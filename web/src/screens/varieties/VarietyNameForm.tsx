@@ -43,7 +43,7 @@ export default function VarietyNameForm({ onSaved, onDirtyChange }: VarietyNameF
     setSending(true)
     try {
       const saved = await post<Variety>('/varieties', { name })
-      invalidateResource(queryClient, 'varieties')
+      invalidateResource(queryClient, 'varieties' as const)
       onSaved({ id: saved.id, name: saved.name })
     } catch (caught) {
       if (caught instanceof ApiError) {

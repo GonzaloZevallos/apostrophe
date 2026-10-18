@@ -98,7 +98,7 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
     void navigate(next === null ? VARIETIES : pathTo(VARIETY, { id: next }), { replace: true })
     // Mark stale without refetching now: the page still mounted would read the variety it
     // just deleted, a 404 the browser writes to its console (`invalidateResource`'s note).
-    invalidateResource(queryClient, 'varieties', { refetchType: 'none' })
+    invalidateResource(queryClient, 'varieties' as const, { refetchType: 'none' as const })
     // The archived list is not the deleted page's own query: a mounted left pane ("Archivadas (N)")
     // reads it again now.
     if (removal === 'archive') void queryClient.invalidateQueries({ queryKey: keys.archivedVarieties() })
@@ -115,9 +115,9 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
     } catch (caught) {
       setAsking(false)
       if (caught instanceof ApiError && caught.code === HAS_HISTORY_CODE) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
       } else if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
         setGone(true)
       } else if (caught instanceof NetworkError) {
         setOffline(true)

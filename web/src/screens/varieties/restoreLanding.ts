@@ -10,7 +10,7 @@ import { varietiesByName } from './varietiesByName'
 export type Landing = number | null | 'unknown'
 
 export function restoreLanding(archived: readonly Variety[] | undefined, restoredId: number): Landing {
-  if (archived === undefined) return 'unknown'
+  if (archived === undefined) return 'unknown' as const
   const others = varietiesByName(archived)
   const at = others.findIndex((variety) => variety.id === restoredId)
   if (at === -1) return others[0]?.id ?? null

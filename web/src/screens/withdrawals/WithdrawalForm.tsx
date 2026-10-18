@@ -350,7 +350,7 @@ export default function WithdrawalForm({
     try {
       if (target === 'new') await recordWithdrawal(body)
       else await editWithdrawal(String(target.id), body)
-      invalidateResource(queryClient, 'stock')
+      invalidateResource(queryClient, 'stock' as const)
       onDone(WITHDRAWAL_SAVED)
     } catch (caught) {
       if (caught instanceof NetworkError) {
@@ -359,13 +359,13 @@ export default function WithdrawalForm({
         const message = resolveOverride(REFUSAL_MESSAGES, caught.code)
         if (caught.code === 'stock.withdrawal_variety_not_found') {
           // The withdrawal itself still has somewhere to go: only a line's variety is gone.
-          invalidateResource(queryClient, 'varieties')
+          invalidateResource(queryClient, 'varieties' as const)
           setFormError(message ?? GENERIC_REFUSAL)
         } else if (caught.code === 'variety.archived') {
           // Before the generic gone branch: the withdrawal is fine, a line's variety is not.
           await settleArchived(sent)
         } else if (isGone(caught.code)) {
-          invalidateResource(queryClient, 'stock')
+          invalidateResource(queryClient, 'stock' as const)
           onGone()
         } else if (message !== undefined) {
           setFormError(message)

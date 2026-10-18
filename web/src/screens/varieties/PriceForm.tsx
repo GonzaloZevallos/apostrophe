@@ -20,7 +20,8 @@ import SinConexion from '../../components/SinConexion'
 import { CLOSE, GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
-import { EFFECTIVE_FROM, NEW_PRICE, PRICE_SAVED, SAVE_PRICE, TODAY } from '../../copy/varieties'
+import { TODAY } from '../../copy/format'
+import { EFFECTIVE_FROM, NEW_PRICE, PRICE_SAVED, SAVE_PRICE } from '../../copy/varieties'
 import {
   fieldOfCode,
   readPriceValues,
@@ -97,11 +98,11 @@ export default function PriceForm({
         effective_from: effectiveFrom,
         ...read.amounts,
       })
-      invalidateResource(queryClient, 'varieties')
+      invalidateResource(queryClient, 'varieties' as const)
       onDone(PRICE_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
         onGone()
       } else if (caught instanceof ApiError) {
         const mapped = fieldOfCode(caught.code)

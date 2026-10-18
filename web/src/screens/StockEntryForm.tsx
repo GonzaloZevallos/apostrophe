@@ -197,7 +197,7 @@ export default function StockEntryForm({
 
   // The entry is no longer there (deleted elsewhere, or never this business's).
   function entryIsGone(): void {
-    invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+    invalidateResource(queryClient, 'stock' as const, { refetchType: 'none' as const })
     onGone?.()
   }
 
@@ -250,7 +250,7 @@ export default function StockEntryForm({
       }
       // Marked stale without refetching: this screen is leaving, and its own entry's query
       // would otherwise refetch a record that may no longer be there.
-      invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+      invalidateResource(queryClient, 'stock' as const, { refetchType: 'none' as const })
       onSaved()
     } catch (caught) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
@@ -285,7 +285,7 @@ export default function StockEntryForm({
     setDeleteError(null)
     try {
       await deleteEntry(entryId)
-      invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+      invalidateResource(queryClient, 'stock' as const, { refetchType: 'none' as const })
       onDeleted?.()
     } catch (caught) {
       setConfirmingDelete(false)

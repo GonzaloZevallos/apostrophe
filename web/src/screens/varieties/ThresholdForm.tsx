@@ -67,11 +67,11 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
     setSending(true)
     try {
       await setThreshold(varietyId, Number(parsed.value))
-      invalidateResource(queryClient, 'stock')
+      invalidateResource(queryClient, 'stock' as const)
       onDone(THRESHOLD_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'stock')
+        invalidateResource(queryClient, 'stock' as const)
         onGone()
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(THRESHOLD_OVERRIDES, caught.code)

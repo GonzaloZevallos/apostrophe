@@ -60,11 +60,11 @@ export default function VarietyThresholdSection({
     setSaving(true)
     try {
       await setThreshold(varietyId, null)
-      invalidateResource(queryClient, 'stock')
+      invalidateResource(queryClient, 'stock' as const)
       flash.showNow(THRESHOLD_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'stock')
+        invalidateResource(queryClient, 'stock' as const)
         onGone()
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(THRESHOLD_OVERRIDES, caught.code)
@@ -100,7 +100,7 @@ export default function VarietyThresholdSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">{LOW_STOCK_WARNING}</h2>
-        <Boton variant="icon" action="edit" ariaLabel={EDIT_WARNING} onClick={() => openForm('threshold')} />
+        <Boton variant="icon" action="edit" ariaLabel={EDIT_WARNING} onClick={() => openForm('threshold' as const)} />
       </div>
       <div className="seccion-variedad__fila">
         <span className={row.status === 'low' ? 'seccion-variedad__valor seccion-variedad__valor--aviso' : 'seccion-variedad__valor'}>
@@ -115,7 +115,7 @@ export default function VarietyThresholdSection({
           disabled={saving || refreshing}
           onClick={() => {
             if (on) void turnOff()
-            else openForm('threshold')
+            else openForm('threshold' as const)
           }}
         >
           <span className="interruptor__perilla" aria-hidden="true" />

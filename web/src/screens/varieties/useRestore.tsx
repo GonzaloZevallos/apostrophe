@@ -50,8 +50,8 @@ export function useRestore(): {
   const [problem, setProblem] = useState<Problem | null>(null)
 
   function refresh(): void {
-    invalidateResource(queryClient, 'varieties')
-    invalidateResource(queryClient, 'stock')
+    invalidateResource(queryClient, 'varieties' as const)
+    invalidateResource(queryClient, 'stock' as const)
   }
 
   /** The one request: `onRestored` runs after it succeeded, every failure is a notice. */
@@ -65,11 +65,11 @@ export function useRestore(): {
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         refresh()
-        setProblem('gone')
+        setProblem('gone' as const)
       } else if (caught instanceof NetworkError) {
-        setProblem('offline')
+        setProblem('offline' as const)
       } else {
-        setProblem('failed')
+        setProblem('failed' as const)
       }
     } finally {
       setSending(false)
@@ -103,8 +103,8 @@ export function useRestore(): {
       )
       flash.armAfterLeaving(VARIETY_RESTORED)
       leaveTo(landing)
-      invalidateResource(queryClient, 'varieties', { refetchType: 'none' })
-      invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+      invalidateResource(queryClient, 'varieties' as const, { refetchType: 'none' as const })
+      invalidateResource(queryClient, 'stock' as const, { refetchType: 'none' as const })
     })
   }
 

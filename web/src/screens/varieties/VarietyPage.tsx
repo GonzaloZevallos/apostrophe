@@ -91,7 +91,7 @@ function Card({ children }: { children: React.ReactNode }) {
 /** The guard of a page drawn behind the price modal: a router supports one blocker at a
  * time and the modal's host holds it, so this page asks for none. It is inert anyway. */
 const UNBLOCKED: LeaveGuard = {
-  blocker: { state: 'unblocked', proceed: undefined, reset: undefined, location: undefined },
+  blocker: { state: 'unblocked' as const, proceed: undefined, reset: undefined, location: undefined },
   disarm: () => undefined,
 }
 function useNoGuard(): LeaveGuard {
@@ -134,7 +134,7 @@ function VarietyPageView({
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
-  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: TAB_VARIETIES })
+  useBackParent('variety' as const, !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' as const } : { title: TAB_VARIETIES })
   const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const archivedStockQuery = useQuery({
     queryKey: keys.archivedStock(),
@@ -206,7 +206,7 @@ function VarietyPageView({
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
           {!archived && (
-            <Boton variant="icon" action="edit" ariaLabel={EDIT_NAME} onClick={() => openForm('rename')} />
+            <Boton variant="icon" action="edit" ariaLabel={EDIT_NAME} onClick={() => openForm('rename' as const)} />
           )}
         </div>
         {row !== undefined && archived && (

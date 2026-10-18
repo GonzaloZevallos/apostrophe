@@ -18,6 +18,13 @@ import {
   VIP_PRICE,
 } from '../../copy/varieties'
 
+/** The field each input writes: codes of `PriceValues`, never words. */
+type PriceFieldCode = 'listPrice' | 'bulkPrice' | 'bulkMinimum' | 'vipPrice'
+const LIST_PRICE_FIELD: PriceFieldCode = 'listPrice'
+const BULK_PRICE_FIELD: PriceFieldCode = 'bulkPrice'
+const BULK_MINIMUM_FIELD: PriceFieldCode = 'bulkMinimum'
+const VIP_PRICE_FIELD: PriceFieldCode = 'vipPrice'
+
 export function FieldError({ message }: { message: string | undefined }) {
   if (message === undefined) return null
   return (
@@ -69,7 +76,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
         <AmountInput
           className="campo__input campo__input--monto"
           value={values.listPrice}
-          onChange={(value) => onChange('listPrice', value)}
+          onChange={(value) => onChange(LIST_PRICE_FIELD, value)}
           required
         />
         <span className="campo__ayuda" data-copy="help">{PRICE_PER_GRAM_HELP}</span>
@@ -82,7 +89,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
             <AmountInput
               className="campo__input"
               value={values.bulkPrice}
-              onChange={(value) => onChange('bulkPrice', value)}
+              onChange={(value) => onChange(BULK_PRICE_FIELD, value)}
             />
             <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
             <FieldError message={errors.bulkPrice} />
@@ -93,7 +100,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
               className="campo__input"
               inputMode="decimal"
               value={values.bulkMinimum}
-              onChange={(event) => onChange('bulkMinimum', event.target.value)}
+              onChange={(event) => onChange(BULK_MINIMUM_FIELD, event.target.value)}
             />
             <span className="campo__ayuda" data-copy="help">{PRICE_FROM_GRAMS_HELP}</span>
             <FieldError message={errors.bulkMinimum} />
@@ -106,7 +113,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
           <AmountInput
             className="campo__input"
             value={values.vipPrice}
-            onChange={(value) => onChange('vipPrice', value)}
+            onChange={(value) => onChange(VIP_PRICE_FIELD, value)}
           />
           <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
           <FieldError message={errors.vipPrice} />

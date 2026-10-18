@@ -21,8 +21,7 @@ import { refreshProgress, type OnboardingTarget } from '../../api/onboarding'
 import type { PricingSettings } from '../../api/pricingSettings'
 import { isGone, kindOf, resolveOverride } from '../../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
-import type { Variety } from '../Variedades'
+import { GENERIC_REFUSAL_MESSAGE, type Variety } from '../Variedades'
 import {
   fieldOfCode,
   readPriceValues,

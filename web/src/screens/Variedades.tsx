@@ -54,6 +54,7 @@ import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
 import { daysLeft } from '../copy/common'
+export { GENERIC_REFUSAL_MESSAGE } from '../copy/common'
 import { TAB_VARIETIES } from '../copy/shell'
 import { ALL_ENTRIES_TITLE, TAKE_OUT_OF_STOCK } from '../copy/stock'
 import {

@@ -52,7 +52,7 @@ function Frame({ children }: { children: ReactNode }) {
 }
 
 export default function WithdrawalFormRoute({ mode }: { mode: 'new' | 'edit' }) {
-  if (mode === 'new') return <FormHost target="new" />
+  if (mode === 'new') return <FormHost target={'new' as const} />
   return <EditHost />
 }
 
@@ -93,7 +93,7 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
 
   const leave = useBackOr(editing ? pathTo(WITHDRAWAL, { id: target.id }) : VARIETIES)
   // A gone withdrawal has no detail to go back to: an edit leaves for the detail's own parent.
-  const goneExit = useGoneExit(editing ? 'withdrawal' : 'withdrawal-new')
+  const goneExit = useGoneExit(editing ? 'withdrawal' as const : 'withdrawal-new' as const)
 
   function onDone(saved: SuccessToast): void {
     disarm()

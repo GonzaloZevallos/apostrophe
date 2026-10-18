@@ -27,7 +27,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
     queryKey: keys.varietyPrices(id),
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
-  useBackParent('variety-prices', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
+  useBackParent('variety-prices' as const, varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
   const failure = varietyQuery.error ?? pricesQuery.error
   if (failure !== null) {
     if (failure instanceof ApiError && isGone(failure.code)) return <GoneScreen label={TAB_VARIETIES} to={VARIETIES} />

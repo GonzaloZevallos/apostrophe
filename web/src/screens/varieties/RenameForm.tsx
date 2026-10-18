@@ -58,11 +58,11 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
     setSending(true)
     try {
       await patch<Variety>(`/varieties/${variety.id}`, { name })
-      invalidateResource(queryClient, 'varieties')
+      invalidateResource(queryClient, 'varieties' as const)
       onDone(VARIETY_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
         onGone()
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(RENAME_OVERRIDES, caught.code)

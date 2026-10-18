@@ -17,6 +17,10 @@ import { VARIETY_ENTRIES, WITHDRAWAL, pathTo } from '../../routes'
 import { ORIGIN_LABEL } from '../originLabel'
 import { REASON_LABEL } from '../withdrawals/withdrawalReasons'
 
+/** Row keys of the merged movement list: an identity, never a word. */
+const WITHDRAWAL_KEY_PREFIX = 'withdrawal-'
+const ENTRY_KEY_PREFIX = 'entry-'
+
 const LAST = 3
 
 export default function VarietyStockSection({
@@ -42,7 +46,7 @@ export default function VarietyStockSection({
       <ul className="lista-entradas">
         {rows.map((movement) =>
           movement.kind === 'withdrawal' ? (
-            <li key={`withdrawal-${movement.id}`} className="fila-entrada">
+            <li key={`${WITHDRAWAL_KEY_PREFIX}${movement.id}`} className="fila-entrada">
               <InAppLink to={pathTo(WITHDRAWAL, { id: movement.id })} className="fila-entrada__enlace">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
@@ -55,7 +59,7 @@ export default function VarietyStockSection({
               </InAppLink>
             </li>
           ) : (
-            <li key={`entry-${movement.id}`} className="fila-entrada">
+            <li key={`${ENTRY_KEY_PREFIX}${movement.id}`} className="fila-entrada">
               <span className="fila-entrada__texto">
                 <span className="fila-entrada__linea1">
                   {formatDate(movement.date, today)} · {ORIGIN_LABEL[movement.origin]}

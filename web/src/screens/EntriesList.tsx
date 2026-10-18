@@ -54,6 +54,10 @@ import { ENTRY_DELETED } from '../copy/common'
 import { TAB_VARIETIES } from '../copy/shell'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 
+/** Row keys of the merged movement list: an identity, never a word. */
+const WITHDRAWAL_KEY_PREFIX = 'withdrawal-'
+const ENTRY_KEY_PREFIX = 'entry-'
+
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
@@ -88,7 +92,7 @@ export default function EntriesList({ varietyId }: Props) {
     enabled: varietyId !== undefined,
   })
 
-  useBackParent('variety-entries', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
+  useBackParent('variety-entries' as const, varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
 
   const [confirming, setConfirming] = useState<StockEntry | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -139,7 +143,7 @@ export default function EntriesList({ varietyId }: Props) {
       setConfirming(null)
       setDeleting(false)
     }
-    invalidateResource(queryClient, 'stock')
+    invalidateResource(queryClient, 'stock' as const)
   }
 
   return (
@@ -160,7 +164,7 @@ export default function EntriesList({ varietyId }: Props) {
         <ul className="lista-entradas">
           {rows.map((entry) =>
             entry.kind === 'withdrawal' ? (
-              <li key={`withdrawal-${entry.id}`} className="fila-entrada">
+              <li key={`${WITHDRAWAL_KEY_PREFIX}${entry.id}`} className="fila-entrada">
                 <InAppLink to={pathTo(WITHDRAWAL, { id: entry.id })} className="fila-entrada__enlace">
                   <span className="fila-entrada__texto">
                     <span className="fila-entrada__linea1">
@@ -173,7 +177,7 @@ export default function EntriesList({ varietyId }: Props) {
                 </InAppLink>
               </li>
             ) : (
-              <li key={`entry-${entry.id}`} className="fila-entrada">
+              <li key={`${ENTRY_KEY_PREFIX}${entry.id}`} className="fila-entrada">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
                     {formatDate(entry.date, me.today)} · {nameOf(entry.variety_id)}

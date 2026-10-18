@@ -61,7 +61,7 @@ export default function VarietyCatalogSection({ row, readOnly = false }: { row: 
     <section id={CATALOG_SECTION_ID} className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">{IN_THE_CATALOG}</h2>
-        <Boton variant="icon" action="edit" ariaLabel={EDIT_CATALOG} onClick={() => openForm('catalog')} />
+        <Boton variant="icon" action="edit" ariaLabel={EDIT_CATALOG} onClick={() => openForm('catalog' as const)} />
       </div>
       <dl className="seccion-variedad__datos">
         <div className="seccion-variedad__dato">

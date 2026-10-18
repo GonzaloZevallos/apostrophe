@@ -41,7 +41,6 @@ import {
   FIELD_DATE,
   FIELD_NOTE,
   FIELD_REASON,
-  VARIETIES_LIST,
   WITHDRAWAL_DELETED,
   WITHDRAWAL_TITLE,
   YES_DELETE_IT,
@@ -59,7 +58,7 @@ function invalidateStockAfterDeleting(queryClient: QueryClient, id: string): voi
   queryClient.invalidateQueries({
     queryKey: keys.stockWithdrawal(id),
     exact: true,
-    refetchType: 'none',
+    refetchType: 'none' as const,
   })
   queryClient.invalidateQueries({
     predicate: (query) =>
@@ -72,7 +71,7 @@ export default function WithdrawalDetail() {
   const { id } = useParams<{ id: string }>()
   const withdrawalId = id ?? ''
   const back = useBackOr(VARIETIES)
-  const goneExit = useGoneExit('withdrawal', { id: withdrawalId })
+  const goneExit = useGoneExit('withdrawal' as const, { id: withdrawalId })
   const queryClient = useQueryClient()
   const flash = useFlash()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -156,7 +155,7 @@ export default function WithdrawalDetail() {
             <dd>{date}</dd>
           </div>
         </dl>
-        <ul className="retiro__lineas" aria-label={VARIETIES_LIST}>
+        <ul className="retiro__lineas" aria-label={TAB_VARIETIES}>
           {withdrawal.lines.map((line, index) => (
             // A variety may repeat in several lines with no merging: the position is the identity.
             <li key={index} className="retiro__linea">

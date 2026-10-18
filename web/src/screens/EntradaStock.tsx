@@ -136,7 +136,7 @@ interface BodyProps {
 function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEntries }: BodyProps) {
   const flash = useFlash()
   const back = useBackOr(mode === 'nuevo' ? VARIETIES : STOCK)
-  const goneExit = useGoneExit('stock-entry', { id: entryId })
+  const goneExit = useGoneExit('stock-entry' as const, { id: entryId })
   const [dirty, setDirty] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)
   // The form's dialogs sit after the body, as the screen always drew them.

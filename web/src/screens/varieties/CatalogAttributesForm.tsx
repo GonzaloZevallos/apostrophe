@@ -99,11 +99,11 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
         indica_share: indica === '' ? null : Number(indica),
         aroma: nullIfEmpty(typed.aroma),
       })
-      invalidateResource(queryClient, 'catalog')
+      invalidateResource(queryClient, 'catalog' as const)
       onDone(CATALOG_ATTRIBUTES_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'catalog')
+        invalidateResource(queryClient, 'catalog' as const)
         onGone()
       } else if (caught instanceof ApiError) {
         const field = fieldOfRefusal(caught.code)
@@ -150,7 +150,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
             value={typed.emoji}
             onChange={(event) => setTyped({ ...typed, emoji: event.target.value })}
           />
-          {errorUnder('emoji')}
+          {errorUnder('emoji' as const)}
         </label>
         <label className="campo">
           <span className="campo__rotulo">{INDICA_SHARE}</span>
@@ -161,7 +161,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
             value={typed.indica}
             onChange={(event) => setTyped({ ...typed, indica: event.target.value })}
           />
-          {errorUnder('indica_share')}
+          {errorUnder('indica_share' as const)}
         </label>
         <label className="campo">
           <span className="campo__rotulo">{AROMA_FLAVOUR}</span>
@@ -171,7 +171,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
             value={typed.aroma}
             onChange={(event) => setTyped({ ...typed, aroma: event.target.value })}
           />
-          {errorUnder('aroma')}
+          {errorUnder('aroma' as const)}
         </label>
         {generalError !== null && (
           <span className="campo__error" role="alert">

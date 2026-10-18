@@ -69,13 +69,13 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
     setFailed(false)
     try {
       await del(`/varieties/${varietyId}/prices/${entry.id}`)
-      invalidateResource(queryClient, 'varieties')
+      invalidateResource(queryClient, 'varieties' as const)
       setDeleting(null)
       flash.showNow(PRICE_DELETED)
     } catch (caught) {
       setDeleting(null)
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
         setGone(true)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
