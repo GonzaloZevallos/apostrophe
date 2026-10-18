@@ -116,7 +116,7 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('.cobro__cliente')).toContainText('owes you $ 5.000')
 
     // "Todo" fills the whole balance in one tap, and the payment is saved.
-    await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
+    await page.getByRole('button', { name: 'All: $ 5.000' }).click()
     await expect(page.getByLabel('Amount')).toHaveValue('5000')
     await page.getByRole('radio', { name: 'Cash' }).check()
     await page.getByRole('button', { name: 'Save' }).click()

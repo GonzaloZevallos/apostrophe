@@ -107,7 +107,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
 
     // Scrolled to the end: how it was paid and the Debiendo hint sit fully above the footer,
     // with the screen's own side margin, never at x = 0.
-    const hint = page.getByText('Para dejar debiendo elegí un cliente')
+    const hint = page.getByText('To leave it owing, choose a customer')
     const hintBox = await box(hint)
     expect(hintBox.x).toBeGreaterThan(0)
     expect(hintBox.y + hintBox.height).toBeLessThanOrEqual((await box(footer)).y)

@@ -69,7 +69,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expect(row).toBeVisible()
   await expect(row.locator('.lista-clientes__telefono')).toHaveCount(0)
   await expect(row).not.toContainText('-')
-  await expect(row).not.toContainText('Sin teléfono')
+  await expect(row).not.toContainText('No phone')
 
   // The card shows no phone field either.
   await row.click()
@@ -112,7 +112,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // Paid in full through Record payment.
   await page.getByRole('link', { name: 'Record payment' }).click()
-  await page.getByRole('button', { name: 'Todo: $ 4.000' }).click()
+  await page.getByRole('button', { name: 'All: $ 4.000' }).click()
   await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()

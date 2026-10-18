@@ -91,15 +91,15 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.getByText('Owes you $ 5.000')).toBeVisible()
-  await expect(page.getByText(`desde el ${today}`)).toBeVisible()
+  await expect(page.getByText(`since ${today}`)).toBeVisible()
   // Clientes' own header already counts her (checked again, with the figure, below).
 
   // --- Record payment: "Todo" fills and settles the whole balance. ---
   await page.getByRole('link', { name: 'Record payment' }).click()
-  await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
+  await page.getByRole('button', { name: 'All: $ 5.000' }).click()
   await page.getByRole('radio', { name: 'Cash' }).check()
   await expect(page.getByText('Comes off the oldest debt first')).toBeVisible()
-  await expect(page.getByText(`$ 5.000 a la venta del ${today}`)).toBeVisible()
+  await expect(page.getByText(`$ 5.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText(/Still owes/)).toHaveCount(0) // nothing left.
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
@@ -131,7 +131,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByLabel('Amount').fill('3000')
   await page.getByRole('radio', { name: 'Transfer' }).check()
-  await expect(page.getByText(`$ 3.000 a la venta del ${today}`)).toBeVisible()
+  await expect(page.getByText(`$ 3.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText('Still owes $ 5.000')).toBeVisible()
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Payment saved · still owes $ 5.000')).toBeVisible()
@@ -142,7 +142,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(transferRow).toContainText('$ 3.000')
   await transferRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
-    page.getByText(`¿Borrás el cobro de $ 3.000 (transferencia) del ${today}?`),
+    page.getByText(`Delete the $ 3.000 payment (transfer) from ${today}?`),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Payment deleted')).toBeVisible()
@@ -167,7 +167,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(
     page.getByRole('alertdialog', {
-      name: `Delete the sale of $ 8.000 del ${today}? Vuelven 8 g al stock.`,
+      name: `Delete the $ 8.000 sale from ${today}? 8 g go back to stock.`,
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
@@ -197,7 +197,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Record payment' }).click()
-  await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
+  await page.getByRole('button', { name: 'All: $ 5.000' }).click()
   await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
@@ -219,7 +219,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(creditRow.getByRole('button', { name: 'Delete payment' })).toHaveCount(1)
   await creditRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
-    page.getByText(`¿Borrás el cobro de $ 5.000 (efectivo) del ${today}?`),
+    page.getByText(`Delete the $ 5.000 payment (cash) from ${today}?`),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Payment deleted')).toBeVisible()

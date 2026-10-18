@@ -178,7 +178,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Debiendo is disabled and explained while there is no customer.
   await expect(page.getByRole('radio', { name: 'Owing' })).toBeDisabled()
-  await expect(page.getByText('Para dejar debiendo elegí un cliente')).toBeVisible()
+  await expect(page.getByText('To leave it owing, choose a customer')).toBeVisible()
 
   // A variety with no price that day is caught on its own line, before saving.
   await fillSaleLine(page, 1, { variety: 'Mimosa', grams: '5' })
@@ -295,7 +295,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(
     page.getByRole('alertdialog', {
-      name: `Delete the sale of $ 1.000 del ${shortDate(todayIso)}? Vuelven 2 g al stock.`,
+      name: `Delete the $ 1.000 sale from ${shortDate(todayIso)}? 2 g go back to stock.`,
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
