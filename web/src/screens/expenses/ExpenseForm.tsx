@@ -33,9 +33,11 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseMoney } from '../../format/parse'
+import { CLOSE, GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
+import * as copy from '../../copy/expenses'
 
-export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const { CATEGORY_GONE } = copy
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 // `expense_category.not_found` is the one code the expense form handles on its
 // own field instead of the generic gone notice (PM round 3): the expense itself
@@ -168,7 +170,7 @@ export default function ExpenseForm({
       } else {
         await editExpense(target.id, body)
       }
-      onDone('Gasto guardado')
+      onDone(copy.EXPENSE_SAVED)
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)
@@ -189,13 +191,13 @@ export default function ExpenseForm({
     }
   }
 
-  // The header, with "Cerrar", shows whatever the categories do, so the seller can
+  // The header, with "Close", shows whatever the categories do, so the seller can
   // always leave.
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">{target === 'nuevo' ? 'Cargar gasto' : 'Editar gasto'}</span>
+      <span className="gasto-form__titulo">{target === 'nuevo' ? copy.FORM_TITLE_NEW : copy.FORM_TITLE_EDIT}</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={onCancel} />
       </span>
     </div>
   )
@@ -215,7 +217,7 @@ export default function ExpenseForm({
       {header}
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Fecha</span>
+          <span className="campo__rotulo">{copy.FIELD_DATE}</span>
           <input
             className="campo__input"
             type="date"
@@ -226,7 +228,7 @@ export default function ExpenseForm({
           />
         </label>
         <label className="campo">
-          <span className="campo__rotulo">Categoría</span>
+          <span className="campo__rotulo">{copy.FIELD_CATEGORY}</span>
           <select
             className="campo__input"
             value={form.category_id}
@@ -236,7 +238,7 @@ export default function ExpenseForm({
             }}
             required
           >
-            <option value="">Elegí una categoría</option>
+            <option value="">{copy.PICK_CATEGORY}</option>
             {allCategories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -252,7 +254,7 @@ export default function ExpenseForm({
         {creatingCategory ? (
           <div className="campo">
             <label className="campo">
-              <span className="campo__rotulo">Nombre de la categoría nueva</span>
+              <span className="campo__rotulo">{copy.NEW_CATEGORY_NAME}</span>
               <input
                 className="campo__input"
                 value={newCategoryName}
@@ -269,16 +271,16 @@ export default function ExpenseForm({
               disabled={newCategorySending || newCategoryName.trim() === ''}
               onClick={onCreateCategory}
             >
-              Crear categoría
+              {copy.CREATE_CATEGORY}
             </Boton>
           </div>
         ) : (
           <Boton variant="link" onClick={() => setCreatingCategory(true)}>
-            Crear una categoría nueva
+            {copy.CREATE_NEW_CATEGORY}
           </Boton>
         )}
         <label className="campo">
-          <span className="campo__rotulo">Monto</span>
+          <span className="campo__rotulo">{copy.FIELD_AMOUNT}</span>
           <input
             className="campo__input campo__input--monto"
             inputMode="numeric"
@@ -288,7 +290,7 @@ export default function ExpenseForm({
           />
         </label>
         <label className="campo">
-          <span className="campo__rotulo">Detalle</span>
+          <span className="campo__rotulo">{copy.FIELD_DETAIL}</span>
           <input
             className="campo__input"
             value={form.detail}
@@ -304,13 +306,13 @@ export default function ExpenseForm({
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          Guardá el gasto
+          {copy.SAVE_EXPENSE}
         </Boton>
         {target !== 'nuevo' && onRequestDelete !== undefined && (
           <Boton
             variant="icon"
             action="delete"
-            ariaLabel="Borrar gasto"
+            ariaLabel={copy.DELETE_EXPENSE}
             onClick={() => onRequestDelete(target)}
           />
         )}

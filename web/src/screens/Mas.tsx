@@ -8,6 +8,8 @@
 
 import InAppLink from '../components/InAppLink'
 import Icono, { type NombreIcono } from '../components/Icono'
+import * as copy from '../copy/expenses'
+import { TAB_ANALYSIS, TAB_EXPENSES, TAB_MORE } from '../copy/shell'
 import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS, WITHDRAWAL_NEW } from '../routes'
 
 interface Item {
@@ -20,28 +22,28 @@ interface Item {
 const ITEMS: Item[] = [
   {
     to: EXPENSE_NEW,
-    label: 'Cargar gasto',
+    label: copy.ADD_EXPENSE,
     icon: 'agregar',
-    detail: 'Categoría, monto y detalle',
+    detail: copy.MORE_ADD_EXPENSE_DETAIL,
   },
   {
     to: WITHDRAWAL_NEW,
-    label: 'Sacar del stock',
+    label: copy.MORE_TAKE_OUT,
     icon: 'salidaStock',
-    detail: 'Promoción o consumo propio',
+    detail: copy.MORE_TAKE_OUT_DETAIL,
   },
-  { to: EXPENSES, label: 'Gastos', icon: 'gastos', detail: 'Por mes y por categoría' },
+  { to: EXPENSES, label: TAB_EXPENSES, icon: 'gastos', detail: copy.MORE_EXPENSES_DETAIL },
   {
     to: ANALYSIS,
-    label: 'Análisis',
+    label: TAB_ANALYSIS,
     icon: 'analisis',
-    detail: 'Variedades, semanas, meses y días',
+    detail: copy.MORE_ANALYSIS_DETAIL,
   },
   {
     to: SETTINGS,
-    label: 'Configuración',
+    label: copy.MORE_SETTINGS,
     icon: 'configuracion',
-    detail: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
+    detail: copy.MORE_SETTINGS_DETAIL,
   },
 ]
 
@@ -60,8 +62,8 @@ export default function Mas() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">Más</span>
-        <nav className="mas__lista" aria-label="Más" data-menu>
+        <span className="encabezado__titulo">{TAB_MORE}</span>
+        <nav className="mas__lista" aria-label={TAB_MORE} data-menu>
           {ITEMS.map((item) => (
             <InAppLink
               key={item.to}

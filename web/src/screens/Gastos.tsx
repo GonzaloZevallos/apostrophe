@@ -36,20 +36,14 @@ import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
-import { FLOWER_NOTICE } from '../copy/expenses'
+import * as copy from '../copy/expenses'
+import { MONTH_NEXT, MONTH_PREVIOUS } from '../copy/analysis'
+import { TAB_EXPENSES } from '../copy/shell'
 
-export { FLOWER_NOTICE }
-export const NO_DISCARD_TITLE = 'No, dejala'
-export const YES_DELETE_TITLE = 'Sí, borrala'
+export const { FLOWER_NOTICE, NO_DISCARD_TITLE, YES_DELETE_TITLE } = copy
 
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
-  return `¿Borrás el gasto de ${formatMoney(expense.amount)} en ${categoryName} del ${formatDate(expense.spent_on, today)}?`
-}
-
-function countLine(expenses: number, categories: number): string {
-  const spent = expenses === 1 ? '1 gasto' : `${expenses} gastos`
-  const inCategories = categories === 1 ? '1 categoría' : `${categories} categorías`
-  return `${spent} en ${inCategories}`
+  return copy.deleteQuestion(formatMoney(expense.amount), categoryName, formatDate(expense.spent_on, today))
 }
 
 function DeleteConfirm({
@@ -97,8 +91,8 @@ function DeleteConfirm({
   return (
     <div className="capa" role="presentation">
       <div className="capa__contenido panel">
-        <span className="panel__titulo">¿Borrás el gasto?</span>
-        <span className="panel__detalle">{deleteQuestion(expense, categoryName, today)} Esto no se puede deshacer.</span>
+        <span className="panel__titulo">{copy.DELETE_TITLE}</span>
+        <span className="panel__detalle">{deleteQuestion(expense, categoryName, today)} {copy.CANNOT_UNDO}</span>
         {offline && <SinConexion />}
         {error !== null && (
           <span className="campo__error" role="alert">
@@ -170,16 +164,16 @@ export default function Gastos() {
     <main className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
-          <span className="encabezado__titulo gastos__titulo">Gastos</span>
-          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
+          <span className="encabezado__titulo gastos__titulo">{TAB_EXPENSES}</span>
+          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={copy.ADD_EXPENSE}>
             <Icono nombre="agregar" />
-            <span className="gastos__cargar-texto">Cargar gasto</span>
+            <span className="gastos__cargar-texto">{copy.ADD_EXPENSE}</span>
           </InAppLink>
           <div className="gastos__mes">
             <button
               type="button"
               className="gastos__mes-boton"
-              aria-label="Mes anterior"
+              aria-label={MONTH_PREVIOUS}
               onClick={() => moveMonth(-1)}
             >
               <Icono nombre="atras" />
@@ -188,7 +182,7 @@ export default function Gastos() {
             <button
               type="button"
               className="gastos__mes-boton"
-              aria-label="Mes siguiente"
+              aria-label={MONTH_NEXT}
               onClick={() => moveMonth(1)}
             >
               <Icono nombre="chevron" />
@@ -204,15 +198,15 @@ export default function Gastos() {
           <>
             <div className="gastos__resumen">
               <div className="gastos__total">
-                <span className="rotulo">Gastaste en el mes</span>
+                <span className="rotulo">{copy.SPENT_THIS_MONTH}</span>
                 <span className="cifra-xl">{formatMoney(view.data.total)}</span>
                 {latest.length > 0 && (
-                  <span className="gastos__conteo">{countLine(latest.length, view.data.categories.length)}</span>
+                  <span className="gastos__conteo">{copy.countLine(latest.length, view.data.categories.length)}</span>
                 )}
               </div>
               {view.data.categories.length > 0 && (
                 <>
-                  <span className="gastos__seccion">Por categoría</span>
+                  <span className="gastos__seccion">{copy.BY_CATEGORY}</span>
                   <div className="gastos__categorias">
                     {view.data.categories.map((category) => (
                       <div key={category.id} className="gastos__categoria">
@@ -234,7 +228,7 @@ export default function Gastos() {
             </div>
             {latest.length > 0 && (
               <div className="gastos__ultimos">
-                <span className="gastos__seccion">Últimos</span>
+                <span className="gastos__seccion">{copy.LATEST}</span>
                 {latest.map(({ expense, categoryName }) => (
                   <button
                     key={expense.id}
@@ -258,7 +252,7 @@ export default function Gastos() {
         <div className="gastos__pie">
           <span className="pie">{FLOWER_NOTICE}</span>
           <BotonLink to={EXPENSE_CATEGORIES} variant="link">
-            Categorías
+            {copy.CATEGORIES}
           </BotonLink>
         </div>
       </div>
@@ -286,10 +280,10 @@ export default function Gastos() {
             />
             {confirmingDiscard && (
               <ConfirmDialog
-                title="¿Descartás los cambios?"
-                detail="Se pierde lo que cambiaste: el gasto sigue como estaba."
-                confirmText="Sí, descartalos"
-                cancelText="No, seguí editando"
+                title={copy.DISCARD_CHANGES_TITLE}
+                detail={copy.DISCARD_CHANGES_DETAIL}
+                confirmText={copy.DISCARD_CHANGES_CONFIRM}
+                cancelText={copy.DISCARD_CHANGES_CANCEL}
                 onConfirm={closeEdit}
                 onCancel={() => setConfirmingDiscard(false)}
               />
@@ -305,7 +299,7 @@ export default function Gastos() {
           onCancel={() => setDeleteTarget(null)}
           onDone={() => {
             setDeleteTarget(null)
-            flash.showNow('Gasto eliminado')
+            flash.showNow(copy.EXPENSE_DELETED)
           }}
           onGone={() => {
             setDeleteTarget(null)
