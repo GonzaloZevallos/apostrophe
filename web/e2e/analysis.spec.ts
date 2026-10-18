@@ -60,7 +60,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '10' })
   await page.getByRole('radio', { name: 'Cash' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // An expense, today, with a category created inline.
@@ -226,7 +226,7 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   await page.getByLabel('Fecha').fill(twoWeeksAgo)
   await fillSaleLine(page, 1, { variety: 'Lirio', grams: '15' })
   await page.getByRole('radio', { name: 'Cash' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // The computer: the week and month tables carry one cost sub-row under each row.

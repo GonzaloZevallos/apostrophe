@@ -1,5 +1,5 @@
 /**
- * Registrar cobro's modal on a computer, in a real browser (ADR-0044): jsdom proves only that
+ * Record payment's modal on a computer, in a real browser (ADR-0044): jsdom proves only that
  * the panes behind it carry `inert`; here Tab never reaches them and a click at the position of
  * a list row lands on the backdrop. Each test signs up its own business and makes its own
  * debtor (ADR-0040).
@@ -14,14 +14,14 @@ import { expectPath } from './helpers/url.js'
 
 test.use({ viewport: { width: 1280, height: 800 } })
 
-/** Signs up, sells "Carla Cobrar" a rose on credit and opens "Registrar cobro" from her card. */
+/** Signs up, sells "Carla Cobrar" a rose on credit and opens "Record payment" from her card. */
 async function openCobroModal(page: Page): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await expect(page.getByText('Variety guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await page.getByLabel(/^Precio de lista/).fill('1000')
@@ -30,19 +30,19 @@ async function openCobroModal(page: Page): Promise<void> {
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill('Carla Cobrar')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
-  await page.getByRole('link', { name: 'Nueva venta a Carla Cobrar' }).click()
+  await page.getByRole('link', { name: 'New sale for Carla Cobrar' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).first().click()
-  await expect(page.getByRole('dialog', { name: 'Registrar cobro' })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
   // The host takes focus to the title once the form is there: its effects have run.
   await expect(page.locator('.cobro-modal .panel__titulo')).toBeFocused()
 }

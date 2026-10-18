@@ -8,9 +8,9 @@
  * what `results.md`'s PRD needs a figure for — a priced variety, a purchase, a sale
  * left owing, a sale paid on the spot, an expense — then proves Inicio (now the
  * panel) shows nothing it did not read from `GET /panel` in this same run: every
- * figure, across Hoy, Semana and Mes, and the "Te deben" teaser's own navigation
+ * figure, across Hoy, Semana and Mes, and the "Owed" teaser's own navigation
  * (PRD, "No curl" metric: "opens Inicio, switches across the three periods, opens
- * Te deben from the block and a customer from the teaser").
+ * Owed from the block and a customer from the teaser").
  *
  * The screen's own figures are never recomputed here from the seed (plan invariant:
  * "No screen does arithmetic ... on an amount from the API") — this file only
@@ -203,17 +203,17 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone').fill('+5491155550077')
   await page.getByLabel('Name').fill('Carla Pérez')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
   // A sale left owing, to Carla.
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale for Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // A sale paid on the spot, no customer.
@@ -221,7 +221,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('link', { name: 'New sale' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.getByRole('radio', { name: 'Cash' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // Two more sales, dated at the start of this week and the start of this month —
@@ -358,7 +358,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     await expect(rosaRow.locator('.fila-stock__insignia')).toHaveText(rosaSideNote)
   }
 
-  // Te deben: the block shows the fetched total, count and oldest date, and the
+  // Owed: the block shows the fetched total, count and oldest date, and the
   // teaser's own balance and "desde dd/mm" — all read, never computed here.
   const debtsSubtitle =
     panel.debts.oldest === null
@@ -375,7 +375,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(teaserLink).toContainText(pesos(teaserRow.balance))
   await expect(teaserLink).toContainText(`desde ${shortDate(teaserRow.owing_since)}`)
 
-  // Opens Te deben from the block's own heading, then goes back to Inicio.
+  // Opens Owed from the block's own heading, then goes back to Inicio.
   await page.getByRole('link', { name: 'Te deben' }).click()
   await expectPath(page, CUSTOMERS)
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))

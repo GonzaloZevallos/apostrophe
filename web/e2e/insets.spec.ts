@@ -126,12 +126,12 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone').fill('+5491155550077')
   await page.getByLabel('Name').fill('Lucía Borde')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
-  await page.getByRole('link', { name: 'Nueva venta a Lucía Borde' }).click()
+  await page.getByRole('link', { name: 'New sale for Lucía Borde' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   const saleUrl = new URL(page.url()).pathname
 
@@ -169,7 +169,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     // landscape), so the end can sit up to a pixel short of the bottom: under 1 px is no overlap.
     expect(detailEnd.bottom, where('detail bottom')).toBeLessThan(viewport.height - BOTTOM + 1)
 
-    // Nueva venta: the save button, and the customer sheet over it.
+    // New sale: the save button, and the customer sheet over it.
     await page.goto(SALE_NEW)
     // The row, not its title: the title is centered in a row whose height follows the
     // narrower content width, so it moves by less than the inset.
@@ -177,19 +177,19 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     expect(form.top, where('nueva venta top')).toBe(TOP)
     if (!viewport.wide) expect(form.left, where('nueva venta left')).toBe(SIDE)
     await scrollToEnd(page)
-    const save = await box(page, 'button:has-text("Guardá la venta")')
-    expect(save.bottom, where('Guardá la venta')).toBeLessThanOrEqual(viewport.height - BOTTOM)
+    const save = await box(page, 'button:has-text("Save sale")')
+    expect(save.bottom, where('Save sale')).toBeLessThanOrEqual(viewport.height - BOTTOM)
 
-    await page.getByRole('button', { name: 'Elegir cliente' }).click()
+    await page.getByRole('button', { name: 'Choose customer' }).click()
     const sheetButton = page.locator('.cliente-sheet__contenido button').last()
     await sheetButton.scrollIntoViewIfNeeded()
     expectInside(where('customer sheet button'), await box(page, '.cliente-sheet__contenido button', 'last'), viewport)
 
-    // Registrar cobro, opened from Clientes' "Cobrar a": a form screen, a modal on a computer.
+    // Record payment, opened from Clientes' "Cobrar a": a form screen, a modal on a computer.
     await page.goto(CUSTOMERS)
     await page.getByRole('link', { name: 'Collect from Lucía Borde' }).first().click()
     await setInsets(page, true)
-    await page.getByRole('button', { name: 'Guardar' }).evaluate((button) => {
+    await page.getByRole('button', { name: 'Save' }).evaluate((button) => {
       for (let el: Element | null = button; el; el = el.parentElement) el.scrollTop = el.scrollHeight
     })
     expectInside(where('cobro form button'), await box(page, 'button:has-text("Guardar")'), viewport)

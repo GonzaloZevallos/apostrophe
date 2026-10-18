@@ -1,7 +1,7 @@
 /**
  * The sales screens on a real phone browser, end to end (GH-78, subtask "nv-loading"): a sale is
  * recorded from a phone with an existing customer, with a new one made from inside the
- * sheet and with none; and at 320, 375 and 430 px, Nueva venta, Ventas and a sale's detail
+ * sheet and with none; and at 320, 375 and 430 px, New sale, Ventas and a sale's detail
  * (dialogs included) overflow nowhere sideways, every interactive element is at least 44 px
  * tall, every input at least 16 px, and Ventas' tabs sit in two or four columns, never three.
  *
@@ -62,9 +62,9 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-venta-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Jazmín')
+  await page.getByLabel('Name').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await expect(page.getByText('Variety guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await setPriceDate(page, '2000-01-01')
@@ -85,14 +85,14 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
     await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
     if (customer === 'existing') {
-      await page.getByRole('button', { name: 'Elegir cliente' }).click()
+      await page.getByRole('button', { name: 'Choose customer' }).click()
       await page.getByRole('button', { name: /Marta Gómez/ }).click()
     } else if (customer === 'new') {
-      await page.getByRole('button', { name: 'Elegir cliente' }).click()
-      await page.getByRole('button', { name: 'Nuevo cliente' }).click()
+      await page.getByRole('button', { name: 'Choose customer' }).click()
+      await page.getByRole('button', { name: 'New customer' }).click()
       await page.getByLabel('Phone').fill('+5491155550012')
       await page.getByLabel('Name').fill('Luz Díaz')
-      await page.getByRole('button', { name: 'Crear cliente' }).click()
+      await page.getByRole('button', { name: 'Create customer' }).click()
       // The sheets close by history, a moment after the customer is saved; until then the
       // picker's own list also names customers, so the chosen one is read once it is gone.
       await expect(page.locator('.cliente-sheet')).toHaveCount(0)
@@ -100,7 +100,7 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
     }
     await page.getByRole('radio', { name: 'Cash' }).check()
     await expect(page.locator('.nueva-venta__pie')).toContainText('$ 5.000')
-    await page.getByRole('button', { name: 'Guardá la venta' }).click()
+    await page.getByRole('button', { name: 'Save sale' }).click()
     await expect(page.getByText('Sale saved')).toBeVisible()
   }
 })
@@ -128,14 +128,14 @@ test.describe('phone sales sweep', () => {
     await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
     await page.getByRole('radio', { name: 'Cash' }).check()
-    await page.getByRole('button', { name: 'Guardá la venta' }).click()
+    await page.getByRole('button', { name: 'Save sale' }).click()
     await expect(page.getByText('Sale saved')).toBeVisible()
     session = await context.storageState()
     await context.close()
   })
 
   for (const phoneCase of CASES) {
-    test(`Nueva venta, Ventas and a sale detail fit and are thumb-sized at ${phoneCase.name}`, async ({ browser, workerServer }) => {
+    test(`New sale, Ventas and a sale detail fit and are thumb-sized at ${phoneCase.name}`, async ({ browser, workerServer }) => {
       const context = await browser.newContext({
         ...PHONE_CONTEXT,
         baseURL: workerServer.url,
@@ -231,22 +231,22 @@ test.describe('phone sales sweep', () => {
 async function sweep(page: Page, { name, scale }: PhoneCase): Promise<void> {
   await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
-  await page.getByRole('button', { name: 'Agregar otra variedad' }).click()
+  await page.getByRole('button', { name: 'Add another variety' }).click()
   await expect(page.locator('.nueva-venta__linea-total').first()).toBeVisible()
   await settled(page)
-  await expectNoSidewaysOverflow(page, `${name}: Nueva venta`, scale)
-  await expectThumbSized(page, `${name}: Nueva venta`, scale)
-  await page.getByRole('button', { name: 'Cerrar' }).click()
-  const discard = page.getByRole('alertdialog', { name: '¿Descartás la venta?' })
+  await expectNoSidewaysOverflow(page, `${name}: New sale`, scale)
+  await expectThumbSized(page, `${name}: New sale`, scale)
+  await page.getByRole('button', { name: 'Close' }).click()
+  const discard = page.getByRole('alertdialog', { name: 'Discard the sale?' })
   await expect(discard).toBeVisible()
   await settled(page)
   await expectThumbSized(page, `${name}: the discard dialog`, scale)
-  await page.getByRole('button', { name: 'Sí, descartala' }).click()
+  await page.getByRole('button', { name: 'Yes, discard it' }).click()
 
   await page.goto(SALES)
   await expect(page.locator('.fila-venta').first()).toBeVisible()
   await settled(page)
-  const tabs = page.getByRole('group', { name: 'Período' })
+  const tabs = page.getByRole('group', { name: 'Period' })
   await expect(tabs.getByRole('button')).toHaveCount(4)
   const columns = await tabs
     .locator('.pestanas__celdas')
@@ -256,13 +256,13 @@ async function sweep(page: Page, { name, scale }: PhoneCase): Promise<void> {
   await expectThumbSized(page, `${name}: Ventas`, scale)
 
   await page.locator('.fila-venta').first().click()
-  await expect(page.getByRole('button', { name: 'Borrar venta' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Delete sale' })).toBeVisible()
   await settled(page)
   await expectNoSidewaysOverflow(page, `${name}: the detail`, scale)
   await expectThumbSized(page, `${name}: the detail`, scale)
-  await page.getByRole('button', { name: 'Borrar venta' }).click()
+  await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(page.getByRole('alertdialog')).toBeVisible()
   await settled(page)
   await expectThumbSized(page, `${name}: the delete dialog`, scale)
-  await page.getByRole('button', { name: 'No, dejala' }).click()
+  await page.getByRole('button', { name: 'No, keep it' }).click()
 }

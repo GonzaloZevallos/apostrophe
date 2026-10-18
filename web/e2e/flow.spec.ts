@@ -44,16 +44,16 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone').fill(PHONE)
   await page.getByLabel('Name').fill('Marisa Gómez')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
   // Add a variety.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await expect(page.getByText('Variety guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expectPath(page, VARIETY)
 
@@ -64,11 +64,11 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel(/^Precio de lista/).fill('9000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
-  await expect(page.getByText(/\$ 9\.000 x g/).first()).toBeVisible()
+  await expect(page.getByText(/\$ 9\.000 / g/).first()).toBeVisible()
 
   // Delete the price entry (the only one): the variety is left with no price.
   await page.getByRole('button', { name: 'Borrar este precio' }).click();
-  await page.getByRole('button', { name: 'Sí, borrala' }).click();
+  await page.getByRole('button', { name: 'Yes, delete it' }).click();
   await expect(page.getByText('Precio eliminado')).toBeVisible()
   await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
 
@@ -79,8 +79,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Entrada de stock' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)
-  await page.getByLabel('Gramos').fill('50')
-  await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
@@ -90,13 +90,13 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Compra · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
-  await page.getByRole('link', { name: 'Editar' }).click()
+  await page.getByRole('link', { name: 'Edit' }).click()
   await expectPath(page, STOCK_ENTRY)
-  await expect(page.getByLabel('Gramos')).toHaveValue('50')
-  await page.getByLabel('Gramos').fill('60')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await expect(page.getByLabel('Grams')).toHaveValue('50')
+  await page.getByLabel('Grams').fill('60')
+  await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, guardar' }).click()
+  await page.getByRole('button', { name: 'Yes, guardar' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry saved')).toBeVisible()
   await expect(page.getByText('Compra · 60 g')).toBeVisible()
@@ -104,7 +104,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
   await page.getByRole('button', { name: 'Borrar', exact: true }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry deleted')).toBeVisible()
   await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
@@ -126,9 +126,9 @@ test('a seller does everything the backend offers today, from the front alone', 
   await openGastos(page)
   await page.getByRole('link', { name: 'Cargar gasto' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
-  await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
+  await page.getByLabel('Name de la categoría nueva').fill('Flete')
   await page.getByRole('button', { name: 'Crear categoría' }).click()
-  await page.getByLabel('Monto').fill('4500')
+  await page.getByLabel('Amount').fill('4500')
   await page.getByLabel('Detalle').fill('Flete al mercado')
   await page.getByRole('button', { name: 'Guardá el gasto' }).click()
   await expect(page.getByText('Gasto guardado')).toBeVisible()
@@ -144,14 +144,14 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Delete it.
   await page.getByText('Flete al mercado central').click()
   await page.getByRole('button', { name: 'Borrar gasto' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Gasto eliminado')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
   // Move between months: the month lives in the URL, one step back and one forward.
-  await page.getByRole('button', { name: 'Mes anterior' }).click()
+  await page.getByRole('button', { name: 'Month anterior' }).click()
   await expectPath(page, EXPENSES, /\?month=\d{4}-\d{2}/)
-  await page.getByRole('button', { name: 'Mes siguiente' }).click()
+  await page.getByRole('button', { name: 'Month siguiente' }).click()
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
@@ -184,14 +184,14 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Categoría guardada')).toBeVisible()
   const newRow = page.locator('.fila', { hasText: 'Delivery en bici' })
   await newRow.getByRole('button', { name: 'Eliminar' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Categoría eliminada')).toBeVisible()
   await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
   await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
-  await page.getByLabel('Nombre del negocio').fill(renamedTo)
+  await page.getByLabel('Name del negocio').fill(renamedTo)
   await page.getByRole('button', { name: 'Guardá el nombre' }).click()
   await expect(page.getByText('Negocio renombrado')).toBeVisible()
 

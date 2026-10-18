@@ -4,7 +4,7 @@
  * (plan, invariants); a stale answer is only ever shown marked pending, never as
  * the answer to the query currently typed (`customers.md`, "List and search").
  *
- * The "Owes youn" section and each row's amber/blue mark come from
+ * The "Owed" section and each row's amber/blue mark come from
  * `GET /payments/debtors` and the customer's own `balance`/`owing_since`/
  * `standing` (payments.md, "On screen") — `fetchStub` below dispatches on the
  * request's own path and query, never on call order, since the header's two
@@ -200,7 +200,7 @@ test('a server error on the list shows the generic retry, never the empty-list t
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
-test('Owes youn sits above everyone A–Z, and the header carries no debt figure', async () => {
+test('Owed sits above everyone A–Z, and the header carries no debt figure', async () => {
   // `customer.json` and `debtors.json` (plan, invariants: "used by the front's
   // fetch fakes") drive this: the customer list carries the fixture's own owing
   // entry plus a settled one, and the section reads straight off `debtors.json`.
@@ -217,7 +217,7 @@ test('Owes youn sits above everyone A–Z, and the header carries no debt figure
   renderClientes()
 
   expect(await screen.findByText('2 customers')).toBeInTheDocument()
-  expect(screen.queryByText(/ owes youn \$/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/ owed \$/)).not.toBeInTheDocument()
   const section = await screen.findByRole('region', { name: 'Owed' })
   const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
   expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -231,7 +231,7 @@ test('Owes youn sits above everyone A–Z, and the header carries no debt figure
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
 })
 
-test("Owes youn shows the API's order and total as answered, never a client sort or sum", async () => {
+test("Owed shows the API's order and total as answered, never a client sort or sum", async () => {
   // Later owing-since first, and a total that is not the sum of the rows: nothing here may
   // resort or add (payments.md, "Who owes and the totals").
   vi.mocked(fetch).mockImplementation(
@@ -258,7 +258,7 @@ test("Owes youn shows the API's order and total as answered, never a client sort
   ).toEqual(['Collect from Zoe', 'Collect from Abel'])
 })
 
-test('a customer in credit is only in A–Z, never in Owes youn', async () => {
+test('a customer in credit is only in A–Z, never in Owed', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -546,7 +546,7 @@ test('on a phone, picking a customer pushes, so Back returns to the list and not
 // A customer's row is a record row: it keeps its layout and takes no icon (the rule's out of scope).
 const RULE = { limits: LIMITS, samples: { name: SAMPLES.name }, optionClasses: ['lista-clientes__fila'] }
 
-test('every action on the list and in Owes youn is icon + text, and Cobrar keeps its accessible name', async () => {
+test('every action on the list and in Owed is icon + text, and Cobrar keeps its accessible name', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, debtorsFixture)),
   )

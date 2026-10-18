@@ -122,7 +122,7 @@ async function settled(page: Page, computer: boolean): Promise<void> {
   if (computer) await expectPath(page, VARIETY)
 }
 
-test('the sale form, Registrar cobro, the catalog and a stock entry open within the tap budget', async ({ page }) => {
+test('the sale form, Record payment, the catalog and a stock entry open within the tap budget', async ({ page }) => {
   test.setTimeout(120_000)
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
@@ -144,7 +144,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       let counter: Counter = { taps: 0 }
       if (computer && root === VARIETIES) {
         // Variedades selects its first variety on its own, and a variety's page is a card: a
-        // card never shows "+ Nueva venta" (navigation.md, "Chrome and back"), the rail
+        // card never shows "+ New sale" (navigation.md, "Chrome and back"), the rail
         // included. So the sale is not one tap from here on a computer; the tab roots that
         // stay roots (the others) are measured below.
         await settled(page, computer)
@@ -165,7 +165,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
         const collect = root === HOME ? 'Cobrar a Carla Toques' : 'Collect from Carla Toques'
         await tap(counter, page.getByRole('link', { name: collect }).first())
         await expectPath(page, CUSTOMER_PAYMENT)
-        await expect(page.getByRole('button', { name: 'Cerrar' }), label).toBeVisible()
+        await expect(page.getByRole('button', { name: 'Close' }), label).toBeVisible()
         measure(`payment ${root}`, device, counter.taps)
       }
 
@@ -177,7 +177,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       await expectPath(page, CUSTOMERS)
       await tap(counter, page.getByRole('link', { name: 'Collect from Carla Toques' }).first())
       await expectPath(page, CUSTOMER_PAYMENT)
-      await expect(page.getByRole('button', { name: 'Cerrar' }), label).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Close' }), label).toBeVisible()
       await expect(page.locator('.cobro__cliente'), label).toContainText('Carla Toques')
       measure(`collect ${root}`, device, counter.taps)
 

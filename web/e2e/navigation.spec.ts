@@ -161,7 +161,7 @@ test.describe.serial('navigation', () => {
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))
   })
 
-  test('"Nueva venta", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
+  test('"New sale", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
     // The real stylesheet in a real browser (computed style is meaningless in jsdom).
     const expectAction = async (control: Locator): Promise<void> => {
       await expect(control).toBeVisible()
@@ -184,7 +184,7 @@ test.describe.serial('navigation', () => {
     for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 920 }]) {
       await page.setViewportSize(size)
       await page.goto(pathTo(CUSTOMER, { id: records.customer }))
-      await expectAction(page.getByRole('link', { name: `Nueva venta a ${records.customerName}` }))
+      await expectAction(page.getByRole('link', { name: `New sale for ${records.customerName}` }))
     }
 
     // InicioPrimeraVez: Inicio of a business with nothing in it yet.
