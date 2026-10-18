@@ -32,8 +32,8 @@ export function probeColour(): ColourFacts {
     }
     const layers: Layer[] = []
     let image = extraImage
-    for (let i = chain.length - 1; i >= 0; i -= 1) {
-      const style = getComputedStyle(chain[i] as Element)
+    for (const [i, at] of [...chain.entries()].reverse()) {
+      const style = getComputedStyle(at)
       if (style.backgroundImage !== 'none') image = true
       if (!TRANSPARENT.test(style.backgroundColor)) layers.push({ color: style.backgroundColor, opacity: cumulative[i] ?? 1 })
     }
@@ -63,9 +63,10 @@ export function probeColour(): ColourFacts {
     if (skipped(element) || disabled(element)) continue
     const type = element.getAttribute('type') ?? 'text'
     if (['checkbox', 'radio', 'hidden', 'range', 'file', 'submit', 'button'].includes(type)) continue
-    const field = element as HTMLInputElement
-    if (field.value !== '') add(element, getComputedStyle(element).color, null, false, '')
-    else if (field.placeholder !== undefined && field.placeholder !== '') {
+    if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)) continue
+    const placeholder = element instanceof HTMLSelectElement ? '' : element.placeholder
+    if (element.value !== '') add(element, getComputedStyle(element).color, null, false, '')
+    else if (placeholder !== '') {
       add(element, getComputedStyle(element, '::placeholder').color, null, false, '::placeholder')
     }
   }
