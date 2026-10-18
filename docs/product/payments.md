@@ -1,6 +1,6 @@
 # Payments
 
-Money a customer hands over, and what each customer owes because of it: their balance, owing since and the account of their sales and payments. Seen only by its business (ADR-0004). Reads sales and their on-the-spot payments from sales (ADR-0007) and customers from customers. Cash (#7) counts payments on their own dates. Which sale a payment settles is worked out live and never stored, like cost of goods (ADR-0009, ADR-0010), while sale prices stay frozen (ADR-0003). Who owes is shown as the Te deben section at the top of Clientes and as Inicio's Te deben block; there is no separate Te deben screen.
+Money a customer hands over, and what each customer owes because of it: their balance, owing since and the account of their sales and payments. Seen only by its business (ADR-0004). Reads sales and their on-the-spot payments from sales (ADR-0007) and customers from customers. Cash (#7) counts payments on their own dates. Which sale a payment settles is worked out live and never stored, like cost of goods (ADR-0009, ADR-0010), while sale prices stay frozen (ADR-0003). Who owes is shown as the Owed section at the top of Clientes and as Inicio's Owed block; there is no separate Owed screen.
 
 ## Jobs
 
@@ -8,11 +8,11 @@ Money a customer hands over, and what each customer owes because of it: their ba
 
 This is the same "run my business from my phone" job as every other capability. It replaces the spreadsheet's single paid/pending column. Settling a debt overwrote that column, so there was no payment date and no partial payment.
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "Cobrar" on every debtor row of Clientes and Inicio, which opens Registrar cobro with the customer chosen in at most 2 taps.)
+**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "Collect" on every debtor row of Clientes and Inicio, which opens Record payment with the customer chosen in at most 2 taps.)
 
 Success criteria:
 
-1. **Fast from the phone**: a payment is recorded in under a minute, with the date already set to today. Registrar cobro, with the customer chosen, opens in at most 2 taps from any tab root ("Cobrar" on Clientes or Inicio). Paying everything owed takes one tap ("Todo").
+1. **Fast from the phone**: a payment is recorded in under a minute, with the date already set to today. Record payment, with the customer chosen, opens in at most 2 taps from any tab root ("Collect" on Clientes or Inicio). Paying everything owed takes one tap ("All").
 2. **Partial payments just work, oldest debt first**: the seller never picks a sale. Every later payment settles the customer's oldest unpaid sale first, then the next. Before saving, the seller sees which sales it settles and what is still owed. After saving, they see what is still owed.
 3. **The balance is always right**:
    - The balance equals what was bought and not paid, minus payments, to the peso.
@@ -46,7 +46,7 @@ Success criteria:
 - **On-the-spot payment**: the payment recorded with a sale paid in full (sales.md, ADR-0007).
   - It settles that sale and only that sale, in full. It never takes part in the oldest-first walk.
   - It is deleted with its sale and cannot be deleted on its own.
-- **Later payment**: recorded through Registrar cobro. Later payments settle what the customer's sales left owing, oldest debt first.
+- **Later payment**: recorded through Record payment. Later payments settle what the customer's sales left owing, oldest debt first.
   - Sales are taken by date, then by recording order.
   - Later payments are applied by date, then by recording order.
   - A payment that reaches past one sale goes on to the next.
@@ -61,7 +61,7 @@ Success criteria:
 ### Credit
 
 - Only deleting a sale that later payments had settled can leave money over. It stays visible and is never floored to $0:
-  - the balance goes below zero and shows as "A favor $ X";
+  - the balance goes below zero and shows as "Credit $ X";
   - the credit applies automatically to the customer's next sales left owing;
   - it counts in no debt figure;
   - a credit that should not exist is fixed by deleting the mistaken payment;
@@ -72,48 +72,48 @@ Success criteria:
 - **Sales still owing**: every sale of the business not fully paid once settlement is applied, partially paid ones included, each counted once. A sale covered by a credit is paid.
 - **Total owed**: the sum of the balances above $0. Credits never subtract from it.
 
-### On screen: Clientes' Te deben section
+### On screen: Clientes' Owed section
 
-- **Where**: the top section of Clientes (customers.md), above everyone A–Z. It replaces the former Te deben screen, which no longer exists; its old path redirects to Clientes (navigation.md). Inicio's Te deben heading opens Clientes on this section (results.md).
+- **Where**: the top section of Clientes (customers.md), above everyone A–Z. It replaces the former Owed screen, which no longer exists; its old path redirects to Clientes (navigation.md). Inicio's Owed heading opens Clientes on this section (results.md).
 - **Its head**: the total owed and the count of sales still owing.
-  - The count reads "1 venta debiendo" for one sale still owing, and "N ventas debiendo" for two or more (e.g. "4 ventas debiendo"). This is the same singular and plural rule Inicio's Te deben block uses for the same count (results.md).
+  - The count reads "1 sale owing" for one sale still owing, and "N sales owing" for two or more (e.g. "4 ventas debiendo"). This is the same singular and plural rule Inicio's Owed block uses for the same count (results.md).
 - **Its rows**: only customers whose balance is above $0, by owing since (oldest first), ties by name.
   - Each row shows the balance in amber and "desde dd/mm", never as a chip.
-  - Each row carries **"Cobrar"** (accessible name "Cobrar a <name>"), which opens Registrar cobro with that customer already chosen. Tapping the rest of the row opens the customer's card.
-- **Nobody owes**: the section reads a fixed "Nadie te debe", with nothing to tap.
+  - Each row carries **"Collect"** (accessible name "Collect from <name>"), which opens Record payment with that customer already chosen. Tapping the rest of the row opens the customer's card.
+- **Nobody owes**: the section reads a fixed "Nobody owes you", with nothing to tap.
 - **Clientes' header** carries no tappable debt figure: the section itself is on screen.
-- **Search**: while a query is typed, Clientes collapses into one flat list by name (customers.md); a customer who owes keeps their balance, "te debe desde dd/mm" and "Cobrar" there.
-- **Customers in credit** never appear in the section and count in no figure. In everyone A–Z they show "A favor $ X" in the neutral/blue treatment, never green or amber.
+- **Search**: while a query is typed, Clientes collapses into one flat list by name (customers.md); a customer who owes keeps their balance, "owes you since dd/mm" and "Collect" there.
+- **Customers in credit** never appear in the section and count in no figure. In everyone A–Z they show "Credit $ X" in the neutral/blue treatment, never green or amber.
 
 ### On screen: the customer's card (`ClienteFicha`)
 
-- It shows "Te debe $ X desde dd/mm". For a credit it shows "A favor $ X" with no "desde". With a balance of $0 it shows neither.
-- "Registrar cobro" shows only when the balance is above $0. Otherwise it is hidden.
+- It shows "Owes you $ X since dd/mm". For a credit it shows "Credit $ X" with no "desde". With a balance of $0 it shows neither.
+- "Record payment" shows only when the balance is above $0. Otherwise it is hidden.
 - The account lists sales and payments in date order, with the running balance:
-  - a sale paid on the spot: "Pagada por efectivo" or "Pagada por transferencia", with no payment row of its own;
-  - a sale left owing: "Quedó debiendo";
-  - a later payment: one row per sale it reaches, "Cobro · <método> · A cuenta de la venta del dd/mm", with the amount applied to that sale;
+  - a sale paid on the spot: "Paid in cash" or "Paid by transfer", with no payment row of its own;
+  - a sale left owing: "Left owing";
+  - a later payment: one row per sale it reaches, "Payment · <method> · Toward the sale of dd/mm", with the amount applied to that sale;
   - any part beyond every debt: "A favor".
-- **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "A favor $ X".
+- **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "Credit $ X".
   - It is the running figure only, not a credit, and counts in no figure.
   - The card's own balance reads "A favor" only when the balance today is below zero.
-- **"Borrar cobro"** exists only on later payments.
-  - It is confirmed with "¿Borrás el cobro de $ 15.000 (transferencia) del 20/09?", "No, dejalo / Sí, borralo". The confirmation names the payment, never the sales it covered.
-  - Then the toast "Cobro eliminado", with no data, and the account and balance refresh from the API.
-  - A payment that is gone follows accounts.md's "Eso ya no está." rule.
+- **"Delete payment"** exists only on later payments.
+  - It is confirmed with "Delete the $ 15.000 payment (transfer) from 20/09?", "No, keep it / Yes, delete it". The confirmation names the payment, never the sales it covered.
+  - Then the toast "Payment deleted", with no data, and the account and balance refresh from the API.
+  - A payment that is gone follows accounts.md's "That's gone." rule.
 
-### On screen: Registrar cobro (`Cobro`)
+### On screen: Record payment (`Cobro`)
 
-- **Opened from**: "Cobrar" on a debtor row of Clientes (either section, or search results) or of Inicio's Te deben block, and "Registrar cobro" on the customer's card. Each opens it with that customer already chosen.
-- **A sheet** (navigation.md): no bar and no "+ Nueva venta"; "Cerrar", and a confirmation when leaving with something typed.
+- **Opened from**: "Collect" on a debtor row of Clientes (either section, or search results) or of Inicio's Owed block, and "Record payment" on the customer's card. Each opens it with that customer already chosen.
+- **A sheet** (navigation.md): no bar and no "+ New sale"; "Close", and a confirmation when leaving with something typed.
 - **The sheet**:
   - "Todo: $ X" fills the amount with the whole balance in one tap;
   - the date comes filled with today;
-  - Efectivo · Transferencia, required.
-- **Before saving**, the API's preview shows which sales the payment settles ("Se descuenta de la deuda más vieja") and "Le queda debiendo $ X" when something remains.
+  - Cash · Transferencia, required.
+- **Before saving**, the API's preview shows which sales the payment settles ("Comes off the oldest debt first") and "Still owes $ X" when something remains.
 - **After saving**:
-  - "Cobro guardado · queda debiendo $ X" when something remains;
-  - "Cobro guardado" when nothing does.
+  - "Payment saved · queda debiendo $ X" when something remains;
+  - "Payment saved" when nothing does.
 
   This is the second deliberate exception to accounts.md's no-data toast rule. The screen it was opened from refreshes from the API.
 - **Refusals** show inline in Spanish and keep everything typed:
@@ -139,7 +139,7 @@ Success criteria:
 
 ## Metrics
 
-- **Record time (criterion 1)**: a payment is recorded through the front from a phone viewport in under 60 s. From Clientes and from Inicio, Registrar cobro opens with the customer chosen in at most 2 taps. "Todo" fills the whole balance in one tap.
+- **Record time (criterion 1)**: a payment is recorded through the front from a phone viewport in under 60 s. From Clientes and from Inicio, Record payment opens with the customer chosen in at most 2 taps. "All" fills the whole balance in one tap.
 - **Settlement matrix (criteria 2, 3)**: 100% passing. It covers:
   - oldest first;
   - a partial payment;
@@ -149,19 +149,19 @@ Success criteria:
   - independence from recording order;
   - working out again after a late record or a delete of a sale or a payment.
 - **Balance identity (criterion 3)**: balance = bought and unpaid − payments, to the peso, after every create and delete of sales and payments.
-- **Credit**: after a settled sale is deleted, the credit is shown as "A favor", kept out of the Te deben section, the total owed and the count, and applied to the next sale left owing.
-- **Who-owes totals (criterion 4)**: the total owed, the count of sales still owing, Clientes' Te deben section, Inicio's block and the Ventas mark equal a direct computation over sales and payments. 0 differences. The count line reads "1 venta debiendo" for one sale and "N ventas debiendo" for two or more, both covered by the front tests.
+- **Credit**: after a settled sale is deleted, the credit is shown as "A favor", kept out of the Owed section, the total owed and the count, and applied to the next sale left owing.
+- **Who-owes totals (criterion 4)**: the total owed, the count of sales still owing, Clientes' Owed section, Inicio's block and the Ventas mark equal a direct computation over sales and payments. 0 differences. The count line reads "1 sale owing" for one sale and "N sales owing" for two or more, both covered by the front tests.
 - **Account (criterion 5)**: the rows and running balance match the settlement for every case of the matrix.
 - **Dates kept (criterion 6)**: after any recompute, every payment's date, amount and method are unchanged.
-- **Preview = stored (criteria 2, 8)**: Registrar cobro's preview matches the settlement after saving. 0 differences.
+- **Preview = stored (criteria 2, 8)**: Record payment's preview matches the settlement after saving. 0 differences.
 - **Isolation (criterion 7)**: every payment route is in the sweep and answers 404 or empty from another business.
 - **No echo (criterion 7)**: no refusal or log line contains an amount or a name. After a full front run, the console and browser storage hold none of them.
 - **No curl (criterion 8)**: an end-to-end run through the front alone:
-  - records a payment from "Cobrar" on Clientes and from "Cobrar" on Inicio;
-  - settles everything with "Todo";
+  - records a payment from "Collect" on Clientes and from "Collect" on Inicio;
+  - settles everything with "All";
   - records a partial payment;
   - deletes a payment;
-  - reads Clientes' Te deben section and its count line.
+  - reads Clientes' Owed section and its count line.
 
 ## Out of scope
 
@@ -169,6 +169,6 @@ Success criteria:
 - A note on a payment.
 - Assigning a payment to a sale by hand.
 - Deleting an on-the-spot payment on its own; editing a payment.
-- A separate Te deben screen.
+- A separate Owed screen.
 - Cash and profit: the results capability (#7).
 - Live updates between partners.
