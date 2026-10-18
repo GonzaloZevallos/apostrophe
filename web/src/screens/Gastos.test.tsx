@@ -16,7 +16,7 @@ import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { FLOWER_NOTICE } from './Gastos'
 import { CATEGORY_GONE } from './expenses/ExpenseForm'
-import { type FetchImpl, ME, jsonResponse, renderExpenses } from './expenses/renderExpenses'
+import { type FetchImpl, ME, jsonResponse, renderExpenses } from '../test/renderExpenses'
 
 interface Row {
   id: number
