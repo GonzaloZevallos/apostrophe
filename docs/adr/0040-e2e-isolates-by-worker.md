@@ -11,6 +11,11 @@ installation. This ADR fixes how workers stop sharing it. The suite itself stays
 `workers: 1` in this step; turning on N workers, the timed phase and the measurements are
 the next step's, and appended here.
 
+*History, superseded by the amendment "one phase, a pinned zone and locale, evidence on
+failure" (GH-251) below: the second step ("N workers and the timed phase") did set `workers: 3`,
+and GH-251 later reduced the run to one phase with no `timed` project. As merged: 3 workers,
+`retries: 0`, one phase, and `sales.spec.ts` in `secure-origin` with the other specs.*
+
 ## Decision
 
 1. **The fixture owns the backend.** `web/e2e/fixtures.ts` holds a worker-scoped `auto`
@@ -60,6 +65,11 @@ Looked for state a second worker could race on, and found none to change:
   budgets), `customers`, `passwords`, `ventasTelefono` (60 s) and `onboarding` (5 min). Only `sales.spec.ts`'s 300 ms check is tight; the next step pins it to a
   timed phase.
 
+  *History, superseded by the amendment "one phase, a pinned zone and locale, evidence on
+  failure" (GH-251) below: the second step did pin that check to a `timed` phase, and GH-251
+  removed the phase once no spec read elapsed time (ADR-0038). As merged: 3 workers,
+  `retries: 0`, one phase, no `timed` project, and `sales.spec.ts` in `secure-origin`.*
+
 ## Worker-restart proof
 
 After a failing test Playwright discards the worker and starts a new one, which starts a
@@ -90,6 +100,11 @@ silent for 30 s fails the fixture at once with a fixed message, so three slow at
 never run past the fixture's own 100 s timeout.
 
 ## N workers and the timed phase (the second step)
+
+*This section records the second step as it was. It is superseded by the amendment "one
+phase, a pinned zone and locale, evidence on failure" (GH-251) below wherever it speaks of
+`timed` or of two phases. N = 3 still stands. As merged: 3 workers, `retries: 0`, one phase,
+no `timed` project, and `sales.spec.ts` in `secure-origin`.*
 
 `web/playwright.config.ts` now sets `workers` to a fixed constant (never
 `os.availableParallelism()`; `fullyParallel` stays `false`, so parallelism is by file).
@@ -149,6 +164,9 @@ max ever recorded (8_458 ms, one worker).
 
 None exceeds half its budget except the list check, which already runs alone in `timed`.
 No file moved to `timed`.
+
+*`timed` existed at the time; the amendment (GH-251) below removed it, so `sales.spec.ts` now
+runs in `secure-origin`, in the one phase of 3 workers with `retries: 0`.*
 
 ### Cold timed phase
 
