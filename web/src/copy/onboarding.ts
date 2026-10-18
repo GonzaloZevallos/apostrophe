@@ -43,8 +43,7 @@ export const STEP_STOCK_SHORT = 'starting stock'
 export const STEP_STOCK_NAME = 'Starting stock'
 
 export const STEP_MESSAGE_TITLE = 'How your catalog looks'
-export const STEP_MESSAGE_WHY =
-  'The header and footer go on every catalog you send. They already have a text: leave it or change it.'
+export const STEP_MESSAGE_WHY = 'Header and footer go on every catalog you send: keep their text or edit it.'
 export const STEP_MESSAGE_SHORT = 'catalog message'
 export const STEP_MESSAGE_NAME = 'Catalog message'
 export const STEP_MESSAGE_GROUP = 'Catalog message'
@@ -56,15 +55,13 @@ export const STEP_BOT_NAME = 'Telegram bot'
 export const STEP_BOT_GROUP = 'Integrations'
 
 export const STEP_PARTNER_TITLE = 'Send the link to your partner'
-export const STEP_PARTNER_WHY =
-  'With the link your partner joins this business and sees what you see. They do not need to join now.'
+export const STEP_PARTNER_WHY = 'With the link your partner joins this business and sees what you see. No rush.'
 export const STEP_PARTNER_SHORT = 'partner'
 export const STEP_PARTNER_NAME = 'Partner'
 export const STEP_PARTNER_GROUP = 'Users'
 
 export const STEP_CATEGORIES_TITLE = 'Expense categories'
-export const STEP_CATEGORIES_WHY =
-  'They sort what you spend. You already have the usual ones: add, rename or remove as you like.'
+export const STEP_CATEGORIES_WHY = 'They sort what you spend. Add, rename or remove the usual ones as you like.'
 export const STEP_CATEGORIES_SHORT = 'expense categories'
 export const STEP_CATEGORIES_NAME = 'Expense categories'
 export const STEP_CATEGORIES_GROUP = 'Expense categories'
@@ -78,8 +75,7 @@ export const DISCARD = 'Yes, discard it'
 export const LEAVE_AS_IS = 'Leave as is'
 export const CREATE_THE_LINK = 'Create the link'
 
-export const ANOTHER_PROMPT =
-  'Have another to add now? Each one gets its name, its price and its starting stock.'
+export const ANOTHER_PROMPT = 'Another one to add now? Each gets its name, its price and its starting stock.'
 export const CARD_DETAIL = "With today's price and its starting stock"
 export const ADD_ANOTHER_VARIETY = 'Add another variety'
 export const ADD_VARIETY_FIRST = "First add a variety with its price for today."
