@@ -19,7 +19,7 @@ test('the gone screen says one fixed line and offers one way back, with no data'
   expect(screen.getByText(GONE_DETAIL)).toBeInTheDocument()
   const links = screen.getAllByRole('link')
   expect(links).toHaveLength(1)
-  expect(links[0]).toHaveTextContent('Back to Ventas')
+  expect(links[0]).toHaveTextContent('Back to Sales')
   expect(links[0]).toHaveAttribute('href', SALES)
   expect(screen.queryAllByRole('button')).toHaveLength(0)
   expect(container.textContent).not.toMatch(/\d/)

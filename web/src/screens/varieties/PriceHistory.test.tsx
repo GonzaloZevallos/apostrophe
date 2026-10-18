@@ -69,7 +69,7 @@ test('a variety that is gone shows no back, only its own way out', async () => {
     api({ 'GET /varieties/1': gone, 'GET /varieties/1/prices': gone }),
   )
 
-  expect(await screen.findByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
   expect(screen.queryByText(/‹/)).not.toBeInTheDocument()
 })
 
@@ -127,7 +127,7 @@ test('a variety that is gone says "That\'s gone." and goes back to Variedades', 
   )
 
   expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
 })
 
 test('an id that is not a number is gone too, and asks the API nothing', async () => {

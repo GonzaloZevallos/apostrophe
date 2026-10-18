@@ -378,7 +378,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   await otherPage.goto(saleBUrl)
   await expect(otherPage.getByText("That's gone.")).toBeVisible()
-  await otherPage.getByRole('link', { name: 'Back to Ventas' }).click()
+  await otherPage.getByRole('link', { name: 'Back to Sales' }).click()
   await expectPath(otherPage, SALES)
   await otherContext.close()
 

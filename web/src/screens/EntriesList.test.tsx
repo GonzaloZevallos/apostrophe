@@ -327,7 +327,7 @@ test('a variety that is gone, or an id that is not a number, shows "That\'s gone
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
   expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
 })
 
 test('a delete marks the catalog stale and the stock list refetches', async () => {
