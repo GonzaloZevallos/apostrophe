@@ -70,7 +70,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Delete this price' }).click();
   await page.getByRole('button', { name: 'Yes, delete it' }).click();
   await expect(page.getByText('Price deleted')).toBeVisible()
-  await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
+  await expect(page.getByText("No price: can't be sold").first()).toBeVisible()
 
   // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
   // "Todas las entradas" (stock.md).
@@ -82,7 +82,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('45000')
-  await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
+  await expect(page.getByText('Works out at $ 900 a gram')).toBeVisible()
   await page.getByRole('button', { name: 'Save entry' }).click()
   await expectAnyPath(page, [VARIETIES, VARIETY])
   await expect(page.getByText('Entry saved')).toBeVisible()
@@ -102,7 +102,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Purchase · 60 g')).toBeVisible()
 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
-  await page.getByRole('button', { name: 'Borrar', exact: true }).click()
+  await page.getByRole('button', { name: 'Delete', exact: true }).click()
   await expect(page.getByText('Before deleting')).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, STOCK)
