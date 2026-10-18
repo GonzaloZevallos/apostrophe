@@ -91,8 +91,8 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await page.getByRole('link', { name: /−5 g/ }).click()
   await page.getByRole('link', { name: 'Edit' }).click()
   await page.getByLabel('Grams 1', { exact: true }).fill('4')
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await page.getByRole('button', { name: 'Sí, guardar' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  await page.getByRole('button', { name: 'Yes, save' }).click()
   await expect(page.getByText('Withdrawal saved')).toBeVisible()
 
   // Inicio: Hoy shows neither line; Semana and Mes show both, at lot cost.

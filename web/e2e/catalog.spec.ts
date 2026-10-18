@@ -64,7 +64,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('button', { name: 'Edit catalog' }).click()
   await page.getByLabel('Emoji').fill('🌹')
-  await page.getByLabel('% índica').fill('30')
+  await page.getByLabel('% indica').fill('30')
   await page.getByLabel('Aroma/flavour').fill('floral, dulce')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(page.getByText('Catalog saved')).toBeVisible()
