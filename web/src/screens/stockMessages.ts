@@ -4,9 +4,10 @@
  * measures each with `SAMPLES` (never fixture or API data). */
 
 import { SAMPLES, type LimitedCopy } from '../copy/limits'
+import { EMPTY_STATES } from './emptyStates'
 
-export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
-export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
+export const EMPTY_STATE_TITLE = EMPTY_STATES.stockTitle
+export const EMPTY_STATE_DETAIL = EMPTY_STATES.stockDetail
 
 export const COST_REQUIRED_HELP = 'Obligatorio cuando es una compra'
 

@@ -56,3 +56,39 @@ export function e2eEnv(): Record<string, string> {
     APOSTROPHE_WEB_DIST: 'web/dist',
   }
 }
+
+// The phone check's own server (GH-80, invariant 7): the same composition behind its own
+// port and its own throwaway database, with its clock pinned
+// (`tests/e2e_app.py::create_mobile_e2e_app`). The port is decided in
+// `playwright.config.ts` exactly like the first server's, and read back here.
+const MOBILE_PORT_VARIABLE = 'APOSTROPHE_E2E_MOBILE_PORT'
+
+export function mobilePort(): number {
+  const raw = process.env[MOBILE_PORT_VARIABLE]
+  const isValid = raw !== undefined && /^[0-9]+$/.test(raw) && Number(raw) >= 1 && Number(raw) <= 65535
+  if (!isValid) {
+    throw new Error(`${MOBILE_PORT_VARIABLE} must be set to a port number from 1 to 65535.`)
+  }
+  return Number(raw)
+}
+
+export function mobileBaseUrl(): string {
+  return `http://${E2E_HOST}:${mobilePort()}`
+}
+
+export function mobileDbPath(): string {
+  return `web/e2e/.tmp/e2e-mobile-${mobilePort()}.db`
+}
+
+export function mobileEnv(): Record<string, string> {
+  return {
+    APOSTROPHE_SECRET_KEY: E2E_SECRET_KEY,
+    APOSTROPHE_DATABASE_URL: `sqlite:///${mobileDbPath()}`,
+    APOSTROPHE_PUBLIC_URL: mobileBaseUrl(),
+    APOSTROPHE_WEB_DIST: 'web/dist',
+  }
+}
+
+// Where the seed leaves what the mobile walk reads (relative to `web/`, the cwd of a run).
+export const MOBILE_STATE_FILE = 'e2e/.tmp/mobile-state.json'
+export const MOBILE_FACTS_FILE = 'e2e/.tmp/mobile-facts.json'

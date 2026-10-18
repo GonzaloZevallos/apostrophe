@@ -5,8 +5,9 @@
  * `copy/copyLimits.test.ts`, never with fixture or API data. */
 
 import { SAMPLES, type LimitedCopy } from '../copy/limits'
+import { EMPTY_STATES } from '../screens/emptyStates'
 
-export const EMPTY_LIST = 'Todavía no registraste ninguna venta en este período.'
+export const EMPTY_LIST = EMPTY_STATES.salesList
 export const GRAMS_HELP = 'Coma, hasta dos decimales'
 export const OWING_HINT = 'Para dejar debiendo elegí un cliente'
 
