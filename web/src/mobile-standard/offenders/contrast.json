@@ -90,6 +90,18 @@
     "issue": 78
   },
   {
+    "screen": "VariedadNueva",
+    "rule": "contrast",
+    "target": "textbox:NombreHasta # caracteres · no puede repetir el nombr",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "contrast",
+    "target": "textbox:NombreHasta # caracteres · no puede repetir el nombr",
+    "issue": 47
+  },
+  {
     "screen": "VentaAsignarCliente",
     "rule": "contrast",
     "target": "textbox:Buscar::placeholder",

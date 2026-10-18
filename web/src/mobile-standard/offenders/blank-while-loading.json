@@ -1,1 +1,92 @@
-[]
+[
+  {
+    "screen": "OnboardingBot",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingListo",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingListoTexto130",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingPrecio",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocio",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStock",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStockTexto130",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingVariedad",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingVariedadTexto130",
+    "rule": "blank-while-loading",
+    "target": "",
+    "issue": 49
+  }
+]

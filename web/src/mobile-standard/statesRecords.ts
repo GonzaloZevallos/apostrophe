@@ -7,7 +7,6 @@
  */
 
 import {
-  CATALOG,
   CUSTOMERS,
   EXPENSE_CATEGORIES,
   EXPENSES,
@@ -56,7 +55,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'EntradaStockConfirmarCambios',
     route: ENTRY_ROUTE,
-    steps: [{ wait: 'Borrar entrada' }, { click: 'Guardar' }],
+    steps: [{ wait: 'Editar entrada' }, { click: 'Guardar' }],
     visible: '¿Guardás los cambios?',
   },
   {
@@ -70,34 +69,34 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'PrecioNuevoFormulario',
     route: LOW_VARIETY,
     steps: [{ click: 'Nuevo precio' }],
-    visible: 'Guardar precio',
+    visible: 'Guardá el precio',
   },
   {
     screen: 'PrecioConfirmarBorrado',
     route: LOW_VARIETY,
-    steps: [{ click: 'Borrar' }],
+    steps: [{ press: 'Borrar este precio' }],
     visible: 'Sí, borrala',
   },
-  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: '+' }], visible: 'Guardar' },
+  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: 'Nueva variedad' }], visible: 'Agregá la variedad' },
   {
     screen: 'VariedadRenombrar',
     route: LOW_VARIETY,
-    steps: [{ click: 'Editar' }],
-    visible: 'Guardar',
+    steps: [{ press: 'Editar nombre' }],
+    visible: 'Guardá el nombre',
   },
-  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [], visible: 'Guardar aviso' },
+  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: 'Editar aviso' }], visible: 'Guardá el aviso' },
 
   {
     screen: 'CatalogoAtributos',
-    route: CATALOG,
-    steps: [{ click: 'Editar' }],
-    visible: 'Se muestra en el catálogo',
+    route: LOW_VARIETY,
+    steps: [{ press: 'Editar catálogo' }],
+    visible: 'Guardá el catálogo',
   },
 
   {
     screen: 'GastoDesdeMas',
     route: MORE,
-    steps: [{ click: '+ Cargar gasto' }],
+    steps: [{ click: 'Cargar gasto' }],
     visible: 'Guardá el gasto',
   },
   {
@@ -110,7 +109,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'GastoEditar',
     route: EXPENSES,
     steps: [{ activate: 'Bolsitas zip' }],
-    visible: 'Borrar gasto',
+    visible: 'Editar gasto',
   },
   {
     screen: 'GastoConfirmarBorrado',

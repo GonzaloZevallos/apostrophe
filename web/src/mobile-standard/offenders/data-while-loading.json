@@ -22,5 +22,11 @@
     "rule": "data-while-loading",
     "target": "span:Hoy #/#",
     "issue": 78
+  },
+  {
+    "screen": "VentaGuardada",
+    "rule": "data-while-loading",
+    "target": "span:Hoy #/#",
+    "issue": 78
   }
 ]

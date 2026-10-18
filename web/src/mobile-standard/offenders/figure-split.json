@@ -71,10 +71,31 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
+    "target": "span:Consumo propio $ #.# y # g sin costo",
+    "issue": 48,
+    "sizes": [
+      "430x932",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Faltante de stock $ #.#",
+    "issue": 48,
+    "sizes": [
+      "430x932",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
     "target": "span:Faltante de stock $ #.#[1]",
     "issue": 48,
     "sizes": [
-      "320x568"
+      "320x568",
+      "375x812"
     ]
   },
   {
@@ -83,7 +104,37 @@
     "target": "span:Faltante de stock $ #.#[2]",
     "issue": 48,
     "sizes": [
-      "320x568"
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Promoción $ #.#",
+    "issue": 48,
+    "sizes": [
+      "430x932"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Promoción $ #.#[1]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Promoción $ #.#[2]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "246x437"
     ]
   },
   {
@@ -91,6 +142,33 @@
     "rule": "figure-split",
     "target": "span:gastos $ #.#.#.#",
     "issue": 48
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "figure-split",
+    "target": "p:# g · baja · # días · $ #.# x g",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "figure-split",
+    "target": "span:Desde # g · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "figure-split",
+    "target": "span:Precio VIP · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "ClienteFicha",
@@ -112,6 +190,15 @@
     "sizes": [
       "320x568",
       "375x812",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "figure-split",
+    "target": "span:Te debe $ #.#",
+    "issue": 46,
+    "sizes": [
       "246x437"
     ]
   },
@@ -148,241 +235,94 @@
     ]
   },
   {
-    "screen": "Cobro",
+    "screen": "CobroBorrar",
     "rule": "figure-split",
     "target": "span:$ #.#[1]",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
   },
   {
-    "screen": "Cobro",
+    "screen": "CobroBorrar",
     "rule": "figure-split",
     "target": "span:$ #.#[2]",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
   },
   {
-    "screen": "Cobro",
+    "screen": "CobroBorrar",
     "rule": "figure-split",
     "target": "span:$ #.#[3]",
     "issue": 46,
     "sizes": [
       "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[1]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
       "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[2]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "figure-split",
+    "target": "span:$ #.#[1]",
+    "issue": 49,
+    "sizes": [
       "246x437"
     ]
   },
   {
-    "screen": "Cobro",
+    "screen": "EstadosConfirmar",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#[1]",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[2]",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[3]",
-    "issue": 46,
+    "target": "span:$ #.#[2]",
+    "issue": 49,
     "sizes": [
-      "320x568",
-      "375x812",
       "246x437"
     ]
   },
   {
-    "screen": "CobroBorrar",
+    "screen": "EstadosConfirmar",
     "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 46,
+    "target": "span:¿Borrás la venta de $ #.# del #/#? Vuelven # g al stock",
+    "issue": 49,
     "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[1]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[1]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[1]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812"
+      "246x437"
     ]
   },
   {
@@ -473,15 +413,6 @@
   {
     "screen": "Inicio",
     "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "375x812"
-    ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "figure-split",
     "target": "span:$ #.#.#.#",
     "issue": 45
   },
@@ -491,7 +422,6 @@
     "target": "span:$ #.#[1]",
     "issue": 45,
     "sizes": [
-      "320x568",
       "246x437"
     ]
   },
@@ -501,7 +431,6 @@
     "target": "span:$ #.#[2]",
     "issue": 45,
     "sizes": [
-      "320x568",
       "246x437"
     ]
   },
@@ -544,6 +473,15 @@
   {
     "screen": "Inicio",
     "rule": "figure-split",
+    "target": "span:$ #.#[7]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
     "target": "span:−$ #.#.#.#[1]",
     "issue": 45
   },
@@ -552,6 +490,90 @@
     "rule": "figure-split",
     "target": "span:−$ #.#.#.#[2]",
     "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "figure-split",
+    "target": "span:# ventas · promedio $ #.#.# · # g",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "figure-split",
+    "target": "span:$ #.#[1]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "figure-split",
+    "target": "span:# ventas · promedio $ #.#.# · # g",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "figure-split",
+    "target": "span:$ #.#[1]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "NuevaVentaConLinea",
@@ -574,7 +596,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
-    "target": "span:$ #.#[1]",
+    "target": "p:# g · baja · # días · $ #.# x g",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -583,7 +605,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
-    "target": "span:$ #.#[2]",
+    "target": "span:Desde # g · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -592,34 +614,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioNuevoFormulario",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioNuevoFormulario",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioNuevoFormulario",
-    "rule": "figure-split",
-    "target": "span:$ #.#[3]",
+    "target": "span:Precio VIP · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -628,7 +623,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "figure-split",
-    "target": "span:$ #.#[1]",
+    "target": "p:# g · baja · # días · $ #.# x g",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -637,7 +632,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "figure-split",
-    "target": "span:$ #.#[2]",
+    "target": "span:Desde # g · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -646,43 +641,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "figure-split",
-    "target": "span:$ #.#[4]",
+    "target": "span:Precio VIP · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -691,7 +650,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "figure-split",
-    "target": "span:$ #.#[1]",
+    "target": "p:# g · baja · # días · $ #.# x g",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -700,7 +659,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "figure-split",
-    "target": "span:$ #.#[2]",
+    "target": "span:Desde # g · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -709,7 +668,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "figure-split",
-    "target": "span:$ #.#[3]",
+    "target": "span:Precio VIP · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -718,7 +677,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "figure-split",
-    "target": "span:$ #.#[1]",
+    "target": "p:# g · baja · # días · $ #.# x g",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -727,7 +686,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "figure-split",
-    "target": "span:$ #.#[2]",
+    "target": "span:Desde # g · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -736,43 +695,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Variedades",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Variedades",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Variedades",
-    "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Variedades",
-    "rule": "figure-split",
-    "target": "span:$ #.#[4]",
+    "target": "span:Precio VIP · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -852,5 +775,23 @@
     "rule": "figure-split",
     "target": "span:$ #.#.#.#",
     "issue": 78
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "figure-split",
+    "target": "span:Desde # g · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "figure-split",
+    "target": "span:Precio VIP · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
   }
 ]

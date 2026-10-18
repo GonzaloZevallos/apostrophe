@@ -1,15 +1,6 @@
 [
   {
-    "screen": "VentaAsignarCliente",
-    "rule": "unreachable",
-    "target": "",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
+    "screen": "CobroBorrar",
     "rule": "unreachable",
     "target": "",
     "issue": 46,
@@ -27,12 +18,48 @@
     ]
   },
   {
-    "screen": "CobroBorrar",
+    "screen": "OnboardingListo",
     "rule": "unreachable",
     "target": "",
-    "issue": 46,
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingListoTexto130",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingPrecio",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingVariedad",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingVariedadTexto130",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 78,
     "sizes": [
       "246x437"
     ]
+  },
+  {
+    "screen": "VentaGuardada",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 78
   }
 ]

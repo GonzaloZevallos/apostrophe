@@ -20,13 +20,7 @@
   {
     "screen": "Catalogo",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
-    "issue": 47
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "link:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
     "issue": 47
   },
   {
@@ -52,6 +46,12 @@
     "rule": "name-overflow",
     "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 60
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "name-overflow",
+    "target": "span:#/# · Variedad LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 47
   },
   {
     "screen": "EstadosGoneAviso",
@@ -203,6 +203,30 @@
     "issue": 45
   },
   {
+    "screen": "InicioHoy",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 45
+  },
+  {
     "screen": "Invitacion",
     "rule": "name-overflow",
     "target": "button:Sumate a Negocio LarguísimoLarguísimoLarguísimoLarguí",
@@ -227,9 +251,21 @@
     "issue": 78
   },
   {
-    "screen": "VariedadNuevaFormulario",
+    "screen": "OnboardingCategorias",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 49
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "name-overflow",
+    "target": "span:#/# · Variedad LarguísimoLarguísimoLarguísimoLarguísimo",
     "issue": 47
   },
   {

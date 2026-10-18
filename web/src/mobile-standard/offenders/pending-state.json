@@ -3,12 +3,7 @@
     "screen": "CobroDesdeClientes",
     "rule": "pending-state",
     "target": "button:Guardar",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
+    "issue": 46
   },
   {
     "screen": "Entrar",

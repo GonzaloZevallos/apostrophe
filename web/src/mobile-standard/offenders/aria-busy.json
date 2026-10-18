@@ -12,6 +12,12 @@
     "issue": 47
   },
   {
+    "screen": "ClienteNuevo",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 46
+  },
+  {
     "screen": "Clientes",
     "rule": "aria-busy",
     "target": "",
@@ -36,13 +42,115 @@
     "issue": 45
   },
   {
-    "screen": "VariedadDetalle",
+    "screen": "InicioHoy",
     "rule": "aria-busy",
     "target": "",
-    "issue": 47
+    "issue": 45
   },
   {
-    "screen": "Variedades",
+    "screen": "InicioPrimeraVez",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45
+  },
+  {
+    "screen": "Mas",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 48
+  },
+  {
+    "screen": "OnboardingBot",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingListo",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingListoTexto130",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingPrecio",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocio",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStock",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStockTexto130",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingVariedad",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingVariedadTexto130",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 49
+  },
+  {
+    "screen": "SacarDelStock",
     "rule": "aria-busy",
     "target": "",
     "issue": 47

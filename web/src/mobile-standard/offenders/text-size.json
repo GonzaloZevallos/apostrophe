@@ -20,7 +20,7 @@
   {
     "screen": "Analisis",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 48
   },
   {
@@ -30,6 +30,36 @@
     "issue": 48
   },
   {
+    "screen": "Archivadas",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 47
+  },
+  {
     "screen": "Catalogo",
     "rule": "text-size",
     "target": "span:Clientes",
@@ -50,7 +80,7 @@
   {
     "screen": "Catalogo",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
@@ -80,7 +110,7 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
@@ -90,36 +120,6 @@
     "issue": 47
   },
   {
-    "screen": "ClienteEditar",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteEditar",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteEditar",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteEditar",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteEditar",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 46
-  },
-  {
     "screen": "ClienteFicha",
     "rule": "text-size",
     "target": "span:Clientes",
@@ -140,41 +140,11 @@
   {
     "screen": "ClienteFicha",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
     "rule": "text-size",
     "target": "span:Ventas",
     "issue": 46
@@ -200,7 +170,7 @@
   {
     "screen": "Clientes",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 46
   },
   {
@@ -230,41 +200,11 @@
   {
     "screen": "ClientesBusqueda",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
     "rule": "text-size",
     "target": "span:Ventas",
     "issue": 46
@@ -305,7 +245,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -325,116 +265,6 @@
     ]
   },
   {
-    "screen": "CobroDesdeClientes",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
     "screen": "Configuracion",
     "rule": "text-size",
     "target": "span:Clientes",
@@ -455,7 +285,7 @@
   {
     "screen": "Configuracion",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 60
   },
   {
@@ -463,96 +293,6 @@
     "rule": "text-size",
     "target": "span:Ventas",
     "issue": 60
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 47
   },
   {
     "screen": "EntradasTodas",
@@ -575,7 +315,7 @@
   {
     "screen": "EntradasTodas",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
@@ -585,34 +325,64 @@
     "issue": 47
   },
   {
-    "screen": "EntradaStockEditar",
+    "screen": "EstadosConfirmar",
     "rule": "text-size",
     "target": "span:Clientes",
-    "issue": 47
+    "issue": 49
   },
   {
-    "screen": "EntradaStockEditar",
+    "screen": "EstadosConfirmar",
     "rule": "text-size",
     "target": "span:Inicio",
-    "issue": 47
+    "issue": 49
   },
   {
-    "screen": "EntradaStockEditar",
+    "screen": "EstadosConfirmar",
     "rule": "text-size",
     "target": "span:Más",
-    "issue": 47
+    "issue": 49
   },
   {
-    "screen": "EntradaStockEditar",
+    "screen": "EstadosConfirmar",
     "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 47
+    "target": "span:Variedades",
+    "issue": 49
   },
   {
-    "screen": "EntradaStockEditar",
+    "screen": "EstadosConfirmar",
     "rule": "text-size",
     "target": "span:Ventas",
-    "issue": 47
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
@@ -635,7 +405,7 @@
   {
     "screen": "EstadosGoneAviso",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 49
   },
   {
@@ -665,7 +435,7 @@
   {
     "screen": "EstadosReintento",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 49
   },
   {
@@ -695,7 +465,7 @@
   {
     "screen": "EstadosSinConexion",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 49
   },
   {
@@ -725,7 +495,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 48
   },
   {
@@ -755,7 +525,7 @@
   {
     "screen": "GastoEditar",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 48
   },
   {
@@ -785,7 +555,7 @@
   {
     "screen": "Gastos",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 48
   },
   {
@@ -815,7 +585,7 @@
   {
     "screen": "Inicio",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 45
   },
   {
@@ -825,6 +595,66 @@
     "issue": 45
   },
   {
+    "screen": "InicioHoy",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 45
+  },
+  {
     "screen": "Mas",
     "rule": "text-size",
     "target": "span:Clientes",
@@ -845,7 +675,7 @@
   {
     "screen": "Mas",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 48
   },
   {
@@ -875,7 +705,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
@@ -885,31 +715,121 @@
     "issue": 47
   },
   {
-    "screen": "PrecioNuevoFormulario",
+    "screen": "RetiroDetalle",
     "rule": "text-size",
     "target": "span:Clientes",
     "issue": 47
   },
   {
-    "screen": "PrecioNuevoFormulario",
+    "screen": "RetiroDetalle",
     "rule": "text-size",
     "target": "span:Inicio",
     "issue": 47
   },
   {
-    "screen": "PrecioNuevoFormulario",
+    "screen": "RetiroDetalle",
     "rule": "text-size",
     "target": "span:Más",
     "issue": 47
   },
   {
-    "screen": "PrecioNuevoFormulario",
+    "screen": "RetiroDetalle",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
-    "screen": "PrecioNuevoFormulario",
+    "screen": "RetiroDetalle",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
     "rule": "text-size",
     "target": "span:Ventas",
     "issue": 47
@@ -935,7 +855,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
@@ -945,36 +865,6 @@
     "issue": 47
   },
   {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "text-size",
-    "target": "span:Clientes",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "text-size",
-    "target": "span:Inicio",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "text-size",
-    "target": "span:Más",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "text-size",
-    "target": "span:Stock",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "text-size",
-    "target": "span:Ventas",
-    "issue": 47
-  },
-  {
     "screen": "VariedadRenombrar",
     "rule": "text-size",
     "target": "span:Clientes",
@@ -995,7 +885,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
@@ -1025,7 +915,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
@@ -1055,7 +945,7 @@
   {
     "screen": "Variedades",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 47
   },
   {
@@ -1065,6 +955,121 @@
     "issue": 47
   },
   {
+    "screen": "VentaAsignarCliente",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 78
+  },
+  {
     "screen": "Ventas",
     "rule": "text-size",
     "target": "span:Clientes",
@@ -1085,7 +1090,7 @@
   {
     "screen": "Ventas",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 78
   },
   {
@@ -1115,7 +1120,7 @@
   {
     "screen": "VentasFechas",
     "rule": "text-size",
-    "target": "span:Stock",
+    "target": "span:Variedades",
     "issue": 78
   },
   {
@@ -1123,5 +1128,35 @@
     "rule": "text-size",
     "target": "span:Ventas",
     "issue": 78
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 47
   }
 ]
