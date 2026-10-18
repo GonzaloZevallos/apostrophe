@@ -4,14 +4,14 @@
     { "screen": "Entrar", "route": "/login", "path": "/login", "signed_out": true,
       "steps": [
         { "fill": { "label": "Email", "value": "{email}" } },
-        { "fill": { "label": "Contraseña", "value": "equivocada123" } },
-        { "click": "Entrá" }
+        { "fill": { "label": "Password", "value": "equivocada123" } },
+        { "click": "Log in" }
       ] },
     { "screen": "EntrarOscuro", "design": "Entrar", "route": "/login", "path": "/login", "signed_out": true, "tema": "oscuro",
       "steps": [
         { "fill": { "label": "Email", "value": "{email}" } },
-        { "fill": { "label": "Contraseña", "value": "equivocada123" } },
-        { "click": "Entrá" }
+        { "fill": { "label": "Password", "value": "equivocada123" } },
+        { "click": "Log in" }
       ] },
     { "screen": "NegocioNuevo", "route": "/invitation/{new_business_token}", "path": "/invitation/{new_business_token}", "signed_out": true },
     { "screen": "Invitacion", "route": "/invitation/{join_token}", "path": "/invitation/{join_token}", "signed_out": true },
