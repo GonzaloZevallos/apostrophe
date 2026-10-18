@@ -192,7 +192,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Nombre del negocio').fill(renamedTo)
-  await page.getByRole('button', { name: 'Save' }).click()
+  await page.getByRole('button', { name: 'Guardá el nombre' }).click()
   await expect(page.getByText('Negocio renombrado')).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser
