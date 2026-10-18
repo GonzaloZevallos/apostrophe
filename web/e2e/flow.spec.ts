@@ -198,7 +198,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
   await page.goto(SETTINGS_USERS)
-  await page.getByRole('button', { name: 'Invite a partner' }).click()
+  await page.getByRole('button', { name: 'Invitá a un socio' }).click()
   await expect(page.locator('.usuarios__link')).toHaveText(/^https?:\/\//)
   const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')

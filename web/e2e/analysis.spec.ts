@@ -101,7 +101,7 @@ test('a seller opens Analysis from Más, moves back a month and reads each secti
 
   await expect(page.getByText("This month's expenses")).toBeVisible()
   await expect(page.getByText('Flete').first()).toBeVisible()
-  await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
+  await expect(page.getByText('Listed apart, entered in Stock').first()).toBeVisible()
 
   await expect(page.locator('.gastos__mes-etiqueta').first()).toHaveText(/\S/)
   const monthLabelBefore = await page
@@ -116,11 +116,11 @@ test('a seller opens Analysis from Más, moves back a month and reads each secti
   await expect(page.locator('.gastos__mes-etiqueta').first()).not.toHaveText(
     monthLabelBefore ?? '',
   )
-  await expect(page.getByText('No vendiste ni regalaste nada este mes.')).toBeVisible()
+  await expect(page.getByText('You sold and gifted nothing this month.')).toBeVisible()
   await expect(page.getByText('Week by week · last 8')).toBeVisible()
   await expect(weekRows.first()).toBeVisible()
   await expect(page.getByText('By weekday')).toBeVisible()
-  await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
+  await expect(page.getByText('Listed apart, entered in Stock').first()).toBeVisible()
 
   expect(consoleMessages).toEqual([])
 })

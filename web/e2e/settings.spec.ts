@@ -68,7 +68,7 @@ test('a seller goes through every Configuración group from the phone, with no c
 
   // Usuarios: a fresh join link.
   await openGroup('Usuarios')
-  await page.getByRole('button', { name: 'Invite a partner' }).click()
+  await page.getByRole('button', { name: 'Invitá a un socio' }).click()
   await expect(page.locator('.usuarios__link')).not.toHaveText('')
   await close()
 
