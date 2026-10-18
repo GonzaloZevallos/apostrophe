@@ -15,3 +15,13 @@ same 404 `variety.not_found` for a foreign or a missing id.
 class VarietyNotFound(LookupError):
     def __init__(self) -> None:
         super().__init__("no such variety")
+
+
+class VarietyArchived(LookupError):
+    """The variety exists but is archived, so nothing new is recorded against it. Like
+    `VarietyNotFound`, code-less: the router raises varieties' own `VarietyArchived`
+    (`variety.archived`) in its place."""
+
+    def __init__(self, variety_id: int) -> None:
+        super().__init__("variety is archived")
+        self.variety_id = variety_id

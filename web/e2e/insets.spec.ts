@@ -7,12 +7,32 @@
  * element that each check can add and remove.
  */
 
-import { expect, test, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { expect, test } from './fixtures.js'
+import type { Page } from '@playwright/test'
+import {
+  CUSTOMER,
+  CUSTOMER_NEW,
+  CUSTOMERS,
+  EXPENSE_CATEGORIES,
+  LOGIN,
+  SALE,
+  SALE_NEW,
+  SALES,
+  SETTINGS_ACCOUNT,
+  SETTINGS_APPEARANCE,
+  SETTINGS_BUSINESS,
+  SETTINGS_CATALOG_MESSAGE,
+  SETTINGS_INTEGRATIONS,
+  SETTINGS_PRICES,
+  SETTINGS_USERS,
+  VARIETIES,
+} from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { uniqueTag } from './helpers/unique.js'
 
-const PASSWORD = 'correcthorsebattery'
 const TOP = 47
 const BOTTOM = 34
 const SIDE = 44
@@ -84,41 +104,35 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   // Signed out: the sign-in screen is its own root, and owns all four sides.
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport)
-    await page.goto('/entrar')
+    await page.goto(LOGIN)
     const moved = await shift(page, '.marca')
     expect(moved.top, `${viewport.name}: /entrar top`).toBe(TOP)
   }
 
   await page.setViewportSize(VIEWPORTS[0])
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Flores del Borde ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-bordes-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(page, { businessName: `Flores del Borde ${uniqueTag()}`, email: `duena-bordes-${uniqueTag()}@example.com` })
 
-  await page.goto('/variedades')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Precio de lista').fill('1000')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('1000')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/clientes/nuevo')
+  await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill('+5491155550077')
   await page.getByLabel('Nombre').fill('Lucía Borde')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
-  await page.getByRole('link', { name: 'Lucía Borde' }).click()
+  await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Nueva venta a Lucía Borde' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   const saleUrl = new URL(page.url()).pathname
 
   for (const viewport of VIEWPORTS) {
@@ -126,10 +140,10 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     const where = (what: string) => `${viewport.name}: ${what}`
 
     // The sales list: a nested `.pantalla` inside the shell, which owns the insets.
-    await page.goto('/ventas')
+    await page.goto(SALES)
     const list = await shift(page, '.encabezado__titulo')
-    expect(list.top, where('/ventas top')).toBe(TOP)
-    if (!viewport.wide) expect(list.left, where('/ventas left')).toBe(SIDE)
+    expect(list.top, where('sales top')).toBe(TOP)
+    if (!viewport.wide) expect(list.left, where('sales left')).toBe(SIDE)
     else expect((await shift(page, '.riel-lateral')).left, where('rail left')).toBe(SIDE)
 
     if (!viewport.wide) {
@@ -156,7 +170,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     expect(detailEnd.bottom, where('detail bottom')).toBeLessThan(viewport.height - BOTTOM + 1)
 
     // Nueva venta: the save button, and the customer sheet over it.
-    await page.goto('/ventas/nueva')
+    await page.goto(SALE_NEW)
     // The row, not its title: the title is centered in a row whose height follows the
     // narrower content width, so it moves by less than the inset.
     const form = await shift(page, '.encabezado-fila')
@@ -171,13 +185,14 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     await sheetButton.scrollIntoViewIfNeeded()
     expectInside(where('customer sheet button'), await box(page, '.cliente-sheet__contenido button', 'last'), viewport)
 
-    // Registrar cobro over the customer's card.
-    await page.goto('/clientes')
-    await page.getByRole('link', { name: 'Lucía Borde' }).click()
-    await page.getByRole('button', { name: 'Registrar cobro' }).click()
+    // Registrar cobro, opened from Clientes' "Cobrar a": a form screen, a modal on a computer.
+    await page.goto(CUSTOMERS)
+    await page.getByRole('link', { name: 'Cobrar a Lucía Borde' }).first().click()
     await setInsets(page, true)
-    await page.locator('.capa__contenido button').last().scrollIntoViewIfNeeded()
-    expectInside(where('cobro sheet button'), await box(page, '.capa__contenido button', 'last'), viewport)
+    await page.getByRole('button', { name: 'Guardar' }).evaluate((button) => {
+      for (let el: Element | null = button; el; el = el.parentElement) el.scrollTop = el.scrollHeight
+    })
+    expectInside(where('cobro form button'), await box(page, 'button:has-text("Guardar")'), viewport)
 
     // A toast: the offline notice is the one that needs no timing.
     await page.context().setOffline(true)
@@ -187,6 +202,52 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     expect(toast.left, where('toast left')).toBeGreaterThanOrEqual(SIDE + TOAST_MARGIN)
     expect(toast.right, where('toast right')).toBeLessThanOrEqual(viewport.width - SIDE - TOAST_MARGIN)
     await page.context().setOffline(false)
+  }
+
+  expect(consoleMessages).toEqual([])
+})
+
+/** `.ajustes-grupo`'s own top padding on a computer, `app.css`'s 80px: what `844942f` computed. */
+const SETTINGS_GROUP_TOP = '80px'
+
+test('a settings group on a computer keeps its 80px top padding at inset 0 and still clears the notch', async ({
+  page,
+}) => {
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+
+  await page.setViewportSize(VIEWPORTS[2])
+  await signUpNewBusiness(page, {
+    businessName: `Flores del Margen ${uniqueTag()}`,
+    email: `duena-margen-${uniqueTag()}@example.com`,
+  })
+
+  const groups = [
+    SETTINGS_BUSINESS,
+    SETTINGS_USERS,
+    SETTINGS_INTEGRATIONS,
+    SETTINGS_PRICES,
+    SETTINGS_CATALOG_MESSAGE,
+    EXPENSE_CATEGORIES,
+    SETTINGS_ACCOUNT,
+    SETTINGS_APPEARANCE,
+  ]
+  for (const group of groups) {
+    await page.goto(group)
+    await expect(page.locator('.ajustes-grupo__tarjeta')).toBeVisible()
+    await setInsets(page, false)
+    // Polled: a group that loads its data first swaps its card once, when the answer lands.
+    await expect
+      .poll(
+        () =>
+          page.locator('.ajustes-grupo').evaluate((element) => getComputedStyle(element).paddingTop),
+        { message: `${group}: padding-top at inset 0` },
+      )
+      .toBe(SETTINGS_GROUP_TOP)
+
+    // The shell owns the top inset: the card moves by the notch, no more and no less.
+    const moved = await shift(page, '.ajustes-grupo__tarjeta')
+    expect(moved.top, `${group}: card top`).toBe(TOP)
   }
 
   expect(consoleMessages).toEqual([])

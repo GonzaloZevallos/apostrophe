@@ -273,6 +273,12 @@ def test_every_text_colour_in_the_stylesheets_is_in_the_table() -> None:
         assert check_rules(rules, rows) == [], path.name
 
 
+def test_only_the_bottom_bar_label_skips_its_paired_background() -> None:
+    rows = parse_table(README.read_text())
+    exempt = {(r.token, s) for r in rows if r.kind == KIND_PAIRED for s in r.selectors}
+    assert exempt == {("--nav-inactivo", ".bar-inferior__item")}
+
+
 # --- The guard bites: fixtures ---------------------------------------------------
 
 _TOKENS: Tokens = {
@@ -387,6 +393,20 @@ def test_an_icon_only_token_on_an_unlisted_selector_fails() -> None:
 
 def test_a_paired_token_without_its_background_fails() -> None:
     assert any("without its background" in p for p in _rules(".x { color: var(--sobre-boton); }"))
+
+
+def test_a_paired_token_on_a_selector_its_row_does_not_list_fails() -> None:
+    assert _rules(".sin-fondo { color: var(--sobre-boton); }") == []
+    for css in (
+        ".sin-fondo__texto { color: var(--sobre-boton); }",
+        ".sin-fondo, .otro { color: var(--sobre-boton); }",
+    ):
+        assert any("without its background" in p for p in _rules(css)), css
+    declared = (
+        ".contenedor { background: var(--boton); color: var(--sobre-boton); }"
+        " .contenedor__texto { font-size: 15px; }"
+    )
+    assert _rules(declared) == []
 
 
 def test_a_rule_inside_a_media_query_is_checked() -> None:

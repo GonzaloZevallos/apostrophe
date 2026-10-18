@@ -13,11 +13,21 @@
  * number.
  */
 
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
+import { inAppState } from '../../components/inAppState'
+import { useGoneNotice } from '../../components/goneExit'
+import { SheetRouterProvider } from '../../components/useSheetStack'
+import { GONE_NOTICE } from '../../api/refusals'
+import { stubViewport } from '../../test-viewport'
+import { StrictMode } from 'react'
+import { LIMITS, SAMPLES } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, useLocation } from 'react-router'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { RouterProvider, createMemoryRouter } from 'react-router'
+import FlashProvider from '../../flash/FlashProvider'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import accountFixture from '../../api/fixtures/account.json'
 import paymentFixture from '../../api/fixtures/payment.json'
@@ -25,8 +35,12 @@ import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState } from '../../components/feedback'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import ClienteFicha from './ClienteFicha'
+import CobroRoute from './CobroRoute'
+import Shell from '../../shell/Shell'
+import { stubFetchWithSettings } from '../stubFetchWithSettings'
+
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 
@@ -47,28 +61,42 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-function renderFicha(id: string) {
+function Flash() {
+  return (
+    <FlashProvider>
+      <Context />
+    </FlashProvider>
+  )
+}
+
+function renderFicha(id: string, entries: string[] = [pathTo(CUSTOMER, { id })]) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Flash />,
+        children: [
+          { path: CUSTOMER, element: <ClienteFicha /> },
+          { path: CUSTOMER_PAYMENT, element: <CobroRoute /> },
+          { path: CUSTOMERS, element: <span>la lista</span> },
+          { path: SALE_NEW, element: <NuevaVentaStub /> },
+        ],
+      },
+    ],
+    { initialEntries: entries },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/clientes/${id}`]}>
-        <Routes>
-          <Route element={<Context />}>
-            <Route path="/clientes/:id" element={<ClienteFicha />} />
-            <Route path="/clientes" element={<span>la lista</span>} />
-            <Route path="/ventas/nueva" element={<NuevaVentaStub />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 const SETTLED_CUSTOMER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
-  channel: 'telegram',
   vip: true,
   balance: 0,
   owing_since: null,
@@ -89,8 +117,10 @@ function dispatchFetch(
   }
 }
 
+let api: ReturnType<typeof stubFetchWithSettings>
+
 beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn())
+  api = stubFetchWithSettings()
 })
 
 afterEach(() => {
@@ -98,7 +128,7 @@ afterEach(() => {
 })
 
 test('a customer that is gone shows the gone screen, with a way back to the list', async () => {
-  vi.mocked(fetch).mockResolvedValue(
+  api.mockResolvedValue(
     jsonResponse(404, { detail: 'no such customer', code: 'customer.not_found' }),
   )
   renderFicha('999')
@@ -106,13 +136,13 @@ test('a customer that is gone shows the gone screen, with a way back to the list
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toHaveAttribute(
     'href',
-    '/clientes',
+    CUSTOMERS,
   )
   expect(screen.queryByText(/999/)).not.toBeInTheDocument()
 })
 
-test('a settled customer shows their phone, channel and VIP, no balance and no Registrar cobro', async () => {
-  vi.mocked(fetch).mockImplementation(
+test('a settled customer shows their phone and VIP, no balance and no Registrar cobro', async () => {
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
       'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
@@ -121,16 +151,15 @@ test('a settled customer shows their phone, channel and VIP, no balance and no R
   renderFicha('3')
 
   expect(await screen.findByText('+54 9 11 5842-3310')).toBeInTheDocument()
-  expect(screen.getByText('Telegram')).toBeInTheDocument()
+  expect(screen.queryByText(/telegram|whatsapp/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Registrar cobro' })).not.toBeInTheDocument()
 })
 
 const NO_PHONE_CUSTOMER = {
   id: 4,
   name: 'Caro',
   phone: null,
-  channel: null,
   vip: false,
   balance: 0,
   owing_since: null,
@@ -138,7 +167,7 @@ const NO_PHONE_CUSTOMER = {
 }
 
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/4': () => jsonResponse(200, NO_PHONE_CUSTOMER),
       'GET /customers/4/account': () => jsonResponse(200, EMPTY_ACCOUNT),
@@ -153,7 +182,7 @@ test('a customer with no phone shows no phone element, no dash, no empty label',
 })
 
 test('"Nueva venta a <name>" opens the sale form with this customer chosen, by id alone', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
       'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
@@ -162,17 +191,49 @@ test('"Nueva venta a <name>" opens the sale form with this customer chosen, by i
   renderFicha('3')
 
   const link = await screen.findByRole('link', { name: 'Nueva venta a Fer' })
-  expect(link).toHaveAttribute('href', '/ventas/nueva')
+  expect(link).toHaveAttribute('href', SALE_NEW)
   await userEvent.click(link)
 
   expect(await screen.findByText('Nueva venta para 3')).toBeInTheDocument()
+})
+
+test('on a computer the customer\'s card under the real shell keeps "Nueva venta a <name>" and the rail has no "+ Nueva venta"', async () => {
+  stubViewport('computer')
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
+      'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Flash />,
+        children: [
+          {
+            element: <Shell />,
+            children: [{ path: CUSTOMER, handle: { screen: 'customer' }, element: <ClienteFicha /> }],
+          },
+        ],
+      },
+    ],
+    { initialEntries: [pathTo(CUSTOMER, { id: 3 })] },
+  )
+  const { container } = render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+
+  expect(await screen.findByRole('link', { name: 'Nueva venta a Fer' })).toHaveAttribute('href', SALE_NEW)
+  const rail = container.querySelector('.riel-lateral') as HTMLElement
+  expect(within(rail).queryByRole('link', { name: /^Nueva venta/ })).not.toBeInTheDocument()
 })
 
 const OWING_CUSTOMER = {
   id: 1,
   name: 'Ana',
   phone: '+5491122334455',
-  channel: 'whatsapp',
   vip: false,
   balance: 11000,
   owing_since: '2026-09-14',
@@ -195,7 +256,7 @@ const OWING_ACCOUNT = {
 }
 
 test('a customer who owes shows "Te debe" since the oldest debt, Registrar cobro, and the account row', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -205,7 +266,7 @@ test('a customer who owes shows "Te debe" since the oldest debt, Registrar cobro
 
   expect(await screen.findByText('Te debe $ 11.000')).toBeInTheDocument()
   expect(screen.getByText('desde el 14/09')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Registrar cobro' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Registrar cobro' })).toBeInTheDocument()
   expect(await screen.findByText('Quedó debiendo')).toBeInTheDocument()
 })
 
@@ -213,7 +274,6 @@ const CREDIT_CUSTOMER = {
   id: 2,
   name: 'Lu',
   phone: '+5491100000000',
-  channel: null,
   vip: false,
   balance: -2000,
   owing_since: null,
@@ -221,7 +281,7 @@ const CREDIT_CUSTOMER = {
 }
 
 test('a customer in credit shows "A favor", never "Te debe", and no Registrar cobro', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/2': () => jsonResponse(200, CREDIT_CUSTOMER),
       'GET /customers/2/account': () => jsonResponse(200, { ...EMPTY_ACCOUNT, balance: -2000, standing: 'credit' }),
@@ -231,7 +291,7 @@ test('a customer in credit shows "A favor", never "Te debe", and no Registrar co
 
   expect(await screen.findByText('A favor $ 2.000')).toBeInTheDocument()
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Registrar cobro' })).not.toBeInTheDocument()
 })
 
 test('the account labels a sale, a later payment\'s split and its leftover credit row only from kind/standing, never a sign on a number', async () => {
@@ -240,7 +300,7 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   // owing, a later payment's split, and the credit left over once every debt is
   // settled. `CREDIT_CUSTOMER`'s own balance/standing match the fixture's
   // overall balance, so the card and the account agree.
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/2': () => jsonResponse(200, CREDIT_CUSTOMER),
       'GET /customers/2/account': () => jsonResponse(200, accountFixture),
@@ -296,7 +356,7 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
 
 test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refreshes the account', async () => {
   let deleted = false
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, deleted ? SETTLED_CUSTOMER : OWING_CUSTOMER),
       'GET /customers/1/account': () =>
@@ -338,13 +398,164 @@ test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refres
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
   await waitFor(() =>
-    expect(fetch).toHaveBeenCalledWith('/payments/5', expect.objectContaining({ method: 'DELETE' })),
+    expect(api).toHaveBeenCalledWith('/payments/5', expect.objectContaining({ method: 'DELETE' })),
   )
   expect(await screen.findByText('Cobro eliminado')).toBeInTheDocument()
 })
 
+const CREDIT_ONLY_CUSTOMER = {
+  ...SETTLED_CUSTOMER,
+  id: 1,
+  name: 'Ana',
+  balance: -44000,
+  standing: 'credit',
+}
+
+const CREDIT_ONLY_ACCOUNT = {
+  balance: -44000,
+  owing_since: null,
+  standing: 'credit',
+  rows: [
+    {
+      kind: 'credit',
+      date: '2026-10-06',
+      running_balance: -44000,
+      standing: 'credit',
+      payment: { id: 7, paid_on: '2026-10-06', amount: 44000, method: 'cash' },
+      amount: 44000,
+    },
+  ],
+}
+
+test('a payment that shows only as "A favor" offers Borrar cobro, and deleting it brings the balance back to nothing', async () => {
+  let deleted = false
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, deleted ? SETTLED_CUSTOMER : CREDIT_ONLY_CUSTOMER),
+      'GET /customers/1/account': () => jsonResponse(200, deleted ? EMPTY_ACCOUNT : CREDIT_ONLY_ACCOUNT),
+      'DELETE /payments/7': () => {
+        deleted = true
+        return new Response(null, { status: 204 })
+      },
+    }),
+  )
+  renderFicha('1')
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  expect(screen.getAllByRole('button', { name: 'Borrar cobro' })).toHaveLength(1)
+  await userEvent.click(borrar)
+
+  expect(
+    screen.getByText('¿Borrás el cobro de $ 44.000 (efectivo) del 06/10?'),
+  ).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+
+  expect(await screen.findByText('Cobro eliminado')).toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByText(/A favor/)).not.toBeInTheDocument())
+  expect(screen.queryByText(/Te debe/)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+})
+
+test('Borrar cobro on a credit-only payment already gone closes the dialog and shows the gone notice', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, CREDIT_ONLY_CUSTOMER),
+      'GET /customers/1/account': () => jsonResponse(200, CREDIT_ONLY_ACCOUNT),
+      'DELETE /payments/7': () => jsonResponse(404, { code: 'payment.not_found' }),
+    }),
+  )
+  renderFicha('1')
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Borrar cobro' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+
+  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(screen.queryByText('¿Borrás el cobro de $ 44.000 (efectivo) del 06/10?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
+})
+
+test('a payment split between a sale and a credit offers one Borrar cobro, on its payment row', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, CREDIT_ONLY_CUSTOMER),
+      'GET /customers/1/account': () =>
+        jsonResponse(200, {
+          balance: -3000,
+          owing_since: null,
+          standing: 'credit',
+          rows: [
+            {
+              kind: 'sale',
+              date: '2026-10-01',
+              running_balance: 5000,
+              standing: 'owes',
+              sale: { id: 10, total: 5000, how_paid: 'owing' },
+            },
+            {
+              kind: 'payment',
+              date: '2026-10-05',
+              running_balance: 0,
+              standing: 'settled',
+              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, method: 'cash' },
+              applied_to: { sale_id: 10, sale_date: '2026-10-01', amount: 5000 },
+            },
+            {
+              kind: 'credit',
+              date: '2026-10-05',
+              running_balance: -3000,
+              standing: 'credit',
+              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, method: 'cash' },
+              amount: 3000,
+            },
+          ],
+        }),
+    }),
+  )
+  renderFicha('1')
+
+  await screen.findByRole('button', { name: 'Borrar cobro' })
+  expect(screen.getAllByRole('button', { name: 'Borrar cobro' })).toHaveLength(1)
+  const filas = Array.from(document.querySelectorAll<HTMLElement>('.cuenta-cliente__fila'))
+  expect(filas).toHaveLength(3)
+  const [saleFila, paymentFila, creditFila] = filas
+  if (saleFila === undefined || paymentFila === undefined || creditFila === undefined) {
+    throw new Error('expected three account rows')
+  }
+  expect(within(saleFila).queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+  expect(within(paymentFila).getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
+  expect(within(creditFila).queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+})
+
+test('a sale paid on the spot offers no Borrar cobro', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, SETTLED_CUSTOMER),
+      'GET /customers/1/account': () =>
+        jsonResponse(200, {
+          balance: 0,
+          owing_since: null,
+          standing: 'settled',
+          rows: [
+            {
+              kind: 'sale',
+              date: '2026-10-01',
+              running_balance: 0,
+              standing: 'settled',
+              sale: { id: 10, total: 5000, how_paid: 'cash' },
+            },
+          ],
+        }),
+    }),
+  )
+  renderFicha('1')
+
+  expect(await screen.findByText('Pagada por efectivo')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+})
+
 test('registering a payment shows "Cobro guardado · queda debiendo $ X" when something remains', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -353,8 +564,8 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Monto'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Monto'), '5000')
@@ -367,7 +578,7 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
 })
 
 test('"Todo" fills the amount with the balance, and the debounced preview shows the splits and what is left', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -380,8 +591,8 @@ test('"Todo" fills the amount with the balance, and the debounced preview shows 
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   const within_ = within(sheet as HTMLElement)
 
@@ -394,7 +605,7 @@ test('"Todo" fills the amount with the balance, and the debounced preview shows 
 })
 
 test('a partial amount\'s preview shows "Le queda debiendo $ X", from the preview\'s own after.balance', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -405,8 +616,8 @@ test('a partial amount\'s preview shows "Le queda debiendo $ X", from the previe
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   const within_ = within(sheet as HTMLElement)
 
@@ -418,7 +629,7 @@ test('a partial amount\'s preview shows "Le queda debiendo $ X", from the previe
 })
 
 test('registering a payment that settles everything shows the plain "Cobro guardado" toast', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -432,8 +643,8 @@ test('registering a payment that settles everything shows the plain "Cobro guard
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Todo: $ 11.000' }))
   await userEvent.click(within(sheet as HTMLElement).getByLabelText('Efectivo'))
@@ -444,7 +655,7 @@ test('registering a payment that settles everything shows the plain "Cobro guard
 })
 
 test('a payment deleted by a partner meanwhile shows the gone notice, never the generic retry', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () =>
@@ -499,7 +710,7 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
   })
   // Same mechanism `client.test.ts` uses to turn a dropped connection into a
   // `NetworkError`: the fetch mock rejects, never resolves with a response.
-  vi.mocked(fetch).mockImplementation((input, init) => {
+  api.mockImplementation((input, init) => {
     const method = init?.method ?? 'GET'
     if (method === 'DELETE') return Promise.reject(new TypeError('Failed to fetch'))
     return base(input, init)
@@ -510,7 +721,7 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
   await userEvent.click(borrar)
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
@@ -518,7 +729,7 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
 })
 
 test('Borrar cobro refused for a reason other than "gone" shows the generic retry, never "Sin conexión" or the gone notice', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, ACCOUNT_WITH_ONE_PAYMENT),
@@ -533,14 +744,14 @@ test('Borrar cobro refused for a reason other than "gone" shows the generic retr
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
   expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
-  expect(screen.queryByText(SIN_CONEXION_TITULO)).not.toBeInTheDocument()
+  expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
 })
 
 test('a payment above the balance shows the fixed refusal inline and keeps what was typed', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -549,8 +760,8 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Monto'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Monto'), '999000')
@@ -559,4 +770,255 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
 
   expect(await screen.findByText('El monto supera lo que te debe.')).toBeInTheDocument()
   expect(within(sheet as HTMLElement).getByLabelText('Monto')).toHaveValue('999000')
+})
+
+const OWING_FETCHES = {
+  'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+  'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
+}
+
+test('the payment route opens the sheet by itself, from a typed address, and Cerrar leaves to Clientes, its parent', async () => {
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1', [pathTo(CUSTOMER_PAYMENT, { id: 1 })])
+
+  expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument())
+})
+
+test('an untouched sheet leaves at once on history back', async () => {
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1')
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  await screen.findByRole('button', { name: 'Guardar' })
+
+  await act(() => router.navigate(-1))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
+  expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument()
+})
+
+test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
+  await userEvent.click(await screen.findByLabelText('Efectivo'))
+  await act(() => router.navigate(-1))
+
+  expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 }))
+  await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  // React takes the dialog off the screen after the click, not inside it: wait for it
+  // before reading anything else (`waitFor`, not `waitForElementToBeRemoved`, which
+  // throws when the element is already gone).
+  await waitFor(() => expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument())
+  // A regression check that "No" did not navigate, not a sync point.
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
+  expect(await screen.findByLabelText('Efectivo')).toBeChecked()
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+})
+
+test('after a save the sheet is not in history: back from the card goes to what was before it', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      ...OWING_FETCHES,
+      'POST /customers/1/payments': () => jsonResponse(201, paymentFixture),
+    }),
+  )
+  const router = renderFicha('1', [CUSTOMERS, pathTo(CUSTOMER, { id: 1 })])
+  await router.navigate(CUSTOMERS)
+  await router.navigate(pathTo(CUSTOMER, { id: 1 }), { state: inAppState({ pathname: CUSTOMERS }) })
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  await userEvent.click(await screen.findByLabelText('Efectivo'))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
+  expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
+  await router.navigate(-1)
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+})
+
+// The gone exit of "Registrar cobro" (navigation.md, "A gone exit is the same move as
+// Cerrar"): its registered parent is Clientes.
+type HistoryEntry = string | { pathname: string; state: unknown }
+
+function ListWithNotice() {
+  const goneShown = useGoneNotice()
+  return (
+    <div>
+      <span>la lista</span>
+      {goneShown && <span>{GONE_NOTICE}</span>}
+    </div>
+  )
+}
+
+function fakeGonePayment() {
+  api.mockImplementation(
+    dispatchFetch({
+      ...OWING_FETCHES,
+      'POST /customers/1/payments': () =>
+        jsonResponse(404, { detail: 'no such customer', code: 'payment.customer_not_found' }),
+    }),
+  )
+}
+
+/** The real data router under StrictMode, with the router handle the gone notice follows. */
+function renderGone(entries: HistoryEntry[]) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Flash />,
+        children: [
+          { path: CUSTOMER, element: <ClienteFicha /> },
+          { path: CUSTOMER_PAYMENT, element: <CobroRoute /> },
+          { path: CUSTOMERS, element: <ListWithNotice /> },
+          { path: HOME, element: <span>Inicio</span> },
+        ],
+      },
+    ],
+    { initialEntries: entries, initialIndex: entries.length - 1 },
+  )
+  const app = (
+    <StrictMode>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  )
+  const view = render(app)
+  return { router, view, app }
+}
+
+async function saveTheGonePayment() {
+  await userEvent.click(await screen.findByLabelText('Efectivo'))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+}
+
+const PAYMENT = pathTo(CUSTOMER_PAYMENT, { id: 1 })
+
+test('a gone cobro opened from Clientes goes back to it: Clientes is in history once, with the notice once', async () => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  await act(() => router.navigate(-1))
+  await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
+  await waitFor(() => expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument())
+})
+
+test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes and leaves Inicio alone", async () => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, { pathname: PAYMENT, state: inAppState({ pathname: HOME }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  await act(() => router.navigate(-1))
+  await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
+  await waitFor(() => expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument())
+})
+
+test('a gone cobro on a direct link replaces the sheet with Clientes and shows the notice', async () => {
+  fakeGonePayment()
+  const { router } = renderGone([PAYMENT])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('after a reload of the sheet, the gone exit still goes back once', async () => {
+  fakeGonePayment()
+  const { router, view, app } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+  await screen.findByLabelText('Efectivo')
+  view.unmount()
+  render(app)
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('a resize across 900 px between opening and leaving does not change where the exit goes', async () => {
+  fakeGonePayment()
+  stubViewport('phone')
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+  await screen.findByLabelText('Efectivo')
+  stubViewport('computer')
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test.each([
+  ['a query string', `${CUSTOMERS}?q=fer`],
+  ['a trailing slash', `${CUSTOMERS}/`],
+])('a from with %s still counts as the parent: the exit goes back', async (_name, from) => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: from }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+const RULE = { limits: LIMITS, samples: { name: SAMPLES.name } }
+
+test('the card and its form follow the icon and text rule: Borrar cobro is icon-only, the rest keep their words', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /customers/1/account': () =>
+        jsonResponse(200, {
+          balance: 6000,
+          owing_since: '2026-09-14',
+          standing: 'owes',
+          rows: [
+            {
+              kind: 'payment',
+              date: '2026-09-20',
+              running_balance: 6000,
+              standing: 'owes',
+              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+              applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
+            },
+          ],
+        }),
+    }),
+  )
+  renderFicha('1')
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  expect(borrar).toHaveClass('boton-icono')
+  expect(borrar).toHaveTextContent('')
+  expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const registrar = screen.getByRole('link', { name: 'Registrar cobro' })
+  expect(registrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const nueva = screen.getByRole('link', { name: /^Nueva venta a / })
+  expect(nueva.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body, RULE)
+
+  await userEvent.click(registrar)
+  await screen.findByRole('button', { name: 'Guardar' })
+  expectIconAndTextRule(document.body, RULE)
 })

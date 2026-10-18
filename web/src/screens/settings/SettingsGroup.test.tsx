@@ -1,9 +1,11 @@
 /**
  * `SettingsGroup`, the frame every Configuración group plugs into, under a memory data
- * router (`useBlocker` needs one): "Cerrar" goes back through `useBackOr('/settings')`, and
+ * router (`useBlocker` needs one): "Cerrar" goes back through `useBackOr(/settings)`, and
  * a dirty group asks before both "Cerrar" and the browser's own Back.
  */
 
+import { SETTINGS, SETTINGS_BUSINESS } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider, useNavigate } from 'react-router'
@@ -44,22 +46,22 @@ function renderGroup(options: { dirty: boolean; inApp: boolean }) {
   const router = createMemoryRouter(
     [
       {
-        path: '/settings',
+        path: SETTINGS,
         element: (
           <main>
             <h1>Lista</h1>
-            <Link to="/settings/business" state={{ inApp: true }}>
+            <Link to={SETTINGS_BUSINESS} state={inAppState({ pathname: SETTINGS })}>
               Abrir
             </Link>
           </main>
         ),
       },
-      { path: '/settings/business', element: <Group dirty={options.dirty} /> },
+      { path: SETTINGS_BUSINESS, element: <Group dirty={options.dirty} /> },
       { path: '/afuera', element: <h1>Afuera</h1> },
     ],
     options.inApp
-      ? { initialEntries: ['/settings'] }
-      : { initialEntries: ['/otro', '/settings/business'], initialIndex: 1 },
+      ? { initialEntries: [SETTINGS] }
+      : { initialEntries: ['/otro', SETTINGS_BUSINESS], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
   return router
@@ -84,7 +86,7 @@ test('an untouched group closes at once: back in history when reached by an in-a
 
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
 
-  expect(router.state.location.pathname).toBe('/settings')
+  expect(router.state.location.pathname).toBe(SETTINGS)
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 
@@ -93,7 +95,7 @@ test('an untouched group reached directly closes to /settings, replacing its ent
 
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
 
-  expect(router.state.location.pathname).toBe('/settings')
+  expect(router.state.location.pathname).toBe(SETTINGS)
   expect(router.state.historyAction).toBe('REPLACE')
 })
 
@@ -102,26 +104,26 @@ test('a dirty group asks before "Cerrar" with its own wording; keeping stays, di
 
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
 
-  expect(router.state.location.pathname).toBe('/settings/business')
+  expect(router.state.location.pathname).toBe(SETTINGS_BUSINESS)
   expect(screen.getByRole('alertdialog', { name: '¿Descartás el nombre?' })).toBeInTheDocument()
   expect(screen.getByText(LEAVE.detail)).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'No, seguí editando' }))
-  expect(router.state.location.pathname).toBe('/settings/business')
+  expect(router.state.location.pathname).toBe(SETTINGS_BUSINESS)
 
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   await user.click(screen.getByRole('button', { name: 'Sí, descartalo' }))
-  expect(router.state.location.pathname).toBe('/settings')
+  expect(router.state.location.pathname).toBe(SETTINGS)
 })
 
 test('a dirty group reached directly asks too, and discarding lands on /settings', async () => {
   const { user, router } = await open(false, true)
 
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
-  expect(router.state.location.pathname).toBe('/settings/business')
+  expect(router.state.location.pathname).toBe(SETTINGS_BUSINESS)
 
   await user.click(screen.getByRole('button', { name: 'Sí, descartalo' }))
-  expect(router.state.location.pathname).toBe('/settings')
+  expect(router.state.location.pathname).toBe(SETTINGS)
 })
 
 test('a dirty group also asks before the browser Back', async () => {
@@ -129,7 +131,7 @@ test('a dirty group also asks before the browser Back', async () => {
 
   await act(() => router.navigate(-1))
 
-  expect(router.state.location.pathname).toBe('/settings/business')
+  expect(router.state.location.pathname).toBe(SETTINGS_BUSINESS)
   expect(screen.getByRole('alertdialog', { name: '¿Descartás el nombre?' })).toBeInTheDocument()
 })
 
@@ -140,4 +142,16 @@ test('a save that disarms the guard leaves without asking even while dirty', asy
 
   expect(router.state.location.pathname).toBe('/afuera')
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+test('"Cerrar" is the icon-only close: a 44 px control named "Cerrar" with no visible word, never "Volver"', async () => {
+  await open(true, false)
+
+  const close = screen.getByRole('button', { name: 'Cerrar' })
+
+  expect(close).toHaveClass('boton-icono')
+  expect(close).toHaveTextContent('')
+  expect(close.querySelector('svg')).not.toBeNull()
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Volver' })).not.toBeInTheDocument()
 })

@@ -8,6 +8,9 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.engine import Engine
+
+from tests.fakes.archive import archive_by_hand
 
 TODAY = "2026-10-02"
 
@@ -226,3 +229,106 @@ def test_a_business_only_ever_sees_its_own_catalog(
     assert other["header"] != "Mi negocio"
     assert other["text"] is None
     assert all(v["name"] != "Only mine" for v in other["varieties"])
+
+
+def test_an_archived_variety_is_absent_from_the_catalog_text_and_the_list(
+    client: TestClient, engine: Engine
+) -> None:
+    kept = _variety(client, "Kept")
+    gone = _variety(client, "Gone")
+    for variety_id in (kept, gone):
+        _price(client, variety_id)
+        _stock(client, variety_id, "20")
+    assert "Gone" in client.get("/catalog").json()["text"]
+    archive_by_hand(engine, gone)
+
+    catalog = client.get("/catalog").json()
+
+    assert "Gone" not in catalog["text"]
+    assert "Kept" in catalog["text"]
+    assert [v["id"] for v in catalog["varieties"]] == [kept]
+
+
+def test_the_attributes_of_an_archived_variety_cannot_be_edited(
+    client: TestClient, engine: Engine
+) -> None:
+    gone = _variety(client, "Gone")
+    archive_by_hand(engine, gone)
+
+    response = client.put(
+        f"/catalog/varieties/{gone}",
+        json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "variety.archived"
+
+
+def test_the_attributes_of_a_missing_variety_keep_the_catalog_refusal(
+    client: TestClient,
+) -> None:
+    response = client.put(
+        "/catalog/varieties/9999",
+        json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
+    )
+
+    assert (response.status_code, response.json()["code"]) == (404, "catalog.variety_not_found")
+
+
+def _set_attributes(client: TestClient, variety_id: int, body: dict[str, Any]) -> None:
+    response = client.put(f"/catalog/varieties/{variety_id}", json=body)
+    assert response.status_code == 200, response.text
+
+
+def test_archived_lists_only_archived_varieties_with_their_stored_attributes_by_name(
+    client: TestClient, engine: Engine
+) -> None:
+    live = _variety(client, "Live")
+    zeta = _variety(client, "Zeta")
+    alfa = _variety(client, "Alfa")
+    plain = _variety(client, "Mate")
+    _set_attributes(
+        client, zeta, {"shown": False, "emoji": "🌿", "indica_share": 70, "aroma": "Cítrico"}
+    )
+    for variety_id in (zeta, alfa, plain):
+        archive_by_hand(engine, variety_id)
+
+    response = client.get("/catalog/archived")
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "variety_id": alfa,
+            "name": "Alfa",
+            "shown": True,
+            "emoji": None,
+            "indica_share": None,
+            "aroma": None,
+        },
+        {
+            "variety_id": plain,
+            "name": "Mate",
+            "shown": True,
+            "emoji": None,
+            "indica_share": None,
+            "aroma": None,
+        },
+        {
+            "variety_id": zeta,
+            "name": "Zeta",
+            "shown": False,
+            "emoji": "🌿",
+            "indica_share": 70,
+            "aroma": "Cítrico",
+        },
+    ]
+    assert live not in [row["variety_id"] for row in response.json()]
+
+
+def test_archived_is_an_empty_list_when_nothing_is_archived(client: TestClient) -> None:
+    _variety(client, "Live")
+
+    response = client.get("/catalog/archived")
+
+    assert response.status_code == 200
+    assert response.json() == []

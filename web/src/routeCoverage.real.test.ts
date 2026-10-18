@@ -16,11 +16,11 @@ import {
   unregistered,
   UNREGISTERED_ROUTES,
 } from './mobile-standard/routeCoverage.ts'
-import { redirects } from './redirects'
 import { router } from './router'
 
 const registryRoutes = REGISTRY.flatMap((screen) => (screen.route === null ? [] : [screen.route]))
-const excused = [NOT_SCREENS, redirectExcuses(redirects), UNREGISTERED_ROUTES]
+// No front code redirects any more (src/routes.ts), so the redirect table is empty.
+const excused = [NOT_SCREENS, redirectExcuses([]), UNREGISTERED_ROUTES]
 const patterns = flattenRoutes(router.routes)
 
 test('every route the router renders is a registry route or excused', () => {

@@ -20,6 +20,8 @@ export const COMPUTER_MIN_WIDTH = 900
 /** One step of a registry entry, as `scripts/design/comparisons.mjs` runs it. */
 export type RegistryStep =
   | { click: string }
+  | { press: string }
+  | { select: { label: string; index: number } }
   | { fill: { label: string; value: string } }
   | { wait: string }
   | { offline: true }
@@ -104,10 +106,19 @@ function parseStep(value: unknown, screen: string): RegistryStep {
   const step = asRecord(value, where)
   const keys = Object.keys(step)
   const only = keys.length === 1 ? keys[0] : undefined
-  if (only === 'click' || only === 'wait') {
+  if (only === 'click' || only === 'wait' || only === 'press') {
     const text = step[only]
     if (typeof text !== 'string' || text === '') throw new Error(`${where} ${only} is not text`)
+    if (only === 'press') return { press: text }
     return only === 'click' ? { click: text } : { wait: text }
+  }
+  if (only === 'select') {
+    const select = asRecord(step['select'], `${where} select`)
+    const { label, index } = select
+    if (typeof label !== 'string' || typeof index !== 'number' || !Number.isInteger(index) || index < 0) {
+      throw new Error(`${where} select needs a label and a non-negative integer index`)
+    }
+    return { select: { label, index } }
   }
   if (only === 'fill') {
     const fill = asRecord(step['fill'], `${where} fill`)
@@ -121,7 +132,7 @@ function parseStep(value: unknown, screen: string): RegistryStep {
     if (step['offline'] !== true) throw new Error(`${where} offline is not true`)
     return { offline: true }
   }
-  throw new Error(`${where} is not a click, fill, wait or offline`)
+  throw new Error(`${where} is not a click, press, fill, select, wait or offline`)
 }
 
 function parseSteps(value: unknown, screen: string): readonly RegistryStep[] {

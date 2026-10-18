@@ -9,11 +9,10 @@
 export const EMPTY_STATES = {
   salesList: 'Todavía no registraste ninguna venta en este período.',
   customersList: 'Todavía no agregaste ningún cliente.',
-  debtorsList: 'Nadie te debe.',
   homeNobodyOwes: 'Nadie te debe',
   homeVarietiesTitle: 'Arrancá por las variedades',
   homeVarietiesDetail:
-    'Cargá tu primera variedad con su precio. Sin precio no se puede cargar una venta.',
+    'Cargá tu primera variedad con su precio. Sin precio no se puede vender.',
   stockTitle: 'Sin entradas de stock',
   stockDetail: 'Cargá tu stock inicial o una compra',
   catalogTitle: 'No hay nada en el catálogo hoy',

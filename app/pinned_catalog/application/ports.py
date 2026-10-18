@@ -18,10 +18,12 @@ from app.pinned_catalog.domain.status import PinFailure
 EditOutcome = Literal["edited", "unchanged"]
 
 
-class Telegram(Protocol):
-    """Raises the domain's own `TelegramUnreachable`, `BotCannotPost`, `MessageGone`
-    (edit only) or `TooLong` (a backstop: callers already check `fits_in_one_message`
-    first) — never Telegram's own description, URL or token (CODING_STANDARDS §9)."""
+class TelegramApi(Protocol):
+    """The raw Telegram port. Raises the domain's own `TelegramRefused` (carrying why),
+    `TelegramUnreachable`, `MessageGone` (edit and pin only) or `TooLong` (a backstop:
+    callers already check `fits_in_one_message` first) — never `BotCannotPost`, which
+    only `ChannelTelegram` produces, and never Telegram's own description, URL or token
+    (CODING_STANDARDS §9)."""
 
     def send(self, token: str, chat: str, plain: str, spans: Sequence[tuple[int, int]]) -> int:
         """Posts `plain` with `spans` as bold entities; answers the new message id."""
@@ -37,6 +39,17 @@ class Telegram(Protocol):
     ) -> EditOutcome: ...
 
     def pin(self, token: str, chat: str, message_id: int) -> None: ...
+
+
+class PrivateChats(Protocol):
+    """The own-chat lookup's port over Telegram's getUpdates."""
+
+    def private_chats(self, token: str) -> frozenset[str]:
+        """The distinct ids of the private chats that wrote to the bot, from its
+        pending messages: it never consumes them and never changes the bot's setup.
+        Raises `UpdatesRefused` (carrying why) or `TelegramUnreachable`, never
+        Telegram's own description, URL or token (CODING_STANDARDS §9)."""
+        ...
 
 
 @dataclass(frozen=True)

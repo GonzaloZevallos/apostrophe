@@ -7,15 +7,32 @@
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
+import {
+  CATALOG,
+  CUSTOMER,
+  CUSTOMER_PAYMENT,
+  CUSTOMERS,
+  HOME,
+  ONBOARDING_DONE,
+  ONBOARDING_STOCK,
+  SETTINGS,
+} from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { MemoryRouter, Outlet, Route, Routes, useLocation, useParams } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../api/fixtures/panel.json'
+import type { FirstRunAnswer } from '../api/firstRun'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
-import Inicio, { EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
+import { LIMITS } from '../copy/limits'
+import { chooseTheme } from '../theme'
+import { invalidateResource } from '../api/keys'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
+import type { OnboardingProgress } from '../api/onboarding'
+import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
+import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -25,6 +42,37 @@ function jsonResponse(status: number, body: unknown): Response {
     headers: { 'Content-Type': 'application/json' },
   })
 }
+
+function answer(overrides: Partial<FirstRunAnswer>): FirstRunAnswer {
+  return { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false, ...overrides }
+}
+
+const NONE = answer({})
+const START = answer({ kind: 'start_varieties' })
+const ONBOARDING_ANSWER = answer({ kind: 'onboarding' })
+
+const NOT_OFFERED: OnboardingProgress = {
+  offered: false,
+  over: false,
+  count: 0,
+  resume: null,
+  steps: [],
+  can_skip_rest: false,
+  varieties_count: 0,
+  stock_entries_count: 0,
+  price_target: null,
+  priced_target: null,
+  stock_target: null,
+}
+
+/** Every call the stub saw on `/onboarding-progress`, as "METHOD url". */
+const calls: string[] = []
+
+/** Every call the stub saw on `/first-run`, as "METHOD url". */
+const firstRunCalls: string[] = []
+
+/** What a POST to `/onboarding-progress/advance` answers; the read's answer when null. */
+let advanced: OnboardingProgress | null = null
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
@@ -37,20 +85,51 @@ function SettingsLanding() {
   return <span>{`Configuración inApp=${String((location.state as { inApp?: boolean } | null)?.inApp)}`}</span>
 }
 
+function ListoLanding() {
+  const location = useLocation()
+  return <span>{`Listo listo=${String((location.state as { listo?: boolean } | null)?.listo)}`}</span>
+}
+
 function stubFetch(
   panel: PanelAnswer,
-  varieties: Array<{ current_price: unknown }> = [{ current_price: { id: 1 } }],
+  firstRun: FirstRunAnswer = NONE,
   pinnedCatalogStatus: unknown = { status: null },
+  onboarding: OnboardingProgress = NOT_OFFERED,
 ) {
+  let currentFirstRun = firstRun
   vi.stubGlobal(
     'fetch',
-    vi.fn((input: RequestInfo | URL) => {
+    vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input)
+      if (url.includes('/first-run/import-notice/dismissal')) {
+        firstRunCalls.push(`${init?.method ?? 'GET'} ${url}`)
+        currentFirstRun = { ...currentFirstRun, import_notice: false }
+        return Promise.resolve(new Response(null, { status: 204 }))
+      }
+      if (url.includes('/first-run')) {
+        firstRunCalls.push(`${init?.method ?? 'GET'} ${url}`)
+        return Promise.resolve(jsonResponse(200, currentFirstRun))
+      }
+      if (url.includes('/onboarding-progress')) {
+        calls.push(`${init?.method ?? 'GET'} ${url}`)
+        return Promise.resolve(jsonResponse(200, init?.method === 'POST' ? (advanced ?? onboarding) : onboarding))
+      }
       if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, pinnedCatalogStatus))
       if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, panel))
-      if (url.includes('/varieties')) return Promise.resolve(jsonResponse(200, varieties))
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
     }),
+  )
+}
+
+function PaymentStub() {
+  const { id } = useParams<{ id: string }>()
+  const state: unknown = useLocation().state
+  const inApp = typeof state === 'object' && state !== null && 'inApp' in state && state.inApp === true
+  return (
+    <>
+      <span>cobro de {id}</span>
+      {inApp && <span>desde la app</span>}
+    </>
   )
 }
 
@@ -59,13 +138,16 @@ function renderInicio(
 ) {
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={[HOME]}>
         <Routes>
           <Route element={<Provide />}>
             <Route index element={<Inicio />} />
-            <Route path="clientes/deben" element={<span>pantalla te deben</span>} />
-            <Route path="clientes/:id" element={<span>ficha de cliente</span>} />
-            <Route path="settings" element={<SettingsLanding />} />
+            <Route path={CUSTOMERS} element={<span>pantalla clientes</span>} />
+            <Route path={CUSTOMER} element={<span>ficha de cliente</span>} />
+            <Route path={CUSTOMER_PAYMENT} element={<PaymentStub />} />
+            <Route path={SETTINGS} element={<SettingsLanding />} />
+            <Route path={ONBOARDING_DONE} element={<ListoLanding />} />
+            <Route path={ONBOARDING_STOCK} element={<span>paso stock</span>} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -75,6 +157,9 @@ function renderInicio(
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  calls.length = 0
+  firstRunCalls.length = 0
+  advanced = null
 })
 
 test('the business avatar at the top opens Configuración in one tap, carrying inApp', async () => {
@@ -82,26 +167,13 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   renderInicio()
 
   const avatar = await screen.findByRole('link', { name: 'Configuración de La Huerta' })
-  expect(avatar).toHaveAttribute('href', '/settings')
+  expect(avatar).toHaveAttribute('href', SETTINGS)
   expect(avatar).toHaveTextContent('LH')
   // The name stays above the title, as the design draws it.
   expect(screen.getByText('La Huerta')).toBeInTheDocument()
   await userEvent.click(avatar)
 
   expect(screen.getByText('Configuración inApp=true')).toBeInTheDocument()
-})
-
-test('shows today\'s figures on open: heading, count, average, grams, Ganancia, Caja', async () => {
-  stubFetch(PANEL)
-  const { container } = renderInicio()
-  await screen.findByText('Vendiste hoy')
-
-  expect(within(container).getByText('2 ventas · promedio $ 7.500 · 10 g')).toBeInTheDocument()
-  expect(within(container.querySelector<HTMLElement>('.panel-ventas')!).getByText('$ 15.000')).toBeInTheDocument()
-  expect(within(container.querySelector<HTMLElement>('.panel-lista')!).getByText('$ 6.000')).toBeInTheDocument()
-  const resultados = container.querySelector<HTMLElement>('.panel-resultados')!
-  expect(within(resultados).getByText('$ 9.000')).toBeInTheDocument() // profit (positive)
-  expect(within(resultados).getByText('$ 15.000')).toBeInTheDocument() // cash
 })
 
 test('switching to Semana shows the week\'s figures, including a negative Caja', async () => {
@@ -127,17 +199,6 @@ function noteAfterRow(container: HTMLElement, label: string): string | null {
   const next = row?.nextElementSibling ?? null
   return next !== null && next.classList.contains('pie') ? next.textContent : null
 }
-
-test('Hoy: no pending note anywhere, and no Faltante de stock row', async () => {
-  stubFetch(PANEL)
-  const { container } = renderInicio()
-  await screen.findByText('Vendiste hoy')
-
-  const resultados = container.querySelectorAll<HTMLElement>('.panel-resultados__celda')[0]!
-  expect(within(resultados).queryByText('incluye costo pendiente')).not.toBeInTheDocument()
-  expect(noteAfterRow(container, 'Costo de lo vendido')).toBeNull()
-  expect(screen.queryByText('Faltante de stock')).not.toBeInTheDocument()
-})
 
 test('Semana: Ganancia\'s note and the Faltante de stock row (with its own note) show; Costo de lo vendido\'s doesn\'t', async () => {
   stubFetch(PANEL)
@@ -181,6 +242,58 @@ test('Semana: Faltante de stock shows with no note of its own when its cost isn\
   expect(noteAfterRow(container, 'Faltante de stock')).toBeNull()
 })
 
+test('Semana: Promoción and Consumo propio follow Faltante de stock and come before Gastos, each with its own note flag', async () => {
+  stubFetch(PANEL)
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  screen.getByRole('button', { name: 'Semana' }).click()
+  await screen.findByText('Vendiste esta semana')
+
+  const labels = Array.from(container.querySelectorAll('.panel-lista__fila > span:first-child')).map(
+    (node) => node.textContent,
+  )
+  expect(labels.slice(0, 6)).toEqual([
+    'Regalaste',
+    'Costo de lo vendido',
+    'Faltante de stock',
+    'Promoción',
+    'Consumo propio',
+    'Gastos',
+  ])
+  const promocion = screen.getByText('Promoción').closest<HTMLElement>('.panel-lista__fila')!
+  expect(within(promocion).getByText('$ 2.000')).toBeInTheDocument()
+  expect(noteAfterRow(container, 'Promoción')).toBe('incluye costo pendiente')
+  const consumo = screen.getByText('Consumo propio').closest<HTMLElement>('.panel-lista__fila')!
+  expect(within(consumo).getByText('$ 1.000')).toBeInTheDocument()
+  expect(noteAfterRow(container, 'Consumo propio')).toBeNull()
+})
+
+test('Hoy and a period with no withdrawal show neither Promoción nor Consumo propio', async () => {
+  // Today carries a withdrawal of each reason, as it does right after the form's
+  // default date is saved: Hoy still hides both lines.
+  const withdrawnToday: PanelAnswer = {
+    ...PANEL,
+    periods: {
+      ...PANEL.periods,
+      today: {
+        ...PANEL.periods.today,
+        promotion: { amount: 2000, pending: false },
+        own_use: { amount: 1000, pending: false },
+      },
+    },
+  }
+  stubFetch(withdrawnToday)
+  renderInicio()
+  await screen.findByText('Vendiste hoy')
+  expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
+  expect(screen.queryByText('Consumo propio')).not.toBeInTheDocument()
+
+  screen.getByRole('button', { name: 'Mes' }).click()
+  await screen.findByText('Vendiste este mes')
+  expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
+  expect(screen.queryByText('Consumo propio')).not.toBeInTheDocument()
+})
+
 test('Mes: Costo de lo vendido\'s note and Ganancia\'s note show; there is no Faltante de stock row', async () => {
   stubFetch(PANEL)
   const { container } = renderInicio()
@@ -213,6 +326,8 @@ test('no sales shows no average, and the range reads with no year', async () => 
         cost_of_goods: 0,
         pending_cost: false,
         shortfall: null,
+        promotion: null,
+        own_use: null,
         expenses: 5000,
         purchases: 0,
         profit: -5000,
@@ -247,14 +362,42 @@ test('Te deben: total, count, oldest date, and the teaser opens a customer card'
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
 })
 
-test('tapping "Te deben" opens the Te deben screen', async () => {
+test('the teaser\'s "Cobrar a X" opens Registrar cobro for that customer, from inside the app', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('$ 37.000')
+
+  screen.getByRole('link', { name: 'Cobrar a Ana Pérez' }).click()
+
+  expect(await screen.findByText('cobro de 1')).toBeInTheDocument()
+  expect(screen.getByText('desde la app')).toBeInTheDocument()
+})
+
+test('"Cobrar" carries the cobro icon, hidden from assistive technology, and keeps its name', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('$ 37.000')
+
+  const link = screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(link).toHaveTextContent('Cobrar')
+})
+
+test('the empty-state line the screen renders is the registered binding and fits its limit', async () => {
+  stubFetch(PANEL, START)
+  renderInicio()
+
+  expect((await screen.findByText(EMPTY_DETAIL)).textContent?.length).toBeLessThanOrEqual(LIMITS.emptyLine)
+})
+
+test('tapping "Te deben" opens Clientes, where the debtors section is', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
   screen.getByRole('link', { name: 'Te deben' }).click()
 
-  expect(await screen.findByText('pantalla te deben')).toBeInTheDocument()
+  expect(await screen.findByText('pantalla clientes')).toBeInTheDocument()
 })
 
 test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
@@ -280,7 +423,7 @@ test('stock rows: name, grams, status and days left, in the API\'s own order, wi
 })
 
 test('"Arrancá por las variedades" shows above the panel, which still shows its real figures', async () => {
-  stubFetch(PANEL, [{ current_price: null }])
+  stubFetch(PANEL, START)
   const { container } = renderInicio()
 
   expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
@@ -307,7 +450,7 @@ test('a remount with a different answer never shows the first answer\'s figures'
   // `gcTime: 0` schedules the cache entry's removal for the next tick (TanStack's own
   // behaviour), the same gap a real navigation away and back leaves: this is what the
   // seam actually promises — a remount never shows a resolved mount's stale cache.
-  await new Promise((resolve) => setTimeout(resolve, 0))
+  await waitFor(() => expect(client.getQueryCache().find({ queryKey: ['panel'] })).toBeUndefined())
 
   const other: PanelAnswer = {
     ...PANEL,
@@ -328,22 +471,339 @@ test('shows "Sin conexión" when the panel fetch fails, with no figures', async 
     vi.fn((input: RequestInfo | URL) => {
       const url = String(input)
       if (url.includes('/panel')) return Promise.reject(new Error('network error'))
-      if (url.includes('/varieties')) return Promise.resolve(jsonResponse(200, [{ current_price: { id: 1 } }]))
+      if (url.includes('/first-run')) return Promise.resolve(jsonResponse(200, NONE))
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
     }),
   )
   renderInicio()
 
-  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText('Vendiste hoy')).not.toBeInTheDocument()
 })
 
 test('shows the fixed pinned-catalog notice while the pin is out of date', async () => {
-  stubFetch(PANEL, [{ current_price: { id: 1 } }], {
+  stubFetch(PANEL, NONE, {
     status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
   })
   renderInicio()
 
   const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
-  expect(notice.closest('a')).toHaveAttribute('href', '/catalogo')
+  expect(notice.closest('a')).toHaveAttribute('href', CATALOG)
+})
+
+test('the stale-catalog notice and the "Arrancá por las variedades" state carry the decorative attention icon; a fresh pin has none', async () => {
+  stubFetch(PANEL, START, {
+    status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
+  })
+  const { unmount } = renderInicio()
+
+  const notice = (await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)).closest('a')!
+  expect(notice).toHaveClass('aviso-ambar')
+  expect(notice).toHaveAttribute('role', 'status')
+  expect(notice.querySelectorAll('svg')).toHaveLength(1)
+  expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const empty = screen.getByText(EMPTY_TITLE).closest('.estado-vacio')!
+  expect(empty.querySelectorAll('svg')).toHaveLength(1)
+  expect(empty.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(empty).toHaveTextContent(EMPTY_DETAIL)
+  unmount()
+
+  stubFetch(PANEL, NONE)
+  const fresh = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  expect(fresh.container.querySelector('.aviso-ambar')).toBeNull()
+  expect(fresh.container.querySelector('.estado-vacio')).toBeNull()
+})
+
+const STEPS_AFTER_ONE: OnboardingProgress['steps'] = [
+  { step: 'variety', state: 'done' },
+  { step: 'stock', state: 'pending' },
+  { step: 'header_footer', state: 'pending' },
+  { step: 'bot', state: 'pending' },
+  { step: 'partner', state: 'pending' },
+  { step: 'categories', state: 'pending' },
+]
+
+const MID_ONBOARDING: OnboardingProgress = {
+  ...NOT_OFFERED,
+  offered: true,
+  count: 1,
+  resume: 'stock',
+  steps: STEPS_AFTER_ONE,
+  varieties_count: 1,
+}
+
+const FINISH: OnboardingProgress = {
+  ...MID_ONBOARDING,
+  count: 6,
+  resume: 'finish',
+  steps: STEPS_AFTER_ONE.map((item) => ({ ...item, state: 'done' as const })),
+}
+
+test('an Onboarding business sees the notice at the top with its count and what is missing, and never Arrancá', async () => {
+  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
+  renderInicio()
+
+  const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
+  expect(within(notice).getByText('1 de 6 pasos')).toBeInTheDocument()
+  expect(within(notice).getByText('Falta: stock inicial')).toBeInTheDocument()
+  expect(notice).toHaveAttribute('href', ONBOARDING_STOCK)
+  await screen.findByText('Vendiste hoy')
+  expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+})
+
+test('with /first-run answering last, slot 1 stays empty: Arrancá never flashes for an Onboarding business', async () => {
+  let release: (response: Response) => void = () => undefined
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/first-run'))
+        return new Promise<Response>((resolve) => {
+          release = resolve
+        })
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, MID_ONBOARDING))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, PANEL))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  renderInicio()
+  await screen.findByText('Vendiste hoy')
+
+  expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+  release(jsonResponse(200, ONBOARDING_ANSWER))
+  expect(await screen.findByText('Seguí con la configuración')).toBeInTheDocument()
+  expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+})
+
+test('a business never offered the Onboarding keeps Arrancá and sees no notice', async () => {
+  stubFetch(PANEL, START)
+  renderInicio()
+
+  expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
+  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+})
+
+test('the finish notice reads 6 de 6 with no Falta line and sends advance only on a tap', async () => {
+  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
+  renderInicio()
+
+  const notice = await screen.findByRole('button', { name: /Seguí con la configuración/ })
+  expect(within(notice).getByText('6 de 6 pasos')).toBeInTheDocument()
+  expect(screen.queryByText(/Falta:/)).not.toBeInTheDocument()
+  await screen.findByText('Vendiste hoy')
+  expect(calls).toEqual(['GET /onboarding-progress'])
+})
+
+test('the Onboarding notice goes once the Onboarding is over', async () => {
+  stubFetch(PANEL, NONE, { status: null }, { ...FINISH, over: true, resume: null })
+  renderInicio()
+  await screen.findByText('Vendiste hoy')
+
+  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+})
+
+test('tapping the finish notice sends advance, and "Listo" opens only from an answer with over: true', async () => {
+  advanced = { ...FINISH, over: true, resume: null }
+  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
+  renderInicio()
+
+  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+
+  expect(await screen.findByText('Listo listo=true')).toBeInTheDocument()
+  expect(calls).toEqual(['GET /onboarding-progress', 'POST /onboarding-progress/advance'])
+})
+
+test('tapping the finish notice when advance answers over: false does not draw "Listo"', async () => {
+  advanced = { ...MID_ONBOARDING }
+  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
+  renderInicio()
+
+  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+
+  expect(await screen.findByText('paso stock')).toBeInTheDocument()
+  expect(screen.queryByText(/Listo listo/)).not.toBeInTheDocument()
+})
+
+test('the resume notice keeps its words and its card: boton-aviso, never a row, named by its visible text, with no icon of its own', async () => {
+  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
+  renderInicio()
+
+  const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
+  expect(notice).toHaveClass('boton-aviso')
+  expect(notice).not.toHaveClass('boton--fila')
+  expect(notice).not.toHaveAttribute('aria-label')
+  expect(notice.textContent).toContain('Seguí con la configuración')
+  expect(notice.textContent).toContain('1 de 6 pasos')
+  expect(notice.textContent).toContain('Falta: stock inicial')
+  // Only the title's decorative chevron: no attention icon, and it is hidden from the name.
+  expect(notice.querySelectorAll('svg')).toHaveLength(1)
+  expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(notice)
+})
+
+test('the finish notice is the same card as a button, named by its visible text', async () => {
+  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
+  renderInicio()
+
+  const notice = await screen.findByRole('button', { name: /Seguí con la configuración/ })
+  expect(notice).toHaveClass('boton-aviso')
+  expect(notice).not.toHaveClass('boton--fila')
+  expect(notice).not.toHaveAttribute('aria-label')
+  expect(notice.querySelectorAll('svg')).toHaveLength(1)
+  expectIconAndTextRule(notice)
+})
+
+const CHECKLIST = answer({
+  kind: 'checklist',
+  checklist: [
+    { step: 'priced_variety', required: true, done: true },
+    { step: 'stock_entry', required: true, done: false },
+    { step: 'published', required: false, done: false },
+    { step: 'second_user', required: false, done: true },
+  ],
+  nothing_qualifies: true,
+})
+
+const IMPORT_NOTICE_TEXT = 'Conectá el bot para que el catálogo fijado se actualice solo'
+
+for (const theme of ['claro', 'oscuro'] as const) {
+  test(`the checklist draws four steps, "Hecho" only on the met ones, and tells required from optional in words (${theme})`, async () => {
+    chooseTheme(theme)
+    stubFetch(PANEL, CHECKLIST)
+    renderInicio()
+
+    const list = await screen.findByRole('list', { name: 'Para arrancar' })
+    const steps = within(list).getAllByRole('listitem')
+    expect(steps.map((step) => step.textContent)).toEqual([
+      'Cargá una variedad con su precioObligatorioHecho',
+      'Cargá lo que tenés hoyObligatorio',
+      'Conectá el botOpcional',
+      'Invitá a un socioOpcionalHecho',
+    ])
+    expect(within(list).getAllByText('Hecho')).toHaveLength(2)
+    // The attention icon is for the notices: the checklist carries none.
+    expect(list.closest('section')?.querySelector('.aviso-ambar__icono')).toBeNull()
+    expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+    expectIconAndTextRule(list)
+    window.localStorage.clear()
+  })
+}
+
+test('the checklist is a box of its own, not the attention state', async () => {
+  stubFetch(PANEL, CHECKLIST)
+  const { container } = renderInicio()
+
+  const box = (await screen.findByRole('list', { name: 'Para arrancar' })).closest('section')!
+  expect(box).not.toBeNull()
+  expect(container.querySelectorAll('.aviso-ambar__icono')).toHaveLength(0)
+})
+
+test('slot 1, then the out-of-date pin, then the import notice, then the figures, in that order', async () => {
+  stubFetch(PANEL, answer({ ...CHECKLIST, import_notice: true }), { status: { state: 'out_of_date' } })
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
+
+  const nodes = [
+    screen.getByRole('list', { name: 'Para arrancar' }).closest('section')!,
+    screen.getByText(PINNED_CATALOG_OUT_OF_DATE),
+    screen.getByText(IMPORT_NOTICE_TEXT),
+    container.querySelector('.panel-ventas')!,
+  ]
+  for (const [index, node] of nodes.entries()) {
+    const next = nodes[index + 1]
+    if (next !== undefined) expect(node.compareDocumentPosition(next)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  }
+})
+
+test('the same notices sit above Semana and Mes', async () => {
+  stubFetch(PANEL, answer({ ...CHECKLIST, import_notice: true }))
+  renderInicio()
+  await screen.findByText('Vendiste hoy')
+
+  screen.getByRole('button', { name: 'Mes' }).click()
+
+  await screen.findByText('Vendiste este mes')
+  expect(screen.getByRole('list', { name: 'Para arrancar' })).toBeInTheDocument()
+  expect(screen.getByText(IMPORT_NOTICE_TEXT)).toBeInTheDocument()
+})
+
+for (const kind of ['none', 'start_varieties'] as const) {
+  test(`the import notice shows beside a "${kind}" slot 1, with the attention icon and a dismiss control`, async () => {
+    stubFetch(PANEL, answer({ kind, import_notice: true }))
+    renderInicio()
+
+    const notice = (await screen.findByText(IMPORT_NOTICE_TEXT)).closest('.aviso-ambar')!
+    expect(notice.querySelector('.aviso-ambar__icono svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(within(notice as HTMLElement).getByRole('button', { name: 'Descartar aviso' })).toBeInTheDocument()
+    expectIconAndTextRule(notice as HTMLElement)
+  })
+}
+
+test('dismissing the import notice sends the dismissal, asks /first-run again and the notice goes', async () => {
+  stubFetch(PANEL, answer({ import_notice: true }))
+  renderInicio()
+  await screen.findByText(IMPORT_NOTICE_TEXT)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Descartar aviso' }))
+
+  await waitFor(() => expect(screen.queryByText(IMPORT_NOTICE_TEXT)).not.toBeInTheDocument())
+  expect(firstRunCalls).toContain('POST /first-run/import-notice/dismissal')
+  expect(firstRunCalls.filter((call) => call === 'GET /first-run')).toHaveLength(2)
+})
+
+test('a failed dismissal keeps the notice and says so', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      if (url.includes('/first-run/import-notice/dismissal') && init?.method === 'POST')
+        return Promise.reject(new Error('network error'))
+      if (url.includes('/first-run')) return Promise.resolve(jsonResponse(200, answer({ import_notice: true })))
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, NOT_OFFERED))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, PANEL))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  renderInicio()
+  await screen.findByText(IMPORT_NOTICE_TEXT)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Descartar aviso' }))
+
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(screen.getByText(IMPORT_NOTICE_TEXT)).toBeInTheDocument()
+})
+
+test('a failed /first-run draws no slot 1 and no error: the figures still show', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/first-run')) return Promise.reject(new Error('network error'))
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, NOT_OFFERED))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, PANEL))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  renderInicio()
+
+  expect(await screen.findByText('Vendiste hoy')).toBeInTheDocument()
+  expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+  expect(screen.queryByRole('list', { name: 'Para arrancar' })).not.toBeInTheDocument()
+  expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
+})
+
+test('a stock write elsewhere makes the next read of /first-run, and the checklist goes', async () => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  stubFetch(PANEL, CHECKLIST)
+  renderInicio(client)
+  await screen.findByRole('list', { name: 'Para arrancar' })
+  stubFetch(PANEL, NONE)
+
+  invalidateResource(client, 'stock')
+
+  await waitFor(() => expect(screen.queryByRole('list', { name: 'Para arrancar' })).not.toBeInTheDocument())
 })

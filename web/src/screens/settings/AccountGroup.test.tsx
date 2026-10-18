@@ -3,18 +3,21 @@
  * and "Cerrar sesión". The API is faked at `fetch`, never mocked deeper (CODING_STANDARDS §10).
  */
 
+import { LOGIN, SETTINGS, SETTINGS_ACCOUNT } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import { WRONG_CURRENT_PASSWORD_MESSAGE } from '../CambiarContrasena'
 import { WEAK_PASSWORD_MESSAGE } from '../Invitacion'
 import { BRAKE_MESSAGE } from '../Entrar'
 import AccountGroup from './AccountGroup'
 import { PASSWORD_CHANGED_SUCCESS } from './messages'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 function noContent(): Response {
   return new Response(null, { status: 204 })
@@ -50,14 +53,14 @@ function renderAccount(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       {
         element: <Provide />,
         children: [
-          { path: '/settings', element: <div>Lista de grupos</div> },
-          { path: '/settings/account', element: <AccountGroup /> },
+          { path: SETTINGS, element: <div>Lista de grupos</div> },
+          { path: SETTINGS_ACCOUNT, element: <AccountGroup /> },
         ],
       },
-      { path: '/entrar', element: <div>Pantalla de entrada</div> },
+      { path: LOGIN, element: <div>Pantalla de entrada</div> },
     ],
     {
-      initialEntries: ['/settings', { pathname: '/settings/account', state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: SETTINGS_ACCOUNT, state: inAppState({ pathname: SETTINGS }) }],
       initialIndex: 1,
     },
   )
@@ -190,7 +193,7 @@ test('a dropped network while logging out shows "Sin conexión" and re-enables t
   const button = await screen.findByRole('button', { name: 'Cerrar sesión' })
   await userEvent.click(button)
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(button).not.toBeDisabled()
 })
 
@@ -202,4 +205,27 @@ test('an untouched group closes at once, with no confirmation, and "Cerrar" neve
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+test('Cambiar contraseña and Cerrar sesión are icon + text, "Cerrar" the icon-only close', async () => {
+  renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  for (const name of ['Cambiar contraseña', 'Cerrar sesión']) {
+    const button = await screen.findByRole('button', { name })
+    expect(button).toHaveTextContent(name)
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  }
+  const close = screen.getByRole('button', { name: 'Cerrar' })
+  expect(close).toHaveClass('boton-icono')
+  expect(close).toHaveTextContent('')
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  expectIconAndTextRule(document.body)
+})
+
+test('the password sheet follows the icon and text rule', async () => {
+  renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  await screen.findByLabelText('Contraseña actual')
+
+  expectIconAndTextRule(document.body)
 })

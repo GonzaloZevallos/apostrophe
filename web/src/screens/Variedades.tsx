@@ -1,33 +1,52 @@
 /**
- * `Variedades` (`varieties.md`, "On screen"): today's list and bulk prices per
- * variety, "Sin precio: no se puede vender" when none is in force, and adding a
- * variety. A row links to `VariedadDetalle` by id alone — never a business id (plan,
- * invariants). Refusals are dispatched through `refusals.ts`, never a raw
- * `caught.code === '…'` comparison.
+ * `Variedades` (`Variedades.dc.html`, `VariedadesCompu.dc.html`; `varieties.md`, "The list"):
+ * the tab root. Every unarchived variety, hidden ones included, sorted by name; each row tells its stock
+ * status by shape and word (`MarcaEstado`), "Oculta" beside it when the catalog hides it,
+ * grams and days left, and today's list price per gram or "Sin precio: no se puede vender".
+ * Above the list: the summary line, "Mandar catálogo" and "+ Entrada de stock" and
+ * "Sacar del stock" (the withdrawal form, no variety chosen); "Nueva variedad" below them
+ * and "Todas las entradas" and, when there are archived ones, "Archivadas (N)" at the foot.
+ *
+ * Nothing here decides anything: statuses and days left are `GET /stock`'s, prices are
+ * `GET /varieties`', "Oculta" is `GET /catalog`'s own `shown`, and the summary line is counted
+ * only by `summaryLine`. A row links to a variety's page by its id alone, never a business id.
+ *
+ * "Mandar catálogo" is disabled, with its reason in words, only while `GET /first-run` says the
+ * checklist shows and nothing qualifies (`navigation.md`, "First-run checklist"); the server
+ * decides, the front never counts what the catalog could send. While that read is pending or
+ * has failed it is enabled, like in every other state.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
-import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../api/client'
-import { invalidateResource, keys } from '../api/keys'
+import { useQuery } from '@tanstack/react-query'
+import { useLocation, useOutletContext } from 'react-router'
+import { NetworkError, get } from '../api/client'
+import { catalogQueryOptions } from '../api/catalog'
+import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
+import { keys } from '../api/keys'
 import type { Me } from '../api/me'
-import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import { readStock, type VarietyStock } from '../api/stock'
-import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
-import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import Boton from '../components/Boton'
+import BotonLink from '../components/BotonLink'
+import ErrorGenerico from '../components/ErrorGenerico'
+import GoneNotice from '../components/GoneNotice'
+import { useGoneNotice } from '../components/goneExit'
+import InAppLink from '../components/InAppLink'
+import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
+import Notice from '../components/Notice'
+import PaneRowLink from '../components/PaneRowLink'
 import SinConexion from '../components/SinConexion'
+import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
+import { ARCHIVED_VARIETIES, CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, WITHDRAWAL_NEW, pathTo } from '../routes'
+import { useViewport } from '../shell/useViewport'
+import { detailFor } from '../stock/detail'
+import { summaryLine } from '../stock/summaryLine'
+import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
+import { varietiesByName } from './varieties/varietiesByName'
+import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
 
-/** The warning line next to a variety's status mark (`stock.md`, "On screen"): told
- * from the same `GET /stock` row `MarcaEstado` already reads, never a figure the
- * front works out itself. */
-function warningFor(row: VarietyStock): string {
-  if (row.threshold === null) return 'Aviso apagado'
-  if (row.status === 'low') return `Avisando: quedan ${formatGrams(row.grams)}`
-  return `Avisame abajo de ${formatGrams(row.threshold)}`
-}
+const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 
 export const VARIETY_SAVED = 'Variedad guardada'
 export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
@@ -41,173 +60,132 @@ interface PriceEntry {
   list_price: number
   bulk_price: number | null
   bulk_minimum: number | null
+  vip_price: number | null
 }
 
 export interface Variety {
   id: number
   name: string
+  archived: boolean
   current_price: PriceEntry | null
 }
 
-const SAVE_OVERRIDES: Partial<Record<RefusalCode, string>> = {
-  'variety.name_taken': NAME_TAKEN_MESSAGE,
-  'variety.name_invalid': NAME_INVALID_MESSAGE,
+/** "135 g · 270 días", or the status' own line where there are no days to count ("0 g · Sin
+ * gramos desde el 05/10"). */
+function figuresOf(row: VarietyStock, today: string): string {
+  const grams = formatGrams(row.grams)
+  if (row.status === 'sold_out' || row.status === 'no_entries') return `${grams} · ${detailFor(row, today)}`
+  return row.days_left === null ? grams : `${grams} · ${row.days_left} días`
 }
 
 export default function Variedades() {
-  useOutletContext<Me>()
-  const queryClient = useQueryClient()
-  const { data, isError, error } = useQuery({
+  const me = useOutletContext<Me>()
+  const computer = useViewport() === 'computer'
+  const feedback = readFeedback(useLocation().state)
+  const goneExited = useGoneNotice()
+  const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
     queryFn: () => get<Variety[]>('/varieties'),
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
-  const stockOf = (varietyId: number): VarietyStock | undefined =>
-    stockQuery.data?.varieties.find((row) => row.variety_id === varietyId)
-  const [adding, setAdding] = useState(false)
-  const [name, setName] = useState('')
-  const [formError, setFormError] = useState<string | null>(null)
-  const [offline, setOffline] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [toast, setToast] = useState<SuccessToast | null>(null)
+  const catalogQuery = useQuery(catalogQueryOptions())
+  const firstRun = actionableFirstRun(useQuery(firstRunQuery))
+  const catalogDisabled = firstRun?.kind === 'checklist' && firstRun.nothing_qualifies
+  const archivedCount = useQuery(archivedVarietiesQueryOptions()).data?.length ?? 0
 
-  useEffect(() => {
-    if (toast === null) return
-    const timer = setTimeout(() => {
-      setToast(null)
-    }, 3000)
-    return () => clearTimeout(timer)
-  }, [toast])
-
-  async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault()
-    setFormError(null)
-    setOffline(false)
-    setSending(true)
-    try {
-      await post<Variety>('/varieties', { name })
-      invalidateResource(queryClient, 'varieties')
-      setName('')
-      setAdding(false)
-      setToast(VARIETY_SAVED)
-    } catch (caught) {
-      if (caught instanceof ApiError) {
-        const message = resolveOverride(SAVE_OVERRIDES, caught.code)
-        if (message !== undefined) setFormError(message)
-        else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
-          setFormError(GENERIC_REFUSAL_MESSAGE)
-        } else {
-          setFormError(ERROR_GENERICO_MENSAJE)
-        }
-      } else if (caught instanceof NetworkError) {
-        setOffline(true)
-      } else {
-        setFormError(ERROR_GENERICO_MENSAJE)
-      }
-    } finally {
-      setSending(false)
-    }
-  }
-
-  if (isError) {
-    if (error instanceof NetworkError) {
-      return (
-        <main className="pantalla">
-          <div className="cuerpo">
-            <SinConexion />
-          </div>
-        </main>
-      )
-    }
-    return (
-      <main className="pantalla">
-        <div className="cuerpo">
-          <ErrorGenerico />
-        </div>
-      </main>
-    )
-  }
+  const failure = varietiesQuery.error ?? stockQuery.error
+  const ready = varietiesQuery.data !== undefined && stockQuery.data !== undefined
+  const hidden = new Set((catalogQuery.data?.varieties ?? []).filter((row) => !row.shown).map((row) => row.id))
+  const rows = ready
+    ? varietiesByName(varietiesQuery.data).flatMap((variety) => {
+        const row = stockQuery.data.varieties.find((candidate) => candidate.variety_id === variety.id)
+        return row === undefined ? [] : [{ variety, row }]
+      })
+    : []
+  const summary = ready ? summaryLine(rows.map(({ row }) => row.status)) : null
 
   return (
-    <main className="pantalla">
+    <main className="pantalla variedades">
       <div className="cuerpo">
-        <div className="encabezado-fila">
-          <span className="encabezado__titulo">Variedades</span>
-          <button
-            type="button"
-            className="boton-icono"
-            aria-label="Nueva variedad"
-            onClick={() => {
-              setAdding(true)
-              setFormError(null)
-            }}
-          >
-            +
-          </button>
+        <h1 className="encabezado__titulo">Variedades</h1>
+        {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
+        <div className="variedades__acciones">
+          {catalogDisabled ? (
+            <>
+              <Boton icon="telegram" disabled ariaDescribedBy={CATALOG_REASON_ID}>
+                Mandar catálogo
+              </Boton>
+              <p className="variedades__motivo" id={CATALOG_REASON_ID} data-copy="help">
+                {CATALOG_DISABLED_REASON}
+              </p>
+            </>
+          ) : (
+            <BotonLink to={CATALOG} icon="telegram">
+              Mandar catálogo
+            </BotonLink>
+          )}
+          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel="+ Entrada de stock">
+            Entrada de stock
+          </BotonLink>
+          <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="salidaStock">
+            Sacar del stock
+          </BotonLink>
+          <span className="variedades__nueva">
+            <BotonLink to={VARIETY_NEW} variant="link">
+              Nueva variedad
+            </BotonLink>
+          </span>
         </div>
-        {toast !== null && <AvisoExito texto={toast} />}
-        {adding && (
-          <form className="formulario" onSubmit={onSubmit}>
-            <label className="campo">
-              <span className="campo__rotulo">Nombre</span>
-              <input
-                className="campo__input"
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                required
-              />
-              {formError !== null && (
-                <span className="campo__error" role="alert">
-                  {formError}
-                </span>
-              )}
-            </label>
-            {offline && <SinConexion />}
-            <button className="boton" type="submit" disabled={sending}>
-              Guardar
-            </button>
-          </form>
+        {feedback !== null ? (
+          <Notice kind={feedback.kind} message={feedback.message} />
+        ) : (
+          goneExited && <GoneNotice />
         )}
-        <div className="lista-variedades">
-          {(data ?? []).map((variety) => {
-            const stockRow = stockOf(variety.id)
-            return (
-            <Link key={variety.id} to={`/variedades/${variety.id}`} className="variedad-item">
-              <div className="variedad-item__encabezado">
-                <span className="variedad-item__nombre">{variety.name}</span>
-                {stockRow !== undefined && <MarcaEstado estado={stockRow.status} />}
-              </div>
-              {stockRow !== undefined && (
-                <span className="variedad-item__aviso">{warningFor(stockRow)}</span>
-              )}
-              {variety.current_price === null ? (
-                <span className="variedad-item__sin-precio">{NO_PRICE_TODAY}</span>
-              ) : (
-                <div className="variedad-item__precios">
-                  <span className="precio-panel">
-                    <span className="precio-panel__rotulo">Lista</span>
-                    <span className="precio-panel__valor">
-                      {formatMoney(variety.current_price.list_price)}
-                    </span>
+        {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
+        {failure === null && !ready && <Loading />}
+        {failure === null && ready && rows.length === 0 && (
+          <div className="estado-vacio">
+            <span className="estado-vacio__titulo" data-copy="emptyTitle">{EMPTY_TITLE}</span>
+            <span className="estado-vacio__detalle" data-copy="emptyLine">{EMPTY_DETAIL}</span>
+          </div>
+        )}
+        {rows.length > 0 && (
+          <div className="lista-variedades">
+            {rows.map(({ variety, row }) => (
+              <PaneRowLink
+                key={variety.id}
+                to={pathTo(VARIETY, { id: variety.id })}
+                replace={computer}
+                className="variedad-fila"
+                activeClassName="variedad-fila variedad-fila--activa"
+              >
+                <span className="variedad-fila__encabezado">
+                  <MarcaEstado estado={row.status} />
+                  <span className="variedad-fila__nombre">{variety.name}</span>
+                  {hidden.has(variety.id) && <span className="variedad-fila__oculta">Oculta</span>}
+                </span>
+                <span className="variedad-fila__pie">
+                  <span className="variedad-fila__detalle">{figuresOf(row, me.today)}</span>
+                  <span className="variedad-fila__precio">
+                    {variety.current_price === null
+                      ? NO_PRICE_TODAY
+                      : `${formatMoney(variety.current_price.list_price)} x g`}
                   </span>
-                  {variety.current_price.bulk_price !== null &&
-                    variety.current_price.bulk_minimum !== null && (
-                      <span className="precio-panel">
-                        <span className="precio-panel__rotulo">
-                          Desde {formatGrams(variety.current_price.bulk_minimum)}
-                        </span>
-                        <span className="precio-panel__valor">
-                          {formatMoney(variety.current_price.bulk_price)}
-                        </span>
-                      </span>
-                    )}
-                </div>
-              )}
-            </Link>
-            )
-          })}
-        </div>
+                </span>
+              </PaneRowLink>
+            ))}
+          </div>
+        )}
+        <InAppLink to={STOCK} className="variedades__todas">
+          <span>Todas las entradas</span>
+          <span aria-hidden="true">›</span>
+        </InAppLink>
+        {archivedCount > 0 && (
+          <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
+            <span>Archivadas ({archivedCount})</span>
+            <span aria-hidden="true">›</span>
+          </InAppLink>
+        )}
       </div>
     </main>
   )

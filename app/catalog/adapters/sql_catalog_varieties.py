@@ -8,7 +8,7 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.catalog.domain.variety import CatalogPrice, CatalogVariety
+from app.catalog.domain.variety import ArchivedCatalogVariety, CatalogPrice, CatalogVariety
 from app.varieties.adapters.sql_varieties import SqlVarieties
 from app.varieties.domain.variety import PriceEntry
 
@@ -19,7 +19,7 @@ class SqlCatalogVarieties:
 
     def on(self, day: date) -> list[CatalogVariety]:
         views = []
-        for variety in self._varieties.all():
+        for variety in self._varieties.listed():
             assert variety.id is not None, "only stored varieties are read here"
             views.append(
                 CatalogVariety(
@@ -30,8 +30,19 @@ class SqlCatalogVarieties:
             )
         return views
 
+    def archived(self) -> list[ArchivedCatalogVariety]:
+        views = []
+        for variety in self._varieties.archived():
+            assert variety.id is not None, "only stored varieties are read here"
+            views.append(ArchivedCatalogVariety(id=variety.id, name=variety.name.value))
+        return views
+
     def exists(self, variety_id: int) -> bool:
         return self._varieties.get(variety_id) is not None
+
+    def usable(self, variety_id: int) -> bool:
+        variety = self._varieties.get(variety_id)
+        return variety is not None and not variety.is_archived
 
 
 def _catalog_price(entry: PriceEntry | None) -> CatalogPrice | None:

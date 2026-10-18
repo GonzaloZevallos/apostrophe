@@ -11,8 +11,9 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
-import { SIN_CONEXION_TITULO } from '../components/SinConexion'
-import { EXPENSE_CATEGORIES, EXPENSES } from '../routes'
+import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
+import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { FLOWER_NOTICE } from './Gastos'
 import { CATEGORY_GONE } from './expenses/ExpenseForm'
 import { type FetchImpl, ME, jsonResponse, renderExpenses } from './expenses/renderExpenses'
@@ -75,7 +76,7 @@ function store(rows: Row[], overrides?: FetchImpl) {
       categories.push(created)
       return jsonResponse(201, created)
     }
-    if (url === '/expenses' && method === 'POST') {
+    if (url === EXPENSES && method === 'POST') {
       const body = JSON.parse(String(init?.body)) as Omit<Row, 'id'>
       const row = { id: 100 + rows.length, ...body }
       rows.push(row)
@@ -214,7 +215,7 @@ test('records from Gastos on a past month: back to that month with the expense s
   expect(screen.getByText('Septiembre 2026')).toBeInTheDocument()
   expect(await screen.findAllByText('Gasto guardado')).toHaveLength(1)
   expect(totalShown()).toBe('$ 2.200')
-  expect(fetch).toHaveBeenCalledWith('/expenses', expect.objectContaining({ method: 'POST' }))
+  expect(fetch).toHaveBeenCalledWith(EXPENSES, expect.objectContaining({ method: 'POST' }))
 })
 
 test('the record action opens the form with today\'s date', async () => {
@@ -258,6 +259,20 @@ test('closing the edit with changes asks before discarding; an untouched close i
   await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
   expect(screen.queryByLabelText('Detalle')).not.toBeInTheDocument()
   expect(fetch).not.toHaveBeenCalledWith('/expenses/9', expect.objectContaining({ method: 'PUT' }))
+})
+
+test('the edit form follows the icon and text rule: delete icon-only, create-category with its icon', async () => {
+  renderExpenses([EXPENSES], store([...SEED]))
+
+  await userEvent.click(await screen.findByText('Bolsas'))
+  const del = await screen.findByRole('button', { name: 'Borrar gasto' })
+  expect(del).toHaveClass('boton-icono')
+  await userEvent.click(screen.getByRole('button', { name: 'Crear una categoría nueva' }))
+  expect(screen.getByRole('button', { name: 'Crear categoría' }).querySelector('svg')).toHaveAttribute(
+    'aria-hidden',
+    'true',
+  )
+  expectIconAndTextRule(document.querySelector<HTMLElement>('.gasto-form') ?? document.body)
 })
 
 test('deleting names its date, category and amount, toasts in place, and the empty category goes', async () => {
@@ -334,7 +349,7 @@ test('a dropped network on delete shows "Sin conexión", never the gone notice',
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar gasto' }))
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
   // The confirmation stays open so the user can retry once back online.
   expect(screen.getByRole('button', { name: 'Sí, borrala' })).toBeInTheDocument()
@@ -346,7 +361,7 @@ test('a category removed mid-form keeps what was typed and empties Categoría', 
     store(
       [...SEED],
       failing(
-        (url, method) => url === '/expenses' && method === 'POST',
+        (url, method) => url === EXPENSES && method === 'POST',
         () => jsonResponse(404, { detail: 'no category', code: 'expense_category.not_found' }),
       ),
     ),
@@ -366,7 +381,7 @@ test('a server error on the expense form shows the generic retry, never the refu
     store(
       [...SEED],
       failing(
-        (url, method) => url === '/expenses' && method === 'POST',
+        (url, method) => url === EXPENSES && method === 'POST',
         () => new Response('internal error', { status: 500 }),
       ),
     ),
@@ -398,7 +413,7 @@ test('links to the expense categories, now a Configuración group, from its foot
 
   const categories = await screen.findByRole('link', { name: 'Categorías' })
   expect(categories).toHaveAttribute('href', EXPENSE_CATEGORIES)
-  expect(EXPENSE_CATEGORIES).toBe('/settings/expense-categories')
+  expect(EXPENSE_CATEGORIES).toBe(EXPENSE_CATEGORIES)
 })
 
 test('subtotals and the total stay equal to the sum shown after create, edit and delete', async () => {

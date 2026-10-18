@@ -9,7 +9,7 @@ from app.customers.adapters.schemas import NO_BALANCE, CustomerIn, CustomerOut, 
 from app.customers.adapters.sql_customers import SqlCustomers
 from app.customers.application import manage_customers
 from app.customers.application.errors import CustomerNotFound, PhoneTaken, RequiredFieldCleared
-from app.customers.application.ports import Balances
+from app.customers.application.ports import Balances, PricingSettingsReader
 from app.customers.domain.customer import Customer, CustomerRuleBroken
 from app.db import get_session
 from app.http_errors import TranslateErrors
@@ -34,8 +34,21 @@ def get_balances(
     return factory(session, business_id)
 
 
+def get_pricing_settings(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> PricingSettingsReader:
+    # Customers never imports `app.pricing_settings`: `app/main.py` hangs the real reader
+    # on `app.state` as a `(Session, business_id)` factory (docs/adr/0006).
+    factory = cast(
+        Callable[[Session, int], PricingSettingsReader],
+        request.app.state.customers_pricing_settings,
+    )
+    return factory(session, business_id)
+
+
 CustomersDep = Annotated[SqlCustomers, Depends(get_customers)]
 BalancesDep = Annotated[Balances, Depends(get_balances)]
+SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 
 
 def _out(customer: Customer, balances: Balances) -> CustomerOut:
@@ -64,15 +77,19 @@ def list_customers(
 
 @router.post("", status_code=201)
 def register_customer(
-    body: CustomerIn, customers: CustomersDep, balances: BalancesDep, session: SessionDep
+    body: CustomerIn,
+    customers: CustomersDep,
+    settings: SettingsDep,
+    balances: BalancesDep,
+    session: SessionDep,
 ) -> CustomerOut:
     with as_http:
         customer = manage_customers.register_customer(
             customers,
+            settings,
             session,
             name=body.name,
             phone=body.phone,
-            channel=body.channel,
             vip=body.vip,
         )
         return _out(customer, balances)
@@ -89,6 +106,7 @@ def edit_customer(
     customer_id: int,
     body: CustomerPatchIn,
     customers: CustomersDep,
+    settings: SettingsDep,
     balances: BalancesDep,
     session: SessionDep,
 ) -> CustomerOut:
@@ -96,5 +114,7 @@ def edit_customer(
         # 404 first, before a `null` meant to clear a required field is even looked at.
         manage_customers.get_customer(customers, customer_id)
         changes = body.to_changes()
-        customer = manage_customers.edit_customer(customers, session, customer_id, changes)
+        customer = manage_customers.edit_customer(
+            customers, settings, session, customer_id, changes
+        )
         return _out(customer, balances)

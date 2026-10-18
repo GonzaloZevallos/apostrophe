@@ -1,6 +1,6 @@
 from datetime import date
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, PlainSerializer
 
@@ -19,6 +19,7 @@ class PriceEntryIn(BaseModel):
     list_price: int
     bulk_price: int | None = None
     bulk_minimum: Decimal | None = None
+    vip_price: int | None = None
 
 
 class PriceEntryOut(BaseModel):
@@ -27,6 +28,7 @@ class PriceEntryOut(BaseModel):
     list_price: int
     bulk_price: int | None
     bulk_minimum: GramsOut | None
+    vip_price: int | None
 
     @classmethod
     def of(cls, entry: PriceEntry) -> "PriceEntryOut":
@@ -37,6 +39,7 @@ class PriceEntryOut(BaseModel):
             list_price=entry.list_price,
             bulk_price=entry.bulk.price if entry.bulk else None,
             bulk_minimum=entry.bulk.minimum.as_decimal() if entry.bulk else None,
+            vip_price=entry.vip_price,
         )
 
 
@@ -46,6 +49,7 @@ class VarietyOut(BaseModel):
     # The price in force on the day asked for (today, unless the caller asked for
     # another day, docs/adr/0011); `null` when the variety has none that day.
     current_price: PriceEntryOut | None
+    archived: bool
 
     @classmethod
     def of(cls, variety: Variety, day: date) -> "VarietyOut":
@@ -55,4 +59,12 @@ class VarietyOut(BaseModel):
             id=variety.id,
             name=variety.name.value,
             current_price=None if price is None else PriceEntryOut.of(price),
+            archived=variety.is_archived,
         )
+
+
+class VarietyDetailOut(VarietyOut):
+    """One variety's page: also the one removal action it offers, worked out from history
+    when it is read (`null` for an archived variety)."""
+
+    removal: Literal["delete", "archive"] | None

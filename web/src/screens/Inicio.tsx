@@ -4,17 +4,20 @@
  * straight from `GET /panel` (`PanelAnswer`, `web/src/api/fixtures/panel.json`) —
  * this screen never computes, sorts or sign-tests an amount itself (plan
  * invariant: "No screen does arithmetic, sorting, sign tests or comparisons on an
- * amount from the API"). Ganancia and Caja render through `formatSignedMoney`;
- * ranges through `formatDateShort` only.
+ * amount from the API"). The figures and ranges are drawn by `inicio/InicioPanel.tsx`.
  *
  * The panel query is frozen (`gcTime: 0`, `staleTime: Infinity`, no refetch on
  * focus or reconnect, plan invariant): a remount always re-fetches, so the
  * figures shown are always the current mount's own resolved answer, never a
  * stale one left behind by an earlier mount or another business.
  *
- * "Arrancá por las variedades" sits above the panel instead of replacing it (PM,
- * adjustment 5): a business can have history and no price today, and its figures
- * are real.
+ * Slot 1 is `GET /first-run`'s `kind` (`inicioNotices`, ADR-0046): the Onboarding notice, the
+ * first-run checklist, "Arrancá por las variedades" or nothing, drawn above the panel
+ * instead of replacing it (a business can have history and no price today, and its
+ * figures are real). The front derives none of it: it stays empty until `/first-run` has
+ * answered, so nothing flashes, and a failure of it draws no slot 1 and no error (the
+ * figures still show). The after-import notice is slot 3, after the pin notice. The
+ * panel's and the Onboarding's failures show the existing "Sin conexión" or the retry.
  *
  * The pinned-catalog notice (plan, "Front"; accounts.md's Inicio rule): a fixed
  * line, never a figure, while `GET /pinned-catalog/status` reads `out_of_date` —
@@ -22,75 +25,37 @@
  * first Publicar").
  */
 
+import { CATALOG, SETTINGS } from '../routes'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import { get, NetworkError } from '../api/client'
+import { firstRunQuery } from '../api/firstRun'
+import { onboardingProgressQuery } from '../api/onboarding'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
-import {
-  getPanel,
-  type PanelAnswer,
-  type PanelDebts,
-  type PanelPeriod,
-  type PanelTab,
-} from '../api/panel'
+import { getPanel, type PanelTab } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
-import MarcaEstado from '../components/MarcaEstado'
+import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
-import { salesCount } from '../format/counts'
-import { formatDateShort } from '../format/dates'
-import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
-import { detailFor, sideNoteFor } from '../stock/detail'
-import { EMPTY_STATES } from './emptyStates'
+import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
+import { inicioNotices } from './inicioNotices'
+import FirstRunChecklist from './inicio/FirstRunChecklist'
+import ImportNotice from './inicio/ImportNotice'
+import InicioPanel from './inicio/InicioPanel'
+import OnboardingNotice from './onboarding/OnboardingNotice'
 
-export const EMPTY_TITLE = EMPTY_STATES.homeVarietiesTitle
-export const EMPTY_DETAIL = EMPTY_STATES.homeVarietiesDetail
-export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
-
-const PENDING_NOTE = 'incluye costo pendiente'
-
-const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }
-const TABS: PanelTab[] = ['today', 'week', 'month']
-const SALES_HEADING: Record<PanelTab, string> = {
-  today: 'Vendiste hoy',
-  week: 'Vendiste esta semana',
-  month: 'Vendiste este mes',
-}
-
-interface VarietySummary {
-  current_price: unknown
-}
+export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
 
 interface PinnedCatalogStatus {
   status: { state: 'up_to_date' | 'out_of_date' } | null
 }
 
-function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
-  if (tab === 'today') return `Hoy ${formatDateShort(period.start)}`
-  return `${formatDateShort(period.start)} – ${formatDateShort(period.end)}`
-}
-
-function salesSubtitle(period: PanelPeriod): string {
-  const count = salesCount(period.sales_count)
-  const grams = formatGrams(period.grams_sold)
-  return period.average_sale === null
-    ? `${count} · ${grams}`
-    : `${count} · promedio ${formatMoney(period.average_sale)} · ${grams}`
-}
-
 export default function Inicio() {
   const me = useOutletContext<Me>()
   const [tab, setTab] = useState<PanelTab>('today')
-
-  const varietiesQuery = useQuery({
-    queryKey: keys.varieties(),
-    queryFn: () => get<VarietySummary[]>('/varieties'),
-  })
-  const hasPricedVariety = (varietiesQuery.data ?? []).some(
-    (variety) => variety.current_price !== null,
-  )
 
   const panelQuery = useQuery({
     queryKey: keys.panel(),
@@ -107,6 +72,15 @@ export default function Inicio() {
   })
   const pinOutOfDate = pinnedCatalog.data?.status?.state === 'out_of_date'
 
+  const onboardingQuery = useQuery(onboardingProgressQuery)
+  const firstRun = useQuery(firstRunQuery)
+  const notices = inicioNotices({
+    firstRun: firstRun.data,
+    onboarding: onboardingQuery.data,
+    pinOutOfDate,
+  })
+  const failed = [panelQuery, onboardingQuery].find((query) => query.isError)
+
   return (
     <main className="pantalla">
       <div className="cuerpo">
@@ -115,182 +89,42 @@ export default function Inicio() {
             <span className="encabezado__negocio">{me.business_name}</span>
             <span className="encabezado__titulo">Inicio</span>
           </div>
-          <Link
-            to="/settings"
-            state={{ inApp: true }}
+          <InAppLink
+            to={SETTINGS}
             aria-label={`Configuración de ${me.business_name}`}
             className="inicio__avatar"
           >
             {initialsOf(me.business_name)}
-          </Link>
+          </InAppLink>
         </div>
 
-        {pinOutOfDate && (
-          <Link to="/catalogo" className="aviso-ambar" role="status">
-            <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
-          </Link>
-        )}
-        {varietiesQuery.data !== undefined && !hasPricedVariety && (
-          <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
-            <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+        {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}
+        {notices.first?.kind === 'checklist' && <FirstRunChecklist steps={notices.first.steps} />}
+        {notices.first?.kind === 'start' && (
+          <div className="estado-vacio estado-vacio--atencion">
+            <AvisoCuerpo attention>
+              <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
+              <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+            </AvisoCuerpo>
           </div>
         )}
+        {notices.pinOutOfDate && (
+          <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">
+            <AvisoCuerpo attention>
+              <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
+            </AvisoCuerpo>
+          </InAppLink>
+        )}
 
-        {panelQuery.isError && panelQuery.error instanceof NetworkError && <SinConexion />}
-        {panelQuery.isError && !(panelQuery.error instanceof NetworkError) && <ErrorGenerico />}
+        {notices.importNotice && <ImportNotice />}
+
+        {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
+        {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}
 
         {panelQuery.data !== undefined && (
-          <Panel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
+          <InicioPanel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
         )}
       </div>
     </main>
-  )
-}
-
-function Panel({
-  panel,
-  tab,
-  onTab,
-  today,
-}: {
-  panel: PanelAnswer
-  tab: PanelTab
-  onTab: (tab: PanelTab) => void
-  today: string
-}) {
-  const period = panel.periods[tab]
-  const { debts, stock } = panel
-
-  return (
-    <>
-      <div className="periodos" role="group" aria-label="Período">
-        {TABS.map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={tab === item ? 'periodos__boton periodos__boton--activo' : 'periodos__boton'}
-            aria-pressed={tab === item}
-            onClick={() => onTab(item)}
-          >
-            {TAB_LABEL[item]}
-          </button>
-        ))}
-        <span className="pie">{rangeLabel(tab, period)}</span>
-      </div>
-
-      <div className="panel-ventas">
-        <span className="rotulo">{SALES_HEADING[tab]}</span>
-        <span className="cifra-xl">{formatMoney(period.sales)}</span>
-        <span className="pie">{salesSubtitle(period)}</span>
-      </div>
-
-      <div className="panel-resultados">
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Ganancia</span>
-          <span className="panel-resultados__valor panel-resultados__valor--acento">
-            {formatSignedMoney(period.profit)}
-          </span>
-          {period.profit_pending && <span className="pie">{PENDING_NOTE}</span>}
-        </div>
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Caja</span>
-          <span className="panel-resultados__valor">{formatSignedMoney(period.cash)}</span>
-        </div>
-      </div>
-
-      <div className="panel-lista">
-        <div className="panel-lista__fila">
-          <span>Costo de lo vendido</span>
-          <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
-        </div>
-        {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
-        {period.shortfall !== null && (
-          <>
-            <div className="panel-lista__fila">
-              <span>Faltante de stock</span>
-              <span className="panel-lista__valor">{formatMoney(period.shortfall.amount)}</span>
-            </div>
-            {period.shortfall.pending && <span className="pie">{PENDING_NOTE}</span>}
-          </>
-        )}
-        <div className="panel-lista__fila">
-          <span>Gastos</span>
-          <span className="panel-lista__valor">{formatMoney(period.expenses)}</span>
-        </div>
-        <div className="panel-lista__fila">
-          <span>Regalaste</span>
-          <span className="panel-lista__valor">{formatGrams(period.grams_gifted)}</span>
-        </div>
-        <div className="panel-lista__fila">
-          <span>Compras de flores</span>
-          <span className="panel-lista__valor">{formatMoney(period.purchases)}</span>
-        </div>
-      </div>
-
-      {/* Both columns full-width on the phone; side by side on a computer
-          (`InicioCompu.dc.html`): CSS alone switches between them, the same way
-          `Shell`'s own bar/rail does. */}
-      <div className="panel-dos-columnas">
-        <TeDebenBlock debts={debts} />
-
-        <div>
-          <span className="rotulo">Lo que te queda</span>
-          <div className="lista-stock">
-            {stock.map((variety) => (
-              <div key={variety.variety_id} className="fila-stock">
-                <MarcaEstado estado={variety.status} />
-                <span className="fila-stock__texto">
-                  <span className="fila-stock__nombre">{variety.name}</span>
-                  <span className="fila-stock__detalle">{detailFor(variety, today)}</span>
-                </span>
-                <span className="fila-stock__cifras">
-                  <span className="fila-stock__gramos">
-                    {variety.status === 'no_entries' ? '—' : formatGrams(variety.grams)}
-                  </span>
-                  {sideNoteFor(variety) !== null && (
-                    <span className="fila-stock__insignia">{sideNoteFor(variety)}</span>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-function TeDebenBlock({ debts }: { debts: PanelDebts }) {
-  // `oldest` is a date-or-null, never an amount (review finding: deciding this from
-  // `total_owed === 0` compared an API amount inside a screen, which the plan
-  // invariant forbids) — the contract sets it to `null` exactly when nobody owes.
-  if (debts.oldest === null) {
-    return (
-      <div className="bloque-deben">
-        <span className="rotulo">Te deben</span>
-        <span className="pie">{EMPTY_STATES.homeNobodyOwes}</span>
-      </div>
-    )
-  }
-
-  return (
-    <div className="bloque-deben">
-      <Link to="/clientes/deben" className="bloque-deben__titulo">
-        Te deben
-      </Link>
-      <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
-      <span className="pie">
-        {salesCount(debts.sales_owing_count)}
-        {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
-      </span>
-      {debts.teaser.map((row) => (
-        <Link key={row.customer_id} to={`/clientes/${row.customer_id}`} className="bloque-deben__fila">
-          <span>{row.name}</span>
-          <span>{formatMoney(row.balance)}</span>
-          <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
-        </Link>
-      ))}
-    </div>
   )
 }

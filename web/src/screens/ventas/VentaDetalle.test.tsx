@@ -12,6 +12,7 @@
  * VIP customer, no customer at all).
  */
 
+import { SALE as SALE_ROUTE, SALES, pathTo } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -52,10 +53,10 @@ function renderDetalle(initialState?: unknown) {
   // history entry (ADR-0027) and its depth is read from the router's own state.
   const router = createMemoryRouter(
     [
-      { path: '/ventas', element: <VentasProbe /> },
-      { path: '/ventas/:id', element: <VentaDetalle /> },
+      { path: SALES, element: <VentasProbe /> },
+      { path: SALE_ROUTE, element: <VentaDetalle /> },
     ],
-    { initialEntries: [{ pathname: '/ventas/10', state: initialState }] },
+    { initialEntries: [{ pathname: pathTo(SALE_ROUTE, { id: 10 }), state: initialState }] },
   )
   render(
     <QueryClientProvider client={queryClient}>
@@ -95,6 +96,31 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   expect(screen.getByText('3,5 g · Ana Pérez · pagada en efectivo')).toBeInTheDocument()
 })
 
+test('shows the skeleton while the sale is pending, then the sale in its place', async () => {
+  let resolveSale: (response: Response) => void = () => {
+    throw new Error('fetch was never called')
+  }
+  const pending = new Promise<Response>((resolve) => {
+    resolveSale = resolve
+  })
+  // The first call is held; every later call gets its own Response, since a body reads once.
+  vi.mocked(fetch).mockImplementationOnce(() => pending)
+  vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, SALE)))
+  renderDetalle()
+
+  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(screen.queryByText('Venta del 14/09')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar venta' })).not.toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'GET' }))
+
+  resolveSale(jsonResponse(200, SALE))
+
+  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(screen.getAllByText('$ 11.000').length).toBeGreaterThan(0)
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+})
+
 test('a sale with no customer and no payment shows "Sin cliente" and drops the payment part', async () => {
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
@@ -120,7 +146,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   renderDetalle()
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', '/ventas')
+  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', SALES)
 })
 
 test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {
@@ -205,7 +231,7 @@ test('a sale with a customer already never shows Asignar cliente', async () => {
   expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument()
 })
 
-const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', channel: 'whatsapp', vip: true }
+const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', vip: true }
 const NICO = { id: 5, name: 'Nico', vip: true }
 
 /** Dispatches on method and path instead of call order: the sheet's own search
@@ -315,4 +341,28 @@ test('assigning a customer a partner deleted meanwhile shows the gone notice on 
   await userEvent.click(await screen.findByText('Nico'))
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+})
+
+test('a sale keeps its recorded "VIP" and "por cantidad" badges while both pricing switches are off', async () => {
+  const line = SALE.lines[0]
+  const recorded = {
+    ...SALE,
+    customer: { id: 5, name: 'Ana Pérez', vip: true },
+    lines: [
+      { ...line, variety_id: 2, variety_name: 'Flor A', pricing_rule: 'vip' },
+      { ...line, variety_id: 3, variety_name: 'Flor B', pricing_rule: 'bulk' },
+    ],
+  }
+  vi.mocked(fetch).mockImplementation((input) =>
+    Promise.resolve(
+      input === '/pricing-settings'
+        ? jsonResponse(200, { is_bulk_pricing: false, is_vip_customers: false })
+        : jsonResponse(200, recorded),
+    ),
+  )
+  renderDetalle()
+
+  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(screen.getByText('VIP')).toBeInTheDocument()
+  expect(screen.getByText('por cantidad')).toBeInTheDocument()
 })

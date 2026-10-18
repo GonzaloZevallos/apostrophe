@@ -1,5 +1,6 @@
 import { QueryClient, QueryObserver } from '@tanstack/react-query'
-import { describe, expect, test } from 'vitest'
+import { waitFor } from '@testing-library/react'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { invalidateResource, keys } from './keys'
 
 function clientWithData(): QueryClient {
@@ -25,6 +26,10 @@ describe('keys', () => {
     expect(keys.expenseCategories()).toEqual(['expense-categories'])
   })
 
+  test('the first-run read keys outside every resource prefix', () => {
+    expect(keys.firstRun()).toEqual(['first-run'])
+  })
+
   test('a customer\'s account and the debtors list key under "payments"', () => {
     expect(keys.customerAccount('1')).toEqual(['payments', 'account', '1'])
     expect(keys.debtors()).toEqual(['payments', 'debtors'])
@@ -38,6 +43,28 @@ describe('keys', () => {
       '2026-10-02',
       5000,
     ])
+  })
+})
+
+describe('invalidateResource and the catalog', () => {
+  test.each(['stock', 'varieties'] as const)('a %s write also invalidates the catalog', (resource) => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.catalog(), { text: 'x' })
+
+    invalidateResource(queryClient, resource)
+
+    expect(isInvalidated(queryClient, keys.catalog())).toBe(true)
+  })
+
+  test('a catalog write does not invalidate stock or varieties', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.stock(), {})
+    queryClient.setQueryData(keys.varieties(), [])
+
+    invalidateResource(queryClient, 'catalog')
+
+    expect(isInvalidated(queryClient, keys.stock())).toBe(false)
+    expect(isInvalidated(queryClient, keys.varieties())).toBe(false)
   })
 })
 
@@ -120,7 +147,7 @@ describe('invalidateResource refetchType', () => {
     const queryClient = new QueryClient()
     const calls: number[] = []
     const queryFn = (): Promise<string> => {
-      calls.push(Date.now())
+      calls.push(calls.length)
       return Promise.resolve('data')
     }
     const key = keys.sale('1')
@@ -134,12 +161,19 @@ describe('invalidateResource refetchType', () => {
     return { queryClient, calls }
   }
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   test('"none" leaves a still-mounted query stale, without refetching it', async () => {
     const { queryClient, calls } = await clientWithActiveObserver()
     expect(calls).toHaveLength(1)
 
+    // A refetch that must never happen cannot be waited for: the fake clock is advanced
+    // explicitly instead, so the "nothing happened" check holds at any machine speed.
+    vi.useFakeTimers({ now: new Date('2026-01-05T12:00:00Z') })
     invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await vi.advanceTimersByTimeAsync(1000)
 
     expect(calls).toHaveLength(1) // never refetched while still mounted.
     expect(isInvalidated(queryClient, keys.sale('1'))).toBe(true) // still marked stale.
@@ -150,8 +184,7 @@ describe('invalidateResource refetchType', () => {
     expect(calls).toHaveLength(1)
 
     invalidateResource(queryClient, 'sales')
-    await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(calls).toHaveLength(2) // the default every other mutation still relies on.
+    await waitFor(() => expect(calls).toHaveLength(2)) // the default every other mutation still relies on.
   })
 })

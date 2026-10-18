@@ -46,7 +46,7 @@ describe('the empty-state wordings', () => {
       '/src/screens/emptyStates.ts': EMPTY_STATES.homeNobodyOwes,
     }
     expect(literalCopies(EMPTY_STATE_WORDINGS, files)).toEqual([
-      { path: '/src/screens/A.tsx', wording: EMPTY_STATES.debtorsList.slice(0, -1) },
+      { path: '/src/screens/A.tsx', wording: EMPTY_STATES.homeNobodyOwes },
     ])
   })
 

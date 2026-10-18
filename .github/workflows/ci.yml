@@ -7,22 +7,22 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
       - run: uv venv --python 3.13
       - run: uv sync --locked --extra dev
-      - run: uv run --no-project pytest
+      - run: uv run --no-project pytest -n auto
       - run: uv run --no-project ruff check .
       - run: uv run --no-project mypy app tests scripts
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: npm
@@ -33,15 +33,15 @@ jobs:
       - run: npm --prefix web test
       - run: npm --prefix web run build
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
       - run: uv venv --python 3.13
       - run: uv sync --locked --extra dev
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: npm
@@ -49,3 +49,9 @@ jobs:
       - run: npm --prefix web ci --no-fund --no-audit
       - run: npx --prefix web playwright install --with-deps chromium
       - run: npm --prefix web run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-test-results
+          path: web/test-results/
+          retention-days: 14

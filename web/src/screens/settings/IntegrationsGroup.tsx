@@ -9,12 +9,12 @@
  * the query cache. The typed token lives only in this component's state: it is in no query
  * key, URL, storage, toast or log, is cleared on a successful Probarlo and kept on a
  * refusal. Probarlo invalidates `keys.pinnedCatalog()`, which also reaches Inicio's notice
- * and the catalog screen's Publicar.
+ * and the catalog screen's Publicar. Buscar mi chat only fills the own chat field from the
+ * bot's messages and saves nothing, so the number it fills is a typed change like any other.
  */
 
-import { type FormEvent, useEffect, useId, useState } from 'react'
+import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router'
 import { ApiError, NetworkError, get, post } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import { PINNED_CATALOG_REFUSAL_OVERRIDES, resolveOverride } from '../../api/refusals'
@@ -23,15 +23,20 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import SettingsGroup, { type LeaveWording } from './SettingsGroup'
+import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
+import MasInfo from '../../components/MasInfo'
+import { CATALOG } from '../../routes'
+import {
+  CHANNEL_CHAT_HELP,
+  LOAD_THE_TOKEN_FIRST,
+  OWN_CHAT_INFO,
+  PREVIOUS_PIN_NOTICE,
+} from './integrationsMessages'
 
 const TITLE = 'Integraciones'
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
-const PREVIOUS_PIN_NOTICE =
-  'El mensaje fijado anterior queda como está; desfijalo vos en Telegram.'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
-const OWN_CHAT_HELP = 'Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.'
-const CATALOG_PATH = '/catalogo'
 
 const LEAVE: LeaveWording = {
   question: '¿Descartás el cambio?',
@@ -40,7 +45,7 @@ const LEAVE: LeaveWording = {
   discardLabel: 'Sí, descartalo',
 }
 
-interface PinnedCatalog {
+export interface PinnedCatalog {
   token_saved_on: string | null
   own_chat: string | null
   channel_chat: string | null
@@ -48,6 +53,10 @@ interface PinnedCatalog {
 
 interface PinnedCatalogTestResult extends PinnedCatalog {
   previous_pin_left: boolean
+}
+
+interface OwnChatFound {
+  own_chat: string
 }
 
 interface Accepted {
@@ -69,7 +78,22 @@ function formatDate(iso: string): string {
   return `${day}/${month}`
 }
 
-function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
+interface IntegrationsFormProps {
+  initial: PinnedCatalog
+  /** Called after a successful Probarlo, the only save. */
+  onSaved?: () => void
+  /** Called whenever "something typed and not saved" changes. */
+  onDirtyChange?: (dirty: boolean) => void
+  /** The "Ir al catálogo" link: the group shows it, an Onboarding step does not. */
+  showCatalogLink: boolean
+}
+
+export function IntegrationsForm({
+  initial,
+  onSaved,
+  onDirtyChange,
+  showCatalogLink,
+}: IntegrationsFormProps) {
   const queryClient = useQueryClient()
   const fieldId = useId()
   const [accepted, setAccepted] = useState<Accepted>(() => acceptedFrom(initial))
@@ -83,6 +107,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
   const [testError, setTestError] = useState<string | null>(null)
   const [testOffline, setTestOffline] = useState(false)
   const [testing, setTesting] = useState(false)
+  const [searching, setSearching] = useState(false)
 
   useEffect(() => {
     if (toast === null) return
@@ -96,15 +121,50 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
     ownChatInput !== accepted.ownChat ||
     channelChatInput !== accepted.channelChat
 
-  async function onProbarlo(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault()
+  useEffect(() => {
+    onDirtyChange?.(dirty)
+  }, [dirty, onDirtyChange])
+
+  const typedToken = tokenFieldOpen && tokenInput.trim() !== '' ? tokenInput : null
+  const canSearch = typedToken !== null || accepted.tokenSavedOn !== null
+
+  function showRefusal(caught: unknown): void {
+    if (caught instanceof ApiError) {
+      setTestError(
+        resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE,
+      )
+    } else if (caught instanceof NetworkError) {
+      setTestOffline(true)
+    } else {
+      setTestError(GENERIC_REFUSAL_MESSAGE)
+    }
+  }
+
+  async function onSearchOwnChat(): Promise<void> {
+    setTestError(null)
+    setTestOffline(false)
+    setSearching(true)
+    try {
+      // Reads only: nothing is saved, and a refusal leaves every field as it was.
+      const found = await post<OwnChatFound>('/pinned-catalog/own-chat-lookup', {
+        token: typedToken,
+      })
+      setOwnChatInput(found.own_chat)
+    } catch (caught) {
+      showRefusal(caught)
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  async function onProbarlo(): Promise<void> {
     setTestError(null)
     setTestOffline(false)
     setPreviousPinLeft(false)
     setTesting(true)
     try {
       const result = await post<PinnedCatalogTestResult>('/pinned-catalog/test', {
-        token: tokenFieldOpen && tokenInput.trim() !== '' ? tokenInput : null,
+        token: typedToken,
         own_chat: ownChatInput,
         channel_chat: channelChatInput.trim() === '' ? null : channelChatInput,
       })
@@ -116,28 +176,33 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
       setTokenInput('')
       setPreviousPinLeft(result.previous_pin_left)
       setToast(TEST_SENT_TOAST)
+      onSaved?.()
     } catch (caught) {
       // A refusal saves nothing and keeps everything typed, the token included.
-      if (caught instanceof ApiError) {
-        setTestError(
-          resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE,
-        )
-      } else if (caught instanceof NetworkError) {
-        setTestOffline(true)
-      } else {
-        setTestError(GENERIC_REFUSAL_MESSAGE)
-      }
+      showRefusal(caught)
     } finally {
       setTesting(false)
       invalidateResource(queryClient, 'pinnedCatalog')
     }
   }
 
+  // Probarlo is icon + text, so it is not a submit button: the form still submits on Enter
+  // from a field, exactly as it did, through the same handler.
+  function onFormSubmit(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault()
+  }
+
+  function onFormKeyDown(event: KeyboardEvent<HTMLFormElement>): void {
+    if (event.key !== 'Enter' || !(event.target instanceof HTMLInputElement)) return
+    event.preventDefault()
+    if (!testing) void onProbarlo()
+  }
+
   return (
-    <SettingsGroup title={TITLE} dirty={dirty} leave={LEAVE}>
+    <>
       {toast !== null && <AvisoExito texto={toast} />}
 
-      <form className="formulario" onSubmit={(event) => void onProbarlo(event)}>
+      <form className="formulario" onSubmit={onFormSubmit} onKeyDown={onFormKeyDown}>
         {tokenFieldOpen ? (
           <label className="campo">
             <span className="campo__rotulo">Token del bot</span>
@@ -157,9 +222,9 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
                 Guardado el {formatDate(accepted.tokenSavedOn as string)} · no se muestra más
               </span>
             </span>
-            <button type="button" className="boton-enlace" onClick={() => setTokenChanging(true)}>
+            <Boton variant="link" onClick={() => setTokenChanging(true)}>
               Cambiar
-            </button>
+            </Boton>
           </div>
         )}
 
@@ -184,17 +249,33 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
           <label className="campo__rotulo" htmlFor={`${fieldId}-own`}>
             Tu chat
           </label>
-          <input
-            id={`${fieldId}-own`}
-            className="campo__input"
-            type="text"
-            aria-describedby={`${fieldId}-own-help`}
-            value={ownChatInput}
-            onChange={(event) => setOwnChatInput(event.target.value)}
-          />
-          <span id={`${fieldId}-own-help`} className="campo__ayuda">
-            {OWN_CHAT_HELP}
-          </span>
+          <div className="campo__fila">
+            <input
+              id={`${fieldId}-own`}
+              className="campo__input"
+              type="text"
+              aria-describedby={`${fieldId}-own-help`}
+              value={ownChatInput}
+              onChange={(event) => setOwnChatInput(event.target.value)}
+            />
+            <Boton
+              variant="secondary"
+              icon="buscar"
+              disabled={!canSearch || searching}
+              ariaDescribedBy={canSearch ? undefined : `${fieldId}-search-help`}
+              onClick={() => void onSearchOwnChat()}
+            >
+              Buscar mi chat
+            </Boton>
+          </div>
+          <div id={`${fieldId}-own-help`}>
+            <MasInfo line={OWN_CHAT_INFO.line} more={OWN_CHAT_INFO.more} />
+          </div>
+          {!canSearch && (
+            <span id={`${fieldId}-search-help`} className="campo__ayuda">
+              {LOAD_THE_TOKEN_FIRST}
+            </span>
+          )}
         </div>
 
         {testError !== null && (
@@ -209,25 +290,34 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
           </div>
         )}
 
-        <button className="boton" type="submit" disabled={testing}>
+        <Boton icon="probar" disabled={testing} onClick={() => void onProbarlo()}>
           Probarlo
-        </button>
+        </Boton>
       </form>
 
-      <Link to={CATALOG_PATH} className="boton--enlace">
-        Ir al catálogo
-      </Link>
-    </SettingsGroup>
+      {showCatalogLink && (
+        <BotonLink to={CATALOG} variant="link">
+          Ir al catálogo
+        </BotonLink>
+      )}
+    </>
   )
 }
 
 export default function IntegrationsGroup() {
+  const [dirty, setDirty] = useState(false)
   const query = useQuery({
     queryKey: keys.pinnedCatalog(),
     queryFn: () => get<PinnedCatalog>('/pinned-catalog'),
   })
 
-  if (query.data !== undefined) return <IntegrationsForm initial={query.data} />
+  if (query.data !== undefined) {
+    return (
+      <SettingsGroup title={TITLE} dirty={dirty} leave={LEAVE}>
+        <IntegrationsForm initial={query.data} onDirtyChange={setDirty} showCatalogLink />
+      </SettingsGroup>
+    )
+  }
 
   return (
     <SettingsGroup title={TITLE} dirty={false} leave={LEAVE}>

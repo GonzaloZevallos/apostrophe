@@ -24,14 +24,16 @@
  * several amounts through the panel alone.
  */
 
-import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
+import { expect, test } from './fixtures.js'
+import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
-
-const PASSWORD = 'correcthorsebattery'
+import { uniqueTag } from './helpers/unique.js'
 
 interface PanelPeriod {
   start: string
@@ -165,35 +167,31 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-panel-${Date.now()}@example.com`
-  const businessName = `Flores del Panel ${Date.now()}`
+  const ownerEmail = `duena-panel-${uniqueTag()}@example.com`
+  const businessName = `Flores del Panel ${uniqueTag()}`
 
   // Accept a new-business invitation.
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
-  await page.goto('/variedades')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
   // Backdated well before this run's own month (sales.spec.ts does the same for
   // Jazmín): the extra, month-only sale seeded below needs a price that reaches
   // back that far too.
-  await page.getByLabel('Rige desde').fill('2000-01-01')
-  await page.getByLabel('Precio de lista').fill('1000')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await setPriceDate(page, '2000-01-01')
+  await page.getByLabel(/^Precio de lista/).fill('1000')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   // A purchase: the "Origen" pill defaults to "Compra" (`EntradaStock.tsx`).
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await expect(page.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')
@@ -202,17 +200,16 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
   // A customer, for the sale left owing.
-  await page.goto('/clientes/nuevo')
+  await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill('+5491155550077')
   await page.getByLabel('Nombre').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expectPath(page, CUSTOMER)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // A sale left owing, to Carla.
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expectPath(page, SALE_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
@@ -220,7 +217,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // A sale paid on the spot, no customer.
-  await page.goto('/ventas')
+  await page.goto(SALES)
   await page.getByRole('link', { name: 'Nueva venta' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
@@ -282,30 +279,41 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     fetch('/panel', { credentials: 'include' }).then((response) => response.json() as Promise<PanelAnswer>),
   )
 
-  await page.goto('/')
+  await page.goto(HOME)
   await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
 
-  async function assertPeriod(period: PanelPeriod, rangeText: string): Promise<void> {
+  async function assertPeriod(period: PanelPeriod, rangeText: string, showsResults: boolean): Promise<void> {
     await expect(page.locator('.periodos .pie')).toContainText(rangeText)
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
-    await expect(
-      page.locator('.panel-resultados__celda').filter({ hasText: 'Ganancia' }).locator('.panel-resultados__valor--acento'),
-    ).toHaveText(signedPesos(period.profit))
-    await expect(
-      page.locator('.panel-resultados__celda').filter({ hasText: 'Caja' }).locator('.panel-resultados__valor'),
-    ).toHaveText(signedPesos(period.cash))
-    await expect(
-      page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' }).locator('.panel-lista__valor'),
-    ).toHaveText(pesos(period.cost_of_goods))
-    await expect(
-      page.locator('.panel-lista__fila').filter({ hasText: 'Gastos' }).locator('.panel-lista__valor'),
-    ).toHaveText(pesos(period.expenses))
-    await expect(
-      page.locator('.panel-lista__fila').filter({ hasText: 'Regalaste' }).locator('.panel-lista__valor'),
-    ).toHaveText(grams(period.grams_gifted))
-    await expect(
-      page.locator('.panel-lista__fila').filter({ hasText: 'Compras de flores' }).locator('.panel-lista__valor'),
-    ).toHaveText(pesos(period.purchases))
+    if (showsResults) {
+      await expect(
+        page.locator('.panel-resultados__celda').filter({ hasText: 'Ganancia' }).locator('.panel-resultados__valor--acento'),
+      ).toHaveText(signedPesos(period.profit))
+      await expect(
+        page.locator('.panel-resultados__celda').filter({ hasText: 'Caja' }).locator('.panel-resultados__valor'),
+      ).toHaveText(signedPesos(period.cash))
+      await expect(
+        page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' }).locator('.panel-lista__valor'),
+      ).toHaveText(pesos(period.cost_of_goods))
+      await expect(
+        page.locator('.panel-lista__fila').filter({ hasText: 'Gastos' }).locator('.panel-lista__valor'),
+      ).toHaveText(pesos(period.expenses))
+      await expect(
+        page.locator('.panel-lista__fila').filter({ hasText: 'Regalaste' }).locator('.panel-lista__valor'),
+      ).toHaveText(grams(period.grams_gifted))
+      await expect(
+        page.locator('.panel-lista__fila').filter({ hasText: 'Compras de flores' }).locator('.panel-lista__valor'),
+      ).toHaveText(pesos(period.purchases))
+      // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
+      // never under Caja (plan, PRD: "Caja never carries it").
+      await expect(page.getByText('incluye costo pendiente')).toHaveCount(period.pending_cost ? 2 : 0)
+    } else {
+      // Hoy is only what can be acted on (results.md): no result figure at all.
+      for (const label of ['Ganancia', 'Caja', 'Costo de lo vendido', 'Gastos', 'Regalaste', 'Compras de flores']) {
+        await expect(page.locator('main').getByText(label, { exact: true })).toHaveCount(0)
+      }
+      await expect(page.getByText('incluye costo pendiente')).toHaveCount(0)
+    }
 
     // "Vendiste ..."'s own subtitle: count, average (absent with no sales) and
     // grams sold (`Inicio.tsx`'s own `salesSubtitle`).
@@ -316,23 +324,19 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
         ? `${count} · ${gramsSoldText}`
         : `${count} · promedio ${pesos(period.average_sale)} · ${gramsSoldText}`
     await expect(page.locator('.panel-ventas .pie')).toHaveText(subtitle)
-
-    // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
-    // never under Caja (plan, PRD: "Caja never carries it").
-    await expect(page.getByText('incluye costo pendiente')).toHaveCount(period.pending_cost ? 2 : 0)
   }
 
   // Hoy: the panel opens here (plan, "Front").
   await expect(page.getByRole('button', { name: 'Hoy', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await assertPeriod(panel.periods.today, shortDate(todayIso))
+  await assertPeriod(panel.periods.today, shortDate(todayIso), false)
 
   // Semana.
   await page.getByRole('button', { name: 'Semana' }).click()
-  await assertPeriod(panel.periods.week, `${shortDate(panel.periods.week.start)} – ${shortDate(panel.periods.week.end)}`)
+  await assertPeriod(panel.periods.week, `${shortDate(panel.periods.week.start)} – ${shortDate(panel.periods.week.end)}`, true)
 
   // Mes.
   await page.getByRole('button', { name: 'Mes' }).click()
-  await assertPeriod(panel.periods.month, `${shortDate(panel.periods.month.start)} – ${shortDate(panel.periods.month.end)}`)
+  await assertPeriod(panel.periods.month, `${shortDate(panel.periods.month.start)} – ${shortDate(panel.periods.month.end)}`, true)
 
   // Back to Hoy for the rest of the run.
   await page.getByRole('button', { name: 'Hoy', exact: true }).click()
@@ -373,16 +377,20 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // Opens Te deben from the block's own heading, then goes back to Inicio.
   await page.getByRole('link', { name: 'Te deben' }).click()
-  await expect(page).toHaveURL(/\/clientes\/deben$/)
+  await expectPath(page, CUSTOMERS)
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
   await page.goBack()
-  await expect(page).toHaveURL(/\/$/)
+  await expectPath(page, HOME)
   await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
 
   // The teaser: Carla's own row, opening her card.
-  await page.getByRole('link', { name: teaserRow.name }).click()
-  await expect(page).toHaveURL(new RegExp(`/clientes/${teaserRow.customer_id}$`))
-  await expect(page.locator('.encabezado__titulo')).toHaveText(teaserRow.name)
+  await page.getByRole('link', { name: teaserRow.name }).first().click()
+  await expect(page).toHaveURL(new RegExp(`${pathTo(CUSTOMER, { id: teaserRow.customer_id })}$`))
+  // On a computer the list sits beside the card and has its own title: read the card's (the pane
+  // without the search box).
+  await expect(
+    page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') }).locator('.encabezado__titulo'),
+  ).toHaveText(teaserRow.name)
   await expect(page.getByText(`Te debe ${pesos(teaserRow.balance)}`)).toBeVisible()
 
   // Nothing personal or technical reaches the console or the browser's own storage

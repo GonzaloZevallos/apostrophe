@@ -13,10 +13,14 @@
  * browser console (CODING_STANDARDS.md section 9, in the browser too).
  */
 
-import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
+import { legacyFor } from './helpers/legacyPaths.js'
+import { expectAnyPath, expectPath } from './helpers/url.js'
+import { expect, test } from './fixtures.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
 const PHONE = '+5491155550001'
@@ -24,99 +28,98 @@ const PHONE = '+5491155550001'
 test('a seller does everything the backend offers today, from the front alone', async ({
   page,
   browser,
+  workerServer,
 }) => {
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-${Date.now()}@example.com`
-  const businessName = `Flores del Centro ${Date.now()}`
+  const ownerEmail = `duena-${uniqueTag()}@example.com`
+  const businessName = `Flores del Centro ${uniqueTag()}`
 
   // Accept a new-business invitation.
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // Add a customer.
-  await page.goto('/clientes/nuevo')
+  await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill(PHONE)
   await page.getByLabel('Nombre').fill('Marisa Gómez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expectPath(page, CUSTOMER)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Add a variety.
-  await page.goto('/variedades')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await expect(page).toHaveURL(/\/variedades\/.+/)
+  await expectPath(page, VARIETY)
 
   // Add a price. "Rige desde" already defaults to `me.today` — the business day
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
   // is, never dated from the browser's own UTC clock (plan, "One clock").
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Precio de lista').fill('9000')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('9000')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
-  await expect(page.locator('.precio-panel__valor')).toHaveText('$ 9.000')
+  await expect(page.getByText(/\$ 9\.000 x g/).first()).toBeVisible()
 
   // Delete the price entry (the only one): the variety is left with no price.
   await page.getByRole('button', { name: 'Borrar este precio' }).click();
   await page.getByRole('button', { name: 'Sí, borrala' }).click();
   await expect(page.getByText('Precio eliminado')).toBeVisible()
-  await expect(page.getByText('Sin precio: no se puede vender')).toBeVisible()
+  await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
 
-  // Record a stock entry for Rosa from the Stock tab (stock.md: "Nueva entrada").
-  await page.goto('/mi-stock')
+  // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
+  // "Todas las entradas" (stock.md).
+  await page.goto(STOCK)
   await expect(page.getByText('Sin entradas de stock')).toBeVisible()
-  await page.getByRole('link', { name: 'Nueva entrada' }).click()
-  await expect(page).toHaveURL(/\/mi-stock\/nueva-entrada$/)
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
+  await expectPath(page, STOCK_ENTRY_NEW)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expectAnyPath(page, [VARIETIES, VARIETY])
   await expect(page.getByText('Entrada guardada')).toBeVisible()
-  await expect(page.getByText('Rosa · 50 g')).toBeVisible()
+  await page.goto(STOCK)
+  await expect(page.getByText('Compra · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
-  await page.getByText('Rosa · 50 g').click()
-  await expect(page).toHaveURL(/\/mi-stock\/entradas\/.+/)
+  await page.getByRole('link', { name: 'Editar' }).click()
+  await expectPath(page, STOCK_ENTRY)
   await expect(page.getByLabel('Gramos')).toHaveValue('50')
   await page.getByLabel('Gramos').fill('60')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expectPath(page, STOCK)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
-  await expect(page.getByText('Rosa · 60 g')).toBeVisible()
+  await expect(page.getByText('Compra · 60 g')).toBeVisible()
 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
-  await page.getByText('Rosa · 60 g').click()
-  await page.getByRole('button', { name: 'Borrar entrada' }).click()
+  await page.getByRole('button', { name: 'Borrar', exact: true }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expectPath(page, STOCK)
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
-  await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
+  await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
 
-  // Set Rosa's low-stock threshold from Variedades, then turn it off (varieties.md:
-  // "set or turn off the threshold from the variety").
-  await page.goto('/variedades')
-  await expect(page.getByText('Aviso apagado')).toBeVisible()
+  // Rosa's page: set the low-stock warning through its form (turning it on only opens the
+  // form), then turn it off (saved at once).
+  await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByLabel('Umbral de aviso (g)').fill('15')
-  await page.getByRole('button', { name: 'Guardar aviso' }).click()
+  await expect(page.getByText('Aviso apagado')).toBeVisible()
+  await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
+  await page.getByLabel('Avisar con menos de').fill('15')
+  await page.getByRole('button', { name: 'Guardá el aviso' }).click()
   await expect(page.getByText('Aviso guardado')).toBeVisible()
   await expect(page.getByText('Avisame abajo de 15 g')).toBeVisible()
-  await page.getByRole('button', { name: 'Apagar aviso' }).click()
-  await expect(page.getByText('Aviso guardado')).toBeVisible()
+  await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
   await expect(page.getByText('Aviso apagado')).toBeVisible()
 
   // Record an expense, with a category created inline.
@@ -147,26 +150,26 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Move between months: the month lives in the URL, one step back and one forward.
   await page.getByRole('button', { name: 'Mes anterior' }).click()
-  await expect(page).toHaveURL(/\/expenses\?month=\d{4}-\d{2}$/)
+  await expectPath(page, EXPENSES, /\?month=\d{4}-\d{2}/)
   await page.getByRole('button', { name: 'Mes siguiente' }).click()
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
-  // app shows the English screen (the one `goto('/gastos')` and one `goto('/mas')` of
+  // app shows the English screen (the one old Gastos path and one old Más path of
   // the run; every other step reaches a screen through the nav or its real path).
-  await page.goto('/gastos?month=2026-01')
-  await expect(page).toHaveURL(/\/expenses\?month=2026-01$/)
+  await page.goto(`${legacyFor(EXPENSES)}?month=2026-01`)
+  await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
   await page.reload()
-  await expect(page).toHaveURL(/\/expenses\?month=2026-01$/)
+  await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
-  await page.goto('/mas')
-  await expect(page).toHaveURL(/\/more$/)
+  await page.goto(legacyFor(MORE))
+  await expectPath(page, MORE)
   await expect(
     page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
   ).toBeVisible()
   await page.reload()
-  await expect(page).toHaveURL(/\/more$/)
+  await expectPath(page, MORE)
   await expect(
     page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
   ).toBeVisible()
@@ -175,7 +178,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // "Envíos y traslados" and "Otros" are the four the business starts with
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
-  await page.goto('/settings/expense-categories')
+  await page.goto(EXPENSE_CATEGORIES)
   await page.getByLabel('Nueva categoría').fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()
@@ -186,7 +189,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
-  await page.goto('/settings/business')
+  await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Nombre del negocio').fill(renamedTo)
   await page.getByRole('button', { name: 'Guardá el nombre' }).click()
@@ -194,17 +197,18 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
-  await page.goto('/settings/users')
+  await page.goto(SETTINGS_USERS)
   await page.getByRole('button', { name: 'Invitá a un socio' }).click()
+  await expect(page.locator('.usuarios__link')).toHaveText(/^https?:\/\//)
   const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
 
-  const partnerContext = await browser.newContext()
+  const partnerContext = await browser.newContext({ baseURL: workerServer.url })
   const partnerPage = await partnerContext.newPage()
   watchConsole(partnerPage, consoleMessages)
   await partnerPage.goto(inviteUrl)
   await expect(partnerPage.locator('.invitacion__titulo')).toHaveText(renamedTo)
-  await partnerPage.getByLabel('Email').fill(`socio-${Date.now()}@example.com`)
+  await partnerPage.getByLabel('Email').fill(`socio-${uniqueTag()}@example.com`)
   await partnerPage.getByLabel('Contraseña').fill(PASSWORD)
   await partnerPage.getByRole('button', { name: `Sumate a ${renamedTo}` }).click()
   await expect(partnerPage.locator('.encabezado__negocio')).toHaveText(renamedTo)

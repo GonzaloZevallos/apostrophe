@@ -8,6 +8,14 @@ Builds nothing itself (the shell wrapper builds `web/` first), starts the server
 it through the API alone, prints the address and the user, and serves until stopped.
 `sample.json` in its directory is written only once the seeding is done: a caller that
 runs this in the background waits for that file, then reads the address and the ids.
+
+    {"url": ..., "email": ..., "password": ..., "ids": {...},
+     "accounts": {"<name>": {"email": ..., "password": ...}}}
+
+The top-level `email`, `password` and `ids` are La Huerta's. `accounts` is always present
+(`{}` when `ONBOARDING_ACCOUNTS` is empty): one extra business per name, seeded like La
+Huerta and still in Onboarding, so a screen that ends the Onboarding ("Listo") can be
+reached once per business in one run. An account carries no `ids`: the ids are La Huerta's.
 The data goes in over HTTP, never through the front: the front is what this app exists
 to compare, so a redesigned screen must never break the seeding. Never touches the
 human's own `apostrophe.db` or `.env`.
@@ -37,6 +45,15 @@ REPO = Path(__file__).resolve().parents[2]
 EMAIL = "vos@lahuerta.com"
 PASSWORD = "muestra-de-la-huerta"
 BUSINESS = "La Huerta"
+# One extra business per "Listo" row of `screens.json`: reaching "Listo" ends a business's
+# Onboarding for good (docs/adr/0036), so each capture of it needs a business of its own.
+ONBOARDING_ACCOUNTS = (
+    "listo",
+    "listo_compu",
+    "listo_oscuro",
+    "listo_compu_oscuro",
+    "listo_texto130",
+)
 
 
 class Api(Protocol):
@@ -51,6 +68,14 @@ class Line:
 
 
 @dataclass(frozen=True)
+class Account:
+    """The sign-in of one extra business, written to `sample.json`'s `accounts`."""
+
+    email: str
+    password: str
+
+
+@dataclass(frozen=True)
 class Sample:
     """The ids a comparison needs to reach a screen showing one record."""
 
@@ -60,14 +85,18 @@ class Sample:
     sold_out: int
     low: int
     no_entries: int
+    withdrawal: int
+    entry: int
+    archived: int
 
 
 def seed(api: Api, today: date) -> Sample:
     """Every state the design's screens show: sales today and earlier, a gift, a VIP,
     a sale without a customer, two customers owing, a later payment, a variety sold
     out, one under its threshold, one never entered, expenses in two categories and a
-    purchase this week. Week-dependent figures sit on `today`, so the week is never
-    empty whatever weekday it runs on."""
+    purchase this week, stock withdrawals of each reason (one past every lot of its
+    variety, so it carries pending cost). Week-dependent figures sit on `today`, so the
+    week is never empty whatever weekday it runs on."""
 
     def ago(days: int) -> str:
         return (today - timedelta(days=days)).isoformat()
@@ -75,6 +104,12 @@ def seed(api: Api, today: date) -> Sample:
     def this_month(days: int) -> str:
         # Gastos shows one month: an expense must never fall into the previous one.
         return (today - timedelta(days=min(days, today.day - 1))).isoformat()
+
+    # A new business starts with both pricing rules off (docs/adr/0034); the design shows
+    # a bulk price and a VIP customer, so the sample switches both on before any price
+    # entry (an entry stores nothing for a rule that is off) and gives each bulk-priced
+    # variety VIP price = bulk price, as the migration did for existing businesses.
+    api.call("PUT", "/pricing-settings", {"is_bulk_pricing": True, "is_vip_customers": True})
 
     def variety(name: str, list_price: int, bulk: int | None = None) -> int:
         made: int = api.call("POST", "/varieties", {"name": name})["id"]
@@ -86,6 +121,7 @@ def seed(api: Api, today: date) -> Sample:
                 "list_price": list_price,
                 "bulk_price": bulk,
                 "bulk_minimum": 5 if bulk is not None else None,
+                "vip_price": bulk,
             },
         )
         return made
@@ -95,8 +131,8 @@ def seed(api: Api, today: date) -> Sample:
     jack = variety("Sir Jack", 11_000)
     mango = variety("Mango Bomb", 15_000)
 
-    def entry(when: str, variety_id: int, origin: str, grams: str, cost: int | None) -> None:
-        api.call(
+    def entry(when: str, variety_id: int, origin: str, grams: str, cost: int | None) -> int:
+        made: int = api.call(
             "POST",
             "/stock/entries",
             {
@@ -107,9 +143,10 @@ def seed(api: Api, today: date) -> Sample:
                 "total_cost": cost,
                 "note": None,
             },
-        )
+        )["id"]
+        return made
 
-    entry(ago(40), gold, "purchase", "120", 600_000)
+    first_entry = entry(ago(40), gold, "purchase", "120", 600_000)
     entry(ago(40), cookies, "purchase", "40", 280_000)
     entry(ago(40), jack, "harvest", "10", None)
     entry(ago(0), gold, "purchase", "30", 150_000)
@@ -119,16 +156,14 @@ def seed(api: Api, today: date) -> Sample:
     entry(ago(0), gold, "adjustment", "-2", None)
     api.call("PUT", f"/stock/varieties/{cookies}/threshold", {"grams": "20"})
 
-    def customer(name: str, phone: str, channel: str | None, vip: bool = False) -> int:
-        made: int = api.call(
-            "POST", "/customers", {"name": name, "phone": phone, "channel": channel, "vip": vip}
-        )["id"]
+    def customer(name: str, phone: str, vip: bool = False) -> int:
+        made: int = api.call("POST", "/customers", {"name": name, "phone": phone, "vip": vip})["id"]
         return made
 
-    nico = customer("Nico Parra", "11 5555-0101", "telegram")
-    tincho = customer("Tincho Aguirre", "11 5555-0102", "whatsapp")
-    mica = customer("Mica Solano", "11 6033-7725", "telegram", vip=True)
-    lu = customer("Lu Fernández", "11 5555-0104", None)
+    nico = customer("Nico Parra", "11 5555-0101")
+    tincho = customer("Tincho Aguirre", "11 5555-0102")
+    mica = customer("Mica Solano", "11 6033-7725", vip=True)
+    lu = customer("Lu Fernández", "11 5555-0104")
 
     def sale(
         when: str,
@@ -177,6 +212,30 @@ def seed(api: Api, today: date) -> Sample:
     sale(ago(0), None, "cash", [Line(gold, "3")])
     sale(ago(0), lu, "cash", [Line(cookies, "2")])
 
+    def withdrawal(
+        when: str, reason: str, lines: list[tuple[int, str]], note: str | None = None
+    ) -> int:
+        made: int = api.call(
+            "POST",
+            "/stock/withdrawals",
+            {
+                "date": when,
+                "reason": reason,
+                "note": note,
+                "lines": [{"variety_id": v, "grams": grams} for v, grams in lines],
+            },
+        )["id"]
+        return made
+
+    # Stock withdrawals (GH-83): Golden Cookies, the variety the comparisons open, gets a
+    # promotion and an own use today, costed from its lot at $ 7.000/g, and an older
+    # promotion so its "Ver todas" has more than three rows; it stays under its threshold.
+    # Sir Jack is already sold out, so the own-use gram taken from it is beyond every lot:
+    # pending cost. Today is in this week and this month whatever weekday it runs on.
+    promotion = withdrawal(ago(0), "promotion", [(cookies, "3")], note="Fiesta de Caro")
+    withdrawal(ago(2), "promotion", [(cookies, "2")])
+    withdrawal(ago(0), "own_use", [(cookies, "2"), (jack, "1")])
+
     api.call(
         "POST",
         f"/customers/{nico}/payments",
@@ -221,8 +280,29 @@ def seed(api: Api, today: date) -> Sample:
             {"shown": True, "emoji": emoji, "indica_share": indica, "aroma": aroma},
         )
 
+    # The one archived variety (GH-131), last: its catalog attributes are read-only once it
+    # is archived. Hidden, with a price, a threshold and a single opening-stock entry with
+    # no cost on the day the sample's history starts, so no period figure moves.
+    archived = variety("Blue Dream", 13_000)
+    api.call(
+        "PUT",
+        f"/catalog/varieties/{archived}",
+        {"shown": False, "emoji": "🫐", "indica_share": 40, "aroma": "Frutos rojos"},
+    )
+    api.call("PUT", f"/stock/varieties/{archived}/threshold", {"grams": "15"})
+    entry(ago(40), archived, "opening_stock", "25", None)
+    api.call("POST", f"/varieties/{archived}/archive")
+
     return Sample(
-        debtor=nico, owing_sale=owing, vip=mica, sold_out=jack, low=cookies, no_entries=mango
+        debtor=nico,
+        owing_sale=owing,
+        vip=mica,
+        sold_out=jack,
+        low=cookies,
+        no_entries=mango,
+        withdrawal=promotion,
+        entry=first_entry,
+        archived=archived,
     )
 
 
@@ -367,6 +447,26 @@ def reset_token(env: dict[str, str], email: str) -> str:
     return operator_link(env, "reset-password", email)
 
 
+def onboarding_accounts(env: dict[str, str], base: str, today: date) -> dict[str, Account]:
+    """One extra business per `ONBOARDING_ACCOUNTS` name, each opened the way a new user
+    opens one (the operator's invitation, then accepting it over HTTP), seeded exactly like
+    La Huerta, and left with its Onboarding open. Each signs in on its own `HttpApi`, so
+    its session cookie never mixes with another business's."""
+    accounts: dict[str, Account] = {}
+    for name in ONBOARDING_ACCOUNTS:
+        account = Account(email=name.replace("_", "-") + "@lahuerta.com", password=PASSWORD)
+        api = HttpApi(base)
+        api.call(
+            "POST",
+            f"/invitations/{new_business_token(env)}/accept",
+            {"email": account.email, "password": account.password, "business_name": BUSINESS},
+        )
+        api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
+        seed(api, today)
+        accounts[name] = account
+    return accounts
+
+
 def free_port() -> int:
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
@@ -440,7 +540,8 @@ def main(argv: list[str] | None = None) -> int:
             {"email": EMAIL, "password": PASSWORD, "business_name": BUSINESS},
         )
         api.call("POST", "/auth/login", {"email": EMAIL, "password": PASSWORD})
-        sample = seed(api, date.today())
+        today = date.today()
+        sample = seed(api, today)
         links = {
             # Unused, so their screens can be compared: one opens a new business, the
             # other joins La Huerta.
@@ -449,6 +550,7 @@ def main(argv: list[str] | None = None) -> int:
             # A live reset link for the sample's user, so the reset screen can be compared.
             "reset_token": reset_token(env, EMAIL),
         }
+        accounts = onboarding_accounts(env, base, today)
     except BaseException:
         server.terminate()
         raise
@@ -457,7 +559,10 @@ def main(argv: list[str] | None = None) -> int:
         "url": base,
         "email": EMAIL,
         "password": PASSWORD,
+        # The day the sample is seeded on: the capture's fake clock reads it, never the wall clock.
+        "today": today.isoformat(),
         "ids": {**asdict(sample), **links},
+        "accounts": {name: asdict(account) for name, account in accounts.items()},
     }
     (workdir / "sample.json").write_text(json.dumps(facts, indent=2), encoding="utf-8")
     print(f"url: {base}")

@@ -308,6 +308,15 @@ def _seed_bigger_history(client: TestClient) -> None:
                 "detail": "gasto",
             },
         )
+    withdrawal = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason": "own_use",
+            "date": (TODAY - timedelta(days=7)).isoformat(),
+            "lines": [{"variety_id": variety_ids[0], "grams": "1"}],
+        },
+    )
+    assert withdrawal.status_code == 201, withdrawal.text
 
 
 def test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded(
@@ -320,6 +329,10 @@ def test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded(
     )
     client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]}
+    )
+    client.post(
+        "/stock/withdrawals",
+        json={"reason": "promotion", "lines": [{"variety_id": variety_id, "grams": "1"}]},
     )
 
     _seed_bigger_history(other_client)

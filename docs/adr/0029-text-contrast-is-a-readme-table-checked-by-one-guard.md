@@ -45,3 +45,26 @@ have caught a later token change doing it again.
 
 Colours set inline in components (`.tsx`) are not seen by the rule check. `hexColors.ts`
 still guards hex literals there; a `var(--token)` set inline escapes the pair check.
+
+## Amendment (GH-107): the bar label is the only paired exemption
+
+`.toast__texto` and `.venta-guardada__deshacer` left the `--boton-texto` row. `.toast`
+now carries the colour next to the `--boton` it already declared, and Deshacer declares
+`--boton` itself, so neither needs an exemption.
+
+`.bar-inferior__item` on `--nav-inactivo` is the only selector exempt from the
+paired-background check. Text drawn on a container's background takes its colour from
+the rule that declares that background.
+
+This amendment supersedes the parenthetical of the "Three kinds of token" bullet,
+"(text drawn on a container's background, and the bottom-bar label)".
+
+`test_only_the_bottom_bar_label_skips_its_paired_background` in
+`tests/test_design_contrast.py` pins that single exemption on purpose: a new one changes
+the README row, that test and this ADR in one diff.
+
+(GH-113, 2026-10-14) `.venta-guardada__deshacer` styled no element since GH-97 (`Boton`'s
+`undo` kind draws `boton--enlace`); the class is removed. Deshacer is
+`.venta-guardada .boton--enlace`, which declares `--boton` and `--boton-texto` in one
+rule, so the table's existing `--boton-texto` row covers it at rest. Its `opacity` and its
+`:active` state are outside this check; `web/e2e/pressed.spec.ts` covers both for Deshacer.

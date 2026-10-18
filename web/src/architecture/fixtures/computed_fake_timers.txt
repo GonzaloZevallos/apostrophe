@@ -1,0 +1,2 @@
+vi.useFakeTimers({ now: start })
+const started = Date.now()

@@ -257,7 +257,9 @@ export interface EstadoVacioProps {
 /* Íconos                                                              */
 /* ------------------------------------------------------------------ */
 
-/** Trazo de 1,6 y 22px. Nunca emoji como ícono de interfaz: los emoji sólo
+/** Trazo de 1,6 y 22px, siempre: el ícono no recibe tamaño ni trazo. Los mismos
+ *  nombres los dibuja `web/src/components/Icono.tsx` (`tests/test_design_icons.py`
+ *  falla si difieren). Nunca emoji como ícono de interfaz: los emoji sólo
  *  aparecen dentro del texto del catálogo, que lo escribe el vendedor. */
 export type NombreIcono =
   | 'inicio'
@@ -269,13 +271,48 @@ export type NombreIcono =
   | 'chevron'
   | 'abajo'
   | 'buscar'
-  | 'calendario'
+  | 'telegram'
   | 'tacho'
   | 'cobro'
-  | 'personaMas';
+  | 'personaMas'
+  | 'agregar'
+  | 'lapiz'
+  | 'cerrar'
+  | 'info'
+  | 'compartir'
+  | 'candado'
+  | 'salirSesion'
+  | 'archivar'
+  | 'restaurar'
+  | 'probar'
+  | 'salidaStock'
+  | 'atencion'
+  | 'copiar'
+  | 'publicar'
+  | 'precio'
+  | 'gastos'
+  | 'analisis'
+  | 'configuracion'
+  | 'negocio'
+  | 'usuarios'
+  | 'integraciones'
+  | 'mensaje'
+  | 'categorias'
+  | 'apariencia'
+  | 'cuenta'
+  | 'hecho'
+  | 'calendario';
+
+/** Más info: una línea corta con una "i" al final que despliega, en su lugar y debajo de la
+ *  línea, la explicación larga (el cómo o el porqué, nunca una consecuencia ni la salida de un
+ *  rechazo). Nombre accesible fijo "Más info", `aria-expanded`, blanco de 44 px; el estado
+ *  abierto es local del componente: nunca en el historial ni en el almacenamiento, nunca un
+ *  cambio sin guardar. Siempre nace cerrado. */
+export interface MasInfoProps {
+  line: string;
+  more: string;
+}
 
 export interface IconoProps {
   nombre: NombreIcono;
-  size?: number;
-  strokeWidth?: number;
 }

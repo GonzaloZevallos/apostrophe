@@ -8,10 +8,13 @@
  * nothing overflows the page sideways. On a computer the tabs keep the plain list.
  */
 
-import { expect, test, type Locator, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { SALES, VARIETIES } from '../src/routes.js'
+import { expect, test } from './fixtures.js'
+import type { Locator, Page } from '@playwright/test'
+import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
+import { uniqueTag } from './helpers/unique.js'
 
-const PASSWORD = 'correcthorsebattery'
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
 
@@ -45,29 +48,24 @@ async function expectInsideTheScreen(page: Page, locator: Locator): Promise<void
 test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % on the phone', async ({
   page,
 }) => {
-  test.setTimeout(90_000)
+  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `duena-telefono-${uniqueTag()}@example.com` })
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Vivero Telefono ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-telefono-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
-
-  await page.goto('/variedades')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Rige desde').fill('2000-01-01')
-  await page.getByLabel('Precio de lista').fill('500')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await setPriceDate(page, '2000-01-01')
+  await page.getByLabel(/^Precio de lista/).fill('500')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/ventas')
-  const today = await page.evaluate(() => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }))
+  await page.goto(SALES)
+  // The backend's own business day, as the app shows it: the spec reads no clock.
+  const me: { today: string } = await (await page.request.get('/auth/me')).json()
+  const today = me.today
   const varieties: { id: number; name: string }[] = await (
     await page.request.get(`/varieties?on=${today}`)
   ).json()
@@ -87,7 +85,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 
   for (const phone of PHONES) {
     await page.setViewportSize({ width: phone.width, height: phone.height })
-    await page.goto('/ventas')
+    await page.goto(SALES)
     const tabs = page.getByRole('group', { name: 'Período' })
     await expect(tabs.getByRole('button')).toHaveCount(4)
 
@@ -133,7 +131,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 
   // The computer keeps the plain tab list, never the phone's grid.
   await page.setViewportSize({ width: 1280, height: 900 })
-  await page.goto('/ventas')
+  await page.goto(SALES)
   await expect(page.getByRole('group', { name: 'Período' }).getByRole('button')).toHaveCount(4)
   await expect(page.locator('.pestanas__celdas')).toHaveCount(0)
 })

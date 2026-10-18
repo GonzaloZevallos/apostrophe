@@ -18,6 +18,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-xdist",
     "httpx2",
     "ruff",
     "mypy",

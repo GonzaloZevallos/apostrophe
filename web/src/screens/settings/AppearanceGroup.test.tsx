@@ -4,10 +4,13 @@
  * button, no toast and no unsaved-changes question; "Cerrar" always closes at once.
  */
 
+import { SETTINGS, SETTINGS_APPEARANCE } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider } from 'react-router'
 import { beforeEach, expect, test } from 'vitest'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import AppearanceGroup from './AppearanceGroup'
 
 const html = document.documentElement
@@ -21,19 +24,19 @@ function renderGroup() {
   const router = createMemoryRouter(
     [
       {
-        path: '/settings',
+        path: SETTINGS,
         element: (
           <main>
             <h1>Lista</h1>
-            <Link to="/settings/appearance" state={{ inApp: true }}>
+            <Link to={SETTINGS_APPEARANCE} state={inAppState({ pathname: SETTINGS })}>
               Abrir
             </Link>
           </main>
         ),
       },
-      { path: '/settings/appearance', element: <AppearanceGroup /> },
+      { path: SETTINGS_APPEARANCE, element: <AppearanceGroup /> },
     ],
-    { initialEntries: ['/settings'] },
+    { initialEntries: [SETTINGS] },
   )
   render(<RouterProvider router={router} />)
   return router
@@ -105,6 +108,13 @@ test('"Cerrar" closes at once after choosing, with no question', async () => {
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   await act(async () => undefined)
-  expect(router.state.location.pathname).toBe('/settings')
+  expect(router.state.location.pathname).toBe(SETTINGS)
   expect(screen.queryByText('¿Descartás el tema?')).not.toBeInTheDocument()
+})
+
+test('Claro and Oscuro are options (radios) and the group follows the icon and text rule', async () => {
+  renderGroup()
+  await open(userEvent.setup())
+  expect(screen.getAllByRole('radio')).toHaveLength(2)
+  expectIconAndTextRule(document.body)
 })

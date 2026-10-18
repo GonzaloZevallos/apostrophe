@@ -1,12 +1,28 @@
 # Import
 
-The one-time load of a business's history from the spreadsheet `Control_de_ventas_y_gastos` (an `.xlsx` export) into that business, run by the installation's operator on the day the business switches to the app. It is an operator script, not a route or a screen. It writes varieties and price history (varieties.md), catalog attributes, header and footer (catalog.md), stock entries (stock.md), expense categories and expenses (expenses.md), customers (customers.md), and sales with their on-the-spot payments (sales.md). Every imported record is the same data, under the same rules, as if it had been entered by hand. Everything it writes belongs to the target business alone (ADR-0004).
+The one-time load of a business's history from the spreadsheet `Control_de_ventas_y_gastos` (an `.xlsx` export) into that business. The installation's operator runs it on the day the business switches to the app. It is an operator script, not a route or a screen.
+
+It writes:
+- varieties and price history (varieties.md);
+- catalog attributes, header and footer (catalog.md);
+- stock entries (stock.md);
+- expense categories and expenses (expenses.md);
+- customers (customers.md);
+- sales with their on-the-spot payments (sales.md);
+- the pricing switches it needs (pricing-settings.md);
+- the end of the business's Onboarding, and the fact that the business was loaded by the import, with when (navigation.md, onboarding.md).
+
+Every imported record is the same data, under the same rules, as if it had been entered by hand. Everything it writes belongs to the target business alone (ADR-0004).
 
 ## Jobs
 
 **When** I switch my business from the spreadsheet to the app, **I want** what the sheet already holds (varieties and their price history, catalog setup, stock entries, expenses, and every sale with who still owes for it) loaded into my business once, on the day I stop using the sheet, **so I can** keep selling in the app from the next order with my real prices, stock and debts in place. I don't retype months of rows, and I don't lose track of who owes me.
 
 **When** I register a customer (from Clientes, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by the optional mapping file; defined in customers.md.)
+
+**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to, without anyone's price changing by surprise. (Served here by switching on the rules the sheet uses; defined in pricing-settings.md.)
+
+**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Clientes and Variedades one by one or doing any arithmetic. (Served here by recording that the business was imported, so Inicio's after-import notice reaches it; defined in navigation.md and results.md.)
 
 Success criteria:
 
@@ -21,6 +37,8 @@ Success criteria:
 3. **Nothing invented.** The command never guesses a phone number, never imports a row the sheet marked unfinished, and never takes over a derived column (Total, Precio x g, Revisar…). Derived figures are recomputed through the product's rules. Anything it can't trust is reported to the operator, who fixes the file or the mapping and runs it again.
 4. **One business, once, never mixed.** It imports only into one business that has no records yet, and never touches a business that has data. Everything imported belongs to that business alone (ADR-0004). The real sheet and its customers' data never enter the repository.
 5. **A sheet with no phone numbers imports in full.** The run goes through with no mapping file or only part of one. The report says how many customers came in without a number and never repeats a number. A number the mapping does give is still checked, and a malformed one still blocks.
+6. **The sheet's pricing keeps working.** A business whose sheet uses bulk prices or "Amigo" rows opens with those rules switched on, so its prices and its VIP customers' next sales come out as the sheet priced them.
+7. **The app knows it was imported.** A successful real run records, in its single commit, that the business was loaded by the import and when, so Inicio's after-import notice shows for it and for no other business.
 
 ## Behaviour
 
@@ -42,6 +60,7 @@ Success criteria:
 - **The report**, the same for a dry run and a successful real run:
   - counts per kind of record: varieties, price entries, catalog attributes, stock entries, expense categories, expenses, customers, sales and payments;
   - the count of customers imported without a phone number;
+  - which pricing switches the import turns on (Precio por cantidad, Clientes VIP), or that it turns none on;
   - every blocking problem, with its sheet and row;
   - every row left out as unfinished, with the sheet's own text for it (e.g. `Falta pago`);
   - every total mismatch, with the sheet's total and the recomputed one;
@@ -50,13 +69,23 @@ Success criteria:
   - unused mapping entries.
 - **What the report may show**: it exists only on the operator's terminal. It may name customers and show amounts. It never repeats a phone number, including a malformed one. Nothing of it goes to logs (ADR-0005).
 
+### Recording the import (navigation.md)
+
+- **A successful real run** ends the business's Onboarding (onboarding.md) and records that the business was loaded by the import, with the instant of the run, both inside the import's single commit and through ports the import declares (ADR-0006).
+- **The record holds** the business and that instant only: no personal data, no counts and nothing from the sheet.
+- **It is never cleared or moved**, and nothing else writes it. A refused run and a dry run write neither.
+- **It is not a record for eligibility**: it never makes the import refuse.
+- **Before it existed**: a business imported before this record existed has none, and is not backfilled; it never sees the after-import notice.
+
 ### Eligibility
 
 - The import is refused if the business has any variety, price entry, stock entry, customer, sale, payment or expense. The refusal comes before any sheet check and changes nothing.
 - These don't count:
   - the business, its name, its users and its invitations;
   - the seeded expense categories, even if renamed or removed;
-  - the seeded catalog header and footer.
+  - the seeded catalog header and footer;
+  - the pricing switches, whatever their state;
+  - the Onboarding's remembered passes and the first-run state (navigation.md).
 - The import overwrites the header and footer. It matches or adds categories, and never renames or removes one.
 
 ### Reading the file
@@ -102,7 +131,8 @@ Success criteria:
   - one price entry per row, following varieties.md's rules;
   - two entries for one variety on one date block;
   - a bulk price without a bulk minimum, or the reverse, blocks;
-  - a bulk price not below the list price blocks.
+  - a bulk price not below the list price blocks;
+  - an entry with a bulk price also gets a VIP price equal to it, which reproduces the sheet's "Amigo" rule. The sheet has no VIP price column.
 - **Catálogo** (rows 6–15: variety, shown, emoji, % índica, aroma; B18/B19: header and footer):
   - "Sí" means shown and "No" means hidden. Any other value blocks.
   - An emoji cell holding plain text or more than one emoji blocks.
@@ -124,10 +154,18 @@ Success criteria:
   - **Any other payment value** blocks.
   - **A row with a $0 total**: its payment value is ignored and nothing stays owed (sales.md).
 
+### Pricing settings
+
+- **What the import switches on**:
+  - **Precio por cantidad**, when any imported price entry has a bulk price;
+  - **Clientes VIP**, when any customer is imported as VIP.
+- **Never off**: the import never turns a switch off. A switch already on stays on.
+- **Priced with the switches it will leave**: every row is priced as if the switches already stood as the import will leave them, so a new business's off switches never change how a sheet row is priced.
+
 ### Pricing rules
 
-- **`""` or `"Lista"`**: list or bulk, by sales.md rules 4 and 5, from the imported price history on the row's date and the row's grams. Never VIP, even for a customer who is VIP elsewhere.
-- **`"Amigo"`**: the VIP rule, on that day's bulk price, or the list price when that day has none.
+- **`""` or `"Lista"`**: list or bulk, by sales.md's lowest-price rule, from the imported price history on the row's date and the row's grams. Never VIP, even for a customer who is VIP elsewhere.
+- **`"Amigo"`**: the VIP rule (sales.md), with the VIP price equal to that day's bulk price. The result is that day's bulk price, or the list price when that day has none, as in the sheet. A tie with the bulk price is stored as VIP.
   - Any customer with at least one finished `"Amigo"` row is imported as VIP.
   - An `"Amigo"` row with no customer blocks.
 - **`"Regalo"`**: a gift. It is charged $0 and its grams still come out of stock. With shipping, the sale's total is the shipping alone, as in the sheet.
@@ -196,8 +234,8 @@ Rows the sheet marks unfinished are the one exception: they are left out and lis
 From test fixtures, with no telemetry:
 
 - **Look before writing (criterion 1)**:
-  - a dry run writes 0 rows in every table, whatever the outcome;
-  - a refused real run writes 0 rows;
+  - a dry run writes 0 rows in every table, whatever the outcome, and changes no switch;
+  - a refused real run writes 0 rows and changes no switch;
   - the dry run lists every blocking problem of a fixture in one pass, every missing column included.
 - **Any export (criteria 1, 3)**: a fixture laid out like a Google Sheets export, with no declared size in any worksheet and every number stored as a float, is read in full by the dry run. 100% passing. It holds:
   - whole numbers in `% índica`, prices, costs, amounts, shipping and a special total, all read as whole numbers;
@@ -214,6 +252,16 @@ From test fixtures, with no telemetry:
 
   Ganancia and Caja are not compared with the sheet.
 - **Recording order (criterion 2)**: a fixture with same-date entries and sales, in unsorted dates, gets its lot order and settlement from date first, then sheet order. 100% passing.
+- **Pricing settings (criterion 6)**: 100% passing.
+  - A fixture with bulk prices and "Amigo" rows ends with both switches on and VIP price = bulk price on every entry with a bulk price, and the report lists both switches.
+  - A fixture with neither ends with both off.
+  - A switch already on before the import stays on.
+  - Every row's stored price, rule and total equal what the import stored before pricing settings existed, "Amigo" rows included.
+- **Import recorded (criterion 7)**: 100% passing.
+  - A successful real run records the import fact with the run's instant, in the same commit as everything else.
+  - A dry run and a refused real run record nothing.
+  - The record never makes a later eligibility check refuse.
+  - Business removal exports and deletes it, and it is invisible from another business through the isolation sweep.
 - **Nothing invented (criterion 3)**:
   - a matrix of every blocking case passes 100%, including a missing column and a filled-in Ventas row with an empty Total;
   - Ventas rows with text in Total, and Entradas and Gastos rows with text in Revisar, are left out and listed with that text, without blocking;
@@ -222,7 +270,7 @@ From test fixtures, with no telemetry:
   - merged categories, merged spellings and unused mapping entries all appear in the report.
 - **One business, once (criterion 4)**:
   - an import into a business holding any one of the seven kinds of record is refused with 0 rows written, tested for each kind;
-  - a business with only seeded, renamed or removed categories and the seeded header and footer is accepted;
+  - a business with only seeded, renamed or removed categories, the seeded header and footer, and either switch state is accepted;
   - imported rows are invisible from another business through the isolation sweep.
 - **No phone numbers (criterion 5)**: 100% passing.
   - a fixture with no mapping file imports in full, every customer without a number;
@@ -244,3 +292,5 @@ From test fixtures, with no telemetry:
 - Grouping several rows into one sale with several lines.
 - Undoing an import once it is done.
 - How a phone number stored as a number in the mapping is read (#54).
+- A VIP price column in the sheet; turning a pricing switch off.
+- Backfilling the import fact for a business imported before it existed.

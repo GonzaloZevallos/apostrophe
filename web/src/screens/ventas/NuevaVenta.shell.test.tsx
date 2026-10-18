@@ -12,6 +12,7 @@ import { act, render, screen, within } from '@testing-library/react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -47,8 +48,8 @@ afterEach(() => {
 function renderForm() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ path: '/ventas/nueva', element: <NuevaVenta /> }] }],
-    { initialEntries: ['/ventas/nueva'] },
+    [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
+    { initialEntries: [SALE_NEW] },
   )
   render(
     <QueryClientProvider client={queryClient}>

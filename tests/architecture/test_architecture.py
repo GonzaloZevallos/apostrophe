@@ -33,6 +33,8 @@ HEXAGON_ROOTS = (
     REPO_ROOT / "app" / "results",
     REPO_ROOT / "app" / "business_removal",
     REPO_ROOT / "app" / "spreadsheet_import",
+    REPO_ROOT / "app" / "onboarding",
+    REPO_ROOT / "app" / "pricing_settings",
 )
 ALL_HEXAGON_NAMES = frozenset(dotted(root) for root in HEXAGON_ROOTS)
 SHARED_KERNEL_MODULES = tuple(sorted((REPO_ROOT / "app" / "shared").glob("*.py")))
@@ -123,21 +125,21 @@ def test_no_test_but_telegram_http_s_own_reaches_the_real_adapter() -> None:
     assert violators == []
 
 
-CREATE_APP_REQUIRED_KEYWORDS = frozenset({"telegram", "upkeep_ticker"})
+CREATE_APP_REQUIRED_KEYWORDS = frozenset({"telegram", "upkeep_ticker", "clock"})
 
 
 def create_app_calls_missing_keywords(module: Path) -> list[str]:
-    """Every `create_app(...)` call in `module` that omits `telegram` or
-    `upkeep_ticker`, named `module:line: missing [...]` — a static stand-in for "every
-    test app injects `FakeTelegram` and sets `upkeep_ticker=False`" (the plan's
-    invariant), proven below against a call that must be flagged and one that must
+    """Every `create_app(...)` call in `module` that omits `telegram`, `upkeep_ticker` or
+    `clock`, named `module:line: missing [...]` — a static stand-in for "every
+    test app injects `FakeTelegram`, sets `upkeep_ticker=False` and names its clock"
+    (the plan's invariant), proven below against a call that must be flagged and one that must
     not, the same way `reaches_telegram_http` is proven above.
 
     Presence of the keyword is all that is checked, not its value: `test_ticker.py`
     legitimately passes `upkeep_ticker=True` to exercise the ticker itself, over its
     own `FakeTelegram`. What this guard rules out is a call that forgets the keyword
     entirely and so falls through to `create_app`'s production defaults — the real
-    `HttpTelegram` and the ticker on — inside a test.
+    `HttpTelegram`, the ticker on and `system_clock` — inside a test (ADR-0043).
     """
     tree = ast.parse(module.read_text(), filename=str(module))
     return [
@@ -159,20 +161,108 @@ def test_the_create_app_guard_flags_a_call_naming_neither_keyword() -> None:
     assert create_app_calls_missing_keywords(FIXTURES / "unguarded_create_app.py") != []
 
 
-def test_the_create_app_guard_does_not_flag_a_call_naming_both_keywords() -> None:
+def test_the_create_app_guard_flags_a_call_that_names_everything_but_the_clock() -> None:
+    assert create_app_calls_missing_keywords(FIXTURES / "clockless_create_app.py") != []
+
+
+def test_the_create_app_guard_does_not_flag_a_call_naming_every_keyword() -> None:
     assert create_app_calls_missing_keywords(FIXTURES / "guarded_create_app.py") == []
 
 
-def test_every_create_app_call_under_tests_names_telegram_and_upkeep_ticker() -> None:
+def test_every_create_app_call_under_tests_names_telegram_upkeep_ticker_and_clock() -> None:
     """The plan's own invariant, over every call site rather than trusting each one:
-    a `create_app(...)` call under `tests/` that forgets `telegram` or `upkeep_ticker`
-    falls through to the real adapter and the live ticker (Tech Lead: review
-    integration, blocking)."""
+    a `create_app(...)` call under `tests/` that forgets `telegram`, `upkeep_ticker` or
+    `clock` falls through to the real adapter, the live ticker or the wall clock (Tech
+    Lead: review integration, blocking; ADR-0043)."""
     violators = [
         violation
         for module in sorted((REPO_ROOT / "tests").rglob("*.py"))
         if FIXTURES not in module.parents
         for violation in create_app_calls_missing_keywords(module)
+    ]
+
+    assert violators == []
+
+
+GUARDED_CONSTRUCTORS = frozenset({"ChannelTelegram", "PinnedCatalogTelegram"})
+
+
+def constructs_guarded_telegram_type(module: Path) -> bool:
+    """Whether `module` calls `ChannelTelegram(...)` or `PinnedCatalogTelegram(...)`:
+    only `app/main.py` may (the plan's invariant), proven below on a module that must be
+    flagged and on one that must not."""
+    tree = ast.parse(module.read_text(), filename=str(module))
+    return any(
+        isinstance(node, ast.Call)
+        and (
+            (isinstance(node.func, ast.Name) and node.func.id in GUARDED_CONSTRUCTORS)
+            or (isinstance(node.func, ast.Attribute) and node.func.attr in GUARDED_CONSTRUCTORS)
+        )
+        for node in ast.walk(tree)
+    )
+
+
+def test_the_constructor_guard_flags_a_module_that_builds_a_channel_telegram() -> None:
+    assert constructs_guarded_telegram_type(FIXTURES / "constructs_channel_telegram.py") is True
+
+
+def test_the_constructor_guard_does_not_flag_an_unrelated_module() -> None:
+    assert constructs_guarded_telegram_type(FIXTURES / "does_not_reach_telegram_http.py") is False
+
+
+def test_only_app_main_constructs_channel_telegram_or_the_holder() -> None:
+    violators = [
+        module
+        for module in sorted((REPO_ROOT / "app").rglob("*.py"))
+        if module != REPO_ROOT / "app" / "main.py" and constructs_guarded_telegram_type(module)
+    ]
+
+    assert violators == []
+
+
+def invite_calls_passing_bare_now(module: Path) -> list[str]:
+    """Every `invite(...)` call in `module` that passes the bare name `NOW` as its second
+    argument, positional or by keyword (`now=`), named `module:line`. An invitation minted
+    at the fixed `NOW` and accepted by an app on another clock expires between the two;
+    the test passes `clock()` from the same `MovableClock` given to `create_app`."""
+    tree = ast.parse(module.read_text(), filename=str(module))
+    return [
+        f"{module}:{node.lineno}"
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and _calls_invite(node.func)
+        for instant in [_invite_instant(node)]
+        if isinstance(instant, ast.Name) and instant.id == "NOW"
+    ]
+
+
+def _calls_invite(func: ast.expr) -> bool:
+    return (isinstance(func, ast.Name) and func.id == "invite") or (
+        isinstance(func, ast.Attribute) and func.attr == "invite"
+    )
+
+
+def _invite_instant(call: ast.Call) -> ast.expr | None:
+    if len(call.args) >= 2:
+        return call.args[1]
+    return next((kw.value for kw in call.keywords if kw.arg == "now"), None)
+
+
+def test_the_invite_guard_flags_an_invitation_minted_at_the_bare_now() -> None:
+    violations = invite_calls_passing_bare_now(FIXTURES / "invite_at_now.py")
+
+    assert len(violations) == 2
+
+
+def test_the_invite_guard_does_not_flag_an_invitation_minted_at_the_clock() -> None:
+    assert invite_calls_passing_bare_now(FIXTURES / "invite_at_clock.py") == []
+
+
+def test_no_invite_call_under_tests_passes_the_bare_now() -> None:
+    violators = [
+        violation
+        for module in sorted((REPO_ROOT / "tests").rglob("*.py"))
+        if FIXTURES not in module.parents
+        for violation in invite_calls_passing_bare_now(module)
     ]
 
     assert violators == []

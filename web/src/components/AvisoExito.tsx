@@ -8,10 +8,17 @@
  * typo or an invented message fails `tsc` instead of rendering silently.
  */
 
+import type { PRICE_SAVED } from '../screens/varieties/priceMessages'
+
 export type SuccessToast =
   | 'Cliente guardado'
+  | 'Entrada guardada'
+  | 'Entrada eliminada'
   | 'Variedad guardada'
-  | 'Precio guardado'
+  | 'Variedad eliminada'
+  | 'Variedad archivada'
+  | 'Variedad restaurada'
+  | typeof PRICE_SAVED
   | 'Precio eliminado'
   | 'Gasto guardado'
   | 'Gasto eliminado'
@@ -23,10 +30,17 @@ export type SuccessToast =
   | 'Cliente asignado'
   | 'Aviso guardado'
   | 'Catálogo guardado'
+  | 'Precios guardados'
   | 'Catálogo copiado'
   | 'Cobro eliminado'
+  | 'Cobro guardado'
+  | `Cobro guardado · queda debiendo ${string}`
   | 'Prueba enviada'
   | 'Catálogo publicado'
+  | 'Entrada guardada'
+  | 'Entrada eliminada'
+  | 'Retiro guardado'
+  | 'Retiro eliminado'
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

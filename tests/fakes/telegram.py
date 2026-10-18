@@ -1,5 +1,5 @@
-"""`FakeTelegram` (the plan's own fixture): the only `Telegram` the test app ever
-wires in (`tests/conftest.py`'s `app` fixture), so no test but
+"""`FakeTelegram` (the plan's own fixture): the only `TelegramApi` and `PrivateChats` the
+test app ever wires in (`tests/conftest.py`'s `app` fixture), so no test but
 `tests/pinned_catalog/test_telegram_http.py` ever constructs the real adapter."""
 
 from __future__ import annotations
@@ -22,10 +22,15 @@ class FakeTelegram:
     _messages: dict[tuple[str, str], dict[int, _Message]] = field(default_factory=dict)
     _next_id: int = 1
     _failure: BaseException | None = None
+    _failure_method: str | None = None
+    _private_chats: dict[str, frozenset[str]] = field(default_factory=dict)
 
-    def fail_next(self, exc: BaseException) -> None:
-        """The next call (send, edit or pin) raises `exc` instead of acting."""
+    def fail_next(self, exc: BaseException, method: str | None = None) -> None:
+        """The next call raises `exc` instead of acting: the next call of any method,
+        or, given `method` ("send", "edit", "pin" or "private_chats"), the next call of
+        that one."""
         self._failure = exc
+        self._failure_method = method
 
     def delete(self, token: str, chat: str, message_id: int) -> None:
         """Simulates the pinned message being deleted by hand in Telegram: the next
@@ -34,7 +39,7 @@ class FakeTelegram:
         self._messages.get((token, chat), {}).pop(message_id, None)
 
     def send(self, token: str, chat: str, plain: str, spans: Sequence[tuple[int, int]]) -> int:
-        self._maybe_raise()
+        self._maybe_raise("send")
         message_id = self._next_id
         self._next_id += 1
         self._messages.setdefault((token, chat), {})[message_id] = _Message(plain)
@@ -49,7 +54,7 @@ class FakeTelegram:
         plain: str,
         spans: Sequence[tuple[int, int]],
     ) -> EditOutcome:
-        self._maybe_raise()
+        self._maybe_raise("edit")
         messages = self._messages.get((token, chat), {})
         message = messages.get(message_id)
         if message is None:
@@ -61,8 +66,18 @@ class FakeTelegram:
         return "edited"
 
     def pin(self, token: str, chat: str, message_id: int) -> None:
-        self._maybe_raise()
+        self._maybe_raise("pin")
         self.calls.append(("pin", token, chat, str(message_id)))
+
+    def set_private_chats(self, token: str, ids: Sequence[str]) -> None:
+        """What `private_chats(token)` answers: the one definition of "found" (none for
+        no id, one person for one id, several for two or more). The default is none."""
+        self._private_chats[token] = frozenset(ids)
+
+    def private_chats(self, token: str) -> frozenset[str]:
+        self._maybe_raise("private_chats")
+        self.calls.append(("private_chats", token))
+        return self._private_chats.get(token, frozenset())
 
     def text_of(self, token: str, chat: str, message_id: int) -> str | None:
         message = self._messages.get((token, chat), {}).get(message_id)
@@ -75,7 +90,7 @@ class FakeTelegram:
         messages = self._messages.get((token, chat), {})
         return next(iter(messages), None)
 
-    def _maybe_raise(self) -> None:
-        if self._failure is not None:
+    def _maybe_raise(self, method: str) -> None:
+        if self._failure is not None and self._failure_method in (None, method):
             exc, self._failure = self._failure, None
             raise exc

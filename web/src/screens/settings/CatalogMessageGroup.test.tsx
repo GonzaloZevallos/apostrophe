@@ -5,6 +5,8 @@
  * deeper (CODING_STANDARDS §10).
  */
 
+import { SETTINGS, SETTINGS_CATALOG_MESSAGE } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -12,7 +14,8 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import CatalogMessageGroup from './CatalogMessageGroup'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -47,13 +50,13 @@ function renderGroup(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       {
         element: <Provide />,
         children: [
-          { path: '/settings', element: <div>Lista de grupos</div> },
-          { path: '/settings/catalog-message', element: <CatalogMessageGroup /> },
+          { path: SETTINGS, element: <div>Lista de grupos</div> },
+          { path: SETTINGS_CATALOG_MESSAGE, element: <CatalogMessageGroup /> },
         ],
       },
     ],
     {
-      initialEntries: ['/settings', { pathname: '/settings/catalog-message', state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: SETTINGS_CATALOG_MESSAGE, state: inAppState({ pathname: SETTINGS }) }],
       initialIndex: 1,
     },
   )
@@ -153,7 +156,7 @@ test('a dropped network shows "Sin conexión" and keeps what was typed', async (
   await type('Encabezado', 'Nuevo')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.getByLabelText('Encabezado')).toHaveValue('Nuevo')
 })
 
@@ -229,4 +232,16 @@ test('the header and footer fields never carry maxLength: the backend counts the
 
   expect(header).not.toHaveAttribute('maxlength')
   expect(screen.getByLabelText('Pie')).not.toHaveAttribute('maxlength')
+})
+
+test('the group follows the icon and text rule, with a saved header and footer and with none', async () => {
+  renderGroup(serving())
+  await screen.findByLabelText('Encabezado')
+  expectIconAndTextRule(document.body)
+})
+
+test('with no varieties and an empty header and footer the group still follows the rule', async () => {
+  renderGroup(vi.fn(() => Promise.resolve(jsonResponse(200, { ...CATALOG, header: '', footer: '' }))))
+  expect(await screen.findByLabelText('Encabezado')).toHaveValue('')
+  expectIconAndTextRule(document.body)
 })

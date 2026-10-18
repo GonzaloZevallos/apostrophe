@@ -14,23 +14,28 @@
  * edit once the backend lands: it starts finding the real command and the
  * skip stops firing on its own.
  *
- * A phone viewport (PRD metric 1: "from the phone... in under a minute"), the
- * same breakpoint `sales.spec.ts` uses.
+ * A phone viewport (PRD metric 1: "from the phone"), the same breakpoint
+ * `sales.spec.ts` uses. No test measures how long the change takes (docs/adr/0038).
  */
 
-import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl, resetLink, supportsPasswordReset } from './backend.js'
+import { HOME, LOGIN, SETTINGS_ACCOUNT } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
+import { expect, test } from './fixtures.js'
+import { resetLink, supportsPasswordReset } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
 const NEW_PASSWORD = 'unanuevaclave99'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
-test('changes a password from Configuración → Tu cuenta in under a minute, signing an older device out and keeping this one', async ({
+test('changes a password from Configuración → Tu cuenta, signing an older device out and keeping this one', async ({
   page,
   browser,
+  workerServer,
 }) => {
   test.skip(
     !supportsPasswordReset(),
@@ -40,29 +45,23 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-clave-${Date.now()}@example.com`
-  const businessName = `Flores del Cambio ${Date.now()}`
+  const ownerEmail = `duena-clave-${uniqueTag()}@example.com`
+  const businessName = `Flores del Cambio ${uniqueTag()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A second device, signed in as the same user.
-  const otherContext = await browser.newContext()
+  const otherContext = await browser.newContext({ baseURL: workerServer.url })
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
-  await otherPage.goto('/entrar')
+  await otherPage.goto(LOGIN)
   await otherPage.getByLabel('Email').fill(ownerEmail)
   await otherPage.getByLabel('Contraseña').fill(PASSWORD)
   await otherPage.getByRole('button', { name: 'Entrá' }).click()
   await expect(otherPage.locator('.encabezado__negocio')).toHaveText(businessName)
 
-  const startedAt = Date.now()
-
-  await page.goto('/settings/account')
+  await page.goto(SETTINGS_ACCOUNT)
   await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
@@ -70,12 +69,10 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   await sheet.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
 
-  expect(Date.now() - startedAt).toBeLessThan(60_000)
-
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
   // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather
   // than reloading the settings screen it was already on.
-  await page.goto('/')
+  await page.goto(HOME)
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // The older device is signed out: its gated calls now answer 401, which is
@@ -86,7 +83,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   const EXPECTED_SIGNED_OUT_NETWORK_LOG =
     'error: Failed to load resource: the server responded with a status of 401 (Unauthorized)'
   await otherPage.reload()
-  await expect(otherPage).toHaveURL(/\/entrar$/)
+  await expectPath(otherPage, LOGIN)
   await otherContext.close()
 
   await expectOnlyTheThemeStored(page)
@@ -104,14 +101,10 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-reset-${Date.now()}@example.com`
-  const businessName = `Flores del Reinicio ${Date.now()}`
+  const ownerEmail = `duena-reset-${uniqueTag()}@example.com`
+  const businessName = `Flores del Reinicio ${uniqueTag()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   const link = resetLink(ownerEmail)

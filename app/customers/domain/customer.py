@@ -1,5 +1,5 @@
 """A business's customers, identified by their own record, not by their phone
-(ADR-0021; CONTEXT.md: Customer, Phone number, Channel, VIP customer). The phone is
+(ADR-0021; CONTEXT.md: Customer, Phone number, VIP customer). The phone is
 optional contact data: a customer can have none.
 
 `PhoneNumber.of` is the only place a phone number is normalised; nothing else in the
@@ -13,7 +13,6 @@ copy.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
 from typing import ClassVar
 
 from app.shared.names import fold
@@ -160,19 +159,13 @@ class CustomerName:
         return cls(" ".join(raw.split()))
 
 
-class Channel(StrEnum):
-    TELEGRAM = "telegram"
-    WHATSAPP = "whatsapp"
-
-
 @dataclass
 class Customer:
-    """The aggregate root: a name, a phone number, a channel and whether they are
-    VIP, and nothing else in this feature (PRD)."""
+    """The aggregate root: a name, a phone number and whether they are VIP,
+    and nothing else in this feature (PRD)."""
 
     name: CustomerName
     phone: PhoneNumber | None
-    channel: Channel | None = None
     vip: bool = False
     id: int | None = None
 

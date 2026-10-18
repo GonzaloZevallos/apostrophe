@@ -1,6 +1,6 @@
 /**
  * `Clientes`: the list, with search by part of the name or of the phone number
- * (`customers.md`). The query lives in the `/clientes` layout route's context,
+ * (`customers.md`). The query lives in the /clientes layout route's context,
  * never in the URL (plan, invariants: "No customer search query ... in a front
  * URL"). Debounced at 150 ms before it becomes the query key
  * (`keys.customers(q)`), so a result that is still catching up to a newer
@@ -10,33 +10,37 @@
  * of a misleading "no customers yet" (PRD, "Feedback").
  */
 
+import { CUSTOMER_NEW } from '../../routes'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router'
+import { useLocation } from 'react-router'
+import BotonLink from '../../components/BotonLink'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
-import { getDebtors } from '../../api/payments'
-import { formatPhone } from '../../format/phone'
-import { formatDateShort } from '../../format/dates'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
+import { useGoneNotice } from '../../components/goneExit'
+import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
-import { EMPTY_STATES } from '../emptyStates'
+import { EMPTY_CUSTOMERS, EVERYONE } from './messages'
+import ClienteFila from './ClienteFila'
+import TeDeben from './TeDeben'
 
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
 export const SEARCHING = 'Buscando…'
-export const EMPTY_LIST = EMPTY_STATES.customersList
-
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
+  const vipCustomers = useIsVipCustomers()
   const [debounced, setDebounced] = useState(query)
   const location = useLocation()
-  const [feedback] = useState(() => readFeedback(location.state))
+  const [stateFeedback] = useState(() => readFeedback(location.state))
+  const goneShown = useGoneNotice()
+  const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query), 150)
@@ -56,10 +60,6 @@ export default function Clientes() {
     queryKey: keys.customers(''),
     queryFn: () => listCustomers(''),
   })
-  const debtors = useQuery({
-    queryKey: keys.debtors(),
-    queryFn: () => getDebtors(),
-  })
 
   const customers = data ?? []
 
@@ -71,14 +71,6 @@ export default function Clientes() {
         </div>
         <div className="campo__rotulo">
           <span>{`${total.data?.length ?? 0} clientes`}</span>
-          {debtors.data !== undefined && debtors.data.debtors.length > 0 && (
-            <>
-              {' · '}
-              <Link to="/clientes/deben">
-                {`${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}
-              </Link>
-            </>
-          )}
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">
@@ -91,48 +83,42 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <Link className="boton" to="/clientes/nuevo">
-          Nuevo cliente
-        </Link>
+        <div className="clientes__accion">
+          <BotonLink to={CUSTOMER_NEW} icon="personaMas">
+            Nuevo cliente
+          </BotonLink>
+        </div>
+        {query === '' && <TeDeben />}
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
         {!isError && (
-          <div
-            className="lista-clientes"
-            aria-busy={isPlaceholderData}
-            aria-label={isPlaceholderData ? SEARCHING : undefined}
-          >
-            {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
-            {!isPlaceholderData && customers.length === 0 && (
-              <span className="campo__rotulo">{EMPTY_LIST}</span>
-            )}
-            {customers.map((customer) => (
-              <Link
-                key={customer.id}
-                to={`/clientes/${customer.id}`}
-                className="lista-clientes__fila"
-              >
-                <span className="lista-clientes__nombre">
-                  {customer.name}
-                  {customer.vip && <span className="vip-insignia">VIP</span>}
+          <section aria-label={query === '' ? EVERYONE : undefined} className="clientes__todos">
+            {query === '' && <span className="campo__rotulo">{EVERYONE}</span>}
+            <div
+              className="lista-clientes"
+              aria-busy={isPlaceholderData}
+              aria-label={isPlaceholderData ? SEARCHING : undefined}
+            >
+              {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
+              {!isPlaceholderData && customers.length === 0 && (
+                <span className="campo__rotulo" data-copy="emptyTitle">
+                  {EMPTY_CUSTOMERS}
                 </span>
-                {customer.phone !== null && (
-                  <span className="lista-clientes__telefono">{formatPhone(customer.phone)}</span>
-                )}
-                {customer.standing === 'owes' && customer.owing_since !== null && (
-                  <span className="lista-clientes__balance">
-                    <span className="monto-deuda">{formatMoney(customer.balance)}</span>
-                    <span className="monto-deuda">
-                      te debe desde {formatDateShort(customer.owing_since)}
-                    </span>
-                  </span>
-                )}
-                {customer.standing === 'credit' && (
-                  <span className="monto-credito">A favor {formatMoneyMagnitude(customer.balance)}</span>
-                )}
-              </Link>
-            ))}
-          </div>
+              )}
+              {customers.map((customer) => (
+                <ClienteFila
+                  key={customer.id}
+                  id={customer.id}
+                  name={customer.name}
+                  phone={customer.phone}
+                  vip={vipCustomers && customer.vip}
+                  balance={customer.balance}
+                  owingSince={customer.owing_since}
+                  standing={customer.standing}
+                />
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </main>

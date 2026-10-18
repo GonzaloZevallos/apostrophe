@@ -113,4 +113,25 @@ describe('findForbiddenUsages', () => {
 
     expect(violations.map((v) => v.rule).sort()).toEqual(['indexedDB', 'sessionStorage'])
   })
+
+  test('flags a module other than components/useLeaveGuard.ts using useBlocker', () => {
+    const violations = findForbiddenUsages([
+      {
+        path: 'src/screens/expenses/ExpenseNewRoute.tsx',
+        content: "import { useBlocker } from 'react-router'\nconst blocker = useBlocker(shouldBlock)",
+      },
+    ])
+
+    expect(violations).toEqual([
+      { path: 'src/screens/expenses/ExpenseNewRoute.tsx', rule: 'useBlocker' },
+    ])
+  })
+
+  test('allows useBlocker only inside src/components/useLeaveGuard.ts', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/components/useLeaveGuard.ts', content: 'const blocker = useBlocker(shouldBlock)' },
+    ])
+
+    expect(violations).toEqual([])
+  })
 })

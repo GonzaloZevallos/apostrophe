@@ -9,11 +9,14 @@
  * the console holds nothing.
  */
 
-import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { CATALOG, HOME, LOGIN } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
+import { expect, test } from './fixtures.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { openGastos } from './helpers/openMas.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
 const NEW_PASSWORD = 'unanuevaclave99'
@@ -26,14 +29,10 @@ test('a seller goes through every Configuración group from the phone, with no c
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-config-${Date.now()}@example.com`
-  const businessName = `Flores de Ajustes ${Date.now()}`
+  const ownerEmail = `duena-config-${uniqueTag()}@example.com`
+  const businessName = `Flores de Ajustes ${uniqueTag()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A category with an expense in it, so its removal is refused later.
@@ -55,7 +54,7 @@ test('a seller goes through every Configuración group from the phone, with no c
     await page.getByRole('button', { name: 'Cerrar', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
   }
-  await page.goto('/')
+  await page.goto(HOME)
   await page.getByRole('link', { name: /^Configuración de / }).click()
   await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
 
@@ -80,7 +79,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByText('Prueba enviada')).toBeVisible()
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expectPath(page, CATALOG)
   await page.goBack()
   await close()
 
@@ -130,7 +129,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await sheet.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
-  await expect(page).toHaveURL(/\/entrar$/)
+  await expectPath(page, LOGIN)
 
   await page.getByLabel('Email').fill(ownerEmail)
   await page.getByLabel('Contraseña').fill(NEW_PASSWORD)

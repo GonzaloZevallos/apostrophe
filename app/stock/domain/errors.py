@@ -36,3 +36,41 @@ class EntryDateInFuture(ValueError):
 
 class EntryNoteTooLong(ValueError):
     code: ClassVar[str] = "stock.note_too_long"
+
+
+class WithdrawalReasonRequired(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_reason_required"
+
+
+class WithdrawalDateInFuture(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_date_in_future"
+
+
+class WithdrawalNoLines(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_no_lines"
+
+
+class WithdrawalGramsNotPositive(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_grams_not_positive"
+
+
+class WithdrawalGramsTooPrecise(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_grams_too_precise"
+
+
+class WithdrawalNoteTooLong(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_note_too_long"
+
+
+class WithdrawalNotFound(LookupError):
+    code: ClassVar[str] = "stock.withdrawal_not_found"
+
+    def __init__(self) -> None:
+        super().__init__("no such stock withdrawal")
+
+
+class WithdrawalVarietyNotFound(LookupError):
+    code: ClassVar[str] = "stock.withdrawal_variety_not_found"
+
+    def __init__(self) -> None:
+        super().__init__("no such variety for a stock withdrawal")

@@ -1,26 +1,27 @@
 /**
- * The one throwaway environment the e2e check starts the backend with (plan,
- * "Shape"/"Old shapes kept": never `scripts/serve.sh` or `scripts/invite-business.sh`,
- * which source `.env` — this run sets its own variables explicitly, from here, so the
- * server (`playwright.config.ts`'s `webServer`) and the `invite-business` CLI call
- * (`newBusinessInvitationUrl` below) always agree on the same database and secret.
+ * The one throwaway environment each e2e backend starts with (plan, "Shape"/"Old shapes
+ * kept": never `scripts/serve.sh` or `scripts/invite-business.sh`, which source `.env` —
+ * this run sets its own variables explicitly, from here, so the worker's server
+ * (`fixtures.ts`'s `workerServer`) and the `invite-business` CLI call
+ * (`newBusinessInvitationUrl`) always agree on the same database and secret).
  *
- * The port is decided only in `playwright.config.ts` (plan, "Shape": it reads
- * `APOSTROPHE_E2E_PORT` or picks a free one with `freePort.ts` and writes it back).
- * This module never reads the environment when it loads — only when `e2ePort()`,
- * `e2eBaseUrl()`, `e2eDbPath()` or `e2eEnv()` are called — so every caller sees the
- * one port the config already settled on.
+ * The port is decided only by `web/e2e/fixtures.ts` (ADR-0040): each Playwright worker
+ * picks its own free port and writes it to `APOSTROPHE_E2E_WORKER_PORT` in its own
+ * process. This module never reads the environment when it loads — only when `e2ePort()`,
+ * `e2eBaseUrl()`, `e2eDbPath()` or `e2eEnv()` are called — so every caller in a worker
+ * sees that worker's one port.
  */
 
-const PORT_VARIABLE = 'APOSTROPHE_E2E_PORT'
+const PORT_VARIABLE = 'APOSTROPHE_E2E_WORKER_PORT'
+const CLOCK_OFFSET_VARIABLE = 'APOSTROPHE_E2E_CLOCK_OFFSET'
 
 export const E2E_HOST = '127.0.0.1'
 export const E2E_SECRET_KEY = 'e2e-secret-key-not-for-production'
 
 /**
- * Reads and validates `APOSTROPHE_E2E_PORT`: digits only, from 1 to 65535. Throws a
- * fixed error naming only the variable and the rule — never a port picked here, by
- * decision (plan, "Shape": "It never picks a port").
+ * Reads and validates `APOSTROPHE_E2E_WORKER_PORT`: digits only, from 1 to 65535. Throws a
+ * fixed error naming only the variable and the rule — never a port picked here:
+ * only `fixtures.ts` picks one.
  */
 export function e2ePort(): number {
   const raw = process.env[PORT_VARIABLE]
@@ -40,8 +41,15 @@ export function e2eDbPath(): string {
   return `web/e2e/.tmp/e2e-${e2ePort()}.db`
 }
 
+/**
+ * `fixtures.ts` writes the clock offset once per worker, before its backend starts; this
+ * passes it on to every child (the server and the CLI calls), so they share one anchored
+ * clock (ADR-0043). Only `tests/e2e_app.py` reads it. No offset set, nothing passed.
+ */
 export function e2eEnv(): Record<string, string> {
+  const offset = process.env[CLOCK_OFFSET_VARIABLE]
   return {
+    ...(offset === undefined ? {} : { [CLOCK_OFFSET_VARIABLE]: offset }),
     APOSTROPHE_SECRET_KEY: E2E_SECRET_KEY,
     APOSTROPHE_DATABASE_URL: `sqlite:///${e2eDbPath()}`,
     APOSTROPHE_PUBLIC_URL: e2eBaseUrl(),

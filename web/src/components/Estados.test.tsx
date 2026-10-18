@@ -1,3 +1,4 @@
+import { SALES } from '../routes'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
@@ -5,12 +6,13 @@ import { GONE_DETAIL } from '../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from './ErrorGenerico'
 import GoneScreen from './GoneScreen'
 import Notice from './Notice'
-import SinConexion, { SIN_CONEXION_DETALLE, SIN_CONEXION_TITULO } from './SinConexion'
+import SinConexion from './SinConexion'
+import { SIN_CONEXION_MENSAJE } from './estadosMessages'
 
 test('the gone screen says one fixed line and offers one way back, with no data', () => {
   const { container } = render(
     <MemoryRouter>
-      <GoneScreen label="Ventas" to="/ventas" />
+      <GoneScreen label="Ventas" to={SALES} />
     </MemoryRouter>,
   )
 
@@ -18,17 +20,19 @@ test('the gone screen says one fixed line and offers one way back, with no data'
   const links = screen.getAllByRole('link')
   expect(links).toHaveLength(1)
   expect(links[0]).toHaveTextContent('Volver a Ventas')
-  expect(links[0]).toHaveAttribute('href', '/ventas')
+  expect(links[0]).toHaveAttribute('href', SALES)
   expect(screen.queryAllByRole('button')).toHaveLength(0)
   expect(container.textContent).not.toMatch(/\d/)
 })
 
-test('"Sin conexión" is announced as a status with its title and detail line, and nothing to press', () => {
+test('"Sin conexión" is announced as one sentence in a status, promises no retry, and has nothing to press', () => {
   render(<SinConexion />)
 
   const status = screen.getByRole('status')
-  expect(status).toHaveTextContent(SIN_CONEXION_TITULO)
-  expect(status).toHaveTextContent(SIN_CONEXION_DETALLE)
+  expect(status).toHaveTextContent(SIN_CONEXION_MENSAJE)
+  expect(SIN_CONEXION_MENSAJE).toMatch(/^Sin conexión/)
+  expect(SIN_CONEXION_MENSAJE).not.toMatch(/reintent|solo|autom/i)
+  expect(status.querySelectorAll('.aviso-ambar__detalle')).toHaveLength(0)
   expect(screen.queryAllByRole('button')).toHaveLength(0)
 })
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import io
 import logging
 import re
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -25,12 +25,16 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.tables import BusinessRow
 from app.customers.adapters.import_port import CustomersImport
 from app.customers.adapters.tables import CustomerRow
+from app.db import make_engine
+from app.main import create_app
 from app.migrations.runner import upgrade_to_head
 from app.sales.adapters.import_port import SalesImport
+from app.settings import Settings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.adapters import layout
-from app.spreadsheet_import.adapters.cli import run
-from tests.conftest import MovableClock, open_business, signed_in
+from app.spreadsheet_import.adapters.cli import main, run
+from tests.conftest import TEST_HASHER, MovableClock, open_business, signed_in
+from tests.fakes.telegram import FakeTelegram
 
 # No report line, exception message or log line ever carries a phone number, not even
 # a run of 4 or more of its digits (the plan's invariant).
@@ -950,3 +954,36 @@ def test_recording_order_follows_date_then_sheet_row(
     second_tie_detail = client.get(f"/sales/{tie_sale_ids[1]}").json()
     assert first_tie_detail["lines"][0]["cost"]["costed"] == 500
     assert second_tie_detail["lines"][0]["cost"]["costed"] == 300
+
+
+def test_main_takes_its_business_day_from_the_clock_it_is_given(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    clock: MovableClock,
+) -> None:
+    url = f"sqlite:///{tmp_path / 'apostrophe.db'}"
+    monkeypatch.setenv("APOSTROPHE_SECRET_KEY", "cli-secret")
+    monkeypatch.setenv("APOSTROPHE_DATABASE_URL", url)
+    file_engine = make_engine(url)
+    file_app = create_app(
+        Settings("cli-secret", url),
+        engine=file_engine,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+        clock=clock,
+    )
+    with TestClient(file_app) as seed_client:
+        open_business(seed_client, file_engine, clock, "Primer Negocio", "uno@example.com")
+    business_id = _business_id(file_engine)
+    xlsx = _save_workbook(_workbook(), tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
+    argv = [str(business_id), str(xlsx), "--mapping", str(mapping), "--dry-run"]
+
+    # The sheet's rows are dated in January 2026: past on the app's clock, still to come
+    # on a clock set in the December before.
+    assert main(argv, clock=clock) == 0
+    assert "Writable: yes" in capsys.readouterr().out
+    assert main(argv, clock=MovableClock(datetime(2025, 12, 31, 12, 0, tzinfo=UTC))) == 0
+    assert "Writable: no" in capsys.readouterr().out

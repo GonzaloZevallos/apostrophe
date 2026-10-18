@@ -8,16 +8,39 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import Boton from './Boton'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 
 test('a primary button is named by its own text', () => {
-  render(<Boton onClick={() => {}}>Guardá la venta</Boton>)
+  render(
+    <Boton icon="agregar" onClick={() => {}}>
+      Guardá la venta
+    </Boton>,
+  )
   expect(screen.getByRole('button', { name: 'Guardá la venta' })).toBeInTheDocument()
 })
 
 test('an icon-only button is named by its ariaLabel, with no visible text', () => {
-  render(<Boton variant="icon" icon="agregar" ariaLabel="Agregar línea" onClick={() => {}} />)
-  const button = screen.getByRole('button', { name: 'Agregar línea' })
+  render(<Boton variant="icon" action="search" ariaLabel="Buscar" onClick={() => {}} />)
+  const button = screen.getByRole('button', { name: 'Buscar' })
   expect(button.className).toBe('boton-icono')
+  expect(button.textContent).toBe('')
+})
+
+test('an icon-only button draws the icon its action maps to, hidden from assistive technology', () => {
+  render(
+    <>
+      <Boton variant="icon" action="delete" ariaLabel="Borrar venta" />
+      <Boton variant="icon" action="search" ariaLabel="Buscar" />
+    </>,
+  )
+  const drawing = (name: string) =>
+    screen.getByRole('button', { name }).querySelector('svg')?.innerHTML
+  expect(drawing('Borrar venta')).toBeTruthy()
+  expect(drawing('Borrar venta')).not.toBe(drawing('Buscar'))
+  expect(screen.getByRole('button', { name: 'Buscar' }).querySelector('svg')).toHaveAttribute(
+    'aria-hidden',
+    'true',
+  )
 })
 
 test('the link variant renders the design\'s underline class, not the filled .boton', () => {
@@ -32,12 +55,25 @@ test('the link variant renders the design\'s underline class, not the filled .bo
 
 test('the destructive variant carries both the base and the destructive class', () => {
   render(
-    <Boton variant="destructive" onClick={() => {}}>
+    <Boton variant="destructive" icon="tacho" onClick={() => {}}>
       Sí, borrala
     </Boton>,
   )
   const button = screen.getByRole('button', { name: 'Sí, borrala' })
   expect(button.className).toBe('boton boton--destructivo')
+})
+
+test('the critical variant is icon + text in its own class, never the filled destructive one', () => {
+  render(
+    <Boton variant="critical" icon="tacho" onClick={() => {}}>
+      Eliminar variedad
+    </Boton>,
+  )
+  const button = screen.getByRole('button', { name: 'Eliminar variedad' })
+  expect(button.className).toBe('boton boton--critico')
+  expect(button.className).not.toContain('destructivo')
+  expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body)
 })
 
 test('a secondary button with an icon still carries the icon beside its text', () => {
@@ -50,7 +86,58 @@ test('a secondary button with an icon still carries the icon beside its text', (
   expect(button.querySelector('svg')).not.toBeNull()
 })
 
+test('an icon next to a word is hidden, so the accessible name stays the word', () => {
+  render(
+    <Boton variant="secondary" icon="personaMas">
+      Asignar cliente
+    </Boton>,
+  )
+  const button = screen.getByRole('button', { name: 'Asignar cliente' })
+  expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(button.getAttribute('aria-label')).toBeNull()
+})
+
+test('a text-only submit has no icon and is a submit button', () => {
+  render(
+    <Boton textOnly="submit" type="submit">
+      Guardá la venta
+    </Boton>,
+  )
+  const button = screen.getByRole('button', { name: 'Guardá la venta' })
+  expect(button).toHaveAttribute('type', 'submit')
+  expect(button.querySelector('svg')).toBeNull()
+})
+
+test.each([
+  ['undo', 'Deshacer'],
+  ['back', '‹ Ventas'],
+  ['link', 'Ver todas'],
+] as const)('the %s kind is text only, drawn as the underlined link', (variant, word) => {
+  render(<Boton variant={variant}>{word}</Boton>)
+  const button = screen.getByRole('button', { name: word })
+  expect(button.className).toBe('boton--enlace')
+  expect(button.querySelector('svg')).toBeNull()
+})
+
 test('disabled passes through to the native button', () => {
-  render(<Boton disabled>Guardá la venta</Boton>)
+  render(
+    <Boton icon="agregar" disabled>
+      Guardá la venta
+    </Boton>,
+  )
   expect(screen.getByRole('button', { name: 'Guardá la venta' })).toBeDisabled()
+})
+
+test('a notice is the card class, named by its whole visible text, with no aria-label', () => {
+  render(
+    <Boton variant="notice">
+      <span>Seguí con la configuración</span>
+      <span>Falta: Categorías</span>
+    </Boton>,
+  )
+  const button = screen.getByRole('button', {
+    name: 'Seguí con la configuraciónFalta: Categorías',
+  })
+  expect(button.className).toBe('boton-aviso')
+  expect(button.getAttribute('aria-label')).toBeNull()
 })

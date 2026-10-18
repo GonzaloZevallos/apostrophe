@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
+import { CUSTOMERS, pathTo, SALES, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -21,8 +22,8 @@ const ROSA = {
   name: 'Rosa',
   current_price: { id: 9, effective_from: '2026-09-01', list_price: 1000, bulk_price: null, bulk_minimum: null },
 }
-const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', channel: null, vip: false }
-const NUEVA = { id: 8, name: 'Luz', phone: null, channel: null, vip: false }
+const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
+const NUEVA = { id: 8, name: 'Luz', phone: null, vip: false }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -40,7 +41,7 @@ beforeEach(() => {
       if (method === 'GET' && path === '/varieties?on=2026-10-02') {
         return Promise.resolve(jsonResponse(200, [ROSA]))
       }
-      if (method === 'GET' && path.startsWith('/customers')) {
+      if (method === 'GET' && path.startsWith(pathTo(CUSTOMERS))) {
         return Promise.resolve(jsonResponse(200, [ANA]))
       }
       if (method === 'POST' && path === '/customers') {
@@ -61,10 +62,10 @@ function renderForm() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
     [
-      { path: '/ventas', element: <h1>Lista de ventas</h1> },
-      { element: <Outlet context={ME} />, children: [{ path: '/ventas/nueva', element: <NuevaVenta /> }] },
+      { path: SALES, element: <h1>Lista de ventas</h1> },
+      { element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] },
     ],
-    { initialEntries: ['/ventas', '/ventas/nueva'], initialIndex: 1 },
+    { initialEntries: [SALES, SALE_NEW], initialIndex: 1 },
   )
   render(
     <QueryClientProvider client={queryClient}>
@@ -94,7 +95,7 @@ test('back with Elegir cliente open closes only the sheet, form intact, nothing 
 
   expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
   expect(askedToDiscard()).not.toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/ventas/nueva')
+  expect(router.state.location.pathname).toBe(SALE_NEW)
   expect(screen.getByLabelText('Nota')).toHaveValue('para Ana')
 })
 
@@ -123,7 +124,7 @@ test('"Cerrar" on Elegir cliente is the same move as back', async () => {
   await typeNote(user)
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
-  await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await user.click((await screen.findAllByRole('button', { name: 'Cerrar' })).at(-1)!)
 
   expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
   expect(askedToDiscard()).not.toBeInTheDocument()
@@ -142,7 +143,7 @@ test('choosing a customer closes the sheet and leaves exactly the form entry', a
   // A customer chosen makes the form dirty: the very next back is the form's own question.
   await back(router)
   expect(askedToDiscard()).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/ventas/nueva')
+  expect(router.state.location.pathname).toBe(SALE_NEW)
 })
 
 test.each([
@@ -157,7 +158,7 @@ test.each([
   [
     'Cerrar',
     async () => {
-      await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+      await userEvent.click(screen.getAllByRole('button', { name: 'Cerrar' }).at(-1)!)
     },
   ],
 ])('a Nuevo cliente save resolving after %s still sets the customer and leaves only the form', async (_name, leave) => {
@@ -179,12 +180,12 @@ test.each([
   await waitFor(() => expect(screen.getByRole('button', { name: /Luz/ })).toBeInTheDocument())
   expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
   expect(screen.getByLabelText('Nota')).toHaveValue('para Ana')
-  expect(router.state.location.pathname).toBe('/ventas/nueva')
+  expect(router.state.location.pathname).toBe(SALE_NEW)
   expect(sheetDepth(router.state.location.state)).toBe(0)
   // Nothing of the sheets is left in history: the next back is the form's own question.
   await back(router)
   expect(askedToDiscard()).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/ventas/nueva')
+  expect(router.state.location.pathname).toBe(SALE_NEW)
 })
 
 test('a dirty form asks on back, asks again after "No, seguí cargando"', async () => {

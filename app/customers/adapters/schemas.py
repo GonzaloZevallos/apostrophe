@@ -1,7 +1,7 @@
 """The HTTP shapes of a customer. Bare: no pydantic length or pattern constraint, so
 every rule stays the domain's and its message is a fixed string (ADR-0005). `PATCH` is
 partial: `model_fields_set` is how `CustomerPatchIn` tells a field left out from a field
-explicitly sent as `null`, which clears `phone` and `channel` but is refused for `name`
+explicitly sent as `null`, which clears `phone` but is refused for `name`
 and `vip`."""
 
 from datetime import date
@@ -12,20 +12,18 @@ from pydantic import BaseModel
 from app.customers.application.errors import RequiredFieldCleared
 from app.customers.application.manage_customers import UNCHANGED, CustomerChanges, Unchanged
 from app.customers.application.ports import CustomerBalance, Standing
-from app.customers.domain.customer import Channel, Customer
+from app.customers.domain.customer import Customer
 
 
 class CustomerIn(BaseModel):
     name: str
     phone: str | None = None
-    channel: Channel | None = None
     vip: bool = False
 
 
 class CustomerPatchIn(BaseModel):
     name: str | None = None
     phone: str | None = None
-    channel: Channel | None = None
     vip: bool | None = None
 
     def to_changes(self) -> CustomerChanges:
@@ -33,7 +31,6 @@ class CustomerPatchIn(BaseModel):
         return CustomerChanges(
             name=_required(self.name, "name" in present, "name"),
             phone=self.phone if "phone" in present else UNCHANGED,
-            channel=self.channel if "channel" in present else UNCHANGED,
             vip=_required(self.vip, "vip" in present, "vip"),
         )
 
@@ -48,7 +45,6 @@ class CustomerOut(BaseModel):
     id: int
     name: str
     phone: str | None
-    channel: Channel | None
     vip: bool
     balance: int
     owing_since: date | None
@@ -61,7 +57,6 @@ class CustomerOut(BaseModel):
             id=customer.id,
             name=customer.name.value,
             phone=customer.phone.value if customer.phone is not None else None,
-            channel=customer.channel,
             vip=customer.vip,
             balance=balance.balance,
             owing_since=balance.owing_since,

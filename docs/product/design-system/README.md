@@ -39,7 +39,9 @@ estado no se alcanza o la página desborda, lo dice arriba. Qué ruta y qué pas
 cada pantalla está en `scripts/design/screens.json`: quien rehace una pantalla mantiene su
 entrada al día. Las cifras de La Huerta que usan las pantallas (saldos, stock, días
 restantes, las cifras del panel) están todas en
-[`muestra.md`](muestra.md), la única fuente: ninguna pantalla inventa un número propio.
+[`muestra.md`](muestra.md), la única fuente: ninguna pantalla inventa un número propio. Lo genera
+`scripts/design/capture_muestra.py` a una fecha fija y un test compara cada pantalla con él
+(ADR-0035).
 
 ## Dirección de diseño
 
@@ -77,8 +79,10 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 - **general**: un token de texto que puede ir sobre cualquier superficie. Lleva una
   fila por cada superficie y todas llegan a 4,5:1, en los dos temas.
 - **par**: un token de texto que sólo se dibuja sobre su fondo. Lleva una sola fila.
-  Una regla de `app.css` que lo usa declara también ese fondo, salvo los selectores
-  de la última columna, que dibujan sobre el fondo de su contenedor.
+  Una regla de `app.css` que lo usa declara también ese fondo. La única excepción es
+  `.bar-inferior__item`, la etiqueta de la barra inferior, con `--nav-inactivo`. Un
+  texto que se dibuja sobre el fondo de su contenedor toma su color de la regla que
+  declara ese fondo.
 - **ícono**: no es texto y no se mide. Sólo puede ser el `color` de los selectores de
   la última columna. `--tenue` es sólo de íconos.
 
@@ -109,7 +113,11 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--deuda2` | general | `--superficie` | 5,19 | 5,68 |  |
 | `--deuda2` | general | `--deuda-fondo` | 4,86 | 5,41 |  |
 | `--deuda2` | general | `--acento-suave` | 5,12 | 5,26 |  |
-| `--boton-texto` | par | `--boton` | 15,97 | 15,80 | `.toast__texto`, `.venta-guardada__deshacer` |
+| `--critico` | general | `--papel` | 13,91 | 11,80 |  |
+| `--critico` | general | `--superficie` | 12,44 | 10,49 |  |
+| `--critico` | general | `--deuda-fondo` | 11,64 | 9,99 |  |
+| `--critico` | general | `--acento-suave` | 12,28 | 9,71 |  |
+| `--boton-texto` | par | `--boton` | 15,97 | 15,80 |  |
 | `--critico-texto` | par | `--critico` | 12,59 | 11,13 |  |
 | `--nav-inactivo` | par | `--papel` | 4,69 | 4,97 | `.bar-inferior__item` |
 | `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg` |
@@ -226,6 +234,65 @@ cambiar las listas, en el mismo diff.
 chequeo: el proyecto `mobile` de `npm --prefix web run e2e` y los conteos de infractores
 que imprime `scripts/design/compare.sh` (con `COMPARE_MOBILE=1` corre también el chequeo).
 El teclado real y la prueba en un celular real siguen siendo a ojo (accounts.md, ADR-0028).
+
+## Íconos y texto
+
+La misma regla que [`docs/product/icon-and-text-rule.md`](../icon-and-text-rule.md),
+dicha igual. Decide cómo se rotula cada cosa, nunca qué hace: ninguna acción, ruta,
+orden, confirmación ni texto de aviso cambia por ella.
+
+**Qué forma toma cada control.** Las dos listas son cerradas: agregar a una cambia
+esta regla, nunca una pantalla suelta.
+
+- **Sólo ícono**: borrar ("Borrar…"), buscar ("Buscar"), cerrar ("Cerrar"), editar
+  ("Editar") y compartir ("Compartir") sólo donde no es la acción principal de la
+  pantalla.
+  - El nombre accesible es la palabra de hoy, exacta, y el blanco mide 44 px como
+    mínimo.
+  - Estar en la lista permite el ícono solo, no lo exige: la acción principal de una
+    pantalla lleva siempre su texto.
+  - Cerrar es una sola forma en todo formulario y hoja: el ícono, con el nombre
+    "Cerrar". Volver no es cerrar: sigue siendo "‹ <padre>".
+  - "Más info" (la "i") es el único ícono solo fuera de esta lista.
+- **Sólo texto**: enlaces, las dos respuestas de una confirmación, el envío de un
+  formulario u hoja, las opciones entre las que se elige (pestañas de período,
+  Efectivo · Transferencia · Debiendo, Claro · Oscuro…) y Deshacer.
+- **Ícono + texto**: todo lo demás. El ícono al lado de una palabra es decorativo
+  (`aria-hidden`), así que el nombre accesible sigue siendo la palabra.
+  - **Crítica**: "Eliminar variedad" (`tacho`) es ícono + texto en contorno de 2 px,
+    sin relleno, con texto e ícono en `--critico` (texto general: filas de la tabla de
+    arriba). El relleno `--critico` con `--critico-texto` queda sólo para la respuesta
+    de una confirmación. Dibujada en `pantallas/VariedadDetalle.dc.html`.
+- **Aviso tocable**: un aviso que el vendedor toca para abrir lo que señala, como
+  "Seguí con la configuración" en Inicio. No es una fila de acción ni un control de
+  ninguna de las dos listas, y no las cambia.
+  - Conserva su tarjeta tal como está diseñada: su fondo, sus esquinas redondeadas y
+    su propio relleno, sin el espaciado ni el divisor de una fila.
+  - Su frase lleva el significado, y su nombre accesible es su texto visible.
+  - Su flecha es la marca decorativa de que abre algo; no lleva otro ícono, y el ícono
+    de atención sólo si la lista de avisos de la regla lo nombra.
+- La barra, la barra lateral, Más y la lista de Configuración llevan siempre ícono +
+  texto, y dos entradas de un mismo menú nunca comparten ícono.
+
+**Largo del texto siempre visible.** Ayuda o aviso: una frase de 80 caracteres como
+máximo. Estado vacío: título de 40 como máximo, una línea de 80 y su acción. Los
+rechazos en línea apuntan a 80 pero conservan lo que hay que corregir, y nunca van
+detrás de "Más info". Las consecuencias que el vendedor no esperaría quedan visibles,
+en corto. El largo se mide en la copia en español tal como se ve, con los datos de
+`SAMPLES` (`web/src/copy/limits.ts`: los peores casos) y lo comprueba
+[`copyLimits.test.ts`](../../../web/src/copy/copyLimits.test.ts).
+
+**Qué va detrás de "Más info".** Sólo el cómo o el porqué, en el lugar, bajo la línea
+que explica; nunca una consecuencia, el arreglo de un rechazo ni un estado. Siempre
+abre cerrado, no se recuerda y no cuenta como cambio sin guardar.
+
+**La familia.** Trazo de 1,6 y 22 px, siempre, dibujado una vez en
+`web/src/components/Icono.tsx`; el ícono no recibe tamaño ni trazo, y ningún trazo
+propone el suyo. Nunca emoji como ícono de interfaz. Cada ícono se nombra por su
+`NombreIcono` (en [`componentes.ts`](componentes.ts)); `Icono.tsx` y `componentes.ts`
+nombran el mismo conjunto, y `tests/test_design_icons.py` falla si difieren o si un
+trazo se sale de la regla. Un nombre ya dibujado se reutiliza antes de agregar otro,
+y uno nuevo entra sólo cuando una pantalla lo usa.
 
 ## Reglas de negocio que viven en el código
 

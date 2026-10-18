@@ -10,10 +10,13 @@
  * before merge (ADR-0028).
  */
 
-import { expect, test, type Locator, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { SALE_NEW, VARIETIES } from '../src/routes.js'
+import { expect, test } from './fixtures.js'
+import type { Locator, Page } from '@playwright/test'
+import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
+import { uniqueTag } from './helpers/unique.js'
 
-const PASSWORD = 'correcthorsebattery'
 const WIDTHS = [320, 375, 430, 246] as const
 const HEIGHT = 700
 
@@ -33,22 +36,17 @@ async function box(locator: Locator): Promise<Box> {
 }
 
 async function signInWithAPricedVariety(page: Page): Promise<void> {
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Vivero Telefono ${Date.now()}`)
-  await page.getByLabel('Email').fill(`telefono-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
-  await page.goto('/variedades')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-${uniqueTag()}@example.com` })
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Rige desde').fill('2000-01-01')
-  await page.getByLabel('Precio de lista').fill('500')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await setPriceDate(page, '2000-01-01')
+  await page.getByLabel(/^Precio de lista/).fill('500')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 }
 
@@ -69,12 +67,11 @@ async function expectShellFitsTheScreen(page: Page): Promise<void> {
 test('the form is three zones at every phone width: footer in view, header fixed, payment last above the footer', async ({
   page,
 }) => {
-  test.setTimeout(90_000)
   await signInWithAPricedVariety(page)
 
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: HEIGHT })
-    await page.goto('/ventas/nueva')
+    await page.goto(SALE_NEW)
     const save = page.getByRole('button', { name: 'Guardá la venta' })
     await expect(save).toBeVisible()
 
@@ -91,6 +88,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     expect((await box(date)).height).toBeGreaterThanOrEqual(44)
 
     // The payment options are at least 44 px tall.
+    await expect(page.getByRole('radio').first()).toBeVisible()
     for (const option of await page.getByRole('radio').all()) {
       expect((await box(option)).height).toBeGreaterThanOrEqual(44)
     }
@@ -123,9 +121,8 @@ test('the form is three zones at every phone width: footer in view, header fixed
 test('with the viewport shortened the footer stays in view, and the keyboard flag drops the grams line', async ({
   page,
 }) => {
-  test.setTimeout(60_000)
   await signInWithAPricedVariety(page)
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   const save = page.getByRole('button', { name: 'Guardá la venta' })
   await expect(save).toBeVisible()
   const grams = page.getByText('vendidos')
@@ -169,24 +166,22 @@ function expectMetrics(actual: TypeMetrics, expected: TypeMetrics): void {
 test('the footer total keeps its phone size, line height and tracking, and the computer total its own', async ({
   page,
 }) => {
-  test.setTimeout(60_000)
   await signInWithAPricedVariety(page)
 
   await page.setViewportSize({ width: 375, height: HEIGHT })
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
   expectMetrics(await footerTotalMetrics(page), { fontSize: 25, lineHeight: 27.5, letterSpacing: -1.125 })
 
   await page.setViewportSize({ width: 1280, height: 800 })
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
   expectMetrics(await footerTotalMetrics(page), { fontSize: 54, lineHeight: 56.7, letterSpacing: -2.43 })
 })
 
 test('the footer total takes its size and line height from the cifra-m custom properties', async ({ page }) => {
-  test.setTimeout(60_000)
   await signInWithAPricedVariety(page)
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
 
   const token = await page.evaluate(() => {

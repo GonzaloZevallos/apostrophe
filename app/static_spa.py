@@ -9,6 +9,8 @@ to a signed-out invitation link and turn an unknown API path into HTML.
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -25,13 +27,123 @@ if TYPE_CHECKING:
 _NO_CACHE_NAMES = frozenset({"index.html", "manifest.webmanifest", "sw.js"})
 
 
-# Front paths whose first segment is also an API route's (`/expenses`): the API's router
-# would answer them, so the front is served there only through this exact list, and only to
-# a browser navigation (docs/adr/0024). A moved screen adds its own entry with its route.
-SHARED_FRONT_PATHS = frozenset({"/expenses", "/expenses/new"})
+# Front paths whose first segment is also an API route's (`/sales`, `/expenses`): the API's
+# router would answer them, so the front is served there only through this list of
+# whole-path templates, and only to a browser navigation (docs/adr/0024, amendment of
+# GH-59). A segment is a literal or `{id}`, which matches digits only.
+SHARED_FRONT_PATHS = frozenset(
+    {
+        "/sales",
+        "/sales/new",
+        "/sales/{id}",
+        "/customers",
+        "/customers/new",
+        "/customers/{id}",
+        "/customers/{id}/edit",
+        "/customers/{id}/payment",
+        "/varieties",
+        "/varieties/new",
+        "/varieties/archived",
+        "/varieties/{id}",
+        "/varieties/{id}/prices",
+        "/varieties/{id}/prices/new",
+        "/varieties/{id}/entries",
+        "/varieties/catalog",
+        "/varieties/entries",
+        "/varieties/entries/new",
+        "/varieties/entries/{id}",
+        "/expenses",
+        "/expenses/new",
+        "/analysis",
+    }
+)
 
-# The old Spanish front paths and where they live now. Permanent, whatever the method.
-LEGACY_FRONT_PATHS = {"/mas": "/more", "/gastos": "/expenses"}
+_ID = "{id}"
+
+# The old Spanish front paths and where they live now: one row each in
+# `legacy_front_paths.json` beside this module, the only home of the list (docs/adr/0033).
+LEGACY_FRONT_PATHS_FILE = Path(__file__).with_name("legacy_front_paths.json")
+_LITERAL_SEGMENT = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
+
+class MalformedLegacyFrontPaths(ValueError):
+    """The legacy rows file is not a list of `{old, now}` templates. Raised at import, so a
+    bad file fails the deploy instead of answering a wrong redirect."""
+
+
+def _check_template(template: object, role: str) -> str:
+    if not isinstance(template, str) or not template.startswith("/"):
+        raise MalformedLegacyFrontPaths(f"a legacy {role} path must be a string starting with /")
+    for segment in template[1:].split("/"):
+        if segment != _ID and not _LITERAL_SEGMENT.match(segment):
+            raise MalformedLegacyFrontPaths(
+                f"a legacy {role} path has a segment that is neither a literal nor {_ID}"
+            )
+    return template
+
+
+def parse_legacy_front_paths(text: str) -> tuple[tuple[str, str], ...]:
+    """The `(old, now)` templates of a rows file. Every segment is a literal or `{id}`, an
+    `{id}` in `now` needs one in `old` (there would be nothing to carry), and no old path
+    is listed twice. Anything else raises `MalformedLegacyFrontPaths`."""
+    try:
+        document = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise MalformedLegacyFrontPaths("the legacy rows file is not JSON") from exc
+    if not isinstance(document, list):
+        raise MalformedLegacyFrontPaths("the legacy rows file must be a list")
+    rows: list[tuple[str, str]] = []
+    for row in document:
+        if not isinstance(row, dict) or set(row) != {"old", "now"}:
+            raise MalformedLegacyFrontPaths("a legacy row has exactly `old` and `now`")
+        old = _check_template(row["old"], "old")
+        now = _check_template(row["now"], "now")
+        if _ID in now.split("/") and _ID not in old.split("/"):
+            raise MalformedLegacyFrontPaths(f"a legacy row's now has {_ID} but its old has none")
+        rows.append((old, now))
+    if len({old for old, _ in rows}) != len(rows):
+        raise MalformedLegacyFrontPaths("a legacy old path is listed twice")
+    return tuple(rows)
+
+
+def matches_template(path: str, template: str) -> dict[str, str] | None:
+    """The one matcher of a request path against a front path (docs/adr/0024). The whole
+    path, segment by segment: a literal must be equal, `{id}` takes ASCII digits only, and
+    both must have the same number of segments (an empty one never matches). Answers what
+    the placeholder captured (`{}` when the template has none), or `None` for no match;
+    compare with `is not None`, since `{}` is a match."""
+    segments = path.split("/")
+    expected = template.split("/")
+    if len(segments) != len(expected):
+        return None
+    captured: dict[str, str] = {}
+    for segment, wanted in zip(segments, expected, strict=True):
+        if wanted == _ID:
+            if not (segment.isascii() and segment.isdigit()):
+                return None
+            captured["id"] = segment
+        elif segment != wanted:
+            return None
+    return captured
+
+
+def _matching(path: str, templates: frozenset[str]) -> bool:
+    return any(matches_template(path, template) is not None for template in templates)
+
+
+def _legacy_target(path: str) -> str | None:
+    """The new path an old Spanish `path` (or it plus one trailing slash) moved to."""
+    whole = _without_one_slash(path)
+    for old, new in LEGACY_FRONT_PATHS:
+        captured = matches_template(whole, old)
+        if captured is not None:
+            return new.replace(_ID, captured.get("id", ""))
+    return None
+
+
+LEGACY_FRONT_PATHS: tuple[tuple[str, str], ...] = parse_legacy_front_paths(
+    LEGACY_FRONT_PATHS_FILE.read_text(encoding="utf-8")
+)
 
 
 class MissingBuiltFront(RuntimeError):
@@ -80,11 +192,11 @@ class SpaStatic(StaticFiles):
 
 class FrontNavigation:
     """Pure ASGI, outside Starlette's routing and its `redirect_slashes`, so the raw path
-    decides before the API's router can claim it (docs/adr/0024):
+    decides before the API's router can claim it (docs/adr/0024, docs/adr/0033):
 
     - a legacy Spanish path (or it plus one trailing slash) is a 308 to its new path, for
       any method and any `Accept`, keeping the query string;
-    - for a `GET`/`HEAD` that accepts `text/html`, an exact `SHARED_FRONT_PATHS` entry is
+    - for a `GET`/`HEAD` that accepts `text/html`, a whole-path `SHARED_FRONT_PATHS` match is
       the app shell, served by the same `SpaStatic` as `/` so its headers have one author,
       and the same path plus one trailing slash is a 308 to the slashless path;
     - everything else reaches the app untouched.
@@ -99,17 +211,17 @@ class FrontNavigation:
             await self._app(scope, receive, send)
             return
         path: str = scope["path"]
-        legacy_target = LEGACY_FRONT_PATHS.get(_without_one_slash(path))
+        legacy_target = _legacy_target(path)
         if legacy_target is not None:
             await self._redirect(legacy_target, scope, receive, send)
             return
         if scope["method"] in ("GET", "HEAD") and _accepts_html(scope):
-            if path in SHARED_FRONT_PATHS:
+            if _matching(path, SHARED_FRONT_PATHS):
                 response = await self._spa.get_response("index.html", scope)
                 await response(scope, receive, send)
                 return
             slashless = _without_one_slash(path)
-            if slashless != path and slashless in SHARED_FRONT_PATHS:
+            if slashless != path and _matching(slashless, SHARED_FRONT_PATHS):
                 await self._redirect(slashless, scope, receive, send)
                 return
         await self._app(scope, receive, send)

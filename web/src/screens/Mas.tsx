@@ -1,67 +1,77 @@
 /**
- * `Mas`: "+ Cargar gasto", Gastos and Análisis first, in the design's order
- * (`Mas.dc.html`), then the entries whose screens have not moved yet (Variedades,
- * Catálogo), which leave with the issues that move them, and Configuración last.
+ * `Mas`: "Cargar gasto" (the docs' "+ Cargar gasto": the `agregar` icon is the plus), "Sacar del stock" (the withdrawal form), Gastos, Análisis and
+ * Configuración, in the design's order (`Mas.dc.html`) and nothing else (navigation.md):
+ * Variedades is a bar tab, and the catalog is reached from it.
  * Paths come from `routes.ts`. The subtitles are the design's own words.
- * Configuración carries `state: { inApp: true }`, which lets its list's back go
- * through history (`useBackOr`).
+ * Every entry goes through `InAppLink`, which lets a card's back go through history.
  */
 
-import { Link } from 'react-router'
-import Icono from '../components/Icono'
-import { ANALYSIS, EXPENSE_NEW, EXPENSES } from '../routes'
+import InAppLink from '../components/InAppLink'
+import Icono, { type NombreIcono } from '../components/Icono'
+import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS, WITHDRAWAL_NEW } from '../routes'
 
 interface Item {
   to: string
   label: string
+  icon: NombreIcono
   detail?: string
-  /** Opening it leaves the app behind it, so a group's "Cerrar" can go back by history. */
-  inApp?: boolean
 }
 
 const ITEMS: Item[] = [
   {
     to: EXPENSE_NEW,
-    label: '+ Cargar gasto',
+    label: 'Cargar gasto',
+    icon: 'agregar',
     detail: 'Categoría, monto y detalle',
   },
-  { to: EXPENSES, label: 'Gastos', detail: 'Por mes y por categoría' },
+  {
+    to: WITHDRAWAL_NEW,
+    label: 'Sacar del stock',
+    icon: 'salidaStock',
+    detail: 'Promoción o consumo propio',
+  },
+  { to: EXPENSES, label: 'Gastos', icon: 'gastos', detail: 'Por mes y por categoría' },
   {
     to: ANALYSIS,
     label: 'Análisis',
+    icon: 'analisis',
     detail: 'Variedades, semanas, meses y días',
   },
   {
-    to: '/variedades',
-    label: 'Variedades',
-    detail: 'Precios y avisos de stock bajo',
-  },
-  {
-    to: '/catalogo',
-    label: 'Catálogo',
-    detail: 'El mensaje de hoy, listo para copiar',
-  },
-  {
-    to: '/settings',
+    to: SETTINGS,
     label: 'Configuración',
+    icon: 'configuracion',
     detail: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
-    inApp: true,
   },
 ]
+
+/**
+ * The docs' "+ Cargar gasto" stands for the `agregar` icon, which draws the plus: the screen
+ * shows the word alone, and the accessible name keeps the "+" (icon-and-text-rule.md,
+ * criterion 5). It is built from the item's own fields, so the two cannot drift. An entry
+ * with another icon is named by its content, as before.
+ */
+function accessibleName(item: Item): string | undefined {
+  if (item.icon !== 'agregar') return undefined
+  return `+ ${item.label}${item.detail === undefined ? '' : ` ${item.detail}`}`
+}
 
 export default function Mas() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
         <span className="encabezado__titulo">Más</span>
-        <nav className="mas__lista" aria-label="Más">
+        <nav className="mas__lista" aria-label="Más" data-menu>
           {ITEMS.map((item) => (
-            <Link
+            <InAppLink
               key={item.to}
               to={item.to}
-              state={item.inApp === true ? { inApp: true } : undefined}
               className="mas__item"
+              aria-label={accessibleName(item)}
             >
+              <span className="mas__item-icono">
+                <Icono nombre={item.icon} />
+              </span>
               <span className="mas__item-texto">
                 <span className="mas__item-rotulo">{item.label}</span>
                 {item.detail !== undefined && (
@@ -69,9 +79,9 @@ export default function Mas() {
                 )}
               </span>
               <span className="mas__item-flecha">
-                <Icono nombre="chevron" size={18} />
+                <Icono nombre="chevron" />
               </span>
-            </Link>
+            </InAppLink>
           ))}
         </nav>
       </div>

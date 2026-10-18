@@ -23,6 +23,15 @@ export interface AmountWithPending {
   pending_grams: number
 }
 
+/** One Análisis cost line (`RowCostOut`): a costed amount, the grams still without a
+ * cost, and the backend's own answer on whether every gram behind the figure is
+ * pending. The front never works that out itself. */
+export interface RowCost {
+  amount: number
+  pending_grams: number
+  all_pending: boolean
+}
+
 export interface VarietyRow {
   variety_id: number
   name: string
@@ -43,7 +52,9 @@ export interface AnalysisMonth {
   grams_sold: number
   grams_gifted: number
   average_margin: MarginFigure
-  shortfall: AmountWithPending | null
+  shortfall: RowCost | null
+  promotion: RowCost | null
+  own_use: RowCost | null
   varieties: VarietyRow[]
 }
 
@@ -53,6 +64,10 @@ export interface AnalysisWeek {
   sales: number
   grams: number
   expenses: number
+  cost_of_goods: RowCost
+  shortfall: RowCost | null
+  promotion: RowCost | null
+  own_use: RowCost | null
   profit: AmountWithPending
   cash: number
   best: boolean
@@ -65,6 +80,10 @@ export interface AnalysisMonthRow {
   sales: number
   grams: number
   expenses: number
+  cost_of_goods: RowCost
+  shortfall: RowCost | null
+  promotion: RowCost | null
+  own_use: RowCost | null
   profit: AmountWithPending
   cash: number
 }
@@ -81,7 +100,9 @@ export interface SinceFirstRecord {
   expenses: number
   profit: AmountWithPending
   cash: number
-  shortfall: AmountWithPending | null
+  shortfall: RowCost | null
+  promotion: RowCost | null
+  own_use: RowCost | null
 }
 
 export interface ExpenseCategoryTotal {

@@ -38,7 +38,10 @@ async function run(page: Page, step: WalkStep, facts: Facts): Promise<void> {
       .first()
     await control.dispatchEvent('click', undefined, options)
   } else if ('click' in step) await clickTarget(page, step.click).click(options)
-  else if ('fill' in step) {
+  else if ('press' in step) await page.getByRole('button', { name: step.press, exact: true }).click(options)
+  else if ('select' in step) {
+    await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index }, options)
+  } else if ('fill' in step) {
     await fill(page, step.fill.label, resolvePlaceholders(step.fill.value, facts), STEP_TIMEOUT_MS)
   } else if ('wait' in step) await page.getByText(step.wait, { exact: true }).first().waitFor(options)
   else await page.context().setOffline(true)

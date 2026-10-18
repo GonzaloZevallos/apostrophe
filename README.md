@@ -46,7 +46,7 @@ The API is described at `http://localhost:8000/docs`.
 ## Check it
 
 ```sh
-uv run --no-project pytest
+uv run --no-project pytest -n auto
 uv run --no-project ruff check .
 uv run --no-project mypy app tests
 ```
@@ -61,11 +61,11 @@ npx --prefix web playwright install chromium   # once
 npm --prefix web run e2e                       # the browser against the real backend
 ```
 
-The e2e run's port comes from `APOSTROPHE_E2E_PORT`, or a free port picked for the
-run when it is unset, so two checkouts can run it at the same time. Run only one e2e
-at a time per checkout, though: `web/dist` is shared. A rare failure to start, from a
-port grabbed between picking it and binding it, is fixed by rerunning, or by setting
-`APOSTROPHE_E2E_PORT` yourself.
+Each e2e Playwright worker starts its own backend on its own free port, over its own
+database (`web/e2e/fixtures.ts`, docs/adr/0040), so two checkouts can run it at the same
+time and there is no variable to set. Run only one e2e at a time per checkout, though:
+`web/dist` is shared. A port grabbed between picking it and binding it is retried three
+times by the fixture; after that, rerun.
 
 All of them run in CI and are what the agentic system runs (`.agentic/stack.yaml`). The guards worth knowing before adding a route or a table:
 

@@ -7,14 +7,15 @@
  * price per gram, rule and total, and "Quitar"). It only renders what it is given.
  */
 
-import { type KeyboardEvent, type RefObject, useSyncExternalStore } from 'react'
+import type { KeyboardEvent, RefObject } from 'react'
 import Boton from '../../components/Boton'
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
-import { COMPUTER_QUERY } from '../../format/breakpoints'
 import { formatGrams, formatMoney } from '../../format/money'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
+import { GRAMS_HELP } from '../../sales/messages'
+import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
 
 export interface LineState {
@@ -47,20 +48,6 @@ function onEnter(event: KeyboardEvent<HTMLInputElement>, action: () => void): vo
   if (event.key !== 'Enter') return
   event.preventDefault()
   action()
-}
-
-/** Whether the screen is on the computer layout. A browser without `matchMedia` (jsdom)
- * is the phone, the layout this component's own changes are for. */
-function useIsComputer(): boolean {
-  return useSyncExternalStore(
-    (notify) => {
-      if (typeof window.matchMedia !== 'function') return () => {}
-      const query = window.matchMedia(COMPUTER_QUERY)
-      query.addEventListener('change', notify)
-      return () => query.removeEventListener('change', notify)
-    },
-    () => typeof window.matchMedia === 'function' && window.matchMedia(COMPUTER_QUERY).matches,
-  )
 }
 
 interface NuevaVentaLineaProps {
@@ -104,7 +91,9 @@ export default function NuevaVentaLinea({
   onChange,
   onRemove,
 }: NuevaVentaLineaProps) {
-  const isComputer = useIsComputer()
+  // A browser without `matchMedia` (jsdom) is the phone, the layout this component's own
+  // changes are for.
+  const isComputer = useViewport() === 'computer'
   if (!isOpen) {
     const displayName = variety?.name ?? 'Sin variedad'
     const messageId = `linea-mensaje-${line.key}`
@@ -185,7 +174,9 @@ export default function NuevaVentaLinea({
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ grams: event.target.value })}
         />
-        <span className="campo__ayuda">Coma, hasta dos decimales</span>
+        <span className="campo__ayuda" data-copy="help">
+          {GRAMS_HELP}
+        </span>
       </label>
       <div className="nueva-venta__linea-opciones">
         {isComputer ? (
@@ -244,9 +235,7 @@ export default function NuevaVentaLinea({
         </div>
       )}
       {canRemove && (
-        <Boton variant="link" ariaLabel={`Quitar línea ${n}`} onClick={onRemove}>
-          Quitar
-        </Boton>
+        <Boton variant="icon" action="delete" ariaLabel={`Quitar línea ${n}`} onClick={onRemove} />
       )}
     </div>
   )

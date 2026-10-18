@@ -22,12 +22,12 @@ from app.accounts.application.invitations import invite_partner
 from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
 from app.business_removal.domain.classification import delete_order
 from app.business_removal.domain.labels import exported_tables
-from app.clock import system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
 from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, open_business, signed_in
 from tests.fakes.telegram import FakeTelegram
+from tests.pricing_switches import set_switches
 
 SETTINGS = Settings(secret_key="removal-test-secret", database_url="sqlite://")
 
@@ -95,26 +95,33 @@ def file_engine(tmp_path: Path) -> Engine:
 
 
 @pytest.fixture
-def app(file_engine: Engine) -> FastAPI:
+def clock() -> MovableClock:
+    """The one clock the app, its invitations and the seeded rows all run on."""
+    return MovableClock(NOW)
+
+
+@pytest.fixture
+def app(file_engine: Engine, clock: MovableClock) -> FastAPI:
     return create_app(
         SETTINGS,
         engine=file_engine,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
+        clock=clock,
         upkeep_ticker=False,
     )
 
 
 @pytest.fixture
-def leaving_token(app: FastAPI, file_engine: Engine) -> str:
-    clock = MovableClock(system_clock())  # the `app` fixture runs on the real clock
+def leaving_token(app: FastAPI, file_engine: Engine, clock: MovableClock) -> str:
     with TestClient(app) as client:
         return open_business(client, file_engine, clock, "Leaving Business", "leaving@example.com")
 
 
 @pytest.fixture
-def staying_token(app: FastAPI, file_engine: Engine, leaving_token: str) -> str:
-    clock = MovableClock(system_clock())
+def staying_token(
+    app: FastAPI, file_engine: Engine, clock: MovableClock, leaving_token: str
+) -> str:
     with TestClient(app) as client:
         return open_business(client, file_engine, clock, "Staying Business", "staying@example.com")
 
@@ -128,36 +135,69 @@ def _issue_join_invitation(engine: Engine, business_id: int, now: datetime) -> s
     return issued.token
 
 
-def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int) -> None:
+def _seed_join_invitations(
+    client: TestClient, engine: Engine, business_id: int, clock: MovableClock
+) -> None:
     """A pending, a used and an expired join invitation for one business (round-3
     Q1's three statuses), so the delete is proven to sweep all of them, whatever their
     status."""
-    _issue_join_invitation(engine, business_id, system_clock())  # left pending, never accepted.
+    today = clock()
+    _issue_join_invitation(engine, business_id, today)  # left pending, never accepted.
 
-    used_token = _issue_join_invitation(engine, business_id, system_clock())
+    used_token = _issue_join_invitation(engine, business_id, today)
     accepted = client.post(
         f"/invitations/{used_token}/accept",
         json={"email": "partner@example.com", "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text
 
-    # Issued well before its 7-day lifetime, so it is already expired as of NOW,
-    # without moving any clock.
-    _issue_join_invitation(engine, business_id, system_clock() - timedelta(days=30))
+    # Issued well before its 7-day lifetime, so it is already expired as of today,
+    # without moving the clock.
+    _issue_join_invitation(engine, business_id, today - timedelta(days=30))
+
+
+def _seed_withdrawal(client: TestClient, variety_id: int) -> None:
+    """A two-line stock withdrawal recorded through its route, so the removal meets both
+    tables with more than one line of one withdrawal."""
+    response = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason": "promotion",
+            "date": "2026-01-01",
+            "lines": [
+                {"variety_id": variety_id, "grams": "5"},
+                {"variety_id": variety_id, "grams": "1.5"},
+            ],
+        },
+    )
+    assert response.status_code == 201, response.text
 
 
 @pytest.fixture
 def seeded(
-    app: FastAPI, file_engine: Engine, leaving_token: str, staying_token: str
+    app: FastAPI,
+    file_engine: Engine,
+    clock: MovableClock,
+    leaving_token: str,
+    staying_token: str,
 ) -> dict[str, Any]:
     with TestClient(app) as client:
         leaving = signed_in(client, leaving_token)
         leaving_records = _seed_everything(leaving, "leaving@example.com")
         leaving_business_id = _business_id(file_engine, "leaving@example.com")
-        _seed_join_invitations(leaving, file_engine, leaving_business_id)
+        _seed_join_invitations(leaving, file_engine, leaving_business_id, clock)
+        _seed_withdrawal(leaving, leaving_records["variety_id"])
 
         staying = signed_in(client, staying_token)
         staying_records = _seed_everything(staying, "staying@example.com")
+        _seed_withdrawal(staying, staying_records["variety_id"])
+    # One first-run row each (docs/adr/0046), so the delete meets the table with data.
+    with file_engine.begin() as connection:
+        for email in ("leaving@example.com", "staying@example.com"):
+            connection.execute(
+                text("INSERT INTO first_run (business_id, imported_at) VALUES (:b, :at)"),
+                {"b": _business_id(file_engine, email), "at": "2026-10-01 12:00:00"},
+            )
     return {"leaving": leaving_records, "staying": staying_records}
 
 
@@ -372,6 +412,7 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
             client, engine, MovableClock(NOW), "Types Business", "types@example.com"
         )
         signed = signed_in(client, token)
+        set_switches(engine, bulk=False, vip=True, business_name="Types Business")
         customer = signed.post(
             "/customers", json={"name": "Vip customer", "phone": "11 2345-6789", "vip": True}
         ).json()

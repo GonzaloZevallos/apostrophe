@@ -24,7 +24,7 @@ export const NOT_SCREENS: Readonly<Record<string, string>> = {
  */
 export function redirectExcuses(table: readonly { from: string }[]): Record<string, string> {
   return Object.fromEntries(
-    table.map(({ from }) => [from, 'redirect-only: replaces itself with another route (src/redirects.ts)']),
+    table.map(({ from }) => [from, 'redirect-only: replaces itself with another route (a table of redirects)']),
   )
 }
 

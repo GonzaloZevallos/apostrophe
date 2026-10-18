@@ -31,6 +31,7 @@
  * customer, deleting or undoing shows 'Eso ya no está. La lista ya está al día.'").
  */
 
+import { SALES } from '../../routes'
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useNavigate, useParams } from 'react-router'
@@ -192,7 +193,7 @@ function VentaDetalleScreen() {
         // still mounted for one more tick and would otherwise refetch into a 404
         // the browser logs on its own (keys.ts).
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-        navigate('/ventas', { replace: true, state: gone() })
+        navigate(SALES, { replace: true, state: gone() })
       } else if (caught instanceof ApiError) {
         const override = resolveOverride(ASSIGN_OVERRIDES, caught.code)
         setAssignError(override?.message ?? GENERIC_REFUSAL)
@@ -221,14 +222,14 @@ function VentaDetalleScreen() {
       // Deshacer's own toast names the grams going back to stock (sales.md, PM
       // adjustment 4); the explicit "Borrar venta" confirmation already named them
       // in its question, so its toast stays the plain, existing one.
-      navigate('/ventas', {
+      navigate(SALES, {
         replace: true,
         state: toast(reason === 'deshacer' ? UNDO_TOAST : DELETE_TOAST),
       })
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-        navigate('/ventas', { replace: true, state: gone() })
+        navigate(SALES, { replace: true, state: gone() })
       } else if (caught instanceof NetworkError) {
         setDeleteOffline(true)
       } else {
@@ -242,7 +243,7 @@ function VentaDetalleScreen() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Ventas" to="/ventas" />
+      return <GoneScreen label="Ventas" to={SALES} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -273,35 +274,19 @@ function VentaDetalleScreen() {
   }
   const sale = data
 
-  function goBack(): void {
-    // No history to go back into (a direct open, a refresh): `/ventas` is the
-    // only sure place back from here (plan, "Navigation").
-    if (location.key === 'default') {
-      navigate('/ventas')
-    } else {
-      navigate(-1)
-    }
-  }
-
   return (
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Boton variant="icon" icon="atras" ariaLabel="Volver" onClick={goBack} />
           <span className="encabezado__titulo">{`Venta del ${formatDateShort(sale.date)}`}</span>
         </div>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
             <span className="venta-guardada__texto">{SALE_SAVED}</span>
-            <button
-              type="button"
-              className="venta-guardada__deshacer"
-              disabled={deleting}
-              onClick={() => void removeSale('deshacer')}
-            >
+            <Boton variant="undo" disabled={deleting} onClick={() => void removeSale('deshacer')}>
               Deshacer
-            </button>
+            </Boton>
           </div>
         )}
         {deleteOffline && <SinConexion />}
@@ -370,9 +355,7 @@ function VentaDetalleScreen() {
             </Boton>
           )}
 
-          <Boton variant="link" icon="tacho" onClick={() => setConfirmingDelete(true)}>
-            Borrar venta
-          </Boton>
+          <Boton variant="icon" action="delete" ariaLabel="Borrar venta" onClick={() => setConfirmingDelete(true)} />
         </div>
       </div>
 

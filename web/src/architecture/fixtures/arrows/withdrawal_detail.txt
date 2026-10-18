@@ -1,0 +1,5 @@
+<div className="retiro__volver">
+  <Boton variant="back" ariaLabel="Volver" onClick={back}>
+    ‹
+  </Boton>
+</div>

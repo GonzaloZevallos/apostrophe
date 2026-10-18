@@ -1,16 +1,18 @@
 /**
- * `TeDeben` at the screen seam (CODING_STANDARDS §10): Testing Library, `fetch`
+ * `TeDeben`, the section on top of Clientes, at the screen seam (CODING_STANDARDS §10): Testing Library, `fetch`
  * faked. The list is the API's own order (plan, "Front": "the API's order"),
  * never resorted here; the total and count head the view and come from
  * `GET /payments/debtors` alone (payments.md, "Who owes and the totals").
  */
 
+import { CUSTOMER, CUSTOMERS } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -23,10 +25,10 @@ function renderTeDeben() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/clientes/deben']}>
+      <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
-          <Route path="/clientes/deben" element={<TeDeben />} />
-          <Route path="/clientes/:id" element={<span>ficha</span>} />
+          <Route path={CUSTOMERS} element={<TeDeben />} />
+          <Route path={CUSTOMER} element={<span>ficha</span>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -58,10 +60,16 @@ test("heads with the total owed and lists debtors in the API's own order", async
 
   expect(await screen.findByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`)).toBeInTheDocument()
 
-  const rows = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/clientes/'))
+  const rows = screen
+    .getAllByRole('link')
+    .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Cobrar')
   expect(rows.map((row) => row.textContent)).toEqual([
-    'Ana Pérez$ 15.000desde 14/09',
-    'Beto$ 22.000desde 20/09',
+    'Ana Pérez$ 15.000te debe desde 14/09',
+    'Beto$ 22.000te debe desde 20/09',
+  ])
+  expect(screen.getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label'))).toEqual([
+    'Cobrar a Ana Pérez',
+    'Cobrar a Beto',
   ])
 })
 
@@ -82,16 +90,19 @@ test('three sales still owing read "3 ventas debiendo", plural', async () => {
   expect(await screen.findByText('3 ventas debiendo')).toBeInTheDocument()
 })
 
-test('an empty debtors list shows the empty-state text', async () => {
+test('nobody owing shows the fixed "Nadie te debe"', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }))
   renderTeDeben()
 
-  expect(await screen.findByText('Nadie te debe.')).toBeInTheDocument()
+  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Te deben' })).toBeInTheDocument()
 })
 
-test('a dropped network shows Sin conexión', async () => {
+test('a dropped network shows nothing here: Clientes shows Sin conexión on its own list', async () => {
   vi.mocked(fetch).mockRejectedValue(new TypeError('network error'))
   renderTeDeben()
 
-  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  await waitFor(() => expect(fetch).toHaveBeenCalled())
+  expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument()
+  expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
 })

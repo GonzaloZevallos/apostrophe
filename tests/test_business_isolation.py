@@ -30,6 +30,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.accounts.adapters.tables import BusinessRow
 from app.accounts.application import manage_business
 from app.accounts.application.ports import Accounts
 from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
@@ -37,13 +38,26 @@ from app.expenses.adapters.tables import ExpenseCategoryRow
 from app.expenses.application import manage_categories
 from app.expenses.domain.category import CategoryNotFound
 from app.main import create_app
+from app.onboarding.adapters.sql_first_runs import SqlFirstRuns
+from app.onboarding.adapters.sql_onboardings import SqlOnboardings
+from app.onboarding.adapters.tables import OnboardingRow
+from app.onboarding.domain.onboarding import Onboarding
 from app.payments.adapters import router as payments_router_module
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
 from app.results.domain.periods import periods as compute_periods
 from app.shared.calendar import Month
 from app.shared.transaction import Transaction
-from tests.conftest import SETTINGS, TEST_HASHER, TODAY, MovableClock, open_business, signed_in
+from tests.conftest import (
+    NOW,
+    SETTINGS,
+    TEST_HASHER,
+    TODAY,
+    MovableClock,
+    open_business,
+    signed_in,
+)
+from tests.fakes.archive import archive_by_hand
 from tests.fakes.telegram import FakeTelegram
 
 MARKER = "zz-isolation-marker"
@@ -151,7 +165,16 @@ def seed_stock(client: TestClient) -> dict[str, int]:
         },
     )
     assert entry.status_code == 201, entry.text
-    return {"stock_entry_id": entry.json()["id"]}
+    withdrawal = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason": "promotion",
+            "note": MARKER,
+            "lines": [{"variety_id": variety["id"], "grams": "5"}],
+        },
+    )
+    assert withdrawal.status_code == 201, withdrawal.text
+    return {"stock_entry_id": entry.json()["id"], "withdrawal_id": withdrawal.json()["id"]}
 
 
 def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
@@ -195,6 +218,23 @@ def seed_payments(client: TestClient) -> dict[str, int]:
     return {"customer_id": customer_id, "payment_id": payment.json()["payment"]["id"]}
 
 
+def seed_pricing_settings(client: TestClient) -> dict[str, int]:
+    saved = client.put(
+        "/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True}
+    )
+    assert saved.status_code == 200, saved.text
+    return {}
+
+
+def seed_first_run(client: TestClient) -> dict[str, int]:
+    # `/first-run` has no record to name and nothing a client can write but the dismissal,
+    # which stamps only an imported business. Its rows are stamped by the import, so the
+    # stamped case is `test_another_business_dismissing_the_import_notice_leaves_a_s_own`.
+    answer = client.get("/first-run")
+    assert answer.status_code == 200, answer.text
+    return {}
+
+
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
@@ -204,6 +244,8 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
+    seed_pricing_settings,
+    seed_first_run,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -246,6 +288,14 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "origin": "opening_stock",
         "grams": "20",
     },
+    ("POST", "/stock/withdrawals"): {
+        "reason": "own_use",
+        "lines": [{"variety_id": 1, "grams": "1"}],
+    },
+    ("PUT", "/stock/withdrawals/{withdrawal_id}"): {
+        "reason": "own_use",
+        "lines": [{"variety_id": 1, "grams": "2"}],
+    },
     ("PUT", "/stock/varieties/{variety_id}/threshold"): {"grams": "15"},
     ("PUT", "/catalog/varieties/{variety_id}"): {
         "shown": True,
@@ -259,6 +309,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "own_chat": "another own chat",
         "channel_chat": None,
     },
+    ("POST", "/pinned-catalog/own-chat-lookup"): {"token": None},
     ("POST", "/customers/{customer_id}/payments/preview"): {
         "paid_on": "2026-10-02",
         "amount": 100,
@@ -268,6 +319,8 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "amount": 100,
         "method": "cash",
     },
+    ("POST", "/onboarding-progress/passes"): {"step": "header_footer", "as": "done"},
+    ("PUT", "/pricing-settings"): {"is_bulk_pricing": False, "is_vip_customers": False},
     ("POST", "/auth/password"): {
         "current_password": "the wrong current password",
         "new_password": "a new password of some length",
@@ -279,7 +332,11 @@ PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
 
 def _operations() -> list[tuple[str, str, bool]]:
     document = create_app(
-        SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+        SETTINGS,
+        clock=MovableClock(NOW),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     ).openapi()
     return sorted(
         (method.upper(), path, "requestBody" in operation)
@@ -294,6 +351,8 @@ def _operations() -> list[tuple[str, str, bool]]:
 OPERATIONS = _operations()
 BY_ID = [(m, p) for m, p, _ in OPERATIONS if "{" in p]
 LISTS = [p for m, p, _ in OPERATIONS if m == "GET" and "{" not in p]
+# The same route with a query that reads other rows: the archived varieties' stock.
+LISTS.append("/stock?archived=true")
 # A non-GET route with no `{` in its path never names a record: the business it acts on
 # can only come from the session. B calling one must never move anything A can see
 # through `LISTS` (a `GET /business` with no path parameter is itself one of `LISTS`,
@@ -361,9 +420,7 @@ def _assert_another_business_cannot_reach_a_record(
     comparison against a deliberately broken route, instead of a copy of it."""
     before = _lists_snapshot(business_a)
 
-    response = business_b.request(
-        method, _concrete(path, seeded), json=BODIES.get((method, path))
-    )
+    response = business_b.request(method, _concrete(path, seeded), json=BODIES.get((method, path)))
 
     assert response.status_code == 404, response.text
     for read in [p for m, p in BY_ID if m == "GET"]:
@@ -451,6 +508,32 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
     assert valid.status_code == 201, valid.text
 
 
+def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    def body(variety_id: int) -> dict[str, Any]:
+        return {"reason": "promotion", "lines": [{"variety_id": variety_id, "grams": "1"}]}
+
+    own_variety = business_b.post("/varieties", json={"name": "B withdrawal variety"}).json()
+    own = business_b.post("/stock/withdrawals", json=body(own_variety["id"]))
+    assert own.status_code == 201, own.text
+    path = f"/stock/withdrawals/{own.json()['id']}"
+
+    sends: list[Callable[[int], Any]] = [
+        lambda variety_id: business_b.post("/stock/withdrawals", json=body(variety_id)),
+        lambda variety_id: business_b.put(path, json=body(variety_id)),
+    ]
+    for send in sends:
+        missing = send(999_999)
+        other_business = send(seeded_b["variety_id"])
+
+        assert missing.status_code == 404, missing.text
+        assert other_business.status_code == 404, other_business.text
+        assert missing.json() == other_business.json()
+
+    assert business_b.get(f"/stock/varieties/{seeded_b['variety_id']}/movements").status_code == 404
+
+
 def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_way(
     business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
 ) -> None:
@@ -511,6 +594,18 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     assert valid.status_code == 200, valid.text
 
 
+def test_another_business_reads_none_of_the_archived_stock_rows(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    variety = business_a.post("/varieties", json={"name": "Archived here"}).json()
+    archive_by_hand(engine, variety["id"])
+    assert [
+        r["variety_id"] for r in business_a.get("/stock?archived=true").json()["varieties"]
+    ] == [variety["id"]]
+
+    assert business_b.get("/stock?archived=true").json()["varieties"] == []
+
+
 @pytest.mark.parametrize("path", LISTS)
 def test_another_business_lists_none_of_its_records(
     business_b: TestClient, seeded: dict[str, int], path: str
@@ -551,6 +646,28 @@ def test_another_business_reads_the_pinned_catalog_as_its_own_empty_state(
     assert own["publish_blocked_by"] is None
     assert MARKER not in other.text
     assert other.json()["publish_blocked_by"] == "not_tested"
+
+
+def test_another_business_cannot_look_up_with_the_saved_token_of_a_business(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    telegram: FakeTelegram,
+) -> None:
+    """The lookup with no typed token takes the saved one of the caller's own business
+    only: A has a saved token and a chat that wrote to its bot, and B, with none, is
+    told so and never reaches A's chat or token."""
+    telegram.set_private_chats(f"{MARKER}:bot-token", ["424242424"])
+    own = business_a.post("/pinned-catalog/own-chat-lookup", json={"token": None})
+
+    other = business_b.post("/pinned-catalog/own-chat-lookup", json={"token": None})
+
+    assert own.status_code == 200, own.text
+    assert own.json() == {"own_chat": "424242424"}
+    assert other.status_code == 422
+    assert other.json()["code"] == "pinned_catalog.token_required"
+    assert "424242424" not in other.text
+    assert MARKER not in other.text
 
 
 def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(
@@ -627,9 +744,7 @@ def test_the_singleton_check_catches_a_write_that_always_touches_business_1(
     ) -> manage_business.BusinessProfile:
         return original_rename_business(accounts, transaction, 1, raw_name)
 
-    monkeypatch.setattr(
-        manage_business, "rename_business", renames_business_one_no_matter_who_asks
-    )
+    monkeypatch.setattr(manage_business, "rename_business", renames_business_one_no_matter_who_asks)
 
     with pytest.raises(AssertionError):
         _assert_a_business_s_write_touches_only_its_own_business(
@@ -751,6 +866,8 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
             "cost_of_goods": 0,
             "pending_cost": False,
             "shortfall": None,
+            "promotion": None,
+            "own_use": None,
             "expenses": 0,
             "purchases": 0,
             "profit": 0,
@@ -855,15 +972,128 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
             "grams_gifted": 0.0,
             "average_margin": {"amount": 0, "percent": None, "pending_grams": 0.0},
             "shortfall": None,
+            "promotion": None,
+            "own_use": None,
             "varieties": [],
         },
         "weeks": [],
         "months": [],
         "weekdays": [
-            {"weekday": weekday, "sales": 0, "count": 0, "best": False}
-            for weekday in range(1, 8)
+            {"weekday": weekday, "sales": 0, "count": 0, "best": False} for weekday in range(1, 8)
         ],
         "since_first_record": None,
         "month_expenses": {"categories": [], "total": 0, "purchases": 0},
         "since_first_record_expenses": {"categories": [], "total": 0, "purchases": 0},
     }
+
+
+def test_each_business_has_its_own_onboarding_row_and_reads_no_other(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    # Opening each business through its invitation seeded its row (docs/adr/0036).
+    with Session(engine) as session:
+        rows = session.scalars(select(OnboardingRow)).all()
+        assert len(rows) == 2
+        ids = {row.business_id for row in rows}
+        assert len(ids) == 2
+        a_id, b_id = sorted(ids)
+        assert SqlOnboardings(session, a_id).get() == Onboarding.opened()
+        assert SqlOnboardings(session, b_id).get() == Onboarding.opened()
+        assert SqlOnboardings(session, max(ids) + 1).get() is None
+
+
+def test_another_business_dismissing_the_import_notice_leaves_a_s_own(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    with Session(engine) as session:
+        a_id = session.scalars(
+            select(BusinessRow.id).where(BusinessRow.name.like(f"%{MARKER}%"))
+        ).one()
+        SqlFirstRuns(session, a_id).imported(NOW)
+        session.commit()
+    before = business_a.get("/first-run").json()
+    assert before["import_notice"] is True
+
+    dismissed = business_b.post("/first-run/import-notice/dismissal")
+
+    assert dismissed.status_code == 204, dismissed.text
+    assert business_a.get("/first-run").json() == before
+    with Session(engine) as session:
+        stored = SqlFirstRuns(session, a_id).get()
+    assert stored is not None
+    assert stored.import_notice_over_at is None
+    assert business_b.get("/first-run").json()["import_notice"] is False
+
+
+def test_another_business_has_no_priced_target_while_a_has_one(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    variety = business_a.post("/varieties", json={"name": "Priced variety"}).json()
+    business_a.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+
+    mine = business_a.get("/onboarding-progress").json()
+    theirs = business_b.get("/onboarding-progress").json()
+
+    assert mine["priced_target"] == {"id": variety["id"], "name": "Priced variety"}
+    assert theirs["priced_target"] is None
+    assert theirs["price_target"] is None
+
+
+@pytest.mark.parametrize(
+    ("method", "path"),
+    [
+        ("GET", "/varieties/{id}"),
+        ("POST", "/varieties/{id}/archive"),
+        ("POST", "/varieties/{id}/restore"),
+        ("PATCH", "/varieties/{id}"),
+        ("POST", "/varieties/{id}/prices"),
+        ("DELETE", "/varieties/{id}"),
+    ],
+)
+def test_another_business_cannot_reach_an_archived_variety(
+    business_a: TestClient, business_b: TestClient, method: str, path: str
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} archived"}).json()
+    business_a.post(f"/varieties/{variety['id']}/archive")
+    body = {"name": "Renamed", "effective_from": "2026-02-01", "list_price": 12_000}
+
+    response = business_b.request(method, path.format(id=variety["id"]), json=body)
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "variety.not_found"
+    b_archived = business_b.get("/varieties", params={"archived": "true"}).json()
+    assert b_archived == []
+    assert business_a.get(f"/varieties/{variety['id']}").json()["archived"] is True
+
+
+@pytest.mark.parametrize("archived", [False, True])
+def test_another_business_cannot_delete_a_variety_with_no_history(
+    business_a: TestClient, business_b: TestClient, archived: bool
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} deletable"}).json()
+    if archived:
+        business_a.post(f"/varieties/{variety['id']}/archive")
+
+    response = business_b.delete(f"/varieties/{variety['id']}")
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "variety.not_found"
+    assert business_a.get(f"/varieties/{variety['id']}").status_code == 200
+
+
+def test_another_business_reads_none_of_the_archived_catalog_attributes(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    variety = business_a.post("/varieties", json={"name": "Archived catalog here"}).json()
+    attributes = business_a.put(
+        f"/catalog/varieties/{variety['id']}",
+        json={"shown": False, "emoji": None, "indica_share": 40, "aroma": MARKER},
+    )
+    assert attributes.status_code == 200, attributes.text
+    archive_by_hand(engine, variety["id"])
+    assert [r["variety_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
+
+    assert business_b.get("/catalog/archived").json() == []

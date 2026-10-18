@@ -12,13 +12,10 @@
 import { get, patch, post } from './client'
 import type { Standing } from './payments'
 
-export type Channel = 'telegram' | 'whatsapp'
-
 export interface Customer {
   id: number
   name: string
   phone: string | null
-  channel: Channel | null
   vip: boolean
   balance: number
   owing_since: string | null
@@ -28,7 +25,6 @@ export interface Customer {
 export interface CustomerIn {
   name: string
   phone: string | null
-  channel: Channel | null
   vip: boolean
 }
 

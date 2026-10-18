@@ -31,11 +31,31 @@ class CostFigure:
 
 @dataclass(frozen=True)
 class AmountWithPending:
-    """A money figure (profit, or stock shortfall) together with the pending grams
-    behind it, for one period."""
+    """A money figure (profit) together with the pending grams behind it, for one
+    period."""
 
     amount: int
     pending_grams: Grams
+
+
+@dataclass(frozen=True)
+class RowCost:
+    """One Análisis cost line (cost of goods, stock shortfall, promotion or own use):
+    its costed amount, its own pending grams and whether *every* gram behind it is
+    pending, so the screen reads "N g sin costo" and never "$ 0". `row_cost` in
+    `period_figures` is the only place `all_pending` is decided."""
+
+    amount: int
+    pending_grams: Grams
+    all_pending: bool
+
+    def __post_init__(self) -> None:
+        if self.amount < 0:
+            raise ValueError("a cost line's amount cannot be negative")
+        if self.pending_grams.hundredths < 0:
+            raise ValueError("a cost line's pending grams cannot be negative")
+        if self.all_pending and not self.pending_grams.is_positive:
+            raise ValueError("a fully pending cost line has pending grams")
 
 
 @dataclass(frozen=True)
@@ -60,7 +80,9 @@ class MonthFigures:
     grams_sold: Grams
     grams_gifted: Grams
     average_margin: MarginFigure
-    shortfall: AmountWithPending | None
+    shortfall: RowCost | None
+    promotion: RowCost | None
+    own_use: RowCost | None
     varieties: tuple[VarietyRow, ...]
 
 
@@ -71,6 +93,10 @@ class WeekFigures:
     sales: int
     grams: Grams
     expenses: int
+    cost_of_goods: RowCost
+    shortfall: RowCost | None
+    promotion: RowCost | None
+    own_use: RowCost | None
     profit: AmountWithPending
     cash: int
     best: bool
@@ -84,6 +110,10 @@ class MonthRowFigures:
     sales: int
     grams: Grams
     expenses: int
+    cost_of_goods: RowCost
+    shortfall: RowCost | None
+    promotion: RowCost | None
+    own_use: RowCost | None
     profit: AmountWithPending
     cash: int
 
@@ -102,7 +132,9 @@ class SinceFirstRecordFigures:
     expenses: int
     profit: AmountWithPending
     cash: int
-    shortfall: AmountWithPending | None
+    shortfall: RowCost | None
+    promotion: RowCost | None
+    own_use: RowCost | None
 
 
 @dataclass(frozen=True)
@@ -131,7 +163,10 @@ class PeriodTotals:
     grams_sold: Grams
     grams_gifted: Grams
     cost_of_goods: CostFigure
-    shortfall: AmountWithPending | None
+    cost_of_goods_row: RowCost
+    shortfall: RowCost | None
+    promotion: RowCost | None
+    own_use: RowCost | None
     expenses: int
     purchases: int
     profit: AmountWithPending

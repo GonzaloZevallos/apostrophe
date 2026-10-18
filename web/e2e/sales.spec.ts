@@ -11,12 +11,13 @@
  * the design's own 900px breakpoint.
  *
  * One business proves the PRD's own metrics in sequence:
- * - The shell: the bar shows exactly Inicio, Ventas, Clientes, Stock and Más.
+ * - The shell: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más.
  * - "Caught before save" (3): Debiendo disabled with no customer, and a line whose
  *   variety has no price that day, both shown before any save is attempted.
  * - "Under a minute" (1): each of the three sales below — a new customer, an
- *   existing one, none — is saved in under 60 s, timed from the moment the form
- *   opens to "Venta guardada".
+ *   existing one, none — is recorded from the form to "Venta guardada". Its
+ *   duration is not measured by any test (docs/adr/0038): the run proves the flow
+ *   completes, `tapBudget.spec.ts` its tap budget.
  * - "One sale" (4) and "What I see is what I get" (2): a two-variety order with
  *   shipping charged once, where the live preview's price per gram, rule and total
  *   for *every* line match the saved detail's, figure for figure, not only the
@@ -32,9 +33,9 @@
  *   actually show, not just one sale's own figure, and the week runs Monday to
  *   Sunday, not "the last 7 days" — a sale dated the Monday of this week counts in
  *   Semana, one dated the Sunday right before it does not.
- * - The list answers in under 300 ms with a few hundred sales (metric 6), seeded
- *   directly through the API: driving the form three hundred times would only time
- *   Playwright's own clicking, not the backend.
+ * - The list answering in under 300 ms with a few hundred sales (metric 6) is not
+ *   checked here: `tests/sales/test_list_cost.py` guards it by the query plan and
+ *   the statement count of `GET /sales`, never by time (docs/adr/0038).
  * - Isolation (ADR-0004): a second business opening the first one's sale by its own
  *   id sees "Eso ya no está.", never the sale itself.
  *
@@ -46,18 +47,18 @@
  * there.
  */
 
-import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
+import { expect, test } from './fixtures.js'
+import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { whilePressed } from './helpers/pressed.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { uniqueTag } from './helpers/unique.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
-
-const PASSWORD = 'correcthorsebattery'
-const RECORD_BUDGET_MS = 60_000 // PRD metric 1: "under a minute".
-const LIST_BUDGET_MS = 300 // PRD metric 6.
-const SEEDED_SALES_FOR_PERF = 300 // "a few hundred sales".
 
 interface VarietyAnswer {
   id: number
@@ -72,7 +73,7 @@ function shortDate(iso: string): string {
 /** This test script is not the front — only `web/src` is held to "never `Date`"
  * (plan, invariants: `format/dates.ts` alone computes periods from `me.today`).
  * Plain UTC day arithmetic on an API date's digits, for this file's own fixtures,
- * the same way `Date.now()` already names this run's own business and emails. */
+ * the same way `uniqueTag()` names this run's own business and emails. */
 function parseIso(iso: string): { year: number; month: number; day: number } {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
   if (match === null) throw new Error(`not an ISO date: ${iso}`)
@@ -108,24 +109,20 @@ function countLabel(count: number): string {
 test('a seller records, undoes, fixes and isolates sales, from the front alone', async ({
   page,
   browser,
+  workerServer,
 }) => {
-  // Seeding a few hundred sales one at a time (below, for the 300 ms list check)
-  // comfortably clears the default 30 s budget on its own; this test's own journey
-  // around it needs the room too.
-  test.setTimeout(90_000)
+  // This test's own journey is long. Under load (backend suite looping beside it) it
+  // ran past its former 90 s, so the ceiling is 240 s: raised, never lowered (GH-110).
+  test.setTimeout(240_000)
 
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-ventas-${Date.now()}@example.com`
-  const businessName = `Vivero Jacarandá ${Date.now()}`
+  const ownerEmail = `duena-ventas-${uniqueTag()}@example.com`
+  const businessName = `Vivero Jacarandá ${uniqueTag()}`
 
   // Accept a new-business invitation.
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // Two priced varieties and one with no price at all, for the "no price that day"
@@ -134,26 +131,26 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // perf sections below seed sales for on dates before today — a default "Rige
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
-    await page.goto('/variedades')
-    await page.getByRole('button', { name: 'Nueva variedad' }).click()
+    await page.goto(VARIETIES)
+    await page.getByRole('link', { name: 'Nueva variedad' }).click()
     await page.getByLabel('Nombre').fill(name)
-    await page.getByRole('button', { name: 'Guardar' }).click()
+    await page.getByRole('button', { name: 'Agregá la variedad' }).click()
     await expect(page.getByText('Variedad guardada')).toBeVisible()
     if (listPrice === undefined) return
     await page.getByRole('link', { name: new RegExp(name) }).click()
-    await page.getByRole('button', { name: 'Nuevo precio' }).click()
-    if (effectiveFrom !== undefined) await page.getByLabel('Rige desde').fill(effectiveFrom)
-    await page.getByLabel('Precio de lista').fill(listPrice)
-    await page.getByRole('button', { name: 'Guardar precio' }).click()
+    await page.getByRole('link', { name: 'Nuevo precio' }).click()
+    if (effectiveFrom !== undefined) await setPriceDate(page, effectiveFrom)
+    await page.getByLabel(/^Precio de lista/).fill(listPrice)
+    await page.getByRole('button', { name: 'Guardá el precio' }).click()
     await expect(page.getByText('Precio guardado')).toBeVisible()
   }
   await addVariety('Jazmín', '500', '2000-01-01')
   await addVariety('Lirio', '300')
   await addVariety('Mimosa')
 
-  await page.goto('/ventas')
+  await page.goto(SALES)
 
-  // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, in that
+  // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más, in that
   // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
   // the side rail, `.riel-lateral`, shares the same `aria-label` but is hidden here).
   const tabBar = page.getByRole('navigation', { name: 'Navegación' }).last()
@@ -161,7 +158,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     'Inicio',
     'Ventas',
     'Clientes',
-    'Stock',
+    'Variedades',
     'Más',
   ])
 
@@ -169,7 +166,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // `.last()`: at this phone viewport the side rail's own "Nueva venta" link (first
   // in `Shell.tsx`'s markup) is the one CSS hides; the fixed bottom button is last.
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expectPath(page, SALE_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
 
   const varieties: VarietyAnswer[] = await (
@@ -178,8 +175,6 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const jazmin = varieties.find((variety) => variety.name === 'Jazmín')
   if (jazmin === undefined) throw new Error('Jazmín missing from GET /varieties?on=')
   const jazminId = jazmin.id
-
-  const saleAStart = Date.now()
 
   // Debiendo is disabled and explained while there is no customer.
   await expect(page.getByRole('radio', { name: 'Debiendo' })).toBeDisabled()
@@ -227,9 +222,8 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.getByText('30 g vendidos')).toBeVisible()
 
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
-  expect(Date.now() - saleAStart).toBeLessThan(RECORD_BUDGET_MS) // a new customer.
 
   // What is shown now is what the API answered, not the preview — but it is the
   // same figures, line for line, since nothing changed in between.
@@ -249,17 +243,16 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Deshacer, right after saving: nothing of this sale survives.
   await page.getByRole('button', { name: 'Deshacer' }).click()
-  await expect(page).toHaveURL(/\/ventas$/)
+  await expectPath(page, SALES)
   await expect(page.getByText('Venta eliminada')).toBeVisible()
   await expect(page.getByText('0 ventas')).toBeVisible()
   await expect(page.getByText('Todavía no registraste ninguna venta en este período.')).toBeVisible()
 
   // --- Sale B: "Nueva venta a <name>", a gift line, no payment needed for $0. ---
-  await page.goto('/clientes')
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
-  const saleBStart = Date.now()
+  await expectPath(page, SALE_NEW)
   // Already chosen, no picking needed: fetched by id (keys.saleFormCustomer), not
   // carried along in history state (plan, invariants).
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')
@@ -274,23 +267,20 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const saveButtonB = page.getByRole('button', { name: 'Guardá la venta' })
   await expect(saveButtonB).toBeEnabled()
   await saveButtonB.click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   const saleBUrl = page.url()
   await expect(page.getByText('Venta guardada')).toBeVisible()
-  expect(Date.now() - saleBStart).toBeLessThan(RECORD_BUDGET_MS) // an existing customer.
   await expect(page.locator('.cifra-xl')).toHaveText('$ 0')
   await expect(page.getByRole('button', { name: 'Asignar cliente' })).toHaveCount(0) // already has one.
 
   // --- Sale C: no customer, assigned afterwards, then deleted. ---
-  await page.goto('/ventas')
+  await page.goto(SALES)
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
-  const saleCStart = Date.now()
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
-  expect(Date.now() - saleCStart).toBeLessThan(RECORD_BUDGET_MS) // no customer: the fastest.
   await expect(page.getByText('Sin cliente')).toBeVisible()
 
   // Assigning a customer: the sheet never offers "Sin cliente" here.
@@ -309,7 +299,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page).toHaveURL(/\/ventas$/)
+  await expectPath(page, SALES)
   await expect(page.getByText('Venta eliminada')).toBeVisible()
 
   // --- Ventas' periods: sums across several sales, and the Monday-to-Sunday week
@@ -356,7 +346,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // N ventas", `Ventas.tsx`'s `ventas__rango`), not a standalone node — checked by
   // substring (`toContainText`), and the total through its own `ventas__total`
   // class, which replaced the oversized shared `.cifra-xl`.
-  await page.goto('/ventas')
+  await page.goto(SALES)
   const hoy = expectedFor(todayIso, todayIso)
   await expect(page.locator('.ventas__rango')).toContainText(countLabel(hoy.count))
   await expect(page.locator('.ventas__total')).toHaveText(pesos(hoy.total))
@@ -377,36 +367,19 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.ventas__rango')).toContainText(countLabel(mes.count))
   await expect(page.locator('.ventas__total')).toHaveText(pesos(mes.total))
 
-  // --- The list still answers fast with a few hundred sales (PRD metric 6): seeded
-  // directly, then timed on the exact request `listSales` makes. ---
-  // Sequential, not `Promise.all`: this is a single SQLite file (the e2e run's own
-  // throwaway one, `env.ts`), and three hundred concurrent writers would only time
-  // how long they spend queued behind each other's write lock, not the one request
-  // this section actually measures below.
-  for (let i = 0; i < SEEDED_SALES_FOR_PERF; i += 1) {
-    await seedSale(todayIso, '1')
-  }
-  const perfStart = Date.now()
-  const perfResponse = await page.request.get(`/sales?date_from=${todayIso}&date_to=${todayIso}`)
-  const elapsedMs = Date.now() - perfStart
-  expect(perfResponse.ok()).toBe(true)
-  expect(elapsedMs).toBeLessThan(LIST_BUDGET_MS)
-
   // --- Isolation: a second business can never reach the first one's sale. ---
-  const otherContext = await browser.newContext()
+  const otherContext = await browser.newContext({ baseURL: workerServer.url })
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
-  await otherPage.goto(newBusinessInvitationUrl())
-  await otherPage.getByLabel('Nombre del negocio').fill(`Otro negocio ${Date.now()}`)
-  await otherPage.getByLabel('Email').fill(`otra-${Date.now()}@example.com`)
-  await otherPage.getByLabel('Contraseña').fill(PASSWORD)
-  await otherPage.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(otherPage.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(otherPage, {
+    businessName: `Otro negocio ${uniqueTag()}`,
+    email: `otra-${uniqueTag()}@example.com`,
+  })
 
   await otherPage.goto(saleBUrl)
   await expect(otherPage.getByText('Eso ya no está.')).toBeVisible()
   await otherPage.getByRole('link', { name: 'Volver a Ventas' }).click()
-  await expect(otherPage).toHaveURL(/\/ventas$/)
+  await expectPath(otherPage, SALES)
   await otherContext.close()
 
   // Nothing personal or technical reaches the console or the browser's own storage
@@ -424,4 +397,62 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // merged), so "Sale B"'s customer card above no longer 404s on its own account view.
   const RESOURCE_404 = 'error: Failed to load resource: the server responded with a status of 404 (Not Found)'
   expect(consoleMessages).toEqual([RESOURCE_404])
+})
+
+test('the Regalo switch is checked by a real tap, shows a press without flipping, and is inert when disabled', async ({
+  page,
+}) => {
+  await signUpNewBusiness(page, {
+    businessName: `Vivero del Regalo ${uniqueTag()}`,
+    email: `duena-regalo-${uniqueTag()}@example.com`,
+  })
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
+  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
+  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: /Rosa/ }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('1000')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
+  await expect(page.getByText('Precio guardado')).toBeVisible()
+
+  await page.goto(SALE_NEW)
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
+
+  const regalo = page.getByRole('switch', { name: 'Regalo línea 1' })
+  const row = page.locator('.opcion-interruptor')
+  await expect(row).toHaveCount(1)
+  await expect(regalo).not.toBeChecked()
+
+  // A real tap, never forced: once on the track, once on the end of the label's text.
+  async function tapAt(selector: string, fromRight: number | null): Promise<void> {
+    const box = await page.locator(selector).boundingBox()
+    if (box === null) throw new Error(`${selector} has no box`)
+    const x = fromRight === null ? box.x + box.width / 2 : box.x + box.width - fromRight
+    await page.mouse.click(x, box.y + box.height / 2)
+  }
+  await tapAt('.opcion-interruptor__pista', null)
+  await expect(regalo).toBeChecked()
+  await tapAt('.opcion-interruptor__texto', 2)
+  await expect(regalo).not.toBeChecked()
+
+  const enabled = await whilePressed(page, '.opcion-interruptor')
+  expect(enabled.resting.transform).toBe('none')
+  expect(enabled.pressed.transform, 'the switch is not scaled while pressed').toBe('none')
+  expect(
+    enabled.pressed.fill !== enabled.resting.fill || enabled.pressed.boxShadow !== enabled.resting.boxShadow,
+    'the switch changes its fill while pressed',
+  ).toBe(true)
+  await expect(regalo).not.toBeChecked()
+
+  // A special price makes the gift inert: pressing it shows nothing and changes nothing.
+  await page.getByLabel('Precio especial línea 1').fill('500')
+  await expect(regalo).toBeDisabled()
+  const inactive = await whilePressed(page, '.opcion-interruptor')
+  expect(inactive.pressed.transform).toBe('none')
+  expect(inactive.pressed.fill, 'a disabled switch keeps its fill').toBe(inactive.resting.fill)
+  expect(inactive.pressed.boxShadow).toBe(inactive.resting.boxShadow)
+  await expect(regalo).toBeDisabled()
+  await expect(regalo).not.toBeChecked()
 })

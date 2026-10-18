@@ -1,0 +1,26 @@
+{
+  "_": "Hand-written, never generated from app/legacy_front_paths.json. Old paths: the front router's at da66651 (web/src/router.tsx and redirects.ts), before the English routes. Targets: the 20-row table of docs/adr/0024's amendment (GH-59). '{id}' stays literal and stands for any id. Every old path is a row here; `removed` stays empty: nothing a seller could reach is dropped.",
+  "rows": [
+    {"old": "/entrar", "now": "/login"},
+    {"old": "/clientes", "now": "/customers"},
+    {"old": "/clientes/nuevo", "now": "/customers/new"},
+    {"old": "/clientes/deben", "now": "/customers"},
+    {"old": "/clientes/{id}", "now": "/customers/{id}"},
+    {"old": "/clientes/{id}/editar", "now": "/customers/{id}/edit"},
+    {"old": "/variedades", "now": "/varieties"},
+    {"old": "/variedades/{id}", "now": "/varieties/{id}"},
+    {"old": "/mi-stock", "now": "/varieties"},
+    {"old": "/mi-stock/nueva-entrada", "now": "/varieties/entries/new"},
+    {"old": "/mi-stock/entradas/{id}", "now": "/varieties/entries/{id}"},
+    {"old": "/ventas", "now": "/sales"},
+    {"old": "/ventas/nueva", "now": "/sales/new"},
+    {"old": "/ventas/{id}", "now": "/sales/{id}"},
+    {"old": "/catalogo", "now": "/varieties/catalog"},
+    {"old": "/analisis", "now": "/analysis"},
+    {"old": "/mas", "now": "/more"},
+    {"old": "/gastos", "now": "/expenses"},
+    {"old": "/gastos/categorias", "now": "/settings/expense-categories"},
+    {"old": "/negocio", "now": "/settings"}
+  ],
+  "removed": []
+}

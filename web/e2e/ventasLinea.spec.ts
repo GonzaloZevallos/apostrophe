@@ -6,31 +6,28 @@
  * shell's own spec, not to this one.
  */
 
-import { expect, test, type Locator, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { SALE_NEW, VARIETIES } from '../src/routes.js'
+import { expect, test } from './fixtures.js'
+import type { Locator, Page } from '@playwright/test'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { uniqueTag } from './helpers/unique.js'
 
-const PASSWORD = 'correcthorsebattery'
 const WIDTHS = [320, 375, 430, 246] as const
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
 
 async function signUpWithAVariety(page: Page): Promise<void> {
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Vivero Línea ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-linea-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
-  await page.goto('/variedades')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await signUpNewBusiness(page, { businessName: `Vivero Línea ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín con un nombre bastante largo')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Precio de lista').fill('500')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('500')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 }
 
@@ -46,7 +43,7 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
 
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 760 })
-    await page.goto('/ventas/nueva')
+    await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, {
       variety: 'Jazmín con un nombre bastante largo',
       grams: '12,5',

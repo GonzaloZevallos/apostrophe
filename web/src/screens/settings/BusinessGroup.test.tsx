@@ -4,6 +4,8 @@
  * server last accepted. The API is faked at `fetch`, never mocked deeper (CODING_STANDARDS §10).
  */
 
+import { LOGIN, SETTINGS, SETTINGS_BUSINESS } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -11,7 +13,8 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import BusinessGroup from './BusinessGroup'
 import { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS } from './messages'
 
@@ -45,14 +48,14 @@ function renderBusiness(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       {
         element: <Provide />,
         children: [
-          { path: '/settings', element: <div>Lista de grupos</div> },
-          { path: '/settings/business', element: <BusinessGroup /> },
+          { path: SETTINGS, element: <div>Lista de grupos</div> },
+          { path: SETTINGS_BUSINESS, element: <BusinessGroup /> },
         ],
       },
-      { path: '/entrar', element: <div>Pantalla de entrada</div> },
+      { path: LOGIN, element: <div>Pantalla de entrada</div> },
     ],
     {
-      initialEntries: ['/settings', { pathname: '/settings/business', state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: SETTINGS_BUSINESS, state: inAppState({ pathname: SETTINGS }) }],
       initialIndex: 1,
     },
   )
@@ -121,7 +124,7 @@ test('a dropped network while renaming shows "Sin conexión", never the generic 
   await userEvent.type(input, 'La Huerta Nueva')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText(RENAME_SUCCESS)).not.toBeInTheDocument()
 })
@@ -178,4 +181,11 @@ test('an untouched name closes at once', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
+})
+
+test('the group follows the icon and text rule: a text-only submit and a link close', async () => {
+  renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+  await screen.findByDisplayValue('La Huerta')
+
+  expectIconAndTextRule(document.body)
 })

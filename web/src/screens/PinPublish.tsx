@@ -13,9 +13,9 @@
  * query and Inicio's status query (`keys.ts`), so Inicio's notice follows.
  */
 
+import { SETTINGS_INTEGRATIONS } from '../routes'
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router'
 import { ApiError, NetworkError, get, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import {
@@ -27,11 +27,19 @@ import {
 } from '../api/refusals'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
+import Boton from '../components/Boton'
+import { AvisoCuerpo } from '../components/AvisoAmbar'
+import BotonLink from '../components/BotonLink'
+import {
+  CHANNEL_MISSING_LEAD,
+  INTEGRATIONS_LINK_WORD,
+  OUT_OF_DATE_SEPARATOR,
+  OUT_OF_DATE_TITLE,
+} from './pinPublishMessages'
 
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-const CHANNEL_MISSING_LEAD = 'Falta el canal: cargalo en '
-const INTEGRATIONS_PATH = '/settings/integrations'
+const INTEGRATIONS_PATH = SETTINGS_INTEGRATIONS
 
 interface PinStatus {
   state: 'up_to_date' | 'out_of_date'
@@ -53,28 +61,39 @@ function formatDate(iso: string): string {
 
 function StatusLine({ status }: { status: PinStatus }) {
   return (
-    <div className="catalogo__publicar-estado">
-      <span className="catalogo__publicar-titulo">
-        {status.state === 'up_to_date' ? 'Al día' : 'Desactualizado'}
-      </span>
-      {status.state === 'out_of_date' && status.reason !== null && (
-        <span className="catalogo__publicar-detalle"> · {PINNED_CATALOG_REASON_LABEL[status.reason]}</span>
-      )}
-      {status.last_published_on !== null && (
-        <span className="catalogo__publicar-detalle">
-          {' '}
-          · El último fue el {formatDate(status.last_published_on)}
+    <div
+      className={
+        status.state === 'out_of_date'
+          ? 'catalogo__publicar-estado catalogo__publicar-estado--atencion'
+          : 'catalogo__publicar-estado'
+      }
+    >
+      <AvisoCuerpo attention={status.state === 'out_of_date'}>
+        <span className="catalogo__publicar-titulo">
+          {status.state === 'up_to_date' ? 'Al día' : OUT_OF_DATE_TITLE}
         </span>
-      )}
+        {status.state === 'out_of_date' && status.reason !== null && (
+          <span className="catalogo__publicar-detalle">
+            {OUT_OF_DATE_SEPARATOR}
+            {PINNED_CATALOG_REASON_LABEL[status.reason]}
+          </span>
+        )}
+        {status.last_published_on !== null && (
+          <span className="catalogo__publicar-detalle">
+            {' '}
+            · El último fue el {formatDate(status.last_published_on)}
+          </span>
+        )}
+      </AvisoCuerpo>
     </div>
   )
 }
 
 function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
   const link = (
-    <Link to={INTEGRATIONS_PATH} state={{ inApp: true }} className="boton--enlace">
-      Integraciones
-    </Link>
+    <BotonLink to={INTEGRATIONS_PATH} variant="link">
+      {INTEGRATIONS_LINK_WORD}
+    </BotonLink>
   )
   if (blockedBy === 'not_tested') {
     return (
@@ -144,14 +163,13 @@ export default function PinPublish() {
     <div className={outOfDate ? 'catalogo__publicar catalogo__publicar--desactualizado' : 'catalogo__publicar'}>
       {toast !== null && <AvisoExito texto={toast} />}
       {data.status !== null && <StatusLine status={data.status} />}
-      <button
-        type="button"
-        className="boton"
+      <Boton
+        icon="publicar"
         disabled={blockedBy !== null || publishing}
         onClick={() => void onPublicar()}
       >
         Publicar
-      </button>
+      </Boton>
       {blockedBy !== null && <BlockedReason blockedBy={blockedBy} />}
       {publishError !== null && (
         <span className="campo__error" role="alert">

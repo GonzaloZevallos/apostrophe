@@ -16,13 +16,14 @@ from datetime import date, datetime
 from typing import Literal
 
 from app.clock import business_day
+from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.ports import (
     PinFacts,
     PinRecorder,
     PinSnapshots,
     SettingsSnapshot,
     SettingsWriter,
-    Telegram,
+    TelegramApi,
 )
 from app.pinned_catalog.domain.bold import fits_in_one_message, telegram_bold
 from app.pinned_catalog.domain.errors import (
@@ -30,10 +31,12 @@ from app.pinned_catalog.domain.errors import (
     MessageGone,
     NotReady,
     OwnChatRequired,
+    TelegramRefused,
     TelegramUnreachable,
     TokenRequired,
     TooLong,
 )
+from app.pinned_catalog.domain.refusal_causes import for_test_send
 from app.pinned_catalog.domain.status import Pin, PinFailure, PinSettings, PinStatus, pin_status
 from app.pinned_catalog.domain.status import needs_send as domain_needs_send
 
@@ -120,7 +123,7 @@ class TestSendResult:
 
 
 def test_send(
-    telegram: Telegram,
+    telegram: TelegramApi,
     snapshots: PinSnapshots,
     settings_writer: SettingsWriter,
     locks: BusinessLocks,
@@ -143,7 +146,10 @@ def test_send(
         if not fits_in_one_message(plain):
             raise TooLong()
 
-        telegram.send(effective_token, own_chat, plain, spans)
+        try:
+            telegram.send(effective_token, own_chat, plain, spans)
+        except TelegramRefused as exc:
+            raise for_test_send(exc.cause) from None
 
         token_changed = token is not None and token != current.settings.token
         channel_changed = channel_chat != current.settings.channel_chat
@@ -156,7 +162,7 @@ def test_send(
 
 
 def push(
-    telegram: Telegram,
+    telegram: ChannelTelegram,
     snapshots: PinSnapshots,
     recorder: PinRecorder,
     locks: BusinessLocks,
@@ -187,7 +193,7 @@ def push(
 
 
 def _push_upkeep(
-    telegram: Telegram,
+    telegram: ChannelTelegram,
     recorder: PinRecorder,
     business_id: int,
     settings: SettingsSnapshot,
@@ -316,7 +322,7 @@ def _push_upkeep(
 
 
 def _push_publish(
-    telegram: Telegram,
+    telegram: ChannelTelegram,
     recorder: PinRecorder,
     business_id: int,
     settings: SettingsSnapshot,

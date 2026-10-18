@@ -10,6 +10,9 @@
  * `navigator.clipboard` or `execCommand`, so the home network's plain-http
  * fallback stays in the one module that tests it.
  *
+ * Plan (invariants): only `components/useLeaveGuard.ts` names `useBlocker`, so every form
+ * or sheet asks its leave question through the one guard.
+ *
  * Walks a list of source files handed to it, rather than the filesystem itself, so a
  * test can feed it a fixture that must fail, not only the files that already pass.
  */
@@ -47,6 +50,11 @@ const RULES: Rule[] = [
     name: 'navigatorClipboard',
     pattern: /\bnavigator\s*\??\.\s*clipboard\b|\bnavigator\s*\[\s*(['"])clipboard\1\s*\]/,
     allow: (path) => path === 'src/clipboard.ts',
+  },
+  {
+    name: 'useBlocker',
+    pattern: /\buseBlocker\b/,
+    allow: (path) => path === 'src/components/useLeaveGuard.ts',
   },
   {
     name: 'execCommand',

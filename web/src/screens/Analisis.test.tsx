@@ -5,6 +5,7 @@
  * assertion reads a figure the fixture already carries — none is computed here.
  */
 
+import { ANALYSIS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -40,10 +41,10 @@ function renderAnalisis(fetchImpl: (url: string, init?: RequestInit) => Promise<
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/analisis']}>
+      <MemoryRouter initialEntries={[ANALYSIS]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/analisis" element={<Analisis />} />
+            <Route path={ANALYSIS} element={<Analisis />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -198,7 +199,11 @@ test('the computer table carries headers, the margin stack, pending marks and th
 
   const weekTables = (await screen.findAllByText('Semana')).map((node) => node.closest('table'))
   const weekTable = weekTables.find((t) => t !== null) as HTMLElement
-  const rows = within(weekTable).getAllByRole('row').slice(1) // drop the header row
+  // Drop the header row and each row's cost sub-row.
+  const rows = within(weekTable)
+    .getAllByRole('row')
+    .slice(1)
+    .filter((row) => !row.classList.contains('analisis__fila-costos'))
   const lastRow = rows.at(-1)
   expect(lastRow).not.toBeUndefined()
   expect((lastRow as HTMLElement).className).toContain('analisis__fila-actual')
@@ -236,4 +241,150 @@ test('month navigation disables "Mes anterior" when there is no earlier month', 
 
   await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
   expect(screen.getByRole('button', { name: 'Mes anterior' })).toBeDisabled()
+})
+
+test('Promoción and Consumo propio show apart from Faltante de stock, each with only its own pending grams', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+
+  // The month header: a promotion with half a pending gram, an own use fully costed.
+  expect(await screen.findByText(/^Promoción \$ 4\.000 y 0,5 g sin costo$/)).toBeInTheDocument()
+  expect(screen.getByText(/^Consumo propio \$ 1\.500$/)).toBeInTheDocument()
+  expect(screen.getByText(/Faltante de stock \$ 3\.000 y 1 g sin costo/)).toBeInTheDocument()
+
+  // The since-the-first-record totals read the same two lines.
+  expect(screen.getByText(/^Promoción \$ 9\.000 y 0,5 g sin costo$/)).toBeInTheDocument()
+  expect(screen.getByText(/^Consumo propio \$ 2\.500$/)).toBeInTheDocument()
+})
+
+test('a week and a month row show a withdrawal line only when the period has one', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  // Phone rows: only the fixture's first week (10/8) has a promotion and an own use.
+  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+  expect(weekRows).toHaveLength(8)
+  expect(within(weekRows[0]!).getByText('Promoción $ 1.000')).toBeInTheDocument()
+  expect(within(weekRows[0]!).getByText('Consumo propio $ 500')).toBeInTheDocument()
+  for (const row of weekRows.slice(1)) {
+    expect(within(row).queryByText(/Promoción|Consumo propio/)).not.toBeInTheDocument()
+  }
+
+  // The month rows: the same, with the fixture's last month holding no promotion.
+  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
+  expect(within(monthRows[0]!).getByText('Promoción $ 1.000')).toBeInTheDocument()
+  expect(within(monthRows[monthRows.length - 1]!).queryByText(/Promoción/)).not.toBeInTheDocument()
+})
+
+const FIXTURE_FIRST_WEEK = analysisFixture.weeks[0]!
+const FIXTURE_LAST_WEEK = analysisFixture.weeks.at(-1)!
+
+function pendingRowFixture() {
+  const fullyPending = { amount: 0, pending_grams: 4, all_pending: true }
+  const partlyPending = { amount: 7000, pending_grams: 1.5, all_pending: false }
+  return {
+    ...analysisFixture,
+    month: { ...analysisFixture.month, shortfall: { amount: 0, pending_grams: 2, all_pending: true } },
+    since_first_record: {
+      ...analysisFixture.since_first_record,
+      promotion: { amount: 0, pending_grams: 3, all_pending: true },
+    },
+    weeks: analysisFixture.weeks.map((week, index) =>
+      index === 1
+        ? { ...week, cost_of_goods: partlyPending }
+        : index === 2
+          ? { ...week, cost_of_goods: fullyPending }
+          : index === 3
+            ? { ...week, cost_of_goods: { amount: 0, pending_grams: 0, all_pending: false } }
+            : week,
+    ),
+    months: analysisFixture.months.map((row, index) =>
+      index === 1 ? { ...row, promotion: fullyPending } : row,
+    ),
+  }
+}
+
+test('every week and month row shows Costo de lo vendido, in the PRD order', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
+  expect(weekRows).toHaveLength(analysisFixture.weeks.length)
+  expect(monthRows).toHaveLength(analysisFixture.months.length)
+  for (const row of [...weekRows, ...monthRows]) {
+    expect(within(row).getByText(/^Costo de lo vendido \$ [\d.]+$/)).toBeInTheDocument()
+  }
+
+  // Sales, grams, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio,
+  // gastos, ganancia, caja.
+  const first = weekRows[0]!
+  const lines = Array.from(first.querySelectorAll('span'))
+    .map((node) => node.textContent ?? '')
+    .filter((text) => /^(Costo de lo vendido|Faltante de stock|Promoción|Consumo propio|gastos|ganancia|caja)/.test(text))
+    .map((text) => text.replace(/ \$.*$/, ''))
+  expect(lines).toEqual([
+    'Costo de lo vendido',
+    'Faltante de stock',
+    'Promoción',
+    'Consumo propio',
+    'gastos',
+    'ganancia',
+    'caja',
+  ])
+  expect(within(first).getByText(`Costo de lo vendido $ ${FIXTURE_FIRST_WEEK.cost_of_goods.amount.toLocaleString('es-AR')}`)).toBeInTheDocument()
+})
+
+test('Faltante de stock shows on a row only when its shortfall is not null', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+  expect(within(weekRows[0]!).getByText('Faltante de stock $ 2.000')).toBeInTheDocument()
+  for (const row of weekRows.slice(1)) {
+    expect(within(row).queryByText(/Faltante de stock/)).not.toBeInTheDocument()
+  }
+  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
+  expect(within(monthRows[0]!).getByText('Faltante de stock $ 2.000')).toBeInTheDocument()
+  expect(within(monthRows.at(-1)!).queryByText(/Faltante de stock/)).not.toBeInTheDocument()
+  expect(FIXTURE_LAST_WEEK.shortfall).toBeNull()
+})
+
+test('a fully pending figure reads only its grams on the header, the since lines and the rows', async () => {
+  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  expect(screen.getByText('Faltante de stock 2 g sin costo')).toBeInTheDocument()
+  expect(screen.getByText('Promoción 3 g sin costo')).toBeInTheDocument()
+  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
+  expect(within(monthRows[1]!).getByText('Promoción 4 g sin costo')).toBeInTheDocument()
+  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+  expect(within(weekRows[2]!).getByText('Costo de lo vendido 4 g sin costo')).toBeInTheDocument()
+  expect(screen.queryByText(/\$ 0 y \d+ g sin costo/)).not.toBeInTheDocument()
+})
+
+test('a partly pending cost of goods reads its amount and its grams; a real zero reads $ 0', async () => {
+  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+  expect(
+    within(weekRows[1]!).getByText('Costo de lo vendido $ 7.000 y 1,5 g sin costo'),
+  ).toBeInTheDocument()
+  expect(within(weekRows[3]!).getByText('Costo de lo vendido $ 0')).toBeInTheDocument()
+})
+
+test('the computer tables carry the same cost lines under each row', async () => {
+  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const weekTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--semanas')!
+  const costRows = weekTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
+  expect(costRows).toHaveLength(analysisFixture.weeks.length)
+  expect(within(costRows[2]!).getByText('Costo de lo vendido 4 g sin costo')).toBeInTheDocument()
+  expect(within(costRows[0]!).getByText('Faltante de stock $ 2.000')).toBeInTheDocument()
+
+  const monthTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--meses')!
+  const monthCostRows = monthTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
+  expect(monthCostRows).toHaveLength(analysisFixture.months.length)
+  expect(within(monthCostRows[1]!).getByText('Promoción 4 g sin costo')).toBeInTheDocument()
 })

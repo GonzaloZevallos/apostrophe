@@ -5,15 +5,13 @@
  * toast, never the generic server-error retry.
  */
 
-export const SIN_CONEXION_TITULO = 'Te quedaste sin internet'
-export const SIN_CONEXION_DETALLE =
-  'apostrophe necesita conexión. Reintentamos solos cuando vuelva.'
+import AvisoAmbar from './AvisoAmbar'
+import { SIN_CONEXION_MENSAJE } from './estadosMessages'
 
 export default function SinConexion() {
   return (
-    <div className="aviso-ambar" role="status">
-      <span className="aviso-ambar__titulo">{SIN_CONEXION_TITULO}</span>
-      <span className="aviso-ambar__detalle">{SIN_CONEXION_DETALLE}</span>
-    </div>
+    <AvisoAmbar attention role="status">
+      <span className="aviso-ambar__titulo">{SIN_CONEXION_MENSAJE}</span>
+    </AvisoAmbar>
   )
 }

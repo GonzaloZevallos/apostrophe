@@ -1,9 +1,10 @@
 /**
- * "Registrar cobro" (`Cobro`, `payments.md`): a sheet over `ClienteFicha`, the
- * same `.capa`/`.capa__contenido` layer `NuevaVentaCliente` uses. "Todo: $ X"
- * fills the amount with the customer's own `balance` (never typed in by the
- * seller for that case); the date defaults to today; Efectivo · Transferencia is
- * required.
+ * "Registrar cobro" (`Cobro`, `payments.md`): the form, drawn inside `CobroFrame` by its host
+ * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "Todo: $ X"
+ * fills the amount with the customer's own `balance` (never typed in by the seller for that
+ * case); the date defaults to today; Efectivo · Transferencia is required. The host owns how it
+ * is left (the leave guard, Escape, the backdrop, where "Cerrar" goes): this form only says
+ * through `onDone`, `onCancel`, `onGone`, `onDirtyChange` and `onSendingChange` what happened.
  *
  * The browser computes nothing (plan, invariants: "the front never adds grams or
  * amounts"): before saving, `POST .../payments/preview` is the one source for
@@ -12,31 +13,27 @@
  * before it becomes `keys.paymentPreview`'s key, so a seller still typing a
  * figure does not fire one request per keystroke. The key is a form-only one
  * (`keys.ts`) frozen with `gcTime: 0` so an old preview never lingers in the
- * cache once the sheet closes. The last answer tanstack query holds for the
- * *current* key is always the one shown — an in-flight call for an amount the
- * seller has since changed is simply never the active query anymore.
+ * cache once the form closes. The last answer tanstack query holds for the
+ * *current* key is always the one shown.
  *
  * `payment.*` codes are matched by a local, literal string union here, not
- * through `refusals.ts`'s contract-backed `RefusalCode` (plan, invariants: "a
- * refusal carries a payment.* code ... appears in contract.json in the same
- * diff" — that diff is the `payments-api` subtask's, still open as this one
- * ships; `tests/test_refusal_codes.py` refuses a code in `contract.json` the
- * backend does not yet answer). Once `payments-api` lands those codes, this can
- * move onto `resolveOverride`/`isGone` like every other screen's refusals.
+ * through `refusals.ts`'s contract-backed `RefusalCode`.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, type RefObject, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import {
   type PaymentIn,
   type PaymentMethod,
-  type RecordedPayment,
+  type Standing,
   previewPayment,
   recordPayment,
 } from '../../api/payments'
+import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
+import { useFlash } from '../../flash/useFlash'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 import { parseMoney } from '../../format/parse'
@@ -44,11 +41,20 @@ import { GENERIC_REFUSAL } from './ClienteForm'
 
 export interface CobroProps {
   customerId: string
-  balance: number
+  /** The customer's name and standing, for the line under the title: all from the API. */
+  customer: { name: string; balance: number; owing_since: string | null; standing: Standing }
   today: string
-  onClose: () => void
-  onSaved: (recorded: RecordedPayment) => void
+  /** The id of the title the dialog is named by, and the ref the host focuses it through. */
+  titleId: string
+  titleRef: RefObject<HTMLSpanElement | null>
+  /** "Cerrar": the host's one `leave`. */
+  onCancel: () => void
+  /** A payment was saved and its toast is armed: the host disarms its guard and leaves. */
+  onDone: () => void
+  /** The customer or the payment is gone: the host disarms its guard and takes the gone exit. */
   onGone: () => void
+  onDirtyChange: (dirty: boolean) => void
+  onSendingChange: (sending: boolean) => void
 }
 
 type PaymentRefusalCode =
@@ -84,7 +90,19 @@ function isPaymentGone(code: string): boolean {
   return (GONE_CODES as ReadonlySet<string>).has(code)
 }
 
-export default function Cobro({ customerId, balance, today, onClose, onSaved, onGone }: CobroProps) {
+export default function Cobro({
+  customerId,
+  customer,
+  today,
+  titleId,
+  titleRef,
+  onCancel,
+  onDone,
+  onGone,
+  onDirtyChange,
+  onSendingChange,
+}: CobroProps) {
+  const balance = customer.balance
   const [amount, setAmount] = useState(String(balance))
   const [date, setDate] = useState(today)
   const [method, setMethod] = useState<PaymentMethod | null>(null)
@@ -92,6 +110,11 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
   const [methodError, setMethodError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
+  const flash = useFlash()
+
+  // Touched means any of the three fields differs from what the form opened with.
+  const dirty = amount !== String(balance) || date !== today || method !== null
+  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
 
   const parsedAmount = parseMoney(amount)
 
@@ -121,6 +144,7 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
   const record = useMutation({
     mutationFn: (body: PaymentIn) => recordPayment(customerId, body),
   })
+  useEffect(() => onSendingChange(record.isPending), [record.isPending, onSendingChange])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -138,7 +162,12 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
     try {
       const recorded = await record.mutateAsync({ paid_on: date, amount: parsedAmount.value, method })
       invalidateResource(queryClient, 'payments')
-      onSaved(recorded)
+      flash.armAfterLeaving(
+        recorded.after.standing === 'owes'
+          ? `Cobro guardado · queda debiendo ${formatMoney(recorded.after.balance)}`
+          : 'Cobro guardado',
+      )
+      onDone()
     } catch (caught) {
       if (caught instanceof ApiError && isPaymentGone(caught.code)) {
         onGone()
@@ -154,14 +183,24 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
   }
 
   return (
-    <div className="capa" role="presentation">
-      <div className="capa__contenido">
-        <span className="panel__titulo">Registrar cobro</span>
+    <>
+      <div className="encabezado-fila">
+        <span ref={titleRef} id={titleId} tabIndex={-1} className="panel__titulo">
+          Registrar cobro
+        </span>
+        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+      </div>
+      <span className="cobro__cliente">
+        {customer.name}
+        {customer.standing === 'owes' && customer.owing_since !== null
+          ? ` · te debe ${formatMoney(customer.balance)} desde el ${formatDateShort(customer.owing_since)}`
+          : ''}
+      </span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
             <span className="campo__rotulo">Monto</span>
             <input
-              className="campo__input"
+              className="campo__input cobro__monto"
               type="text"
               inputMode="numeric"
               value={amount}
@@ -169,9 +208,11 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
               required
             />
           </label>
-          <button type="button" className="boton-enlace" onClick={() => setAmount(String(balance))}>
-            Todo: {formatMoney(balance)}
-          </button>
+          <div className="cobro__todo">
+            <Boton variant="link" onClick={() => setAmount(String(balance))}>
+              Todo: {formatMoney(balance)}
+            </Boton>
+          </div>
           {amountError !== null && (
             <span className="campo__error" role="alert">
               {amountError}
@@ -190,7 +231,7 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
             />
           </label>
 
-          <fieldset className="campo">
+          <fieldset className="campo cobro__metodo">
             <legend className="campo__rotulo">Método</legend>
             <label>
               <input
@@ -218,7 +259,7 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
           </fieldset>
 
           {parsedAmount.ok && preview.data !== undefined && (
-            <div className="campo">
+            <div className="campo cobro__resumen">
               <span className="campo__rotulo">Se descuenta de la deuda más vieja</span>
               {preview.data.applied_to.map((split) => (
                 <span key={split.sale_id}>
@@ -233,14 +274,10 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
 
           {offline && <SinConexion />}
 
-          <button className="boton" type="submit" disabled={record.isPending}>
+          <Boton textOnly="submit" type="submit" disabled={record.isPending}>
             Guardar
-          </button>
-          <button type="button" className="boton-enlace" onClick={onClose}>
-            Cancelar
-          </button>
+          </Boton>
         </form>
-      </div>
-    </div>
+    </>
   )
 }

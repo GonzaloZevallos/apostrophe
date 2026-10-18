@@ -1,5 +1,5 @@
 /**
- * `ClienteFicha`: a customer's card — phone, channel, VIP, the balance and
+ * `ClienteFicha`: a customer's card — phone, VIP, the balance and
  * "Registrar cobro" (`payments.md`, "On screen"). Every figure here —
  * `balance`, `owing_since`, `standing`, the account's rows and their own
  * `running_balance`/`standing` — is the payments domain's own answer
@@ -10,18 +10,21 @@
  * (ADR-0004).
  */
 
+import { CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_PAYMENT, SALE_NEW, pathTo } from '../../routes'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useLocation, useOutletContext, useParams } from 'react-router'
+import { useLocation, useParams } from 'react-router'
+import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
+import { useGoneNotice } from '../../components/goneExit'
 import { ApiError, NetworkError } from '../../api/client'
-import { type Channel, getCustomer } from '../../api/customers'
+import { getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import type { Me } from '../../api/me'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import {
   type AccountRow,
   type HowPaid,
   type PaymentMethod,
-  type RecordedPayment,
   deletePayment,
   getAccount,
 } from '../../api/payments'
@@ -44,12 +47,7 @@ import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
-import Cobro from './Cobro'
-
-const CHANNEL_LABEL: Record<Channel, string> = {
-  telegram: 'Telegram',
-  whatsapp: 'WhatsApp',
-}
+import { deleteRowIndices } from './accountRows'
 
 const HOW_PAID_LABEL: Record<Exclude<HowPaid, 'none'>, string> = {
   cash: 'Pagada por efectivo',
@@ -96,16 +94,23 @@ function rowOwnAmount(row: AccountRow): string {
   return formatMoneyMagnitude(row.amount)
 }
 
+/** A row's React key, from the ids its own kind carries (never its index). A
+ * payment settles a given sale in at most one split, so `payment`+`sale` is unique. */
+function rowKey(row: AccountRow): string {
+  if (row.kind === 'sale') return `sale-${row.sale.id}`
+  if (row.kind === 'payment') return `payment-${row.payment.id}-${row.applied_to.sale_id}`
+  return `credit-${row.payment.id}`
+}
+
 export default function ClienteFicha() {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const location = useLocation()
-  const feedback = readFeedback(location.state)
+  const goneShown = useGoneNotice()
+  const feedback = readFeedback(location.state) ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
   const queryClient = useQueryClient()
-  const me = useOutletContext<Me>()
+  const vipCustomers = useIsVipCustomers()
 
-  const [showCobro, setShowCobro] = useState(false)
-  const [savedNotice, setSavedNotice] = useState<string | null>(null)
   const [deletedToast, setDeletedToast] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState<
     { id: number; amount: number; method: PaymentMethod; paid_on: string } | null
@@ -128,15 +133,6 @@ export default function ClienteFicha() {
   const removePayment = useMutation({
     mutationFn: (paymentId: number) => deletePayment(String(paymentId)),
   })
-
-  function onCobroSaved(recorded: RecordedPayment): void {
-    setShowCobro(false)
-    setSavedNotice(
-      recorded.after.standing === 'owes'
-        ? `Cobro guardado · queda debiendo ${formatMoney(recorded.after.balance)}`
-        : 'Cobro guardado',
-    )
-  }
 
   async function onConfirmDeletePayment(): Promise<void> {
     if (confirmingDelete === null) return
@@ -166,7 +162,7 @@ export default function ClienteFicha() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Clientes" to="/clientes" />
+      return <GoneScreen label="Clientes" to={CUSTOMERS} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -196,23 +192,18 @@ export default function ClienteFicha() {
     )
   }
 
-  const seenPaymentIds = new Set<number>()
+  const rows = account.data?.rows ?? []
+  const deleteIndices = deleteRowIndices(rows)
 
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div>
-          <Link to="/clientes">Volver</Link>
+        <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo">{data.name}</span>
-          <Link to={`/clientes/${customerId}/editar`}>Editar</Link>
+          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
-        {savedNotice !== null && (
-          <div className="toast" role="status">
-            <span className="toast__texto">{savedNotice}</span>
-          </div>
-        )}
         {deletedToast && (
           <div className="toast" role="status">
             <span className="toast__texto">Cobro eliminado</span>
@@ -222,11 +213,16 @@ export default function ClienteFicha() {
         {deletePaymentFailed && <ErrorGenerico />}
 
         {data.standing === 'owes' && (
-          <div className="campo">
+          <div className="ficha-deuda">
             <span className="cifra-m monto-deuda">Te debe {formatMoney(data.balance)}</span>
             {data.owing_since !== null && (
               <span className="rotulo">desde el {formatDateShort(data.owing_since)}</span>
             )}
+            <div className="clientes__accion">
+              <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
+                Registrar cobro
+              </BotonLink>
+            </div>
           </div>
         )}
         {data.standing === 'credit' && (
@@ -242,38 +238,28 @@ export default function ClienteFicha() {
               <span>{formatPhone(data.phone)}</span>
             </div>
           )}
-          <div className="campo">
-            <span className="campo__rotulo">Canal</span>
-            <span>{data.channel !== null ? CHANNEL_LABEL[data.channel] : 'Sin canal'}</span>
-          </div>
-          <div className="campo">
-            <span className="campo__rotulo">VIP</span>
-            <span>{data.vip ? 'Sí' : 'No'}</span>
-          </div>
+          {vipCustomers && (
+            <div className="campo">
+              <span className="campo__rotulo">VIP</span>
+              <span>{data.vip ? 'Sí' : 'No'}</span>
+            </div>
+          )}
         </div>
 
-        {data.standing === 'owes' && (
-          <button type="button" className="boton" onClick={() => setShowCobro(true)}>
-            Registrar cobro
-          </button>
-        )}
-
         <div className="cuenta-cliente">
-          {(account.data?.rows ?? []).map((row, index) => {
+          {rows.map((row, index) => {
             const label = rowLabel(row)
-            const showDelete =
-              row.kind === 'payment' && !seenPaymentIds.has(row.payment.id)
-            if (row.kind === 'payment') seenPaymentIds.add(row.payment.id)
             return (
-              <div key={index} className="cuenta-cliente__fila">
+              <div key={rowKey(row)} className="cuenta-cliente__fila">
                 <span className="cuenta-cliente__fecha">{formatDateShort(row.date)}</span>
                 {label !== '' && <span>{label}</span>}
                 <span className="cuenta-cliente__monto">{rowOwnAmount(row)}</span>
                 <span className="cuenta-cliente__saldo">{rowAmount(row)}</span>
-                {showDelete && (
-                  <button
-                    type="button"
-                    className="boton-enlace"
+                {deleteIndices.has(index) && row.kind !== 'sale' && (
+                  <Boton
+                    variant="icon"
+                    action="delete"
+                    ariaLabel="Borrar cobro"
                     onClick={() =>
                       setConfirmingDelete({
                         id: row.payment.id,
@@ -282,33 +268,19 @@ export default function ClienteFicha() {
                         paid_on: row.payment.paid_on,
                       })
                     }
-                  >
-                    Borrar cobro
-                  </button>
+                  />
                 )}
               </div>
             )
           })}
         </div>
 
-        <Link to="/ventas/nueva" state={newSaleFor(customerId)} className="boton">
-          Nueva venta a {data.name}
-        </Link>
+        <div className="clientes__accion">
+          <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">
+            Nueva venta a {data.name}
+          </BotonLink>
+        </div>
       </div>
-
-      {showCobro && (
-        <Cobro
-          customerId={customerId}
-          balance={data.balance}
-          today={me.today}
-          onClose={() => setShowCobro(false)}
-          onSaved={onCobroSaved}
-          onGone={() => {
-            setShowCobro(false)
-            setAccountGone(true)
-          }}
-        />
-      )}
 
       {confirmingDelete !== null && (
         <ConfirmDialog

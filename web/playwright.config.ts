@@ -4,39 +4,24 @@
  * front — `web/dist`, the same artefact `scripts/serve.sh` serves — never a mock of
  * either side (PRD, M1: "no `curl` at any point").
  *
- * The server is started here, with its own throwaway SQLite file and secret key, by
- * calling `uvicorn` and the `invite-business` CLI directly with explicit environment
- * variables — never `scripts/serve.sh` or `scripts/invite-business.sh`, which source
- * `.env` (plan, "Old shapes kept": the e2e run calls neither).
+ * No server starts here (ADR-0040, GH-152): each Playwright worker starts its own
+ * uvicorn, on its own free port and over its own throwaway SQLite file, from the
+ * worker-scoped `workerServer` fixture in `e2e/fixtures.ts`, and every spec takes `test`
+ * from there. This file is also loaded inside every worker, so it never resolves a port
+ * and sets no top-level `baseURL`: the fixture supplies it per worker.
  *
- * The port is decided only here (plan, "Shape": "the port is decided only in
- * `web/playwright.config.ts`"): `APOSTROPHE_E2E_PORT` when set, else a free port from
- * `freePort.ts`, written back into the environment so every worker this config
- * spawns inherits the same one. `env.ts`'s functions read it back; nothing else picks
- * or hardcodes a port.
+ * One phase, one `npx playwright test` (ADR-0040, GH-251). A red run leaves evidence in
+ * `OUTPUT_DIR`: a junit file, and a trace and a screenshot of each failing test.
  */
 
 import { defineConfig } from '@playwright/test'
 import { freePort } from './e2e/freePort.js'
-import {
-  E2E_HOST,
-  e2eBaseUrl,
-  e2eDbPath,
-  e2eEnv,
-  e2ePort,
-  mobileBaseUrl,
-  mobileDbPath,
-  mobileEnv,
-  mobilePort,
-} from './e2e/env.js'
+import { E2E_HOST, mobileBaseUrl, mobileDbPath, mobileEnv, mobilePort } from './e2e/env.js'
 
-if (process.env.APOSTROPHE_E2E_PORT === undefined) {
-  process.env.APOSTROPHE_E2E_PORT = String(await freePort(E2E_HOST))
-}
-// Validates the variable whether it was already set or was just picked above —
-// `e2ePort()` never picks a port itself, by decision.
-e2ePort()
-// The phone check's second server gets its own port the same way (GH-80).
+// The phone check's second server gets one port for the whole run (GH-80, invariant 7).
+// The first server is per worker (ADR-0040) and never named here. The runner decides the
+// port once and every worker it forks inherits the variable, so a worker loading this
+// file again finds it set and picks nothing.
 if (process.env.APOSTROPHE_E2E_MOBILE_PORT === undefined) {
   process.env.APOSTROPHE_E2E_MOBILE_PORT = String(await freePort(E2E_HOST))
 }
@@ -46,8 +31,6 @@ const assignments = (env: Record<string, string>): string =>
   Object.entries(env)
     .map(([key, value]) => `${key}=${value}`)
     .join(' ')
-
-const envAssignments = assignments(e2eEnv())
 
 // Playwright races a `url` poll against `wait` (`node_modules/playwright/lib/runner/
 // index.js:946-951`), so keeping `url` set would let another worktree's server,
@@ -60,15 +43,38 @@ const readyOn = (port: number): RegExp =>
 // One cell walks every registry screen twice (loaded, then held); a cell's own budget.
 const MOBILE_TEST_TIMEOUT_MS = 300_000
 
+// Read once. The caller names the directory (a run never overwrites an earlier one); the
+// config never computes a name from the time or the sha.
+const OUTPUT_DIR = process.env.PLAYWRIGHT_OUTPUT_DIR ?? 'test-results/local'
+
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30_000,
+  // Wait ceilings, set here once (GH-110); a call site never sets a shorter one.
+  // Measured with the backend suite (`uv run --no-project pytest -n auto -q`) looping in
+  // another shell, 3 workers (ADR-0040). Accept-invitation POST (scrypt, ADR-0002): max
+  // 1_949 ms and p95 1_669 ms over the 5 final-config runs (175 signups); the heaviest
+  // earlier run on one worker had max 8_458 ms. `expect` stays at least 2x the largest max.
+  // A test's timeout is at least 2x its own longest duration under that load. Longest
+  // passing per spec over the 5 runs at 3 workers: sales 54 s (alone, in the former `timed`
+  // phase), tapBudget 45 s, flow 30 s, insets 28 s, payments 23 s (before, on one worker: payments 75 s,
+  // panel 69 s, passwords 67 s, insets 62 s, sales 117 s). So the default is 160 s;
+  // `sales.spec.ts` sets 240 s itself. Not measured: the CI box (2 vCPU).
+  timeout: 160_000,
+  expect: { timeout: 17_000 },
   retries: 0,
   fullyParallel: false,
-  workers: 1,
-  reporter: 'list',
+  // A fixed constant, never derived from the machine (ADR-0040): the same figure everywhere,
+  // so a run on a 2-vCPU CI box and on a 16-core one are the same shape.
+  workers: 3,
+  outputDir: OUTPUT_DIR,
+  reporter: [['list'], ['junit', { outputFile: `${OUTPUT_DIR}/junit.xml` }]],
   use: {
-    baseURL: e2eBaseUrl(),
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    // The browser's zone and locale are set here once, never by a spec (ADR-0040, GH-251):
+    // a calendar day in a spec is the same day whatever zone the machine runs in.
+    timezoneId: 'America/Argentina/Buenos_Aires',
+    locale: 'es-AR',
   },
   // `catalogInsecureOrigin.spec.ts` (review finding, carried from the clipboard
   // subtask: the `execCommand` fallback was only proven in jsdom) needs a base URL
@@ -76,7 +82,7 @@ export default defineConfig({
   // Chromium's own secure-context rule still treats as insecure — so it gets its
   // own project with its own `baseURL`, instead of running under the default one
   // every other spec shares. It needs no real DNS entry: the spec itself proxies
-  // every request for that host to the one real server this config starts below.
+  // every request for that host to its own worker's real server.
   projects: [
     // The phone check runs on its own server and clock (the `mobile` project below), so the
     // original specs, which keep the first server and the real clock, never match it.
@@ -107,40 +113,18 @@ export default defineConfig({
       use: { baseURL: mobileBaseUrl(), isMobile: true, hasTouch: true },
     },
   ],
-  webServer: [
-    {
-    // A throwaway SQLite file, keyed on the port so two runs never share one,
-    // removed before every run; `cwd: '..'` so the paths in `e2eEnv()`
-    // (repo-root-relative, matching `scripts/serve.sh`'s own) resolve the same way.
-    // Never `scripts/serve.sh`: that one sources `.env`.
-    //
-    // `tests.e2e_app:create_e2e_app`, not `app.main:create_app` (GH-10, front
-    // subtask): the plan's own invariant — "the test app always injects
-    // FakeTelegram and upkeep_ticker=False" — holds for the e2e run too, so no
-    // spec here ever reaches a real Telegram token or the network.
+  // Only the phone check's second server starts here: the first is each worker's own
+  // (ADR-0040, `fixtures.ts`). Its clock is pinned (`create_mobile_e2e_app`).
+  webServer: {
     command:
-      `mkdir -p "$(dirname '${e2eDbPath()}')" && rm -f '${e2eDbPath()}' && ` +
-      `${envAssignments} uv run --no-project uvicorn tests.e2e_app:create_e2e_app --factory ` +
-      `--host ${E2E_HOST} --port ${e2ePort()} --no-access-log`,
+      `mkdir -p "$(dirname '${mobileDbPath()}')" && rm -f '${mobileDbPath()}' && ` +
+      `${assignments(mobileEnv())} uv run --no-project uvicorn tests.e2e_app:create_mobile_e2e_app ` +
+      `--factory --host ${E2E_HOST} --port ${mobilePort()} --no-access-log`,
     cwd: '..',
     reuseExistingServer: false,
     timeout: 30_000,
     stdout: 'pipe',
     stderr: 'pipe',
-    wait: { stderr: readyOn(e2ePort()) },
-    },
-    {
-      // The second server (GH-80, invariant 7): `create_mobile_e2e_app`, its clock pinned.
-      command:
-        `mkdir -p "$(dirname '${mobileDbPath()}')" && rm -f '${mobileDbPath()}' && ` +
-        `${assignments(mobileEnv())} uv run --no-project uvicorn tests.e2e_app:create_mobile_e2e_app ` +
-        `--factory --host ${E2E_HOST} --port ${mobilePort()} --no-access-log`,
-      cwd: '..',
-      reuseExistingServer: false,
-      timeout: 30_000,
-      stdout: 'pipe',
-      stderr: 'pipe',
-      wait: { stderr: readyOn(mobilePort()) },
-    },
-  ],
+    wait: { stderr: readyOn(mobilePort()) },
+  },
 })
