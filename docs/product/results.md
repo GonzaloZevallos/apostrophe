@@ -9,19 +9,19 @@ Whether a business makes money and how much it actually has, over today, this we
 - payments, balances and settlement from payments (ADR-0012);
 - stock status and days left from stock.
 
-It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Inicio is set here. An archived variety (varieties.md) leaves What you have left and "Start with varieties", while every period figure keeps it.
+It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Profit here and profit in Análisis are the same figure. Inicio also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Inicio is set here. An archived variety (varieties.md) leaves What you have left and "Start with varieties", while every period figure keeps it.
 
 ## Jobs
 
-**When** I open the app, or stop between orders or at the end of the day to see how today, this week or this month is going, **I want to** see on one screen what I sold, what it cost me, what I spent, what I earned (Ganancia), the money that actually moved (Caja), who owes me and what I have left of each variety, **so I can** tell whether I'm making money and how much I actually have, and know whether to restock or chase a debt, without opening Ventas, Clientes and Variedades one by one or doing any arithmetic myself.
+**When** I open the app, or stop between orders or at the end of the day to see how today, this week or this month is going, **I want to** see on one screen what I sold, what it cost me, what I spent, what I earned (Profit), the money that actually moved (Cash), who owes me and what I have left of each variety, **so I can** tell whether I'm making money and how much I actually have, and know whether to restock or chase a debt, without opening Ventas, Clientes and Variedades one by one or doing any arithmetic myself.
 
-Ganancia and Caja exist nowhere else in the product, and they are why the panel exists. The spreadsheet's Panel got profit wrong: its profit dropped the week flower was bought. Showing debt and stock on the same screen is a convenience on top of that.
+Profit and Cash exist nowhere else in the product, and they are why the panel exists. The spreadsheet's Panel got profit wrong: its profit dropped the week flower was bought. Showing debt and stock on the same screen is a convenience on top of that.
 
 **When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Clientes and Variedades one by one or doing any arithmetic.
 
 This refines the panel job above and the navigation job for Hoy (GH-45); it is not a new job. Its protagonist is the seller, on the phone, with little time; Semana and Mes are for the weekly or monthly look, Análisis for anything deeper. Before it, the seller went into Clientes to collect and into Variedades variety by variety, and set the business up without a guide, often forgetting the bot.
 
-**When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Ganancia what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promoción and Consumo propio lines of Semana and Mes; the withdrawal is defined in stock.md.)
+**When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Profit what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promotion and Own use lines of Semana and Mes; the withdrawal is defined in stock.md.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Hoy showing what can be acted on today, with "Cobrar" on each debtor.)
 
@@ -36,17 +36,17 @@ Success criteria:
    - the period's sales total and count equal Ventas for the same period;
    - Owed to you's total, count and oldest date equal Clientes' Te deben section;
    - each variety's grams, status and days left equal Variedades;
-   - Semana's and Mes's Ganancia, cost of goods sold, stock shortfall, Promoción, Consumo propio, expenses and Caja equal Análisis's row for the same week and month.
+   - Semana's and Mes's Profit, cost of goods sold, stock shortfall, Promotion, Own use, expenses and Cash equal Análisis's row for the same week and month.
 
    Any figure that disagrees is a defect.
-3. **Ganancia and Caja are honest**:
-   - Ganancia = sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses (CONTEXT.md: Profit).
-   - Caja = payments received − expenses − purchases, each counted on its own date.
+3. **Profit and Cash are honest**:
+   - Profit = sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses (CONTEXT.md: Profit).
+   - Cash = payments received − expenses − purchases, each counted on its own date.
    - They appear side by side under those names, in Semana and Mes.
    - A negative figure is shown as it is, never hidden or floored.
-   - Pending cost is flagged, never treated as $0 (ADR-0009). Ganancia is then worked out over the costed part.
-   - Flower lost to a negative adjustment lowers Ganancia on the adjustment's date.
-   - Grams withdrawn for promotion or own use lower Ganancia on the withdrawal's date, each reason on its own line, never folded into cost of goods sold or stock shortfall.
+   - Pending cost is flagged, never treated as $0 (ADR-0009). Profit is then worked out over the costed part.
+   - Flower lost to a negative adjustment lowers Profit on the adjustment's date.
+   - Grams withdrawn for promotion or own use lower Profit on the withdrawal's date, each reason on its own line, never folded into cost of goods sold or stock shortfall.
    - Corrected stock entries and withdrawals show the next time the panel opens: a period has no closing date.
    - Archiving or restoring a variety moves no figure.
 4. **Who owes and what's left, at a glance**: money owed, each debtor one tap from collecting, and stock per unarchived variety with its status. Status is told by shape and word, never by color alone.
@@ -55,9 +55,9 @@ Success criteria:
    - every figure comes from the server;
    - a period with no activity shows real zeros;
    - average sale shows nothing when the period has no sales.
-7. **A withdrawal is not a sale**: recording one leaves sales, number of sales, average sale, grams sold, Regalaste, cost of goods sold, stock shortfall and Caja exactly as they were.
-8. **Collect in one tap from Hoy**: "Collect" on each debtor row of the Owed to you block opens Registrar cobro with that customer chosen, accessible name "Collect from <name>"; back or "Cerrar" leaves it in one move.
-9. **Hoy is only what can be acted on**: sold today, then Owed to you, then What you have left; a low variety links to its page; no result figure (Ganancia, Caja, costs, Gastos, Regalaste, Compras) shows on Hoy.
+7. **A withdrawal is not a sale**: recording one leaves sales, number of sales, average sale, grams sold, You gifted, cost of goods sold, stock shortfall and Cash exactly as they were.
+8. **Collect in one tap from Hoy**: "Collect" on each debtor row of the Owed to you block opens Registrar cobro with that customer chosen, accessible name "Collect from <name>"; back or "Close" leaves it in one move.
+9. **Hoy is only what can be acted on**: sold today, then Owed to you, then What you have left; a low variety links to its page; no result figure (Profit, Cash, costs, Gastos, You gifted, Compras) shows on Hoy.
 10. **First run follows today's definition**: a brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the four-step checklist; an imported business sees the dismissable after-import notice; at most one first-run element shows at a time (navigation.md).
 11. **Every notice leads to its fix**: "Your Telegram catalog is out of date" opens the catalog screen; the business avatar opens Configuración.
 12. **Looks as designed**: Inicio, InicioOscuro and InicioCompu match `docs/product/design-system/pantallas/`, phone and computer, both themes.
@@ -70,49 +70,49 @@ Success criteria:
   - Semana is the Monday-to-Sunday week that contains today.
   - Mes is the current calendar month.
 - The panel opens on Hoy.
-- **Ranges**: "Hoy 03/10", "28/09 – 04/10" and "01/10 – 31/10".
+- **Ranges**: "Today 03/10", "28/09 – 04/10" and "01/10 – 31/10".
   - Always `dd/mm`, with no month names, even when a week crosses into another month or year.
   - A range covers the whole period, including days still to come. The figures cover only what has been recorded.
 
 ### Figures per period
 
-Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Ganancia and Caja come from the same period computation as Análisis (ADR-0020), never from a second sum. They count every variety, archived ones included.
+Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Profit and Cash come from the same period computation as Análisis (ADR-0020), never from a second sum. They count every variety, archived ones included.
 
 - **Sales**: the sum of the period's sale totals, shipping included, paid or not. It is the same figure as Ventas' total. Its heading follows the tab: "Vendiste hoy", "Vendiste esta semana" or "Vendiste este mes". Withdrawals are never sales.
 - **Number of sales**: counts sales, not lines.
 - **Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales.
 - **Grams sold**: the grams of the period's lines that are not gifts.
-- **Grams gifted** ("Regalaste"): the grams of the period's gift lines. Withdrawn grams are never gifted grams.
+- **Grams gifted** ("You gifted"): the grams of the period's gift lines. Withdrawn grams are never gifted grams.
 - **Cost of goods sold** ("Cost of goods sold"): what the grams of the period's sale lines (gifts included) cost, from their lots as the lots stand now (ADR-0009, ADR-0010). Neither a negative adjustment's cost nor a withdrawal's is part of it.
 - **Stock shortfall** ("Stock shortfall"): what the grams taken out by the period's negative adjustments cost, on the adjustment's date, from their lots as they stand now, oldest first (CONTEXT.md: Stock shortfall). It shows as "Stock shortfall $ X" only when the period has any negative adjustment; otherwise the line is left out. It never includes a withdrawal.
-- **Promotion cost** ("Promotion") and **own-use cost** ("Own use"): what the grams of the period's withdrawals of that reason cost, on the withdrawal's date, from their lots as they stand now, oldest first. Each shows as "Promoción $ X" or "Consumo propio $ X" only when the period has a withdrawal of that reason; otherwise its line is left out.
+- **Promotion cost** ("Promotion") and **own-use cost** ("Own use"): what the grams of the period's withdrawals of that reason cost, on the withdrawal's date, from their lots as they stand now, oldest first. Each shows as "Promotion $ X" or "Own use $ X" only when the period has a withdrawal of that reason; otherwise its line is left out.
 - **Expenses** ("Gastos"): the sum of the period's expenses.
-- **Purchases** ("Compras de flores"): the total cost of the period's purchase stock entries.
-- **Ganancia**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
+- **Purchases** ("Flower purchases"): the total cost of the period's purchase stock entries.
+- **Profit**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
   - When any of its cost is pending, it is worked out over the costed part: the sales of pending grams are left out (sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses), with sales of costed grams per line as CONTEXT.md's Margin defines them (line total × costed grams ÷ line grams, half up). The sales figure shown stays the full sales.
   - It is the same figure Análisis shows as profit for the same week or month.
   - It takes the design's accent treatment whatever its sign: the accent marks the headline figure, not whether it is good or bad.
-- **Caja**: payments received − expenses − purchases. Payments received are every payment dated in the period, on-the-spot and later ones alike, each on its own payment date. Caja is shown side by side with Ganancia. A withdrawal never touches it.
+- **Cash**: payments received − expenses − purchases. Payments received are every payment dated in the period, on-the-spot and later ones alike, each on its own payment date. Cash is shown side by side with Profit. A withdrawal never touches it.
 
 ### What each tab shows
 
 - **Hoy** shows what can be acted on today, top to bottom: what was sold today (sales, number of sales, average sale and grams sold), then the Owed to you block, then What you have left.
-- **Semana and Mes** show sales, number of sales, average sale, grams sold, Regalaste, Costo de lo vendido, Stock shortfall (when the period has one), Promoción and Consumo propio (each when the period has one), Gastos, Compras de flores, Ganancia and Caja, then the Owed to you block and What you have left. Promoción and Consumo propio sit right after Stock shortfall and before Gastos.
-- Ganancia, Caja, Costo de lo vendido, Stock shortfall, Promoción, Consumo propio, Gastos, Regalaste and Compras never show on Hoy.
+- **Semana and Mes** show sales, number of sales, average sale, grams sold, You gifted, Cost of goods sold, Stock shortfall (when the period has one), Promotion and Own use (each when the period has one), Gastos, Flower purchases, Profit and Cash, then the Owed to you block and What you have left. Promotion and Own use sit right after Stock shortfall and before Gastos.
+- Profit, Cash, Cost of goods sold, Stock shortfall, Promotion, Own use, Gastos, You gifted and Compras never show on Hoy.
 
 ### Pending cost
 
 - A fixed "incluye costo pendiente" note, with no grams or amounts:
-  - under Costo de lo vendido, when any of the period's sale lines has pending grams as the lots stand now;
+  - under Cost of goods sold, when any of the period's sale lines has pending grams as the lots stand now;
   - under Stock shortfall, when any of the period's negative adjustments has pending grams;
-  - under Promoción, when any of the period's promotion withdrawals has pending grams; under Consumo propio, likewise for own use;
-  - under Ganancia, when any of those applies.
-- Caja never carries it: pending cost is not money that moved.
+  - under Promotion, when any of the period's promotion withdrawals has pending grams; under Own use, likewise for own use;
+  - under Profit, when any of those applies.
+- Cash never carries it: pending cost is not money that moved.
 - With nothing pending, no figure shows the note.
 
 ### Negative figures
 
-- Ganancia and Caja may go below zero.
+- Profit and Cash may go below zero.
 - A negative figure reads with a minus sign before the app's money format: "−$ 4.500".
 - It is shown in the neutral treatment, never red or amber, and is never hidden or floored. The sign tells the state.
 - "A favor" stays reserved for a customer's credit.
@@ -126,7 +126,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Tapping the block's heading opens Clientes, on its Te deben section.
 - Customers in credit never appear and count in no figure.
 - **Nobody owes**: the block stays and reads a fixed "Nobody owes you", with nothing to tap.
-- **After "Collect"**: Registrar cobro follows payments.md unchanged (a partial payment allowed, a payment above the balance refused inline keeping everything typed, "Todo" filling the whole balance). Saving or "Cerrar" returns to Inicio in one move. The toast is payments.md's "Cobro guardado · queda debiendo $ X", or "Cobro guardado" when nothing is left owing; it never names the customer. The block refreshes from the API:
+- **After "Collect"**: Registrar cobro follows payments.md unchanged (a partial payment allowed, a payment above the balance refused inline keeping everything typed, "Todo" filling the whole balance). Saving or "Close" returns to Inicio in one move. The toast is payments.md's "Cobro guardado · queda debiendo $ X", or "Cobro guardado" when nothing is left owing; it never names the customer. The block refreshes from the API:
   - the total, the count and the oldest date update;
   - a debtor still owing stays, with the new balance;
   - a debtor paid in full leaves, and the teaser refills to 3 by its own order;
@@ -184,20 +184,20 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - sales total and count against Ventas;
   - Owed to you figures against Clientes' Te deben section;
   - each variety's grams, status, days left and detail against Variedades;
-  - Semana's and Mes's Ganancia, cost of goods sold, stock shortfall, Promoción, Consumo propio, expenses and Caja against `GET /analysis`'s row for the same week and month, over a seeded history that includes a negative adjustment with costed grams, one with pending grams, a sale line with pending grams, a costed withdrawal of each reason and a withdrawal with pending grams.
+  - Semana's and Mes's Profit, cost of goods sold, stock shortfall, Promotion, Own use, expenses and Cash against `GET /analysis`'s row for the same week and month, over a seeded history that includes a negative adjustment with costed grams, one with pending grams, a sale line with pending grams, a costed withdrawal of each reason and a withdrawal with pending grams.
 - **Formulas (criterion 3)**: a matrix, 100% passing, covering:
-  - Ganancia and Caja;
+  - Profit and Cash;
   - payments counted on their own date, not the sale's;
-  - a backdated purchase or an edited stock entry moving cost of goods sold and Ganancia;
-  - a negative adjustment lowering Ganancia by its costed shortfall on its own date, showing "Stock shortfall $ X", and leaving cost of goods sold and Caja unchanged;
-  - a withdrawal of each reason lowering Ganancia on its own date, showing its own line, and leaving cost of goods sold, stock shortfall and Caja unchanged;
+  - a backdated purchase or an edited stock entry moving cost of goods sold and Profit;
+  - a negative adjustment lowering Profit by its costed shortfall on its own date, showing "Stock shortfall $ X", and leaving cost of goods sold and Cash unchanged;
+  - a withdrawal of each reason lowering Profit on its own date, showing its own line, and leaving cost of goods sold, stock shortfall and Cash unchanged;
   - a period with no negative adjustment showing no Stock shortfall line, and one with no withdrawal of a reason showing no line for it;
-  - pending grams on a sale line leaving their sales out of Ganancia while "Vendiste" keeps the full sales;
-  - pending cost showing the note under Costo de lo vendido, Stock shortfall, Promoción, Consumo propio and Ganancia as defined, and never under Caja;
-  - negative Ganancia and Caja shown as "−$ X".
+  - pending grams on a sale line leaving their sales out of Profit while "Vendiste" keeps the full sales;
+  - pending cost showing the note under Cost of goods sold, Stock shortfall, Promotion, Own use and Profit as defined, and never under Cash;
+  - negative Profit and Cash shown as "−$ X".
 - **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from What you have left and does not count for "Start with varieties".
-- **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, Regalaste, cost of goods sold, stock shortfall and Caja.
-- **Tabs (criterion 9)**: front tests, phone and computer, show Hoy with sold today, Owed to you and What you have left only, in that order, and Ganancia, Caja, Costo de lo vendido, Stock shortfall, Promoción, Consumo propio, Gastos, Regalaste and Compras only on Semana and Mes, Promoción and Consumo propio right after Stock shortfall.
+- **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, You gifted, cost of goods sold, stock shortfall and Cash.
+- **Tabs (criterion 9)**: front tests, phone and computer, show Hoy with sold today, Owed to you and What you have left only, in that order, and Profit, Cash, Cost of goods sold, Stock shortfall, Promotion, Own use, Gastos, You gifted and Compras only on Semana and Mes, Promotion and Own use right after Stock shortfall.
 - **One-tap collect (criterion 8)**: the end-to-end front run, phone and computer viewports, taps "Collect from <name>" on Hoy, Registrar cobro opens with that customer chosen, a payment is saved, and one back move returns to Inicio.
 - **Refresh after Collect**: front tests show a partial payment leaving the debtor with the new balance, a full payment removing the row and the teaser refilling to 3 by its order, "Nobody owes you" when nobody is left owing, and both toasts reading as specified with no customer name.
 - **Inicio's order (criteria 10, 11)**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Start with varieties" (never two), then the out-of-date notice, then the after-import notice, then the figures; the out-of-date notice opens the catalog screen and the avatar opens Configuración.
@@ -206,10 +206,10 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nobody owes you" when nobody owes; "Collect" with its accessible name on every row. No state is told by color alone, in both themes.
 - **Isolation (criterion 5)**: from another business, the panel route shows none of the first business's figures, Onboarding state or first-run state. After a full front run, the console and browser storage hold no figures or names.
 - **Nothing invented (criterion 6)**:
-  - an empty business shows $ 0 and 0 g, with no average sale and no Stock shortfall, Promoción or Consumo propio line;
+  - an empty business shows $ 0 and 0 g, with no average sale and no Stock shortfall, Promotion or Own use line;
   - every figure on screen equals the API's answer.
 - **Looks as designed (criterion 12)**: `scripts/design/compare.sh` runs before and after for Inicio, InicioOscuro and InicioCompu, phone and computer, with the captures attached to the PR and every difference from the design listed.
-- **No curl**: the end-to-end front run opens Inicio, switches across the three periods, reads Promoción and Consumo propio after recording a withdrawal of each reason, opens Clientes from the block's heading, a customer from the teaser, and Registrar cobro from a teaser row's "Cobrar".
+- **No curl**: the end-to-end front run opens Inicio, switches across the three periods, reads Promotion and Own use after recording a withdrawal of each reason, opens Clientes from the block's heading, a customer from the teaser, and Registrar cobro from a teaser row's "Cobrar".
 - **Business measure**, read by the operator from existing records only, never shown in the app: the share of pre-Onboarding businesses that complete the checklist, and the share of imported businesses that publish the catalog.
 
 ## Out of scope
@@ -218,7 +218,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Recording anything from the panel other than through "+ Nueva venta" and "Collect".
 - Live updates between partners.
 - Margins per variety (#8), stock shortfall per variety, and promotion or own-use cost per variety.
-- Pending grams counted on the panel ("y N g sin costo"): the panel's note is fixed and carries no grams; Análisis shows the counts.
+- Pending grams counted on the panel ("and N g not yet costed"): the panel's note is fixed and carries no grams; Análisis shows the counts.
 - Stock's total grams on the panel.
 - Dismissing the Onboarding notice.
 - Archived varieties on the panel.

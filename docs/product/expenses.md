@@ -128,14 +128,14 @@ Success criteria:
   redirects there permanently), opens the expense form directly with today's date. Its
   subtitle is design's call.
 - **The expense form** is a form (navigation.md): no bar and no "+ Nueva venta", and it
-  closes with "Cerrar".
+  closes with "Close".
   - "Categoría", "Monto" and "Detalle" are marked required.
   - Submit is blocked while the detail is blank.
   - The date comes filled with today.
-  - "Cerrar" and a successful save go back by history to the screen that opened it (Más
+  - "Close" and a successful save go back by history to the screen that opened it (Más
     or Gastos).
   - With no history (a direct link), it goes back to Gastos on the current month.
-  - A successful save shows "Gasto guardado" with no jump elsewhere. After a save from
+  - A successful save shows "Expense saved" with no jump elsewhere. After a save from
     Gastos, Gastos stays on the month it was showing and refreshes.
   - Leaving with something typed asks before discarding; an untouched form closes at
     once.
@@ -155,7 +155,7 @@ Success criteria:
 - **An expense or category that is gone** when it is saved, deleted or opened follows the
   app's rule in `accounts.md`: "Eso ya no está." Opening one offers "Volver a Gastos" on
   the current month.
-- **Toasts**: "Gasto guardado", "Gasto eliminado", "Categoría guardada" and "Categoría
+- **Toasts**: "Expense saved", "Expense deleted", "Categoría guardada" and "Categoría
   eliminada", with no amounts in them.
 - **Refusals** show inline and keep what was typed.
 - **Feedback**: network loss shows "Sin conexión", and a server error shows a generic
@@ -207,8 +207,8 @@ Read from the data and from tests; there is no telemetry.
   - a link that opens Configuración → Categorías de gastos;
   - inline creation in the expense form still working.
 - **M10, form return**: front tests cover:
-  - "Cerrar" and a successful save going back by history to Más or to Gastos;
-  - "Gasto guardado";
+  - "Close" and a successful save going back by history to Más or to Gastos;
+  - "Expense saved";
   - the discard confirmation, and the untouched close;
   - the no-history fallback to Gastos on the current month.
 - **M11, redirects**: `/gastos` → `/expenses` and `/mas` → `/more` answer a permanent

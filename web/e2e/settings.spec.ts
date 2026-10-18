@@ -92,7 +92,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await close()
 
   // Categorías de gastos: add, rename, a refused removal, then remove.
-  await openGroup('Expense categories')
+  await openGroup('Categorías de gastos')
   await page.getByLabel('Nueva categoría').fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()
