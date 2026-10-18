@@ -26,6 +26,7 @@ export const OWED = 'Owed'
 export const salesOwing = (count: number) => `${salesCount(count)} owing`
 
 /** A customer's row: what it says about money and its Collect button. */
+export const sinceDate = (date: string) => `since ${date}`
 export const owesSince = (date: string) => `owes you since ${date}`
 export const creditOf = (amount: string) => `Credit ${amount}`
 export const COLLECT = 'Collect'
