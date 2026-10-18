@@ -41,6 +41,8 @@ import { FLOWER_NOTICE, NO_DISCARD_TITLE, YES_DELETE_TITLE } from '../copy/expen
 import { MONTH_NEXT, MONTH_PREVIOUS } from '../copy/analysis'
 import { TAB_EXPENSES } from '../copy/shell'
 
+const EXPENSES_KEY = 'expenses' as const
+
 export { FLOWER_NOTICE, NO_DISCARD_TITLE, YES_DELETE_TITLE }
 
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
@@ -73,13 +75,13 @@ function DeleteConfirm({
     setError(null)
     try {
       await deleteExpense(expense.id)
-      invalidateResource(queryClient, 'expenses')
+      invalidateResource(queryClient, EXPENSES_KEY)
       onDone()
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)
       } else if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'expenses')
+        invalidateResource(queryClient, EXPENSES_KEY)
         onGone()
       } else {
         setError(ERROR_GENERICO_MENSAJE)
@@ -266,7 +268,7 @@ export default function Gastos() {
               onDirtyChange={setEditDirty}
               onCancel={() => (editDirty ? setConfirmingDiscard(true) : closeEdit())}
               onDone={(saved) => {
-                invalidateResource(queryClient, 'expenses')
+                invalidateResource(queryClient, EXPENSES_KEY)
                 closeEdit()
                 flash.showNow(saved)
               }}

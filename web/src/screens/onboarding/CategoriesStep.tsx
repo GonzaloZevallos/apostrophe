@@ -9,14 +9,16 @@ import ExpenseCategoriesEditor from '../settings/ExpenseCategoriesEditor'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import * as copy from '../../copy/onboarding'
+import { PASS, SLUG } from './steps'
 
 export default function CategoriesStep({ onDirtyChange, onProgress }: StepBodyProps) {
   const { run, sending, notice } = useOnboardingWrite(onProgress)
   return (
     <>
       <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} addCollapsed />
-      <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass('categories', 'done'))}>
-        Seguir
+      <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass(SLUG.categories, PASS.done))}>
+        {copy.CONTINUE}
       </StepSubmit>
       {notice}
     </>

@@ -37,6 +37,9 @@ import { CLOSE, GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 import * as copy from '../../copy/expenses'
 import { CATEGORY_GONE } from '../../copy/expenses'
 
+const EXPENSES_KEY = 'expenses' as const
+const CATEGORIES_KEY = 'expenseCategories' as const
+
 export { CATEGORY_GONE }
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
@@ -133,7 +136,7 @@ export default function ExpenseForm({
     setNewCategorySending(true)
     try {
       const created = await addCategory(newCategoryName)
-      invalidateResource(queryClient, 'expenseCategories')
+      invalidateResource(queryClient, CATEGORIES_KEY)
       setExtraCategories((previous) => [...previous, created])
       setForm((previous) => ({ ...previous, category_id: String(created.id) }))
       setCategoryError(null)
@@ -176,11 +179,11 @@ export default function ExpenseForm({
       if (caught instanceof NetworkError) {
         setOffline(true)
       } else if (caught instanceof ApiError && resolveOverride(EXPENSE_FORM_OVERRIDES, caught.code) === 'category-gone') {
-        invalidateResource(queryClient, 'expenseCategories')
+        invalidateResource(queryClient, CATEGORIES_KEY)
         setForm((previous) => ({ ...previous, category_id: '' }))
         setCategoryError(CATEGORY_GONE)
       } else if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'expenses')
+        invalidateResource(queryClient, EXPENSES_KEY)
         onGone?.()
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)

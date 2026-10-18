@@ -16,9 +16,13 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { IMPORT_NOTICE, IMPORT_NOTICE_DISMISS } from '../../copy/home'
 
+type Failure = 'offline' | 'error'
+const OFFLINE: Failure = 'offline'
+const ERROR: Failure = 'error'
+
 export default function ImportNotice() {
   const queryClient = useQueryClient()
-  const [failure, setFailure] = useState<'offline' | 'error' | null>(null)
+  const [failure, setFailure] = useState<Failure | null>(null)
 
   async function dismiss(): Promise<void> {
     setFailure(null)
@@ -26,7 +30,7 @@ export default function ImportNotice() {
       await sendImportNoticeDismissal()
       await queryClient.invalidateQueries({ queryKey: keys.firstRun() })
     } catch (caught) {
-      setFailure(caught instanceof NetworkError ? 'offline' : 'error')
+      setFailure(caught instanceof NetworkError ? OFFLINE : ERROR)
     }
   }
 

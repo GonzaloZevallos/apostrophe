@@ -48,6 +48,8 @@ import ImportNotice from './inicio/ImportNotice'
 import InicioPanel from './inicio/InicioPanel'
 import OnboardingNotice from './onboarding/OnboardingNotice'
 
+const FIRST_TAB = 'today' as const
+
 export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
 
 interface PinnedCatalogStatus {
@@ -56,7 +58,7 @@ interface PinnedCatalogStatus {
 
 export default function Inicio() {
   const me = useOutletContext<Me>()
-  const [tab, setTab] = useState<PanelTab>('today')
+  const [tab, setTab] = useState<PanelTab>(FIRST_TAB)
 
   const panelQuery = useQuery({
     queryKey: keys.panel(),

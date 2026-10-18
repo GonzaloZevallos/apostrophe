@@ -19,10 +19,12 @@ import Icono from '../../components/Icono'
 import SinConexion from '../../components/SinConexion'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
-import { STEP_COUNT, stepInfo } from './steps'
+import { FAILURE, STEP_COUNT, stepInfo } from './steps'
 import { HOME } from '../../routes'
+import * as copy from '../../copy/onboarding'
+import { NOTICE_TITLE } from '../../copy/onboarding'
 
-export const NOTICE_TITLE = 'Seguí con la configuración'
+export { NOTICE_TITLE }
 
 export default function OnboardingNotice({ progress }: { progress: OnboardingProgress }) {
   const navigate = useNavigate()
@@ -37,10 +39,10 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
         <span className="aviso-onboarding__texto">{NOTICE_TITLE}</span>
         <Icono nombre="chevron" />
       </span>
-      <span className="aviso-onboarding__conteo">{`${progress.count} de ${STEP_COUNT} pasos`}</span>
+      <span className="aviso-onboarding__conteo">{copy.stepsDone(progress.count, STEP_COUNT)}</span>
       <StepIndicator steps={progress.steps} current={current} />
       {current !== null && (
-        <span className="aviso-onboarding__falta">{`Falta: ${stepInfo(current).shortName}`}</span>
+        <span className="aviso-onboarding__falta">{copy.missingStep(stepInfo(current).shortName)}</span>
       )}
     </>
   )
@@ -51,9 +53,9 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
       const answer = await sendAdvance()
       await afterProgress(answer, navigate, queryClient)
     } catch (caught) {
-      if (caught instanceof NetworkError) setFailure('offline')
+      if (caught instanceof NetworkError) setFailure(FAILURE.offline)
       else if (caught instanceof ApiError && isGone(caught.code)) void navigate(HOME)
-      else setFailure('error')
+      else setFailure(FAILURE.error)
     }
   }
 

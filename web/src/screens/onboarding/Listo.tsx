@@ -18,26 +18,24 @@ import { inAppState } from '../../components/inAppState'
 import { HOME, SALE_NEW } from '../../routes'
 import { useOnboarding } from './onboardingContext'
 import StepIndicator from './StepIndicator'
-import { STEP_COUNT, STEPS, type StepInfo } from './steps'
-
-function plural(n: number, one: string, many: string): string {
-  return n === 1 ? `1 ${one}` : `${n} ${many}`
-}
+import { STATE, STEP_COUNT, STEPS, type StepInfo } from './steps'
+import { CLOSE } from '../../copy/common'
+import * as copy from '../../copy/onboarding'
 
 export default function Listo() {
   const { progress } = useOnboarding()
   const navigate = useNavigate()
 
   function lineOf(info: StepInfo): { done: boolean; text: string } {
-    const state = progress.steps.find((item) => item.step === info.slug)?.state ?? 'pending'
+    const state = progress.steps.find((item) => item.step === info.slug)?.state ?? STATE.pending
     if (state === 'done') return { done: true, text: doneText(info.slug) }
-    return { done: false, text: `Para después — en ${info.later}` }
+    return { done: false, text: copy.laterLine(info.later) }
   }
 
   function doneText(slug: StepSlug): string {
-    if (slug === 'variety') return `Hecho · ${plural(progress.varieties_count, 'variedad', 'variedades')}`
-    if (slug === 'stock') return `Hecho · ${plural(progress.stock_entries_count, 'entrada', 'entradas')}`
-    return 'Hecho'
+    if (slug === 'variety') return copy.doneVarieties(progress.varieties_count)
+    if (slug === 'stock') return copy.doneEntries(progress.stock_entries_count)
+    return copy.DONE
   }
 
   async function firstSale(): Promise<void> {
@@ -52,17 +50,17 @@ export default function Listo() {
           <Boton
             variant="icon"
             action="close"
-            ariaLabel="Cerrar"
+            ariaLabel={CLOSE}
             onClick={() => void navigate(HOME, { replace: true })}
           />
         </div>
         <div className="onboarding__progreso">
-          <span className="onboarding__paso">{`${STEP_COUNT} de ${STEP_COUNT} pasos`}</span>
+          <span className="onboarding__paso">{copy.stepsDone(STEP_COUNT, STEP_COUNT)}</span>
           <StepIndicator steps={progress.steps} current={null} />
         </div>
         <div className="onboarding__titulos">
-          <h1 className="onboarding__titulo onboarding__titulo--grande">Listo</h1>
-          <p className="onboarding__porque">Esto quedó armado en tu negocio.</p>
+          <h1 className="onboarding__titulo onboarding__titulo--grande">{copy.ALL_SET}</h1>
+          <p className="onboarding__porque">{copy.ALL_SET_LINE}</p>
         </div>
         <ul className="listo__lista">
           {STEPS.map((info) => {
@@ -85,10 +83,10 @@ export default function Listo() {
         </ul>
         <div className="onboarding__acciones">
           <Boton icon="agregar" onClick={() => void firstSale()}>
-            Cargar mi primera venta
+            {copy.FIRST_SALE}
           </Boton>
           <Boton variant="secondary" icon="inicio" onClick={() => void navigate(HOME, { replace: true })}>
-            Ir a Inicio
+            {copy.GO_HOME}
           </Boton>
         </div>
       </div>

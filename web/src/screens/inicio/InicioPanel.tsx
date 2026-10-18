@@ -37,10 +37,10 @@ import * as copy from '../../copy/home'
 
 /** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
  * when the period has one (`null` otherwise), right before Gastos. */
-const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
-  { key: 'shortfall', label: copy.SHORTFALL_LABEL },
-  { key: 'promotion', label: copy.PROMOTION_LABEL },
-  { key: 'own_use', label: copy.OWN_USE_LABEL },
+const COST_LINES: Array<{ kind: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
+  { kind: 'shortfall', label: copy.SHORTFALL_LABEL },
+  { kind: 'promotion', label: copy.PROMOTION_LABEL },
+  { kind: 'own_use', label: copy.OWN_USE_LABEL },
 ]
 
 const TAB_LABEL: Record<PanelTab, string> = {
@@ -48,7 +48,7 @@ const TAB_LABEL: Record<PanelTab, string> = {
   week: copy.TAB_WEEK,
   month: copy.TAB_MONTH,
 }
-const TABS: PanelTab[] = ['today', 'week', 'month']
+const TABS = ['today', 'week', 'month'] as const
 const SALES_HEADING: Record<PanelTab, string> = {
   today: copy.SOLD_TODAY,
   week: copy.SOLD_THIS_WEEK,
@@ -140,11 +140,11 @@ function PeriodResults({ period }: { period: PanelPeriod }) {
           <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
         </div>
         {period.pending_cost && <span className="pie">{copy.PENDING_NOTE}</span>}
-        {COST_LINES.map(({ key, label }) => {
-          const line = period[key]
+        {COST_LINES.map(({ kind, label }) => {
+          const line = period[kind]
           if (line === null) return null
           return (
-            <Fragment key={key}>
+            <Fragment key={kind}>
               <div className="panel-lista__fila">
                 <span>{label}</span>
                 <span className="panel-lista__valor">{formatMoney(line.amount)}</span>

@@ -15,7 +15,7 @@ import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS, WITHDRAWAL_NEW } from '../ro
 interface Item {
   to: string
   label: string
-  icon: NombreIcono
+  icono: NombreIcono
   detail?: string
 }
 
@@ -23,26 +23,26 @@ const ITEMS: Item[] = [
   {
     to: EXPENSE_NEW,
     label: copy.ADD_EXPENSE,
-    icon: 'agregar',
+    icono: 'agregar',
     detail: copy.MORE_ADD_EXPENSE_DETAIL,
   },
   {
     to: WITHDRAWAL_NEW,
     label: copy.MORE_TAKE_OUT,
-    icon: 'salidaStock',
+    icono: 'salidaStock',
     detail: copy.MORE_TAKE_OUT_DETAIL,
   },
-  { to: EXPENSES, label: TAB_EXPENSES, icon: 'gastos', detail: copy.MORE_EXPENSES_DETAIL },
+  { to: EXPENSES, label: TAB_EXPENSES, icono: 'gastos', detail: copy.MORE_EXPENSES_DETAIL },
   {
     to: ANALYSIS,
     label: TAB_ANALYSIS,
-    icon: 'analisis',
+    icono: 'analisis',
     detail: copy.MORE_ANALYSIS_DETAIL,
   },
   {
     to: SETTINGS,
     label: copy.MORE_SETTINGS,
-    icon: 'configuracion',
+    icono: 'configuracion',
     detail: copy.MORE_SETTINGS_DETAIL,
   },
 ]
@@ -54,7 +54,7 @@ const ITEMS: Item[] = [
  * with another icon is named by its content, as before.
  */
 function accessibleName(item: Item): string | undefined {
-  if (item.icon !== 'agregar') return undefined
+  if (item.icono !== 'agregar') return undefined
   return `+ ${item.label}${item.detail === undefined ? '' : ` ${item.detail}`}`
 }
 
@@ -72,7 +72,7 @@ export default function Mas() {
               aria-label={accessibleName(item)}
             >
               <span className="mas__item-icono">
-                <Icono nombre={item.icon} />
+                <Icono nombre={item.icono} />
               </span>
               <span className="mas__item-texto">
                 <span className="mas__item-rotulo">{item.label}</span>

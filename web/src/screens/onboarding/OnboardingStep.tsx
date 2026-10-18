@@ -33,12 +33,16 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import type { StepBodyProps } from './stepBodies'
-import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
+import * as copy from '../../copy/onboarding'
+import { DISCARD, DISCARD_DETAIL, DISCARD_QUESTION, KEEP_TYPING, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
+import { CLOSE } from '../../copy/common'
 import {
   isFirst,
   isLast,
   isOptional,
+  FAILURE,
   laterHint,
+  PASS,
   previousPath,
   STEP_COUNT,
   stepInfo,
@@ -46,10 +50,10 @@ import {
 } from './steps'
 import { HOME } from '../../routes'
 
-export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
-export const DISCARD_QUESTION = '¿Descartás lo que escribiste?'
-export const KEEP_TYPING = 'No, seguí escribiendo'
-export const DISCARD = 'Sí, descartalo'
+const SKIP_ONE = 'one' as const
+const SKIP_REST = 'rest' as const
+
+export { DISCARD, DISCARD_DETAIL, DISCARD_QUESTION, KEEP_TYPING, PARTLY_SAVED_DETAIL }
 
 type Skip = 'one' | 'rest'
 type Failure = 'offline' | 'error'
@@ -93,14 +97,14 @@ export default function OnboardingStep({
     setSending(true)
     try {
       // A required step never reaches here: the buttons are only drawn for the optional.
-      if (kind === 'one' && isOptional(slug)) onAnswer(await sendPass(slug, 'skipped'))
+      if (kind === 'one' && isOptional(slug)) onAnswer(await sendPass(slug, PASS.skipped))
       else if (kind === 'rest') onAnswer(await sendSkipRest())
     } catch (caught) {
-      if (caught instanceof NetworkError) setFailure('offline')
+      if (caught instanceof NetworkError) setFailure(FAILURE.offline)
       else if (caught instanceof ApiError && isGone(caught.code)) {
         disarm()
         void navigate(HOME)
-      } else setFailure('error')
+      } else setFailure(FAILURE.error)
     } finally {
       setSending(false)
     }
@@ -117,16 +121,16 @@ export default function OnboardingStep({
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
             <Boton variant="secondary" icon="atras" onClick={() => void navigate(previous)}>
-              Atrás
+              {copy.BACK}
             </Boton>
           )}
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={() => void navigate(HOME)} />
+          <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={() => void navigate(HOME)} />
         </div>
 
         <div className="onboarding__progreso">
           <div className="onboarding__progreso-fila">
-            <span className="onboarding__paso">{`Paso ${stepNumber(slug)} de ${STEP_COUNT}`}</span>
-            <span className="onboarding__insignia">{info.required ? 'Obligatorio' : 'Opcional'}</span>
+            <span className="onboarding__paso">{copy.stepLine(stepNumber(slug), STEP_COUNT)}</span>
+            <span className="onboarding__insignia">{info.required ? copy.REQUIRED : copy.OPTIONAL}</span>
           </div>
           <StepIndicator steps={progress.steps} current={slug} />
         </div>
@@ -146,12 +150,12 @@ export default function OnboardingStep({
         {!info.required && (
           <div className="onboarding__saltar">
             <div className="onboarding__saltar-fila">
-              <Boton variant="link" disabled={sending} onClick={() => requestSkip('one')}>
-                Saltar
+              <Boton variant="link" disabled={sending} onClick={() => requestSkip(SKIP_ONE)}>
+                {copy.SKIP}
               </Boton>
               {progress.can_skip_rest && !isLast(slug) && (
-                <Boton variant="link" disabled={sending} onClick={() => requestSkip('rest')}>
-                  Saltar el resto
+                <Boton variant="link" disabled={sending} onClick={() => requestSkip(SKIP_REST)}>
+                  {copy.SKIP_THE_REST}
                 </Boton>
               )}
             </div>

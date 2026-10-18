@@ -12,6 +12,8 @@ import CatalogMessageForm from '../settings/CatalogMessageForm'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import * as copy from '../../copy/onboarding'
+import { PASS, SLUG } from './steps'
 
 export default function CatalogMessageStep({ onDirtyChange, onProgress }: StepBodyProps) {
   const [dirty, setDirty] = useState(false)
@@ -29,17 +31,17 @@ export default function CatalogMessageStep({ onDirtyChange, onProgress }: StepBo
   return (
     <>
       <CatalogMessageForm
-        submitLabel="Guardar"
+        submitLabel={copy.SAVE}
         onDirtyChange={onDirty}
-        onSaved={() => void run(() => sendPass('header_footer', 'done'))}
+        onSaved={() => void run(() => sendPass(SLUG.header_footer, PASS.done))}
       />
       {!dirty && (
         <StepSubmit
           variant="secondary"
           disabled={sending}
-          onSubmit={() => void run(() => sendPass('header_footer', 'done'))}
+          onSubmit={() => void run(() => sendPass(SLUG.header_footer, PASS.done))}
         >
-          Dejar así
+          {copy.LEAVE_AS_IS}
         </StepSubmit>
       )}
       {notice}

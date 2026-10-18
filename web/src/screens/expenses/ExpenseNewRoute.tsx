@@ -24,6 +24,9 @@ import { useFlash } from '../../flash/useFlash'
 import { EXPENSES } from '../../routes'
 import ExpenseForm from './ExpenseForm'
 
+const EXPENSES_KEY = 'expenses' as const
+const NEW_TARGET: 'nuevo' = 'nuevo'
+
 export default function ExpenseNewRoute() {
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -32,7 +35,7 @@ export default function ExpenseNewRoute() {
   const leave = useBackOr(EXPENSES)
 
   function onDone(saved: SuccessToast): void {
-    invalidateResource(queryClient, 'expenses')
+    invalidateResource(queryClient, EXPENSES_KEY)
     flash.armAfterLeaving(saved)
     disarm()
     leave()
@@ -41,7 +44,7 @@ export default function ExpenseNewRoute() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <ExpenseForm target="nuevo" onDone={onDone} onCancel={leave} onDirtyChange={setDirty} />
+        <ExpenseForm target={NEW_TARGET} onDone={onDone} onCancel={leave} onDirtyChange={setDirty} />
       </div>
       {blocker.state === 'blocked' && (
         <LeaveConfirm

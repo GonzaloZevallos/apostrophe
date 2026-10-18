@@ -18,6 +18,9 @@ import { anotherVarietyState } from './anotherVariety'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import * as copy from '../../copy/onboarding'
+
+const OPENING_ORIGIN = 'opening_stock' as const
 
 export default function StockStep({ me, progress, onDirtyChange, onProgress }: StepBodyProps) {
   const queryClient = useQueryClient()
@@ -45,17 +48,17 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     return (
       <>
         <p className="onboarding__porque">
-          ¿Tenés otra para cargar ahora? Cada una lleva su nombre, su precio y su stock inicial.
+          {copy.ANOTHER_PROMPT}
         </p>
         {savedName !== null && (
           <div className="onboarding__tarjeta">
             <span className="onboarding__tarjeta-nombre">{savedName}</span>
-            <span className="onboarding__tarjeta-detalle">Con precio de hoy y con su stock inicial</span>
+            <span className="onboarding__tarjeta-detalle">{copy.CARD_DETAIL}</span>
           </div>
         )}
         <div className="onboarding__acciones">
           <StepSubmit disabled={sending} onSubmit={() => void run(sendAdvance)}>
-            Seguir
+            {copy.CONTINUE}
           </StepSubmit>
           <Boton
             variant="secondary"
@@ -63,7 +66,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
             disabled={sending}
             onClick={() => void navigate(ONBOARDING_VARIETY, { state: inAppState(location, anotherVarietyState()) })}
           >
-            Agregar otra variedad
+            {copy.ADD_ANOTHER_VARIETY}
           </Boton>
         </div>
         {notice}
@@ -73,9 +76,9 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
   if (target === null) {
     return (
       <>
-        <p className="onboarding__porque">Primero cargá una variedad con su precio de hoy.</p>
+        <p className="onboarding__porque">{copy.ADD_VARIETY_FIRST}</p>
         <Boton icon="agregar" onClick={() => void navigate(ONBOARDING_VARIETY)}>
-          Cargar una variedad
+          {copy.ADD_A_VARIETY}
         </Boton>
       </>
     )
@@ -86,7 +89,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
         mode="nuevo"
         today={me.today}
         fixedVarietyId={target.id}
-        fixedOrigin="opening_stock"
+        fixedOrigin={OPENING_ORIGIN}
         onSaved={() => void stockSaved()}
         onDirtyChange={onDirtyChange}
       />

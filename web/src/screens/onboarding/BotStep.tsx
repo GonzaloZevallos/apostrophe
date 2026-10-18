@@ -18,8 +18,11 @@ import { IntegrationsForm, type PinnedCatalog } from '../settings/IntegrationsGr
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import { PUBLISH_LINE } from '../../copy/onboarding'
+import * as copy from '../../copy/onboarding'
+import { PASS, SLUG } from './steps'
 
-export const PUBLISH_LINE = 'Cuando quieras, publicalo desde Variedades → Mandar catálogo'
+export { PUBLISH_LINE }
 
 export default function BotStep({ progress, onDirtyChange, onProgress }: StepBodyProps) {
   const query = useQuery({
@@ -28,8 +31,8 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
   })
   const [tested, setTested] = useState(false)
   const { run, sending, notice } = useOnboardingWrite(onProgress)
-  const done = progress.steps.find((item) => item.step === 'bot')?.state === 'done'
-  const send = () => run(() => sendPass('bot', 'done'))
+  const done = progress.steps.find((item) => item.step === SLUG.bot)?.state === 'done'
+  const send = () => run(() => sendPass(SLUG.bot, PASS.done))
 
   if (query.data === undefined) {
     if (query.isError) return query.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />
@@ -37,7 +40,7 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
   }
   return (
     <>
-      {(done || tested) && <span className="onboarding__insignia">Hecho</span>}
+      {(done || tested) && <span className="onboarding__insignia">{copy.DONE}</span>}
       <IntegrationsForm
         initial={query.data}
         showCatalogLink={false}
@@ -50,7 +53,7 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
       {(done || tested) && <p className="pie">{PUBLISH_LINE}</p>}
       {(done || tested) && (
         <StepSubmit disabled={sending} onSubmit={() => void send()}>
-          Seguir
+          {copy.CONTINUE}
         </StepSubmit>
       )}
       {notice}

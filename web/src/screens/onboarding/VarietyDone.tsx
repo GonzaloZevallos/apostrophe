@@ -21,6 +21,9 @@ import SinConexion from '../../components/SinConexion'
 import { formatMoney } from '../../format/money'
 import { ONBOARDING_STOCK } from '../../routes'
 import type { Variety } from '../Variedades'
+import * as copy from '../../copy/onboarding'
+
+const STEP_ONE_KEY = 'step-one' as const
 
 export interface VarietyDoneProps {
   target: OnboardingTarget
@@ -31,7 +34,7 @@ export interface VarietyDoneProps {
 export default function VarietyDone({ target, onStale }: VarietyDoneProps) {
   const navigate = useNavigate()
   const query = useQuery({
-    queryKey: [...keys.variety(String(target.id)), 'step-one'],
+    queryKey: [...keys.variety(String(target.id)), STEP_ONE_KEY],
     queryFn: () => get<Variety>(`/varieties/${target.id}`),
     gcTime: 0,
   })
@@ -56,12 +59,12 @@ export default function VarietyDone({ target, onStale }: VarietyDoneProps) {
       <div className="onboarding__tarjeta">
         <span className="onboarding__tarjeta-nombre">{target.name}</span>
         <span className="onboarding__tarjeta-detalle">
-          {price === null ? '' : `${formatMoney(price.list_price)} x g`}
+          {price === null ? '' : copy.perGramLine(formatMoney(price.list_price))}
         </span>
-        <span className="onboarding__tarjeta-detalle">Hecho</span>
+        <span className="onboarding__tarjeta-detalle">{copy.DONE}</span>
       </div>
       <Boton textOnly="submit" type="submit">
-        Seguir
+        {copy.CONTINUE}
       </Boton>
     </form>
   )
