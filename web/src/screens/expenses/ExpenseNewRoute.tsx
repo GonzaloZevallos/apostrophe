@@ -25,7 +25,7 @@ import { EXPENSES } from '../../routes'
 import ExpenseForm from './ExpenseForm'
 
 const EXPENSES_KEY = 'expenses' as const
-const NEW_TARGET: 'nuevo' = 'nuevo'
+const NEW_TARGET = 'nuevo' as const
 
 export default function ExpenseNewRoute() {
   const queryClient = useQueryClient()
