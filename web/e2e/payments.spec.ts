@@ -61,7 +61,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variety guardada')).toBeVisible()
+  await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await page.getByLabel(/^Precio de lista/).fill('1000')
@@ -91,7 +91,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.getByText('Owes you $ 5.000')).toBeVisible()
-  await expect(page.getByText(`since ${today}`)).toBeVisible()
+  await expect(page.getByText(`desde el ${today}`)).toBeVisible()
   // Clientes' own header already counts her (checked again, with the figure, below).
 
   // --- Record payment: "Todo" fills and settles the whole balance. ---

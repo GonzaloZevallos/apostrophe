@@ -21,7 +21,7 @@ async function openCobroModal(page: Page): Promise<void> {
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variety guardada')).toBeVisible()
+  await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await page.getByLabel(/^Precio de lista/).fill('1000')

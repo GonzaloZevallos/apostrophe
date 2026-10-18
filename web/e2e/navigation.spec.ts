@@ -161,7 +161,7 @@ test.describe.serial('navigation', () => {
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))
   })
 
-  test('"New sale", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
+  test('"Nueva venta", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
     // The real stylesheet in a real browser (computed style is meaningless in jsdom).
     const expectAction = async (control: Locator): Promise<void> => {
       await expect(control).toBeVisible()

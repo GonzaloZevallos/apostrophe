@@ -49,7 +49,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Name').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variety guardada')).toBeVisible()
+  await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await page.getByLabel(/^Precio de lista/).fill('1000')

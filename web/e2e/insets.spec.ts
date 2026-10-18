@@ -169,7 +169,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     // landscape), so the end can sit up to a pixel short of the bottom: under 1 px is no overlap.
     expect(detailEnd.bottom, where('detail bottom')).toBeLessThan(viewport.height - BOTTOM + 1)
 
-    // New sale: the save button, and the customer sheet over it.
+    // Nueva venta: the save button, and the customer sheet over it.
     await page.goto(SALE_NEW)
     // The row, not its title: the title is centered in a row whose height follows the
     // narrower content width, so it moves by less than the inset.

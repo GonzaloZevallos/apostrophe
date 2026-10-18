@@ -64,7 +64,7 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Name').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variety guardada')).toBeVisible()
+  await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await setPriceDate(page, '2000-01-01')

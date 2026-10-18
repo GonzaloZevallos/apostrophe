@@ -61,7 +61,7 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   await page.getByRole('button', { name: 'Yes, discard it' }).click()
   await expectPath(page, CUSTOMERS)
 
-  // A dirty New sale.
+  // A dirty Nueva venta.
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Volver' }).first().click()
   await page.getByRole('link', { name: 'New sale for Carla Volver' }).click()

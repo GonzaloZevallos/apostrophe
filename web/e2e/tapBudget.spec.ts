@@ -144,7 +144,7 @@ test('the sale form, Record payment, the catalog and a stock entry open within t
       let counter: Counter = { taps: 0 }
       if (computer && root === VARIETIES) {
         // Variedades selects its first variety on its own, and a variety's page is a card: a
-        // card never shows "+ New sale" (navigation.md, "Chrome and back"), the rail
+        // card never shows "+ Nueva venta" (navigation.md, "Chrome and back"), the rail
         // included. So the sale is not one tap from here on a computer; the tab roots that
         // stay roots (the others) are measured below.
         await settled(page, computer)

@@ -45,7 +45,7 @@ async function expectInsideTheScreen(page: Page, locator: Locator): Promise<void
   expect(found.x + found.width).toBeLessThanOrEqual(width)
 }
 
-test('Sales and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % on the phone', async ({
+test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % on the phone', async ({
   page,
 }) => {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `duena-telefono-${uniqueTag()}@example.com` })
@@ -54,7 +54,7 @@ test('Sales and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % on
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Name').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variety guardada')).toBeVisible()
+  await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await setPriceDate(page, '2000-01-01')

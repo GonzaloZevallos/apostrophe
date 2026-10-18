@@ -8,9 +8,9 @@
  * what `results.md`'s PRD needs a figure for — a priced variety, a purchase, a sale
  * left owing, a sale paid on the spot, an expense — then proves Inicio (now the
  * panel) shows nothing it did not read from `GET /panel` in this same run: every
- * figure, across Hoy, Semana and Mes, and the "Owed" teaser's own navigation
+ * figure, across Hoy, Semana and Mes, and the "Te deben" teaser's own navigation
  * (PRD, "No curl" metric: "opens Inicio, switches across the three periods, opens
- * Owed from the block and a customer from the teaser").
+ * Te deben from the block and a customer from the teaser").
  *
  * The screen's own figures are never recomputed here from the seed (plan invariant:
  * "No screen does arithmetic ... on an amount from the API") — this file only
@@ -358,7 +358,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     await expect(rosaRow.locator('.fila-stock__insignia')).toHaveText(rosaSideNote)
   }
 
-  // Owed: the block shows the fetched total, count and oldest date, and the
+  // Te deben: the block shows the fetched total, count and oldest date, and the
   // teaser's own balance and "desde dd/mm" — all read, never computed here.
   const debtsSubtitle =
     panel.debts.oldest === null
@@ -375,7 +375,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(teaserLink).toContainText(pesos(teaserRow.balance))
   await expect(teaserLink).toContainText(`desde ${shortDate(teaserRow.owing_since)}`)
 
-  // Opens Owed from the block's own heading, then goes back to Inicio.
+  // Opens Te deben from the block's own heading, then goes back to Inicio.
   await page.getByRole('link', { name: 'Te deben' }).click()
   await expectPath(page, CUSTOMERS)
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))

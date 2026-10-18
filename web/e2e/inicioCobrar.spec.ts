@@ -1,6 +1,6 @@
 /**
  * Collecting from Hoy, phone and computer, against the real backend through the built front
- * (results.md, "Owed block"): a seller taps "Cobrar a <name>" on the debtor's row, saves a
+ * (results.md, "Te deben block"): a seller taps "Cobrar a <name>" on the debtor's row, saves a
  * payment in Record payment, and is back on Inicio in one move, with the block refreshed from
  * the API and the toast not naming the customer. "Cerrar" returns in one move too.
  *
