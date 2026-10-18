@@ -110,7 +110,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Record payment' })).toHaveCount(0)
   await expect(
-    page.getByText(`Payment · cash · Toward the sale of ${today}`),
+    page.getByText(`Payment · cash · Applied to the sale of ${today}`),
   ).toBeVisible()
 
   // Sale 2: 8 g of Rosa, also left owing — $8.000.

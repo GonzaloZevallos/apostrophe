@@ -189,7 +189,7 @@ test('a dropped network on the list shows Sin conexión, never the empty-list te
   renderClientes()
 
   expect(await screen.findByText('No connection: check your internet and try again.')).toBeInTheDocument()
-  expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
+  expect(screen.queryByText("You haven't added any customers yet.")).not.toBeInTheDocument()
 })
 
 test('a server error on the list shows the generic retry, never the empty-list text', async () => {
@@ -197,7 +197,7 @@ test('a server error on the list shows the generic retry, never the empty-list t
   renderClientes()
 
   expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
-  expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
+  expect(screen.queryByText("You haven't added any customers yet.")).not.toBeInTheDocument()
 })
 
 test('Owed sits above everyone A–Z, and the header carries no debt figure', async () => {
@@ -346,7 +346,7 @@ test('a customer with no phone shows no phone element, no dash, no empty label',
   const row = await screen.findByRole('link', { name: new RegExp(customerNoPhoneFixture.name) })
   expect(row.querySelector('.lista-clientes__telefono')).toBeNull()
   expect(row).not.toHaveTextContent('-')
-  expect(row).not.toHaveTextContent('Sin teléfono')
+  expect(row).not.toHaveTextContent('No phone')
 })
 
 test('a customer who owes shows the amber mark; one in credit shows the blue "Credit"', async () => {

@@ -92,7 +92,7 @@ Success criteria:
 - The account lists sales and payments in date order, with the running balance:
   - a sale paid on the spot: "Paid in cash" or "Paid by transfer", with no payment row of its own;
   - a sale left owing: "Left owing";
-  - a later payment: one row per sale it reaches, "Payment · <method> · Toward the sale of dd/mm", with the amount applied to that sale;
+  - a later payment: one row per sale it reaches, "Payment · <method> · Applied to the sale of dd/mm", with the amount applied to that sale;
   - any part beyond every debt: "A favor".
 - **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "Credit $ X".
   - It is the running figure only, not a credit, and counts in no figure.

@@ -176,7 +176,7 @@ test('a customer with no phone shows no phone element, no dash, no empty label',
   await screen.findByText('Caro')
   expect(screen.queryByText('Phone')).not.toBeInTheDocument()
   expect(screen.queryByText('-')).not.toBeInTheDocument()
-  expect(screen.queryByText('Sin teléfono')).not.toBeInTheDocument()
+  expect(screen.queryByText('No phone')).not.toBeInTheDocument()
 })
 
 test('"New sale for <name>" opens the sale form with this customer chosen, by id alone', async () => {
@@ -310,7 +310,7 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   const account = document.querySelector('.cuenta-cliente')
   expect(account).not.toBeNull()
   const inAccount = within(account as HTMLElement)
-  expect(inAccount.getByText('Payment · cash · Toward the sale of 14/09')).toBeInTheDocument()
+  expect(inAccount.getByText('Payment · cash · Applied to the sale of 14/09')).toBeInTheDocument()
   expect(inAccount.getByText('Credit')).toBeInTheDocument()
 
   // Each row shows its own figure (`.cuenta-cliente__monto`) next to the running

@@ -52,8 +52,8 @@ import {
   newSaleTo,
   owes,
   paymentRow,
-  sinceDate,
 } from '../../copy/customers'
+import { sinceDate } from '../../copy/format'
 import { GONE_NOTICE } from '../../copy/refusals'
 import { TAB_CUSTOMERS } from '../../copy/shell'
 import { isGone } from '../../api/refusals'

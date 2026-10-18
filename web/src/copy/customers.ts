@@ -26,7 +26,6 @@ export const OWED = 'Owed'
 export const salesOwing = (count: number) => `${salesCount(count)} owing`
 
 /** A customer's row: what it says about money and its Collect button. */
-export const sinceDate = (date: string) => `since ${date}`
 export const owesSince = (date: string) => `owes you since ${date}`
 export const creditOf = (amount: string) => `Credit ${amount}`
 export const COLLECT = 'Collect'
@@ -73,7 +72,7 @@ export const METHOD_CASH = 'cash'
 export const METHOD_TRANSFER = 'transfer'
 export const deletePaymentQuestion = (money: string, method: string, day: string) =>
   `Delete the ${money} payment (${method}) from ${day}?`
-export const paymentRow = (method: string, day: string) => `Payment · ${method} · Toward the sale of ${day}`
+export const paymentRow = (method: string, day: string) => `Payment · ${method} · Applied to the sale of ${day}`
 
 /** The Record payment screen: its fields, its refusals and its toast. */
 export const AMOUNT = 'Amount'
