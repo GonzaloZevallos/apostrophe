@@ -104,6 +104,11 @@ describe('steps', () => {
     ])
   })
 
+  test('accepts a press and a select', () => {
+    const steps = [{ press: 'Cerrar' }, { select: { label: 'Variedad', index: 1 } }]
+    expect(parseRegistry({ screens: [entry({ steps })] })[0]?.steps).toEqual(steps)
+  })
+
   test('a screen without steps has none', () => {
     expect(parseRegistry({ screens: [entry({})] })[0]?.steps).toEqual([])
   })
@@ -113,6 +118,9 @@ describe('steps', () => {
     ['a click that is not text', { click: 3 }],
     ['a fill without its value', { fill: { label: 'Email' } }],
     ['an offline that is not true', { offline: false }],
+    ['a press that is not text', { press: 3 }],
+    ['a select without its index', { select: { label: 'Variedad' } }],
+    ['a select with a negative index', { select: { label: 'Variedad', index: -1 } }],
     ['a step that is not an object', 'click'],
   ])('refuses %s', (_name, step) => {
     expect(() => parseRegistry({ screens: [entry({ steps: [step] })] })).toThrow(/step/)
@@ -127,13 +135,11 @@ describe('resolvePlaceholders', () => {
   const facts = { email: 'vos@lahuerta.com', debtor: 12 }
 
   test('fills every {name} from the facts, numbers as text', () => {
-    expect(resolvePlaceholders('/clientes/{debtor}?e={email}', facts)).toBe(
-      '/clientes/12?e=vos@lahuerta.com',
-    )
+    expect(resolvePlaceholders('/a/{debtor}?e={email}', facts)).toBe('/a/12?e=vos@lahuerta.com')
   })
 
   test('leaves text without placeholders alone', () => {
-    expect(resolvePlaceholders('/ventas', facts)).toBe('/ventas')
+    expect(resolvePlaceholders('/a', facts)).toBe('/a')
   })
 
   test('refuses a placeholder no fact names, saying which', () => {

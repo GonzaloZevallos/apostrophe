@@ -1,11 +1,12 @@
 /** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here saves. */
 
+import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import type { WalkState } from './states.ts'
 
 export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'NuevaVentaConLinea',
-    route: '/ventas/nueva',
+    route: SALE_NEW,
     steps: [
       { fill: { label: 'Variedad línea 1', value: 'Golden Cookies' } },
       { fill: { label: 'Gramos línea 1', value: '10' } },
@@ -15,19 +16,19 @@ export const SALES_STATES: readonly WalkState[] = [
   },
   {
     screen: 'ElegirCliente',
-    route: '/ventas/nueva',
+    route: SALE_NEW,
     steps: [{ click: 'Elegir cliente' }, { fill: { label: 'Buscar', value: 'Nico' } }],
     visible: 'Nico Parra',
   },
   {
     screen: 'NuevoClienteEnVenta',
-    route: '/ventas/nueva',
+    route: SALE_NEW,
     steps: [{ click: 'Elegir cliente' }, { click: 'Nuevo cliente' }],
     visible: 'Crear cliente',
   },
   {
     screen: 'DescartarVenta',
-    route: '/ventas/nueva',
+    route: SALE_NEW,
     steps: [
       { fill: { label: 'Variedad línea 1', value: 'Sir Jack' } },
       { fill: { label: 'Gramos línea 1', value: '5' } },
@@ -37,37 +38,37 @@ export const SALES_STATES: readonly WalkState[] = [
   },
   {
     screen: 'VentaAsignarCliente',
-    route: '/ventas',
+    route: SALES,
     steps: [{ click: 'Sin cliente' }, { click: 'Asignar cliente' }],
     visible: 'Elegir cliente',
   },
   {
     screen: 'VentaBorrar',
-    route: '/ventas/{owing_sale}',
+    route: SALE.replace(':id', '{owing_sale}'),
     steps: [{ click: 'Borrar venta' }],
     visible: 'Sí, borrala',
   },
   {
     screen: 'CobroDesdeClientes',
-    route: '/clientes',
+    route: CUSTOMERS,
     steps: [{ click: 'Nico Parra' }, { click: 'Registrar cobro' }],
     visible: 'Guardar',
   },
   {
     screen: 'CobroDesdeInicio',
-    route: '/',
+    route: HOME,
     steps: [{ click: 'Nico Parra' }, { click: 'Registrar cobro' }],
     visible: 'Guardar',
   },
   {
     screen: 'CobroBorrar',
-    route: '/clientes/{debtor}',
+    route: CUSTOMER.replace(':id', '{debtor}'),
     steps: [{ click: 'Borrar cobro' }],
     visible: 'Sí, borralo',
   },
   {
     screen: 'VentasFechas',
-    route: '/ventas',
+    route: SALES,
     steps: [{ click: 'Fechas' }],
     visible: 'Hasta',
   },

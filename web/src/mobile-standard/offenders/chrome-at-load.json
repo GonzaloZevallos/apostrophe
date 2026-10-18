@@ -204,13 +204,13 @@
     "issue": 59
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "chrome-at-load",
     "target": "link:Nueva venta",
     "issue": 59
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "chrome-at-load",
     "target": "navigation:Navegación",
     "issue": 59

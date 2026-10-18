@@ -211,7 +211,7 @@
     "issue": 59
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "chrome-mid-scroll",
     "target": "link:Nueva venta",
     "issue": 59,
@@ -221,7 +221,7 @@
     ]
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navegación",
     "issue": 59

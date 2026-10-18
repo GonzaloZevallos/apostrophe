@@ -555,31 +555,31 @@
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "text-size",
     "target": "span:Clientes",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "text-size",
     "target": "span:Inicio",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "text-size",
     "target": "span:Más",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "text-size",
     "target": "span:Stock",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "text-size",
     "target": "span:Ventas",
     "issue": 47

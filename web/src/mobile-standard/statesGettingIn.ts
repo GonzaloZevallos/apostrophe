@@ -7,6 +7,7 @@
  * silent pass. Writes are stubbed, never sent (invariant 6).
  */
 
+import { INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
 import type { WalkState } from './states.ts'
 
 const BRAKE = '5 intentos fallidos · probá de nuevo en 15 minutos'
@@ -21,7 +22,7 @@ const NEVER_MINTED = 'no-such-link-0000000000000000'
 export const GETTING_IN_STATES: readonly WalkState[] = [
   {
     screen: 'EntrarFreno',
-    route: '/entrar',
+    route: LOGIN,
     signedOut: true,
     steps: [
       { fill: { label: 'Email', value: '{email}' } },
@@ -31,18 +32,18 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
     visible: BRAKE,
     writes: [{ method: 'POST', path: /^\/auth\/login$/, status: 429, body: { code: 'account.login_locked' } }],
   },
-  { screen: 'InvitacionMuerta', route: `/invitation/${NEVER_MINTED}`, signedOut: true, steps: [], visible: INVITATION_DEAD },
-  { screen: 'ResetMuerto', route: `/reset/${NEVER_MINTED}`, signedOut: true, steps: [], visible: LINK_DEAD },
+  { screen: 'InvitacionMuerta', route: INVITATION.replace(':token', NEVER_MINTED), signedOut: true, steps: [], visible: INVITATION_DEAD },
+  { screen: 'ResetMuerto', route: RESET.replace(':token', NEVER_MINTED), signedOut: true, steps: [], visible: LINK_DEAD },
   {
     screen: 'EstadosReintento',
-    route: '/ventas',
+    route: SALES,
     steps: [],
     visible: RETRY,
     reads: [{ path: /^\/sales$/, status: 500 }],
   },
   {
     screen: 'EstadosGoneAviso',
-    route: '/ventas/{owing_sale}',
+    route: SALE.replace(':id', '{owing_sale}'),
     steps: [{ click: 'Borrar venta' }, { click: 'Sí, borrala' }],
     visible: GONE_NOTICE,
     writes: [{ method: 'DELETE', path: /^\/sales\/\d+$/, status: 404, body: { code: 'sale.not_found' } }],

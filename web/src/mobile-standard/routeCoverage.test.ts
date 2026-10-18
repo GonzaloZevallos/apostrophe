@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { HOME, SALE, SALES } from '../routes.ts'
 import { REGISTRY } from './registry.ts'
 import {
   flattenRoutes,
@@ -14,15 +15,15 @@ const registryRoutes = REGISTRY.flatMap((screen) => (screen.route === null ? [] 
 
 describe('route coverage, pure half', () => {
   test('a route missing from the registry is reported (fixture)', () => {
-    expect(unregistered(['/', '/ventas', '/nueva-pantalla', '/ventas/:id/recibo'], registryRoutes, excused)).toEqual([
-      '/nueva-pantalla',
-      '/ventas/:id/recibo',
+    expect(unregistered([HOME, SALES, '/new-screen', `${SALE}/receipt`], registryRoutes, excused)).toEqual([
+      '/new-screen',
+      `${SALE}/receipt`,
     ])
   })
 
   test('a registry route, a placeholder match, and the two excuse lists are accepted', () => {
     expect(
-      unregistered(['/ventas/:id', '*', '/old', '/mi-stock', '/clientes/:id/editar'], registryRoutes, excused),
+      unregistered([SALE, '*', '/old', ...Object.keys(UNREGISTERED_ROUTES)], registryRoutes, excused),
     ).toEqual([])
   })
 
@@ -41,8 +42,8 @@ describe('route coverage, pure half', () => {
   })
 
   test('a placeholder and a router parameter each count as one segment', () => {
-    expect(patternsMatch('/ventas/:id', '/ventas/{owing_sale}')).toBe(true)
-    expect(patternsMatch('/ventas/:id', '/ventas')).toBe(false)
+    expect(patternsMatch(SALE, SALE.replace(':id', '{owing_sale}'))).toBe(true)
+    expect(patternsMatch(SALE, SALES)).toBe(false)
     expect(patternsMatch('/a/b', '/a/c')).toBe(false)
   })
 

@@ -6,7 +6,19 @@
  * could send is aborted by the walk, and these states stop before one.
  */
 
-import { EXPENSE_CATEGORIES, EXPENSES, MORE } from '../routes.ts'
+import {
+  CATALOG,
+  CUSTOMERS,
+  EXPENSE_CATEGORIES,
+  EXPENSES,
+  MORE,
+  pathTo,
+  SETTINGS_ACCOUNT,
+  STOCK,
+  STOCK_ENTRY,
+  VARIETIES,
+  VARIETY,
+} from '../routes.ts'
 import type { WalkState } from './states.ts'
 
 /*
@@ -22,29 +34,24 @@ import type { WalkState } from './states.ts'
  * order `sample_app.seed` makes them, and a list row cannot be tapped on the phone today
  * (its neighbour's row overlaps it), so the walk opens the entry by its route.
  */
-const ENTRY_ROUTE = '/mi-stock/entradas/1'
+const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
+
+/** The variety the sample app seeds below its stock threshold, by the registry's placeholder. */
+const LOW_VARIETY = VARIETY.replace(':id', '{low}')
 
 export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'ClientesBusqueda',
-    route: '/clientes',
+    route: CUSTOMERS,
     steps: [{ fill: { label: 'Buscar cliente', value: 'Nico' } }],
     visible: 'Nico Parra',
   },
-  { screen: 'ClienteNuevo', route: '/clientes/nuevo', steps: [], visible: 'Guardá y usá' },
-  { screen: 'ClienteEditar', route: '/clientes/{debtor}/editar', steps: [], visible: 'Guardá y usá' },
 
   {
-    screen: 'EntradaStockDesdeStock',
-    route: '/mi-stock',
-    steps: [{ activate: 'Nueva entrada' }],
-    visible: 'Guardá la entrada',
-  },
-  {
-    screen: 'EntradaStockEditar',
-    route: ENTRY_ROUTE,
+    screen: 'EntradasTodas',
+    route: STOCK,
     steps: [],
-    visible: 'Borrar entrada',
+    visible: 'Todas las entradas',
   },
   {
     screen: 'EntradaStockConfirmarCambios',
@@ -61,28 +68,28 @@ export const RECORDS_STATES: readonly WalkState[] = [
 
   {
     screen: 'PrecioNuevoFormulario',
-    route: '/variedades/{low}',
+    route: LOW_VARIETY,
     steps: [{ click: 'Nuevo precio' }],
     visible: 'Guardar precio',
   },
   {
     screen: 'PrecioConfirmarBorrado',
-    route: '/variedades/{low}',
+    route: LOW_VARIETY,
     steps: [{ click: 'Borrar' }],
     visible: 'Sí, borrala',
   },
-  { screen: 'VariedadNuevaFormulario', route: '/variedades', steps: [{ click: '+' }], visible: 'Guardar' },
+  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: '+' }], visible: 'Guardar' },
   {
     screen: 'VariedadRenombrar',
-    route: '/variedades/{low}',
+    route: LOW_VARIETY,
     steps: [{ click: 'Editar' }],
     visible: 'Guardar',
   },
-  { screen: 'VariedadUmbral', route: '/variedades/{low}', steps: [], visible: 'Guardar aviso' },
+  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [], visible: 'Guardar aviso' },
 
   {
     screen: 'CatalogoAtributos',
-    route: '/catalogo',
+    route: CATALOG,
     steps: [{ click: 'Editar' }],
     visible: 'Se muestra en el catálogo',
   },
@@ -126,7 +133,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   },
   {
     screen: 'ConfiguracionContrasena',
-    route: '/settings/account',
+    route: SETTINGS_ACCOUNT,
     steps: [{ click: 'Cambiar contraseña' }],
     visible: 'Contraseña actual',
   },

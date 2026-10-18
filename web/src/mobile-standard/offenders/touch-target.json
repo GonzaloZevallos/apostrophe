@@ -1022,7 +1022,7 @@
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-target",
     "target": "link:Inicio",
     "issue": 47,
@@ -1031,7 +1031,7 @@
     ]
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-target",
     "target": "link:Más",
     "issue": 47,
@@ -1040,7 +1040,7 @@
     ]
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-target",
     "target": "link:Stock",
     "issue": 47,
@@ -1049,7 +1049,7 @@
     ]
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-target",
     "target": "link:Ventas",
     "issue": 47,
@@ -1058,7 +1058,7 @@
     ]
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-target",
     "target": "link:Volver",
     "issue": 47

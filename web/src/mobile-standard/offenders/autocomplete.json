@@ -350,31 +350,31 @@
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "autocomplete",
     "target": "combobox:Variedad",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "autocomplete",
     "target": "textbox:Costo total Obligatorio cuando es una compra",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "autocomplete",
     "target": "textbox:Fecha",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "autocomplete",
     "target": "textbox:Gramos",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "autocomplete",
     "target": "textbox:Nota",
     "issue": 47

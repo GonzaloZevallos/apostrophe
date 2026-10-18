@@ -6,6 +6,8 @@
  * importing `router.tsx` pulls in React.
  */
 
+import { HOME, ONBOARDING, ONBOARDING_DONE, WITHDRAWAL_EDIT } from '../routes.ts'
+
 /** The shape of a route object this guard reads (react-router's `RouteObject` fits it). */
 export interface RouteNode {
   path?: string | undefined
@@ -19,7 +21,7 @@ export const NOT_SCREENS: Readonly<Record<string, string>> = {
 }
 
 /**
- * The redirect-only routes (`src/redirects.ts`) as excuses, each with its reason. The table
+ * The redirect-only routes (none today: no front code redirects) as excuses, each with its reason. The table
  * is passed in, not imported: it lives in a module that pulls in React.
  */
 export function redirectExcuses(table: readonly { from: string }[]): Record<string, string> {
@@ -35,9 +37,9 @@ export function redirectExcuses(table: readonly { from: string }[]): Record<stri
  * covers must be removed (the real test fails on it).
  */
 export const UNREGISTERED_ROUTES: Readonly<Record<string, string>> = {
-  '/clientes/:id/editar': 'edit form of a customer: no design file or registry entry',
-  '/mi-stock': 'the stock list: no registry entry',
-  '/mi-stock/entradas/:id': 'edit form of a stock entry: no design file or registry entry',
+  [ONBOARDING]: 'the onboarding entry: it only redirects to the current step, no registry entry',
+  [ONBOARDING_DONE]: 'the onboarding end: reached once per business, no registry entry',
+  [WITHDRAWAL_EDIT]: 'edit form of a withdrawal: no design file or registry entry',
 }
 
 /** Every full pattern the router can render a screen for: leaves and index routes. */
@@ -45,16 +47,16 @@ export function flattenRoutes(routes: readonly RouteNode[], parent = ''): string
   return routes.flatMap((route) => {
     if (route.path === '*') return ['*']
     const own = route.path ?? ''
-    const full = own === '' ? parent : own.startsWith('/') ? own : `${parent.replace(/\/$/, '')}/${own}`
+    const full = own === '' ? parent : own.startsWith(HOME) ? own : `${parent.replace(/\/$/, '')}/${own}`
     if (route.children !== undefined && route.children.length > 0) return flattenRoutes(route.children, full)
-    return [full === '' ? '/' : full]
+    return [full === '' ? HOME : full]
   })
 }
 
 const isParam = (segment: string): boolean => segment.startsWith(':') || /^\{.+\}$/.test(segment)
 
 function segments(pattern: string): string[] {
-  return pattern.split('/').filter((segment) => segment !== '')
+  return pattern.split(HOME).filter((segment) => segment !== '')
 }
 
 /** Same number of segments, each equal or a parameter (`:x` or `{x}`) on either side. */

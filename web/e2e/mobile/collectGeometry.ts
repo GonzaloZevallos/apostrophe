@@ -18,7 +18,7 @@
 import type { Rule, Violation } from '../../src/mobile-standard/violation.ts'
 import type { CellId } from './collect.js'
 
-export function collectGeometry(cell: CellId): Violation[] {
+export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: string }): Violation[] {
   const MIN_TOUCH = 44
   const MIN_INPUT_FONT = 16
   const MIN_TEXT = 12
@@ -223,7 +223,7 @@ export function collectGeometry(cell: CellId): Violation[] {
   }
 
   // --- inputs ------------------------------------------------------------------------
-  const onSignIn = location.pathname.startsWith('/entrar')
+  const onSignIn = location.pathname.startsWith(loginPath)
   for (const element of all(FIELDS)) {
     const name = labelOf(element).toLowerCase()
     const type = element.getAttribute('type') ?? ''

@@ -6,6 +6,7 @@
  * write is held and then aborted (invariant 6): it never reaches the backend.
  */
 
+import { CUSTOMERS, LOGIN, SALE_NEW } from '../routes.ts'
 import type { WalkStep } from './states.ts'
 
 export interface PendingTap {
@@ -23,7 +24,7 @@ export interface PendingTap {
 export const PENDING_TAPS: readonly PendingTap[] = [
   {
     screen: 'NuevaVentaConLinea',
-    route: '/ventas/nueva',
+    route: SALE_NEW,
     steps: [
       { fill: { label: 'Variedad línea 1', value: 'Golden Cookies' } },
       { fill: { label: 'Gramos línea 1', value: '10' } },
@@ -33,7 +34,7 @@ export const PENDING_TAPS: readonly PendingTap[] = [
   },
   {
     screen: 'CobroDesdeClientes',
-    route: '/clientes',
+    route: CUSTOMERS,
     steps: [
       { click: 'Nico Parra' },
       { click: 'Registrar cobro' },
@@ -45,7 +46,7 @@ export const PENDING_TAPS: readonly PendingTap[] = [
   },
   {
     screen: 'Entrar',
-    route: '/entrar',
+    route: LOGIN,
     signedOut: true,
     steps: [
       { fill: { label: 'Email', value: '{email}' } },

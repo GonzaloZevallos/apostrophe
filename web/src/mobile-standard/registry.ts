@@ -60,10 +60,7 @@ export const STATE_NAMES: readonly string[] = [
   'EstadosGoneAviso',
   // Records areas (`states-records`).
   'ClientesBusqueda',
-  'ClienteNuevo',
-  'ClienteEditar',
-  'EntradaStockDesdeStock',
-  'EntradaStockEditar',
+  'EntradasTodas',
   'EntradaStockConfirmarCambios',
   'EntradaStockConfirmarBorrado',
   'PrecioNuevoFormulario',

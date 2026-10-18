@@ -1618,67 +1618,67 @@
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "button:Ajuste",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "button:Compra",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "button:Cosecha",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "button:Guardá la entrada",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "button:Stock inicial",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "link:Clientes",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "link:Inicio",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "link:Más",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "link:Stock",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "link:Ventas",
     "issue": 47
   },
   {
-    "screen": "EntradaStockDesdeStock",
+    "screen": "EntradasTodas",
     "rule": "touch-action",
     "target": "navigation:Navegación",
     "issue": 47
