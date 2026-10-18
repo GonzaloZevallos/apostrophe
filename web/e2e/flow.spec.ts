@@ -125,27 +125,27 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Record an expense, with a category created inline.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
-  await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
-  await page.getByRole('button', { name: 'Crear categoría' }).click()
-  await page.getByLabel('Monto').fill('4500')
-  await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByRole('button', { name: 'Create a new category' }).click()
+  await page.getByLabel('New category name').fill('Flete')
+  await page.getByRole('button', { name: 'Create category' }).click()
+  await page.getByLabel('Amount').fill('4500')
+  await page.getByLabel('Detail').fill('Flete al mercado')
+  await page.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
   await expect(page.getByText('Flete al mercado')).toBeVisible()
 
   // Edit it.
   await page.getByText('Flete al mercado').click()
-  await page.getByLabel('Detalle').fill('Flete al mercado central')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByLabel('Detail').fill('Flete al mercado central')
+  await page.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toBeVisible()
 
   // Delete it.
   await page.getByText('Flete al mercado central').click()
-  await page.getByRole('button', { name: 'Borrar gasto' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page.getByText('Gasto eliminado')).toBeVisible()
+  await page.getByRole('button', { name: 'Delete expense' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await expect(page.getByText('Expense deleted')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
   // Move between months: the month lives in the URL, one step back and one forward.

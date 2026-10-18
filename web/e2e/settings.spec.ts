@@ -38,13 +38,13 @@ test('a seller goes through every Configuración group from the phone, with no c
   // A category with an expense in it, so its removal is refused later.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
-  await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
-  await page.getByRole('button', { name: 'Crear categoría' }).click()
-  await page.getByLabel('Monto').fill('4500')
-  await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByRole('button', { name: 'Create a new category' }).click()
+  await page.getByLabel('New category name').fill('Flete')
+  await page.getByRole('button', { name: 'Create category' }).click()
+  await page.getByLabel('Amount').fill('4500')
+  await page.getByLabel('Detail').fill('Flete al mercado')
+  await page.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   // One tap from Inicio's avatar: the list of groups, then a group, then "Cerrar" back.
   const openGroup = async (name: string): Promise<void> => {

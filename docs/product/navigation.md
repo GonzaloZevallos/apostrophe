@@ -44,7 +44,7 @@ Success criteria:
    - the catalog screen opens in at most 2 taps (Variedades → "Mandar catálogo");
    - a stock entry opens in at most 2 taps (Variedades → "+ Entrada de stock");
    - a stock withdrawal opens in at most 2 taps (Más → "Sacar del stock", or Variedades → "Sacar del stock");
-   - an expense opens in at most 2 taps (Más → "+ Cargar gasto").
+   - an expense opens in at most 2 taps (Más → "+ Add expense").
 
    On a computer, each takes no more taps than on the phone.
 2. **Every business-wide setting in one place.** Name, users and join links, the pricing rules (Precio por cantidad and Clientes VIP), the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Configuración and nowhere else. Configuración is reachable in at most 2 taps from any tab root: from the business avatar on Inicio and from Más on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Configuración groups exist. The Onboarding's steps save these same settings through their owners and are not a second place for them (onboarding.md).
@@ -79,8 +79,8 @@ Success criteria:
 
 ### Más (phone)
 
-- In order: "+ Cargar gasto" (it opens the expense form with today's date, expenses.md), "Sacar del stock" (it opens the stock withdrawal form with today's date and no variety chosen, stock.md), Gastos, Análisis, Configuración.
-- "+ Cargar gasto" and "Sacar del stock" are on top because they are the loads with no shorter path from every tab root.
+- In order: "+ Add expense" (it opens the expense form with today's date, expenses.md), "Sacar del stock" (it opens the stock withdrawal form with today's date and no variety chosen, stock.md), Gastos, Análisis, Configuración.
+- "+ Add expense" and "Sacar del stock" are on top because they are the loads with no shorter path from every tab root.
 - Nothing else: an entry appears only once what it opens exists. There is no entry for the Onboarding.
 
 ### Configuración

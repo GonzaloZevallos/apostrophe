@@ -21,7 +21,7 @@ when sales arrive.
 several times a day, **I want** the app laid out around what I actually do and how often,
 with expenses within reach for the weekly or monthly look and every setting in one place,
 **so I can** get back to the customer instead of hunting through menus. (The navigation
-job, navigation.md: served here by "+ Cargar gasto" in Más, a way to record from Gastos
+job, navigation.md: served here by "+ Add expense" in Más, a way to record from Gastos
 itself, Gastos as the one monthly view, and categories in Configuración.)
 
 In practice, these jobs come together like this. The seller pays for something that isn't
@@ -33,7 +33,7 @@ on a bigger screen.
 Success criteria:
 
 1. An expense is recorded from the phone in under a minute. Its form opens in at most 2
-   taps from any tab root (Más → "+ Cargar gasto") and in 1 tap from Gastos. On a
+   taps from any tab root (Más → "+ Add expense") and in 1 tap from Gastos. On a
    computer it takes no more taps than on the phone. The date is already set to today,
    and the category is picked from the business's list.
 2. For any month, the view shows every expense of that month and the month's total. It
@@ -121,10 +121,10 @@ Success criteria:
     1 tap:
     - on the phone, a secondary action in Gastos' body, never a second floating "+"
       competing with "+ Nueva venta";
-    - on a computer, the "Cargar gasto" button in the page header.
+    - on a computer, the "Add expense" button in the page header.
 
     Its exact look is design's call.
-- **"+ Cargar gasto"**, first in Más on the phone (route `/more`; the old `/mas`
+- **"+ Add expense"**, first in Más on the phone (route `/more`; the old `/mas`
   redirects there permanently), opens the expense form directly with today's date. Its
   subtitle is design's call.
 - **The expense form** is a form (navigation.md): no bar and no "+ Nueva venta", and it
@@ -186,7 +186,7 @@ Read from the data and from tests; there is no telemetry.
 - **M5, flower kept out (criterion 3)**: purchases that appear in the expense lists must be
   0, by construction. An expense has no field that could hold grams or a variety.
 - **M6, no curl (criterion 4)**: the end-to-end front run:
-  - records an expense from Más → "+ Cargar gasto" and one from Gastos;
+  - records an expense from Más → "+ Add expense" and one from Gastos;
   - edits and deletes one;
   - moves between months;
   - adds, renames and removes a category in Configuración, including a refused removal.

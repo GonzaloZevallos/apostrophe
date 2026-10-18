@@ -21,14 +21,14 @@ import { fillSaleLine } from './helpers/sale.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { uniqueTag } from './helpers/unique.js'
 
-test('a seller opens Análisis from Más, moves back a month and reads each section', async ({
+test('a seller opens Analysis from Más, moves back a month and reads each section', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
   const ownerEmail = `duena-analisis-${uniqueTag()}@example.com`
-  const businessName = `Flores del Análisis ${uniqueTag()}`
+  const businessName = `Flores del Analysis ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
@@ -66,13 +66,13 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // An expense, today, with a category created inline.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
-  await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
-  await page.getByRole('button', { name: 'Crear categoría' }).click()
-  await page.getByLabel('Monto').fill('1500')
-  await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByRole('button', { name: 'Create a new category' }).click()
+  await page.getByLabel('New category name').fill('Flete')
+  await page.getByRole('button', { name: 'Create category' }).click()
+  await page.getByLabel('Amount').fill('1500')
+  await page.getByLabel('Detail').fill('Flete al mercado')
+  await page.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   // Más → Análisis.
   await openMas(page)
@@ -180,7 +180,7 @@ async function recordWithdrawal(
   await expect(page.getByText('Retiro guardado')).toBeVisible()
 }
 
-test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Consumo propio, fully and partly pending', async ({
+test('Analysis reads Costo de lo vendido, Faltante de stock, Promoción and Consumo propio, fully and partly pending', async ({
   page,
 }, testInfo) => {
   const consoleMessages: string[] = []
@@ -239,33 +239,33 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   expect(weekRows).toBeGreaterThan(2)
   for (const costs of [weekCosts, monthCosts]) {
     for (let i = 0; i < (await costs.count()); i += 1) {
-      await expect(costs.nth(i)).toContainText('Costo de lo vendido')
+      await expect(costs.nth(i)).toContainText('Cost of goods sold')
     }
   }
 
   // A past week, partly pending: the costed 10 g plus 5 g still without a cost.
   await expect(
-    weekCosts.filter({ hasText: 'Costo de lo vendido $ 10.000 and 5 g not yet costed' }),
+    weekCosts.filter({ hasText: 'Cost of goods sold $ 10.000 and 5 g not yet costed' }),
   ).toHaveCount(1)
   // A week with no sales reads a real $ 0.
-  await expect(weekCosts.filter({ hasText: 'Costo de lo vendido $ 0' }).first()).toBeVisible()
+  await expect(weekCosts.filter({ hasText: 'Cost of goods sold $ 0' }).first()).toBeVisible()
   // The current week, its last row, has the fully pending shortfall and own use.
-  await expect(weekCosts.last()).toContainText('Faltante de stock 1 g not yet costed')
-  await expect(weekCosts.last()).toContainText('Consumo propio 1 g not yet costed')
-  await expect(weekCosts.first()).not.toContainText('Faltante de stock')
+  await expect(weekCosts.last()).toContainText('Stock shortfall 1 g not yet costed')
+  await expect(weekCosts.last()).toContainText('Own use 1 g not yet costed')
+  await expect(weekCosts.first()).not.toContainText('Stock shortfall')
   // A past month, fully pending promotion; only the current month has the shortfall.
-  await expect(monthCosts.filter({ hasText: 'Promoción 2 g not yet costed' })).toHaveCount(1)
-  await expect(monthCosts.filter({ hasText: 'Faltante de stock 1 g not yet costed' })).toHaveCount(1)
-  await expect(monthCosts.last()).toContainText('Faltante de stock 1 g not yet costed')
+  await expect(monthCosts.filter({ hasText: 'Promotion 2 g not yet costed' })).toHaveCount(1)
+  await expect(monthCosts.filter({ hasText: 'Stock shortfall 1 g not yet costed' })).toHaveCount(1)
+  await expect(monthCosts.last()).toContainText('Stock shortfall 1 g not yet costed')
 
   // The header and "Desde el primer registro": fully pending, grams only.
   const header = page.locator('.cuerpo > div').filter({ hasText: 'You sold this month' }).first()
-  await expect(header).toContainText('Faltante de stock 1 g not yet costed')
-  await expect(header).toContainText('Consumo propio 1 g not yet costed')
+  await expect(header).toContainText('Stock shortfall 1 g not yet costed')
+  await expect(header).toContainText('Own use 1 g not yet costed')
   const since = page.locator('.analisis__historico')
-  await expect(since).toContainText('Faltante de stock 1 g not yet costed')
-  await expect(since).toContainText('Promoción 2 g not yet costed')
-  await expect(since).toContainText('Consumo propio 1 g not yet costed')
+  await expect(since).toContainText('Stock shortfall 1 g not yet costed')
+  await expect(since).toContainText('Promotion 2 g not yet costed')
+  await expect(since).toContainText('Own use 1 g not yet costed')
 
   // Never a pending cost read as a zero, anywhere a cost line is drawn.
   for (const region of [weekCosts, monthCosts, header, since]) {
@@ -275,9 +275,9 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   // The same rows on the phone, as cards.
   await page.setViewportSize({ width: 390, height: 844 })
   const phoneWeeks = page.locator('.analisis__semana')
-  await expect(phoneWeeks.filter({ hasText: 'Costo de lo vendido $ 10.000 and 5 g not yet costed' })).toHaveCount(1)
-  await expect(phoneWeeks.last()).toContainText('Faltante de stock 1 g not yet costed')
-  await expect(page.locator('.analisis__mes-fila').filter({ hasText: 'Promoción 2 g not yet costed' })).toHaveCount(1)
+  await expect(phoneWeeks.filter({ hasText: 'Cost of goods sold $ 10.000 and 5 g not yet costed' })).toHaveCount(1)
+  await expect(phoneWeeks.last()).toContainText('Stock shortfall 1 g not yet costed')
+  await expect(page.locator('.analisis__mes-fila').filter({ hasText: 'Promotion 2 g not yet costed' })).toHaveCount(1)
 
   // Screenshots for the PR: header, the rows and the since-the-first-record block, per
   // viewport and theme.

@@ -98,12 +98,12 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await expectPath(page, MORE)
 
   await page.getByRole('link', { name: /^\+ Add expense/ }).click()
-  await page.getByRole('combobox', { name: 'Categoría' }).selectOption({ label: 'Packaging' })
-  await page.getByLabel('Monto').fill('3200')
-  await page.getByLabel('Detalle').fill('Cajas de cartón')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
+  await page.getByRole('combobox', { name: 'Category' }).selectOption({ label: 'Packaging' })
+  await page.getByLabel('Amount').fill('3200')
+  await page.getByLabel('Detail').fill('Cajas de cartón')
+  await page.getByRole('button', { name: 'Save expense' }).click()
   await expectPath(page, MORE)
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }).click()
   await expect(page.getByText('Cajas de cartón')).toBeVisible()
@@ -161,7 +161,9 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       if (root === HOME || root === CUSTOMERS) {
         await page.goto(root)
         counter = { taps: 0 }
-        await tap(counter, page.getByRole('link', { name: 'Collect from Carla Toques' }).first())
+        // Home's row link is this group's English; Clientes' own link is still Spanish.
+        const collect = root === HOME ? 'Collect from Carla Toques' : 'Cobrar a Carla Toques'
+        await tap(counter, page.getByRole('link', { name: collect }).first())
         await expectPath(page, CUSTOMER_PAYMENT)
         await expect(page.getByRole('button', { name: 'Cerrar' }), label).toBeVisible()
         measure(`payment ${root}`, device, counter.taps)
@@ -173,7 +175,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       counter = { taps: 0 }
       if (root !== CUSTOMERS) await viaTab(page, counter, computer, 'Customers')
       await expectPath(page, CUSTOMERS)
-      await tap(counter, page.getByRole('link', { name: 'Collect from Carla Toques' }).first())
+      await tap(counter, page.getByRole('link', { name: 'Cobrar a Carla Toques' }).first())
       await expectPath(page, CUSTOMER_PAYMENT)
       await expect(page.getByRole('button', { name: 'Cerrar' }), label).toBeVisible()
       await expect(page.locator('.cobro__cliente'), label).toContainText('Carla Toques')

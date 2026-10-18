@@ -98,19 +98,19 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   // Inicio: Hoy shows neither line; Semana and Mes show both, at lot cost.
   await page.goto(HOME)
   await expect(page.getByText('You sold today')).toBeVisible()
-  await expect(page.getByText('Promoción')).toHaveCount(0)
-  await expect(page.getByText('Consumo propio')).toHaveCount(0)
+  await expect(page.getByText('Promotion')).toHaveCount(0)
+  await expect(page.getByText('Own use')).toHaveCount(0)
   for (const [tab, heading] of [
     ['Week', 'You sold this week'],
     ['Month', 'You sold this month'],
   ] as const) {
     await page.getByRole('button', { name: tab, exact: true }).click()
     await expect(page.getByText(heading)).toBeVisible()
-    const promotion = page.locator('.panel-lista__fila').filter({ hasText: 'Promoción' })
+    const promotion = page.locator('.panel-lista__fila').filter({ hasText: 'Promotion' })
     await expect(promotion).toContainText('$ 1.600')
-    const ownUse = page.locator('.panel-lista__fila').filter({ hasText: 'Consumo propio' })
+    const ownUse = page.locator('.panel-lista__fila').filter({ hasText: 'Own use' })
     await expect(ownUse).toContainText('$ 800')
-    await expect(page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' })).toContainText(
+    await expect(page.locator('.panel-lista__fila').filter({ hasText: 'Cost of goods sold' })).toContainText(
       '$ 0',
     )
   }
@@ -119,8 +119,8 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await openMas(page)
   await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Analysis/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === ANALYSIS)
-  await expect(page.getByText('Promoción $ 1.600').first()).toBeVisible()
-  await expect(page.getByText('Consumo propio $ 800').first()).toBeVisible()
+  await expect(page.getByText('Promotion $ 1.600').first()).toBeVisible()
+  await expect(page.getByText('Own use $ 800').first()).toBeVisible()
 
   expect(consoleMessages).toEqual([])
 })

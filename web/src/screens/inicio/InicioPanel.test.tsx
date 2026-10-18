@@ -305,7 +305,7 @@ test('"Nobody owes you" shows with nothing to tap when nobody owes', async () =>
   renderInicio()
 
   expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Collect a/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Collect from/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
 
@@ -410,7 +410,7 @@ test('Registrar cobro opened from Inicio: with nobody left owing the block reads
   await payFromInicio('11000')
 
   expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Collect a/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Collect from/ })).not.toBeInTheDocument()
 })
 
 test('"Cerrar" on Registrar cobro opened from Inicio returns to Inicio in one move', async () => {

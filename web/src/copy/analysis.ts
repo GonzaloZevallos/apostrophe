@@ -5,6 +5,7 @@
 
 import { andPending, pendingOnly } from './format'
 import { SAMPLES, type LimitedCopy } from './limits'
+import { TAB_EXPENSES } from './shell'
 
 export const NO_HISTORY_LINE = 'Nothing to analyze yet.'
 export const EMPTY_MONTH_LINE = 'You sold and gifted nothing this month.'
@@ -27,7 +28,7 @@ export const BEST_WEEK_TABLE_MARK = 'best'
 export const SOLD_THIS_MONTH = 'You sold this month'
 export const PROFIT = 'Profit'
 export const CASH = 'Cash'
-export const EXPENSES = 'Expenses'
+export const EXPENSES = TAB_EXPENSES
 export const FLOWER_PURCHASES = 'Flower purchases'
 export const WEEK = 'Week'
 export const MONTH = 'Month'

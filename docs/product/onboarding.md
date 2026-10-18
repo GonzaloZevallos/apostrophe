@@ -58,7 +58,7 @@ Success criteria:
   - Otherwise it opens the Onboarding at the resume step.
   - It cannot be dismissed. It goes for good when the Onboarding is over.
   - Partners see it too.
-- A seller who wants it gone sooner finishes the two required steps and taps "Saltar el resto".
+- A seller who wants it gone sooner finishes the two required steps and taps "Skip the rest".
 
 ### The screens
 
@@ -69,9 +69,9 @@ Success criteria:
   - progress in words as well as shape ("Paso 2 de 6"), never by colour alone;
   - "Atrás", to the step before, on every step but step 1. Step 1 has no step before it: it shows no "Atrás", and "Cerrar" is its way out;
   - "Saltar", on optional steps only;
-  - "Saltar el resto", on optional steps only, only once both required steps are done, and never on the last step (step 6), where it would pass nothing "Saltar" does not;
+  - "Skip the rest", on optional steps only, only once both required steps are done, and never on the last step (step 6), where it would pass nothing "Saltar" does not;
   - "Cerrar", which lands on Inicio and keeps everything saved and the resume point.
-- **The skip controls**: "Saltar" and, when it shows, "Saltar el resto" sit together on one line as text links, as the design draws them; neither is a button.
+- **The skip controls**: "Saltar" and, when it shows, "Skip the rest" sit together on one line as text links, as the design draws them; neither is a button.
 - **The step frame follows the drawn design** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); where this file and the drawing disagree on what a step shows, this file wins and the difference is a defect in the design.
 - **Unsaved changes**: leaving a step with something typed and not saved, by "Cerrar", "Atrás" or "Saltar", asks before discarding. An untouched step leaves at once.
 - **Inside the steps**, the owners' own behaviour applies unchanged: field rules, refusals inline keeping what was typed, toasts, Probarlo's and Buscar mi chat's reasons, "Sin conexión", the generic retry and "Eso ya no está.".
@@ -128,18 +128,18 @@ Success criteria:
 - **Data that already exists** shows "Done" and counts as passed: a bot saved earlier, a second user already in the business. A done required step shows "Done" the same way (step 1 as above).
 - **Resume** lands on the first step that is neither done nor passed, or on "Listo" when there is none.
 - **Leaving** ("Cerrar", closing the app, a dropped connection) keeps everything saved and the resume point.
-- **"Saltar el resto"** passes every remaining optional step at once.
+- **"Skip the rest"** passes every remaining optional step at once.
 - **No early end**: the Onboarding never ends before both required steps are met, and nothing outside it (a price added on the variety's page, say) ends it.
 
 ### "Listo"
 
-- Once both required steps are done and every optional step is passed, the next screen the Onboarding shows is "Listo", and **reaching "Listo" ends the Onboarding**. Usually that is on the tap that passes the last optional step (its own action, or "Saltar el resto"); when every step became done or passed outside it, it is on tapping the Inicio notice.
+- Once both required steps are done and every optional step is passed, the next screen the Onboarding shows is "Listo", and **reaching "Listo" ends the Onboarding**. Usually that is on the tap that passes the last optional step (its own action, or "Skip the rest"); when every step became done or passed outside it, it is on tapping the Inicio notice.
 - From then on it is over for good: leaving "Listo" by any means, or closing the app on it, never brings the Onboarding back, and the Inicio notice goes. No tap on "Listo" itself is needed.
 - **One line per step**:
   - "Done" for a step whose data exists or that was saved;
   - "Para después — en Configuración → <grupo>" or "en Variedades" for a skipped step;
   - the required steps' lines count the records made, e.g. "Hecho · 2 variedades": a count, never a figure or an amount.
-- **Actions**: the primary "Cargar mi primera venta", which opens Nueva venta, and the secondary "Ir a Inicio". No celebration and no extra content.
+- **Actions**: the primary "Cargar mi primera venta", which opens Nueva venta, and the secondary "Go to Home". No celebration and no extra content.
 - **Nueva venta opened from "Listo"** goes back to Inicio, whether closed with "Cerrar" or saved. It never goes back to "Listo" or the Onboarding.
 
 ### Empty states and errors
@@ -200,8 +200,8 @@ There is no telemetry.
 - **One fact, one place (criterion 4)**: a value saved in each step reads the same in Configuración or on the variety's page, and the reverse.
 - **Only the sale is required (criterion 2)**: front tests show:
   - every optional step skipped in one tap;
-  - "Saltar el resto" only once both required steps are done, and never on step 6;
-  - "Saltar" and "Saltar el resto" as text links on one line;
+  - "Skip the rest" only once both required steps are done, and never on step 6;
+  - "Saltar" and "Skip the rest" as text links on one line;
   - "Listo" naming where each skipped step lives.
 - **The step frame**: front tests show no "Atrás" on step 1 and "Atrás" opening the step before on steps 2–6.
 - **Step 1**: front tests show:

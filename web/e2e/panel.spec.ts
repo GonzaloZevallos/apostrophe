@@ -267,11 +267,11 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // An expense, in the business's own default "Other" category.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByLabel('Categoría').selectOption({ label: 'Other' })
-  await page.getByLabel('Monto').fill('1500')
-  await page.getByLabel('Detalle').fill('Bolsas de regalo')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByLabel('Category').selectOption({ label: 'Other' })
+  await page.getByLabel('Amount').fill('1500')
+  await page.getByLabel('Detail').fill('Bolsas de regalo')
+  await page.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
   // figure for figure, never recomputed here (plan invariant).
@@ -287,22 +287,22 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
     if (showsResults) {
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Ganancia' }).locator('.panel-resultados__valor--acento'),
+        page.locator('.panel-resultados__celda').filter({ hasText: 'Profit' }).locator('.panel-resultados__valor--acento'),
       ).toHaveText(signedPesos(period.profit))
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Caja' }).locator('.panel-resultados__valor'),
+        page.locator('.panel-resultados__celda').filter({ hasText: 'Cash' }).locator('.panel-resultados__valor'),
       ).toHaveText(signedPesos(period.cash))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' }).locator('.panel-lista__valor'),
+        page.locator('.panel-lista__fila').filter({ hasText: 'Cost of goods sold' }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.cost_of_goods))
       await expect(
         page.locator('.panel-lista__fila').filter({ hasText: 'Expenses' }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.expenses))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Regalaste' }).locator('.panel-lista__valor'),
+        page.locator('.panel-lista__fila').filter({ hasText: 'You gifted' }).locator('.panel-lista__valor'),
       ).toHaveText(grams(period.grams_gifted))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Compras de flores' }).locator('.panel-lista__valor'),
+        page.locator('.panel-lista__fila').filter({ hasText: 'Flower purchases' }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
       // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
       // never under Caja (plan, PRD: "Caja never carries it").
@@ -322,7 +322,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     const subtitle =
       period.average_sale === null
         ? `${count} · ${gramsSoldText}`
-        : `${count} · promedio ${pesos(period.average_sale)} · ${gramsSoldText}`
+        : `${count} · average ${pesos(period.average_sale)} · ${gramsSoldText}`
     await expect(page.locator('.panel-ventas .pie')).toHaveText(subtitle)
   }
 
@@ -363,7 +363,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const debtsSubtitle =
     panel.debts.oldest === null
       ? countLabel(panel.debts.sales_owing_count)
-      : `${countLabel(panel.debts.sales_owing_count)} · desde ${shortDate(panel.debts.oldest)}`
+      : `${countLabel(panel.debts.sales_owing_count)} · since ${shortDate(panel.debts.oldest)}`
   await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
   // The direct child only: each teaser row below carries its own `.pie` too
   // ("desde dd/mm"), nested inside its own `<Link>`, never a direct child here.
@@ -373,10 +373,10 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   if (teaserRow === undefined) throw new Error('empty teaser in GET /panel')
   const teaserLink = page.locator('.bloque-deben__fila').filter({ hasText: teaserRow.name })
   await expect(teaserLink).toContainText(pesos(teaserRow.balance))
-  await expect(teaserLink).toContainText(`desde ${shortDate(teaserRow.owing_since)}`)
+  await expect(teaserLink).toContainText(`since ${shortDate(teaserRow.owing_since)}`)
 
   // Opens Te deben from the block's own heading, then goes back to Inicio.
-  await page.getByRole('link', { name: 'Te deben' }).click()
+  await page.getByRole('link', { name: 'Owed to you' }).click()
   await expectPath(page, CUSTOMERS)
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
   await page.goBack()

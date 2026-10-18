@@ -5,7 +5,9 @@
  */
 
 import type { LimitedCopy } from './limits'
+import { SAVE } from './common'
 import { MORE_SETTINGS } from './expenses'
+import { CHECKLIST_DONE, CHECKLIST_OPTIONAL, CHECKLIST_REQUIRED, STEP_STOCK_ENTRY } from './home'
 import { TAB_VARIETIES } from './shell'
 
 export const DISCARD_DETAIL = 'You lose what you typed: nothing has been saved yet.'
@@ -13,14 +15,10 @@ export const DISCARD_DETAIL = 'You lose what you typed: nothing has been saved y
 export const PARTLY_SAVED_DETAIL = 'The variety is already saved; you lose the price you typed.'
 
 /** The shared small words of the steps. */
-export const DONE = 'Done'
 export const CONTINUE = 'Continue'
-export const SAVE = 'Save'
 export const BACK = 'Back'
 export const SKIP = 'Skip'
 export const SKIP_THE_REST = 'Skip the rest'
-export const REQUIRED = 'Required'
-export const OPTIONAL = 'Optional'
 
 export const stepLine = (number: number, total: number) => `Step ${number} of ${total}`
 export const stepsDone = (count: number, total: number) => `${count} of ${total} steps`
@@ -37,7 +35,6 @@ export const STEP_VARIETY_WHY = 'To sell, each variety needs a name and its pric
 export const STEP_VARIETY_SHORT = 'variety with a price'
 export const STEP_VARIETY_NAME = 'Variety with a price'
 
-export const STEP_STOCK_TITLE = 'Add what you have today'
 export const STEP_STOCK_WHY = "You can't sell without stock: tell us how many grams you have of this variety."
 export const STEP_STOCK_SHORT = 'starting stock'
 export const STEP_STOCK_NAME = 'Starting stock'
@@ -101,3 +98,10 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 ]
 
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Words owned by another section, imported read-only and re-exported under the names the steps use. */
+export const DONE = CHECKLIST_DONE
+export const REQUIRED = CHECKLIST_REQUIRED
+export const OPTIONAL = CHECKLIST_OPTIONAL
+export const STEP_STOCK_TITLE = STEP_STOCK_ENTRY
+export { SAVE }
