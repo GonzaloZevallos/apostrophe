@@ -37,10 +37,11 @@ import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
 import * as copy from '../copy/expenses'
+import { FLOWER_NOTICE, NO_DISCARD_TITLE, YES_DELETE_TITLE } from '../copy/expenses'
 import { MONTH_NEXT, MONTH_PREVIOUS } from '../copy/analysis'
 import { TAB_EXPENSES } from '../copy/shell'
 
-export const { FLOWER_NOTICE, NO_DISCARD_TITLE, YES_DELETE_TITLE } = copy
+export { FLOWER_NOTICE, NO_DISCARD_TITLE, YES_DELETE_TITLE }
 
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
   return copy.deleteQuestion(formatMoney(expense.amount), categoryName, formatDate(expense.spent_on, today))

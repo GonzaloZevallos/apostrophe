@@ -38,6 +38,9 @@ import { TAB_ANALYSIS, TAB_SALES } from '../copy/shell'
 import * as copy from '../copy/analysis'
 import { pendingSuffix } from '../format/pending'
 import {
+  BEST_WEEK_MARK,
+  BEST_WEEKDAY_MARK,
+  BEST_WEEK_TABLE_MARK,
   COST_OF_GOODS_LABEL,
   EMPTY_MONTH_LINE,
   NO_BEST_WEEK_LINE,
@@ -62,7 +65,7 @@ export {
   SINCE_FIRST_RECORD_LABEL,
   VARIETY_TOTAL_NOTE,
 }
-export const { BEST_WEEK_MARK, BEST_WEEKDAY_MARK, BEST_WEEK_TABLE_MARK } = copy
+export { BEST_WEEK_MARK, BEST_WEEKDAY_MARK, BEST_WEEK_TABLE_MARK }
 
 /** One cost line, "Stock shortfall $ 3.000 and 1 g not yet costed": the label and
  * `formatRowCost`, in one node. */

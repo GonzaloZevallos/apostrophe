@@ -35,8 +35,9 @@ import SinConexion from '../../components/SinConexion'
 import { parseMoney } from '../../format/parse'
 import { CLOSE, GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 import * as copy from '../../copy/expenses'
+import { CATEGORY_GONE } from '../../copy/expenses'
 
-export const { CATEGORY_GONE } = copy
+export { CATEGORY_GONE }
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 // `expense_category.not_found` is the one code the expense form handles on its

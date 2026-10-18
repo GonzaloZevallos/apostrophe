@@ -14,7 +14,7 @@ import {
   ME,
   jsonResponse,
   renderExpenses,
-} from "./renderExpenses";
+} from "../../test/renderExpenses";
 
 const CATEGORIES = [
   { id: 1, name: "Packaging" },
