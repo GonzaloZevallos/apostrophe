@@ -8,3 +8,4 @@ export function words(): string {
   return window.confirm('Sure?') ? 'Yes' : 'No'
 }
 export const Notice = () => <p aria-live="polite" title="Careful">text</p>
+export const LABELS = { save: 'Save sale', done: 'Done' } as const

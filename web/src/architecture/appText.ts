@@ -24,7 +24,8 @@
  * - the value of an object property in `CODE_VALUED_PROPERTIES` (`status`, `rule`, `tone`...);
  * - the initializer of a declaration whose name says it is a code (`CODE_NAME`: `*_CLASS`,
  *   `*_KEY`, `*_PATH`, `*_ID`...);
- * - anything inside an `as const` tuple or object, which is a code table, never a sentence;
+ * - a lowercase, space-free token inside an `as const` tuple or object (a code table); a capitalised
+ *   or spaced word there is shown text and is still flagged;
  * - a value returned by a function whose declared return type is a union of string
  *   literals, or a local alias of one.
  *
@@ -141,6 +142,9 @@ export const CODE_VALUED_PROPERTIES: readonly string[] = [
 
 /** A declaration named like this holds a code: a class list, a key, a path, a selector, an
  * id. */
+/** A lowercase token with no space: the shape of a code in a table, never of a shown word. */
+const CODE_TOKEN = /^[a-z0-9_.:/#-]+$/
+
 const CODE_NAME =
   /(?:^|_)(?:CLASS|CLASSES|KEY|PATH|QUERY|SELECTOR|ATTRIBUTE|FIELDS|CONTAINERS|NAMES|PREFIX|ID|IDS|CODE|VIEWPORT)$|(?:Class|Classes|Key|Path|Query|Selector|Attribute|Id|Ids|Code|Viewport)$/
 
@@ -288,7 +292,14 @@ function isAllowedContext(node: ts.Node): boolean {
         return true
       }
     }
-    if (ts.isAsExpression(current) && ts.isTypeReferenceNode(current.type) && current.type.typeName.getText() === 'const') return true
+    if (
+      ts.isAsExpression(current) &&
+      ts.isTypeReferenceNode(current.type) &&
+      current.type.typeName.getText() === 'const' &&
+      CODE_TOKEN.test(literalOf(node)?.text ?? '')
+    ) {
+      return true
+    }
     if (ts.isPropertyAssignment(current) && current.initializer === child) {
       const key = propertyKey(current.name)
       if (key !== null && CODE_VALUED_PROPERTIES.includes(key)) return true

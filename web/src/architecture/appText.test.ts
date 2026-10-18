@@ -38,6 +38,8 @@ describe('a visible literal is flagged', () => {
         { line: 8, node: 'string' },
         { line: 10, node: 'string' },
         { line: 10, node: 'jsx-text' },
+        { line: 11, node: 'string' },
+        { line: 11, node: 'string' },
       ],
     ],
   ])('%s', (name, expected) => {
