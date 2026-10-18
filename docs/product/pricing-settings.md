@@ -110,4 +110,4 @@ The business export (accounts.md) holds the two switches as stored.
 - Refusing or warning a sale because the switches changed mid-sale.
 - A warning or count of varieties without a VIP price.
 - Roles or permissions for changing the switches.
-- Applying on tap, as Apariencia does: the switches reprice every new sale for every partner, so they are saved explicitly.
+- Applying on tap, as Appearance does: the switches reprice every new sale for every partner, so they are saved explicitly.

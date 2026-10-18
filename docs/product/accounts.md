@@ -10,9 +10,9 @@ Every other capability reads one thing from here, the business of the user askin
 - how it is served, installed and themed, including the theme choice each device remembers, and how the installed shell fills the phone's screen;
 - how the installation is published on the internet and backed up (ADR-0016);
 - the feedback rules every screen follows, and the shared states (`Estados`) that draw them;
-- the Negocio, Usuarios, Apariencia and Tu cuenta groups of Configuración.
+- the Business, Users, Appearance and Your account groups of Settings.
 
-Where every screen sits (tabs, sidebar, Más, Configuración, the chrome and back rule, routes, first run) is navigation.md. Inicio, where the app opens, is the panel defined in results.md. The Precios group is pricing-settings.md.
+Where every screen sits (tabs, sidebar, Más, Settings, the chrome and back rule, routes, first run) is navigation.md. Inicio, where the app opens, is the panel defined in results.md. The Precios group is pricing-settings.md.
 
 ## Jobs
 
@@ -34,9 +34,9 @@ These two refine the "log in once and stay in" job above. The operator's command
 
 This refines the "log in once and stay in", "get in with the link I was sent" and forgotten-password jobs above; it is not a new job. Its protagonist is the seller; the operator's commands stay outside the app.
 
-**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Settings → Apariencia, navigation.md) and stays on that device once chosen.
+**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Settings → Appearance, navigation.md) and stays on that device once chosen.
 
-**When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Configuración's Negocio, Usuarios, Apariencia and Tu cuenta; the structure is navigation.md.)
+**When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Settings's Business, Users, Appearance and Your account; the structure is navigation.md.)
 
 **When** I open the installed app on my phone between orders or mid-chat with a customer, **I want** it to fill the screen and respond the way a phone app does (nothing hidden under the notch or the home bar, a status bar the colour of the app, no page bounce or pull-to-refresh, no blue flash or stray text selection when I tap, and the field I'm typing in never hidden by the keyboard), **so I can** tap, type and read figures fast and get back to the customer, without the app feeling like a web page in a frame.
 
@@ -62,7 +62,7 @@ This refines the "log in once and stay in" job above and criterion 5; it is not 
 - The protagonist of this job is the maintainer of the installation, or the reviewer acting for them. The seller is affected only indirectly: a gate that goes red because the date changed holds up every fix they are waiting for.
 - It is served here by the business-removal tests. Every instant in them comes from the movable clock (ADR-0001), so their verdict never depends on the day they run. No behaviour of the app changes.
 
-The navigation job (navigation.md) decides where Negocio, Usuarios, Apariencia and Tu cuenta are reached from: Configuración.
+The navigation job (navigation.md) decides where Business, Users, Appearance and Your account are reached from: Settings.
 
 Success criteria:
 
@@ -109,7 +109,7 @@ Success criteria, the theme:
 Success criteria, changing and resetting a password:
 
 18. **Change, fast and final.**
-    - From Settings → Tu cuenta on the phone, a user with the right current password sets a new one (at least 10 characters) in under a minute.
+    - From Settings → Your account on the phone, a user with the right current password sets a new one (at least 10 characters) in under a minute.
     - Every other session of that user is closed at once.
     - The device that changed it stays signed in.
     - Partners' sessions are untouched.
@@ -346,14 +346,14 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - the app shows no banner or explanation of the difference.
 - **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
 - **No network**: when a request fails because the network dropped, the open app shows "No connection: check your internet and try again." on any origin. This does not rely on the service worker.
-- **Theme**: the app opens in the light theme whatever the phone or computer is set to, unless Oscuro is stored on that device. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Settings → Apariencia, Claro or Oscuro (navigation.md).
+- **Theme**: the app opens in the light theme whatever the phone or computer is set to, unless Dark is stored on that device. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Settings → Appearance, Light or Dark (navigation.md).
   - The rule is one: no attribute on `<html>` means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session, and the system's light or dark setting picks nothing. `oscuro` is the only recognised value.
   - **The theme choice is remembered per device**:
-    - tapping Claro or Oscuro applies and remembers it at once, with no save, toast or unsaved-changes warning;
+    - tapping Light or Dark applies and remembers it at once, with no save, toast or unsaved-changes warning;
     - the device keeps only the choice: nothing personal, no money, no session and nothing about a business;
     - it belongs to the device, not to the user or the business; a partner's device and the user's other devices are unaffected;
     - logging out does not clear it;
-    - a stored Oscuro shows on every screen of that device, Entrar, the invitation and the reset screens included; a device with nothing stored opens light;
+    - a stored Dark shows on every screen of that device, Entrar, the invitation and the reset screens included; a device with nothing stored opens light;
     - the screens before login have no theme control.
   - Native controls and scrollbars follow the app's theme, not the system's: light with no attribute, dark with `data-tema="oscuro"`.
   - Both themes keep the same tokens and values, and every state rule holds in both.
@@ -379,7 +379,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
     - It shows both when the link is opened and when a submit answers 404.
     - It keeps nothing typed and never says why the link is dead.
     - Its only button goes to Entrar.
-- **Where screens sit**: the bar, the sidebar, Más, Configuración, the chrome and back rule and the first run are navigation.md. Inicio is the panel (results.md).
+- **Where screens sit**: the bar, the sidebar, Más, Settings, the chrome and back rule and the first run are navigation.md. Inicio is the panel (results.md).
 
 ### The installed shell
 
@@ -416,12 +416,12 @@ How the app fills a phone's screen and responds to touch once installed (criteri
 - **Splash**: no `apple-touch-startup-image`; iOS shows its own blank launch screen, accepted. Android's splash comes from the manifest's `background_color` and icon.
 - **Accepted limitations**: on iOS the status strip stays light with dark text above the dark paper in the dark theme; on iOS the launch screen is blank until the app paints.
 
-### In Configuración: Negocio, Usuarios, Apariencia, Tu cuenta
+### In Settings: Business, Users, Appearance, Your account
 
-These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Cerrar", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Precios, between Usuarios and Integrations, is pricing-settings.md.)
+These groups of Settings (navigation.md) replace the former Business screen, which no longer exists; `/negocio` redirects to Settings. Each is its own subscreen, a form: "Close", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Prices, between Users and Integrations, is pricing-settings.md.)
 
-- **Negocio**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
-- **Usuarios**:
+- **Business**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
+- **Users**:
   - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
   - "Invite a partner": each tap creates one fresh join link, to copy or share with the phone's share sheet.
 - **Appearance**: Light and Dark, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Close" always closes at once.
@@ -456,7 +456,7 @@ These groups of Configuración (navigation.md) replace the former Negocio screen
   - Publishing belongs to the installation as a whole: every business becomes reachable at once, kept apart only by session isolation (ADR-0004).
 - **No admin surface** (ADR-0002):
   - Brake state, backup health and drill results are read from outside the app: logs, the drill's output and the GitHub Actions run.
-  - Nothing is seen or done from a signed-in session, and the app gains no screen, route or navigation entry for it. Configuración holds no operator setting.
+  - Nothing is seen or done from a signed-in session, and the app gains no screen, route or navigation entry for it. Settings holds no operator setting.
 
 ### Constraints
 
@@ -506,7 +506,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 
 ## Metrics
 
-- **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a new-business invitation, renames the business from Settings → Negocio, creates a join link from Usuarios and accepts it as a second user.
+- **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a new-business invitation, renames the business from Settings → Business, creates a join link from Users and accepts it as a second user.
 - **Isolation (criteria 1, 6)**:
   - the business routes sit in the isolation sweep and the gated-route test;
   - serving tests prove no path reaches outside `web/dist`;
@@ -522,8 +522,8 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Theme (criteria 23–26)**:
   - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`), nothing stored and no attribute reads the page background as `--papel` (#fcfbf8), Entrar included;
   - dark on request: an e2e run with `data-tema="oscuro"` on `<html>`, whatever the system setting, reads the page background as the dark theme's own value from `tokens.css`;
-  - choosing Oscuro in Settings → Apariencia sets the attribute, and Claro removes it, with no toast, save button or unsaved-changes warning, and the current choice marked by more than color;
-  - the choice survives a reload and a logout; with Oscuro stored, Entrar, the invitation and the reset screens show dark;
+  - choosing Dark in Settings → Appearance sets the attribute, and Light removes it, with no toast, save button or unsaved-changes warning, and the current choice marked by more than color;
+  - the choice survives a reload and a logout; with Dark stored, Entrar, the invitation and the reset screens show dark;
   - browser storage holds only the theme choice;
   - no test or fixture reaches the dark theme by emulating a dark system;
   - no token value changed;
@@ -543,7 +543,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
     - the iOS light strip, with the top inset handled;
     - the maskable icon on the Android launcher.
 - **Nothing invented (criterion 7)**:
-  - the bar, the sidebar, Más and Configuración show exactly the entries navigation.md lists;
+  - the bar, the sidebar, Más and Settings show exactly the entries navigation.md lists;
   - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
   - Inicio shows no notices other than the first-run checklist, "Start with the varieties", the pinned catalog's and the after-import notice.
 - **Password change (criterion 18)**:
@@ -569,7 +569,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - the reset routes are never braked.
 - **Reset command (criteria 20, 22)**: an email with no user writes 0 rows and retires 0 links.
 - **No curl for passwords (criterion 22)**: the end-to-end front run:
-  - changes a password from Settings → Tu cuenta, after which an old session is signed out and this one stays in;
+  - changes a password from Settings → Your account, after which an old session is signed out and this one stays in;
   - completes a reset from a printed link through to Inicio;
   - sees the dead-link state for a used link.
 - **Getting in, redesigned (criteria 27–32)**:
@@ -660,7 +660,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - An admin screen, route or navigation entry, or anything operated from a signed-in session.
 - A per-business publishing flag or staged rollout.
 - The bar's and header's own behaviour (#59), and each screen's own layout, including a save action pinned above the keyboard.
-- Building Settings → Apariencia, and whether or where the theme choice is kept: its own issue.
+- Building Settings → Appearance, and whether or where the theme choice is kept: its own issue.
 - A dark splash, and iOS `apple-touch-startup-image` splash images.
 - An iOS status bar that follows the theme live.
 - A landscape-specific design; locking orientation or disabling zoom.
