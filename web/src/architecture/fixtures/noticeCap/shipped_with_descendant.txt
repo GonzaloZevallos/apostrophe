@@ -1,0 +1,16 @@
+.boton-aviso {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--espacio-lg) 18px;
+}
+
+@media (min-width: 900px) {
+  .boton-aviso {
+    max-width: 560px;
+  }
+}
+
+.boton-aviso .aviso-onboarding__texto {
+  max-width: 200px;
+}
