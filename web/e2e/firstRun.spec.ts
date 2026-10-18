@@ -48,7 +48,7 @@ for (const viewport of VIEWPORTS) {
     for (const text of NOT_THERE) await expect(page.getByText(text)).toHaveCount(0)
 
     await page.goto(SETTINGS_USERS)
-    await page.getByRole('button', { name: 'Invite a partner' }).click()
+    await page.getByRole('button', { name: 'Invitá a un socio' }).click()
     await expect(page.locator('.usuarios__link')).toHaveText(/^https?:\/\//)
     const inviteUrl = await page.locator('.usuarios__link').textContent()
     if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')

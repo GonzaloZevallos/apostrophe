@@ -96,7 +96,7 @@ test('a seller opens Analysis from Más, moves back a month and reads each secti
   const weekRows = page.locator('.analisis__tabla-contenedor--semanas tbody tr')
   await expect(weekRows.first()).toBeVisible()
 
-  await expect(page.getByText('Por día de la semana')).toBeVisible()
+  await expect(page.getByText('By weekday')).toBeVisible()
   await expect(page.locator('.analisis__dia').first()).toBeVisible()
 
   await expect(page.getByText("This month's expenses")).toBeVisible()
@@ -119,7 +119,7 @@ test('a seller opens Analysis from Más, moves back a month and reads each secti
   await expect(page.getByText('No vendiste ni regalaste nada este mes.')).toBeVisible()
   await expect(page.getByText('Week by week · last 8')).toBeVisible()
   await expect(weekRows.first()).toBeVisible()
-  await expect(page.getByText('Por día de la semana')).toBeVisible()
+  await expect(page.getByText('By weekday')).toBeVisible()
   await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
 
   expect(consoleMessages).toEqual([])

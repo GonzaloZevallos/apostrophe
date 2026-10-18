@@ -20,7 +20,7 @@ const NOTICE = 'Keep going with setup'
 
 async function priceAVariety(page: import('@playwright/test').Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Add your first variety' })).toBeVisible()
-  await page.getByLabel(/^Nombre/).fill(name)
+  await page.getByLabel(/^Name/).fill(name)
   await page.getByLabel(/^Precio de lista/).fill('9000')
   await page.getByRole('button', { name: 'Guardá la variedad' }).click()
 }

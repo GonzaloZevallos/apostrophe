@@ -56,7 +56,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page.getByText('−5 g')).toBeVisible()
   // The variety's own "Sacar del stock" (the list beside it carries one with no variety).
-  await page.locator(`a[href*="${WITHDRAWAL_NEW}?variety="]`, { hasText: 'Take out of stock' }).click()
+  await page.locator(`a[href*="${WITHDRAWAL_NEW}?variety="]`, { hasText: 'Sacar del stock' }).click()
   await expect(page.getByLabel('Variedad 1', { exact: true })).toHaveValue(/\d+/)
   await page.getByRole('button', { name: 'Consumo propio', exact: true }).click()
   await page.getByLabel('Gramos 1', { exact: true }).fill('2')

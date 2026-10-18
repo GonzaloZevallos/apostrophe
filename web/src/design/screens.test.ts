@@ -321,9 +321,9 @@ describe('the Inicio rows of the real screens.json', () => {
   })
 
   it('crops each Semana capture to the block that draws Semana', () => {
-    expect(clicks(row('Inicio'))).toEqual(['Semana'])
+    expect(clicks(row('Inicio'))).toEqual(['Week'])
     expect(row('Inicio').section).toBe(SEMANA_PHONE)
-    expect(clicks(row('InicioCompu'))).toEqual(['Semana'])
+    expect(clicks(row('InicioCompu'))).toEqual(['Week'])
     expect(row('InicioCompu').section).toBe(SEMANA_COMPU)
   })
 
