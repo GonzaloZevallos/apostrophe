@@ -62,7 +62,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   const renamedTo = `${businessName} Renombrado`
   await openGroup('Negocio')
   await page.getByLabel('Nombre del negocio').fill(renamedTo)
-  await page.getByRole('button', { name: 'Save' }).click()
+  await page.getByRole('button', { name: 'Guardá el nombre' }).click()
   await expect(page.getByText('Negocio renombrado')).toBeVisible()
   await close()
 
@@ -88,7 +88,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByLabel('Encabezado').fill('🌿 Catálogo de la semana')
   await page.getByLabel('Pie').fill('Consultas por privado.')
   await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
-  await expect(page.getByText('Catalog saved')).toBeVisible()
+  await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await close()
 
   // Categorías de gastos: add, rename, a refused removal, then remove.

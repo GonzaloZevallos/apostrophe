@@ -78,7 +78,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByLabel('Encabezado').fill('🌸 Catálogo de Flores del Catálogo 🌸')
   await page.getByLabel('Pie').fill('Pedidos por privado.')
   await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
-  await expect(page.getByText('Catalog saved')).toBeVisible()
+  await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar' }).click()
   await expectPath(page, CATALOG)
   await expect(page.getByLabel('Pie')).toHaveCount(0)
