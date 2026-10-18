@@ -114,7 +114,7 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 - **`OnboardingListo`** (the default row, phone light) follows that rule, on its own account written by the sample app (`scripts/design/sample_app.py`'s `ONBOARDING_ACCOUNTS`). It does not start at `/onboarding/categories`, does not run the whole flow through step 6, and never clicks "Saltar el resto" on step 6.
 - **`OnboardingListoCompu` and `OnboardingListoOscuro`** keep their accounts, `listo_compu` and `listo_oscuro`.
 - **The computer dark row** (GH-164 follow-up) is new: it follows the registry's dark-twin convention for its name, on an account of its own written by the sample app. Its exact row and account names are the Tech Lead's.
-- **Each Listo entry has a distinct account**; two entries on one account are refused.
+- **Each Listo entry has a distinct `open` account**; two entries on one account are refused, and a Listo entry never names an `ended` account (the kind is in `facts.account_kinds`, ADR-0042's GH-189 amendment).
 - **Capture accounts are design tooling only**: written by the sample app alone, never by product code or by the seed `muestra.md` is rendered from.
 - **No product rule bends for a capture**: "Saltar el resto" never appears on step 6, and Listo is reached when the last optional step is passed (step 6 by "Seguir").
 
@@ -128,11 +128,12 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 ### Registry enforcement tests
 
 - The real-registry test in `web/src/design/screens.test.ts` states the account rule, enforced by the registry's rule module (`scripts/design/screens.mjs`):
-  - an account is allowed only on an entry that reaches Listo, and only if it names an account the sample writes;
-  - any other entry that names an account fails;
+  - an entry may only name an account the sample writes, each with a kind in `facts.account_kinds` (`open` or `ended`; `assertAccountKinds` refuses a missing, partial or mismatched map);
+  - an `open` account belongs to one Listo entry: an `open` account on any other entry fails, and a Listo entry on an account that is not `open` fails;
+  - an `ended` account (a business whose Onboarding the sample ended at seed time) may be shared by read-only entries, such as the six `Inicio*` rows, and no Listo entry names it;
   - a Listo entry that names an account the sample does not write fails;
   - two entries on one account are refused (`assertSelectedAccounts`), the default Listo row included.
-- The account-validation tests and `assertSelectedAccounts` keep everything they guarded.
+- The account-validation tests and `assertSelectedAccounts` keep everything they guarded; the old static rule "an account only on a Listo entry" now lives in `assertSelectedAccounts`, against the kinds.
 - **Same record in path and route**: the same test states that when an entry's `path` names at least one `{name}` placeholder, its placeholders equal the `route`'s exactly: the same names, in the same order, compared as written, before any normalisation.
   - A path with no placeholder names no record and passes, whatever its route holds. This is part of the rule, not an exemption: no entry is listed as exempt.
   - It only adds to the cross-check; ADR-0033's normalisation to `{id}` for matching against the front registry is unchanged.
