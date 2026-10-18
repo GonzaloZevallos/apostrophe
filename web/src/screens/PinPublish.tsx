@@ -43,7 +43,7 @@ import {
 import { GENERIC_REFUSAL_MESSAGE } from '../copy/common'
 
 /** The resource a publish writes: a code of the query keys, never a word. */
-const PINNED_CATALOG_RESOURCE: 'pinnedCatalog' = 'pinnedCatalog'
+const PINNED_CATALOG_KEY = 'pinnedCatalog'
 
 const PUBLISHED_TOAST: SuccessToast = CATALOG_PUBLISHED
 const INTEGRATIONS_PATH = SETTINGS_INTEGRATIONS
@@ -159,7 +159,7 @@ export default function PinPublish() {
       setPublishing(false)
       // A failed Publish records its failure server-side too, so the status follows
       // the last attempt: refetch on both paths.
-      invalidateResource(queryClient, PINNED_CATALOG_RESOURCE)
+      invalidateResource(queryClient, PINNED_CATALOG_KEY)
     }
   }
 
