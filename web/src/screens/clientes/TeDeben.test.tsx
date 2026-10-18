@@ -12,7 +12,6 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
-import { SIN_CONEXION_MENSAJE } from '../../copy/states'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -62,14 +61,14 @@ test("heads with the total owed and lists debtors in the API's own order", async
 
   const rows = screen
     .getAllByRole('link')
-    .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Cobrar')
+    .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Collect')
   expect(rows.map((row) => row.textContent)).toEqual([
-    'Ana Pérez$ 15.000te debe desde 14/09',
-    'Beto$ 22.000te debe desde 20/09',
+    'Ana Pérez$ 15.000owes you since 14/09',
+    'Beto$ 22.000owes you since 20/09',
   ])
-  expect(screen.getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label'))).toEqual([
-    'Cobrar a Ana Pérez',
-    'Cobrar a Beto',
+  expect(screen.getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label'))).toEqual([
+    'Collect from Ana Pérez',
+    'Collect from Beto',
   ])
 })
 
@@ -80,14 +79,14 @@ test('one sale still owing reads "1 venta debiendo", singular', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 1 }))
   renderTeDeben()
 
-  expect(await screen.findByText('1 sale debiendo')).toBeInTheDocument()
+  expect(await screen.findByText('1 sale owing')).toBeInTheDocument()
 })
 
 test('three sales still owing read "3 ventas debiendo", plural', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 3 }))
   renderTeDeben()
 
-  expect(await screen.findByText('3 sales debiendo')).toBeInTheDocument()
+  expect(await screen.findByText('3 sales owing')).toBeInTheDocument()
 })
 
 test('nobody owing shows the fixed "Nobody owes you"', async () => {
@@ -95,7 +94,7 @@ test('nobody owing shows the fixed "Nobody owes you"', async () => {
   renderTeDeben()
 
   expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
-  expect(screen.getByRole('region', { name: 'Te deben' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Owed' })).toBeInTheDocument()
 })
 
 test('a dropped network shows nothing here: Clientes shows Sin conexión on its own list', async () => {
@@ -103,6 +102,6 @@ test('a dropped network shows nothing here: Clientes shows Sin conexión on its 
   renderTeDeben()
 
   await waitFor(() => expect(fetch).toHaveBeenCalled())
-  expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument()
-  expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: 'Owed' })).not.toBeInTheDocument()
+  expect(screen.queryByText('No connection: check your internet and try again.')).not.toBeInTheDocument()
 })

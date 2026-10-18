@@ -11,7 +11,7 @@
  * names them. The VIP mark this screen once showed next to the customer's name is
  * dropped too: the design's summary is one flat text line, and sales.md's "Shows"
  * names only "the customer or Sin cliente" (plan, invariants: no figure or text the
- * API does not answer, and no behaviour sales.md lacks, appears on screen). "Borrás
+ * API does not answer, and no behaviour sales.md lacks, appears on screen). "Delete
  * la venta" is confirmed
  * with `Antes de borrar`, naming the date and the amount; "Venta guardada" with
  * Deshacer (`Estados`) is this screen's own banner, read once through
@@ -52,11 +52,34 @@ import Loading from '../../components/Loading'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
-import { GENERIC_REFUSAL } from './NuevaVenta'
 import { SALE_DELETED, SALE_DELETED_STOCK_BACK } from '../../copy/common'
+import { CANCEL_DELETE, CONFIRM_DELETE, DELETE_DETAIL } from '../../copy/customers'
+import {
+  ASSIGN_CUSTOMER,
+  CUSTOMER_ALREADY_ASSIGNED_MESSAGE,
+  CUSTOMER_ASSIGNED,
+  DELETE_SALE,
+  GENERIC_REFUSAL,
+  LEFT_OWING,
+  LINES,
+  NOTE,
+  NO_CUSTOMER,
+  PAID_BY_TRANSFER,
+  PAID_IN_CASH,
+  SHIPPING_CHARGED,
+  TOTAL,
+  UNDO,
+  deleteSaleQuestion,
+  pricePerGramLine,
+  saleOf,
+} from '../../copy/sales'
+import { TAB_SALES } from '../../copy/shell'
 import NuevaVentaCliente from './NuevaVentaCliente'
 
-export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = 'Esta venta ya tiene cliente.'
+const SALES_RESOURCE_KEY = 'sales'
+const UNDO_CODE = 'deshacer'
+const DELETE_CODE = 'borrar'
+const NO_REFETCH_OPTIONS = { refetchType: 'none' } as const
 const ASSIGN_TOAST_MS = 2500
 
 /** `PUT /sales/{id}/customer`'s own refusals, matched only through `RefusalCode`
@@ -77,11 +100,11 @@ export const UNDO_WINDOW_MS = 5000
 function paymentSummary(payment: Sale['payment']): string {
   switch (payment) {
     case 'cash':
-      return 'pagada en efectivo'
+      return PAID_IN_CASH
     case 'transfer':
-      return 'pagada por transferencia'
+      return PAID_BY_TRANSFER
     case 'owing':
-      return 'quedó debiendo'
+      return LEFT_OWING
     case 'none':
       return ''
   }
@@ -93,7 +116,7 @@ function paymentSummary(payment: Sale['payment']): string {
 function summaryLine(sale: SaleDetail): string {
   const parts = [
     formatGrams(sale.total_grams),
-    sale.customer === null ? 'Sin cliente' : sale.customer.name,
+    sale.customer === null ? NO_CUSTOMER : sale.customer.name,
     paymentSummary(sale.payment),
   ]
   return parts.filter((part) => part !== '').join(' · ')
@@ -103,7 +126,7 @@ function deleteTitle(sale: SaleDetail): string {
   const money = formatMoney(sale.total)
   const day = formatDateShort(sale.date)
   const grams = formatGrams(sale.total_grams)
-  return `¿Borrás la venta de ${money} del ${day}? Vuelven ${grams} al stock.`
+  return deleteSaleQuestion(money, day, grams)
 }
 
 const DELETE_TOAST = SALE_DELETED
@@ -184,7 +207,7 @@ function VentaDetalleScreen() {
           ? current
           : { ...updated, lines: current.lines, total_grams: current.total_grams },
       )
-      invalidateResource(queryClient, 'sales')
+      invalidateResource(queryClient, SALES_RESOURCE_KEY)
       setAssigned(true)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
@@ -193,7 +216,7 @@ function VentaDetalleScreen() {
         // `refetchType: 'none'`: this screen's own `keys.sale(saleId)` query is
         // still mounted for one more tick and would otherwise refetch into a 404
         // the browser logs on its own (keys.ts).
-        invalidateResource(queryClient, 'sales', { refetchType: 'none' })
+        invalidateResource(queryClient, SALES_RESOURCE_KEY, NO_REFETCH_OPTIONS)
         navigate(SALES, { replace: true, state: gone() })
       } else if (caught instanceof ApiError) {
         const override = resolveOverride(ASSIGN_OVERRIDES, caught.code)
@@ -209,7 +232,7 @@ function VentaDetalleScreen() {
     }
   }
 
-  async function removeSale(reason: 'borrar' | 'deshacer'): Promise<void> {
+  async function removeSale(reason: typeof DELETE_CODE | typeof UNDO_CODE): Promise<void> {
     setDeleting(true)
     setDeleteOffline(false)
     setDeleteFailed(false)
@@ -219,17 +242,17 @@ function VentaDetalleScreen() {
       // `keys.sale(saleId)`, still mounted for one more tick — refetching it now
       // would only answer 404. Ventas still gets a fresh list on its next mount,
       // since the invalidated query is left stale.
-      invalidateResource(queryClient, 'sales', { refetchType: 'none' })
+      invalidateResource(queryClient, SALES_RESOURCE_KEY, NO_REFETCH_OPTIONS)
       // Deshacer's own toast names the grams going back to stock (sales.md, PM
       // adjustment 4); the explicit "Borrar venta" confirmation already named them
       // in its question, so its toast stays the plain, existing one.
       navigate(SALES, {
         replace: true,
-        state: toast(reason === 'deshacer' ? UNDO_TOAST : DELETE_TOAST),
+        state: toast(reason === UNDO_CODE ? UNDO_TOAST : DELETE_TOAST),
       })
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'sales', { refetchType: 'none' })
+        invalidateResource(queryClient, SALES_RESOURCE_KEY, NO_REFETCH_OPTIONS)
         navigate(SALES, { replace: true, state: gone() })
       } else if (caught instanceof NetworkError) {
         setDeleteOffline(true)
@@ -244,7 +267,7 @@ function VentaDetalleScreen() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Ventas" to={SALES} />
+      return <GoneScreen label={TAB_SALES} to={SALES} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -279,14 +302,14 @@ function VentaDetalleScreen() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">{`Venta del ${formatDateShort(sale.date)}`}</span>
+          <span className="encabezado__titulo">{saleOf(formatDateShort(sale.date))}</span>
         </div>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
             <span className="venta-guardada__texto">{SALE_SAVED}</span>
-            <Boton variant="undo" disabled={deleting} onClick={() => void removeSale('deshacer')}>
-              Deshacer
+            <Boton variant="undo" disabled={deleting} onClick={() => void removeSale(UNDO_CODE)}>
+              {UNDO}
             </Boton>
           </div>
         )}
@@ -294,13 +317,13 @@ function VentaDetalleScreen() {
         {deleteFailed && <ErrorGenerico />}
 
         <div className="venta-detalle__resumen">
-          <span className="campo__rotulo">Total</span>
+          <span className="campo__rotulo">{TOTAL}</span>
           <span className="cifra-xl">{formatMoney(sale.total)}</span>
           <span className="venta-detalle__subtitulo">{summaryLine(sale)}</span>
         </div>
 
         <div>
-          <span className="venta-detalle__encabezado-lineas">Líneas</span>
+          <span className="venta-detalle__encabezado-lineas">{LINES}</span>
           <div className="venta-detalle__lineas">
             {sale.lines.map((line, index) => (
               // A sale can have two lines of the same variety (a gift line and a
@@ -314,7 +337,7 @@ function VentaDetalleScreen() {
                 </div>
                 <div className="venta-detalle__linea-inferior">
                   <span className="venta-detalle__precio">
-                    {formatMoney(line.price_per_gram)} por gramo
+                    {pricePerGramLine(formatMoney(line.price_per_gram))}
                   </span>
                   <ReglaInsignia rule={line.pricing_rule} />
                   <span className="venta-detalle__total">{formatMoney(line.line_total)}</span>
@@ -322,13 +345,13 @@ function VentaDetalleScreen() {
               </div>
             ))}
             <div className="venta-detalle__renglon">
-              <span>Envío cobrado</span>
+              <span>{SHIPPING_CHARGED}</span>
               <span className="venta-detalle__renglon-monto">
                 {formatMoney(sale.shipping_charged)}
               </span>
             </div>
             <div className="venta-detalle__renglon venta-detalle__renglon--total">
-              <span>Total</span>
+              <span>{TOTAL}</span>
               <span className="venta-detalle__renglon-monto">{formatMoney(sale.total)}</span>
             </div>
           </div>
@@ -336,12 +359,12 @@ function VentaDetalleScreen() {
 
         {sale.note !== null && sale.note !== '' && (
           <div className="campo">
-            <span className="campo__rotulo">Nota</span>
+            <span className="campo__rotulo">{NOTE}</span>
             <span className="venta-detalle__nota">{sale.note}</span>
           </div>
         )}
 
-        {assigned && <AvisoExito texto="Cliente asignado" />}
+        {assigned && <AvisoExito texto={CUSTOMER_ASSIGNED} />}
         {assignOffline && <SinConexion />}
         {assignError !== null && (
           <span className="campo__error" role="alert">
@@ -352,11 +375,11 @@ function VentaDetalleScreen() {
         <div className="venta-detalle__acciones">
           {sale.customer === null && (
             <Boton variant="secondary" icon="personaMas" onClick={assignSheet.open}>
-              Asignar cliente
+              {ASSIGN_CUSTOMER}
             </Boton>
           )}
 
-          <Boton variant="icon" action="delete" ariaLabel="Borrar venta" onClick={() => setConfirmingDelete(true)} />
+          <Boton variant="icon" action="delete" ariaLabel={DELETE_SALE} onClick={() => setConfirmingDelete(true)} />
         </div>
       </div>
 
@@ -367,11 +390,11 @@ function VentaDetalleScreen() {
       {confirmingDelete && (
         <ConfirmDialog
           title={deleteTitle(sale)}
-          detail="Esto no se puede deshacer."
-          confirmText="Sí, borrala"
-          cancelText="No, dejala"
+          detail={DELETE_DETAIL}
+          confirmText={CONFIRM_DELETE}
+          cancelText={CANCEL_DELETE}
           onConfirm={() => {
-            if (!deleting) void removeSale('borrar')
+            if (!deleting) void removeSale(DELETE_CODE)
           }}
           onCancel={() => setConfirmingDelete(false)}
         />

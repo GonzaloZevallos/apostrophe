@@ -270,7 +270,7 @@ function effectiveRatio(look: Ink, backdrop: string): number {
   return contrastRatio(text, fill)
 }
 
-test.describe('Deshacer', () => {
+test.describe('Undo', () => {
   test.use({ viewport: PHONE })
 
   for (const theme of THEMES) {
@@ -299,7 +299,7 @@ test.describe('Deshacer', () => {
       await page.clock.install({ time: PAGE_CLOCK_START })
       await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
       await page.getByRole('radio', { name: 'Cash' }).check()
-      await page.getByRole('button', { name: 'Guardá la venta' }).click()
+      await page.getByRole('button', { name: 'Save sale' }).click()
       await expect(page.getByText('Sale saved')).toBeVisible()
       // `performance.now()` counts the fake milliseconds since the install, so the page's
       // clock is read from the start instant the spec chose, never from the real one.
@@ -309,18 +309,18 @@ test.describe('Deshacer', () => {
       const deshacer = '.venta-guardada .boton--enlace'
       const backdrop = await page.locator('.venta-guardada').evaluate((bar) => getComputedStyle(bar).backgroundColor)
       const found = await whilePressed(page, deshacer)
-      expectPressed('Deshacer', found)
+      expectPressed('Undo', found)
 
       const resting = await ink(page, deshacer)
-      expect(effectiveRatio(resting, backdrop), 'Deshacer at rest').toBeGreaterThanOrEqual(4.5)
+      expect(effectiveRatio(resting, backdrop), 'Undo at rest').toBeGreaterThanOrEqual(4.5)
       const box = await page.locator(deshacer).boundingBox()
-      if (box === null) throw new Error('Deshacer has no box')
+      if (box === null) throw new Error('Undo has no box')
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
       await page.mouse.down()
       const pressed = await ink(page, deshacer)
       await page.mouse.move(0, 0)
       await page.mouse.up()
-      expect(effectiveRatio(pressed, backdrop), 'Deshacer while pressed').toBeGreaterThanOrEqual(4.5)
+      expect(effectiveRatio(pressed, backdrop), 'Undo while pressed').toBeGreaterThanOrEqual(4.5)
 
       await expect(page.getByText('Sale saved')).toBeVisible()
       await expect(page.getByText('Sale deleted · the grams go back to stock')).toHaveCount(0)

@@ -28,7 +28,34 @@ import {
   deletePayment,
   getAccount,
 } from '../../api/payments'
+import { RULE_VIP } from '../../copy/common'
+import {
+  CANCEL_DELETE,
+  CONFIRM_DELETE,
+  CREDIT,
+  DELETE_DETAIL,
+  DELETE_PAYMENT,
+  EDIT,
+  HOW_PAID_CASH,
+  HOW_PAID_OWING,
+  HOW_PAID_TRANSFER,
+  METHOD_CASH,
+  METHOD_TRANSFER,
+  NO,
+  PAYMENT_DELETED,
+  PHONE,
+  RECORD_PAYMENT,
+  YES,
+  balanceOf,
+  creditOf,
+  deletePaymentQuestion,
+  newSaleTo,
+  owes,
+  paymentRow,
+} from '../../copy/customers'
+import { sinceDate } from '../../copy/format'
 import { GONE_NOTICE } from '../../copy/refusals'
+import { TAB_CUSTOMERS } from '../../copy/shell'
 import { isGone } from '../../api/refusals'
 
 // `payment.not_found` is not yet in `contract.json` (`isGone` would answer
@@ -37,7 +64,12 @@ import { isGone } from '../../api/refusals'
 // invariants: a refusal's code and its `contract.json` entry land together).
 // Checked here by its literal string, not through the shared, contract-backed
 // `isGone`, until that lands.
-const PAYMENT_NOT_FOUND = 'payment.not_found'
+const PAYMENT_NOT_FOUND_CODE = 'payment.not_found'
+const PAYMENTS_RESOURCE_KEY = 'payments'
+const NO_REFETCH_OPTIONS = { refetchType: 'none' } as const
+const SALE_ROW_KEY_PREFIX = 'sale-'
+const PAYMENT_ROW_KEY_PREFIX = 'payment-'
+const CREDIT_ROW_KEY_PREFIX = 'credit-'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { newSaleFor, readFeedback } from '../../components/feedback'
@@ -51,18 +83,22 @@ import { formatPhone } from '../../format/phone'
 import { deleteRowIndices } from './accountRows'
 
 const HOW_PAID_LABEL: Record<Exclude<HowPaid, 'none'>, string> = {
-  cash: 'Pagada por efectivo',
-  transfer: 'Pagada por transferencia',
-  owing: 'Quedó debiendo',
+  cash: HOW_PAID_CASH,
+  transfer: HOW_PAID_TRANSFER,
+  owing: HOW_PAID_OWING,
 }
 
 const METHOD_LABEL: Record<PaymentMethod, string> = {
-  cash: 'efectivo',
-  transfer: 'transferencia',
+  cash: METHOD_CASH,
+  transfer: METHOD_TRANSFER,
 }
 
 function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
-  return `¿Borrás el cobro de ${formatMoney(payment.amount)} (${METHOD_LABEL[payment.method]}) del ${formatDateShort(payment.paid_on)}?`
+  return deletePaymentQuestion(
+    formatMoney(payment.amount),
+    METHOD_LABEL[payment.method],
+    formatDateShort(payment.paid_on),
+  )
 }
 
 /** One account row's own text (plan, "Front"), never built from a sign
@@ -73,15 +109,15 @@ function rowLabel(row: AccountRow): string {
     return row.sale.how_paid === 'none' ? '' : HOW_PAID_LABEL[row.sale.how_paid]
   }
   if (row.kind === 'payment') {
-    return `Cobro · ${METHOD_LABEL[row.payment.method]} · A cuenta de la venta del ${formatDateShort(row.applied_to.sale_date)}`
+    return paymentRow(METHOD_LABEL[row.payment.method], formatDateShort(row.applied_to.sale_date))
   }
-  return 'A favor'
+  return CREDIT
 }
 
 function rowAmount(row: AccountRow): string {
   return row.standing === 'credit'
-    ? `A favor ${formatMoneyMagnitude(row.running_balance)}`
-    : `saldo ${formatMoney(row.running_balance)}`
+    ? creditOf(formatMoneyMagnitude(row.running_balance))
+    : balanceOf(formatMoney(row.running_balance))
 }
 
 /** The row's own figure (design, `ClienteFicha.dc.html`: each row shows its own
@@ -98,9 +134,9 @@ function rowOwnAmount(row: AccountRow): string {
 /** A row's React key, from the ids its own kind carries (never its index). A
  * payment settles a given sale in at most one split, so `payment`+`sale` is unique. */
 function rowKey(row: AccountRow): string {
-  if (row.kind === 'sale') return `sale-${row.sale.id}`
-  if (row.kind === 'payment') return `payment-${row.payment.id}-${row.applied_to.sale_id}`
-  return `credit-${row.payment.id}`
+  if (row.kind === 'sale') return `${SALE_ROW_KEY_PREFIX}${row.sale.id}`
+  if (row.kind === 'payment') return `${PAYMENT_ROW_KEY_PREFIX}${row.payment.id}-${row.applied_to.sale_id}`
+  return `${CREDIT_ROW_KEY_PREFIX}${row.payment.id}`
 }
 
 export default function ClienteFicha() {
@@ -143,12 +179,12 @@ export default function ClienteFicha() {
     setDeletePaymentFailed(false)
     try {
       await removePayment.mutateAsync(paymentId)
-      invalidateResource(queryClient, 'payments')
+      invalidateResource(queryClient, PAYMENTS_RESOURCE_KEY)
       setDeletedToast(true)
     } catch (caught) {
-      if (caught instanceof ApiError && caught.code === PAYMENT_NOT_FOUND) {
+      if (caught instanceof ApiError && caught.code === PAYMENT_NOT_FOUND_CODE) {
         setAccountGone(true)
-        invalidateResource(queryClient, 'payments', { refetchType: 'none' })
+        invalidateResource(queryClient, PAYMENTS_RESOURCE_KEY, NO_REFETCH_OPTIONS)
       } else if (caught instanceof NetworkError) {
         setDeletePaymentOffline(true)
       } else {
@@ -163,7 +199,7 @@ export default function ClienteFicha() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Clientes" to={CUSTOMERS} />
+      return <GoneScreen label={TAB_CUSTOMERS} to={CUSTOMERS} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -201,13 +237,13 @@ export default function ClienteFicha() {
       <div className="cuerpo">
         <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo">{data.name}</span>
-          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
+          <BotonLink variant="icon" action="edit" ariaLabel={EDIT} to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
         {deletedToast && (
           <div className="toast" role="status">
-            <span className="toast__texto">Cobro eliminado</span>
+            <span className="toast__texto">{PAYMENT_DELETED}</span>
           </div>
         )}
         {deletePaymentOffline && <SinConexion />}
@@ -215,34 +251,34 @@ export default function ClienteFicha() {
 
         {data.standing === 'owes' && (
           <div className="ficha-deuda">
-            <span className="cifra-m monto-deuda">Te debe {formatMoney(data.balance)}</span>
+            <span className="cifra-m monto-deuda">{owes(formatMoney(data.balance))}</span>
             {data.owing_since !== null && (
-              <span className="rotulo">desde el {formatDateShort(data.owing_since)}</span>
+              <span className="rotulo">{sinceDate(formatDateShort(data.owing_since))}</span>
             )}
             <div className="clientes__accion">
               <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
-                Registrar cobro
+                {RECORD_PAYMENT}
               </BotonLink>
             </div>
           </div>
         )}
         {data.standing === 'credit' && (
           <div className="campo">
-            <span className="cifra-m monto-credito">A favor {formatMoneyMagnitude(data.balance)}</span>
+            <span className="cifra-m monto-credito">{creditOf(formatMoneyMagnitude(data.balance))}</span>
           </div>
         )}
 
         <div className="formulario">
           {data.phone !== null && (
             <div className="campo">
-              <span className="campo__rotulo">Teléfono</span>
+              <span className="campo__rotulo">{PHONE}</span>
               <span>{formatPhone(data.phone)}</span>
             </div>
           )}
           {vipCustomers && (
             <div className="campo">
-              <span className="campo__rotulo">VIP</span>
-              <span>{data.vip ? 'Sí' : 'No'}</span>
+              <span className="campo__rotulo">{RULE_VIP}</span>
+              <span>{data.vip ? YES : NO}</span>
             </div>
           )}
         </div>
@@ -260,7 +296,7 @@ export default function ClienteFicha() {
                   <Boton
                     variant="icon"
                     action="delete"
-                    ariaLabel="Borrar cobro"
+                    ariaLabel={DELETE_PAYMENT}
                     onClick={() =>
                       setConfirmingDelete({
                         id: row.payment.id,
@@ -278,7 +314,7 @@ export default function ClienteFicha() {
 
         <div className="clientes__accion">
           <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">
-            Nueva venta a {data.name}
+            {newSaleTo(data.name)}
           </BotonLink>
         </div>
       </div>
@@ -286,9 +322,9 @@ export default function ClienteFicha() {
       {confirmingDelete !== null && (
         <ConfirmDialog
           title={deletePaymentTitle(confirmingDelete)}
-          detail="Esto no se puede deshacer."
-          confirmText="Sí, borralo"
-          cancelText="No, dejalo"
+          detail={DELETE_DETAIL}
+          confirmText={CONFIRM_DELETE}
+          cancelText={CANCEL_DELETE}
           onConfirm={() => void onConfirmDeletePayment()}
           onCancel={() => setConfirmingDelete(null)}
         />

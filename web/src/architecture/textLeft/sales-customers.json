@@ -1,15 +1,1 @@
-[
-  "src/screens/clientes/ClienteFicha.tsx",
-  "src/screens/clientes/ClienteFila.tsx",
-  "src/screens/clientes/ClienteForm.tsx",
-  "src/screens/clientes/Clientes.tsx",
-  "src/screens/clientes/Cobro.tsx",
-  "src/screens/clientes/CobroRoute.tsx",
-  "src/screens/clientes/CustomerFields.tsx",
-  "src/screens/clientes/TeDeben.tsx",
-  "src/screens/ventas/NuevaVenta.tsx",
-  "src/screens/ventas/NuevaVentaCliente.tsx",
-  "src/screens/ventas/NuevaVentaLinea.tsx",
-  "src/screens/ventas/VentaDetalle.tsx",
-  "src/screens/ventas/Ventas.tsx"
-]
+[]

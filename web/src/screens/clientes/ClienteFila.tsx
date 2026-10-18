@@ -15,7 +15,11 @@ import type { Standing } from '../../api/payments'
 import { formatDateShort } from '../../format/dates'
 import { formatPhone } from '../../format/phone'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
+import { COLLECT, collectFrom, creditOf, owesSince } from '../../copy/customers'
+import { RULE_VIP } from '../../copy/common'
 import { useViewport } from '../../shell/useViewport'
+
+const ROW_CLASS = 'lista-clientes__fila'
 
 interface Props {
   id: number
@@ -37,27 +41,27 @@ export default function ClienteFila({ id, name, phone = null, vip = false, balan
       <PaneRowLink
         to={pathTo(CUSTOMER, { id })}
         replace={computer}
-        className="lista-clientes__fila"
-        activeClassName="lista-clientes__fila"
+        className={ROW_CLASS}
+        activeClassName={ROW_CLASS}
       >
         <span className="lista-clientes__datos">
           <span className="lista-clientes__nombre">
             {name}
-            {vip && <span className="vip-insignia">VIP</span>}
+            {vip && <span className="vip-insignia">{RULE_VIP}</span>}
           </span>
           {phone !== null && <span className="lista-clientes__telefono">{formatPhone(phone)}</span>}
         </span>
         {standing === 'owes' && owingSince !== null && (
           <span className="lista-clientes__balance">
             <span className="monto-deuda">{formatMoney(balance)}</span>
-            <span className="monto-deuda">te debe desde {formatDateShort(owingSince)}</span>
+            <span className="monto-deuda">{owesSince(formatDateShort(owingSince))}</span>
           </span>
         )}
-        {standing === 'credit' && <span className="monto-credito">A favor {formatMoneyMagnitude(balance)}</span>}
+        {standing === 'credit' && <span className="monto-credito">{creditOf(formatMoneyMagnitude(balance))}</span>}
       </PaneRowLink>
       {standing === 'owes' && (
-        <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id })} icon="cobro" ariaLabel={`Cobrar a ${name}`}>
-          Cobrar
+        <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id })} icon="cobro" ariaLabel={collectFrom(name)}>
+          {COLLECT}
         </BotonLink>
       )}
     </div>

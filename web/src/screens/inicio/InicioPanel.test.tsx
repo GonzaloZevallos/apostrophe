@@ -320,18 +320,18 @@ test('a debtor row names its Cobrar by the customer and keeps the rest of the ro
   expect(screen.getByRole('link', { name: 'Te deben' })).toHaveAttribute('href', CUSTOMERS)
 
   await userEvent.click(cobrar)
-  expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 }))
 })
 
 async function payFromInicio(amount: string): Promise<void> {
   await userEvent.click(await screen.findByRole('link', { name: 'Cobrar a Ana Pérez' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
+  const sheet = (await screen.findByRole('button', { name: 'Save' })).closest('form')
   const inside = within(sheet as HTMLElement)
-  await userEvent.clear(inside.getByLabelText('Monto'))
-  await userEvent.type(inside.getByLabelText('Monto'), amount)
-  await userEvent.click(inside.getByLabelText('Efectivo'))
-  await userEvent.click(inside.getByRole('button', { name: 'Guardar' }))
+  await userEvent.clear(inside.getByLabelText('Amount'))
+  await userEvent.type(inside.getByLabelText('Amount'), amount)
+  await userEvent.click(inside.getByLabelText('Cash'))
+  await userEvent.click(inside.getByRole('button', { name: 'Save' }))
 }
 
 const THREE_DEBTORS = debts(
@@ -361,8 +361,8 @@ test('Registrar cobro opened from Inicio: a partial payment returns in one move,
   const { router } = renderInicio()
   await payFromInicio('5000')
 
-  expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
-  expect(screen.getByText('Cobro guardado · queda debiendo $ 6.000').textContent).not.toMatch(/Ana/)
+  expect(await screen.findByText('Payment saved · still owes $ 6.000')).toBeInTheDocument()
+  expect(screen.getByText('Payment saved · still owes $ 6.000').textContent).not.toMatch(/Ana/)
   expect(router.state.location.pathname).toBe(HOME)
   expect(router.state.historyAction).toBe('POP')
   expect(await screen.findByText('$ 27.000')).toBeInTheDocument()
@@ -391,7 +391,7 @@ test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guard
   const { router } = renderInicio()
   await payFromInicio('11000')
 
-  expect(await screen.findByText('Cobro guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Payment saved')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(HOME)
   await waitFor(() => expect(screen.queryByText('Ana Pérez')).not.toBeInTheDocument())
   expect(screen.getAllByRole('link', { name: /^Cobrar a / })).toHaveLength(3)
@@ -417,7 +417,7 @@ test('"Cerrar" on Registrar cobro opened from Inicio returns to Inicio in one mo
   const { router } = renderInicio()
   await screen.findByText('$ 37.000')
   await userEvent.click(screen.getByRole('link', { name: 'Cobrar a Ana Pérez' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Vendiste hoy')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(HOME)

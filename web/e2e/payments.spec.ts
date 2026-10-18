@@ -1,18 +1,18 @@
 /**
  * Payments and balances' own end-to-end run (plan, "Shape"; PRD metric 8, "No
- * curl"): the seller's whole journey through Registrar cobro, the customer's
- * account, Te deben and a sale's grams-naming delete, against the real backend,
+ * curl"): the seller's whole journey through Record payment, the customer's
+ * account, Owed and a sale's grams-naming delete, against the real backend,
  * through the built front alone — never a mock of either side.
  *
  * `flow.spec.ts` and `sales.spec.ts` cover everything offered before this task;
  * this file proves the PRD's own flow in sequence, one customer with two sales:
- * - record a later payment through Registrar cobro, settling the whole balance
- *   with "Todo" ("Cobro guardado", no figure left to show);
- * - record a second, partial payment ("Cobro guardado · queda debiendo $ X"),
+ * - record a later payment through Record payment, settling the whole balance
+ *   with "Todo" ("Payment saved", no figure left to show);
+ * - record a second, partial payment ("Payment saved · still owes $ X"),
  *   after checking its preview names the sale it reaches and what is left;
- * - delete that payment through "Borrar cobro", confirmed first, and see the
+ * - delete that payment through "Delete payment", confirmed first, and see the
  *   debt it had settled return;
- * - open "Te deben" from the Clientes header and reach the same customer there;
+ * - open "Owed" from the Clientes header and reach the same customer there;
  * - delete a sale from Ventas, whose confirmation names the grams returning to
  *   stock (left over from #20, sales.md).
  *
@@ -38,9 +38,9 @@ function shortDate(iso: string): string {
 }
 
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
- * its "Te debe" and "A favor" are what these specs read. */
+ * its "Owes you" and "Credit" are what these specs read. */
 function cardOf(page: Page) {
-  return page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') })
+  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
 }
 
 test('a seller records, settles, undoes and traces payments, from the front alone', async ({
@@ -70,107 +70,107 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // A customer, left owing on its first sale.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Teléfono').fill('+5491155550099')
-  await page.getByLabel('Nombre').fill('Carla Pérez')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByLabel('Phone').fill('+5491155550099')
+  await page.getByLabel('Name').fill('Carla Pérez')
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
   // Sale 1: 5 g of Rosa, left owing — $5.000.
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale for Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
-  const todayIso = await page.getByLabel('Fecha').inputValue()
+  const todayIso = await page.getByLabel('Date').inputValue()
   const today = shortDate(todayIso)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // The card shows the debt, straight from the API.
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await expect(page.getByText('Te debe $ 5.000')).toBeVisible()
-  await expect(page.getByText(`desde el ${today}`)).toBeVisible()
+  await expect(page.getByText('Owes you $ 5.000')).toBeVisible()
+  await expect(page.getByText(`since ${today}`, { exact: true })).toBeVisible()
   // Clientes' own header already counts her (checked again, with the figure, below).
 
-  // --- Registrar cobro: "Todo" fills and settles the whole balance. ---
-  await page.getByRole('link', { name: 'Registrar cobro' }).click()
-  await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
-  await expect(page.getByText('Se descuenta de la deuda más vieja')).toBeVisible()
-  await expect(page.getByText(`$ 5.000 a la venta del ${today}`)).toBeVisible()
-  await expect(page.getByText(/Le queda debiendo/)).toHaveCount(0) // nothing left.
-  await page.getByRole('button', { name: 'Guardar' }).click()
-  await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
+  // --- Record payment: "Todo" fills and settles the whole balance. ---
+  await page.getByRole('link', { name: 'Record payment' }).click()
+  await page.getByRole('button', { name: 'All: $ 5.000' }).click()
+  await page.getByRole('radio', { name: 'Cash' }).check()
+  await expect(page.getByText('Comes off the oldest debt first')).toBeVisible()
+  await expect(page.getByText(`$ 5.000 to the sale of ${today}`)).toBeVisible()
+  await expect(page.getByText(/Still owes/)).toHaveCount(0) // nothing left.
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
 
-  // Settled: no more "Te debe", no more "Registrar cobro", and the account names
-  // how it was paid and the sale as "Quedó debiendo" no more — it reads the cash
+  // Settled: no more "Owes you", no more "Record payment", and the account names
+  // how it was paid and the sale as "Left owing" no more — it reads the cash
   // cobro reaching that sale instead.
-  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
-  await expect(page.getByRole('link', { name: 'Registrar cobro' })).toHaveCount(0)
+  await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Record payment' })).toHaveCount(0)
   await expect(
-    page.getByText(`Cobro · efectivo · A cuenta de la venta del ${today}`),
+    page.getByText(`Payment · cash · Applied to the sale of ${today}`),
   ).toBeVisible()
 
   // Sale 2: 8 g of Rosa, also left owing — $8.000.
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale for Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '8' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
+  await expect(page.getByText('Owes you $ 8.000')).toBeVisible()
 
   // --- A partial payment, by transfer: the preview names what is left before
   // saving, and the toast after saving carries the same figure (PRD metric 2). ---
-  await page.getByRole('link', { name: 'Registrar cobro' }).click()
-  await page.getByLabel('Monto').fill('3000')
-  await page.getByRole('radio', { name: 'Transferencia' }).check()
-  await expect(page.getByText(`$ 3.000 a la venta del ${today}`)).toBeVisible()
-  await expect(page.getByText('Le queda debiendo $ 5.000')).toBeVisible()
-  await page.getByRole('button', { name: 'Guardar' }).click()
-  await expect(page.getByText('Cobro guardado · queda debiendo $ 5.000')).toBeVisible()
-  await expect(page.getByText('Te debe $ 5.000')).toBeVisible()
+  await page.getByRole('link', { name: 'Record payment' }).click()
+  await page.getByLabel('Amount').fill('3000')
+  await page.getByRole('radio', { name: 'Transfer' }).check()
+  await expect(page.getByText(`$ 3.000 to the sale of ${today}`)).toBeVisible()
+  await expect(page.getByText('Still owes $ 5.000')).toBeVisible()
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Payment saved · still owes $ 5.000')).toBeVisible()
+  await expect(page.getByText('Owes you $ 5.000')).toBeVisible()
 
-  // --- Borrar cobro: confirmed first, then the debt it had settled returns. ---
-  const transferRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'transferencia' })
+  // --- Delete payment: confirmed first, then the debt it had settled returns. ---
+  const transferRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'transfer' })
   await expect(transferRow).toContainText('$ 3.000')
-  await transferRow.getByRole('button', { name: 'Borrar cobro' }).click()
+  await transferRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
-    page.getByText(`¿Borrás el cobro de $ 3.000 (transferencia) del ${today}?`),
+    page.getByText(`Delete the $ 3.000 payment (transfer) from ${today}?`),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, borralo' }).click()
-  await expect(page.getByText('Cobro eliminado')).toBeVisible()
-  await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await expect(page.getByText('Payment deleted')).toBeVisible()
+  await expect(page.getByText('Owes you $ 8.000')).toBeVisible()
 
-  // --- Te deben: opened from the Clientes header, lists her with the same figure,
+  // --- Owed: opened from the Clientes header, lists her with the same figure,
   // and the total/count head the view. ---
   await page.goto(CUSTOMERS)
-  const owing = page.getByRole('region', { name: 'Te deben' })
+  const owing = page.getByRole('region', { name: 'Owed' })
   await expect(owing.locator('.cifra-xl')).toHaveText('$ 8.000')
-  await expect(owing.getByText('1 sale debiendo')).toBeVisible()
+  await expect(owing.getByText('1 sale owing')).toBeVisible()
   await owing.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
+  await expect(page.getByText('Owes you $ 8.000')).toBeVisible()
 
   // --- Deleting a sale names the grams returning to stock (sales.md, left over
   // from #20), never the debt or the credit it leaves. ---
   await page.goto(SALES)
   const saleTwoRow = page.locator('.fila-venta').filter({ hasText: '$ 8.000' })
-  await expect(saleTwoRow.getByText('te debe')).toBeVisible()
+  await expect(saleTwoRow.getByText('owes you')).toBeVisible()
   await saleTwoRow.click()
-  await page.getByRole('button', { name: 'Borrar venta' }).click()
+  await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(
     page.getByRole('alertdialog', {
-      name: `¿Borrás la venta de $ 8.000 del ${today}? Vuelven 8 g al stock.`,
+      name: `Delete the $ 8.000 sale from ${today}? 8 g go back to stock.`,
     }),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, SALES)
   await expect(page.getByText('Sale deleted')).toBeVisible()
 
@@ -178,33 +178,33 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // credit (recording never creates one, and this sale took no payment with it).
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
-  await expect(cardOf(page).getByText('A favor', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('Credit', { exact: false })).toHaveCount(0)
 
-  // --- A payment that is only "A favor" can still be deleted: sell on credit,
+  // --- A payment that is only "Credit" can still be deleted: sell on credit,
   // collect it later, delete the sale (the cobro becomes a credit), then delete
   // that cobro (payments.md: a credit that should not exist is fixed by deleting
   // the mistaken payment). The card still holds the first sale and its cobro. ---
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale for Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
   const creditSaleUrl = page.url()
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await page.getByRole('link', { name: 'Registrar cobro' }).click()
-  await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
-  await page.getByRole('button', { name: 'Guardar' }).click()
-  await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Record payment' }).click()
+  await page.getByRole('button', { name: 'All: $ 5.000' }).click()
+  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
 
   await page.goto(creditSaleUrl)
-  await page.getByRole('button', { name: 'Borrar venta' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Delete sale' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, SALES)
   await expect(page.getByText('Sale deleted')).toBeVisible()
 
@@ -212,49 +212,49 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   // Three rows: the first sale, its cobro, and the new cobro left as a credit.
   await expect(page.locator('.cuenta-cliente__fila')).toHaveCount(3)
-  const creditRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'A favor' })
+  const creditRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'Credit' })
   await expect(creditRow).toHaveCount(1)
-  // Every cobro offers "Borrar cobro" once: the first's, and the credit's.
-  await expect(page.getByRole('button', { name: 'Borrar cobro' })).toHaveCount(2)
-  await expect(creditRow.getByRole('button', { name: 'Borrar cobro' })).toHaveCount(1)
-  await creditRow.getByRole('button', { name: 'Borrar cobro' }).click()
+  // Every cobro offers "Delete payment" once: the first's, and the credit's.
+  await expect(page.getByRole('button', { name: 'Delete payment' })).toHaveCount(2)
+  await expect(creditRow.getByRole('button', { name: 'Delete payment' })).toHaveCount(1)
+  await creditRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
-    page.getByText(`¿Borrás el cobro de $ 5.000 (efectivo) del ${today}?`),
+    page.getByText(`Delete the $ 5.000 payment (cash) from ${today}?`),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, borralo' }).click()
-  await expect(page.getByText('Cobro eliminado')).toBeVisible()
-  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
-  await expect(cardOf(page).getByText('A favor', { exact: false })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Borrar cobro' })).toHaveCount(1)
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await expect(page.getByText('Payment deleted')).toBeVisible()
+  await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('Credit', { exact: false })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Delete payment' })).toHaveCount(1)
 
   // Nothing personal or technical reaches the console or the browser's own storage.
   await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 
   // --- The plural form: two more sales left owing bring the count to "2 sales
-  // debiendo", and Te deben's header total is their sum (payments.md, Metrics
+  // debiendo", and Owed's header total is their sum (payments.md, Metrics
   // "Who-owes totals" and "No curl"). ---
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale for Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale for Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
-  await expect(page.getByRole('region', { name: 'Te deben' }).locator('.cifra-xl')).toHaveText('$ 5.000')
-  await expect(page.getByText('2 sales debiendo')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Owed' }).locator('.cifra-xl')).toHaveText('$ 5.000')
+  await expect(page.getByText('2 sales owing')).toBeVisible()
 })

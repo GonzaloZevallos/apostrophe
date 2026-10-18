@@ -1,5 +1,5 @@
 /**
- * Registrar cobro at the tree seam: the app's real route table (`appRouter.routes`) rendered
+ * Record payment at the tree seam: the app's real route table (`appRouter.routes`) rendered
  * with `fetch` faked. On a computer `/customers/{id}/payment` is a dialog over the list and the
  * customer's card, both inert and `aria-hidden` (ADR-0044); on a phone it is the full form
  * screen. Every way out is the host's one leave, and a save lands on the screen it was opened
@@ -84,9 +84,9 @@ describe('on a computer', () => {
   test('a direct link opens the dialog with the customer chosen, over a list and a card that are inert and aria-hidden', async () => {
     renderApp([{ pathname: PAYMENT }], 'computer')
 
-    const dialog = await screen.findByRole('dialog', { name: 'Registrar cobro' })
+    const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
     expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(dialog).toHaveTextContent('Ana Pérez · te debe $ 11.000 desde el 14/09')
+    expect(dialog).toHaveTextContent('Ana Pérez · owes you $ 11.000 since 14/09')
     for (const selector of ['.cobro-paneles__lista', '.cobro-paneles__detalle']) {
       const pane = document.querySelector(selector)
       expect(pane).not.toBeNull()
@@ -99,7 +99,7 @@ describe('on a computer', () => {
 
   test('Escape and the backdrop leave like Cerrar does: to Clientes when nothing is behind', async () => {
     const router = renderApp([{ pathname: PAYMENT }], 'computer')
-    await screen.findByRole('dialog', { name: 'Registrar cobro' })
+    await screen.findByRole('dialog', { name: 'Record payment' })
 
     fireEvent.keyDown(document, { key: 'Escape' })
     await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
@@ -107,7 +107,7 @@ describe('on a computer', () => {
 
   test('the backdrop ends in the same leave', async () => {
     const router = renderApp([{ pathname: PAYMENT }], 'computer')
-    await screen.findByRole('dialog', { name: 'Registrar cobro' })
+    await screen.findByRole('dialog', { name: 'Record payment' })
 
     const backdrop = document.querySelector<HTMLElement>('.cobro-modal')
     expect(backdrop).not.toBeNull()
@@ -117,11 +117,11 @@ describe('on a computer', () => {
 
   test('with something typed, Escape asks first and does not leave', async () => {
     const router = renderApp([{ pathname: PAYMENT }], 'computer')
-    await screen.findByRole('dialog', { name: 'Registrar cobro' })
-    await userEvent.click(screen.getByLabelText('Efectivo'))
+    await screen.findByRole('dialog', { name: 'Record payment' })
+    await userEvent.click(screen.getByLabelText('Cash'))
 
     fireEvent.keyDown(document, { key: 'Escape' })
-    expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
+    expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(PAYMENT)
     // A second Escape does nothing while the question shows.
     fireEvent.keyDown(document, { key: 'Escape' })
@@ -133,7 +133,7 @@ describe('on a phone', () => {
   test('the form is a full screen: no dialog, no pane and nothing inert behind it', async () => {
     renderApp([{ pathname: PAYMENT }], 'phone')
 
-    expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(document.querySelector('.cobro-paneles__lista')).toBeNull()
     expect(document.querySelector('[inert]')).toBeNull()
@@ -143,12 +143,12 @@ describe('on a phone', () => {
 describe.each<Viewport>(['phone', 'computer'])('opened from a list, on a %s', (viewport) => {
   test('from Clientes: a save lands on Clientes with the toast, and one back afterwards leaves', async () => {
     const router = renderApp([{ pathname: HOME }, { pathname: CUSTOMERS }], viewport)
-    await userEvent.click((await screen.findAllByRole('link', { name: 'Cobrar a Ana Pérez' }))[0]!)
-    await userEvent.click(await screen.findByLabelText('Efectivo'))
-    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    await userEvent.click((await screen.findAllByRole('link', { name: 'Collect from Ana Pérez' }))[0]!)
+    await userEvent.click(await screen.findByLabelText('Cash'))
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
-    expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
+    expect(await screen.findByText('Payment saved · still owes $ 6.000')).toBeInTheDocument()
     await act(() => router.navigate(-1))
     expect(router.state.location.pathname).toBe(HOME)
   })
@@ -159,8 +159,8 @@ describe.each<Viewport>(['phone', 'computer'])('opened from a list, on a %s', (v
       viewport,
       { 'GET /panel': () => jsonResponse(200, { debtors: [] }) },
     )
-    await userEvent.click(await screen.findByLabelText('Efectivo'))
-    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    await userEvent.click(await screen.findByLabelText('Cash'))
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
   })
@@ -172,12 +172,12 @@ test('a customer answered as settled opens without an error, and the save is ref
     'POST /customers/1/payments': () => jsonResponse(422, { code: 'payment.above_balance' }),
   })
 
-  const save = await screen.findByRole('button', { name: 'Guardar' })
-  await userEvent.click(screen.getByLabelText('Efectivo'))
+  const save = await screen.findByRole('button', { name: 'Save' })
+  await userEvent.click(screen.getByLabelText('Cash'))
   await userEvent.click(save)
 
   expect(await screen.findByRole('alert')).toBeInTheDocument()
-  expect(screen.getByLabelText('Efectivo')).toBeChecked()
+  expect(screen.getByLabelText('Cash')).toBeChecked()
 })
 
 test('a customer that is gone shows "That\'s gone." with a way back to Clientes', async () => {

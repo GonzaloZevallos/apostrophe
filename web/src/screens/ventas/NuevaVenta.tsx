@@ -66,18 +66,39 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
-import { OWING_HINT } from '../../copy/sales'
+import { CLOSE, RULE_VIP } from '../../copy/common'
+import { DATE, DISCARD, KEEP_EDITING } from '../../copy/customers'
+import { TODAY } from '../../copy/format'
+import {
+  ADD_VARIETY,
+  CHANGE,
+  CHOOSE_CUSTOMER,
+  DATE_IN_FUTURE,
+  DISCARD_SALE_DETAIL,
+  DISCARD_SALE_QUESTION,
+  GENERIC_REFUSAL,
+  LINE_GRAMS_INVALID,
+  LINE_VARIETY_MISSING,
+  NOTE,
+  NOTE_TOO_LONG,
+  NO_LINES_MESSAGE,
+  OWING_HINT,
+  PAYMENT_REQUIRED_MESSAGE,
+  SAVE_SALE,
+  SHIPPING,
+  SHIPPING_CHARGED,
+  SHIPPING_NEGATIVE,
+  SPECIAL_PRICE_INVALID_MESSAGE,
+  TOTAL,
+  gramsGifted,
+  gramsSold,
+} from '../../copy/sales'
+import { NEW_SALE } from '../../copy/shell'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
 
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
-export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
-export { OWING_HINT }
-export const PAYMENT_REQUIRED_MESSAGE = 'Elegí cómo se pagó, o dejá la venta debiendo'
-export const SPECIAL_PRICE_INVALID_MESSAGE = 'El precio especial tiene que ser mayor a $0'
-export const LINE_GRAMS_INVALID = 'Cargá los gramos: coma, hasta dos decimales'
-export const LINE_VARIETY_MISSING = 'Elegí una variedad'
+const LINE_FIELD_PREFIX = 'line:'
 
 function emptyLine(): LineState {
   return {
@@ -143,9 +164,9 @@ const SUBMIT_OVERRIDES: Partial<
   >
 > = {
   'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
-  'sale.shipping_negative': { field: 'shipping', message: 'El envío no puede ser negativo' },
-  'sale.note_too_long': { field: 'note', message: 'La nota es demasiado larga' },
-  'sale.date_in_future': { field: 'date', message: 'La fecha no puede ser futura' },
+  'sale.shipping_negative': { field: 'shipping', message: SHIPPING_NEGATIVE },
+  'sale.note_too_long': { field: 'note', message: NOTE_TOO_LONG },
+  'sale.date_in_future': { field: 'date', message: DATE_IN_FUTURE },
   'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
   'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
@@ -334,7 +355,7 @@ function NuevaVentaForm() {
   })
 
   function noPriceErrorFor(key: string): string | null {
-    return errors.find((error) => error.field === `line:${key}`)?.message ?? null
+    return errors.find((error) => error.field === `${LINE_FIELD_PREFIX}${key}`)?.message ?? null
   }
 
   /** The one message a line shows, in the plan's priority order: an invalid typed
@@ -462,7 +483,7 @@ function NuevaVentaForm() {
     }
     const shippingCharged = parseShipping(shipping)
     if (shippingCharged === null) {
-      setShippingError('El envío no puede ser negativo')
+      setShippingError(SHIPPING_NEGATIVE)
       return
     }
 
@@ -542,24 +563,24 @@ function NuevaVentaForm() {
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
-            <span className="encabezado__titulo">Nueva venta</span>
+            <span className="encabezado__titulo">{NEW_SALE}</span>
             <span className="fecha-pildora">
               <input
                 className="fecha-pildora__input"
                 type="date"
-                aria-label="Fecha"
+                aria-label={DATE}
                 value={date}
                 max={maxSaleDate(me.today)}
                 onChange={(event) => setDate(event.target.value)}
                 required
               />
               <span className="fecha-pildora__texto" aria-hidden="true">
-                {date === me.today ? `Hoy ${formatDateShort(date)}` : formatDateLong(date)}
+                {date === me.today ? `${TODAY} ${formatDateShort(date)}` : formatDateLong(date)}
                 <Icono nombre="abajo" />
               </span>
             </span>
             <span className="nueva-venta__cerrar">
-              <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
+              <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={close} />
             </span>
           </div>
           {dateError !== null && (
@@ -575,7 +596,7 @@ function NuevaVentaForm() {
               {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
               {customer === null ? (
                 <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
-                  Elegir cliente
+                  {CHOOSE_CUSTOMER}
                 </Boton>
               ) : (
                 <Boton variant="row" onClick={customerSheet.open}>
@@ -583,13 +604,13 @@ function NuevaVentaForm() {
                     <div className="nueva-venta__cliente-texto">
                       <span className="lista-clientes__nombre">
                         {customer.name}
-                        {settings.vip && customer.vip && <span className="vip-insignia">VIP</span>}
+                        {settings.vip && customer.vip && <span className="vip-insignia">{RULE_VIP}</span>}
                       </span>
                       {customer.phone !== null && (
                         <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
                       )}
                     </div>
-                    <span className="nueva-venta__cliente-cambiar">Cambiar</span>
+                    <span className="nueva-venta__cliente-cambiar">{CHANGE}</span>
                   </div>
                 </Boton>
               )}
@@ -617,14 +638,14 @@ function NuevaVentaForm() {
                 ))}
               </div>
               <Boton variant="secondary" icon="agregar" onClick={addLine}>
-                Agregar otra variedad
+                {ADD_VARIETY}
               </Boton>
 
               <div className="nueva-venta__fila-dato">
-                <span>Envío cobrado</span>
+                <span>{SHIPPING_CHARGED}</span>
                 <input
                   className="campo__input"
-                  aria-label="Envío"
+                  aria-label={SHIPPING}
                   type="text"
                   inputMode="numeric"
                   value={shipping}
@@ -638,10 +659,10 @@ function NuevaVentaForm() {
               )}
 
               <div className="nueva-venta__fila-dato">
-                <span>Nota</span>
+                <span>{NOTE}</span>
                 <textarea
                   className="campo__input"
-                  aria-label="Nota"
+                  aria-label={NOTE}
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
                 />
@@ -679,17 +700,17 @@ function NuevaVentaForm() {
             </div>
 
             <div className="nueva-venta__pie">
-              <span className="rotulo">Total</span>
+              <span className="rotulo">{TOTAL}</span>
               <span className="cifra-xl">
                 {repricing ? <Loading compacto /> : formatMoney(totals.total)}
               </span>
               <span className="rotulo nueva-venta__gramos">
-                {formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos
+                {gramsSold(formatGrams(fromHundredths(totals.gramsSoldHundredths)))}
                 {totals.gramsGiftedHundredths > 0 &&
-                  ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
+                  gramsGifted(formatGrams(fromHundredths(totals.gramsGiftedHundredths)))}
               </span>
               <Boton textOnly="submit" type="submit" disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
-                Guardá la venta
+                {SAVE_SALE}
               </Boton>
             </div>
           </div>
@@ -703,10 +724,10 @@ function NuevaVentaForm() {
         <div className="nueva-venta__aviso">
           <LeaveConfirm
             blocker={blocker}
-            question="¿Descartás la venta?"
-            detail="No vas a poder recuperar lo que cargaste."
-            keepLabel="No, seguí cargando"
-            discardLabel="Sí, descartala"
+            question={DISCARD_SALE_QUESTION}
+            detail={DISCARD_SALE_DETAIL}
+            keepLabel={KEEP_EDITING}
+            discardLabel={DISCARD}
           />
         </div>
       )}

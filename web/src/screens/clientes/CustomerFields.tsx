@@ -12,6 +12,9 @@
  * happens next.
  */
 
+import { RULE_VIP } from '../../copy/common'
+import { NAME, PHONE } from '../../copy/customers'
+
 export interface CustomerFieldsValue {
   name: string
   phone: string
@@ -38,7 +41,7 @@ export default function CustomerFields({
     <>
       <div className="campo">
         <label className="campo">
-          <span className="campo__rotulo">Teléfono</span>
+          <span className="campo__rotulo">{PHONE}</span>
           <input
             className="campo__input"
             type="tel"
@@ -54,7 +57,7 @@ export default function CustomerFields({
       </div>
       <div className="campo">
         <label className="campo">
-          <span className="campo__rotulo">Nombre</span>
+          <span className="campo__rotulo">{NAME}</span>
           <input
             className="campo__input"
             type="text"
@@ -71,7 +74,7 @@ export default function CustomerFields({
       </div>
       {showVip && (
         <label className="campo">
-          <span className="campo__rotulo">VIP</span>
+          <span className="campo__rotulo">{RULE_VIP}</span>
           <input
             type="checkbox"
             checked={value.vip}

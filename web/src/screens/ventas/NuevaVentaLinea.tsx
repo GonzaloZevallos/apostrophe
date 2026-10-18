@@ -3,8 +3,8 @@
  * the focus logic): the design's closed row (name, grams as a large figure, price
  * per gram, `ReglaInsignia` and the line total — or, with a message and no valid
  * preview, an incomplete row with that message and never figures) and the open
- * editing row (variety, grams, Regalo, Precio especial, the line's message or its
- * price per gram, rule and total, and "Quitar"). It only renders what it is given.
+ * editing row (variety, grams, Gift, Special price, the line's message or its
+ * price per gram, rule and total, and "Remove"). It only renders what it is given.
  */
 
 import type { KeyboardEvent, RefObject } from 'react'
@@ -14,7 +14,22 @@ import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import { formatGrams, formatMoney } from '../../format/money'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
-import { GRAMS_HELP } from '../../copy/sales'
+import {
+  CHOOSE_VARIETY,
+  GIFT,
+  GRAMS,
+  GRAMS_HELP,
+  NO_VARIETY,
+  SPECIAL_PRICE,
+  VARIETY,
+  giftOfLine,
+  gramsOfLine,
+  lineSummary,
+  pricePerGram,
+  removeLine,
+  specialPriceOfLine,
+  varietyOfLine,
+} from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
 
@@ -64,7 +79,7 @@ interface NuevaVentaLineaProps {
   /** The line's variety, if the fetched prices carry it. */
   variety: Variety | undefined
   varieties: Variety[]
-  /** "Quitar" is only offered when the sale has more than one line. */
+  /** "Remove" is only offered when the sale has more than one line. */
   canRemove: boolean
   varietyRef: RefObject<HTMLSelectElement | null>
   gramsRef: RefObject<HTMLInputElement | null>
@@ -95,12 +110,12 @@ export default function NuevaVentaLinea({
   // changes are for.
   const isComputer = useViewport() === 'computer'
   if (!isOpen) {
-    const displayName = variety?.name ?? 'Sin variedad'
+    const displayName = variety?.name ?? NO_VARIETY
     const messageId = `linea-mensaje-${line.key}`
     return (
       <Boton
         variant="row"
-        ariaLabel={`Línea ${n}: ${displayName}`}
+        ariaLabel={lineSummary(n, displayName)}
         ariaDescribedBy={error !== null ? messageId : undefined}
         onClick={onOpen}
       >
@@ -108,7 +123,7 @@ export default function NuevaVentaLinea({
           <span className="nueva-venta__linea-nombre">{displayName}</span>
           {preview !== null && (
             <span className="nueva-venta__linea-gramos">
-              {formatGrams(fromHundredths(preview.gramsHundredths))} g
+              {formatGrams(fromHundredths(preview.gramsHundredths))}
             </span>
           )}
         </div>
@@ -120,7 +135,7 @@ export default function NuevaVentaLinea({
           preview !== null && (
             <div className="nueva-venta__linea-detalle">
               {preview.rule !== 'gift' && (
-                <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)} x g</span>
+                <span className="nueva-venta__linea-preciogramo">{pricePerGram(formatMoney(preview.pricePerGram))}</span>
               )}
               <ReglaInsignia rule={preview.rule} />
               <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
@@ -139,16 +154,16 @@ export default function NuevaVentaLinea({
   return (
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
       <label className="campo">
-        <span className="campo__rotulo">Variedad</span>
+        <span className="campo__rotulo">{VARIETY}</span>
         <select
           className="campo__input"
-          aria-label={`Variedad línea ${n}`}
+          aria-label={varietyOfLine(n)}
           value={line.varietyId}
           ref={varietyRef}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ varietyId: event.target.value })}
         >
-          <option value="">Elegí una variedad</option>
+          <option value="">{CHOOSE_VARIETY}</option>
           {varieties.map((item) => (
             <option key={item.id} value={item.id}>
               {item.name}
@@ -157,10 +172,10 @@ export default function NuevaVentaLinea({
         </select>
       </label>
       <label className="campo">
-        <span className="campo__rotulo">Gramos</span>
+        <span className="campo__rotulo">{GRAMS}</span>
         <input
           className="campo__input"
-          aria-label={`Gramos línea ${n}`}
+          aria-label={gramsOfLine(n)}
           type="text"
           inputMode="decimal"
           enterKeyHint="next"
@@ -183,18 +198,18 @@ export default function NuevaVentaLinea({
           <label>
             <input
               type="checkbox"
-              aria-label={`Regalo línea ${n}`}
+              aria-label={giftOfLine(n)}
               checked={line.gift}
               disabled={line.specialPrice.trim() !== ''}
               onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
               onChange={(event) => onChange({ gift: event.target.checked })}
             />
-            Regalo
+            {GIFT}
           </label>
         ) : (
           <OpcionInterruptor
-            label="Regalo"
-            ariaLabel={`Regalo línea ${n}`}
+            label={GIFT}
+            ariaLabel={giftOfLine(n)}
             checked={line.gift}
             disabled={line.specialPrice.trim() !== ''}
             onChange={(gift) => onChange({ gift })}
@@ -202,11 +217,11 @@ export default function NuevaVentaLinea({
         )}
         <input
           className="campo__input"
-          aria-label={`Precio especial línea ${n}`}
+          aria-label={specialPriceOfLine(n)}
           type="text"
           inputMode="numeric"
           enterKeyHint="done"
-          placeholder="Precio especial"
+          placeholder={SPECIAL_PRICE}
           value={line.specialPrice}
           disabled={line.gift}
           ref={specialPriceRef}
@@ -228,14 +243,14 @@ export default function NuevaVentaLinea({
       {error === null && !figuresLoading && preview !== null && (
         <div className="nueva-venta__linea-detalle">
           {preview.rule !== 'gift' && (
-            <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)} x g</span>
+            <span className="nueva-venta__linea-preciogramo">{pricePerGram(formatMoney(preview.pricePerGram))}</span>
           )}
           <ReglaInsignia rule={preview.rule} />
           <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
         </div>
       )}
       {canRemove && (
-        <Boton variant="icon" action="delete" ariaLabel={`Quitar línea ${n}`} onClick={onRemove} />
+        <Boton variant="icon" action="delete" ariaLabel={removeLine(n)} onClick={onRemove} />
       )}
     </div>
   )

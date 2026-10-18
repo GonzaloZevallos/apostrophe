@@ -4,7 +4,7 @@
  * never in the URL (plan, invariants: "No customer search query ... in a front
  * URL"). Debounced at 150 ms before it becomes the query key
  * (`keys.customers(q)`), so a result that is still catching up to a newer
- * keystroke stays marked `aria-busy` with "Buscando…" instead of ever being shown
+ * keystroke stays marked `aria-busy` with "Searching…" instead of ever being shown
  * as the answer to the query currently typed (`keepPreviousData`). A dropped
  * network or a server error on the list itself shows the matching state instead
  * of a misleading "no customers yet" (PRD, "Feedback").
@@ -26,13 +26,19 @@ import { GONE_NOTICE } from '../../copy/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
-import { EMPTY_CUSTOMERS, EVERYONE } from '../../copy/customers'
+import {
+  EMPTY_CUSTOMERS,
+  EVERYONE,
+  NEW_CUSTOMER,
+  SEARCHING,
+  SEARCH_LABEL,
+  SEARCH_PLACEHOLDER,
+  customerCount,
+} from '../../copy/customers'
+import { TAB_CUSTOMERS } from '../../copy/shell'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
 
-export const SEARCH_LABEL = 'Buscar cliente'
-export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
-export const SEARCHING = 'Buscando…'
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
@@ -67,10 +73,10 @@ export default function Clientes() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <span className="encabezado__titulo">Clientes</span>
+          <span className="encabezado__titulo">{TAB_CUSTOMERS}</span>
         </div>
         <div className="campo__rotulo">
-          <span>{`${total.data?.length ?? 0} clientes`}</span>
+          <span>{customerCount(total.data?.length ?? 0)}</span>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">
@@ -85,7 +91,7 @@ export default function Clientes() {
         </label>
         <div className="clientes__accion">
           <BotonLink to={CUSTOMER_NEW} icon="personaMas">
-            Nuevo cliente
+            {NEW_CUSTOMER}
           </BotonLink>
         </div>
         {query === '' && <TeDeben />}

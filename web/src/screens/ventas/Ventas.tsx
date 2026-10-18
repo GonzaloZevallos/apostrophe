@@ -42,19 +42,34 @@ import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
-import { EMPTY_LIST } from '../../copy/sales'
+import { RULE_VIP } from '../../copy/common'
+import { TODAY } from '../../copy/format'
+import {
+  EMPTY_LIST,
+  FROM,
+  NO_CUSTOMER,
+  OWES,
+  PERIOD,
+  PERIOD_DATES,
+  PERIOD_MONTH,
+  PERIOD_WEEK,
+  TO,
+} from '../../copy/sales'
+import { TAB_SALES } from '../../copy/shell'
 import { useViewport } from '../../shell/useViewport'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
-export { EMPTY_LIST }
-
 const PERIOD_LABEL: Record<Period, string> = {
-  hoy: 'Hoy',
-  semana: 'Semana',
-  mes: 'Mes',
-  fechas: 'Fechas',
+  hoy: TODAY,
+  semana: PERIOD_WEEK,
+  mes: PERIOD_MONTH,
+  fechas: PERIOD_DATES,
 }
+
+const TODAY_CODE = 'hoy'
+const CELLS_FIT_CODE = 'celdas'
+const ACCENT_TONE_CODE = 'acento'
 
 const PERIODS: Period[] = ['hoy', 'semana', 'mes', 'fechas']
 
@@ -95,7 +110,7 @@ export default function Ventas() {
   const location = useLocation()
   const [feedback] = useState(() => readFeedback(location.state))
   const vipCustomers = useIsVipCustomers()
-  const [period, setPeriod] = useState<Period>('hoy')
+  const [period, setPeriod] = useState<Period>(TODAY_CODE)
   const [custom, setCustom] = useState<DateRange>(() => monthRange(me.today))
   // The phone's equal-cells fit is opt-in; the computer keeps `VentasCompu`'s plain tab list.
   const computer = useViewport() === 'computer'
@@ -114,14 +129,14 @@ export default function Ventas() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="ventas__cabecera">
-          <span className="encabezado__titulo">Ventas</span>
+          <span className="encabezado__titulo">{TAB_SALES}</span>
 
           <Pestanas
             items={PESTANA_ITEMS}
             value={period}
             onChange={setPeriod}
-            ariaLabel="Período"
-            ajuste={computer ? undefined : 'celdas'}
+            ariaLabel={PERIOD}
+            ajuste={computer ? undefined : CELLS_FIT_CODE}
           />
 
           {!isError && !isPending && (
@@ -137,11 +152,11 @@ export default function Ventas() {
         {period === 'fechas' && (
           <div className="periodos__fechas">
             <label className="campo">
-              <span className="campo__rotulo">Desde</span>
+              <span className="campo__rotulo">{FROM}</span>
               <input
                 className="campo__input"
                 type="date"
-                aria-label="Desde"
+                aria-label={FROM}
                 value={custom.start}
                 max={custom.end}
                 onChange={(event) =>
@@ -150,11 +165,11 @@ export default function Ventas() {
               />
             </label>
             <label className="campo">
-              <span className="campo__rotulo">Hasta</span>
+              <span className="campo__rotulo">{TO}</span>
               <input
                 className="campo__input"
                 type="date"
-                aria-label="Hasta"
+                aria-label={TO}
                 value={custom.end}
                 min={custom.start}
                 onChange={(event) =>
@@ -186,11 +201,11 @@ export default function Ventas() {
                     <span className="fila-venta__cuerpo">
                       <span className="fila-venta__nombre">
                         {sale.customer === null ? (
-                          <span className="fila-venta__sin-cliente">Sin cliente</span>
+                          <span className="fila-venta__sin-cliente">{NO_CUSTOMER}</span>
                         ) : (
                           <>
                             {sale.customer.name}
-                            {vipCustomers && sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
+                            {vipCustomers && sale.customer.vip && <Insignia tono={ACCENT_TONE_CODE}>{RULE_VIP}</Insignia>}
                           </>
                         )}
                       </span>
@@ -207,7 +222,7 @@ export default function Ventas() {
                       <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda' : 'fila-venta__cifra'}>
                         {formatMoney(sale.total)}
                       </span>
-                      {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">te debe</span>}
+                      {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">{OWES}</span>}
                     </span>
                     <Icono nombre="chevron" />
                   </InAppLink>

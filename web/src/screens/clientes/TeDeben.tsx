@@ -10,10 +10,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
-import { salesCount } from '../../format/counts'
 import { formatMoney } from '../../format/money'
 import ClienteFila from './ClienteFila'
 import { NOBODY_OWES } from '../../copy/common'
+import { OWED, salesOwing } from '../../copy/customers'
 
 export default function TeDeben() {
   const { data } = useQuery({
@@ -26,10 +26,10 @@ export default function TeDeben() {
   if (data === undefined) return null
 
   return (
-    <section aria-label="Te deben">
+    <section aria-label={OWED}>
       <div className="campo__rotulo clientes__seccion-cabecera">
-        <span>Te deben</span>
-        {data.debtors.length > 0 && <span>{`${salesCount(data.sales_owing_count)} debiendo`}</span>}
+        <span>{OWED}</span>
+        {data.debtors.length > 0 && <span>{salesOwing(data.sales_owing_count)}</span>}
       </div>
 
       {data.debtors.length === 0 ? (

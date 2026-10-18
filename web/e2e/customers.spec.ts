@@ -10,8 +10,8 @@
  * green is `web-e2e`'s own run, not a claim in this comment.
  *
  * Covers the PRD's own lifecycle for a customer with no number: registered, edited,
- * found by name, chosen for a sale left owing, paid through Registrar cobro, and
- * shown in Te deben — plus a new no-number customer created from Elegir cliente
+ * found by name, chosen for a sale left owing, paid through Record payment, and
+ * shown in Owed — plus a new no-number customer created from Choose customer
  * and sold to (its duration is not measured, docs/adr/0038), and that nothing personal reaches the console or the
  * browser's own storage.
  */
@@ -27,12 +27,12 @@ import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
 
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
- * its "Te debe" and "A favor" are what these specs read. */
+ * its "Owes you" and "Credit" are what these specs read. */
 function cardOf(page: Page) {
-  return page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') })
+  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
 }
 
-test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
+test('a customer with no phone number is registered, edited, sold to, paid and shown in Owed', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
@@ -58,8 +58,8 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // Registered with no phone number at all.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Nombre').fill('Noe Sinnumero')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByLabel('Name').fill('Noe Sinnumero')
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -69,36 +69,36 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expect(row).toBeVisible()
   await expect(row.locator('.lista-clientes__telefono')).toHaveCount(0)
   await expect(row).not.toContainText('-')
-  await expect(row).not.toContainText('Sin teléfono')
+  await expect(row).not.toContainText('No phone')
 
   // The card shows no phone field either.
   await row.click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Teléfono')).toHaveCount(0)
+  await expect(page.getByText('Phone')).toHaveCount(0)
 
   // Edited: still no phone number, and the edit form shows no required marker on
   // the phone field while it stays usable.
-  await page.getByRole('link', { name: 'Editar' }).click()
-  await expect(page.getByLabel('Teléfono')).toHaveValue('')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('link', { name: 'Edit' }).click()
+  await expect(page.getByLabel('Phone')).toHaveValue('')
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expect(page.getByText('Customer saved')).toBeVisible()
-  await expect(page.getByText('Teléfono')).toHaveCount(0)
+  await expect(page.getByText('Phone')).toHaveCount(0)
 
   // Chosen for a sale, left owing — $4.000.
-  await page.getByRole('link', { name: 'Nueva venta a Noe Sinnumero' }).click()
+  await page.getByRole('link', { name: 'New sale for Noe Sinnumero' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Noe Sinnumero' }).first().click()
-  await expect(page.getByText('Te debe $ 4.000')).toBeVisible()
+  await expect(page.getByText('Owes you $ 4.000')).toBeVisible()
 
   // The balance is set in `cifra-m`: 25px on a 27.5px line, tracked at -0.035em.
-  const owed = await page.getByText('Te debe $ 4.000').evaluate((node) => {
+  const owed = await page.getByText('Owes you $ 4.000').evaluate((node) => {
     const style = getComputedStyle(node)
     return {
       fontSize: parseFloat(style.fontSize),
@@ -110,38 +110,38 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   expect(Math.abs(owed.lineHeight - 27.5)).toBeLessThan(0.01)
   expect(Math.abs(owed.letterSpacing - -0.875)).toBeLessThan(0.01)
 
-  // Paid in full through Registrar cobro.
-  await page.getByRole('link', { name: 'Registrar cobro' }).click()
-  await page.getByRole('button', { name: 'Todo: $ 4.000' }).click()
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
-  await page.getByRole('button', { name: 'Guardar' }).click()
-  await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
-  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
+  // Paid in full through Record payment.
+  await page.getByRole('link', { name: 'Record payment' }).click()
+  await page.getByRole('button', { name: 'All: $ 4.000' }).click()
+  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
+  await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
 
   // A second customer, also without a phone number, created straight from Elegir
   // cliente inside a new sale, chosen and sold to in one run.
   await page.goto(SALE_NEW)
-  await page.getByRole('button', { name: 'Elegir cliente' }).click()
-  await page.getByRole('button', { name: 'Nuevo cliente' }).click()
-  await page.getByLabel('Nombre').fill('Sol Sinnumero')
-  await page.getByRole('button', { name: 'Crear cliente' }).click()
+  await page.getByRole('button', { name: 'Choose customer' }).click()
+  await page.getByRole('button', { name: 'New customer' }).click()
+  await page.getByLabel('Name').fill('Sol Sinnumero')
+  await page.getByRole('button', { name: 'Create customer' }).click()
   await expect(page.getByRole('button', { name: /Sol Sinnumero/ })).toBeVisible()
   // The chosen chip carries no phone element either.
   const chip = page.getByRole('button', { name: /Sol Sinnumero/ })
   await expect(chip.locator('.nueva-venta__cliente-telefono')).toHaveCount(0)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
-  // Te deben lists the second, no-number customer's own fresh debt — the first
+  // Owed lists the second, no-number customer's own fresh debt — the first
   // customer's debt is already settled, so she never named here.
   await page.goto(CUSTOMERS)
-  const debtorRow = page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: /^Sol Sinnumero/ })
+  const debtorRow = page.getByRole('region', { name: 'Owed' }).getByRole('link', { name: /^Sol Sinnumero/ })
   await expect(debtorRow).toBeVisible()
   await expect(debtorRow).toContainText('$ 2.000')
-  await expect(page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Owed' }).getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)
 
   // Nothing personal or technical reaches the console or the browser's own storage.
   await expectOnlyTheThemeStored(page)

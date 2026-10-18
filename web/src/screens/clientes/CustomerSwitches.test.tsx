@@ -91,13 +91,13 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('Ventas shows a row\'s VIP badge only while Clientes VIP is on', async () => {
+test('Sales shows a row\'s VIP badge only while Clientes VIP is on', async () => {
   stub(true, { 'GET /sales?date_from=2026-10-03&date_to=2026-10-03': [SALE] })
   renderAt(SALES)
   expect(await screen.findByText('VIP')).toBeInTheDocument()
 })
 
-test('Ventas hides a row\'s VIP badge while Clientes VIP is off', async () => {
+test('Sales hides a row\'s VIP badge while Clientes VIP is off', async () => {
   stub(false, { 'GET /sales?date_from=2026-10-03&date_to=2026-10-03': [SALE] })
   renderAt(SALES)
   expect(await screen.findByText('Nico')).toBeInTheDocument()
@@ -126,7 +126,7 @@ test('the customer form shows the VIP field only while Clientes VIP is on', asyn
 test('the customer form has no VIP field while Clientes VIP is off', async () => {
   stub(false, {})
   renderAt(CUSTOMER_NEW)
-  expect(await screen.findByText('Nombre')).toBeInTheDocument()
+  expect(await screen.findByText('Name')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
