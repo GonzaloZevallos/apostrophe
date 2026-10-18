@@ -222,7 +222,7 @@ Success criteria:
   - filled circle = baja;
   - empty circle = ok.
 - **"Stock y entradas"** on a variety's page: its last 3 movements (entries and
-  withdrawals) and "Ver todas" for all of that variety's movements, newest date first,
+  withdrawals) and "See all" for all of that variety's movements, newest date first,
   then most recently recorded first.
   - A withdrawal row shows its date, "Promotion" or "Own use", and that variety's
     grams in it with a minus sign (e.g. "−5 g"): going out is told by word and sign,
@@ -245,7 +245,7 @@ Success criteria:
   - the cost per gram before saving ("Works out at $ 8.500 a gram") whenever there is a
     cost.
 - **Take out of stock**, the withdrawal form, a form (navigation.md): "Close", no bar, no
-  "+ Nueva venta", and a confirmation when leaving with something typed. It follows the
+  "+ New sale", and a confirmation when leaving with something typed. It follows the
   phone standard for inputs and targets (#80).
   - Opened from Más (second, after "+ Cargar gasto"), from the secondary "Take out of
     stock" on Varieties (next to "+ Stock entry", phone and computer), with no
@@ -273,7 +273,7 @@ Success criteria:
       clears its message.
 - **A withdrawal's detail**, opened from its row: a detail (navigation.md), with the bar
   or sidebar and a "‹" back to the variety's page it came from (Varieties when there is
-  no history), and no "+ Nueva venta". It shows the date, the reason, every line and the
+  no history), and no "+ New sale". It shows the date, the reason, every line and the
   note, with "Edit" and "Delete", also when a line's variety is archived.
 - **Editing an entry**: saving is confirmed first.
 - **Deleting an entry**: confirmed with "Before deleting", naming the date, variety and
