@@ -30,11 +30,14 @@ from __future__ import annotations
 
 import argparse
 import http.cookiejar
+import importlib.util
 import json
 import os
+import re
 import secrets
 import signal
 import socket
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -42,6 +45,7 @@ import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
+from contextlib import closing
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 from pathlib import Path
@@ -66,6 +70,13 @@ ONBOARDING_ACCOUNTS = (
 ENDED_ONBOARDING_ACCOUNTS = (
     "inicio",
 )
+# The business of the first-run checklist (GH-274): it has no Onboarding row, as a business
+# that existed before the Onboarding (docs/adr/0036, docs/adr/0046). Read-only for every
+# screen that names it, and no "Listo" row ever does.
+PRE_ONBOARDING_ACCOUNTS = ("checklist",)
+# The business the real spreadsheet import loaded (GH-274): `first_run.imported_at` is
+# stamped by `scripts/import-spreadsheet.sh` and by nothing else. Read-only as well.
+IMPORTED_ACCOUNTS = ("importada",)
 
 
 class Api(Protocol):
@@ -477,6 +488,184 @@ def onboarding_accounts(env: dict[str, str], base: str, today: date) -> dict[str
         seed(api, today)
         accounts[name] = account
     return accounts
+
+
+def business_id_of(db_path: Path, email: str) -> int:
+    """The id of the business `email` belongs to, read from the sample's own database.
+    Read-only: the connection is opened for reading and never writes."""
+    with closing(sqlite3.connect(f"{db_path.as_uri()}?mode=ro", uri=True, timeout=30)) as conn:
+        found = conn.execute(
+            "SELECT business_id FROM app_user WHERE email = ?", (email,)
+        ).fetchone()
+    if found is None:
+        raise SystemExit("sample-app: an account has no business in the sample's database")
+    business: int = found[0]
+    return business
+
+
+def expect_first_run(
+    api: Api,
+    kind: str,
+    *,
+    steps: tuple[tuple[str, bool], ...] | None = None,
+    import_notice: bool,
+) -> None:
+    """Checks `GET /first-run` against the answer the account being built exists to
+    produce, and stops the sample if it differs. `steps` is the checklist's steps in order,
+    each with whether it is done (`None`: no checklist). The message names the expected
+    kind and the check that failed, a step by its fixed name, and never an answer's data."""
+    shown = api.call("GET", "/first-run")
+    wanted = () if steps is None else steps
+    got = tuple((item.get("step"), item.get("done")) for item in shown.get("checklist", ()))
+
+    def stop(check: str) -> SystemExit:
+        return SystemExit(f"sample-app: the {kind} account's first run is wrong: {check}")
+
+    if shown.get("kind") != kind:
+        raise stop("kind")
+    for index, (name, done) in enumerate(wanted):
+        if index >= len(got) or got[index] != (name, done):
+            raise stop(f"step {name}")
+    if len(got) != len(wanted):
+        raise stop("steps")
+    if shown.get("import_notice") is not import_notice:
+        raise stop("import_notice")
+
+
+def accept_new_business(env: dict[str, str], base: str, name: str) -> tuple[Account, HttpApi]:
+    """A new business opened the way a new user opens one: the operator's invitation,
+    accepted over HTTP. Not signed in yet."""
+    account = Account(email=name.replace("_", "-") + "@lahuerta.com", password=PASSWORD)
+    api = HttpApi(base)
+    api.call(
+        "POST",
+        f"/invitations/{new_business_token(env)}/accept",
+        {"email": account.email, "password": account.password, "business_name": BUSINESS},
+    )
+    return account, api
+
+
+def pre_onboarding_account(
+    env: dict[str, str], base: str, today: date, db_path: Path
+) -> Account:
+    """The `PRE_ONBOARDING_ACCOUNTS` business: the first-run checklist with step 1 done.
+
+    It is opened by the operator's invitation like any other, and then its `onboarding` row
+    is deleted before anything reads the business. That is the only row the design tooling
+    writes directly, and it is the stored shape of a business from before the Onboarding:
+    no route can make it, since the Onboarding was never backfilled (docs/adr/0036) and the
+    `first_run` row is created by its first stamp (docs/adr/0046). Everything else comes
+    over HTTP: one variety, priced from `today`, and nothing more (no stock entry, no
+    publication, no second user), so exactly the first step is done."""
+    (name,) = PRE_ONBOARDING_ACCOUNTS
+    account, api = accept_new_business(env, base, name)
+    business = business_id_of(db_path, account.email)
+    with closing(sqlite3.connect(db_path, timeout=30)) as conn:
+        conn.execute("PRAGMA foreign_keys=ON")
+        with conn:
+            dropped = conn.execute("DELETE FROM onboarding WHERE business_id = ?", (business,))
+        stamped = conn.execute(
+            "SELECT COUNT(*) FROM first_run WHERE business_id = ?", (business,)
+        ).fetchone()[0]
+    if dropped.rowcount != 1 or stamped != 0:
+        raise SystemExit("sample-app: the checklist account's Onboarding row was not removed")
+    api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
+    made: int = api.call("POST", "/varieties", {"name": "Primera variedad"})["id"]
+    api.call(
+        "POST",
+        f"/varieties/{made}/prices",
+        {
+            "effective_from": today.isoformat(),
+            "list_price": 10_000,
+            "bulk_price": None,
+            "bulk_minimum": None,
+        },
+    )
+    expect_first_run(
+        api,
+        "checklist",
+        steps=(
+            ("priced_variety", True),
+            ("stock_entry", False),
+            ("published", False),
+            ("second_user", False),
+        ),
+        import_notice=False,
+    )
+    return account
+
+
+def load_import_workbook() -> Any:
+    """The sibling `import_workbook.py`, loaded by its path: this file runs as a script
+    (`scripts/design/` is then on `sys.path`) and is also loaded by path by its tests."""
+    path = Path(__file__).with_name("import_workbook.py")
+    spec = importlib.util.spec_from_file_location("import_workbook", path)
+    if spec is None or spec.loader is None:
+        raise SystemExit("sample-app: import_workbook.py cannot be loaded")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+# What the import's report prints when something is wrong or left out, as `report.py`
+# writes it. The sample looks for these headings and never echoes the report.
+REPORT_PROBLEM_HEADINGS = (
+    "Blocking problems:",
+    "Left out as unfinished:",
+    "Total mismatches (sheet vs. recomputed):",
+)
+
+
+DATABASE_OVERRIDE = re.compile(r"^\s*(export\s+)?APOSTROPHE_DATABASE_URL\s*=", re.MULTILINE)
+
+
+def refuse_database_override(dotenv: Path) -> None:
+    """`scripts/import-spreadsheet.sh` sources the repository's `.env` after the environment
+    it is given, so a `.env` that sets the database would send the import to the human's own
+    database instead of the sample's. The sample stops before that, reading only whether the
+    variable is assigned and never its value."""
+    if dotenv.is_file() and DATABASE_OVERRIDE.search(dotenv.read_text(encoding="utf-8")):
+        raise SystemExit(
+            "sample-app: .env sets APOSTROPHE_DATABASE_URL and the import script would use it; "
+            "move .env aside for this run"
+        )
+
+
+def run_import(env: dict[str, str], business: int, workbook: Path, *, dry_run: bool) -> None:
+    """Runs `scripts/import-spreadsheet.sh` as the operator does, against the sample's own
+    database (`env`). A non-zero exit, or a problem in its report, stops the sample with a
+    message that carries nothing of the report: it can name customers and amounts."""
+    refuse_database_override(REPO / ".env")
+    command = [str(REPO / "scripts" / "import-spreadsheet.sh"), str(business), str(workbook)]
+    if dry_run:
+        command.append("--dry-run")
+    ran = subprocess.run(command, cwd=REPO, env=env, capture_output=True, text=True, check=False)
+    step = "dry run" if dry_run else "run"
+    if ran.returncode != 0:
+        raise SystemExit(f"sample-app: the import {step} failed")
+    if any(heading in ran.stdout for heading in REPORT_PROBLEM_HEADINGS):
+        raise SystemExit(f"sample-app: the import {step} reported a problem")
+
+
+def imported_account(env: dict[str, str], base: str, today: date, db_path: Path) -> Account:
+    """The `IMPORTED_ACCOUNTS` business: one the real spreadsheet import loaded.
+
+    It is opened by the operator's invitation and left empty, so the import accepts it.
+    Its workbook (`import_workbook.build`, written beside the sample's database, never in
+    the repository) goes through the operator's own command, first with `--dry-run` and
+    then for real: that run, and no row written by the tooling, stamps `imported_at`.
+    Nothing here dismisses the after-import notice or publishes the catalog."""
+    (name,) = IMPORTED_ACCOUNTS
+    account, api = accept_new_business(env, base, name)
+    business = business_id_of(db_path, account.email)
+    workbook = db_path.parent / "import.xlsx"
+    load_import_workbook().build(workbook, today)
+    run_import(env, business, workbook, dry_run=True)
+    run_import(env, business, workbook, dry_run=False)
+    api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
+    expect_first_run(api, "none", import_notice=True)
+    return account
 
 
 def end_onboarding(api: Api) -> None:
