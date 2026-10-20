@@ -64,3 +64,46 @@ over unchanged.
 - **`tests/architecture/test_clock_injection.py` enforces the second**, with `ast` and per call
   site: every `create_app` call under `tests/` names a `clock` (not `None`, no `**` unpacking, and a
   wrapper only if listed and its `clock` has no default).
+
+## Amendment (GH-195): the credential is issued on the app's clock, found by definition
+
+GH-201 closed the `create_app` side: every app built in a test names its clock. This closes the
+issuing side. An invitation or reset link minted at a fixed instant (`NOW`, a `datetime(...)`, an
+offset from either) and checked by an app on another clock expires between the two.
+
+- **The rule**: a test never gives an issuer of a time-limited credential an instant that does not
+  follow the app's clock. It passes `clock()` from the `MovableClock` the app runs on.
+  `tests/architecture/test_credential_clock.py` enforces it with `ast`, per call site. It replaces
+  the earlier guard that only knew the callee `invite` and the bare name `NOW`.
+- **Issuers are keyed by where they are defined**, `(module, qualified name)`, never by a bare
+  name: the test helper `issue` and `SessionSigner.issue` share a name and nothing else. Imports
+  are read over the whole module (function-local and `as` aliases included). A bare name resolves
+  through them or through a top-level `def`; `x.f(...)` resolves as a module function when `x` is
+  an imported module and otherwise only against the method rows, by method name. A call that
+  resolves to no row is ignored.
+- **A fixed instant** is an upper-case name or attribute (`NOW`, `conftest.NOW`, an alias of one),
+  a `datetime(...)`, `date(...)` or `timedelta(...)` call, a literal, an operation made only of
+  those, or a plain name bound once in its scope to one of them (`now = NOW`). `clock()`, a
+  parameter, a loop target and a name bound twice are not fixed.
+- **Three groups, every function in exactly one**, checked by a closed-world test over the public
+  functions of `invitations.py` and `reset_password.py` and the `add_*`, `issue_*` and `save_*`
+  methods of the `Accounts` protocol:
+  - `ISSUERS`: the use cases, the port's `issue_reset_link` and the three test helpers, with the
+    position of the instant (the keyword `now` is matched too, and `created_at` for the port);
+  - `FORBIDDEN_IN_TESTS`: `Accounts.add_invitation` and `Accounts.save_invitation`. They take a
+    whole `Invitation`, whose instant sits inside the object; parsing it would mean following
+    constructors and fields. A test issues through `invite_new_business` or `invite_partner` on
+    its own clock instead. Domain tests that build an `Invitation` with no app stay legitimate;
+  - `NOT_ISSUERS`: each with a reason. The checkers (`look_up_invitation`, `accept_invitation`,
+    `look_up_reset_link`, `reset_password`) are here because no test calls them: tests reach them
+    through HTTP, on the app's clock. That is a reading of the tree, not something the guard checks.
+  Every row must resolve to a `def`, so a rename leaves no stale row.
+- **Proved by fixtures that fail, never by elapsed time** (ADR-0038): flagged and unflagged shapes
+  live under `tests/architecture/fixtures/` with exact counts. No exemption list, no shifted-date run.
+- **Known limits**:
+  - a fixed instant that reaches an issuer through the parameter of a helper outside the table is
+    not seen (`def mint(engine, when): invite(engine, when)`, called as `mint(engine, NOW)`);
+  - a future direct call to a checker with a fixed instant is not flagged by itself; it shows only
+    when someone reads the `NOT_ISSUERS` rows;
+  - the closed-world test reflects only those two modules and the port; a new module of
+    credentials elsewhere is added to its reflection list.
