@@ -1,0 +1,11 @@
+[
+  {
+    "screen": "ZzSondaFetch",
+    "file": "/tmp/gh273-runs/demo2/ZzSondaFetch/ZzSondaFetch.png",
+    "notes": [
+      "el diseño no se pudo capturar: la pantalla no quedó quieta"
+    ],
+    "design": null,
+    "built": "/tmp/gh273-runs/demo2/ZzSondaFetch/ZzSondaFetch.built.png"
+  }
+]

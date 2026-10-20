@@ -259,6 +259,36 @@ test('Week and Month keep every result figure, Promotion and Own use right after
   expect(screen.getByRole('link', { name: 'Collect from Ana Pérez' })).toBeInTheDocument()
 })
 
+test('the sold headline and the result figures share one group, and the two blocks another, in the phone order', async () => {
+  // `InicioCompu.dc.html`: headline beside the figures, then Owed to you beside What you have left.
+  // The groups are what the computer layout lays out; found by what they hold, and the
+  // order stays the phone's. No test id: the phone check names its offenders by the nearest one.
+  renderInicio()
+  await screen.findByText('You sold today')
+  await userEvent.click(screen.getByRole('button', { name: 'Week' }))
+  const headline = await screen.findByText('You sold this week')
+
+  const figures = headline.parentElement?.parentElement as HTMLElement
+  expect(figures).toContainElement(screen.getByText('You gifted'))
+  expect(figures).toContainElement(screen.getByText('Profit'))
+  expect(figures).not.toContainElement(screen.getByText('Owed to you'))
+
+  const debts = screen.getByText('Owed to you')
+  const left = screen.getByText('What you have left')
+  let blocks = debts.parentElement as HTMLElement
+  while (!blocks.contains(left)) blocks = blocks.parentElement as HTMLElement
+  expect(blocks).not.toContainElement(headline)
+  expect(blocks.parentElement).toBe(figures.parentElement)
+  expect(debts.compareDocumentPosition(left)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  expect(figures.compareDocumentPosition(blocks)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+
+  // Today has no result figures: its group holds the headline alone.
+  await userEvent.click(screen.getByRole('button', { name: 'Today' }))
+  const today = (await screen.findByText('You sold today')).parentElement?.parentElement as HTMLElement
+  expect(today).not.toContainElement(screen.getByText('Owed to you'))
+  expect(within(today).queryByText('You gifted')).toBeNull()
+})
+
 test('a low variety links to its page; every other row is plain text, and order stays by name', async () => {
   panelNow = {
     ...PANEL,

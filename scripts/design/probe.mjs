@@ -4,8 +4,9 @@
 // purpose: no imports and no reference to anything outside the function.
 
 // Before any page script runs: a count of the page's own `fetch` calls in flight (the one
-// request channel the built app uses, ADR-0042) and the layout signature, so the frame
-// loop can ask both without sending any page text out.
+// request channel the built app uses, ADR-0042), one boolean for "the DOM was mutated since the
+// last frame" and the layout signature, so the frame loop can ask them without sending any
+// page text out.
 export function pageProbe(signature) {
   let inFlight = 0
   let waiting = []
@@ -52,6 +53,19 @@ export function pageProbe(signature) {
     const quiet = reported === completed
     reported = completed
     return quiet
+  }
+  // One observer on the whole document, keeping one boolean. `takeRecords` hands over the
+  // records the browser has queued but not yet delivered, so a mutation made just before a read
+  // is never missed. The read resets the flag in the same call; only the boolean crosses back.
+  let mutated = false
+  const observer = new window.MutationObserver(() => {
+    mutated = true
+  })
+  observer.observe(window.document, { attributes: true, childList: true, characterData: true, subtree: true })
+  window.__captureMutated = () => {
+    const since = mutated || observer.takeRecords().length > 0
+    mutated = false
+    return since
   }
   window.__captureSignature = signature
 }
