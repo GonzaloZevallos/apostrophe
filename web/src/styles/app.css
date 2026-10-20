@@ -1922,6 +1922,13 @@ body {
   gap: var(--espacio-xs);
 }
 
+/* The drawing's "N ventas · promedio…" line sits under the figure, left-aligned like it,
+ * not centred with `.pie`'s own padding. */
+.panel-ventas > .pie {
+  padding: 0;
+  text-align: start;
+}
+
 .panel-resultados {
   display: flex;
   gap: var(--espacio-sm);
