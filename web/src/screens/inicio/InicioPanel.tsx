@@ -98,7 +98,7 @@ export default function InicioPanel({
       {/* The headline and, on Semana and Mes, the result figures: one group so a computer
           lays them side by side (`InicioCompu.dc.html`); on the phone the group draws
           nothing of its own (`display: contents`). */}
-      <div className="panel-cifras" data-testid="inicio-cifras">
+      <div className="panel-cifras">
         <div className="panel-ventas">
           <span className="rotulo">{SALES_HEADING[tab]}</span>
           <span className="cifra-xl">{formatMoney(period.sales)}</span>
@@ -111,7 +111,7 @@ export default function InicioPanel({
       {/* Both columns full-width on the phone; side by side on a computer
           (`InicioCompu.dc.html`): CSS alone switches between them, the same way
           `Shell`'s own bar/rail does. */}
-      <div className="panel-dos-columnas" data-testid="inicio-bloques">
+      <div className="panel-dos-columnas">
         <TeDebenBlock debts={debts} />
 
         <div>
@@ -130,7 +130,7 @@ export default function InicioPanel({
 /** Semana's and Mes's result figures; Hoy never draws them (results.md). */
 function PeriodResults({ period }: { period: PanelPeriod }) {
   return (
-    <div className="panel-cifras__resultados" data-testid="inicio-resultados">
+    <div className="panel-cifras__resultados">
       <div className="panel-lista">
         <div className="panel-lista__fila">
           <span>Regalaste</span>
