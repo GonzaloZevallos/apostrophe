@@ -38,6 +38,11 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - Same protagonist as the job above; it refines that job and is not a new product job.
 - Before it (GH-150's follow-up): a plan invariant asked for `compare.sh` runs with no foreign load; all six runs had load, so it could never hold, and it was recorded as unsatisfiable and shipped past.
 
+**When** I review a design capture, base against head or one run against another, **I want** every screen captured in the state it comes to rest in, with no switch or other element caught partway through a change (an animation, a background refresh, a control still disabled while it waits), **so I can** read AE 0 as "nothing changed" and any non-zero line as a real difference, and approve without rerunning, explaining a difference away, or carrying an open finding into the next task.
+
+- Same protagonist as the jobs above; it refines the captures-under-load job and is not a new product job. The trigger is a non-zero AE line on a screen the PR did not touch. The seller is affected only indirectly.
+- Before it (GH-45's evidence and GH-261's runs): `VariedadesCompu built: AE 2888`, the open variety's "Aviso de stock bajo" switch caught grey in some runs and black in others. ADR-0042's GH-261 amendment read it as an unsettled CSS transition; it was the switch drawn disabled while the page re-read stock in the background, and enabled once that read ended. Reviewers reran, or listed the line as unexplained.
+
 Success criteria:
 
 1. **One green run.** One `--strict` call over Inicio* and the Onboarding block exits 0.
@@ -78,6 +83,13 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 8. **The gate is untouched.** The capture stays review evidence judged by eye and is never a gate step. No elapsed-time check is added (ADR-0038).
 9. **Nothing a seller sees changes.** No screen, copy, route or product rule changes. Every suite passes with no test loosened.
 
+Success criteria, captures at rest (numbered on their own; Metrics cites them as "Rest criterion N"):
+
+1. **Repeatable.** Five whole-registry `--strict` runs per commit, with no `--only`, each on a fresh sample and on the same Argentina day, each compared with the first run by `ae.mjs`, give AE 0 on every row and side, `VariedadesCompu built` included. Base and head, both captured with head's tooling, give AE 0 on every row the change did not touch. Runs on the loaded shared machine count; an idle machine is never required.
+2. **The resting state.** What is captured is the state the screen comes to rest in once nothing is still changing: no animated change running, no request pending (a background re-read included) and no control still disabled or busy while it waits. For the open variety's "Aviso de stock bajo" switch on VariedadesCompu, that is the switch enabled, on or off as the sample's stored threshold gives it, never drawn disabled mid-refresh.
+3. **Never half-drawn.** A screen that has not come to rest when it is captured fails its row under `--strict`. It is never accepted as a pass.
+4. **Nothing loosened, nothing a seller sees changes.** There is no pixel tolerance. No row is excused, skipped or listed as a known failure. The app's own behaviour (its animated changes, a control disabled while a refresh runs), screens and copy are not changed to make the capture pass. Capture stays review evidence and never becomes a gate step.
+
 ## Behaviour
 
 ### What a capture is
@@ -86,6 +98,19 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 - Each screen writes its composed sheet and its raw design and built captures; a before/after compares the raw captures by exact AE, never the sheet (ADR-0042).
 - A capture is review evidence, judged by eye in the PR. It is never a gate step, and no new automated check is added for it.
 - **A capture's result does not depend on machine load.** No plan invariant or evidence rule asks for an idle machine; a capture taken on the shared, loaded development machine is valid evidence as it stands.
+- **A capture is taken only once the screen is at rest**, on the design side and the built side, on every row of the registry. At rest means nothing is still changing:
+  - every animated change that ends (transitions and finite animations, on any element of the captured screen) has finished;
+  - no request is still pending, a background re-read the screen started on its own included;
+  - no control is still between states, such as disabled or busy while a refresh runs.
+- An element is captured in the state it comes to rest in. For VariedadesCompu's open variety, the "Aviso de stock bajo" switch is captured enabled, on or off as the sample's stored threshold gives it, never grey because the capture landed while stock was being re-read.
+
+### Capturing at rest
+
+- **Elements that never stop**: an element that never stops moving does not fail its row just for moving, and gets no exemption either: like every row, it must give the same capture on every run, whatever the machine's load. No registry row is designed to keep moving at rest (loading states are shaped like the content, accounts.md), so no exception is named. A row that needed one is a product question for PM, never a registry entry.
+- **Slow screens**: a slow screen passes once it comes to rest. A screen that has not come to rest within a bound fails its row (see Failures). The bound limits how long the capture waits; it is never a statement about duration, and nothing asserts elapsed time (ADR-0038). It is generous enough that load alone never fails a row. Its value, and how rest is detected (animations, pending requests, a control's state), are the Tech Lead's call.
+- **No per-run state check**: waiting for rest is a condition on when to capture, never a check of what the screen shows. The capture never compares a screen's content with the sample data. The resting state is verified by eye in the evidence of the task that settled it, and a later regression to a stable but wrong state shows as a non-zero AE in a before/after or as a mismatch with the design file, caught by eye in review.
+- **The app is not changed for it**: a control the app keeps disabled while a refresh runs (the seller's guard against acting mid-refresh) stays as it is; the capture waits for the refresh to end.
+- **Which state is settled** is decided: the state the screen comes to rest in once nothing is still changing. GH-261's finding (`VariedadesCompu built: AE 2888`, the switch caught disabled while stock was re-read) is resolved by this rule.
 
 ### Every row reaches its screen
 
@@ -152,6 +177,7 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 - A row that cannot reach its screen fails while it steps there, so `--strict` exits non-zero. That row is a defect to fix, never a known failure to report around.
 - A font left in error on a capture, an offline step included, fails the applied-check, so `--strict` exits non-zero.
 - **A row whose screen has not finished drawing when it is captured fails.** Under `--strict` it gives a non-zero exit, like a row that cannot reach its screen. It is never captured half-drawn and never accepted as a pass. How the capture tells that a screen has finished drawing is the Tech Lead's decision; this file names no mechanism.
+- **A row whose screen has not come to rest within the bound fails**, whatever was still changing (an animation, a pending request, a control still disabled or busy). The failure names the row and the side, with a fixed sentence saying the screen had not come to rest. It is reported like a screen that never finished drawing: that side is `null` in `index.json`, no `.design.png` or `.built.png` is written for it, the sheet is still composed with "—" for that side, and under `--strict` the run finishes every row, writes `index.json` and exits non-zero. It never shows up as an AE difference, and it carries no page text, sample data, amounts or names.
 - A difference that machine load causes in a capture's pixels is a capture defect, fixed in the capture; the comparison is never loosened and an idle machine is never asked for.
 - A capture that shows a screen other than its row names, or a clipped section, is caught by eye in review and blocks approval. Neither is ever accepted as a pass.
 - A Listo entry naming an account the sample does not write fails the registry test.
@@ -166,6 +192,7 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
 - No before/after AE pair is required for a change with no seller-visible difference whose "before" row never reached its screen.
 - For a change that corrects a row's record: the captures of the corrected row and its twin, light and dark, judged by eye, and the audit of every row (rows checked, fixes made, follow-ups linked).
+- For the change that settles capture at rest (GH-261's follow-up): five whole-registry `--strict` runs per commit, base and head, on the loaded shared machine on one Argentina day, with the `ae.mjs` outputs comparing run 1 with runs 2 to 5 on each side and base with head; the VariedadesCompu captures, and those of every row with an animated element or a control that waits on a refresh, judged by eye against the sample's stored data in light and dark where the registry has both, with the switch's resting state stated (enabled, on or off as the stored threshold gives it); one deliberately unsettled row shown failing under `--strict`; and the closing record marking GH-261's finding resolved and correcting its cause to a background refresh with the control disabled.
 
 ### The Onboarding restyle's evidence (GH-164 follow-up)
 
@@ -231,6 +258,11 @@ No telemetry; read from the PR evidence and from tests.
 - **Unfinished screen fails**: a deliberately unsettled row under `--strict` exits non-zero and is not captured as a pass, shown once in the PR.
 - **Gate untouched (Load criterion 8)**: no change to `.agentic/stack.yaml` or CI, no new gate step, no elapsed-time assertion.
 - **Nothing a seller sees changes (Load criterion 9)**: every suite passes and no test is loosened, read from the diff.
+- **Repeatable (Rest criterion 1)**: for base and for head, five whole-registry `--strict` outputs (no `--only`, each exit 0) taken on one Argentina day on the shared, loaded machine, and the `ae.mjs` output comparing run 1 with runs 2 to 5 on each side, plus the base-vs-head `ae.mjs` output: 0 non-zero lines, `VariedadesCompu built` included, no missing side and no one-sided `null`.
+- **Resting state (Rest criterion 2)**: the `VariedadesCompu` captures, and those of every row with an animated element or a control that waits on a refresh, attached and judged by eye against the sample's stored data, in light and dark where the registry has both; the PR states which state the switch rests in.
+- **Never half-drawn (Rest criterion 3)**: a deliberately unsettled row (something that never comes to rest within the bound) under `--strict` exits non-zero, its side `null`, no PNG written, with the fixed message naming the row and side, shown once in the PR; it is never read as an AE difference.
+- **Nothing loosened (Rest criterion 4)**: read from the diff: no tolerance in the comparison; the registry has the same rows as before; no seller-visible change under `app/` or `web/src/`, the switch's disabled-while-refreshing behaviour included; no change to `.agentic/stack.yaml`, CI or the gate; no elapsed-time assertion (ADR-0038).
+- **Finding closed**: the closing record marks GH-261's `VariedadesCompu built: AE 2888` resolved, with its cause corrected to a background refresh with the control disabled, citing the five runs per commit. Business measure: spec-scope findings for an unexplained AE on a screen the PR did not touch, goal 0.
 
 ## Out of scope
 
@@ -255,3 +287,7 @@ No telemetry; read from the PR evidence and from tests.
 - A pixel tolerance in the comparison.
 - Timed evidence (mypy timings, e2e worker runs): ADR-0038, ADR-0040 and ADR-0041.
 - Re-judging GH-150's capture runs.
+- A per-run check, inside the capture, that a screen's state matches the sample data.
+- A list of exceptions for elements that never stop moving.
+- Changing the app's own transitions, animations, background refreshes, the switch's disabled-while-refreshing state or any screen to make a capture rest sooner.
+- Naming the wait bound's value in this file.

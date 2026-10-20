@@ -1,0 +1,2 @@
+ZzSondaTransicion: el diseño no se pudo capturar: la pantalla no quedó quieta
+comparisons: --strict and a capture failed (a side that did not settle or could not be reached, a font, or a screen that threw)
