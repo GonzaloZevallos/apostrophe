@@ -100,3 +100,19 @@ test('only the explicit modalOnComputer hides the rail, and only on a computer',
   expect(chromeOf(modal, 'phone').rail).toBe(true)
   expect(chromeOf(plainForm, 'computer').rail).toBe(true)
 })
+
+test('no form, on either viewport, shows "+ Nueva venta" in the rail or on the bar', () => {
+  const forms = SCREENS.filter((entry) => entry.kind === 'form')
+  expect(forms.length).toBeGreaterThan(0)
+  for (const form of forms) {
+    for (const viewport of ['phone', 'computer'] as const) {
+      const chrome = chromeOf(form, viewport)
+      expect({ id: form.id, viewport, rail: chrome.railNuevaVenta, bar: chrome.barNuevaVenta }).toEqual({
+        id: form.id,
+        viewport,
+        rail: false,
+        bar: false,
+      })
+    }
+  }
+})

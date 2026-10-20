@@ -162,7 +162,8 @@ test.describe.serial('navigation', () => {
   })
 
   test('"Nueva venta", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
-    // The real stylesheet in a real browser (computed style is meaningless in jsdom).
+    // The real stylesheet in a real browser (computed style is meaningless in jsdom). It reads
+    // the built `web/dist`: after a CSS edit, `vite build` first, or the run sees the old rule.
     const expectAction = async (control: Locator): Promise<void> => {
       await expect(control).toBeVisible()
       const look = await control.evaluate((element) => {
@@ -180,6 +181,14 @@ test.describe.serial('navigation', () => {
     await page.setViewportSize({ width: 1280, height: 920 })
     await page.goto(HOME)
     await expectAction(page.locator('.boton-nueva-venta--escritorio'))
+
+    // The dark theme (`data-tema`, the attribute the Configuración switch sets) paints the
+    // same action: the rail's on the computer, the bar's on the phone.
+    await page.evaluate(() => document.documentElement.setAttribute('data-tema', 'oscuro'))
+    await expectAction(page.locator('.boton-nueva-venta--escritorio'))
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expectAction(page.locator('.columna-principal > .boton-nueva-venta'))
+    await page.evaluate(() => document.documentElement.removeAttribute('data-tema'))
 
     for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 920 }]) {
       await page.setViewportSize(size)
