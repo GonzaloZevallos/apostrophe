@@ -51,3 +51,41 @@ The same row, the viewport set to the document's `scrollHeight` (1280 wide, so n
 - Consequence: with the check as planned, a `Compu` row whose shot dances the viewport would fail its row in roughly the same proportion as it is gray today (p of 0.1 to 0.8), instead of being repeatable. The capture needs to stop causing the refetch it then waits for. The control above shows one way that was measured: size the viewport to the document before the final settle and take a plain shot, so the screenshot never resizes the viewport. A decision for the Tech Lead; it changes `comparisons.mjs` (both sides, every row taller than its viewport) and says something about rows whose layout depends on viewport height. It was not tried on other rows.
 - The cause is also in `ADR-0042`'s record: the GH-261 amendment's "unsettled CSS transition" is wrong (the switch has no transition), and so is a "background re-read the screen started on its own": the re-read is started by the capture's own screenshot.
 - Not investigated: why some full-page shots, at no throttling, do not reach the `1x1` flip before the pixels are taken (the black runs show a single `resize` event).
+
+## Evidence on the head (captured 2026-10-20, Argentina day, shared loaded machine)
+
+Review evidence only: nothing here is a gate, CI or `.agentic/stack.yaml` step. Valid only for the SHAs below.
+
+- Task base (tooling and app before the change): `6541887d3c808164d0d1da97ea21084e81e2854a`.
+- Head captured: `27eefcb060f4b74b3e2cd855827c554cb5484417`. Its only later commit is this evidence.
+- `@fontsource/plus-jakarta-sans`: 5.3.0 (head's `web/node_modules`). Node v24.21.0.
+- Overlay (ADR-0042, GH-219) used for the base side that was prepared: head's whole `scripts/design/` over the base's own `app/` and `web/`; its diff stat is the stat of `git diff --stat 6541887d..HEAD -- scripts/design`: 4 files changed, 224 insertions(+), 46 deletions(-) (`comparisons.mjs`, `probe.mjs`, `settle.d.mts`, `settle.mjs`).
+
+### Five whole-registry `--strict` runs of the head (done)
+
+Each on a fresh sample, no `--only`, one after the other, on the shared machine (load average 6 to 17 around them). Per run: `head-runN/{strict-console.txt,exit-code,times.txt,index.json}`.
+
+| Run | Start | End | Exit |
+|---|---|---|---|
+| 1 | 10:01:57 | 10:08:55 | 0 |
+| 2 | 10:09:54 | 10:18:13 | 0 |
+| 3 | 10:19:10 | 10:25:56 | 0 |
+| 4 | 10:26:45 | 10:35:13 | 0 |
+| 5 | 10:46:28 | 10:55:22 | 0 |
+
+A first attempt at run 5 was cut off by the capture wrapper's own 590 s cap (not by the capture), left no `index.json` and does not count; run 5 above is its retake from scratch, on the same sample method.
+
+`ae.mjs` run 1 against runs 2 to 5 (`ae-head-1-vs-N.txt`): each prints 312 lines (156 rows, both sides), every one `AE 0`, exit 0. **0 non-zero lines, `VariedadesCompu built` included; no `null` side in any `index.json`.**
+
+### The switch, judged by eye and by pixel
+
+`VariedadesCompu-built-switch-head-run1.png` (a crop of the head's run-1 capture, 2x): the "Aviso de stock bajo" switch is **enabled and on** (black track, white thumb at the right), the state the sample's stored threshold gives it, not the grey of the disabled state. The track pixel is `35,30,24` (black) in all five runs. The registry has no dark `VariedadesCompu` row, so there is no dark capture of it.
+
+### Not done in this delivery (named, never hidden)
+
+The turn cap ran out before these were captured. Nothing below is claimed:
+
+1. The five base runs (overlay) and the base-against-head `ae.mjs`. The first attempt failed: the overlay's `settle.d.mts` no longer matches the base's two test files under `tsc -b` (the scratch base needs them removed, they are not served), and a scratch tree made with `git archive` needs the checkout's `.venv` linked for the sample server.
+2. The two throwaway demonstrations (a row re-issuing a fetch on a fake-clock `setInterval` while a button stays disabled, and a row restarting a finite transition every tick) shown failing under `--strict`.
+3. The diagnostic pair of the head's tooling under CPU throttling (the diagnosis above has the base's p of 0.1 to 0.8 and the no-dance control at 0 of 24).
+4. A by-eye pass of the other rows that carry the switch or an animated element (`VariedadDetalle`, `VariedadArchivada*`, `ArchivadasCompu`): they are AE 0 across the five head runs, which is not the same as judged.
