@@ -22,6 +22,8 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { EXPENSES } from '../../routes'
 import ExpenseForm from './ExpenseForm'
+import { EXPENSES_TEXT } from '../../copy/expenses'
+import { COMMON_TEXT } from '../../copy/common'
 
 export default function ExpenseNewRoute() {
   const queryClient = useQueryClient()
@@ -45,10 +47,10 @@ export default function ExpenseNewRoute() {
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el gasto?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={EXPENSES_TEXT.descartasElGasto}
+          detail={COMMON_TEXT.sePierdeLoQue}
+          keepLabel={COMMON_TEXT.noSeguiCargando}
+          discardLabel={COMMON_TEXT.siDescartalo}
         />
       )}
     </main>

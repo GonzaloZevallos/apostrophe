@@ -15,6 +15,7 @@ import { useId } from 'react'
 import type { PanelPeriod, PanelTab } from '../../api/panel'
 import { salesCount } from '../../format/counts'
 import { formatGrams, formatMoney, formatSignedMoney } from '../../format/money'
+import { COMMON_TEXT } from '../../copy/common'
 
 const PENDING_NOTE = 'incluye costo pendiente'
 
@@ -125,12 +126,12 @@ export function PeriodFigures({
 
         <div className="panel-resultados">
           <ResultCell
-            label="Ganancia"
+            label={COMMON_TEXT.ganancia}
             value={formatSignedMoney(period.profit)}
             accent
             pending={period.profit_pending}
           />
-          <ResultCell label="Caja" value={formatSignedMoney(period.cash)} accent={false} pending={false} />
+          <ResultCell label={COMMON_TEXT.caja} value={formatSignedMoney(period.cash)} accent={false} pending={false} />
         </div>
       </div>
     </div>

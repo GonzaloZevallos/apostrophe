@@ -22,7 +22,7 @@ import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import AuthPage from '../components/AuthPage'
 import Boton from '../components/Boton'
 import PasswordField from '../components/PasswordField'
-import { BRAKE_MESSAGE, INVITE_ONLY_LINE, LOGIN_HINT } from '../copy/auth'
+import { BRAKE_MESSAGE, INVITE_ONLY_LINE, LOGIN_HINT, AUTH_TEXT } from '../copy/auth'
 
 export const CREDENTIALS_WRONG = 'Email o contraseña incorrectos'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
@@ -71,13 +71,13 @@ export default function Entrar() {
     <AuthPage>
       <div>
         <span className="marca">
-          apostrophe<span className="marca__apostrofe">’</span>
+          {AUTH_TEXT.apostrophe}<span className="marca__apostrofe">{AUTH_TEXT.text}</span>
         </span>
-        <p className="subtitulo">Tus ventas, tu stock y lo que te deben.</p>
+        <p className="subtitulo">{AUTH_TEXT.tusVentasTuStock}</p>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Email</span>
+          <span className="campo__rotulo">{AUTH_TEXT.email}</span>
           <input
             className="campo__input"
             type="email"
@@ -86,9 +86,9 @@ export default function Entrar() {
             required
           />
         </label>
-        <PasswordField label="Contraseña" value={password} onChange={setPassword} error={error} />
+        <PasswordField label={AUTH_TEXT.contrasena} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Entrá
+          {AUTH_TEXT.entra}
         </Boton>
         {locked ? (
           <span className="campo__error" role="alert">

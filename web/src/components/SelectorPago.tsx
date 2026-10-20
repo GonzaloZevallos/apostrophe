@@ -24,6 +24,7 @@
 
 import { useId } from 'react'
 import type { PaymentChoice } from '../sales/pricing'
+import { COMMON_TEXT } from '../copy/common'
 
 export interface SelectorPagoProps {
   value: PaymentChoice | null
@@ -49,7 +50,7 @@ export default function SelectorPago({
 
   return (
     <div>
-      <div className="selector-pago" role="radiogroup" aria-label="Cómo se pagó">
+      <div className="selector-pago" role="radiogroup" aria-label={COMMON_TEXT.comoSePago}>
         {OPTIONS.map((option) => {
           const checked = value === option.value
           const disabled = option.value === 'owing' && owingDisabled

@@ -18,6 +18,8 @@ import { IntegrationsForm, type PinnedCatalog } from '../settings/IntegrationsGr
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import { CHECKLIST_DONE } from '../../copy/inicio'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
 export const PUBLISH_LINE = 'Cuando quieras, publicalo desde Variedades → Mandar catálogo'
 
@@ -37,7 +39,7 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
   }
   return (
     <>
-      {(done || tested) && <span className="onboarding__insignia">Hecho</span>}
+      {(done || tested) && <span className="onboarding__insignia">{CHECKLIST_DONE}</span>}
       <IntegrationsForm
         initial={query.data}
         showCatalogLink={false}
@@ -50,7 +52,7 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
       {(done || tested) && <p className="pie">{PUBLISH_LINE}</p>}
       {(done || tested) && (
         <StepSubmit disabled={sending} onSubmit={() => void send()}>
-          Seguir
+          {ONBOARDING_TEXT.seguir}
         </StepSubmit>
       )}
       {notice}

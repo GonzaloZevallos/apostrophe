@@ -25,3 +25,40 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 
 /** Nothing here is over 80 characters. */
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const SALES_TEXT = {
+  hoy0: (date: string | number) => `Hoy ${date}`,
+  elegirCliente: 'Elegir cliente',
+  envioCobrado: 'Envío cobrado',
+  envio: 'Envío',
+  total: 'Total',
+  n0DeRegalo: (arg1: string | number) => ` · ${arg1} de regalo`,
+  guardaLaVenta: 'Guardá la venta',
+  descartasLaVenta: '¿Descartás la venta?',
+  noVasAPoder: 'No vas a poder recuperar lo que cargaste.',
+  siDescartala: 'Sí, descartala',
+  buscar: 'Buscar',
+  telefonoONombre: 'Teléfono o nombre',
+  sinCliente: 'Sin cliente',
+  crearCliente: 'Crear cliente',
+  linea01: (n: string | number, displayName: string | number) => `Línea ${n}: ${displayName}`,
+  g: ' g',
+  variedadLinea0: (n: string | number) => `Variedad línea ${n}`,
+  gramosLinea0: (n: string | number) => `Gramos línea ${n}`,
+  regaloLinea0: (n: string | number) => `Regalo línea ${n}`,
+  regalo: 'Regalo',
+  precioEspecialLinea0: (n: string | number) => `Precio especial línea ${n}`,
+  precioEspecial: 'Precio especial',
+  quitarLinea0: (n: string | number) => `Quitar línea ${n}`,
+  ventaDel0: (date: string | number) => `Venta del ${date}`,
+  deshacer: 'Deshacer',
+  lineas: 'Líneas',
+  porGramo: ' por gramo',
+  clienteAsignado: 'Cliente asignado',
+  asignarCliente: 'Asignar cliente',
+  borrarVenta: 'Borrar venta',
+  desde: 'Desde',
+  hasta: 'Hasta',
+  teDebe: 'te debe',
+} as const

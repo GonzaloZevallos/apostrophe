@@ -38,7 +38,8 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { CATEGORIES_SAVE_AT_ONCE, GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import { CATEGORIES_SAVE_AT_ONCE, GENERIC_REFUSAL_MESSAGE, SETTINGS_TEXT } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
 
 export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
 
@@ -209,7 +210,7 @@ function Categories({
       {adding ? (
         <form className="formulario" onSubmit={onAdd}>
           <label className="campo">
-            <span className="campo__rotulo">Nueva categoría</span>
+            <span className="campo__rotulo">{SETTINGS_TEXT.nuevaCategoria}</span>
             <input
               ref={inputRef}
               className="campo__input"
@@ -224,13 +225,13 @@ function Categories({
           )}
           {offline && <SinConexion />}
           <Boton variant="secondary" textOnly="submit" type="submit" disabled={sending || newName.trim() === ''}>
-            + Categoría
+            {SETTINGS_TEXT.categoria}
           </Boton>
         </form>
       ) : (
         <div ref={addRef}>
           <Boton variant="secondary" icon="agregar" onClick={() => setAdding(true)}>
-            Categoría
+            {COMMON_TEXT.categoria}
           </Boton>
         </div>
       )}
@@ -322,10 +323,10 @@ function CategoryRow({
           className="campo__input"
           value={draft}
           onChange={(event) => onDraft(event.target.value)}
-          aria-label={`Nombre de ${category.name}`}
+          aria-label={SETTINGS_TEXT.nombreDe0(category.name)}
         />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardar
+          {COMMON_TEXT.guardar}
         </Boton>
         {error !== null && (
           <span className="campo__error" role="alert">
@@ -341,9 +342,9 @@ function CategoryRow({
     <div className="fila">
       <span className="categoria-fila__nombre">{category.name}</span>
       <span className="categoria-fila__accion">
-        <Boton variant="icon" action="edit" ariaLabel="Renombrar" onClick={() => onDraft(category.name)} />
+        <Boton variant="icon" action="edit" ariaLabel={SETTINGS_TEXT.renombrar} onClick={() => onDraft(category.name)} />
       </span>
-      <Boton variant="icon" action="delete" ariaLabel="Eliminar" onClick={() => setConfirming(true)} />
+      <Boton variant="icon" action="delete" ariaLabel={SETTINGS_TEXT.eliminar} onClick={() => setConfirming(true)} />
       {error !== null && (
         <span className="campo__error" role="alert">
           {error}
@@ -353,16 +354,16 @@ function CategoryRow({
       {confirming && (
         <div className="capa" role="presentation">
           <div className="capa__contenido panel">
-            <span className="panel__titulo">¿Borrás la categoría?</span>
+            <span className="panel__titulo">{SETTINGS_TEXT.borrasLaCategoria}</span>
             <span className="panel__detalle">
-              Se borra &ldquo;{category.name}&rdquo;. Esto no se puede deshacer.
+              {SETTINGS_TEXT.seBorra}{category.name}{SETTINGS_TEXT.estoNoSePuede}
             </span>
             <div className="panel__botones">
               <AnswerButton kind="keep" onClick={() => setConfirming(false)}>
-                No, dejala
+                {COMMON_TEXT.noDejala}
               </AnswerButton>
               <AnswerButton kind="confirm" disabled={sending} onClick={remove}>
-                Sí, borrala
+                {COMMON_TEXT.siBorrala}
               </AnswerButton>
             </div>
           </div>

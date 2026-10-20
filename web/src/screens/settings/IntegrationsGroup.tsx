@@ -31,8 +31,9 @@ import {
   CHANNEL_CHAT_HELP,
   LOAD_THE_TOKEN_FIRST,
   OWN_CHAT_INFO,
-  PREVIOUS_PIN_NOTICE,
+  PREVIOUS_PIN_NOTICE, SETTINGS_TEXT,
 } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
 
 const TITLE = 'Integraciones'
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
@@ -205,7 +206,7 @@ export function IntegrationsForm({
       <form className="formulario" onSubmit={onFormSubmit} onKeyDown={onFormKeyDown}>
         {tokenFieldOpen ? (
           <label className="campo">
-            <span className="campo__rotulo">Token del bot</span>
+            <span className="campo__rotulo">{SETTINGS_TEXT.tokenDelBot}</span>
             <input
               className="campo__input"
               type="password"
@@ -217,20 +218,20 @@ export function IntegrationsForm({
         ) : (
           <div className="catalogo__fila">
             <span className="catalogo__fila-texto">
-              <span>Token del bot</span>
+              <span>{SETTINGS_TEXT.tokenDelBot}</span>
               <span className="catalogo__fila-detalle">
-                Guardado el {formatDate(accepted.tokenSavedOn as string)} · no se muestra más
+                {SETTINGS_TEXT.guardadoEl}{formatDate(accepted.tokenSavedOn as string)}{SETTINGS_TEXT.noSeMuestraMas}
               </span>
             </span>
             <Boton variant="link" onClick={() => setTokenChanging(true)}>
-              Cambiar
+              {COMMON_TEXT.cambiar}
             </Boton>
           </div>
         )}
 
         <div className="campo">
           <label className="campo__rotulo" htmlFor={`${fieldId}-channel`}>
-            Chat del canal
+            {SETTINGS_TEXT.chatDelCanal}
           </label>
           <input
             id={`${fieldId}-channel`}
@@ -247,7 +248,7 @@ export function IntegrationsForm({
 
         <div className="campo">
           <label className="campo__rotulo" htmlFor={`${fieldId}-own`}>
-            Tu chat
+            {SETTINGS_TEXT.tuChat}
           </label>
           <div className="campo__fila">
             <input
@@ -265,7 +266,7 @@ export function IntegrationsForm({
               ariaDescribedBy={canSearch ? undefined : `${fieldId}-search-help`}
               onClick={() => void onSearchOwnChat()}
             >
-              Buscar mi chat
+              {SETTINGS_TEXT.buscarMiChat}
             </Boton>
           </div>
           <div id={`${fieldId}-own-help`}>
@@ -291,13 +292,13 @@ export function IntegrationsForm({
         )}
 
         <Boton icon="probar" disabled={testing} onClick={() => void onProbarlo()}>
-          Probarlo
+          {SETTINGS_TEXT.probarlo}
         </Boton>
       </form>
 
       {showCatalogLink && (
         <BotonLink to={CATALOG} variant="link">
-          Ir al catálogo
+          {SETTINGS_TEXT.irAlCatalogo}
         </BotonLink>
       )}
     </>

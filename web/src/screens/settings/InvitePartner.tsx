@@ -19,6 +19,7 @@ import { copyText } from '../../clipboard'
 import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
 import { inviteExpiry } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
 
 interface Invite {
   url: string
@@ -88,9 +89,9 @@ export default function InvitePartner({
           <div className="usuarios__link">{invite.url}</div>
           <div className="usuarios__acciones">
             <Boton variant="primary" icon="copiar" onClick={onCopy}>
-              Copiar
+              {COMMON_TEXT.copiar}
             </Boton>
-            <Boton variant="icon" action="share" ariaLabel="Compartir" onClick={onShare} />
+            <Boton variant="icon" action="share" ariaLabel={COMMON_TEXT.compartir} onClick={onShare} />
           </div>
           <span className="campo__rotulo" data-copy="help">
             {inviteExpiry(formatDateShort(invite.expires_at.slice(0, 10)))}

@@ -1,3 +1,4 @@
+import { COMMON_TEXT } from '../copy/common'
 /**
  * The "Cargando" state of `Estados`: the design's three skeleton shapes — a short
  * bar, a wider bar and two cards side by side — in the surface color, standing
@@ -17,7 +18,7 @@ export interface LoadingProps {
 }
 
 export function LoadingAnuncio() {
-  return <div className="cargando__anuncio" role="progressbar" aria-label="Cargando" aria-busy="true" />
+  return <div className="cargando__anuncio" role="progressbar" aria-label={COMMON_TEXT.cargando} aria-busy="true" />
 }
 
 export default function Loading({ compacto = false }: LoadingProps) {
@@ -29,7 +30,7 @@ export default function Loading({ compacto = false }: LoadingProps) {
     )
   }
   return (
-    <div className="cargando" role="progressbar" aria-label="Cargando" aria-busy="true">
+    <div className="cargando" role="progressbar" aria-label={COMMON_TEXT.cargando} aria-busy="true">
       <span className="cargando__barra cargando__barra--corta" />
       <span className="cargando__barra cargando__barra--ancha" />
       <div className="cargando__tarjetas">

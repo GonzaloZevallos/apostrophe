@@ -33,6 +33,8 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseMoney } from '../../format/parse'
+import { EXPENSES_TEXT } from '../../copy/expenses'
+import { COMMON_TEXT } from '../../copy/common'
 
 export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
@@ -193,9 +195,9 @@ export default function ExpenseForm({
   // always leave.
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">{target === 'nuevo' ? 'Cargar gasto' : 'Editar gasto'}</span>
+      <span className="gasto-form__titulo">{target === 'nuevo' ? EXPENSES_TEXT.cargarGasto : EXPENSES_TEXT.editarGasto}</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={onCancel} />
       </span>
     </div>
   )
@@ -215,7 +217,7 @@ export default function ExpenseForm({
       {header}
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Fecha</span>
+          <span className="campo__rotulo">{COMMON_TEXT.fecha}</span>
           <input
             className="campo__input"
             type="date"
@@ -226,7 +228,7 @@ export default function ExpenseForm({
           />
         </label>
         <label className="campo">
-          <span className="campo__rotulo">Categoría</span>
+          <span className="campo__rotulo">{COMMON_TEXT.categoria}</span>
           <select
             className="campo__input"
             value={form.category_id}
@@ -236,7 +238,7 @@ export default function ExpenseForm({
             }}
             required
           >
-            <option value="">Elegí una categoría</option>
+            <option value="">{EXPENSES_TEXT.elegiUnaCategoria}</option>
             {allCategories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -252,7 +254,7 @@ export default function ExpenseForm({
         {creatingCategory ? (
           <div className="campo">
             <label className="campo">
-              <span className="campo__rotulo">Nombre de la categoría nueva</span>
+              <span className="campo__rotulo">{EXPENSES_TEXT.nombreDeLaCategoria}</span>
               <input
                 className="campo__input"
                 value={newCategoryName}
@@ -269,16 +271,16 @@ export default function ExpenseForm({
               disabled={newCategorySending || newCategoryName.trim() === ''}
               onClick={onCreateCategory}
             >
-              Crear categoría
+              {EXPENSES_TEXT.crearCategoria}
             </Boton>
           </div>
         ) : (
           <Boton variant="link" onClick={() => setCreatingCategory(true)}>
-            Crear una categoría nueva
+            {EXPENSES_TEXT.crearUnaCategoriaNueva}
           </Boton>
         )}
         <label className="campo">
-          <span className="campo__rotulo">Monto</span>
+          <span className="campo__rotulo">{COMMON_TEXT.monto}</span>
           <input
             className="campo__input campo__input--monto"
             inputMode="numeric"
@@ -288,7 +290,7 @@ export default function ExpenseForm({
           />
         </label>
         <label className="campo">
-          <span className="campo__rotulo">Detalle</span>
+          <span className="campo__rotulo">{EXPENSES_TEXT.detalle}</span>
           <input
             className="campo__input"
             value={form.detail}
@@ -304,13 +306,13 @@ export default function ExpenseForm({
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          Guardá el gasto
+          {EXPENSES_TEXT.guardaElGasto}
         </Boton>
         {target !== 'nuevo' && onRequestDelete !== undefined && (
           <Boton
             variant="icon"
             action="delete"
-            ariaLabel="Borrar gasto"
+            ariaLabel={EXPENSES_TEXT.borrarGasto}
             onClick={() => onRequestDelete(target)}
           />
         )}

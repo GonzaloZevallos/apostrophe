@@ -33,7 +33,7 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import type { StepBodyProps } from './stepBodies'
-import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
+import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL, ONBOARDING_TEXT } from '../../copy/onboarding'
 import {
   isFirst,
   isLast,
@@ -45,6 +45,8 @@ import {
   stepNumber,
 } from './steps'
 import { HOME } from '../../routes'
+import { COMMON_TEXT } from '../../copy/common'
+import { CHECKLIST_REQUIRED, CHECKLIST_OPTIONAL } from '../../copy/inicio'
 
 export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
 export const DISCARD_QUESTION = '¿Descartás lo que escribiste?'
@@ -117,16 +119,16 @@ export default function OnboardingStep({
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
             <Boton variant="secondary" icon="atras" onClick={() => void navigate(previous)}>
-              Atrás
+              {ONBOARDING_TEXT.atras}
             </Boton>
           )}
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={() => void navigate(HOME)} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={() => void navigate(HOME)} />
         </div>
 
         <div className="onboarding__progreso">
           <div className="onboarding__progreso-fila">
-            <span className="onboarding__paso">{`Paso ${stepNumber(slug)} de ${STEP_COUNT}`}</span>
-            <span className="onboarding__insignia">{info.required ? 'Obligatorio' : 'Opcional'}</span>
+            <span className="onboarding__paso">{ONBOARDING_TEXT.paso0De1(stepNumber(slug), STEP_COUNT)}</span>
+            <span className="onboarding__insignia">{info.required ? CHECKLIST_REQUIRED : CHECKLIST_OPTIONAL}</span>
           </div>
           <StepIndicator steps={progress.steps} current={slug} />
         </div>
@@ -147,11 +149,11 @@ export default function OnboardingStep({
           <div className="onboarding__saltar">
             <div className="onboarding__saltar-fila">
               <Boton variant="link" disabled={sending} onClick={() => requestSkip('one')}>
-                Saltar
+                {ONBOARDING_TEXT.saltar}
               </Boton>
               {progress.can_skip_rest && !isLast(slug) && (
                 <Boton variant="link" disabled={sending} onClick={() => requestSkip('rest')}>
-                  Saltar el resto
+                  {ONBOARDING_TEXT.saltarElResto}
                 </Boton>
               )}
             </div>

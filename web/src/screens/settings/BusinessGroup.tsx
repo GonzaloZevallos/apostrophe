@@ -23,8 +23,9 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { BUSINESS_NAME_INVALID_MESSAGE, GENERIC_REFUSAL_MESSAGE, RENAME_SUCCESS } from '../../copy/settings'
+import { BUSINESS_NAME_INVALID_MESSAGE, GENERIC_REFUSAL_MESSAGE, RENAME_SUCCESS, SETTINGS_TEXT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
+import { COMMON_TEXT } from '../../copy/common'
 
 interface Business {
   name: string
@@ -49,7 +50,7 @@ export default function BusinessGroup() {
 
   if (isPending || isError) {
     return (
-      <SettingsGroup title="Negocio" dirty={false} leave={LEAVE}>
+      <SettingsGroup title={SETTINGS_TEXT.negocio} dirty={false} leave={LEAVE}>
         {isPending && <Loading />}
         {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       </SettingsGroup>
@@ -107,7 +108,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
   }
 
   return (
-    <SettingsGroup title="Negocio" dirty={name !== accepted} leave={LEAVE}>
+    <SettingsGroup title={SETTINGS_TEXT.negocio} dirty={name !== accepted} leave={LEAVE}>
       {renamed && (
         <div className="aviso-flotante">
           <AvisoExito texto={RENAME_SUCCESS} />
@@ -115,7 +116,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
       )}
       <form className="formulario" onSubmit={onRename}>
         <label className="campo">
-          <span className="campo__rotulo">Nombre del negocio</span>
+          <span className="campo__rotulo">{COMMON_TEXT.nombreDelNegocio}</span>
           <input
             className="campo__input"
             type="text"
@@ -130,7 +131,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
           )}
         </label>
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          Guardá el nombre
+          {COMMON_TEXT.guardaElNombre}
         </Boton>
         {offline && <SinConexion />}
       </form>

@@ -32,6 +32,8 @@ import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
 import { varietiesByName } from './varietiesByName'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
 
 const HAS_HISTORY_CODE = 'variety.has_history'
 
@@ -125,24 +127,24 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
       <div className="variedad-retiro">
         {deleting ? (
           <Boton variant="critical" icon="tacho" onClick={() => setAsking(true)}>
-            Eliminar variedad
+            {VARIETIES_TEXT.eliminarVariedad}
           </Boton>
         ) : (
           <Boton variant="secondary" icon="archivar" onClick={() => setAsking(true)}>
-            Archivar variedad
+            {VARIETIES_TEXT.archivarVariedad}
           </Boton>
         )}
       </div>
       {asking && (
         <ConfirmDialog
-          title={deleting ? '¿Eliminás esta variedad?' : '¿Archivás esta variedad?'}
+          title={deleting ? VARIETIES_TEXT.eliminasEstaVariedad : VARIETIES_TEXT.archivasEstaVariedad}
           detail={
             deleting
-              ? 'No tiene ventas ni entradas. Se borra para siempre, con sus precios. Esto no se puede deshacer.'
+              ? VARIETIES_TEXT.noTieneVentasNi
               : archiveDetail(grams)
           }
-          confirmText={deleting ? 'Sí, eliminala' : 'Sí, archivala'}
-          cancelText="No, dejala"
+          confirmText={deleting ? VARIETIES_TEXT.siEliminala : VARIETIES_TEXT.siArchivala}
+          cancelText={COMMON_TEXT.noDejala}
           onConfirm={() => {
             if (!sending) void onConfirm()
           }}

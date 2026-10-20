@@ -18,6 +18,7 @@ import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import InvitePartner from './InvitePartner'
 import SettingsGroup from './SettingsGroup'
+import { SETTINGS_TEXT } from '../../copy/settings'
 
 interface Business {
   users: { email: string }[]
@@ -38,7 +39,7 @@ export default function UsersGroup() {
   })
 
   return (
-    <SettingsGroup title="Usuarios" dirty={false} leave={LEAVE}>
+    <SettingsGroup title={SETTINGS_TEXT.usuarios} dirty={false} leave={LEAVE}>
       {isPending && <Loading />}
       {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       {!isPending && !isError && (
@@ -46,7 +47,7 @@ export default function UsersGroup() {
           {data.users.map((user) => (
             <li key={user.email} className="usuarios__usuario">
               <span>{user.email}</span>
-              {user.email === me.email && <span className="usuarios__vos">vos</span>}
+              {user.email === me.email && <span className="usuarios__vos">{SETTINGS_TEXT.vos}</span>}
             </li>
           ))}
         </ul>

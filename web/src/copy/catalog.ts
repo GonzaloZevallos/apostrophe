@@ -15,3 +15,11 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: EMPTY_STATE_DETAIL },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const CATALOG_TEXT = {
+  catalogo: 'Catálogo',
+  comoSeVeEn: 'Cómo se ve en Telegram',
+  queNoSaleY: 'Qué no sale y por qué',
+  editarEncabezadoYPie: 'Editar encabezado y pie',
+} as const

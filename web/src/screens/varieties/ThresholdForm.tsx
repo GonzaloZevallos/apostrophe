@@ -18,8 +18,9 @@ import SinConexion from '../../components/SinConexion'
 import { formatGramsInput } from '../../format/money'
 import { parseGrams } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
-import { THRESHOLD_INVALID_MESSAGE, THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from '../../copy/varieties'
+import { THRESHOLD_INVALID_MESSAGE, THRESHOLD_OVERRIDES, THRESHOLD_SAVED, VARIETIES_TEXT } from '../../copy/varieties'
 import Boton from '../../components/Boton'
+import { COMMON_TEXT } from '../../copy/common'
 
 /** The saved amount as a person types it: a comma, no unit. */
 function typedFrom(threshold: number | null): string {
@@ -85,14 +86,14 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
   return (
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Aviso de stock bajo</span>
+        <span className="gasto-form__titulo">{VARIETIES_TEXT.avisoDeStockBajo}</span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Avisar con menos de</span>
+          <span className="campo__rotulo">{VARIETIES_TEXT.avisarConMenosDe}</span>
           <input
             className="campo__input"
             type="text"
@@ -108,7 +109,7 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
         </label>
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardá el aviso
+          {VARIETIES_TEXT.guardaElAviso}
         </Boton>
       </form>
     </div>

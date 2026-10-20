@@ -15,6 +15,8 @@ import { formatGrams, formatMoney } from '../../format/money'
 import { VARIETY_ENTRIES, WITHDRAWAL, pathTo } from '../../routes'
 import { ORIGIN_LABEL } from '../originLabel'
 import { REASON_LABEL } from '../withdrawals/withdrawalReasons'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { OUT_OF_DATE_SEPARATOR } from '../../copy/pinnedCatalog'
 
 const LAST = 3
 
@@ -35,8 +37,8 @@ export default function VarietyStockSection({
   return (
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
-        <h2 className="seccion-variedad__titulo">Stock y entradas</h2>
-        <BotonLink variant="link" to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>Ver todas</BotonLink>
+        <h2 className="seccion-variedad__titulo">{VARIETIES_TEXT.stockYEntradas}</h2>
+        <BotonLink variant="link" to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>{VARIETIES_TEXT.verTodas}</BotonLink>
       </div>
       <ul className="lista-entradas">
         {rows.map((movement) =>
@@ -45,7 +47,7 @@ export default function VarietyStockSection({
               <InAppLink to={pathTo(WITHDRAWAL, { id: movement.id })} className="fila-entrada__enlace">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
-                    {formatDate(movement.date, today)} · {REASON_LABEL[movement.reason]}
+                    {formatDate(movement.date, today)}{OUT_OF_DATE_SEPARATOR}{REASON_LABEL[movement.reason]}
                   </span>
                 </span>
                 <span className="fila-entrada__cifras">
@@ -57,10 +59,10 @@ export default function VarietyStockSection({
             <li key={`entry-${movement.id}`} className="fila-entrada">
               <span className="fila-entrada__texto">
                 <span className="fila-entrada__linea1">
-                  {formatDate(movement.date, today)} · {ORIGIN_LABEL[movement.origin]}
+                  {formatDate(movement.date, today)}{OUT_OF_DATE_SEPARATOR}{ORIGIN_LABEL[movement.origin]}
                 </span>
                 {movement.cost_per_gram !== null && (
-                  <span className="fila-entrada__linea2">{formatMoney(movement.cost_per_gram)} el gramo</span>
+                  <span className="fila-entrada__linea2">{formatMoney(movement.cost_per_gram)}{VARIETIES_TEXT.elGramo}</span>
                 )}
               </span>
               <span className="fila-entrada__cifras">

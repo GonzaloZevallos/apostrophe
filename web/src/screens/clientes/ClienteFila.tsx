@@ -16,6 +16,8 @@ import { formatDateShort } from '../../format/dates'
 import { formatPhone } from '../../format/phone'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { useViewport } from '../../shell/useViewport'
+import { COMMON_TEXT } from '../../copy/common'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
 
 interface Props {
   id: number
@@ -43,21 +45,21 @@ export default function ClienteFila({ id, name, phone = null, vip = false, balan
         <span className="lista-clientes__datos">
           <span className="lista-clientes__nombre">
             {name}
-            {vip && <span className="vip-insignia">VIP</span>}
+            {vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
           </span>
           {phone !== null && <span className="lista-clientes__telefono">{formatPhone(phone)}</span>}
         </span>
         {standing === 'owes' && owingSince !== null && (
           <span className="lista-clientes__balance">
             <span className="monto-deuda">{formatMoney(balance)}</span>
-            <span className="monto-deuda">te debe desde {formatDateShort(owingSince)}</span>
+            <span className="monto-deuda">{CUSTOMERS_TEXT.teDebeDesde}{formatDateShort(owingSince)}</span>
           </span>
         )}
-        {standing === 'credit' && <span className="monto-credito">A favor {formatMoneyMagnitude(balance)}</span>}
+        {standing === 'credit' && <span className="monto-credito">{CUSTOMERS_TEXT.aFavor}{formatMoneyMagnitude(balance)}</span>}
       </PaneRowLink>
       {standing === 'owes' && (
-        <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id })} icon="cobro" ariaLabel={`Cobrar a ${name}`}>
-          Cobrar
+        <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id })} icon="cobro" ariaLabel={COMMON_TEXT.cobrarA0(name)}>
+          {COMMON_TEXT.cobrar}
         </BotonLink>
       )}
     </div>

@@ -30,8 +30,9 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import SinConexion from '../../components/SinConexion'
-import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED } from '../../copy/settings'
+import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED, SETTINGS_TEXT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
+import { COMMON_TEXT } from '../../copy/common'
 
 const TITLE = 'Precios'
 
@@ -115,7 +116,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
       )}
       <form className="formulario" onSubmit={onSave}>
         <OpcionInterruptor
-          label="Precio por cantidad"
+          label={COMMON_TEXT.precioPorCantidad}
           checked={bulk}
           onChange={(next) => {
             setBulk(next)
@@ -123,7 +124,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
           }}
         />
         <OpcionInterruptor
-          label="Clientes VIP"
+          label={SETTINGS_TEXT.clientesVip}
           checked={vip}
           onChange={(next) => {
             setVip(next)
@@ -139,7 +140,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          Guardá los precios
+          {SETTINGS_TEXT.guardaLosPrecios}
         </Boton>
       </form>
     </SettingsGroup>

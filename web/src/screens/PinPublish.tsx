@@ -34,7 +34,7 @@ import {
   CHANNEL_MISSING_LEAD,
   INTEGRATIONS_LINK_WORD,
   OUT_OF_DATE_SEPARATOR,
-  OUT_OF_DATE_TITLE,
+  OUT_OF_DATE_TITLE, PINNED_CATALOG_TEXT,
 } from '../copy/pinnedCatalog'
 
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
@@ -70,7 +70,7 @@ function StatusLine({ status }: { status: PinStatus }) {
     >
       <AvisoCuerpo attention={status.state === 'out_of_date'}>
         <span className="catalogo__publicar-titulo">
-          {status.state === 'up_to_date' ? 'Al día' : OUT_OF_DATE_TITLE}
+          {status.state === 'up_to_date' ? PINNED_CATALOG_TEXT.alDia : OUT_OF_DATE_TITLE}
         </span>
         {status.state === 'out_of_date' && status.reason !== null && (
           <span className="catalogo__publicar-detalle">
@@ -81,7 +81,7 @@ function StatusLine({ status }: { status: PinStatus }) {
         {status.last_published_on !== null && (
           <span className="catalogo__publicar-detalle">
             {' '}
-            · El último fue el {formatDate(status.last_published_on)}
+            {PINNED_CATALOG_TEXT.elUltimoFueEl}{formatDate(status.last_published_on)}
           </span>
         )}
       </AvisoCuerpo>
@@ -98,7 +98,7 @@ function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
   if (blockedBy === 'not_tested') {
     return (
       <span className="campo__ayuda">
-        {PINNED_CATALOG_NOT_READY_REASON} · {link}
+        {PINNED_CATALOG_NOT_READY_REASON}{OUT_OF_DATE_SEPARATOR}{link}
       </span>
     )
   }
@@ -168,7 +168,7 @@ export default function PinPublish() {
         disabled={blockedBy !== null || publishing}
         onClick={() => void onPublicar()}
       >
-        Publicar
+        {PINNED_CATALOG_TEXT.publicar}
       </Boton>
       {blockedBy !== null && <BlockedReason blockedBy={blockedBy} />}
       {publishError !== null && (

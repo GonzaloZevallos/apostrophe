@@ -21,6 +21,8 @@ import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { INDICA_SHARE_INVALID_MESSAGE, fieldOfRefusal, type CatalogField } from './catalogFormErrors'
 import Boton from '../../components/Boton'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
 
 export const CATALOG_ATTRIBUTES_SAVED: SuccessToast = 'Catálogo guardado'
 
@@ -117,19 +119,19 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
   return (
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">En el catálogo</span>
+        <span className="gasto-form__titulo">{VARIETIES_TEXT.enElCatalogo}</span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <div className="seccion-variedad__fila">
-          <span className="campo__rotulo">Mostrar en el catálogo</span>
+          <span className="campo__rotulo">{VARIETIES_TEXT.mostrarEnElCatalogo}</span>
           <button
             type="button"
             role="switch"
             aria-checked={typed.shown}
-            aria-label="Mostrar en el catálogo"
+            aria-label={VARIETIES_TEXT.mostrarEnElCatalogo}
             className="interruptor"
             onClick={() => setTyped({ ...typed, shown: !typed.shown })}
           >
@@ -137,7 +139,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
           </button>
         </div>
         <label className="campo">
-          <span className="campo__rotulo">Emoji</span>
+          <span className="campo__rotulo">{VARIETIES_TEXT.emoji}</span>
           <input
             className="campo__input"
             type="text"
@@ -147,7 +149,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
           {errorUnder('emoji')}
         </label>
         <label className="campo">
-          <span className="campo__rotulo">% índica</span>
+          <span className="campo__rotulo">{VARIETIES_TEXT.indica}</span>
           <input
             className="campo__input"
             type="text"
@@ -158,7 +160,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
           {errorUnder('indica_share')}
         </label>
         <label className="campo">
-          <span className="campo__rotulo">Aroma/sabor</span>
+          <span className="campo__rotulo">{VARIETIES_TEXT.aromaSabor}</span>
           <input
             className="campo__input"
             type="text"
@@ -174,7 +176,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardá el catálogo
+          {VARIETIES_TEXT.guardaElCatalogo}
         </Boton>
       </form>
     </div>

@@ -9,6 +9,7 @@
 import { useState } from 'react'
 import { chooseTheme, currentTheme } from '../../theme'
 import SettingsGroup from './SettingsGroup'
+import { SETTINGS_TEXT } from '../../copy/settings'
 
 const CHOICES = [
   { value: 'claro', label: 'Claro' },
@@ -25,7 +26,7 @@ export default function AppearanceGroup() {
 
   return (
     <SettingsGroup
-      title="Apariencia"
+      title={SETTINGS_TEXT.apariencia}
       dirty={false}
       leave={{
         question: '¿Descartás el tema?',
@@ -35,7 +36,7 @@ export default function AppearanceGroup() {
       }}
     >
       <span className="rotulo ajustes-tema__rotulo" id="ajustes-tema-rotulo">
-        Tema
+        {SETTINGS_TEXT.tema}
       </span>
       <div className="ajustes-tema" role="radiogroup" aria-labelledby="ajustes-tema-rotulo">
         {CHOICES.map((choice) => {

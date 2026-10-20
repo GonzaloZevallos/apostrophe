@@ -9,6 +9,7 @@
 import { useState } from 'react'
 import ExpenseCategoriesEditor from './ExpenseCategoriesEditor'
 import SettingsGroup from './SettingsGroup'
+import { SETTINGS_TEXT } from '../../copy/settings'
 
 export { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
 
@@ -22,7 +23,7 @@ const LEAVE = {
 export default function ExpenseCategoriesGroup() {
   const [dirty, setDirty] = useState(false)
   return (
-    <SettingsGroup title="Categorías de gastos" dirty={dirty} leave={LEAVE}>
+    <SettingsGroup title={SETTINGS_TEXT.categoriasDeGastos} dirty={dirty} leave={LEAVE}>
       <ExpenseCategoriesEditor onDirtyChange={setDirty} />
     </SettingsGroup>
   )

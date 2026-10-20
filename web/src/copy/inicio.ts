@@ -37,3 +37,11 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: STEP_SECOND_USER },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const INICIO_TEXT = {
+  inicio: 'Inicio',
+  loQueTeQueda: 'Lo que te queda',
+  desde0: (oldest: string | number) => `desde ${oldest}`,
+  desde02: (owing_since: string | number) => ` · desde ${owing_since}`,
+} as const

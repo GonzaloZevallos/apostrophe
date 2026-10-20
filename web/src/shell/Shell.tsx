@@ -51,6 +51,8 @@ import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useViewport } from './useViewport'
+import { SHELL_TEXT } from '../copy/shell'
+import { COMMON_TEXT } from '../copy/common'
 
 type Placement = 'bar' | 'rail' | 'both'
 
@@ -169,7 +171,7 @@ export default function Shell() {
     <BackParentContext.Provider value={backParent}>
     <div className="disposicion">
       {chrome.rail && (
-        <nav className="riel-lateral" aria-label="Navegación" data-menu>
+        <nav className="riel-lateral" aria-label={SHELL_TEXT.navegacion} data-menu>
           {chrome.railNuevaVenta && (
             <>
               <BotonLink
@@ -178,7 +180,7 @@ export default function Shell() {
                 className={NUEVA_VENTA_ESCRITORIO_CLASS}
                 ariaDescribedBy={railDescribedBy}
               >
-                Nueva venta
+                {COMMON_TEXT.nuevaVenta}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta nueva-venta__falta--escritorio" id={RAIL_MISSING_ID}>
@@ -207,7 +209,7 @@ export default function Shell() {
           })}
           <InAppLink
             to={SETTINGS}
-            aria-label={`Configuración de ${me.business_name}`}
+            aria-label={COMMON_TEXT.configuracionDe0(me.business_name)}
             aria-current={railPlace === 'business' ? 'page' : undefined}
             className={
               railPlace === 'business'
@@ -228,7 +230,7 @@ export default function Shell() {
           {chrome.barNuevaVenta && (
             <>
               <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
-                Nueva venta
+                {COMMON_TEXT.nuevaVenta}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta" id={NUEVA_VENTA_MISSING_ID}>
@@ -238,7 +240,7 @@ export default function Shell() {
             </>
           )}
           {chrome.bar && (
-            <nav className="bar-inferior" aria-label="Navegación" data-menu>
+            <nav className="bar-inferior" aria-label={SHELL_TEXT.navegacion} data-menu>
               {BAR_ITEMS.map((item) => (
                 <BarItem key={item.to} item={item} active={barPlace === item.place} />
               ))}

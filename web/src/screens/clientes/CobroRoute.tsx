@@ -30,6 +30,8 @@ import { CUSTOMERS } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Cobro from './Cobro'
 import CobroFrame from './CobroFrame'
+import { COMMON_TEXT } from '../../copy/common'
+import { PAYMENTS_TEXT } from '../../copy/payments'
 
 const LABEL = 'Registrar cobro'
 
@@ -108,7 +110,7 @@ export default function CobroRoute() {
   if (isError) {
     const state =
       error instanceof ApiError && isGone(error.code) ? (
-        <GoneScreen label="Clientes" to={CUSTOMERS} />
+        <GoneScreen label={COMMON_TEXT.clientes} to={CUSTOMERS} />
       ) : error instanceof NetworkError ? (
         <SinConexion />
       ) : (
@@ -143,10 +145,10 @@ export default function CobroRoute() {
       {blocked && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el cobro?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={PAYMENTS_TEXT.descartasElCobro}
+          detail={COMMON_TEXT.sePierdeLoQue}
+          keepLabel={COMMON_TEXT.noSeguiCargando}
+          discardLabel={COMMON_TEXT.siDescartalo}
         />
       )}
     </CobroFrame>

@@ -45,3 +45,10 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: CHANNEL_MISSING_LINE },
 ]
 export const LONG_REFUSALS: readonly string[] = [OUT_OF_DATE_TOO_LONG_LINE]
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const PINNED_CATALOG_TEXT = {
+  alDia: 'Al día',
+  elUltimoFueEl: '· El último fue el ',
+  publicar: 'Publicar',
+} as const

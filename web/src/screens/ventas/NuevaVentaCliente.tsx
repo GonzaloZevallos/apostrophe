@@ -37,6 +37,8 @@ import {
   PHONE_INVALID,
   PHONE_TAKEN,
 } from '../clientes/ClienteForm'
+import { SALES_TEXT } from '../../copy/sales'
+import { COMMON_TEXT } from '../../copy/common'
 
 export interface NuevaVentaClienteProps {
   allowNone: boolean
@@ -125,18 +127,18 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
       <div className="cliente-sheet__contenido">
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
-          <span className="panel__titulo">Elegir cliente</span>
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={chooser.close} />
+          <span className="panel__titulo">{SALES_TEXT.elegirCliente}</span>
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={chooser.close} />
         </div>
         <label className="campo campo--buscar">
-          <span className="campo__rotulo visualmente-oculto">Buscar</span>
+          <span className="campo__rotulo visualmente-oculto">{SALES_TEXT.buscar}</span>
           <span className="campo--buscar__icono">
             <Icono nombre="buscar" />
           </span>
           <input
             className="campo__input campo--buscar__input"
             type="text"
-            placeholder="Teléfono o nombre"
+            placeholder={SALES_TEXT.telefonoONombre}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -155,7 +157,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               <span className="lista-clientes__fila-contenido">
                 <span className="lista-clientes__nombre">
                   {customer.name}
-                  {vipCustomers && customer.vip && <span className="vip-insignia">VIP</span>}
+                  {vipCustomers && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                 </span>
                 {customer.phone !== null && (
                   <span className="lista-clientes__telefono">{customer.phone}</span>
@@ -173,12 +175,12 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               chooser.closeAll()
             }}
           >
-            Sin cliente
+            {SALES_TEXT.sinCliente}
           </Boton>
         )}
         {!creator.isOpen ? (
           <Boton variant="secondary" icon="personaMas" onClick={creator.open}>
-            Nuevo cliente
+            {COMMON_TEXT.nuevoCliente}
           </Boton>
         ) : (
           <form className="formulario" onSubmit={onCreate}>
@@ -196,7 +198,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
             )}
             {offline && <SinConexion />}
             <Boton textOnly="submit" type="submit" disabled={create.isPending}>
-              Crear cliente
+              {SALES_TEXT.crearCliente}
             </Boton>
           </form>
         )}

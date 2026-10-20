@@ -54,6 +54,8 @@ import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { GENERIC_REFUSAL } from './NuevaVenta'
 import NuevaVentaCliente from './NuevaVentaCliente'
+import { COMMON_TEXT } from '../../copy/common'
+import { SALES_TEXT } from '../../copy/sales'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = 'Esta venta ya tiene cliente.'
 const ASSIGN_TOAST_MS = 2500
@@ -243,7 +245,7 @@ function VentaDetalleScreen() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Ventas" to={SALES} />
+      return <GoneScreen label={COMMON_TEXT.ventas} to={SALES} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -278,14 +280,14 @@ function VentaDetalleScreen() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">{`Venta del ${formatDateShort(sale.date)}`}</span>
+          <span className="encabezado__titulo">{SALES_TEXT.ventaDel0(formatDateShort(sale.date))}</span>
         </div>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
             <span className="venta-guardada__texto">{SALE_SAVED}</span>
             <Boton variant="undo" disabled={deleting} onClick={() => void removeSale('deshacer')}>
-              Deshacer
+              {SALES_TEXT.deshacer}
             </Boton>
           </div>
         )}
@@ -293,13 +295,13 @@ function VentaDetalleScreen() {
         {deleteFailed && <ErrorGenerico />}
 
         <div className="venta-detalle__resumen">
-          <span className="campo__rotulo">Total</span>
+          <span className="campo__rotulo">{SALES_TEXT.total}</span>
           <span className="cifra-xl">{formatMoney(sale.total)}</span>
           <span className="venta-detalle__subtitulo">{summaryLine(sale)}</span>
         </div>
 
         <div>
-          <span className="venta-detalle__encabezado-lineas">Líneas</span>
+          <span className="venta-detalle__encabezado-lineas">{SALES_TEXT.lineas}</span>
           <div className="venta-detalle__lineas">
             {sale.lines.map((line, index) => (
               // A sale can have two lines of the same variety (a gift line and a
@@ -313,7 +315,7 @@ function VentaDetalleScreen() {
                 </div>
                 <div className="venta-detalle__linea-inferior">
                   <span className="venta-detalle__precio">
-                    {formatMoney(line.price_per_gram)} por gramo
+                    {formatMoney(line.price_per_gram)}{SALES_TEXT.porGramo}
                   </span>
                   <ReglaInsignia rule={line.pricing_rule} />
                   <span className="venta-detalle__total">{formatMoney(line.line_total)}</span>
@@ -321,13 +323,13 @@ function VentaDetalleScreen() {
               </div>
             ))}
             <div className="venta-detalle__renglon">
-              <span>Envío cobrado</span>
+              <span>{SALES_TEXT.envioCobrado}</span>
               <span className="venta-detalle__renglon-monto">
                 {formatMoney(sale.shipping_charged)}
               </span>
             </div>
             <div className="venta-detalle__renglon venta-detalle__renglon--total">
-              <span>Total</span>
+              <span>{SALES_TEXT.total}</span>
               <span className="venta-detalle__renglon-monto">{formatMoney(sale.total)}</span>
             </div>
           </div>
@@ -335,12 +337,12 @@ function VentaDetalleScreen() {
 
         {sale.note !== null && sale.note !== '' && (
           <div className="campo">
-            <span className="campo__rotulo">Nota</span>
+            <span className="campo__rotulo">{COMMON_TEXT.nota}</span>
             <span className="venta-detalle__nota">{sale.note}</span>
           </div>
         )}
 
-        {assigned && <AvisoExito texto="Cliente asignado" />}
+        {assigned && <AvisoExito texto={SALES_TEXT.clienteAsignado} />}
         {assignOffline && <SinConexion />}
         {assignError !== null && (
           <span className="campo__error" role="alert">
@@ -351,11 +353,11 @@ function VentaDetalleScreen() {
         <div className="venta-detalle__acciones">
           {sale.customer === null && (
             <Boton variant="secondary" icon="personaMas" onClick={assignSheet.open}>
-              Asignar cliente
+              {SALES_TEXT.asignarCliente}
             </Boton>
           )}
 
-          <Boton variant="icon" action="delete" ariaLabel="Borrar venta" onClick={() => setConfirmingDelete(true)} />
+          <Boton variant="icon" action="delete" ariaLabel={SALES_TEXT.borrarVenta} onClick={() => setConfirmingDelete(true)} />
         </div>
       </div>
 
@@ -366,9 +368,9 @@ function VentaDetalleScreen() {
       {confirmingDelete && (
         <ConfirmDialog
           title={deleteTitle(sale)}
-          detail="Esto no se puede deshacer."
-          confirmText="Sí, borrala"
-          cancelText="No, dejala"
+          detail={COMMON_TEXT.estoNoSePuede}
+          confirmText={COMMON_TEXT.siBorrala}
+          cancelText={COMMON_TEXT.noDejala}
           onConfirm={() => {
             if (!deleting) void removeSale('borrar')
           }}

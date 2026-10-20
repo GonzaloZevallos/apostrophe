@@ -44,6 +44,8 @@ import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import CustomerFields from './CustomerFields'
+import { COMMON_TEXT } from '../../copy/common'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
 
 export const SAVED_TOAST = 'Cliente guardado'
 export const NAME_REQUIRED = 'Ponele un nombre'
@@ -78,7 +80,7 @@ export default function ClienteForm({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Clientes" to={CUSTOMERS} />
+      return <GoneScreen label={COMMON_TEXT.clientes} to={CUSTOMERS} />
     }
     if (existing.error instanceof NetworkError) {
       return (
@@ -206,9 +208,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       <div className="cuerpo">
         <div className="encabezado-fila">
           <span className="encabezado__titulo">
-            {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
+            {mode === 'nuevo' ? COMMON_TEXT.nuevoCliente : CUSTOMERS_TEXT.editarCliente}
           </span>
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={close} />
         </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields
@@ -229,17 +231,17 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           )}
           {offline && <SinConexion />}
           <Boton textOnly="submit" type="submit" disabled={save.isPending}>
-            Guardá y usá
+            {CUSTOMERS_TEXT.guardaYUsa}
           </Boton>
         </form>
       </div>
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el cliente?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={CUSTOMERS_TEXT.descartasElCliente}
+          detail={COMMON_TEXT.sePierdeLoQue}
+          keepLabel={COMMON_TEXT.noSeguiCargando}
+          discardLabel={COMMON_TEXT.siDescartalo}
         />
       )}
     </main>

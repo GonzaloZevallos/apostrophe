@@ -30,3 +30,22 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: NOT_USABLE_DETAIL },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const AUTH_TEXT = {
+  contrasenaActual: 'Contraseña actual',
+  contrasenaNueva: 'Contraseña nueva',
+  cancelar: 'Cancelar',
+  apostrophe: 'apostrophe',
+  text: '’',
+  tusVentasTuStock: 'Tus ventas, tu stock y lo que te deben.',
+  email: 'Email',
+  contrasena: 'Contraseña',
+  entra: 'Entrá',
+  armaTuNegocio: 'Armá tu negocio',
+  creaElNegocio: 'Creá el negocio',
+  sumateA0: (business_name: string | number | null) => `Sumate a ${business_name}`,
+  entrar: 'Entrar',
+  elegiTuContrasenaNueva: 'Elegí tu contraseña nueva',
+  guardarYEntrar: 'Guardar y entrar',
+} as const

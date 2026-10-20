@@ -20,3 +20,21 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: NOBODY_OWES },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const CUSTOMERS_TEXT = {
+  cobroEliminado: 'Cobro eliminado',
+  teDebe: 'Te debe ',
+  desdeEl: 'desde el ',
+  aFavor: 'A favor ',
+  telefono: 'Teléfono',
+  si: 'Sí',
+  no: 'No',
+  borrarCobro: 'Borrar cobro',
+  nuevaVentaA: 'Nueva venta a ',
+  teDebeDesde: 'te debe desde ',
+  editarCliente: 'Editar cliente',
+  guardaYUsa: 'Guardá y usá',
+  descartasElCliente: '¿Descartás el cliente?',
+  n0Clientes: (arg1: string | number) => `${arg1} clientes`,
+} as const

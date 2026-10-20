@@ -39,3 +39,35 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   ),
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const ANALYSIS_TEXT = {
+  text: '‹',
+  comprasDeFlores: 'Compras de flores',
+  vendisteEnElMes: 'Vendiste en el mes',
+  vendidos: ' vendidos · ',
+  regalados: ' regalados',
+  margenPromedio01: (percent: string | number, pending_grams: string | number) => ` · margen promedio ${percent}%${pending_grams}`,
+  margenPromedio0: (pending_grams: string | number) => ` · margen promedio${pending_grams}`,
+  porVariedad: 'Por variedad',
+  delMes: '% del mes',
+  costo: 'costo ',
+  margen: 'margen ',
+  parte: 'Parte',
+  gramosRegalo: 'Gramos regalo',
+  costo2: 'Costo',
+  margen2: 'Margen',
+  text2: '%',
+  semanaASemanaUltimas: 'Semana a semana · últimas 8',
+  gastos: 'gastos ',
+  ganancia: 'ganancia ',
+  caja: 'caja ',
+  semana: 'Semana',
+  mesAMesUltimos: 'Mes a mes · últimos 12',
+  mes: 'Mes',
+  porDiaDeLa: 'Por día de la semana',
+  ventas: ' ventas',
+  gastosDelMes: 'Gastos del mes',
+  gastosDesdeElPrimer: 'Gastos desde el primer registro',
+  analisis: 'Análisis',
+} as const

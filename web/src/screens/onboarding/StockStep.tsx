@@ -18,6 +18,8 @@ import { anotherVarietyState } from './anotherVariety'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
+import { COMMON_TEXT } from '../../copy/common'
 
 export default function StockStep({ me, progress, onDirtyChange, onProgress }: StepBodyProps) {
   const queryClient = useQueryClient()
@@ -45,17 +47,17 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     return (
       <>
         <p className="onboarding__porque">
-          ¿Tenés otra para cargar ahora? Cada una lleva su nombre, su precio y su stock inicial.
+          {ONBOARDING_TEXT.tenesOtraParaCargar}
         </p>
         {savedName !== null && (
           <div className="onboarding__tarjeta">
             <span className="onboarding__tarjeta-nombre">{savedName}</span>
-            <span className="onboarding__tarjeta-detalle">Con precio de hoy y con su stock inicial</span>
+            <span className="onboarding__tarjeta-detalle">{ONBOARDING_TEXT.conPrecioDeHoy}</span>
           </div>
         )}
         <div className="onboarding__acciones">
           <StepSubmit disabled={sending} onSubmit={() => void run(sendAdvance)}>
-            Seguir
+            {ONBOARDING_TEXT.seguir}
           </StepSubmit>
           <Boton
             variant="secondary"
@@ -63,7 +65,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
             disabled={sending}
             onClick={() => void navigate(ONBOARDING_VARIETY, { state: inAppState(location, anotherVarietyState()) })}
           >
-            Agregar otra variedad
+            {COMMON_TEXT.agregarOtraVariedad}
           </Boton>
         </div>
         {notice}
@@ -73,9 +75,9 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
   if (target === null) {
     return (
       <>
-        <p className="onboarding__porque">Primero cargá una variedad con su precio de hoy.</p>
+        <p className="onboarding__porque">{ONBOARDING_TEXT.primeroCargaUnaVariedad}</p>
         <Boton icon="agregar" onClick={() => void navigate(ONBOARDING_VARIETY)}>
-          Cargar una variedad
+          {ONBOARDING_TEXT.cargarUnaVariedad}
         </Boton>
       </>
     )

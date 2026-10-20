@@ -41,3 +41,35 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: perGramPreview(SAMPLES.amount) },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const STOCK_TEXT = {
+  nuevaEntrada: 'Nueva entrada',
+  editarEntrada: 'Editar entrada',
+  descartasLaEntrada: '¿Descartás la entrada?',
+  entradas: 'Entradas',
+  sinCosto: 'Sin costo',
+  borrar: 'Borrar',
+  antesDeBorrar: 'Antes de borrar',
+  borrasLaEntradaDel: (today: string | number, variety_id: string | number, grams: string | number) => `¿Borrás la entrada del ${today} de ${variety_id}, ${grams}? Esto no se puede deshacer.`,
+  guardasLosCambios: '¿Guardás los cambios?',
+  estoActualizaLaEntrada: 'Esto actualiza la entrada.',
+  siGuardar: 'Sí, guardar',
+  noSeguirEditando: 'No, seguir editando',
+  stockInicial: 'Stock inicial',
+  costoTotal: 'Costo total',
+  origen: 'Origen',
+  guardaLaEntrada: 'Guardá la entrada',
+  borrarEntrada: 'Borrar entrada',
+  retiro: 'Retiro',
+  motivo: 'Motivo',
+  variedadYGramos: 'Variedad y gramos',
+  variedadYGramos0: (arg1: string | number) => `Variedad y gramos ${arg1}`,
+  variedad0: (arg1: string | number) => `Variedad ${arg1}`,
+  gramos0: (arg1: string | number) => `Gramos ${arg1}`,
+  quitarVariedad0: (arg1: string | number) => `Quitar variedad ${arg1}`,
+  guardaElRetiro: 'Guardá el retiro',
+  estoActualizaElRetiro: 'Esto actualiza el retiro y los lotes que vienen después.',
+  descartasElRetiro: '¿Descartás el retiro?',
+  sePierdeLoQue: 'Se pierde lo que cambiaste: el retiro sigue como estaba.',
+} as const

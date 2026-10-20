@@ -27,7 +27,7 @@ import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
-import { NO_ARCHIVED_MESSAGE } from '../../copy/varieties'
+import { NO_ARCHIVED_MESSAGE, VARIETIES_TEXT } from '../../copy/varieties'
 import { varietiesByName } from './varietiesByName'
 
 
@@ -53,7 +53,7 @@ export default function ArchivedVarieties() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">Archivadas</h1>
+        <h1 className="encabezado__titulo">{VARIETIES_TEXT.archivadas2}</h1>
         {notice}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !loaded && <Loading />}
@@ -74,12 +74,12 @@ export default function ArchivedVarieties() {
                 >
                   <span className="variedad-fila__nombre">{variety.name}</span>
                   <span className="variedad-marcas">
-                    <Insignia>Archivada</Insignia>
-                    {hidden.has(variety.id) && <span className="variedad-resumen__oculta">Oculta</span>}
+                    <Insignia>{VARIETIES_TEXT.archivada}</Insignia>
+                    {hidden.has(variety.id) && <span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span>}
                   </span>
                 </PaneRowLink>
                 <Boton variant="secondary" icon="restaurar" disabled={sending} onClick={() => void restore(variety.id)}>
-                  Restaurar
+                  {VARIETIES_TEXT.restaurar}
                 </Boton>
               </div>
             ))}

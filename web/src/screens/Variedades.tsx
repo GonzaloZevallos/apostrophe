@@ -44,7 +44,8 @@ import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
-import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
+import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE, VARIETIES_TEXT } from '../copy/varieties'
+import { COMMON_TEXT } from '../copy/common'
 
 const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 
@@ -107,13 +108,13 @@ export default function Variedades() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">Variedades</h1>
+        <h1 className="encabezado__titulo">{COMMON_TEXT.variedades}</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
           {catalogDisabled ? (
             <>
               <Boton icon="telegram" disabled ariaDescribedBy={CATALOG_REASON_ID}>
-                Mandar catálogo
+                {VARIETIES_TEXT.mandarCatalogo}
               </Boton>
               <p className="variedades__motivo" id={CATALOG_REASON_ID} data-copy="help">
                 {CATALOG_DISABLED_REASON}
@@ -121,18 +122,18 @@ export default function Variedades() {
             </>
           ) : (
             <BotonLink to={CATALOG} icon="telegram">
-              Mandar catálogo
+              {VARIETIES_TEXT.mandarCatalogo}
             </BotonLink>
           )}
-          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel="+ Entrada de stock">
-            Entrada de stock
+          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel={VARIETIES_TEXT.entradaDeStock}>
+            {VARIETIES_TEXT.entradaDeStock2}
           </BotonLink>
           <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="salidaStock">
-            Sacar del stock
+            {COMMON_TEXT.sacarDelStock}
           </BotonLink>
           <span className="variedades__nueva">
             <BotonLink to={VARIETY_NEW} variant="link">
-              Nueva variedad
+              {VARIETIES_TEXT.nuevaVariedad}
             </BotonLink>
           </span>
         </div>
@@ -162,14 +163,14 @@ export default function Variedades() {
                 <span className="variedad-fila__encabezado">
                   <MarcaEstado estado={row.status} />
                   <span className="variedad-fila__nombre">{variety.name}</span>
-                  {hidden.has(variety.id) && <span className="variedad-fila__oculta">Oculta</span>}
+                  {hidden.has(variety.id) && <span className="variedad-fila__oculta">{VARIETIES_TEXT.oculta}</span>}
                 </span>
                 <span className="variedad-fila__pie">
                   <span className="variedad-fila__detalle">{figuresOf(row, me.today)}</span>
                   <span className="variedad-fila__precio">
                     {variety.current_price === null
                       ? NO_PRICE_TODAY
-                      : `${formatMoney(variety.current_price.list_price)} x g`}
+                      : COMMON_TEXT.n0XG(formatMoney(variety.current_price.list_price))}
                   </span>
                 </span>
               </PaneRowLink>
@@ -177,13 +178,13 @@ export default function Variedades() {
           </div>
         )}
         <InAppLink to={STOCK} className="variedades__todas">
-          <span>Todas las entradas</span>
-          <span aria-hidden="true">›</span>
+          <span>{COMMON_TEXT.todasLasEntradas}</span>
+          <span aria-hidden="true">{COMMON_TEXT.text}</span>
         </InAppLink>
         {archivedCount > 0 && (
           <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
-            <span>Archivadas ({archivedCount})</span>
-            <span aria-hidden="true">›</span>
+            <span>{VARIETIES_TEXT.archivadas}{archivedCount}{VARIETIES_TEXT.text}</span>
+            <span aria-hidden="true">{COMMON_TEXT.text}</span>
           </InAppLink>
         )}
       </div>

@@ -21,6 +21,7 @@ import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import { STEP_COUNT, stepInfo } from './steps'
 import { HOME } from '../../routes'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
 export const NOTICE_TITLE = 'Seguí con la configuración'
 
@@ -37,10 +38,10 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
         <span className="aviso-onboarding__texto">{NOTICE_TITLE}</span>
         <Icono nombre="chevron" />
       </span>
-      <span className="aviso-onboarding__conteo">{`${progress.count} de ${STEP_COUNT} pasos`}</span>
+      <span className="aviso-onboarding__conteo">{ONBOARDING_TEXT.n0De1Pasos(progress.count, STEP_COUNT)}</span>
       <StepIndicator steps={progress.steps} current={current} />
       {current !== null && (
-        <span className="aviso-onboarding__falta">{`Falta: ${stepInfo(current).shortName}`}</span>
+        <span className="aviso-onboarding__falta">{ONBOARDING_TEXT.falta0(stepInfo(current).shortName)}</span>
       )}
     </>
   )

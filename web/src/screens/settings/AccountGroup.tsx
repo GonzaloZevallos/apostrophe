@@ -16,8 +16,9 @@ import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import { logOut } from '../../session'
 import CambiarContrasena from '../CambiarContrasena'
-import { PASSWORD_CHANGED_SUCCESS } from '../../copy/settings'
+import { PASSWORD_CHANGED_SUCCESS, SETTINGS_TEXT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
+import { COMMON_TEXT } from '../../copy/common'
 
 const LEAVE = {
   question: '¿Descartás la contraseña nueva?',
@@ -53,7 +54,7 @@ export default function AccountGroup() {
   }
 
   return (
-    <SettingsGroup title="Tu cuenta" dirty={false} leave={LEAVE}>
+    <SettingsGroup title={SETTINGS_TEXT.tuCuenta} dirty={false} leave={LEAVE}>
       {({ disarm }) => (
         <>
           {passwordChanged && (
@@ -62,10 +63,10 @@ export default function AccountGroup() {
             </div>
           )}
           <Boton variant="secondary" icon="candado" onClick={() => setChangingPassword(true)}>
-            Cambiar contraseña
+            {COMMON_TEXT.cambiarContrasena}
           </Boton>
           <Boton variant="secondary" icon="salirSesion" onClick={() => void onLogOut(disarm)} disabled={loggingOut}>
-            Cerrar sesión
+            {SETTINGS_TEXT.cerrarSesion}
           </Boton>
           {logoutOffline && <SinConexion />}
           {changingPassword && (

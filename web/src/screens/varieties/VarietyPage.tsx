@@ -62,6 +62,10 @@ import VarietyStockSection from './VarietyStockSection'
 import { useBackParent } from '../../shell/useBackParent'
 import VarietyThresholdSection from './VarietyThresholdSection'
 import { useRestore } from './useRestore'
+import { COMMON_TEXT } from '../../copy/common'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { OUT_OF_DATE_SEPARATOR } from '../../copy/pinnedCatalog'
+import { DISCARD_DETAIL } from '../../copy/onboarding'
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
@@ -145,7 +149,7 @@ function VarietyPageView({
 
   const failure = varietyQuery.error ?? pricesQuery.error ?? stockQuery.error ?? archivedCatalogQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
-    return <GoneScreen label="Variedades" to={VARIETIES} />
+    return <GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />
   }
   if (failure !== null) {
     return <Card>{failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Card>
@@ -189,7 +193,7 @@ function VarietyPageView({
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
           {!archived && (
-            <Boton variant="icon" action="edit" ariaLabel="Editar nombre" onClick={() => openForm('rename')} />
+            <Boton variant="icon" action="edit" ariaLabel={VARIETIES_TEXT.editarNombre} onClick={() => openForm('rename')} />
           )}
         </div>
         {row !== undefined && archived && (
@@ -197,21 +201,21 @@ function VarietyPageView({
             <p className="variedad-resumen variedad-resumen--archivada">
               {formatGrams(row.grams)}
               {' · '}
-              {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
+              {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.n0XG(formatMoney(variety.current_price.list_price))}
             </p>
             <div className="variedad-marcas">
-              <Insignia>Archivada</Insignia>
-              {archivedAttributes !== null && !archivedAttributes.shown && <span className="variedad-resumen__oculta">Oculta</span>}
+              <Insignia>{VARIETIES_TEXT.archivada}</Insignia>
+              {archivedAttributes !== null && !archivedAttributes.shown && <span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span>}
             </div>
           </>
         )}
         {row !== undefined && !archived && (
           <p className="variedad-resumen">
-            {formatGrams(row.grams)} · <MarcaEstado estado={row.status} />
-            {catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
-            {row.days_left !== null && <> · {row.days_left} días</>}
+            {formatGrams(row.grams)}{OUT_OF_DATE_SEPARATOR}<MarcaEstado estado={row.status} />
+            {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_SEPARATOR}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
+            {row.days_left !== null && <>{OUT_OF_DATE_SEPARATOR}{row.days_left}{VARIETIES_TEXT.dias}</>}
             {' · '}
-            {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
+            {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.n0XG(formatMoney(variety.current_price.list_price))}
           </p>
         )}
 
@@ -251,20 +255,20 @@ function VarietyPageView({
             {restoreNotice}
             <div className="variedad-acciones">
               <Boton variant="primary" icon="restaurar" disabled={restoring} onClick={() => void restoreFromPage(varietyId)}>
-                Restaurar
+                {VARIETIES_TEXT.restaurar}
               </Boton>
             </div>
           </>
         ) : (
           <div className="variedad-acciones">
-            <BotonLink variant="secondary" icon="agregar" ariaLabel="+ Entrada" to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
-              Entrada
+            <BotonLink variant="secondary" icon="agregar" ariaLabel={VARIETIES_TEXT.entrada} to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
+              {VARIETIES_TEXT.entrada2}
             </BotonLink>
             <BotonLink variant="secondary" icon="precio" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
-              Nuevo precio
+              {VARIETIES_TEXT.nuevoPrecio}
             </BotonLink>
             <BotonLink variant="secondary" icon="salidaStock" to={withdrawalNewFor(varietyId)}>
-              Sacar del stock
+              {COMMON_TEXT.sacarDelStock}
             </BotonLink>
           </div>
         )}
@@ -296,10 +300,10 @@ function VarietyPageView({
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el cambio?"
-          detail="Se pierde lo que escribiste: todavía no se guardó nada."
-          keepLabel="No, seguí escribiendo"
-          discardLabel="Sí, descartalo"
+          question={VARIETIES_TEXT.descartasElCambio}
+          detail={DISCARD_DETAIL}
+          keepLabel={VARIETIES_TEXT.noSeguiEscribiendo}
+          discardLabel={COMMON_TEXT.siDescartalo}
         />
       )}
     </main>

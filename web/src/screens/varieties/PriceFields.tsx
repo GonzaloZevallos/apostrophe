@@ -8,7 +8,8 @@
 
 import type { PricingSettings } from '../../api/pricingSettings'
 import type { PriceErrors, PriceValues } from './priceFieldRules'
-import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP } from '../../copy/varieties'
+import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP, VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
 
 export function FieldError({ message }: { message: string | undefined }) {
   if (message === undefined) return null
@@ -33,7 +34,7 @@ interface AmountInputProps {
 function AmountInput({ className, value, onChange, required }: AmountInputProps) {
   return (
     <span className="campo__monto">
-      <span className="campo__prefijo" aria-hidden="true">$</span>
+      <span className="campo__prefijo" aria-hidden="true">{VARIETIES_TEXT.text2}</span>
       <input
         className={className}
         inputMode="numeric"
@@ -57,7 +58,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
   return (
     <>
       <label className="campo">
-        <span className="campo__rotulo">Precio de lista</span>
+        <span className="campo__rotulo">{VARIETIES_TEXT.precioDeLista}</span>
         <AmountInput
           className="campo__input campo__input--monto"
           value={values.listPrice}
@@ -70,7 +71,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
       {settings.is_bulk_pricing && (
         <>
           <label className="campo">
-            <span className="campo__rotulo">Precio por cantidad</span>
+            <span className="campo__rotulo">{COMMON_TEXT.precioPorCantidad}</span>
             <AmountInput
               className="campo__input"
               value={values.bulkPrice}
@@ -80,7 +81,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
             <FieldError message={errors.bulkPrice} />
           </label>
           <label className="campo">
-            <span className="campo__rotulo">Mínimo en gramos</span>
+            <span className="campo__rotulo">{VARIETIES_TEXT.minimoEnGramos}</span>
             <input
               className="campo__input"
               inputMode="decimal"
@@ -94,7 +95,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
       )}
       {settings.is_vip_customers && (
         <label className="campo">
-          <span className="campo__rotulo">Precio VIP</span>
+          <span className="campo__rotulo">{VARIETIES_TEXT.precioVip}</span>
           <AmountInput
             className="campo__input"
             value={values.vipPrice}

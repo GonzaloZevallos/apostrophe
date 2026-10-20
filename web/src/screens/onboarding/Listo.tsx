@@ -19,6 +19,8 @@ import { HOME, SALE_NEW } from '../../routes'
 import { useOnboarding } from './onboardingContext'
 import StepIndicator from './StepIndicator'
 import { STEP_COUNT, STEPS, type StepInfo } from './steps'
+import { COMMON_TEXT } from '../../copy/common'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
 function plural(n: number, one: string, many: string): string {
   return n === 1 ? `1 ${one}` : `${n} ${many}`
@@ -52,17 +54,17 @@ export default function Listo() {
           <Boton
             variant="icon"
             action="close"
-            ariaLabel="Cerrar"
+            ariaLabel={COMMON_TEXT.cerrar}
             onClick={() => void navigate(HOME, { replace: true })}
           />
         </div>
         <div className="onboarding__progreso">
-          <span className="onboarding__paso">{`${STEP_COUNT} de ${STEP_COUNT} pasos`}</span>
+          <span className="onboarding__paso">{ONBOARDING_TEXT.n0De1Pasos(STEP_COUNT, STEP_COUNT)}</span>
           <StepIndicator steps={progress.steps} current={null} />
         </div>
         <div className="onboarding__titulos">
-          <h1 className="onboarding__titulo onboarding__titulo--grande">Listo</h1>
-          <p className="onboarding__porque">Esto quedó armado en tu negocio.</p>
+          <h1 className="onboarding__titulo onboarding__titulo--grande">{ONBOARDING_TEXT.listo}</h1>
+          <p className="onboarding__porque">{ONBOARDING_TEXT.estoQuedoArmadoEn}</p>
         </div>
         <ul className="listo__lista">
           {STEPS.map((info) => {
@@ -85,10 +87,10 @@ export default function Listo() {
         </ul>
         <div className="onboarding__acciones">
           <Boton icon="agregar" onClick={() => void firstSale()}>
-            Cargar mi primera venta
+            {ONBOARDING_TEXT.cargarMiPrimeraVenta}
           </Boton>
           <Boton variant="secondary" icon="inicio" onClick={() => void navigate(HOME, { replace: true })}>
-            Ir a Inicio
+            {ONBOARDING_TEXT.irAInicio}
           </Boton>
         </div>
       </div>

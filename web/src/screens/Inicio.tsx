@@ -40,12 +40,13 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../shell/initials'
-import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
+import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE, INICIO_TEXT } from '../copy/inicio'
 import { inicioNotices } from './inicioNotices'
 import FirstRunChecklist from './inicio/FirstRunChecklist'
 import ImportNotice from './inicio/ImportNotice'
 import InicioPanel from './inicio/InicioPanel'
 import OnboardingNotice from './onboarding/OnboardingNotice'
+import { COMMON_TEXT } from '../copy/common'
 
 export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
 
@@ -87,11 +88,11 @@ export default function Inicio() {
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">
             <span className="encabezado__negocio">{me.business_name}</span>
-            <span className="encabezado__titulo">Inicio</span>
+            <span className="encabezado__titulo">{INICIO_TEXT.inicio}</span>
           </div>
           <InAppLink
             to={SETTINGS}
-            aria-label={`Configuración de ${me.business_name}`}
+            aria-label={COMMON_TEXT.configuracionDe0(me.business_name)}
             className="inicio__avatar"
           >
             {initialsOf(me.business_name)}

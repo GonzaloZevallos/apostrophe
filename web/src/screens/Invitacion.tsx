@@ -28,7 +28,8 @@ import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { formatDateShort } from '../format/dates'
-import { expiryLine, NOT_USABLE_DETAIL, NOT_USABLE_TITLE, WEAK_PASSWORD_MESSAGE } from '../copy/auth'
+import { expiryLine, NOT_USABLE_DETAIL, NOT_USABLE_TITLE, WEAK_PASSWORD_MESSAGE, AUTH_TEXT } from '../copy/auth'
+import { COMMON_TEXT } from '../copy/common'
 
 export { NOT_USABLE_DETAIL, NOT_USABLE_TITLE }
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
@@ -157,7 +158,7 @@ export default function Invitacion() {
     <AuthPage
       titleClass="invitacion__titulo"
       eyebrow={isNewBusiness ? 'Invitación válida' : 'Te invitaron a'}
-      title={isNewBusiness ? 'Armá tu negocio' : (view.business_name ?? undefined)}
+      title={isNewBusiness ? AUTH_TEXT.armaTuNegocio : (view.business_name ?? undefined)}
       subtitle={
         isNewBusiness
           ? 'Ponele un nombre y creá tu usuario. Después podés invitar a un socio.'
@@ -167,7 +168,7 @@ export default function Invitacion() {
       <form className="formulario" onSubmit={onSubmit}>
         {isNewBusiness && (
           <label className="campo">
-            <span className="campo__rotulo">Nombre del negocio</span>
+            <span className="campo__rotulo">{COMMON_TEXT.nombreDelNegocio}</span>
             <input
               className="campo__input"
               type="text"
@@ -178,7 +179,7 @@ export default function Invitacion() {
           </label>
         )}
         <label className="campo">
-          <span className="campo__rotulo">Email</span>
+          <span className="campo__rotulo">{AUTH_TEXT.email}</span>
           <input
             className="campo__input"
             type="email"
@@ -187,9 +188,9 @@ export default function Invitacion() {
             required
           />
         </label>
-        <PasswordField label="Contraseña" value={password} onChange={setPassword} error={error} />
+        <PasswordField label={AUTH_TEXT.contrasena} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {isNewBusiness ? 'Creá el negocio' : `Sumate a ${view.business_name}`}
+          {isNewBusiness ? AUTH_TEXT.creaElNegocio : AUTH_TEXT.sumateA0(view.business_name)}
         </Boton>
       </form>
       <div className="pie">

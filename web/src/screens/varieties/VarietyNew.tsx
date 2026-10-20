@@ -15,6 +15,9 @@ import { VARIETIES } from '../../routes'
 import { VARIETY_SAVED } from '../Variedades'
 import Boton from '../../components/Boton'
 import VarietyNameForm from './VarietyNameForm'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
+import { DISCARD_DETAIL } from '../../copy/onboarding'
 
 export default function VarietyNew() {
   const navigate = useNavigate()
@@ -39,9 +42,9 @@ export default function VarietyNew() {
       <div className="cuerpo">
         <div className="gasto-form">
           <div className="gasto-form__cabecera">
-            <span className="gasto-form__titulo">Nueva variedad</span>
+            <span className="gasto-form__titulo">{VARIETIES_TEXT.nuevaVariedad}</span>
             <span className="gasto-form__cerrar">
-              <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={leave} />
+              <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={leave} />
             </span>
           </div>
           <VarietyNameForm onSaved={onSaved} onDirtyChange={setDirty} />
@@ -50,10 +53,10 @@ export default function VarietyNew() {
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás la variedad?"
-          detail="Se pierde lo que escribiste: todavía no se guardó nada."
-          keepLabel="No, seguí escribiendo"
-          discardLabel="Sí, descartalo"
+          question={VARIETIES_TEXT.descartasLaVariedad}
+          detail={DISCARD_DETAIL}
+          keepLabel={VARIETIES_TEXT.noSeguiEscribiendo}
+          discardLabel={COMMON_TEXT.siDescartalo}
         />
       )}
     </main>

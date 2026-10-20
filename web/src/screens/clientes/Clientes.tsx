@@ -26,9 +26,10 @@ import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
-import { EMPTY_CUSTOMERS, EVERYONE } from '../../copy/customers'
+import { EMPTY_CUSTOMERS, EVERYONE, CUSTOMERS_TEXT } from '../../copy/customers'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
+import { COMMON_TEXT } from '../../copy/common'
 
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
@@ -67,10 +68,10 @@ export default function Clientes() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <span className="encabezado__titulo">Clientes</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.clientes}</span>
         </div>
         <div className="campo__rotulo">
-          <span>{`${total.data?.length ?? 0} clientes`}</span>
+          <span>{CUSTOMERS_TEXT.n0Clientes(total.data?.length ?? 0)}</span>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">
@@ -85,7 +86,7 @@ export default function Clientes() {
         </label>
         <div className="clientes__accion">
           <BotonLink to={CUSTOMER_NEW} icon="personaMas">
-            Nuevo cliente
+            {COMMON_TEXT.nuevoCliente}
           </BotonLink>
         </div>
         {query === '' && <TeDeben />}

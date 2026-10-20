@@ -59,3 +59,37 @@ const LIMITED_COPY_1: readonly LimitedCopy[] = [
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [...LIMITED_COPY_0, ...LIMITED_COPY_1]
 export const LONG_REFUSALS: readonly string[] = []
+
+/** Every text a person reads in this area that is not a named message above, by key. */
+export const SETTINGS_TEXT = {
+  mas: 'Más',
+  tuCuenta: 'Tu cuenta',
+  cerrarSesion: 'Cerrar sesión',
+  apariencia: 'Apariencia',
+  tema: 'Tema',
+  negocio: 'Negocio',
+  encabezado: 'Encabezado',
+  pie: 'Pie',
+  nuevaCategoria: 'Nueva categoría',
+  categoria: '+ Categoría',
+  nombreDe0: (name: string | number) => `Nombre de ${name}`,
+  renombrar: 'Renombrar',
+  eliminar: 'Eliminar',
+  borrasLaCategoria: '¿Borrás la categoría?',
+  seBorra: 'Se borra “',
+  estoNoSePuede: '”. Esto no se puede deshacer.',
+  categoriasDeGastos: 'Categorías de gastos',
+  tokenDelBot: 'Token del bot',
+  guardadoEl: 'Guardado el ',
+  noSeMuestraMas: ' · no se muestra más',
+  chatDelCanal: 'Chat del canal',
+  tuChat: 'Tu chat',
+  buscarMiChat: 'Buscar mi chat',
+  probarlo: 'Probarlo',
+  irAlCatalogo: 'Ir al catálogo',
+  clientesVip: 'Clientes VIP',
+  guardaLosPrecios: 'Guardá los precios',
+  configuracion: 'Configuración',
+  usuarios: 'Usuarios',
+  vos: 'vos',
+} as const

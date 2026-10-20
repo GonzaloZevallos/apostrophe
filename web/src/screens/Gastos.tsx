@@ -36,7 +36,8 @@ import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
-import { FLOWER_NOTICE } from '../copy/expenses'
+import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
+import { COMMON_TEXT } from '../copy/common'
 
 export { FLOWER_NOTICE }
 export const NO_DISCARD_TITLE = 'No, dejala'
@@ -97,8 +98,8 @@ function DeleteConfirm({
   return (
     <div className="capa" role="presentation">
       <div className="capa__contenido panel">
-        <span className="panel__titulo">¿Borrás el gasto?</span>
-        <span className="panel__detalle">{deleteQuestion(expense, categoryName, today)} Esto no se puede deshacer.</span>
+        <span className="panel__titulo">{EXPENSES_TEXT.borrasElGasto}</span>
+        <span className="panel__detalle">{deleteQuestion(expense, categoryName, today)}{EXPENSES_TEXT.estoNoSePuede}</span>
         {offline && <SinConexion />}
         {error !== null && (
           <span className="campo__error" role="alert">
@@ -170,16 +171,16 @@ export default function Gastos() {
     <main className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
-          <span className="encabezado__titulo gastos__titulo">Gastos</span>
-          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
+          <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.gastos}</span>
+          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={EXPENSES_TEXT.cargarGasto}>
             <Icono nombre="agregar" />
-            <span className="gastos__cargar-texto">Cargar gasto</span>
+            <span className="gastos__cargar-texto">{EXPENSES_TEXT.cargarGasto}</span>
           </InAppLink>
           <div className="gastos__mes">
             <button
               type="button"
               className="gastos__mes-boton"
-              aria-label="Mes anterior"
+              aria-label={COMMON_TEXT.mesAnterior}
               onClick={() => moveMonth(-1)}
             >
               <Icono nombre="atras" />
@@ -188,7 +189,7 @@ export default function Gastos() {
             <button
               type="button"
               className="gastos__mes-boton"
-              aria-label="Mes siguiente"
+              aria-label={COMMON_TEXT.mesSiguiente}
               onClick={() => moveMonth(1)}
             >
               <Icono nombre="chevron" />
@@ -204,7 +205,7 @@ export default function Gastos() {
           <>
             <div className="gastos__resumen">
               <div className="gastos__total">
-                <span className="rotulo">Gastaste en el mes</span>
+                <span className="rotulo">{EXPENSES_TEXT.gastasteEnElMes}</span>
                 <span className="cifra-xl">{formatMoney(view.data.total)}</span>
                 {latest.length > 0 && (
                   <span className="gastos__conteo">{countLine(latest.length, view.data.categories.length)}</span>
@@ -212,7 +213,7 @@ export default function Gastos() {
               </div>
               {view.data.categories.length > 0 && (
                 <>
-                  <span className="gastos__seccion">Por categoría</span>
+                  <span className="gastos__seccion">{EXPENSES_TEXT.porCategoria}</span>
                   <div className="gastos__categorias">
                     {view.data.categories.map((category) => (
                       <div key={category.id} className="gastos__categoria">
@@ -234,7 +235,7 @@ export default function Gastos() {
             </div>
             {latest.length > 0 && (
               <div className="gastos__ultimos">
-                <span className="gastos__seccion">Últimos</span>
+                <span className="gastos__seccion">{EXPENSES_TEXT.ultimos}</span>
                 {latest.map(({ expense, categoryName }) => (
                   <button
                     key={expense.id}
@@ -258,7 +259,7 @@ export default function Gastos() {
         <div className="gastos__pie">
           <span className="pie">{FLOWER_NOTICE}</span>
           <BotonLink to={EXPENSE_CATEGORIES} variant="link">
-            Categorías
+            {EXPENSES_TEXT.categorias}
           </BotonLink>
         </div>
       </div>
@@ -286,10 +287,10 @@ export default function Gastos() {
             />
             {confirmingDiscard && (
               <ConfirmDialog
-                title="¿Descartás los cambios?"
-                detail="Se pierde lo que cambiaste: el gasto sigue como estaba."
-                confirmText="Sí, descartalos"
-                cancelText="No, seguí editando"
+                title={COMMON_TEXT.descartasLosCambios}
+                detail={EXPENSES_TEXT.sePierdeLoQue}
+                confirmText={EXPENSES_TEXT.siDescartalos}
+                cancelText={COMMON_TEXT.noSeguiEditando}
                 onConfirm={closeEdit}
                 onCancel={() => setConfirmingDiscard(false)}
               />

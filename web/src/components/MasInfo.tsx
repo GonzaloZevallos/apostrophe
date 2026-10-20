@@ -13,6 +13,7 @@
 
 import { useId, useState } from 'react'
 import Icono from './Icono'
+import { COMMON_TEXT } from '../copy/common'
 
 export interface MasInfoProps {
   /** The always-visible line (a registered binding of at most 80 characters). */
@@ -33,7 +34,7 @@ export default function MasInfo({ line, more }: MasInfoProps) {
         <button
           type="button"
           className="mas-info__boton"
-          aria-label="Más info"
+          aria-label={COMMON_TEXT.masInfo}
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((was) => !was)}

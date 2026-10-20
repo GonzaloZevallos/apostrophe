@@ -9,6 +9,7 @@
 import InAppLink from '../components/InAppLink'
 import Icono, { type NombreIcono } from '../components/Icono'
 import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS, WITHDRAWAL_NEW } from '../routes'
+import { SETTINGS_TEXT } from '../copy/settings'
 
 interface Item {
   to: string
@@ -60,8 +61,8 @@ export default function Mas() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">Más</span>
-        <nav className="mas__lista" aria-label="Más" data-menu>
+        <span className="encabezado__titulo">{SETTINGS_TEXT.mas}</span>
+        <nav className="mas__lista" aria-label={SETTINGS_TEXT.mas} data-menu>
           {ITEMS.map((item) => (
             <InAppLink
               key={item.to}

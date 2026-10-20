@@ -36,7 +36,7 @@ import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
-import { DEAD_LINK_MESSAGE, WEAK_PASSWORD_MESSAGE } from '../copy/auth'
+import { DEAD_LINK_MESSAGE, WEAK_PASSWORD_MESSAGE, AUTH_TEXT } from '../copy/auth'
 
 export { DEAD_LINK_MESSAGE }
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
@@ -114,7 +114,7 @@ export default function Reset() {
     return (
       <AuthPage title={DEAD_LINK_MESSAGE}>
         <BotonLink variant="link" to={LOGIN}>
-          Entrar
+          {AUTH_TEXT.entrar}
         </BotonLink>
       </AuthPage>
     )
@@ -137,11 +137,11 @@ export default function Reset() {
   }
 
   return (
-    <AuthPage title="Elegí tu contraseña nueva">
+    <AuthPage title={AUTH_TEXT.elegiTuContrasenaNueva}>
       <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
-        <PasswordField label="Contraseña nueva" value={password} onChange={setPassword} error={error} />
+        <PasswordField label={AUTH_TEXT.contrasenaNueva} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardar y entrar
+          {AUTH_TEXT.guardarYEntrar}
         </Boton>
       </form>
     </AuthPage>

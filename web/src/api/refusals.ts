@@ -5,6 +5,7 @@
  * rename on either side fails a check instead of quietly falling back here.
  */
 
+import { REFUSAL_TEXT } from '../copy/refusals'
 import contract from './contract.json'
 
 export type RefusalKind = 'refusal' | 'gone'
@@ -27,19 +28,19 @@ function isRefusalCode(code: string): code is RefusalCode {
 /** Shown after a save or a delete lands on a record that is gone (plan, "Gone
  * records"): no id, name, date or amount, so it reads the same whatever was
  * deleted, foreign, or never existed (ADR-0004). Not a success toast. */
-export const GONE_NOTICE = 'Eso ya no está. La lista ya está al día.'
+export const GONE_NOTICE = REFUSAL_TEXT.goneNotice
 
 /** Shown instead of a detail screen for a record that is gone, with no data of its
  * own (plan, "Gone records"). */
-export const GONE_DETAIL = 'Eso ya no está.'
+export const GONE_DETAIL = REFUSAL_TEXT.goneDetail
 
 /** Fixed text for `variety.name_archived`: the name belongs to an archived variety. It
  * repeats nothing the seller typed (ADR-0005). */
-export const NAME_ARCHIVED_MESSAGE = 'Ese nombre es de una variedad archivada. Buscala en Archivadas.'
+export const NAME_ARCHIVED_MESSAGE = REFUSAL_TEXT.nameArchived
 
 /** Fixed text for `variety.has_history`: a delete was refused because the variety has
  * sales or stock. It repeats no name or amount (ADR-0005). */
-export const HAS_HISTORY_MESSAGE = 'Esta variedad ya tiene historia: archivala en vez de eliminarla.'
+export const HAS_HISTORY_MESSAGE = REFUSAL_TEXT.hasHistory
 
 /** A code's kind, from the shared contract. The parameter stays a plain `string`
  * because a code comes in untyped off the wire (`ApiError.code`); a code the
@@ -81,34 +82,23 @@ export type PinReason =
   | 'missing_publish'
   | 'too_long'
 
-export const PINNED_CATALOG_REASON_LABEL: Record<PinReason, string> = {
-  telegram_unreachable: 'Telegram no respondió',
-  bot_cannot_post: 'El bot no puede publicar en el canal',
-  message_gone: 'El mensaje fijado ya no está: publicalo de nuevo',
-  missing_publish: 'Falta publicarlo con el bot o el canal nuevo',
-  too_long: 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.',
-}
+export const PINNED_CATALOG_REASON_LABEL: Record<PinReason, string> = REFUSAL_TEXT.pinReason
 
-const PINNED_CATALOG_GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
-export const PINNED_CATALOG_NOT_READY_REASON = 'Probalo primero para ver cómo queda'
+const PINNED_CATALOG_GENERIC_REFUSAL = REFUSAL_TEXT.pinnedGeneric
+export const PINNED_CATALOG_NOT_READY_REASON = REFUSAL_TEXT.pinnedNotReady
 
 /** What Probarlo says for each cause Telegram's refusal carries (the PRD's table): the
  * seller's own chat and token, never the channel. Fixed text, repeating nothing typed. */
-const PROBARLO_TOKEN_INVALID_REASON = 'El token no es válido: copialo de nuevo de @BotFather.'
-const PROBARLO_OWN_CHAT_NOT_STARTED_REASON =
-  'Abrí tu bot en Telegram y tocá Iniciar, después probalo de nuevo.'
-const PROBARLO_OWN_CHAT_NOT_FOUND_REASON =
-  'No encontramos tu chat: revisá el número y tocá Iniciar en tu bot.'
-const PROBARLO_TEST_FAILED_REASON = 'No pudimos enviarte la prueba: revisá el token y tu chat.'
+const PROBARLO_TOKEN_INVALID_REASON = REFUSAL_TEXT.probarloTokenInvalid
+const PROBARLO_OWN_CHAT_NOT_STARTED_REASON = REFUSAL_TEXT.probarloOwnChatNotStarted
+const PROBARLO_OWN_CHAT_NOT_FOUND_REASON = REFUSAL_TEXT.probarloOwnChatNotFound
+const PROBARLO_TEST_FAILED_REASON = REFUSAL_TEXT.probarloTestFailed
 
 /** What Buscar mi chat says when it finds no one person (the PRD's table): fixed text,
  * repeating nothing typed and showing no name or number. */
-const LOOKUP_NO_MESSAGES_REASON =
-  'Todavía no vemos mensajes en tu bot: abrilo en Telegram, tocá Iniciar y buscá de nuevo.'
-const LOOKUP_SEVERAL_CHATS_REASON =
-  'Le escribió más de una persona a tu bot: buscá tu número con @userinfobot y escribilo acá.'
-const LOOKUP_UPDATES_UNREADABLE_REASON =
-  'No pudimos leer los mensajes de tu bot: buscá tu número con @userinfobot y escribilo acá.'
+const LOOKUP_NO_MESSAGES_REASON = REFUSAL_TEXT.lookupNoMessages
+const LOOKUP_SEVERAL_CHATS_REASON = REFUSAL_TEXT.lookupSeveralChats
+const LOOKUP_UPDATES_UNREADABLE_REASON = REFUSAL_TEXT.lookupUpdatesUnreadable
 
 /** Every `pinned_catalog.*` code `contract.json` lists, mapped here exhaustively
  * (plan, "Front": "Map every `pinned_catalog.*` code in `web/src/api/refusals.ts`;
@@ -148,7 +138,7 @@ export const PINNED_CATALOG_REFUSAL_OVERRIDES: Record<
 
 /** The fixed Spanish text of the varieties refusal that has a field of its own: a VIP
  * price at or above the list price. It carries no amount (ADR-0005). */
-export const VIP_PRICE_NOT_BELOW_LIST_MESSAGE = 'El precio VIP tiene que ser menor al precio de lista'
+export const VIP_PRICE_NOT_BELOW_LIST_MESSAGE = REFUSAL_TEXT.vipPriceNotBelowList
 
 export const VARIETY_REFUSAL_TEXT: Partial<Record<RefusalCode, string>> = {
   'variety.vip_price_not_below_list': VIP_PRICE_NOT_BELOW_LIST_MESSAGE,
@@ -168,12 +158,4 @@ export const WITHDRAWAL_REFUSAL_MESSAGES: Record<
   | 'stock.withdrawal_note_too_long'
   | 'stock.withdrawal_variety_not_found',
   string
-> = {
-  'stock.withdrawal_reason_required': 'Elegí el motivo: Promoción o Consumo propio',
-  'stock.withdrawal_date_in_future': 'La fecha no puede ser futura',
-  'stock.withdrawal_no_lines': 'Agregá al menos una variedad con sus gramos',
-  'stock.withdrawal_grams_not_positive': 'Los gramos tienen que ser más que cero',
-  'stock.withdrawal_grams_too_precise': 'Los gramos admiten hasta dos decimales',
-  'stock.withdrawal_note_too_long': 'La nota admite hasta 200 caracteres',
-  'stock.withdrawal_variety_not_found': 'Alguna variedad ya no está: elegí otra',
-}
+> = REFUSAL_TEXT.withdrawal

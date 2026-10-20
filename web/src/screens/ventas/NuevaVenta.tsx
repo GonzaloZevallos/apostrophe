@@ -66,10 +66,11 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
-import { OWING_HINT } from '../../copy/sales'
+import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
+import { COMMON_TEXT } from '../../copy/common'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
@@ -542,24 +543,24 @@ function NuevaVentaForm() {
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
-            <span className="encabezado__titulo">Nueva venta</span>
+            <span className="encabezado__titulo">{COMMON_TEXT.nuevaVenta}</span>
             <span className="fecha-pildora">
               <input
                 className="fecha-pildora__input"
                 type="date"
-                aria-label="Fecha"
+                aria-label={COMMON_TEXT.fecha}
                 value={date}
                 max={maxSaleDate(me.today)}
                 onChange={(event) => setDate(event.target.value)}
                 required
               />
               <span className="fecha-pildora__texto" aria-hidden="true">
-                {date === me.today ? `Hoy ${formatDateShort(date)}` : formatDateLong(date)}
+                {date === me.today ? SALES_TEXT.hoy0(formatDateShort(date)) : formatDateLong(date)}
                 <Icono nombre="abajo" />
               </span>
             </span>
             <span className="nueva-venta__cerrar">
-              <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
+              <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={close} />
             </span>
           </div>
           {dateError !== null && (
@@ -575,7 +576,7 @@ function NuevaVentaForm() {
               {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
               {customer === null ? (
                 <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
-                  Elegir cliente
+                  {SALES_TEXT.elegirCliente}
                 </Boton>
               ) : (
                 <Boton variant="row" onClick={customerSheet.open}>
@@ -583,13 +584,13 @@ function NuevaVentaForm() {
                     <div className="nueva-venta__cliente-texto">
                       <span className="lista-clientes__nombre">
                         {customer.name}
-                        {settings.vip && customer.vip && <span className="vip-insignia">VIP</span>}
+                        {settings.vip && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                       </span>
                       {customer.phone !== null && (
                         <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
                       )}
                     </div>
-                    <span className="nueva-venta__cliente-cambiar">Cambiar</span>
+                    <span className="nueva-venta__cliente-cambiar">{COMMON_TEXT.cambiar}</span>
                   </div>
                 </Boton>
               )}
@@ -617,14 +618,14 @@ function NuevaVentaForm() {
                 ))}
               </div>
               <Boton variant="secondary" icon="agregar" onClick={addLine}>
-                Agregar otra variedad
+                {COMMON_TEXT.agregarOtraVariedad}
               </Boton>
 
               <div className="nueva-venta__fila-dato">
-                <span>Envío cobrado</span>
+                <span>{SALES_TEXT.envioCobrado}</span>
                 <input
                   className="campo__input"
-                  aria-label="Envío"
+                  aria-label={SALES_TEXT.envio}
                   type="text"
                   inputMode="numeric"
                   value={shipping}
@@ -638,10 +639,10 @@ function NuevaVentaForm() {
               )}
 
               <div className="nueva-venta__fila-dato">
-                <span>Nota</span>
+                <span>{COMMON_TEXT.nota}</span>
                 <textarea
                   className="campo__input"
-                  aria-label="Nota"
+                  aria-label={COMMON_TEXT.nota}
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
                 />
@@ -679,17 +680,17 @@ function NuevaVentaForm() {
             </div>
 
             <div className="nueva-venta__pie">
-              <span className="rotulo">Total</span>
+              <span className="rotulo">{SALES_TEXT.total}</span>
               <span className="cifra-xl">
                 {repricing ? <Loading compacto /> : formatMoney(totals.total)}
               </span>
               <span className="rotulo nueva-venta__gramos">
-                {formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos
+                {formatGrams(fromHundredths(totals.gramsSoldHundredths))}{COMMON_TEXT.vendidos}
                 {totals.gramsGiftedHundredths > 0 &&
-                  ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
+                  SALES_TEXT.n0DeRegalo(formatGrams(fromHundredths(totals.gramsGiftedHundredths)))}
               </span>
               <Boton textOnly="submit" type="submit" disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
-                Guardá la venta
+                {SALES_TEXT.guardaLaVenta}
               </Boton>
             </div>
           </div>
@@ -703,10 +704,10 @@ function NuevaVentaForm() {
         <div className="nueva-venta__aviso">
           <LeaveConfirm
             blocker={blocker}
-            question="¿Descartás la venta?"
-            detail="No vas a poder recuperar lo que cargaste."
-            keepLabel="No, seguí cargando"
-            discardLabel="Sí, descartala"
+            question={SALES_TEXT.descartasLaVenta}
+            detail={SALES_TEXT.noVasAPoder}
+            keepLabel={COMMON_TEXT.noSeguiCargando}
+            discardLabel={SALES_TEXT.siDescartala}
           />
         </div>
       )}
