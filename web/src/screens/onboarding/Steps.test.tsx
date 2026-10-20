@@ -252,6 +252,20 @@ test('step 2 saves the opening stock of the stock target through the owner, then
   expect(calls).toContain('POST /onboarding-progress/advance')
 })
 
+test('step 2 names the variety and asks only grams and the optional cost: no Variedad select, no Nota, no date input', async () => {
+  stubFetch(answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending'], { stock_target: MANGO }), {
+    ...STOCK_FORM_READS,
+  })
+  renderAt(ONBOARDING_STOCK)
+
+  expect(await screen.findByText('Mango Bomb')).toBeInTheDocument()
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Nota')).not.toBeInTheDocument()
+  expect(document.querySelector('input[type="date"]')).toBeNull()
+  expect(screen.getAllByRole('textbox')).toHaveLength(2)
+  expect(screen.getByText('Stock inicial')).toBeInTheDocument()
+})
+
 test('"Agregar otra variedad" goes back to step 1 with the progress still on steps 1 and 2', async () => {
   const done = answer(REQUIRED, { stock_entries_count: 1 })
   stubFetch(done, {})
