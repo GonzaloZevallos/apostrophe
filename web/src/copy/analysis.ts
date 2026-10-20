@@ -44,7 +44,6 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const ANALYSIS_TEXT = {
-  text: '‹',
   comprasDeFlores: 'Compras de flores',
   vendisteEnElMes: 'Vendiste en el mes',
   vendidos: ' vendidos · ',
@@ -59,7 +58,6 @@ export const ANALYSIS_TEXT = {
   gramosRegalo: 'Gramos regalo',
   costo2: 'Costo',
   margen2: 'Margen',
-  text2: '%',
   semanaASemanaUltimas: 'Semana a semana · últimas 8',
   gastos: 'gastos ',
   ganancia: 'ganancia ',

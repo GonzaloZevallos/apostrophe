@@ -34,7 +34,7 @@ interface AmountInputProps {
 function AmountInput({ className, value, onChange, required }: AmountInputProps) {
   return (
     <span className="campo__monto">
-      <span className="campo__prefijo" aria-hidden="true">{VARIETIES_TEXT.text2}</span>
+      <span className="campo__prefijo" aria-hidden="true">$</span>
       <input
         className={className}
         inputMode="numeric"

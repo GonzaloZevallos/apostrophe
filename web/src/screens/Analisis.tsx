@@ -195,7 +195,7 @@ function MonthNav({
           if (month.previous !== null) onMonth(month.previous)
         }}
       >
-        {ANALYSIS_TEXT.text}
+        ‹
       </button>
       <span className="gastos__mes-etiqueta">{formatMonthLong(month.month)}</span>
       <button
@@ -207,7 +207,7 @@ function MonthNav({
           if (month.next !== null) onMonth(month.next)
         }}
       >
-        {COMMON_TEXT.text}
+        ›
       </button>
     </div>
   )
@@ -359,7 +359,7 @@ function AnalisisContenido({
                             {pendingSuffix(variety.margin.pending_grams)}
                           </span>
                           {variety.margin.percent !== null && (
-                            <span>{variety.margin.percent}{ANALYSIS_TEXT.text2}</span>
+                            <span>{variety.margin.percent}%</span>
                           )}
                         </td>
                       </tr>

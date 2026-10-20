@@ -1,6 +1,6 @@
 /**
  * The wordings a screen must never show while its data loads (no false empty state). The
- * list is the screens' own (`screens/emptyStates.ts`), imported, never copied: a new empty
+ * list is the screens' own (`copy/emptyStates.ts`), imported, never copied: a new empty
  * state is added there once and is forbidden here without another edit.
  */
 

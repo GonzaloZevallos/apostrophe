@@ -72,7 +72,7 @@ export default function Entrar() {
     <AuthPage>
       <div>
         <span className="marca">
-          {AUTH_TEXT.apostrophe}<span className="marca__apostrofe">{AUTH_TEXT.text}</span>
+          {AUTH_TEXT.apostrophe}<span className="marca__apostrofe">’</span>
         </span>
         <p className="subtitulo">{AUTH_TEXT.tusVentasTuStock}</p>
       </div>

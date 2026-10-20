@@ -180,12 +180,12 @@ export default function Variedades() {
         )}
         <InAppLink to={STOCK} className="variedades__todas">
           <span>{COMMON_TEXT.todasLasEntradas}</span>
-          <span aria-hidden="true">{COMMON_TEXT.text}</span>
+          <span aria-hidden="true">›</span>
         </InAppLink>
         {archivedCount > 0 && (
           <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
-            <span>{VARIETIES_TEXT.archivadas}{archivedCount}{VARIETIES_TEXT.text}</span>
-            <span aria-hidden="true">{COMMON_TEXT.text}</span>
+            <span>{VARIETIES_TEXT.archivadas}{archivedCount})</span>
+            <span aria-hidden="true">›</span>
           </InAppLink>
         )}
       </div>

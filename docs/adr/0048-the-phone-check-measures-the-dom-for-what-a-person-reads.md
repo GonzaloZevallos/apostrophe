@@ -28,7 +28,7 @@ check. The phone check (`web/e2e/mobile.spec.ts`, GH-80) reads the page itself.
 - **Loading.** With the screen's GETs held (the session's own `/auth/me` passes: held, the
   gated layout renders nothing and no screen's loading state could be read), a screen that
   asked for data is read for `blank-while-loading`, `aria-busy`, `false-empty` (the one
-  list, `screens/emptyStates.ts`) and `data-while-loading`. After the release,
+  list, `copy/emptyStates.ts`) and `data-while-loading`. After the release,
   `chrome-shift` and `content-shift` come from a `layout-shift` observer installed before
   the app's scripts, counting only what moved from the release on: what moved before it
   (a font swapping in) is the page's own timing, and measured from navigation the content

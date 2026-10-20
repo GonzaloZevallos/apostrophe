@@ -39,7 +39,6 @@ export const AUTH_TEXT = {
   contrasenaNueva: 'Contraseña nueva',
   cancelar: 'Cancelar',
   apostrophe: 'apostrophe',
-  text: '’',
   tusVentasTuStock: 'Tus ventas, tu stock y lo que te deben.',
   email: 'Email',
   contrasena: 'Contraseña',

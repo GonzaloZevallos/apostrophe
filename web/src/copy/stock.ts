@@ -46,6 +46,16 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const STOCK_TEXT = {
+  firstEntry: 'Cargale la primera entrada',
+  noGrams: 'Sin gramos',
+  noGramsSince: (date: string) => `Sin gramos desde el ${date}`,
+  warnBelowThreshold: 'Avisás por debajo del umbral',
+  warnBelow: (grams: string) => `Avisás abajo de ${grams}`,
+  atPace: 'Al ritmo de los últimos 30 días',
+  daysLeft: (days: number) => `${days} días`,
+  warningOff: 'Aviso apagado',
+  warningLow: (grams: string) => `Avisando: quedan ${grams}`,
+  warnMeBelow: (grams: string) => `Avisame abajo de ${grams}`,
   nuevaEntrada: 'Nueva entrada',
   editarEntrada: 'Editar entrada',
   descartasLaEntrada: '¿Descartás la entrada?',

@@ -188,7 +188,7 @@ doc may record a deliberate exception; without one, this standard wins over an a
      pending state at once (`pending-state`).
 
    Review: a new fixed empty or no-activity wording goes into
-   `web/src/screens/emptyStates.ts`; screens render from it, and the check forbids every
+   `web/src/copy/emptyStates.ts`; screens render from it, and the check forbids every
    wording in it while data loads. A literal copy in a screen fails its guard.
 8. **Readability** (checked).
    - Every text node is at least 4.5:1 against its effective background, in both themes,

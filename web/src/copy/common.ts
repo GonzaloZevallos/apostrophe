@@ -5,7 +5,7 @@
  * performs none (`queryClient.ts`).
  */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 
@@ -28,7 +28,6 @@ export const COMMON_TEXT = {
   comoSePago: 'Cómo se pagó',
   mesAnterior: 'Mes anterior',
   mesSiguiente: 'Mes siguiente',
-  text: '›',
   vendidos: ' vendidos',
   variedad: 'Variedad',
   ventas: 'Ventas',

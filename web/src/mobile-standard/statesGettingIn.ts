@@ -2,7 +2,7 @@
  * Getting in and the shared `Estados` states. "Sin conexión" and the bare "Eso ya no está."
  * are the registry's own `EstadosSinConexion` and `EstadosGone`; the loading state is every
  * screen's held walk, so neither is repeated here. Each state waits on the words the screen
- * says (`screens/authMessages.ts`, `components/ErrorGenerico.tsx`, `api/refusals.ts`,
+ * says (`copy/auth.ts`, `components/ErrorGenerico.tsx`, `api/refusals.ts`,
  * `screens/Invitacion.tsx`), so a reworded state is an `unreachable` page rule, not a
  * silent pass. Writes are stubbed, never sent (invariant 6).
  */

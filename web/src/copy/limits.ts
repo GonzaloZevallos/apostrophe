@@ -40,7 +40,7 @@ export interface LimitedCopy {
   text: string
 }
 
-/** What a copy module (`messages.ts` or `*Messages.ts`) exports besides its strings. */
+/** What a copy module (a file of `web/src/copy/`) exports besides its strings. */
 export interface CopyModule {
   LIMITED_COPY?: readonly LimitedCopy[]
   LONG_REFUSALS?: readonly string[]

@@ -6,12 +6,12 @@
  * the link word the screen draws at their end. `copy/copyLimits.test.ts` measures them.
  */
 
-import {
-  PINNED_CATALOG_NOT_READY_REASON,
-  PINNED_CATALOG_REASON_LABEL,
-  type PinReason,
-} from '../api/refusals'
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
+import { REFUSAL_TEXT } from './refusals.ts'
+
+type PinReason = keyof typeof REFUSAL_TEXT.pinReason
+const PINNED_CATALOG_NOT_READY_REASON = REFUSAL_TEXT.pinnedNotReady
+const PINNED_CATALOG_REASON_LABEL = REFUSAL_TEXT.pinReason
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 

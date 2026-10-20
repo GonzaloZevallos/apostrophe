@@ -4,7 +4,7 @@
  * password clears "Contraseña actual" and keeps "Contraseña nueva" — a
  * deliberate exception to "refusals keep what was typed" (PM round 2). A short
  * new password shows the invitation's own too-short text; a lock shows the
- * login brake's own message (`authMessages.ts`'s `BRAKE_MESSAGE`), both keeping
+ * login brake's own message (`copy/auth.ts`'s `BRAKE_MESSAGE`), both keeping
  * everything typed. Neither a 422 nor a 429 ever sends the user to login: they
  * are handled here, inline, never through `handleUnauthorized`.
  *

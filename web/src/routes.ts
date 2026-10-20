@@ -1,6 +1,6 @@
-import { SHELL_TEXT } from './copy/shell'
-import { COMMON_TEXT } from './copy/common'
-import { INTEGRATIONS_LINK_WORD } from './copy/pinnedCatalog'
+import { SHELL_TEXT } from './copy/shell.ts'
+import { COMMON_TEXT } from './copy/common.ts'
+import { INTEGRATIONS_LINK_WORD } from './copy/pinnedCatalog.ts'
 /**
  * The route registry: the one place the front writes a path, and the one place that says
  * what kind of screen each path is. No other file in `web/src` or `web/e2e` carries a route
