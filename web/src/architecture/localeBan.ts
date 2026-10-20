@@ -1,5 +1,5 @@
 /**
- * The locale ban (ADR-0048): no non-test file under `web/src` calls the `to`-`Locale` family
+ * The locale ban (ADR-0049): no non-test file under `web/src` calls the `to`-`Locale` family
  * of methods or builds a date or relative-time formatter from `Intl`. They answer in the
  * browser's language, so a figure or a date would change with the reader's device; every
  * format lives in `web/src/format/` and writes its own words. `Intl`'s number formatter is

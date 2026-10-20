@@ -1,4 +1,4 @@
-/** The stock entry form, the entries list and the stock withdrawal screens (ADR-0048). The
+/** The stock entry form, the entries list and the stock withdrawal screens (ADR-0049). The
  * fixed lines that are always on screen (help lines, the preview line and the empty state) are
  * listed in `LIMITED_COPY` for `copy/copyLimits.test.ts`, which measures each with `SAMPLES`
  * (never fixture or API data). The screens render these same bindings. */

@@ -1,4 +1,4 @@
-/** The visible-literal rule over the real tree (ADR-0048): no non-test `.ts`/`.tsx` writes a
+/** The visible-literal rule over the real tree (ADR-0049): no non-test `.ts`/`.tsx` writes a
  * text of its own. There is no allowance: a file that does is moved to `src/copy/`. */
 
 import { expect, test } from 'vitest'

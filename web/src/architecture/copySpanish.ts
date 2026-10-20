@@ -1,5 +1,5 @@
 /**
- * The Spanish rule over `web/src/copy/` (ADR-0048). Every section is read, none can opt out;
+ * The Spanish rule over `web/src/copy/` (ADR-0049). Every section is read, none can opt out;
  * each value is rendered (a function entry is called with the
  * `SAMPLES` the limits use), NFC-normalised, trimmed and case-folded, and fails when:
  *
@@ -13,7 +13,7 @@
  * A violation names the section and the entry, never the text.
  *
  * It is a ratchet, not a proof: an unaccented Spanish word that is in neither list passes,
- * and review owns it (ADR-0048, known risks).
+ * and review owns it (ADR-0049, known risks).
  */
 
 import baselineFile from './fixtures/copyBaseline.es.json'

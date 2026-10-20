@@ -1,6 +1,6 @@
 // Generates `src/architecture/fixtures/copyBaseline.es.json`: every text of the keyed
 // package `src/copy/` as the Spanish app says it today, one entry per key path
-// (`section.ENTRY`, `section.OBJECT.key`). The Spanish rule over `copy/` (ADR-0048) fails
+// (`section.ENTRY`, `section.OBJECT.key`). The Spanish rule over `copy/` (ADR-0049) fails
 // a section value that equals one of these. A function entry is stored as its output
 // rendered with `SAMPLES`, with the arguments listed in `FUNCTION_SAMPLES` below; an entry
 // with several argument lists adds `#<index>` to its key. A function with no row there

@@ -1,5 +1,5 @@
 /**
- * Every text the front shows, one section file per area (ADR-0048). A section is a
+ * Every text the front shows, one section file per area (ADR-0049). A section is a
  * namespace here, so two sections may name an entry the same way. Screens import from the
  * section file they need; this index is the one list of the sections.
  */

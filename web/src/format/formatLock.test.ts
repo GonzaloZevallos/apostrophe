@@ -1,5 +1,5 @@
 /**
- * The formats the English app keeps (ADR-0048): only the words inside a figure change, never
+ * The formats the English app keeps (ADR-0049): only the words inside a figure change, never
  * its numbers or symbols. This pins every one of them in one place; the screens' own tests
  * pin the words around them.
  */

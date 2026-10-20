@@ -1,5 +1,5 @@
 /**
- * The visible-literal rule (ADR-0048): a screen or component never writes a text a person
+ * The visible-literal rule (ADR-0049): a screen or component never writes a text a person
  * reads; it imports it from `web/src/copy/`. `findVisibleLiterals(path, source)` parses one
  * file with the TypeScript compiler's own parser and returns every string literal,
  * no-substitution template, template part or JSX text that contains a Unicode letter,

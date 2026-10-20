@@ -1,5 +1,5 @@
 /**
- * The words inside the app's formats (ADR-0048): weekday and month names, "Today" and
+ * The words inside the app's formats (ADR-0049): weekday and month names, "Today" and
  * "since", the sales count and the pending-cost wording of a figure. Only the words are
  * here; the numbers and symbols (`$ 11.000`, `3,5 g`, `dd/mm`) are written by `format/`.
  * Monday stays the first day of the week.
