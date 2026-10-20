@@ -3,7 +3,7 @@
  * renders this same binding.
  */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 import {
   CATEGORY,
   DISCARD_THE_CHANGES,
@@ -17,7 +17,7 @@ import {
   WORD_YES_DELETE_IT,
   WORD_YES_DISCARD_IT,
   YES_DISCARD_THEM,
-} from './common'
+} from './common.ts'
 
 export const FLOWER_NOTICE = "Flower purchases don't go here: enter them in Stock."
 

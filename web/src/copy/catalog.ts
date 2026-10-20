@@ -6,13 +6,13 @@
  * say why Publish is blocked, with the link word the screen draws at their end.
  */
 
-import { INTEGRATIONS, STATUS_NO_ENTRIES, STATUS_SOLD_OUT, WORD_COPY, WORD_SHARE } from './common'
+import { INTEGRATIONS, STATUS_NO_ENTRIES, STATUS_SOLD_OUT, WORD_COPY, WORD_SHARE } from './common.ts'
 import {
   PINNED_CATALOG_NOT_READY_REASON,
   PINNED_CATALOG_REASON_LABEL,
   type PinReason,
-} from './refusals'
-import type { LimitedCopy } from './limits'
+} from './refusals.ts'
+import type { LimitedCopy } from './limits.ts'
 
 export const EMPTY_STATE_TITLE = 'Nothing in the catalog today'
 export const EMPTY_STATE_DETAIL = 'Nothing to copy yet'

@@ -1,0 +1,4170 @@
+[
+  {
+    "screen": "Analisis",
+    "rule": "touch-action",
+    "target": "button:Mes anterior",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "touch-action",
+    "target": "button:Mes siguiente",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 48
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "touch-action",
+    "target": "button:Restaurar",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "button:Copiar",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "button:Publicar",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "button:Archivar variedad",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "button:Borrar este precio",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "button:Editar aviso",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "button:Editar catálogo",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "button:Editar nombre",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "button:Guardá el catálogo",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "switch:Avisar cuando quede poco",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-action",
+    "target": "switch:Mostrar en el catálogo",
+    "issue": 47
+  },
+  {
+    "screen": "ClienteEditar",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteEditar",
+    "rule": "touch-action",
+    "target": "button:Guardá y usá",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "touch-action",
+    "target": "button:Borrar cobro",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "touch-action",
+    "target": "button:‹ Clientes",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteNuevo",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteNuevo",
+    "rule": "touch-action",
+    "target": "button:Guardá y usá",
+    "issue": 46
+  },
+  {
+    "screen": "Clientes",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 46
+  },
+  {
+    "screen": "Clientes",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 46
+  },
+  {
+    "screen": "Clientes",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 46
+  },
+  {
+    "screen": "Clientes",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 46
+  },
+  {
+    "screen": "Clientes",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 46
+  },
+  {
+    "screen": "Clientes",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 46
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 46
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 46
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 46
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 46
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 46
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 46
+  },
+  {
+    "screen": "Cobro",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 46
+  },
+  {
+    "screen": "Cobro",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 46
+  },
+  {
+    "screen": "Cobro",
+    "rule": "touch-action",
+    "target": "button:Todo: $ #.#",
+    "issue": 46
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "button:Borrar cobro",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "button:No, dejalo",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "button:Sí, borralo",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "button:‹ Clientes",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 46
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 46
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "touch-action",
+    "target": "button:Todo: $ #.#",
+    "issue": 46
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "touch-action",
+    "target": "button:Todo: $ #.#",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "touch-action",
+    "target": "button:‹ Más",
+    "issue": 60
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 60
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 60
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 60
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 60
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 60
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionApariencia",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionApariencia",
+    "rule": "touch-action",
+    "target": "radio:Claro",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionApariencia",
+    "rule": "touch-action",
+    "target": "radio:Oscuro",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:+ Categoría",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[6]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:No, dejala",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[6]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Sí, borrala",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:+ Categoría",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:+ Categoría",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[6]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[6]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionContrasena",
+    "rule": "touch-action",
+    "target": "button:Cambiar contraseña",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionContrasena",
+    "rule": "touch-action",
+    "target": "button:Cancelar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionContrasena",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionContrasena",
+    "rule": "touch-action",
+    "target": "button:Cerrar sesión",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionContrasena",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionContrasena",
+    "rule": "touch-action",
+    "target": "button:Mostrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "rule": "touch-action",
+    "target": "button:Cambiar contraseña",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "rule": "touch-action",
+    "target": "button:Cerrar sesión",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionIntegraciones",
+    "rule": "touch-action",
+    "target": "button:Buscar mi chat",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionIntegraciones",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionIntegraciones",
+    "rule": "touch-action",
+    "target": "button:Más info",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionIntegraciones",
+    "rule": "touch-action",
+    "target": "button:Probarlo",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMensaje",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMensaje",
+    "rule": "touch-action",
+    "target": "button:Guardá el mensaje",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionNegocio",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionNegocio",
+    "rule": "touch-action",
+    "target": "button:Guardá el nombre",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionPrecios",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionPrecios",
+    "rule": "touch-action",
+    "target": "button:Guardá los precios",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionUsuarios",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionUsuarios",
+    "rule": "touch-action",
+    "target": "button:Invitá a un socio",
+    "issue": 60
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "button:Agregar otra variedad",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "button:Elegir cliente",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "button:Guardá la venta",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "button:No, seguí cargando",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "button:Sí, descartala",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "radio:Debiendo",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "radio:Efectivo",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "touch-action",
+    "target": "radio:Transferencia",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:Agregar otra variedad",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:Cerrar@Nueva ventaHoy #/#Elegir clien",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:Elegir cliente",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:Guardá la venta",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:Nico Parra+#",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:Nuevo cliente",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:Sin cliente",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "radio:Debiendo",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "radio:Efectivo",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "radio:Transferencia",
+    "issue": 78
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "touch-action",
+    "target": "button:Ajuste",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "touch-action",
+    "target": "button:Compra",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "touch-action",
+    "target": "button:Cosecha",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "touch-action",
+    "target": "button:Guardá la entrada",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "touch-action",
+    "target": "button:Stock inicial",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Ajuste",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Borrar entrada",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Compra",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Cosecha",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:No, dejala",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Stock inicial",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Sí, borrala",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:Ajuste",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:Borrar entrada",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:Compra",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:Cosecha",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:No, seguir editando",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:Stock inicial",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "touch-action",
+    "target": "button:Sí, guardar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "touch-action",
+    "target": "button:Ajuste",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "touch-action",
+    "target": "button:Borrar entrada",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "touch-action",
+    "target": "button:Compra",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "touch-action",
+    "target": "button:Cosecha",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "touch-action",
+    "target": "button:Stock inicial",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "rule": "touch-action",
+    "target": "button:Ajuste",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "rule": "touch-action",
+    "target": "button:Compra",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "rule": "touch-action",
+    "target": "button:Cosecha",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "rule": "touch-action",
+    "target": "button:Guardá la entrada",
+    "issue": 47
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "rule": "touch-action",
+    "target": "button:Stock inicial",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · #K GoldAjuste · -# gSin ",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · #K GoldCompra · # g$ #.#[1]",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · #K GoldCompra · # g$ #.#[2]",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Golden CookiesCompra · #",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Sir JackCosecha · # gSin",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Stock inicial · # gSin c",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Variedad LarguísimoLargu",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Variedad sin ventasCompr",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "Entrar",
+    "rule": "touch-action",
+    "target": "button:Entrá",
+    "issue": 49
+  },
+  {
+    "screen": "Entrar",
+    "rule": "touch-action",
+    "target": "button:Mostrar",
+    "issue": 49
+  },
+  {
+    "screen": "EntrarFreno",
+    "rule": "touch-action",
+    "target": "button:Entrá",
+    "issue": 49
+  },
+  {
+    "screen": "EntrarFreno",
+    "rule": "touch-action",
+    "target": "button:Mostrar",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "button:Borrar venta",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "button:No, dejala",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "button:Sí, borrala",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "button:‹ Ventas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-action",
+    "target": "button:‹ Ventas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "button:Fechas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "button:Hoy",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "button:Mes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "button:Semana",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "button:Fechas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "button:Hoy",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "button:Mes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "button:Semana",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "button:Fechas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "button:Hoy",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "button:Mes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "button:Semana",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 49
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Mes anterior",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Mes siguiente",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:No, dejala",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Sí, borrala",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 48
+  },
+  {
+    "screen": "GastoDesdeGastos",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 48
+  },
+  {
+    "screen": "GastoDesdeGastos",
+    "rule": "touch-action",
+    "target": "button:Crear una categoría nueva",
+    "issue": 48
+  },
+  {
+    "screen": "GastoDesdeGastos",
+    "rule": "touch-action",
+    "target": "button:Guardá el gasto",
+    "issue": 48
+  },
+  {
+    "screen": "GastoDesdeMas",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 48
+  },
+  {
+    "screen": "GastoDesdeMas",
+    "rule": "touch-action",
+    "target": "button:Crear una categoría nueva",
+    "issue": 48
+  },
+  {
+    "screen": "GastoDesdeMas",
+    "rule": "touch-action",
+    "target": "button:Guardá el gasto",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:Borrar gasto",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:Crear una categoría nueva",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:Guardá el gasto",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:Mes anterior",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "button:Mes siguiente",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 48
+  },
+  {
+    "screen": "GastoNuevo",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 48
+  },
+  {
+    "screen": "GastoNuevo",
+    "rule": "touch-action",
+    "target": "button:Crear una categoría nueva",
+    "issue": 48
+  },
+  {
+    "screen": "GastoNuevo",
+    "rule": "touch-action",
+    "target": "button:Guardá el gasto",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "button:Mes anterior",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "button:Mes siguiente",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 48
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "button:Hoy",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "button:Mes",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "button:Semana",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "button:Hoy",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "button:Mes",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "button:Semana",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 45
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "button:Hoy",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "button:Mes",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "button:Semana",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 45
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 45
+  },
+  {
+    "screen": "Invitacion",
+    "rule": "touch-action",
+    "target": "button:Mostrar",
+    "issue": 49
+  },
+  {
+    "screen": "Invitacion",
+    "rule": "touch-action",
+    "target": "button:Sumate a Negocio LarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 49
+  },
+  {
+    "screen": "Mas",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 48
+  },
+  {
+    "screen": "Mas",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 48
+  },
+  {
+    "screen": "Mas",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 48
+  },
+  {
+    "screen": "Mas",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 48
+  },
+  {
+    "screen": "Mas",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 48
+  },
+  {
+    "screen": "Mas",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 48
+  },
+  {
+    "screen": "NegocioNuevo",
+    "rule": "touch-action",
+    "target": "button:Creá el negocio",
+    "issue": 49
+  },
+  {
+    "screen": "NegocioNuevo",
+    "rule": "touch-action",
+    "target": "button:Mostrar",
+    "issue": 49
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "touch-action",
+    "target": "button:Agregar otra variedad",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "touch-action",
+    "target": "button:Elegir cliente",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "touch-action",
+    "target": "button:Guardá la venta",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "touch-action",
+    "target": "radio:Debiendo",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "touch-action",
+    "target": "radio:Efectivo",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "touch-action",
+    "target": "radio:Transferencia",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Agregar otra variedad",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Cerrar@Nueva ventaHoy #/#Elegir clien",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Elegir cliente",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Guardá la venta",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Lu Fernández+#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Mica SolanoVIP+#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Nico Parra+#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Nuevo cliente",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Sin cliente",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Tincho Aguirre+#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "radio:Debiendo",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "radio:Efectivo",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "radio:Transferencia",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "button:Agregar otra variedad",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "button:Elegir cliente",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "button:Guardá la venta",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "button:Línea #: Golden Cookies",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "button:Quitar línea #",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "radio:Debiendo",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "radio:Efectivo",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "touch-action",
+    "target": "radio:Transferencia",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Agregar otra variedad",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Cerrar@Nueva ventaHoy #/#Elegir clien",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Crear cliente",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Elegir cliente",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Guardá la venta",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Lu Fernández+#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Mica SolanoVIP+#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Nico Parra+#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Sin cliente",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Tincho Aguirre+#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "radio:Debiendo",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "radio:Efectivo",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "radio:Transferencia",
+    "issue": 78
+  },
+  {
+    "screen": "OnboardingBot",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBot",
+    "rule": "touch-action",
+    "target": "button:Buscar mi chat",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBot",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBot",
+    "rule": "touch-action",
+    "target": "button:Más info",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBot",
+    "rule": "touch-action",
+    "target": "button:Probarlo",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBot",
+    "rule": "touch-action",
+    "target": "button:Saltar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBot",
+    "rule": "touch-action",
+    "target": "button:Saltar el resto",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "touch-action",
+    "target": "button:Buscar mi chat",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "touch-action",
+    "target": "button:Más info",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "touch-action",
+    "target": "button:Probarlo",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "touch-action",
+    "target": "button:Saltar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "rule": "touch-action",
+    "target": "button:Saltar el resto",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Categoría",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[1]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[2]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[3]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[4]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[5]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[6]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[1]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[2]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[3]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[4]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[5]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[6]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Saltar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "rule": "touch-action",
+    "target": "button:Seguir",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Categoría",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Eliminar[1]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Eliminar[2]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Eliminar[3]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Eliminar[4]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Eliminar[5]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Eliminar[6]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Renombrar[1]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Renombrar[2]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Renombrar[3]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Renombrar[4]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Renombrar[5]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Renombrar[6]",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Saltar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "rule": "touch-action",
+    "target": "button:Seguir",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "rule": "touch-action",
+    "target": "button:Dejar así",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "rule": "touch-action",
+    "target": "button:Saltar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "rule": "touch-action",
+    "target": "button:Saltar el resto",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "rule": "touch-action",
+    "target": "button:Dejar así",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "rule": "touch-action",
+    "target": "button:Guardar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "rule": "touch-action",
+    "target": "button:Saltar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "rule": "touch-action",
+    "target": "button:Saltar el resto",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocio",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocio",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocio",
+    "rule": "touch-action",
+    "target": "button:Crear el link",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocio",
+    "rule": "touch-action",
+    "target": "button:Saltar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocio",
+    "rule": "touch-action",
+    "target": "button:Saltar el resto",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "rule": "touch-action",
+    "target": "button:Crear el link",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "rule": "touch-action",
+    "target": "button:Saltar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "rule": "touch-action",
+    "target": "button:Saltar el resto",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStock",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStock",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStock",
+    "rule": "touch-action",
+    "target": "button:Guardá la entrada",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStockTexto130",
+    "rule": "touch-action",
+    "target": "button:Atrás",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStockTexto130",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 49
+  },
+  {
+    "screen": "OnboardingStockTexto130",
+    "rule": "touch-action",
+    "target": "button:Guardá la entrada",
+    "issue": 49
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Archivar variedad",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Borrar este precio",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Editar aviso",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Editar catálogo",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Editar nombre",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:No, dejala",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Sí, borrala",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "switch:Avisar cuando quede poco",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioNuevo",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioNuevo",
+    "rule": "touch-action",
+    "target": "button:Guardá el precio",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioNuevo",
+    "rule": "touch-action",
+    "target": "button:Hoy #/#",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioNuevoFormulario",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioNuevoFormulario",
+    "rule": "touch-action",
+    "target": "button:Guardá el precio",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioNuevoFormulario",
+    "rule": "touch-action",
+    "target": "button:Hoy #/#",
+    "issue": 47
+  },
+  {
+    "screen": "Reset",
+    "rule": "touch-action",
+    "target": "button:Guardar y entrar",
+    "issue": 49
+  },
+  {
+    "screen": "Reset",
+    "rule": "touch-action",
+    "target": "button:Mostrar",
+    "issue": 49
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "touch-action",
+    "target": "button:Borrar",
+    "issue": 47
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "SacarDelStock",
+    "rule": "touch-action",
+    "target": "button:Agregar otra variedad",
+    "issue": 47
+  },
+  {
+    "screen": "SacarDelStock",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "SacarDelStock",
+    "rule": "touch-action",
+    "target": "button:Consumo propio",
+    "issue": 47
+  },
+  {
+    "screen": "SacarDelStock",
+    "rule": "touch-action",
+    "target": "button:Guardá el retiro",
+    "issue": 47
+  },
+  {
+    "screen": "SacarDelStock",
+    "rule": "touch-action",
+    "target": "button:Promoción",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · #K GoldAjuste · -# gSin ",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · #K GoldCompra · # g$ #.#[1]",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · #K GoldCompra · # g$ #.#[2]",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Golden CookiesCompra · #",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Sir JackCosecha · # gSin",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Stock inicial · # gSin c",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Variedad LarguísimoLargu",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:Borrar@#/# · Variedad sin ventasCompr",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "touch-action",
+    "target": "button:Borrar",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "touch-action",
+    "target": "button:‹ Golden Cookies",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "touch-action",
+    "target": "button:Restaurar",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "touch-action",
+    "target": "button:‹ Archivadas",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "button:Archivar variedad",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "button:Borrar este precio",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "button:Editar aviso",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "button:Editar catálogo",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "button:Editar nombre",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "touch-action",
+    "target": "switch:Avisar cuando quede poco",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadNueva",
+    "rule": "touch-action",
+    "target": "button:Agregá la variedad",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadNueva",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "touch-action",
+    "target": "button:Agregá la variedad",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "button:Archivar variedad",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "button:Borrar este precio",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "button:Editar aviso",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "button:Editar catálogo",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "button:Editar nombre",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "button:Guardá el nombre",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "touch-action",
+    "target": "switch:Avisar cuando quede poco",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "button:Archivar variedad",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "button:Borrar este precio",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "button:Editar aviso",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "button:Editar catálogo",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "button:Editar nombre",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "button:Guardá el aviso",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "button:‹ Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "touch-action",
+    "target": "switch:Avisar cuando quede poco",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Asignar cliente",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Borrar venta",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Cerrar",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Lu Fernández+#",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Mica SolanoVIP+#",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Nico Parra+#",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Nuevo cliente",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Tincho Aguirre+#",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:‹ Ventas",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "button:Borrar venta",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "button:No, dejala",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "button:Sí, borrala",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "button:‹ Ventas",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 78
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-action",
+    "target": "button:Borrar venta",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-action",
+    "target": "button:‹ Ventas",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 78
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "button:Fechas",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "button:Hoy",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "button:Mes",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "button:Semana",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 78
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "button:Fechas",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "button:Hoy",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "button:Mes",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "button:Semana",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 78
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 78
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "touch-action",
+    "target": "button:Borrar este precio",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "touch-action",
+    "target": "button:‹ Golden Cookies",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "touch-action",
+    "target": "link:Clientes",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "touch-action",
+    "target": "link:Inicio",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "touch-action",
+    "target": "link:Más",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "touch-action",
+    "target": "link:Variedades",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "touch-action",
+    "target": "link:Ventas",
+    "issue": 47
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 47
+  }
+]

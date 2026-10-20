@@ -1,5 +1,5 @@
 /**
- * `detailFor`/`sideNoteFor`: a variety's fixed Spanish detail line and side badge,
+ * `detailFor`/`sideNoteFor`: a variety's fixed Spanish detail line and side note,
  * from its stock status alone (`stock.md`, "On screen"). Shared by `Stock` and
  * `Inicio` (the panel's own "Lo que te queda", `results.md`) — moved here from
  * `Stock.tsx` so neither screen keeps its own copy of the same mapping (plan,
@@ -18,8 +18,6 @@ import {
   FIRST_ENTRY_HINT,
   NO_GRAMS,
   noGramsSince,
-  STATUS_NO_ENTRIES,
-  STATUS_SOLD_OUT,
   WARNING_OFF,
   warningLow,
   warnMeBelow,
@@ -58,11 +56,7 @@ export function detailFor(variety: StockDetailSubject, today: string): string {
 }
 
 export function sideNoteFor(variety: StockSideNoteSubject): string | null {
-  // "sold out" is a visible word on its own right here (PRD: "the inverted chip, not
-  // red"), not only the one MarcaEstado keeps for screen readers — a sold-out variety
-  // never has a `days_left` to fall back on, so it must be checked before that.
-  if (variety.status === 'sold_out') return STATUS_SOLD_OUT
-  if (variety.status === 'no_entries') return STATUS_NO_ENTRIES
+  // The status word is `MarcaEstado`'s, never this note's: only the days left show here.
   if (variety.days_left === null) return null
   return daysLeft(variety.days_left)
 }

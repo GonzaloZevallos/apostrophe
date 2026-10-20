@@ -4,7 +4,7 @@
  * never copies a value this file owns.
  */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 
 /** The label of an icon-only close control and of a sheet's way out. */
 export const CLOSE = 'Close'

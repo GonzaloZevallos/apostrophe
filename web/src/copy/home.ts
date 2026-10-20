@@ -3,7 +3,7 @@
  * `copy/copyLimits.test.ts`. `Inicio.tsx` renders these same bindings.
  */
 
-import { INVITE_A_PARTNER, NOBODY_OWES, WORD_COLLECT, WORD_PERIOD } from './common'
+import { INVITE_A_PARTNER, NOBODY_OWES, WORD_COLLECT, WORD_PERIOD } from './common.ts'
 import {
   CASH,
   COST_OF_GOODS_LABEL,
@@ -16,9 +16,9 @@ import {
   SHORTFALL_LABEL,
   SOLD_THIS_MONTH,
   WEEK,
-} from './analysis'
-import { TODAY } from './format'
-import type { LimitedCopy } from './limits'
+} from './analysis.ts'
+import { TODAY } from './format.ts'
+import type { LimitedCopy } from './limits.ts'
 
 export const EMPTY_TITLE = 'Start with varieties'
 export const EMPTY_DETAIL = "Add your first variety with its price. You can't sell without one."

@@ -126,6 +126,118 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg` |
 <!-- contraste:fin -->
 
+## En el celular
+
+Qué significa "se siente como una app" por debajo de los 900 px del punto de corte de la
+compu (los diseños de compu quedan fuera). La app llega al celular como esta misma web, así
+que lo que la web hace en el celular es la app final. Son los mismos ocho requisitos, con
+las mismas etiquetas, que la subsección "Phone" de `CODING_STANDARDS.md` §10: los dos textos
+son una sola regla.
+
+Cada parte es **chequeada** (`web/e2e/mobile.spec.ts` falla, con la `Rule` que se nombra, de
+`web/src/mobile-standard/violation.ts`) o **de revisión** (la hace cumplir quien revisa).
+Donde `docs/product/accounts.md` (el shell instalado), ADR-0027, ADR-0028, ADR-0029 o
+ADR-0048 ya decidieron un punto, acá se cita y no se repite. El documento de producto de un
+área puede registrar una excepción deliberada; sin una, esta regla manda sobre el issue del
+área.
+
+1. **Chrome.**
+   - Chequeado: la barra inferior, el encabezado y "+ Nueva venta" están dentro de la
+     pantalla al cargar y después de scrollear hasta la mitad (`chrome-at-load`,
+     `chrome-mid-scroll`).
+   - Revisión: la barra y el encabezado son fijos; el contenido tiene relleno para que nada
+     quede detrás. Las zonas seguras y `dvh` son las del shell instalado (accounts.md): las
+     variables `--inset-*`, y nunca `100vh`.
+2. **Toque.**
+   - Chequeado: todo botón, enlace e input visible mide al menos 44x44 px CSS, el control de
+     fecha nativo incluido, y una acción de texto lleva relleno, no sólo la altura de su
+     línea (`touch-target`); la única excepción es un enlace dentro de un texto corrido.
+     `user-select: none` y `touch-action: manipulation` en botones, pestañas y barra
+     (`user-select`, `touch-action`).
+   - Revisión: 8 px entre vecinos; nada depende del hover; todo botón y fila tiene estado
+     `:active` y no hay resaltado de toque por defecto (los dos, del shell instalado,
+     accounts.md).
+3. **Campos.**
+   - Chequeado: tamaño de letra de al menos 16 px en todo input, select y fecha
+     (`input-font`); un valor de `autocomplete` en todo input visible: `username` en el mail
+     del ingreso, `organization` en el nombre del negocio, `current-password`,
+     `new-password`, y `off` en el nombre y el teléfono de un cliente (`autocomplete`);
+     `inputmode="decimal"` en gramos e `inputmode="numeric"` en pesos (`inputmode`);
+     `type="email"` y `type="tel"` (`input-type`).
+   - Revisión: `enterkeyhint`, salvo en las líneas de Nueva venta, que ya prueban las
+     pruebas de sales.md. El teclado se pide sólo por resultado: el campo con foco queda a la
+     vista y el botón de guardar se alcanza scrolleando. El meta viewport es el del shell
+     instalado; nadie lo cambia fuera de #77 (ADR-0028).
+4. **Formularios y hojas** (revisión en su conjunto; sus controles caen bajo las reglas
+   chequeadas de toque, campos y legibilidad).
+   - Una hoja con campos o con una lista ocupa toda la pantalla en el celular, con "Cerrar"
+     arriba; su acción principal queda fija abajo, al alcance del pulgar, mientras el
+     teclado está cerrado (fijarla sobre el teclado lo decide cada pantalla, como Nueva
+     venta, ADR-0028).
+   - Una hoja es una entrada del historial: el "atrás" del sistema y Escape la cierran, y el
+     scroll de fondo está bloqueado (ADR-0027).
+   - Una confirmación ("Antes de borrar", "¿Descartás la venta?") es un diálogo corto con dos
+     botones de al menos 44 px, no una hoja. Escape y el "atrás" del sistema la descartan
+     como su "No".
+   - Una pantalla de entrada (Entrar, NegocioNuevo, Invitacion, Reset) es una pantalla, no
+     una hoja: mantiene su columna centrada y todas las demás reglas le valen completas.
+5. **Disposición.**
+   - Chequeado: ningún scroll horizontal de la página a 320 px ni al 130 % (246 px CSS)
+     (`h-scroll`); un nombre largo se corta con puntos suspensivos (`name-overflow`); una
+     cifra nunca se parte en dos renglones y el "$" nunca queda solo en un renglón
+     (`figure-split`), probado con el dato de la revisión: un nombre de 60 caracteres y
+     cifras de nueve dígitos.
+   - Revisión: listas, no tablas, en el celular.
+6. **Gestos.**
+   - Chequeado: `overscroll-behavior: none` en `html` y `body` (`overscroll`).
+   - Revisión: el "atrás" del sistema sigue el historial (ADR-0027); las regiones con scroll
+     usan `contain` (accounts.md).
+7. **Carga** (chequeada), con la API retenida:
+   - el área de contenido tiene la forma de su diseño final y lleva `aria-busy="true"`
+     (`blank-while-loading`, `aria-busy`);
+   - ninguna frase fija de estado vacío aparece hasta que llega la respuesta
+     (`false-empty`), y el estado de carga no tiene ningún dígito ni símbolo de moneda
+     (`data-while-loading`);
+   - cuando llegan los datos el chrome se mueve 0 px (`chrome-shift`) y el área de contenido
+     como mucho `CONTENT_SHIFT_PX` (`content-shift`);
+   - un toque en el guardar de Nueva venta, en el de Registrar cobro y en "Entrá" de Entrar
+     muestra su estado pendiente al instante (`pending-state`).
+
+   Revisión: una frase fija nueva de vacío o sin actividad va en
+   `web/src/screens/emptyStates.ts`; las pantallas la leen de ahí y el chequeo prohíbe
+   cada frase de ese archivo mientras cargan los datos. Una copia literal en una pantalla
+   rompe su prueba.
+8. **Legibilidad** (chequeada).
+   - Todo texto tiene al menos 4,5:1 contra su fondo efectivo, en los dos temas, sin la
+     relajación para texto grande (`contrast`); un fondo que la cuenta no puede probar se
+     informa, nunca se aprueba (`contrast-unprovable`). Ningún texto mide menos de 12 px,
+     sin excepción (`text-size`).
+   - La etiqueta de un control deshabilitado queda exenta; un motivo escrito al lado, no.
+     Los tokens sólo de ícono (las flechas `--tenue`) no se miden.
+   - La tabla de contraste de arriba sigue siendo la guarda de los tokens (ADR-0029); lo que
+     manda para lo que una persona lee es el chequeo sobre el DOM (ADR-0048).
+
+**Formularios, hojas y rutas nuevos** (revisión): un formulario, hoja, confirmación o
+estado compartido de `Estados` nuevo se suma a los estados que recorre el chequeo
+(`WalkState`, en `web/src/mobile-standard/states*.ts`) para que lo visite; una ruta nueva
+se registra en `scripts/design/screens.json`, y una ruta del front que falte ahí rompe el
+chequeo. Un paso que no llega a su pantalla se informa como `unreachable`, nunca se saltea.
+
+**La lista de infractores.** Lo que la app incumple hoy se lista, nunca se saltea:
+`web/src/mobile-standard/offenders/<regla>.json`, un archivo por regla, cada entrada una
+pantalla, una regla, un elemento y un issue (uno de área del mapa fijo #45-#49, #59, #60,
+#78), con `sizes` y `themes` opcionales. Sólo puede achicarse: la corrida falla ante un
+infractor nuevo, ante una entrada cuya celda ya pasa y ante una entrada sin número de issue
+válido. No consulta ninguna red; quien revisa comprueba que el número sea un issue de área
+real y abierto. Un issue de área no está terminado mientras sus pantallas sigan en la lista.
+Vale sólo para el dato y la fecha fijos (ADR-0048); cambiar cualquiera de los dos es
+cambiar las listas, en el mismo diff.
+
+**Se adjunta.** Todo PR de un área (#45-#49, #59, #60, #78) adjunta el resultado del
+chequeo: el proyecto `mobile` de `npm --prefix web run e2e` y los conteos de infractores
+que imprime `scripts/design/compare.sh` (con `COMPARE_MOBILE=1` corre también el chequeo).
+El teclado real y la prueba en un celular real siguen siendo a ojo (accounts.md, ADR-0028).
+
 ## Íconos y texto
 
 La misma regla que [`docs/product/icon-and-text-rule.md`](../icon-and-text-rule.md),

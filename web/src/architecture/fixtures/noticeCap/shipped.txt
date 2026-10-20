@@ -1,0 +1,13 @@
+.boton-aviso {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--espacio-lg) 18px;
+}
+
+/* Same literal as NOTICE_CAP. */
+@media (min-width: 900px) {
+  .boton-aviso {
+    max-width: 560px;
+  }
+}

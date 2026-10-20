@@ -1,6 +1,6 @@
 /** The `shell` section of the app's texts: the bar, the sidebar and their labels. */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 
 /** The seven places the bar and the sidebar lead to, by the glossary's word. */
 export const TAB_HOME = 'Home'

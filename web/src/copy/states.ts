@@ -5,8 +5,8 @@
  * performs none (`queryClient.ts`).
  */
 
-import { NO_CONNECTION_MESSAGE, RETRY_MESSAGE } from './common'
-import type { LimitedCopy } from './limits'
+import { NO_CONNECTION_MESSAGE, RETRY_MESSAGE } from './common.ts'
+import type { LimitedCopy } from './limits.ts'
 
 export const SIN_CONEXION_MENSAJE = NO_CONNECTION_MESSAGE
 export const ERROR_GENERICO_MENSAJE = RETRY_MESSAGE

@@ -106,11 +106,11 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   ] as const) {
     await page.getByRole('button', { name: tab, exact: true }).click()
     await expect(page.getByText(heading)).toBeVisible()
-    const promotion = page.locator('.panel-lista__fila').filter({ hasText: 'Promotion' })
+    const promotion = page.getByRole('group', { name: 'Promotion', exact: true })
     await expect(promotion).toContainText('$ 1.600')
-    const ownUse = page.locator('.panel-lista__fila').filter({ hasText: 'Own use' })
+    const ownUse = page.getByRole('group', { name: 'Own use', exact: true })
     await expect(ownUse).toContainText('$ 800')
-    await expect(page.locator('.panel-lista__fila').filter({ hasText: 'Cost of goods sold' })).toContainText(
+    await expect(page.getByRole('group', { name: 'Cost of goods sold', exact: true })).toContainText(
       '$ 0',
     )
   }

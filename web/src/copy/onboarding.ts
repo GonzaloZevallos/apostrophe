@@ -4,7 +4,7 @@
  * measures the very bindings the dialogs show.
  */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 import {
   CATALOG_MESSAGE,
   EXPENSE_CATEGORIES,
@@ -15,10 +15,10 @@ import {
   WORD_ADD_ANOTHER_VARIETY,
   WORD_NAME,
   WORD_YES_DISCARD_IT,
-} from './common'
-import { MORE_SETTINGS } from './expenses'
-import { CHECKLIST_DONE, CHECKLIST_OPTIONAL, CHECKLIST_REQUIRED, STEP_STOCK_ENTRY } from './home'
-import { TAB_VARIETIES } from './shell'
+} from './common.ts'
+import { MORE_SETTINGS } from './expenses.ts'
+import { CHECKLIST_DONE, CHECKLIST_OPTIONAL, CHECKLIST_REQUIRED, STEP_STOCK_ENTRY } from './home.ts'
+import { TAB_VARIETIES } from './shell.ts'
 
 export const DISCARD_DETAIL = 'You lose what you typed: nothing has been saved yet.'
 /** For a step that has already saved part of its work: the variety is kept, the price typed is not. */

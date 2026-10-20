@@ -5,7 +5,7 @@
  * Monday stays the first day of the week.
  */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 
 /** "Today 07/10": the chip of a date that is today. */
 export const TODAY = 'Today'

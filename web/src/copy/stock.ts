@@ -3,7 +3,7 @@
  * listed in `LIMITED_COPY` for `copy/copyLimits.test.ts`, which measures each with `SAMPLES`
  * (never fixture or API data). The screens render these same bindings. */
 
-import { SAMPLES, type LimitedCopy } from './limits'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
 import {
   CHOOSE_A_VARIETY,
   DATE_IN_FUTURE_REFUSAL,
@@ -23,7 +23,7 @@ import {
   WORD_VARIETY,
   WORD_YES_DELETE_IT,
   WORD_YES_DISCARD_IT,
-} from './common'
+} from './common.ts'
 
 export const EMPTY_STATE_TITLE = 'No stock entries'
 export const EMPTY_STATE_DETAIL = 'Add your opening stock or a purchase'

@@ -5,7 +5,7 @@
  * rename on either side fails a check instead of quietly falling back here.
  */
 
-import contract from './contract.json'
+import contract from './contract.json' with { type: 'json' }
 
 export type RefusalKind = 'refusal' | 'gone'
 

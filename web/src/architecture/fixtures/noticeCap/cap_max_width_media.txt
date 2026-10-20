@@ -1,0 +1,12 @@
+.boton-aviso {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--espacio-lg) 18px;
+}
+
+@media (max-width: 899.98px) {
+  .boton-aviso {
+    max-width: 560px;
+  }
+}

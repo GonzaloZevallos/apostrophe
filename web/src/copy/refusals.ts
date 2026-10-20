@@ -5,18 +5,18 @@
  * from this section. Registered for `copyLimits.test.ts` like every section.
  */
 
-import type { RefusalCode } from '../api/refusals'
-import { DATE_IN_FUTURE_REFUSAL, GENERIC_REFUSAL_MESSAGE } from './common'
-import type { LimitedCopy } from './limits'
+import type { RefusalCode } from '../api/refusals.ts'
+import { DATE_IN_FUTURE_REFUSAL, GENERIC_REFUSAL_MESSAGE } from './common.ts'
+import type { LimitedCopy } from './limits.ts'
 
 /** Shown after a save or a delete lands on a record that is gone (plan, "Gone
  * records"): no id, name, date or amount, so it reads the same whatever was
  * deleted, foreign, or never existed (ADR-0004). Not a success toast. */
-export { GONE_NOTICE } from './common'
+export { GONE_NOTICE } from './common.ts'
 
 /** Shown instead of a detail screen for a record that is gone, with no data of its
  * own (plan, "Gone records"). */
-export { GONE_DETAIL } from './common'
+export { GONE_DETAIL } from './common.ts'
 
 /** Fixed text for `variety.name_archived`: the name belongs to an archived variety. It
  * repeats nothing the seller typed (ADR-0005). */

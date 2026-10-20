@@ -1,6 +1,6 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, searchForWorkspaceRoot } from 'vite'
 
 // In development, every API path proxies to the backend (`uvicorn`, localhost:8000);
 // everything else is the front's own router, served by Vite itself. The list is the
@@ -23,6 +23,10 @@ const API_SEGMENTS = [
 export default defineConfig({
   plugins: [react()],
   server: {
+    // Vite's own default (the workspace root) plus the one design-registry file the front
+    // reads outside `web/`: the mobile standard's `registry.ts` imports it as static JSON.
+    // Nothing else of `scripts/` is reachable.
+    fs: { allow: [searchForWorkspaceRoot(process.cwd()), '../scripts/design/screens.json'] },
     proxy: Object.fromEntries(
       API_SEGMENTS.map((segment) => [`/${segment}`, 'http://localhost:8000']),
     ),

@@ -3,9 +3,9 @@
  * `copy/copyLimits.test.ts`. `Analisis.tsx` renders these same bindings.
  */
 
-import { andPending, pendingOnly } from './format'
-import { SAMPLES, type LimitedCopy } from './limits'
-import { TAB_EXPENSES } from './shell'
+import { andPending, pendingOnly } from './format.ts'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
+import { TAB_EXPENSES } from './shell.ts'
 import {
   OWN_USE,
   PAID_CASH,
@@ -15,7 +15,7 @@ import {
   WORD_SHARE,
   WORD_VARIETY,
   WORD_WEEK,
-} from './common'
+} from './common.ts'
 
 export const NO_HISTORY_LINE = 'Nothing to analyze yet.'
 export const EMPTY_MONTH_LINE = 'You sold and gifted nothing this month.'

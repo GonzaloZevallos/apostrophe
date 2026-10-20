@@ -1,0 +1,56 @@
+[
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "user-select",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "user-select",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "user-select",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "user-select",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "user-select",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "user-select",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "user-select",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "user-select",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "user-select",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  }
+]

@@ -8,7 +8,7 @@
 
 import type { RefusalCode } from '../api/refusals'
 import type { SuccessToast } from '../components/AvisoExito'
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 import {
   DISCARD_THE_CHANGE,
   ENTERED_LOST_DETAIL,
@@ -17,7 +17,7 @@ import {
   WORD_CATALOG_SAVED,
   WORD_NAME,
   WORD_PRICES,
-} from './common'
+} from './common.ts'
 
 export const EMPTY_TITLE = "You haven't added any varieties yet"
 export const EMPTY_DETAIL = 'Add the first one with its price so you can sell and send your catalog.'

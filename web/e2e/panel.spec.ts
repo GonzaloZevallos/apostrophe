@@ -8,7 +8,7 @@
  * what `results.md`'s PRD needs a figure for — a priced variety, a purchase, a sale
  * left owing, a sale paid on the spot, an expense — then proves Inicio (now the
  * panel) shows nothing it did not read from `GET /panel` in this same run: every
- * figure, across Hoy, Semana and Mes, and the "Te deben" teaser's own navigation
+ * figure, across Hoy, Semana and Mes, and the "Owed to you" teaser's own navigation
  * (PRD, "No curl" metric: "opens Inicio, switches across the three periods, opens
  * Te deben from the block and a customer from the teaser").
  *
@@ -94,6 +94,11 @@ function countLabel(count: number): string {
   return `${count} ${count === 1 ? 'sale' : 'sales'}`
 }
 
+/** `salesOwingCount`: the Te deben head's count line. */
+function owingLabel(count: number): string {
+  return `${countLabel(count)} debiendo`
+}
+
 // A local mirror of `web/src/components/MarcaEstado.tsx`'s own word table and
 // `web/src/stock/detail.ts`'s `detailFor` — this file never imports `web/src`
 // (every other e2e spec duplicates its own small formatters the same way), and
@@ -127,10 +132,9 @@ function detailFor(
 }
 
 /** `web/src/stock/detail.ts`'s own `sideNoteFor`: the one place `days_left`
- * itself shows, in `.fila-stock__insignia` — never in the detail line. */
+ * itself shows, in `.fila-stock__insignia` — never in the detail line. The status word
+ * is `MarcaEstado`'s, not this note's. */
 function sideNoteFor(variety: { status: Status; days_left: number | null }): string | null {
-  if (variety.status === 'sold_out') return 'sold out'
-  if (variety.status === 'no_entries') return 'no entries'
   if (variety.days_left === null) return null
   return `${variety.days_left} days`
 }
@@ -283,26 +287,26 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
 
   async function assertPeriod(period: PanelPeriod, rangeText: string, showsResults: boolean): Promise<void> {
-    await expect(page.locator('.periodos .pie')).toContainText(rangeText)
+    await expect(page.locator('.inicio__periodos .pie')).toContainText(rangeText)
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
     if (showsResults) {
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Profit' }).locator('.panel-resultados__valor--acento'),
+        page.getByRole('group', { name: 'Profit', exact: true }).locator('.panel-resultados__valor--acento'),
       ).toHaveText(signedPesos(period.profit))
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Cash' }).locator('.panel-resultados__valor'),
+        page.getByRole('group', { name: 'Cash', exact: true }).locator('.panel-resultados__valor'),
       ).toHaveText(signedPesos(period.cash))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Cost of goods sold' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Cost of goods sold', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.cost_of_goods))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Expenses' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Expenses', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.expenses))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'You gifted' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'You gifted', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(grams(period.grams_gifted))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Flower purchases' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Flower purchases', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
       // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
       // never under Caja (plan, PRD: "Caja never carries it").
@@ -342,7 +346,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('button', { name: 'Today', exact: true }).click()
 
   // Lo que te queda: Rosa's own row, straight from the fetched answer — grams,
-  // status (shape and word), the detail line, and the side badge, which is the
+  // status (shape and word), the detail line, and the side note, which is the
   // one place days left itself shows (`sideNoteFor`, never the detail line).
   const rosa = panel.stock.find((row) => row.name === 'Rosa')
   if (rosa === undefined) throw new Error('Rosa missing from GET /panel stock')
@@ -359,15 +363,14 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   }
 
   // Te deben: the block shows the fetched total, count and oldest date, and the
-  // teaser's own balance and "desde dd/mm" — all read, never computed here.
-  const debtsSubtitle =
-    panel.debts.oldest === null
-      ? countLabel(panel.debts.sales_owing_count)
-      : `${countLabel(panel.debts.sales_owing_count)} · since ${shortDate(panel.debts.oldest)}`
+  // teaser's own balance and "since dd/mm" — all read, never computed here.
   await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
-  // The direct child only: each teaser row below carries its own `.pie` too
-  // ("desde dd/mm"), nested inside its own `<Link>`, never a direct child here.
-  await expect(page.locator('.bloque-deben > .pie')).toHaveText(debtsSubtitle)
+  // The head's two lines, each its own element: the count (`salesOwingCount`) and the
+  // oldest date. Each teaser row carries its own "since dd/mm", inside its own link.
+  await expect(page.locator('.bloque-deben__cuenta')).toHaveText(owingLabel(panel.debts.sales_owing_count))
+  if (panel.debts.oldest !== null) {
+    await expect(page.locator('.bloque-deben__desde')).toHaveText(`since ${shortDate(panel.debts.oldest)}`)
+  }
 
   const [teaserRow] = panel.debts.teaser
   if (teaserRow === undefined) throw new Error('empty teaser in GET /panel')

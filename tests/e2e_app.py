@@ -26,6 +26,7 @@ import threading
 import time
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI
 
@@ -136,6 +137,21 @@ def create_e2e_app() -> FastAPI:
             daemon=True,
         ).start()
     return app
+
+
+# The phone check's second server (GH-80, invariant 7): its clock answers this one instant
+# on every call, so the business day, the week and the month never move under the walk
+# and the offender lists stay true. The front's clock is pinned to the same instant.
+PINNED_INSTANT = datetime(2026, 9, 16, 12, 0, tzinfo=ZoneInfo("America/Argentina/Buenos_Aires"))
+
+
+def create_mobile_e2e_app() -> FastAPI:
+    return create_app(
+        Settings.from_env(),
+        clock=lambda: PINNED_INSTANT,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
 
 
 def main(argv: Sequence[str]) -> int:

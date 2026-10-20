@@ -1,0 +1,75 @@
+/** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here saves. */
+
+import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
+import type { WalkState } from './states.ts'
+
+export const SALES_STATES: readonly WalkState[] = [
+  {
+    screen: 'NuevaVentaConLinea',
+    route: SALE_NEW,
+    steps: [
+      { fill: { label: 'Variedad línea 1', value: 'Golden Cookies' } },
+      { fill: { label: 'Gramos línea 1', value: '10' } },
+      { click: 'Agregar otra variedad' },
+    ],
+    visible: '$ 120.000',
+  },
+  {
+    screen: 'ElegirCliente',
+    route: SALE_NEW,
+    steps: [{ click: 'Elegir cliente' }, { fill: { label: 'Buscar', value: 'Nico' } }],
+    visible: 'Nico Parra',
+  },
+  {
+    screen: 'NuevoClienteEnVenta',
+    route: SALE_NEW,
+    steps: [{ click: 'Elegir cliente' }, { click: 'Nuevo cliente' }],
+    visible: 'Crear cliente',
+  },
+  {
+    screen: 'DescartarVenta',
+    route: SALE_NEW,
+    steps: [
+      { fill: { label: 'Variedad línea 1', value: 'Sir Jack' } },
+      { fill: { label: 'Gramos línea 1', value: '5' } },
+      { press: 'Cerrar' },
+    ],
+    visible: '¿Descartás la venta?',
+  },
+  {
+    screen: 'VentaAsignarCliente',
+    route: SALES,
+    steps: [{ click: 'Sin cliente' }, { click: 'Asignar cliente' }],
+    visible: 'Elegir cliente',
+  },
+  {
+    screen: 'VentaBorrar',
+    route: SALE.replace(':id', '{owing_sale}'),
+    steps: [{ click: 'Borrar venta' }],
+    visible: 'Sí, borrala',
+  },
+  {
+    screen: 'CobroDesdeClientes',
+    route: CUSTOMERS,
+    steps: [{ click: 'Nico Parra' }, { click: 'Registrar cobro' }],
+    visible: 'Guardar',
+  },
+  {
+    screen: 'CobroDesdeInicio',
+    route: HOME,
+    steps: [{ click: 'Nico Parra' }, { click: 'Registrar cobro' }],
+    visible: 'Guardar',
+  },
+  {
+    screen: 'CobroBorrar',
+    route: CUSTOMER.replace(':id', '{debtor}'),
+    steps: [{ click: 'Borrar cobro' }],
+    visible: 'Sí, borralo',
+  },
+  {
+    screen: 'VentasFechas',
+    route: SALES,
+    steps: [{ click: 'Fechas' }],
+    visible: 'Hasta',
+  },
+]

@@ -16,8 +16,8 @@ import {
   WORD_PERIOD,
   WORD_VARIETY,
   WORD_WEEK,
-} from './common'
-import { SAMPLES, type LimitedCopy } from './limits'
+} from './common.ts'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const EMPTY_LIST = "You haven't recorded any sales in this period yet."
 export const GRAMS_HELP = 'Comma, up to two decimals'

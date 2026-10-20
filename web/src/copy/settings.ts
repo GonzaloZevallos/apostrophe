@@ -7,7 +7,7 @@
  * an object, not a string export, so the registry check does not read it as a line.
  */
 
-import { SAMPLES, type LimitedCopy } from './limits'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
 import type { SuccessToast } from '../components/AvisoExito'
 import {
   CATALOG_MESSAGE,
@@ -31,7 +31,7 @@ import {
   WORD_YES_DELETE_IT,
   WORD_YES_DISCARD_IT,
   YES_DISCARD_THEM,
-} from './common'
+} from './common.ts'
 
 export const RENAME_SUCCESS: SuccessToast = 'Business renamed'
 export const PASSWORD_CHANGED_SUCCESS: SuccessToast = 'Password changed · we signed out your other sessions'

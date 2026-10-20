@@ -3,7 +3,7 @@
  * constant from another screen: what two of them say lives here.
  */
 
-import { SAMPLES, type LimitedCopy } from './limits'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const WEAK_PASSWORD_MESSAGE = 'The password must have at least 10 characters'
 export const DEAD_LINK_MESSAGE = 'This link no longer works. Ask whoever sent it for a new one.'

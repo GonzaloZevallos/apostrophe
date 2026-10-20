@@ -16,9 +16,9 @@ import {
   WORD_NO_KEEP_IT,
   WORD_YES_DELETE_IT,
   WORD_YES_DISCARD_IT,
-} from './common'
-import { salesCount } from './format'
-import type { LimitedCopy } from './limits'
+} from './common.ts'
+import { salesCount } from './format.ts'
+import type { LimitedCopy } from './limits.ts'
 
 /** Clientes' empty list. */
 export const EMPTY_CUSTOMERS = "You haven't added any customers yet."
