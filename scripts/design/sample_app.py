@@ -63,7 +63,9 @@ ONBOARDING_ACCOUNTS = (
 # One extra business per capture that must NOT show the Onboarding's notice: its Onboarding
 # is ended, always through `POST /onboarding-progress/skip-rest` and never by writing a row.
 # A screen reads one of these only when its frames do not draw the notice (`Inicio*`).
-ENDED_ONBOARDING_ACCOUNTS = ("inicio",)
+ENDED_ONBOARDING_ACCOUNTS = (
+    "inicio",
+)
 
 
 class Api(Protocol):

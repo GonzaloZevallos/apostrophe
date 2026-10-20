@@ -132,7 +132,7 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
   - an `open` account belongs to one Listo entry: an `open` account on any other entry fails, and a Listo entry on an account that is not `open` fails;
   - an `ended` account (a business whose Onboarding the sample ended at seed time) may be shared by read-only entries, such as the six `Inicio*` rows, and no Listo entry names it;
   - a Listo entry that names an account the sample does not write fails;
-  - two entries on one account are refused (`assertSelectedAccounts`), the default Listo row included.
+  - two Listo entries on one account are refused (`assertSelectedAccounts`), the default Listo row included.
 - The account-validation tests and `assertSelectedAccounts` keep everything they guarded; the old static rule "an account only on a Listo entry" now lives in `assertSelectedAccounts`, against the kinds.
 - **Same record in path and route**: the same test states that when an entry's `path` names at least one `{name}` placeholder, its placeholders equal the `route`'s exactly: the same names, in the same order, compared as written, before any normalisation.
   - A path with no placeholder names no record and passes, whatever its route holds. This is part of the rule, not an exemption: no entry is listed as exempt.

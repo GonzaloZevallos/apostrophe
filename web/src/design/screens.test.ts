@@ -750,12 +750,9 @@ describe('assertSelectedAccounts', () => {
     ).toThrow(/^Inicio: account is not one of the sample's accounts$/)
   })
 
-  // TEMPORARY (GH-189): ENDED_ONBOARDING_ACCOUNTS is written by the `sample-app` subtask, which
-  // merges beside this one. Until sample_app.py declares it the test is skipped, and the
-  // integrator removes the skip once both are merged, so it can never stay silent.
+  // Both constants must exist in sample_app.py: a rename or a removal fails here, it never goes quiet.
   const source = readFileSync(resolve(process.cwd(), '..', 'scripts/design/sample_app.py'), 'utf-8')
-  const declaresEnded = /^ENDED_ONBOARDING_ACCOUNTS = \(/m.test(source)
-  it.skipIf(!declaresEnded)("accepts the real screens.json with the kinds sample_app.py seeds", () => {
+  it("accepts the real screens.json with the kinds sample_app.py seeds", () => {
     const namesOf = (constant: string): string[] => {
       const declared = new RegExp(`^${constant} = \\(([^)]*)\\)`, 'm').exec(source)?.[1]
       if (declared === undefined) throw new Error(`sample_app.py declares no ${constant}`)
