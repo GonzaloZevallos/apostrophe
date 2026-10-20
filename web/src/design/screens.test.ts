@@ -987,9 +987,9 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
   })
 
   it('refuses a first-run row whose label is not in its drawing, or occurs twice', () => {
-    const row = { screen: 'InicioChecklist', route: '/', path: '/', account: 'checklist' }
+    const row = { screen: 'InicioChecklist', route: 'ruta', account: 'checklist' }
     expect(() => assertScreens([{ ...row, section: 'Una etiqueta que no está dibujada' }])).toThrow(/InicioChecklist/)
-    expect(() => assertScreens([{ screen: 'InicioHoyCompu', design: 'InicioCompu', route: '/', path: '/', section: 'Hoy' }])).toThrow(
+    expect(() => assertScreens([{ screen: 'InicioHoyCompu', design: 'InicioCompu', route: 'ruta', section: 'Hoy' }])).toThrow(
       /InicioHoyCompu: section "Hoy" occurs \d+ times in InicioCompu\.dc\.html, expected exactly once/,
     )
   })
