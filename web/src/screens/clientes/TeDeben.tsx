@@ -10,7 +10,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
-import { salesCount } from '../../format/counts'
+import { salesOwingCount } from '../../format/counts'
 import { formatMoney } from '../../format/money'
 import ClienteFila from './ClienteFila'
 import { NOBODY_OWES } from './messages'
@@ -29,7 +29,7 @@ export default function TeDeben() {
     <section aria-label="Te deben">
       <div className="campo__rotulo clientes__seccion-cabecera">
         <span>Te deben</span>
-        {data.debtors.length > 0 && <span>{`${salesCount(data.sales_owing_count)} debiendo`}</span>}
+        {data.debtors.length > 0 && <span>{salesOwingCount(data.sales_owing_count)}</span>}
       </div>
 
       {data.debtors.length === 0 ? (

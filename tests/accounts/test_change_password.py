@@ -16,7 +16,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import LoginAddressGuardRow, LoginGuardRow, ResetLinkRow
-from tests.conftest import NOW, PASSWORD, MovableClock, open_business
+from tests.conftest import PASSWORD, MovableClock, open_business
 
 NEW_PASSWORD = "a brand new password"
 
@@ -292,7 +292,7 @@ def test_a_successful_change_resets_the_email_count_and_leaves_the_address_alone
 
 
 def test_success_deletes_the_user_s_live_reset_link(
-    client: TestClient, engine: Engine
+    client: TestClient, engine: Engine, clock: MovableClock
 ) -> None:
     from app.accounts.adapters.sql_accounts import SqlAccounts
     from app.accounts.domain.account import Email
@@ -301,7 +301,7 @@ def test_success_deletes_the_user_s_live_reset_link(
         accounts = SqlAccounts(session)
         user = accounts.user_by_email(Email.of("uno@example.com"))
         assert user is not None and user.id is not None
-        accounts.issue_reset_link(user.id, "a" * 64, NOW)
+        accounts.issue_reset_link(user.id, "a" * 64, clock())
         session.commit()
 
     client.post(

@@ -406,7 +406,7 @@ test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guard
   await waitFor(() => expect(screen.queryByText('Ana Pérez')).not.toBeInTheDocument())
   expect(screen.getAllByRole('link', { name: /^Cobrar a / })).toHaveLength(3)
   expect(screen.getByRole('link', { name: 'Cobrar a Dani Ruiz' })).toBeInTheDocument()
-  expect(screen.getByText('3 ventas · desde 14/09')).toBeInTheDocument()
+  expect(screen.getByText('3 ventas debiendo')).toBeInTheDocument()
 })
 
 test('Registrar cobro opened from Inicio: with nobody left owing the block reads "Nadie te debe"', async () => {
@@ -432,4 +432,65 @@ test('"Cerrar" on Registrar cobro opened from Inicio returns to Inicio in one mo
   expect(await screen.findByText('Vendiste hoy')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(HOME)
   expect(router.state.historyAction).toBe('POP')
+})
+
+test('the period switch is text tabs (Pestanas) with the range last in the same row', async () => {
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
+
+  const row = container.querySelector<HTMLElement>('.inicio__periodos')!
+  const group = within(row).getByRole('group', { name: 'Período' })
+  expect(group).toHaveClass('pestanas')
+  expect(within(group).getByRole('button', { name: 'Hoy' })).toHaveAttribute('aria-pressed', 'true')
+  expect(within(group).getByRole('button', { name: 'Hoy' })).toHaveClass('pestanas__opcion--activa')
+  expect(within(group).getByRole('button', { name: 'Semana' })).toHaveAttribute('aria-pressed', 'false')
+  expect(container.querySelector('.periodos, .periodos__boton')).toBeNull()
+  expect(row.lastElementChild).toHaveClass('pie')
+  expect(row.lastElementChild?.textContent).toMatch(/^Hoy \d\d\/\d\d$/)
+})
+
+test('a Te deben row reads the name, then the amount in amber with its date, Cobrar beside it', async () => {
+  const { container } = renderInicio()
+  await screen.findByText('$ 37.000')
+
+  const head = container.querySelector('.bloque-deben')!
+  expect(head.querySelector('.bloque-deben__cuenta')).toHaveTextContent('4 ventas debiendo')
+  expect(head.querySelector('.bloque-deben__cuenta')).toHaveClass('pie')
+  expect(head.querySelector('.bloque-deben__desde')).toHaveTextContent(/^desde \d\d\/\d\d$/)
+
+  const row = container.querySelector<HTMLElement>('.bloque-deben__fila')!
+  const data = row.querySelector<HTMLElement>('.bloque-deben__datos')!
+  expect(data.firstElementChild).toHaveTextContent('Ana Pérez')
+  expect(data.querySelector('.monto-deuda')).toHaveTextContent(/^\$ [\d.]+$/)
+  expect(data.lastElementChild).toHaveTextContent(/^\$ [\d.]+ · desde \d\d\/\d\d$/)
+  const cobrar = within(row).getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  expect(cobrar).toHaveTextContent('Cobrar')
+  expect(data.contains(cobrar)).toBe(false)
+})
+
+test('Lo que te queda: every status has its word once and days only as the side figure', async () => {
+  panelNow = {
+    ...PANEL,
+    stock: [
+      { ...PANEL.stock[0]!, variety_id: 1, name: 'Criolla', status: 'low', days_left: 5 },
+      { ...PANEL.stock[0]!, variety_id: 2, name: 'Mora', status: 'ok', days_left: 40 },
+      { ...PANEL.stock[0]!, variety_id: 3, name: 'Zinnia', status: 'sold_out', days_left: null },
+      { ...PANEL.stock[0]!, variety_id: 4, name: 'Nueva', status: 'no_entries', days_left: null },
+    ],
+  }
+  const { container } = renderInicio()
+  await screen.findByText('Criolla')
+
+  const rows = Array.from(container.querySelectorAll<HTMLElement>('.fila-stock'))
+  expect(rows.map((row) => row.querySelectorAll('.marca-estado__palabra').length)).toEqual([1, 1, 1, 1])
+  expect(rows.map((row) => row.querySelector('.fila-stock__insignia')?.textContent ?? null)).toEqual([
+    '5 días',
+    '40 días',
+    null,
+    null,
+  ])
+  for (const row of rows) {
+    expect(row.querySelector('.fila-stock__insignia--sold_out, .fila-stock__insignia--low')).toBeNull()
+    expect(row.querySelector('.fila-stock__detalle')).not.toBeNull()
+  }
 })

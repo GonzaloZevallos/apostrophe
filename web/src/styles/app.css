@@ -1670,31 +1670,34 @@ body {
   box-shadow: 0 2px 0 var(--tinta);
 }
 
-/* `Inicio`'s own period tabs (`panel.ts`'s `Hoy/Semana/Mes`), unrelated to
- * `Ventas`' `Pestanas` above and out of this subtask's scope — restored after
- * this branch had accidentally renamed/deleted them out from under `Inicio.tsx`,
- * which still renders them (review finding, spec-scope). */
-.periodos {
+/* `Inicio`'s period row: `Pestanas` (text tabs, the active one underlined) and the range on
+ * one baseline. The range sits at the row's end when it fits and wraps to its own line, at
+ * the end, when it doesn't (320 px, 246 px at 130 %). The 44 px of each tab is this row's own
+ * rule: `.boton--enlace`, `.pestanas` and `.pestanas__opcion` stay as `Ventas` has them. */
+.inicio__periodos {
   display: flex;
-  gap: var(--espacio-sm);
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--espacio-xl);
+  row-gap: var(--espacio-xs);
 }
 
-.periodos__boton {
-  height: var(--alto-tocable);
-  padding: 0 var(--espacio-md);
-  border: 0;
-  border-radius: var(--radio-pildora);
-  background: var(--superficie);
-  color: var(--tinta);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+.inicio__periodos .pestanas {
+  flex-wrap: wrap;
 }
 
-.periodos__boton--activo {
-  background: var(--acento-suave);
-  color: var(--acento);
-  font-weight: 600;
+.inicio__periodos .pestanas__opcion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+}
+
+.inicio__periodos > .pie {
+  margin-inline-start: auto;
+  padding: 0;
+  text-align: end;
 }
 
 .periodos__fechas {
@@ -1921,12 +1924,19 @@ body {
 
 /* `Inicio`, now the panel (`results.md`): the "Vendiste..." figure, Ganancia/Caja
  * side by side, the Costo de lo vendido/Gastos/Regalaste/Compras list and the Te
- * deben block. Reuses `.periodos`, `.cifra-xl`, `.rotulo`, `.pie`, `.fila-stock` and
+ * deben block. Reuses `.inicio__periodos`, `.cifra-xl`, `.rotulo`, `.pie`, `.fila-stock` and
  * `.lista-stock` from Ventas/Stock; these are the panel's own additions. */
 .panel-ventas {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
+}
+
+/* The drawing's "N ventas · promedio…" line sits under the figure, left-aligned like it,
+ * not centred with `.pie`'s own padding. */
+.panel-ventas > .pie {
+  padding: 0;
+  text-align: start;
 }
 
 .panel-resultados {
@@ -2002,14 +2012,46 @@ body {
   text-decoration: none;
 }
 
+/* The customer's data (name, then amount and date) is the tap target for the card; Cobrar
+ * sits to its right. The link is at least 44 px tall by its own padding. */
 .bloque-deben__datos {
   flex: 1;
+  min-width: 0;
+  min-height: var(--alto-tocable);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--espacio-sm);
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
   color: inherit;
   text-decoration: none;
+}
+
+.bloque-deben__nombre {
+  max-width: 100%;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bloque-deben__datos > .pie,
+.bloque-deben__cuenta,
+.bloque-deben__desde {
+  padding: 0;
+  text-align: start;
+  color: var(--deuda2);
+}
+
+.bloque-deben__datos > .pie {
+  max-width: 100%;
+}
+
+.bloque-deben__cuenta {
+  margin-top: var(--espacio-xs);
+}
+
+.bloque-deben__desde {
+  margin-top: var(--espacio-xs);
 }
 
 .panel-dos-columnas {
@@ -2356,8 +2398,8 @@ body {
  * never red), a filled circle for baja, an empty circle for ok/no entries. */
 .fila-stock {
   display: flex;
-  align-items: center;
-  gap: var(--espacio-md);
+  flex-direction: column;
+  gap: var(--espacio-xs);
   padding: var(--espacio-md) 0;
   border-bottom: 1px solid var(--linea);
 }
@@ -2372,29 +2414,29 @@ body {
   text-decoration: none;
 }
 
-.fila-stock__texto {
-  flex: 1;
-  min-width: 0;
+/* Line 1: the name (it truncates, never pushes the figures out) and, to its right, the grams
+ * with the days left beside them. */
+.fila-stock__encabezado {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: baseline;
+  gap: var(--espacio-md);
 }
 
 .fila-stock__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 17px;
   font-weight: 600;
 }
 
-.fila-stock__detalle {
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
 .fila-stock__cifras {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: baseline;
+  gap: var(--espacio-sm);
+  white-space: nowrap;
 }
 
 .fila-stock__gramos {
@@ -2404,8 +2446,30 @@ body {
 }
 
 .fila-stock__insignia {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  color: var(--tinta2);
+}
+
+/* Line 2: the status mark with its word (never wrapped), then the detail line (wraps freely). */
+.fila-stock__pie {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-md);
+}
+
+.fila-stock__pie .marca-estado {
+  flex: none;
+  gap: var(--espacio-sm);
+  white-space: nowrap;
+}
+
+.fila-stock__pie .marca-estado__forma {
+  flex: none;
+}
+
+.fila-stock__detalle {
+  font-size: 13px;
   color: var(--tinta2);
 }
 
@@ -2438,20 +2502,6 @@ body {
 .cuenta-cliente__fecha {
   color: var(--tinta2);
   font-size: 13px;
-}
-
-.fila-stock__insignia--sold_out {
-  background: var(--critico);
-  color: var(--critico-texto);
-  padding: 3px 9px;
-  border-radius: var(--radio-pildora);
-}
-
-.fila-stock__insignia--low {
-  background: var(--deuda-fondo);
-  color: var(--deuda);
-  padding: 3px 9px;
-  border-radius: var(--radio-pildora);
 }
 
 .marca-estado {
@@ -3685,6 +3735,19 @@ body {
   color: var(--tinta2);
 }
 
+/* Lo que te queda reads the status word beside its shape too, as Variedades does. */
+.fila-stock .marca-estado__palabra {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta2);
+}
+
 .variedades__todas {
   display: flex;
   align-items: center;
@@ -4197,7 +4260,7 @@ body {
  * Controls rendered on a <button>, <a> or <Link> (each checked against its component):
  *   filled, so a --papel ring is the fill cue (it differs from the resting fill in both
  *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
- *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar,
+ *   .boton-icono, .pildora, .gastos__cargar, .aviso-ambar,
  *   .cobrar, .interruptor, .boton-aviso;
  *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
@@ -4221,7 +4284,6 @@ body {
 :is(
     .boton,
     .boton-icono,
-    .periodos__boton,
     .pildora,
     .gastos__cargar,
     .aviso-ambar,
@@ -4316,7 +4378,6 @@ body {
 :is(
     .boton,
     .boton-icono,
-    .periodos__boton,
     .pildora,
     .gastos__cargar,
     .aviso-ambar,
@@ -4456,13 +4517,6 @@ body {
   gap: var(--espacio-sm);
 }
 
-/* The wider pill must not push the row past the card on a phone: the customer's data
- * gives up its width first and wraps whole items instead of squeezing them. */
-.bloque-deben__datos {
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
 /* ===== gh97-integration: More info and the attention icon ===== */
 .mas-info__linea {
   display: flex;
@@ -4562,12 +4616,12 @@ body {
  * not the full-width Boton. */
 .bloque-deben__fila .boton {
   flex: none;
-  align-self: flex-end;
+  align-self: center;
   height: auto;
   min-height: var(--alto-tocable);
-  padding: 0 var(--espacio-lg);
+  padding: 0 var(--espacio-md);
   background: var(--acento);
-  font-size: 14px;
+  font-size: 13px;
   text-decoration: none;
 }
 

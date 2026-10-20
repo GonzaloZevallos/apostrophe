@@ -10,3 +10,9 @@
 export function salesCount(n: number): string {
   return n === 1 ? '1 venta' : `${n} ventas`
 }
+
+/** The Te deben block's count line (`payments.md`): `1` → `"1 venta debiendo"`, `N` →
+ * `"N ventas debiendo"`. `Inicio` and `TeDeben` (Clientes) both say it by calling this. */
+export function salesOwingCount(n: number): string {
+  return `${salesCount(n)} debiendo`
+}
