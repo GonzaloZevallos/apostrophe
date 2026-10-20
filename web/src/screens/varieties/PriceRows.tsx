@@ -22,7 +22,7 @@ import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { NO_KEEP_IT, YES_DELETE_IT } from '../../copy/stock'
 import {
-  CURRENT_TODAY,
+  CURRENT_PRICE,
   DELETE_PRICE,
   PRICE_DELETED,
   bulkFrom,
@@ -98,7 +98,7 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
           <div key={entry.id} className="historial-fila">
             <span className="historial-fila__fecha">
               {effectiveFrom(formatDateShort(entry.effective_from))}
-              {currentPriceId === entry.id && <span className="historial-fila__vigente">{CURRENT_TODAY}</span>}
+              {currentPriceId === entry.id && <span className="historial-fila__vigente">{CURRENT_PRICE}</span>}
             </span>
             <span>
               <span className="historial-fila__precio">{formatMoney(entry.list_price)}</span>

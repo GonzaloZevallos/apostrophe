@@ -418,13 +418,13 @@ describe('the actions and the sections', () => {
     expect(inside.queryByText('30 g')).not.toBeInTheDocument()
   })
 
-  test('Prices carries the last 3 prices, "Current today" and "See all"', async () => {
+  test('Prices carries the last 3 prices, "Current price" and "See all"', async () => {
     renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'Prices' })).closest('section')
     const inside = within(section as HTMLElement)
     expect(inside.getAllByText(/Effective from/)).toHaveLength(3)
-    expect(inside.getByText('Current today')).toBeInTheDocument()
+    expect(inside.getByText('Current price')).toBeInTheDocument()
     expect(inside.queryByText('$ 9.800')).not.toBeInTheDocument()
     expect(inside.getByRole('link', { name: 'See all' })).toHaveAttribute('href', pathTo(VARIETY_PRICES, { id: 1 }))
   })

@@ -23,8 +23,8 @@ test('lists every price newest first with "Effective from", the one in force and
 
   expect(await screen.findByRole('button', { name: '‹ 24K Gold' })).toBeInTheDocument()
   const rows = (await screen.findAllByText(/^Effective from/)).map((node) => node.textContent)
-  expect(rows).toEqual(['Effective from 25/09Current today', 'Effective from 01/09', 'Effective from 05/07'])
-  expect(screen.getByText('Current today')).toBeInTheDocument()
+  expect(rows).toEqual(['Effective from 25/09Current price', 'Effective from 01/09', 'Effective from 05/07'])
+  expect(screen.getByText('Current price')).toBeInTheDocument()
   expect(screen.getByText('From 10 g · $ 10.000')).toBeInTheDocument()
   expect(screen.getByText('$ 11.000')).toBeInTheDocument()
   expect(screen.getAllByRole('button', { name: 'Delete this price' })).toHaveLength(3)

@@ -97,7 +97,7 @@ export const INDICA_SHARE = '% indica'
 export const AROMA_FLAVOUR = 'Aroma/flavour'
 
 /** A price row and its delete. */
-export const CURRENT_TODAY = 'Current today'
+export const CURRENT_PRICE = 'Current price'
 export const effectiveFrom = (date: string) => `${EFFECTIVE_FROM} ${date}`
 export const bulkFrom = (grams: string, price: string) => `From ${grams} · ${price}`
 export const vipLine = (price: string) => `${VIP_PRICE} · ${price}`

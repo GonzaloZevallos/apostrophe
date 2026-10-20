@@ -35,7 +35,7 @@ _In the app_: Price (price history)
 
 **Current price**:
 For a variety on a given date, the price entry with the latest effective date on or before that date. A variety with no such entry has no price that day.
-_In the app_: Current today
+_In the app_: Current price
 _Avoid_: today's price, active price
 
 **List price**:
