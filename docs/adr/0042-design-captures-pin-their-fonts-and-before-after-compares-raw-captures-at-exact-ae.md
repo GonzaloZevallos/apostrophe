@@ -373,11 +373,23 @@ PM, never an exception. The frame after the shot does not advance the clock, so 
 clock has not reached, on purpose. `refetchOnWindowFocus` stays at react-query's default. The viewport
 branch of each layout decides whether a full-page shot would remount (`VarietiesLayout` does).
 
-**What the evidence shows.** Five whole-registry `--strict` runs of the head (`27eefcb0`), one Argentina
-day (2026-10-20), fresh samples, no `--only`, fontsource 5.3.0: every run exited 0, and `ae.mjs` run 1
-against runs 2 to 5 printed 0 non-zero lines (312 each), `VariedadesCompu built` included, no `null` side;
-by eye the switch rests enabled and on in all five. The diagnosis (base: grey in 0.1 to 0.8 of single-row
-runs depending on load; no-dance control: 0 of 24) supports the cause. **The base's five runs, the
-base-against-head comparison, the diagnostic pair under throttling and the demonstration of a row that
-never rests were not captured**, so GH-261's finding is recorded as resolved on the head's repeats and the
-diagnosis only, and the evidence is incomplete, not conclusive, until those are added.
+**What the evidence shows** (docs/evidence/GH-273-capture-at-rest.md, 2026-10-20, fontsource 5.3.0,
+base `6541887d`, head `27eefcb0`).
+
+- Five whole-registry `--strict` runs of the head and five of the base with head's tooling (overlay),
+  every one exit 0, fresh samples, no `--only`: `ae.mjs` run 1 against runs 2 to 5 on each side and base
+  against head all print 0 non-zero lines of 312, `VariedadesCompu built` included, no `null` side.
+- The diagnostic pair on the single `VariedadesCompu` row: the head's tooling gave 0 gray captures in 54
+  (12 at 4x CPU throttling, 12 at 10x, 30 unthrottled); the base's own tooling gave 3 gray of 12 at 4x.
+  By eye the switch rests enabled and on, in light and dark on `VariedadDetalle`.
+- Two throwaway rows, one that re-reads on every tick and keeps a button disabled, one that restarts a
+  finite transition on every tick, each fail under `--strict`: exit 1, the side `null`, no PNG, the fixed
+  sentence.
+
+GH-261's `VariedadesCompu built: AE 2888` is **resolved**, on those repeats and on the pair.
+
+**One consequence the finding did not ask for.** Rule 5 changes pixels. The base's own tooling and the
+head's, run on the same app (`6541887d`), differ on 49 `built` lines (none on `design`), the same 49 in two
+runs, mostly phone rows with a fixed bottom bar: growing the viewport to the document and taking a plain
+shot moves what depends on the viewport's height. Those 49 rows were not judged by eye. They are not
+excused: they are escalated, and captures taken by the earlier tooling are not comparable with these.

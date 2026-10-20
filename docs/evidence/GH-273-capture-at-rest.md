@@ -59,7 +59,7 @@ Review evidence only: nothing here is a gate, CI or `.agentic/stack.yaml` step. 
 - Task base (tooling and app before the change): `6541887d3c808164d0d1da97ea21084e81e2854a`.
 - Head captured: `27eefcb060f4b74b3e2cd855827c554cb5484417`. Its only later commit is this evidence.
 - `@fontsource/plus-jakarta-sans`: 5.3.0 (head's `web/node_modules`). Node v24.21.0.
-- Overlay (ADR-0042, GH-219) used for the base side that was prepared: head's whole `scripts/design/` over the base's own `app/` and `web/`; its diff stat is the stat of `git diff --stat 6541887d..HEAD -- scripts/design`: 4 files changed, 224 insertions(+), 46 deletions(-) (`comparisons.mjs`, `probe.mjs`, `settle.d.mts`, `settle.mjs`).
+- Overlay (ADR-0042, GH-219) used for the base side: head's whole `scripts/design/` over the base's own `app/` and `web/`; its diff stat is the stat of `git diff --stat 6541887d..HEAD -- scripts/design`: 4 files changed, 224 insertions(+), 46 deletions(-) (`comparisons.mjs`, `probe.mjs`, `settle.d.mts`, `settle.mjs`).
 
 ### Five whole-registry `--strict` runs of the head (done)
 
@@ -81,11 +81,61 @@ A first attempt at run 5 was cut off by the capture wrapper's own 590 s cap (not
 
 `VariedadesCompu-built-switch-head-run1.png` (a crop of the head's run-1 capture, 2x): the "Aviso de stock bajo" switch is **enabled and on** (black track, white thumb at the right), the state the sample's stored threshold gives it, not the grey of the disabled state. The track pixel is `35,30,24` (black) in all five runs. The registry has no dark `VariedadesCompu` row, so there is no dark capture of it.
 
-### Not done in this delivery (named, never hidden)
+### Five whole-registry `--strict` runs of the base, with head's tooling (overlay)
 
-The turn cap ran out before these were captured. Nothing below is claimed:
+Base = `6541887d` (its own `app/` and `web/`), head's whole `scripts/design/` over it. The scratch tree is `git archive 6541887d` with the overlay, `web/node_modules` and `.venv` linked from this checkout; the base's two `web/src/design/*.test.ts` files were removed from the scratch tree because they are not served and the overlay's `settle.d.mts` no longer fits them under `tsc -b` (the build the sample app runs first). Fresh sample per run, no `--only`, same Argentina day. Per run: `base-runN/`.
 
-1. The five base runs (overlay) and the base-against-head `ae.mjs`. The first attempt failed: the overlay's `settle.d.mts` no longer matches the base's two test files under `tsc -b` (the scratch base needs them removed, they are not served), and a scratch tree made with `git archive` needs the checkout's `.venv` linked for the sample server.
-2. The two throwaway demonstrations (a row re-issuing a fetch on a fake-clock `setInterval` while a button stays disabled, and a row restarting a finite transition every tick) shown failing under `--strict`.
-3. The diagnostic pair of the head's tooling under CPU throttling (the diagnosis above has the base's p of 0.1 to 0.8 and the no-dance control at 0 of 24).
-4. A by-eye pass of the other rows that carry the switch or an animated element (`VariedadDetalle`, `VariedadArchivada*`, `ArchivadasCompu`): they are AE 0 across the five head runs, which is not the same as judged.
+| Run | Start | End | Exit |
+|---|---|---|---|
+| 1 | 11:37:35 | 11:44:49 | 0 |
+| 2 | 11:45:37 | 11:54:37 | 0 |
+| 3 | 11:55:31 | 12:04:15 | 0 |
+| 4 | 12:05:20 | 12:12:23 | 0 |
+| 5 | 12:13:13 | 12:19:46 | 0 |
+
+- `ae.mjs` base run 1 against runs 2 to 5 (`ae-base-1-vs-N.txt`): 312 lines each, **0 non-zero**.
+- `ae.mjs` base run 1 against head runs 1 to 5 (`ae-base1-vs-headN.txt`): 312 lines each, **0 non-zero**, `VariedadesCompu built` included, no `null` side in any `index.json`.
+
+This compares the same app under the same (head's) tooling, so it shows the head's own change to `app/` and `web/` (tests only) leaves every pixel as it was. It does not compare the shot change against the old shots: that is the next section.
+
+### The old tooling against the new, on the same app (the `fitViewport` / `fullPageIfWide` question)
+
+Two more whole-registry `--strict` runs, `6541887d`'s own `scripts/design` on `6541887d` (`oldtool-run1/2`, both exit 0, run after the base runs), each compared with head run 1 (`ae-oldtool1-head1.txt`, `ae-oldtool2-head1.txt`) and with each other (`ae-oldtool1-2.txt`).
+
+- **49 non-zero lines, every one a `built` side**, identical in both old runs (the same 49 rows with the same AE, so it is a deterministic difference of the tooling, not noise). No `design` side differs and none is `different dimensions`. Old run 1 against old run 2 has 0 non-zero line(s).
+- The pattern is the phone rows with a fixed bottom bar (AE about 80,000 on `Inicio`, `Ventas`, `Clientes`, `Variedades`, `Gastos`, `Mas`, `EstadosSinConexion`, ...; about 7,600 to 8,000 on the others), a few large (`CobroCompu` 128,000, `PrecioNuevoCompu` 711,680, `Analisis` 199,324, `EstadosConfirmar` 331,646, `VariedadNuevaCompu` 277,682) and `VariedadesCompu built` 468. Not looked at row by row.
+- Reading: growing the viewport to the document's height and taking a plain shot moves what depends on the viewport's height (fixed bars, `dvh`, `min-height`) compared with the old full-page shot. **This is an unbriefed pixel change of the capture on 49 built lines. It is not excused and not judged here**: it is escalated to the Tech Lead (the open plan rows on `comparisons.mjs:392` and `:402`). Captures taken by the old tooling are not comparable with captures taken by this one.
+
+### The diagnostic pair (single `VariedadesCompu` row, built, 1280x920, light)
+
+`--only VariedadesCompu --strict`, one `comparisons.mjs` run per sample, one sample app per tree, CPU throttling by CDP `Emulation.setCPUThrottlingRate` set in a throwaway copy (not committed). The verdict is the pixel of the switch's track in the PNG (`121,118,113` gray, `35,30,24` black), read from every PNG. Counts in `diagnostic-pair/counts.txt`.
+
+| Tooling (tree) | Throttling | N | gray | black | no capture |
+|---|---|---|---|---|---|
+| head's (head) | 4 | 12 | 0 | 12 | 0 |
+| head's (head) | 10 | 12 | 0 | 12 | 0 |
+| head's (head) | none | 30 | 0 | 30 | 0 |
+| base's own (base) | 4 | 12 | 3 | 9 | 0 |
+
+The same N as the diagnosis for 4 and 10 and more than 3/p for the lowest rate seen (p = 0.1 gives 30). Base's p today was 0.25 at throttling 4 (the diagnosis measured 0.83 at 4 on a busier moment), so **the base can fail on this row and the head did not in 54 runs**, which is what supports 'resolved'.
+
+### The two never-rests demonstrations (throwaway, not committed)
+
+Two rows added to a scratch copy of the head (`/tmp`, a registry entry each and a `.dc.html` each; not in this checkout and not in the registry), each run once with `--only <row> --strict`. Output in `demo-fetch/` and `demo-transition/` (console, exit code, `index.json`, list of files written):
+
+- `ZzSondaFetch`: a button disabled while a `fetch` re-issued every 16 ms on the fake clock's `setInterval` runs.
+- `ZzSondaTransicion`: a finite 400 ms CSS transition whose target changes on every 16 ms tick.
+
+Each: exit **1**; message `<row>: el diseño no se pudo capturar: la pantalla no quedó quieta` (names the row and the side, the fixed sentence, no page text); `index.json` has `"design": null`; no `.design.png` is written (only `<row>.png`, the composed sheet with "—", and `<row>.built.png`, since the built side of that row is an ordinary screen that did rest). Two first attempts did not show it and are not evidence: the throwaway had no applied font on its first text (a different, font failure), and with a 50 ms interval a run of three calm frames fits between ticks, so the row passed. A 16 ms interval ticks on every frame, which no pause can fit.
+
+### By eye, in light and dark where the registry has both
+
+From head run 1 (`27eefcb0`); each at rest, nothing mid-change:
+
+- `VariedadesCompu built` (no dark row exists): switch enabled and on (black track, thumb right), the state the stored threshold gives; track pixel black in all five head runs. Crop above.
+- `VariedadDetalle` and `VariedadDetalleOscuro` built: "Aviso de stock bajo" switch enabled and on in both (dark track on light theme, light track on dark theme, thumb right).
+- `ConfiguracionPrecios` built: both switches (`Precio por cantidad`, `Clientes VIP`) on, enabled, blue, thumb right. (The 120 ms thumb transition of `OpcionInterruptor` is the only transition on a switch in the app.)
+- `NuevaVentaOscuro` built: the `Regalo` switch off, thumb left, enabled.
+- `VariedadArchivada` built: the archived variety shows its low-stock notice as text, with no switch.
+
+Not viewed: the remaining `Configuracion*`, `NuevaVenta*`, `Catalogo*` and the other `VariedadArchivada*`/`ArchivadasCompu` rows. They are AE 0 across the five head runs and the five base runs, which shows they repeat, not that they were judged.

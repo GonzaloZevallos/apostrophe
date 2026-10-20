@@ -1,0 +1,11 @@
+[
+  {
+    "screen": "ZzSondaTransicion",
+    "file": "/tmp/gh273-runs/demo2/ZzSondaTransicion/ZzSondaTransicion.png",
+    "notes": [
+      "el diseño no se pudo capturar: la pantalla no quedó quieta"
+    ],
+    "design": null,
+    "built": "/tmp/gh273-runs/demo2/ZzSondaTransicion/ZzSondaTransicion.built.png"
+  }
+]

@@ -1,0 +1,1094 @@
+[
+  {
+    "screen": "Entrar",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Entrar.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Entrar.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Entrar.built.png"
+  },
+  {
+    "screen": "EntrarOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EntrarOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EntrarOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EntrarOscuro.built.png"
+  },
+  {
+    "screen": "NegocioNuevo",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/NegocioNuevo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/NegocioNuevo.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/NegocioNuevo.built.png"
+  },
+  {
+    "screen": "Invitacion",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Invitacion.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Invitacion.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Invitacion.built.png"
+  },
+  {
+    "screen": "Reset",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Reset.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Reset.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Reset.built.png"
+  },
+  {
+    "screen": "ResetOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ResetOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ResetOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ResetOscuro.built.png"
+  },
+  {
+    "screen": "Inicio",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Inicio.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Inicio.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Inicio.built.png"
+  },
+  {
+    "screen": "InicioHoy",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoy.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoy.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoy.built.png"
+  },
+  {
+    "screen": "InicioOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/InicioOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/InicioOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/InicioOscuro.built.png"
+  },
+  {
+    "screen": "InicioCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/InicioCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/InicioCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/InicioCompu.built.png"
+  },
+  {
+    "screen": "InicioHoyCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoyCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoyCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoyCompu.built.png"
+  },
+  {
+    "screen": "InicioHoyCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoyCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoyCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/InicioHoyCompuOscuro.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVez.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVez.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVez.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVezCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVezCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVezCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVezCompu.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVezOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVezOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVezOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/InicioPrimeraVezOscuro.built.png"
+  },
+  {
+    "screen": "Ventas",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Ventas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Ventas.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Ventas.built.png"
+  },
+  {
+    "screen": "VentasCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentasCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentasCompu.built.png"
+  },
+  {
+    "screen": "NuevaVenta",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVenta.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVenta.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVenta.built.png"
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCliente.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCliente.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCliente.built.png"
+  },
+  {
+    "screen": "NuevaVentaCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCompu.built.png"
+  },
+  {
+    "screen": "VentaDetalle",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalle.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalle.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalle.built.png"
+  },
+  {
+    "screen": "VentaDetalleCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleCompu.built.png"
+  },
+  {
+    "screen": "VentasOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentasOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentasOscuro.built.png"
+  },
+  {
+    "screen": "VentasCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentasCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentasCompuOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaClienteOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaClienteOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaClienteOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaClienteOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/NuevaVentaCompuOscuro.built.png"
+  },
+  {
+    "screen": "VentaDetalleOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleOscuro.built.png"
+  },
+  {
+    "screen": "VentaDetalleCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentaDetalleCompuOscuro.built.png"
+  },
+  {
+    "screen": "VentaGuardada",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentaGuardada.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentaGuardada.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentaGuardada.built.png"
+  },
+  {
+    "screen": "VentaGuardadaOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VentaGuardadaOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VentaGuardadaOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VentaGuardadaOscuro.built.png"
+  },
+  {
+    "screen": "Clientes",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Clientes.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Clientes.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Clientes.built.png"
+  },
+  {
+    "screen": "ClientesCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClientesCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClientesCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClientesCompu.built.png"
+  },
+  {
+    "screen": "ClienteFicha",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClienteFicha.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClienteFicha.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClienteFicha.built.png"
+  },
+  {
+    "screen": "ClienteNuevo",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClienteNuevo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClienteNuevo.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClienteNuevo.built.png"
+  },
+  {
+    "screen": "ClienteNuevoCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClienteNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClienteNuevoCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClienteNuevoCompu.built.png"
+  },
+  {
+    "screen": "ClienteEditar",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClienteEditar.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClienteEditar.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClienteEditar.built.png"
+  },
+  {
+    "screen": "ClienteEditarCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClienteEditarCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClienteEditarCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClienteEditarCompu.built.png"
+  },
+  {
+    "screen": "Cobro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Cobro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Cobro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Cobro.built.png"
+  },
+  {
+    "screen": "CobroCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/CobroCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/CobroCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/CobroCompu.built.png"
+  },
+  {
+    "screen": "ClientesOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClientesOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClientesOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClientesOscuro.built.png"
+  },
+  {
+    "screen": "ClientesCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClientesCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClientesCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClientesCompuOscuro.built.png"
+  },
+  {
+    "screen": "ClienteFichaOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ClienteFichaOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ClienteFichaOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ClienteFichaOscuro.built.png"
+  },
+  {
+    "screen": "CobroOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/CobroOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/CobroOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/CobroOscuro.built.png"
+  },
+  {
+    "screen": "CobroCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/CobroCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/CobroCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/CobroCompuOscuro.built.png"
+  },
+  {
+    "screen": "EntradaStock",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStock.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStock.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStock.built.png"
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockEditar.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockEditar.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockEditar.built.png"
+  },
+  {
+    "screen": "EntradaStockCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockCompu.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradas.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradas.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasOscuro.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasCompu.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EntradaStockSinEntradasCompuOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradas.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradas.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasVariedad.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasVariedad.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasVariedad.built.png"
+  },
+  {
+    "screen": "SacarDelStock",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/SacarDelStock.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/SacarDelStock.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/SacarDelStock.built.png"
+  },
+  {
+    "screen": "SacarDelStockCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/SacarDelStockCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/SacarDelStockCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/SacarDelStockCompu.built.png"
+  },
+  {
+    "screen": "RetiroDetalle",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/RetiroDetalle.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/RetiroDetalle.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/RetiroDetalle.built.png"
+  },
+  {
+    "screen": "VerTodas",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VerTodas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VerTodas.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VerTodas.built.png"
+  },
+  {
+    "screen": "PrecioNuevo",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevo.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevo.built.png"
+  },
+  {
+    "screen": "PrecioNuevoCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoCompu.built.png"
+  },
+  {
+    "screen": "PrecioNuevoOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoOscuro.built.png"
+  },
+  {
+    "screen": "PrecioNuevoCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/PrecioNuevoCompuOscuro.built.png"
+  },
+  {
+    "screen": "VariedadNueva",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadNueva.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadNueva.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadNueva.built.png"
+  },
+  {
+    "screen": "VariedadNuevaCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadNuevaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadNuevaCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadNuevaCompu.built.png"
+  },
+  {
+    "screen": "Variedades",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Variedades.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Variedades.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Variedades.built.png"
+  },
+  {
+    "screen": "VariedadesCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadesCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadesCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadesCompu.built.png"
+  },
+  {
+    "screen": "VariedadDetalle",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadDetalle.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadDetalle.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadDetalle.built.png"
+  },
+  {
+    "screen": "Archivadas",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Archivadas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Archivadas.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Archivadas.built.png"
+  },
+  {
+    "screen": "ArchivadasCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasCompu.built.png"
+  },
+  {
+    "screen": "Gastos",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Gastos.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Gastos.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Gastos.built.png"
+  },
+  {
+    "screen": "GastosCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/GastosCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/GastosCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/GastosCompu.built.png"
+  },
+  {
+    "screen": "GastoNuevo",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/GastoNuevo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/GastoNuevo.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/GastoNuevo.built.png"
+  },
+  {
+    "screen": "GastoNuevoCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/GastoNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/GastoNuevoCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/GastoNuevoCompu.built.png"
+  },
+  {
+    "screen": "Catalogo",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Catalogo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Catalogo.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Catalogo.built.png"
+  },
+  {
+    "screen": "CatalogoCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoCompu.built.png"
+  },
+  {
+    "screen": "Analisis",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Analisis.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Analisis.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Analisis.built.png"
+  },
+  {
+    "screen": "AnalisisCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisCompu.built.png"
+  },
+  {
+    "screen": "AnalisisOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisOscuro.built.png"
+  },
+  {
+    "screen": "AnalisisCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/AnalisisCompuOscuro.built.png"
+  },
+  {
+    "screen": "Mas",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Mas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Mas.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Mas.built.png"
+  },
+  {
+    "screen": "Configuracion",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/Configuracion.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/Configuracion.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/Configuracion.built.png"
+  },
+  {
+    "screen": "ConfiguracionCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionNegocio",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionNegocio.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionNegocio.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionNegocio.built.png"
+  },
+  {
+    "screen": "ConfiguracionNegocioCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionNegocioCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionNegocioCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionNegocioCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionUsuarios",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionUsuarios.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionUsuarios.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionUsuarios.built.png"
+  },
+  {
+    "screen": "ConfiguracionUsuariosCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionUsuariosCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionUsuariosCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionUsuariosCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionPrecios",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionPrecios.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionPrecios.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionPrecios.built.png"
+  },
+  {
+    "screen": "ConfiguracionPreciosCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionPreciosCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionPreciosCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionPreciosCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegraciones",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegraciones.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegraciones.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegraciones.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesOscuro.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionIntegracionesCompuOscuro.built.png"
+  },
+  {
+    "screen": "ConfiguracionMensaje",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionMensaje.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionMensaje.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionMensaje.built.png"
+  },
+  {
+    "screen": "ConfiguracionMensajeCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionMensajeCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionMensajeCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionMensajeCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCategorias.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCategorias.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCategorias.built.png"
+  },
+  {
+    "screen": "ConfiguracionCategoriasCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCategoriasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCategoriasCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCategoriasCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionApariencia",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionApariencia.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionApariencia.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionApariencia.built.png"
+  },
+  {
+    "screen": "ConfiguracionAparienciaCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionAparienciaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionAparienciaCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionAparienciaCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCuenta.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCuenta.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCuenta.built.png"
+  },
+  {
+    "screen": "ConfiguracionCuentaCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCuentaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCuentaCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ConfiguracionCuentaCompu.built.png"
+  },
+  {
+    "screen": "OnboardingStock",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStock.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStock.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStock.built.png"
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensaje.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensaje.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensaje.built.png"
+  },
+  {
+    "screen": "OnboardingBot",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBot.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBot.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBot.built.png"
+  },
+  {
+    "screen": "OnboardingSocio",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocio.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocio.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocio.built.png"
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategorias.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategorias.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategorias.built.png"
+  },
+  {
+    "screen": "OnboardingStockOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingBotOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingSocioOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingStockCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockCompu.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeCompu.built.png"
+  },
+  {
+    "screen": "OnboardingBotCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotCompu.built.png"
+  },
+  {
+    "screen": "OnboardingSocioCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioCompu.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasCompu.built.png"
+  },
+  {
+    "screen": "OnboardingStockCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingBotCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingSocioCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingStockTexto130",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockTexto130.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingStockTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeTexto130.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingMensajeTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotTexto130.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingBotTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioTexto130.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingSocioTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasTexto130.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingCategoriasTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingVariedad",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedad.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedad.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedad.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadCompu.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadTexto130",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadTexto130.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingVariedadCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingPrecio",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingPrecio.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingPrecio.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingPrecio.built.png"
+  },
+  {
+    "screen": "OnboardingListo",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListo.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListo.built.png"
+  },
+  {
+    "screen": "OnboardingListoCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoCompu.built.png"
+  },
+  {
+    "screen": "OnboardingListoOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingListoCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingListoTexto130",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoTexto130.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/OnboardingListoTexto130.built.png"
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexion.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexion.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexion.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionCompu.built.png"
+  },
+  {
+    "screen": "EstadosGone",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EstadosGone.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EstadosGone.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EstadosGone.built.png"
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EstadosConfirmar.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EstadosConfirmar.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EstadosConfirmar.built.png"
+  },
+  {
+    "screen": "MasOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/MasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/MasOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/MasOscuro.built.png"
+  },
+  {
+    "screen": "VariedadDetalleOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadDetalleOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadDetalleOscuro.built.png"
+  },
+  {
+    "screen": "ArchivadasOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasOscuro.built.png"
+  },
+  {
+    "screen": "ArchivadasCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/ArchivadasCompuOscuro.built.png"
+  },
+  {
+    "screen": "CatalogoOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoOscuro.built.png"
+  },
+  {
+    "screen": "CatalogoCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/CatalogoCompuOscuro.built.png"
+  },
+  {
+    "screen": "VerTodasOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VerTodasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VerTodasOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VerTodasOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasVariedadOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasVariedadOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasVariedadOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/TodasLasEntradasVariedadOscuro.built.png"
+  },
+  {
+    "screen": "RetiroDetalleOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/RetiroDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/RetiroDetalleOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/RetiroDetalleOscuro.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionOscuro.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/EstadosSinConexionCompuOscuro.built.png"
+  },
+  {
+    "screen": "VariedadArchivada",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivada.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivada.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivada.built.png"
+  },
+  {
+    "screen": "VariedadArchivadaOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaOscuro.built.png"
+  },
+  {
+    "screen": "VariedadArchivadaCompu",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaCompu.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaCompu.built.png"
+  },
+  {
+    "screen": "VariedadArchivadaCompuOscuro",
+    "file": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/oldtool/run1/shots/VariedadArchivadaCompuOscuro.built.png"
+  }
+]
