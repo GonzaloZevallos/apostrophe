@@ -354,17 +354,21 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(clicks(row('InicioHoy'))).toEqual([])
     expect(row('InicioHoy')).toMatchObject({ design: 'Inicio', section: HOY_PHONE })
     expect(clicks(row('InicioHoyCompu'))).toEqual([])
-    expect(row('InicioHoyCompu')).toMatchObject({ design: 'InicioCompu', viewport: [1280, 920] })
+    expect(row('InicioHoyCompu')).toMatchObject({
+      design: 'InicioCompu',
+      section: HOY_PHONE,
+      viewport: [1280, 920],
+    })
   })
 
   it('captures the dark computer Hoy against the light computer drawing, as the other CompuOscuro twins do', () => {
     expect(clicks(row('InicioHoyCompuOscuro'))).toEqual([])
     expect(row('InicioHoyCompuOscuro')).toMatchObject({
       design: 'InicioCompu',
+      section: HOY_PHONE,
       tema: 'oscuro',
       viewport: [1280, 920],
     })
-    expect(row('InicioHoyCompuOscuro').section).toBeUndefined()
   })
 
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
