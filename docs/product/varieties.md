@@ -195,7 +195,7 @@ Success criteria:
   - New sale's variety picker (`sales.md`);
   - the stock entry form's variety picker (`stock.md`);
   - the price entry form;
-  - the catalog text and the catalog screen's "what does not go out" list (`catalog.md`);
+  - the catalog text and the catalog screen's "What's left out and why" list (`catalog.md`);
   - the pinned catalog.
 - **Past records keep it, by its plain name, with no "archivada" tag and no figure
   changed**: Ventas and a sale's detail, the customer's account, All entries,
