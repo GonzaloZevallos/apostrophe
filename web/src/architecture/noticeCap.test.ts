@@ -25,6 +25,7 @@ const REFUSED: ReadonlyArray<readonly [string, string]> = [
   ['cap_comma_group_only', 'rule alone'],
   ['cap_in_is', 'rule alone'],
   ['cap_in_is_bare', 'rule alone'],
+  ['cap_in_where', 'rule alone'],
   ['cap_pseudo', 'rule alone'],
   ['cap_ancestor', 'rule alone'],
   ['cap_wrong_value', 'value of'],
