@@ -352,12 +352,14 @@ test('no sales shows no average, and the range reads with no year', async () => 
 
 test('Te deben: total, count, oldest date, and the teaser opens a customer card', async () => {
   stubFetch(PANEL)
-  renderInicio()
+  const { container } = renderInicio()
 
   expect(await screen.findByText('$ 37.000')).toBeInTheDocument()
-  expect(screen.getByText('4 ventas · desde 14/09')).toBeInTheDocument()
+  expect(screen.getByText('4 ventas debiendo')).toBeInTheDocument()
+  expect(container.querySelector('.bloque-deben__desde')).toHaveTextContent('desde 14/09')
   const row = screen.getByText('Ana Pérez').closest('a')
   expect(row).not.toBeNull()
+  expect(row).toHaveTextContent(/\$ [\d.]+ · desde \d\d\/\d\d/)
   row?.click()
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
 })
@@ -435,7 +437,7 @@ test('"Arrancá por las variedades" shows above the panel, which still shows its
     el.textContent?.includes(EMPTY_TITLE),
   )
   const panelIndex = Array.from(container.querySelectorAll('.cuerpo > *')).findIndex((el) =>
-    el.classList.contains('periodos'),
+    el.classList.contains('inicio__periodos'),
   )
   expect(titleIndex).toBeLessThan(panelIndex)
 })

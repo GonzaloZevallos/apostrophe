@@ -34,7 +34,6 @@ export interface SourceFile {
 /** The closed list of raw-button classes: options and rows, never an action. */
 export const OPTION_CLASSES = [
   'pildora',
-  'periodos__boton',
   'gastos__mes-boton',
   'fila-gasto',
   'ajustes__item--boton',
