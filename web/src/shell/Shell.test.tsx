@@ -42,6 +42,7 @@ import {
   type Screen,
 } from '../routes'
 import Mas from '../screens/Mas'
+import { chooseTheme } from '../theme'
 import Shell from './Shell'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
@@ -105,6 +106,7 @@ function stubFirstRun(answer: FirstRunAnswer | 'pending' | undefined): void {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  chooseTheme('claro')
 })
 
 function renderShell(
@@ -495,10 +497,13 @@ function checklist(pricedDone: boolean): FirstRunAnswer {
   }
 }
 
-test.each([
-  ['phone', false, 2],
-  ['computer', true, 2],
-])('%s: while the checklist shows with no priced variety, "Nueva venta" stays a link and says what is missing', async (_name, computer, buttons) => {
+test.each(
+  (['claro', 'oscuro'] as const).flatMap((theme) => [
+    ['phone', false, 2, theme] as const,
+    ['computer', true, 2, theme] as const,
+  ]),
+)('%s: while the checklist shows with no priced variety, "Nueva venta" stays a link and says what is missing (%s)', async (_name, computer, buttons, theme) => {
+  chooseTheme(theme)
   renderShell([HOME], { computer, firstRun: checklist(false) })
 
   const lines = await screen.findAllByText(MISSING_LINE)

@@ -27,6 +27,7 @@ import {
 import { NO_PRICE_TODAY } from './Variedades'
 import { EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
 import { LIMITS, SAMPLES } from '../copy/limits'
+import { chooseTheme } from '../theme'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -128,6 +129,7 @@ function writes(fetchMock: ReturnType<typeof vi.fn>): { call: string; body: unkn
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  chooseTheme('claro')
 })
 
 describe('the list', () => {
@@ -574,7 +576,8 @@ describe('"Mandar catálogo" and the first-run checklist', () => {
     nothing_qualifies: true,
   }
 
-  test('is disabled with its reason in words while the checklist shows and nothing qualifies', async () => {
+  test.each(['claro', 'oscuro'] as const)('is disabled with its reason in words while the checklist shows and nothing qualifies (%s)', async (theme) => {
+    chooseTheme(theme)
     renderApp(VARIETIES_PATH, { answers: { 'GET /first-run': () => json(200, CHECKLIST_EMPTY) } })
 
     const button = await screen.findByRole('button', { name: 'Mandar catálogo' })
