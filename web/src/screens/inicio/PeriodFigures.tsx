@@ -26,6 +26,19 @@ const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: str
   { key: 'own_use', label: 'Consumo propio' },
 ]
 
+/** Shortest and longest formatted figure the computer's card fits at a scaled size
+ * (`app.css`, "Long figures"). */
+const LARGO_MIN = 8
+const LARGO_MAX = 14
+
+/** The `data-largo` of a value span: the code-point length of the already formatted string,
+ * clamped to 8-14, absent below 8. It says a length only, never an amount or a sign, so
+ * the stylesheet can shrink a long figure to fit its card. */
+function largoOf(formatted: string): string | undefined {
+  const length = [...formatted].length
+  return length < LARGO_MIN ? undefined : String(Math.min(length, LARGO_MAX))
+}
+
 const SALES_HEADING: Record<PanelTab, string> = {
   today: 'Vendiste hoy',
   week: 'Vendiste esta semana',
@@ -130,7 +143,9 @@ function ListItem({ label, value, pending }: { label: string; value: string; pen
     <div className="panel-lista__item" role="group" aria-labelledby={labelId}>
       <div className="panel-lista__fila">
         <span id={labelId}>{label}</span>
-        <span className="panel-lista__valor">{value}</span>
+        <span className="panel-lista__valor" data-largo={largoOf(value)}>
+          {value}
+        </span>
       </div>
       {pending && <span className="pie">{PENDING_NOTE}</span>}
     </div>
@@ -154,7 +169,10 @@ function ResultCell({
       <span id={labelId} className="rotulo">
         {label}
       </span>
-      <span className={accent ? 'panel-resultados__valor panel-resultados__valor--acento' : 'panel-resultados__valor'}>
+      <span
+        className={accent ? 'panel-resultados__valor panel-resultados__valor--acento' : 'panel-resultados__valor'}
+        data-largo={largoOf(value)}
+      >
         {value}
       </span>
       {pending && <span className="pie">{PENDING_NOTE}</span>}

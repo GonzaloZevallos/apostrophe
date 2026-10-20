@@ -117,3 +117,37 @@ test('two instances together: every aria-labelledby resolves to exactly one elem
     expect(document.querySelectorAll(`[id="${id}"]`)).toHaveLength(1)
   }
 })
+
+/** The value span of a figure group: the one that carries the formatted figure. */
+function valueOf(label: string, text: string): HTMLElement {
+  return within(screen.getByRole('group', { name: label })).getByText(text)
+}
+
+test('data-largo carries the length of the formatted figure, 8 to 14, and is absent below 8', () => {
+  render(<PeriodFigures tab="week" period={{ ...WEEK, expenses: 93000, purchases: 9000 }} />)
+
+  expect(valueOf('Gastos', '$ 93.000')).toHaveAttribute('data-largo', '8')
+  expect(valueOf('Compras de flores', '$ 9.000')).not.toHaveAttribute('data-largo')
+  expect(valueOf('Regalaste', '2 g')).not.toHaveAttribute('data-largo')
+})
+
+test('data-largo is 14 for "−$ 999.999.999" and stays 14 for anything longer', () => {
+  render(
+    <PeriodFigures
+      tab="week"
+      period={{ ...WEEK, profit: -999999999, cash: 1000000000, cost_of_goods: 12345678 }}
+    />,
+  )
+
+  expect(valueOf('Ganancia', '−$ 999.999.999')).toHaveAttribute('data-largo', '14')
+  expect(valueOf('Caja', '$ 1.000.000.000')).toHaveAttribute('data-largo', '14')
+  expect(valueOf('Costo de lo vendido', '$ 12.345.678')).toHaveAttribute('data-largo', '12')
+})
+
+test('data-largo says only a length: never an amount or a sign', () => {
+  render(<PeriodFigures tab="week" period={{ ...WEEK, profit: -5000, cash: 5000 }} />)
+
+  const ganancia = valueOf('Ganancia', '−$ 5.000')
+  const caja = valueOf('Caja', '$ 5.000')
+  expect(ganancia.getAttribute('data-largo')).toBe(caja.getAttribute('data-largo'))
+})
