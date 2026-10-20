@@ -10,7 +10,8 @@ import {
 import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
 import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
-import { spanishMarker } from '../architecture/copySpanish'
+import { SAMPLES } from '../copy/limits'
+import { fold, renderedEntries, spanishMarker, type Section } from '../architecture/copySpanish'
 
 describe('assertScreens', () => {
   it('refuses an entry with color_scheme', () => {
@@ -371,7 +372,7 @@ describe('assertScreens checks every step against one closed list of shapes', ()
         withSteps([
           { click: 'Semana' },
           { press: 'Borrar venta' },
-          { wait: 'Stock y entradas' },
+          { wait: 'Stock and entries' },
           { fill: { label: 'Gramos', value: '{email}' } },
           { select: { label: 'Variedad línea 1', index: 0 } },
           { offline: true },
@@ -555,7 +556,7 @@ describe('the archived variety rows of the real screens.json', () => {
       const entry = screens.screens.find((s) => s.screen === key)!
       expect(entry.route, key).toBe(listPath)
       expect(entry.path, key).toBe(`${listPath.replace(/archived$/, '')}{archived}`)
-      expect(entry.steps, key).toEqual([{ click: 'Blue Dream' }, { wait: 'Stock y entradas' }])
+      expect(entry.steps, key).toEqual([{ click: 'Blue Dream' }, { wait: 'Stock and entries' }])
       expect(entry.viewport !== undefined, key).toBe(key.includes('Compu'))
       expect(entry.tema === 'oscuro', key).toBe(key.endsWith('Oscuro'))
     }
@@ -619,7 +620,7 @@ describe('an entry whose path names a record names the same placeholders in its 
   it('refuses a path that names a record when the route names none and no step clicks to it', () => {
     const entry = { screen: 'VariedadArchivada', path: 'varieties/{archived}', route: 'varieties/archived' }
     expect(pathRecordMismatches([entry])).toEqual([{ screen: 'VariedadArchivada', path: ['archived'], route: [] }])
-    expect(pathRecordMismatches([{ ...entry, steps: [{ wait: 'Stock y entradas' }] }])).toEqual([
+    expect(pathRecordMismatches([{ ...entry, steps: [{ wait: 'Stock and entries' }] }])).toEqual([
       { screen: 'VariedadArchivada', path: ['archived'], route: [] },
     ])
     expect(pathRecordMismatches([{ ...entry, steps: [{ click: 'Blue Dream' }] }])).toEqual([])
@@ -764,15 +765,45 @@ function builtSideTexts(steps: readonly Step[]): string[] {
   return texts
 }
 
+/** Texts the sample app was seeded with: seller data, not app text. */
+const SAMPLE_DATA: ReadonlySet<string> = new Set(['Blue Dream'])
+
+const copyModules = import.meta.glob<Record<string, unknown>>(
+  ['../copy/*.ts', '!../copy/{index,limits}.ts', '!../copy/*.test.ts'],
+  { eager: true },
+)
+
+/** Every text the copy can show, as the app shows it: strings as they are, function entries
+ * rendered with the sample arguments the limits use. */
+const SHOWN = new Set(
+  Object.values(copyModules).flatMap((section) => renderedEntries(section as Section).map(({ text }) => text)),
+)
+/** A step that waits for a text with the seeded variety "Gelato" in it stands for the entry
+ * rendered with the sample name. */
+const shown = (text: string) => SHOWN.has(fold(text.replace('Gelato', SAMPLES.name)))
+
 describe('the built-side steps of the real screens.json speak the app’s English', () => {
+  const real = (screens.screens as { screen: string; steps?: Step[] }[]).flatMap((entry) =>
+    builtSideTexts(entry.steps ?? []).map((text) => ({ screen: entry.screen, text })),
+  )
+
   it('has no Spanish word in a click, press, wait or fill label', () => {
-    const texts = (screens.screens as { steps?: Step[] }[]).flatMap((entry) => builtSideTexts(entry.steps ?? []))
-    expect(texts.length).toBeGreaterThan(50)
-    expect(texts.filter((text) => spanishMarker(text) !== null)).toEqual([])
+    expect(real.length).toBeGreaterThan(50)
+    expect(real.filter(({ text }) => spanishMarker(text) !== null)).toEqual([])
   })
 
   it('refuses a step that still waits for a Spanish text', () => {
     const texts = builtSideTexts([{ click: 'Guardá la entrada' }, { wait: 'Sin conexión' }, { fill: { label: 'Gramos' } }])
     expect(texts.filter((text) => spanishMarker(text) !== null)).toEqual(['Guardá la entrada', 'Sin conexión'])
+  })
+
+  it('names, in every step, a text the copy shows (or the sample data it was seeded with)', () => {
+    expect(real.filter(({ text }) => !shown(text) && !SAMPLE_DATA.has(text)).map(({ text }) => text)).toEqual([])
+  })
+
+  it('refuses a step whose text no copy value shows, whether or not it carries an accent', () => {
+    expect(shown('Entrada')).toBe(false)
+    expect(shown('Stock inicial')).toBe(false)
+    expect(shown('Stock and entries')).toBe(true)
   })
 })
