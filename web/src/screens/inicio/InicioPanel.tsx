@@ -95,13 +95,18 @@ export default function InicioPanel({
         <span className="pie">{rangeLabel(tab, period)}</span>
       </div>
 
-      <div className="panel-ventas">
-        <span className="rotulo">{SALES_HEADING[tab]}</span>
-        <span className="cifra-xl">{formatMoney(period.sales)}</span>
-        <span className="pie">{salesSubtitle(period)}</span>
-      </div>
+      {/* The headline and, on Semana and Mes, the result figures: one group so a computer
+          lays them side by side (`InicioCompu.dc.html`); on the phone the group draws
+          nothing of its own (`display: contents`). */}
+      <div className="panel-cifras">
+        <div className="panel-ventas">
+          <span className="rotulo">{SALES_HEADING[tab]}</span>
+          <span className="cifra-xl">{formatMoney(period.sales)}</span>
+          <span className="pie">{salesSubtitle(period)}</span>
+        </div>
 
-      {tab !== 'today' && <PeriodResults period={period} />}
+        {tab !== 'today' && <PeriodResults period={period} />}
+      </div>
 
       {/* Both columns full-width on the phone; side by side on a computer
           (`InicioCompu.dc.html`): CSS alone switches between them, the same way
@@ -125,7 +130,7 @@ export default function InicioPanel({
 /** Semana's and Mes's result figures; Hoy never draws them (results.md). */
 function PeriodResults({ period }: { period: PanelPeriod }) {
   return (
-    <>
+    <div className="panel-cifras__resultados">
       <div className="panel-lista">
         <div className="panel-lista__fila">
           <span>Regalaste</span>
@@ -172,7 +177,7 @@ function PeriodResults({ period }: { period: PanelPeriod }) {
           <span className="panel-resultados__valor">{formatSignedMoney(period.cash)}</span>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

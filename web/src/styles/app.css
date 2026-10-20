@@ -1919,6 +1919,13 @@ body {
   gap: var(--espacio-xs);
 }
 
+/* The headline and the result figures' wrappers draw nothing on the phone: their children
+ * stay the flex items of `.cuerpo`, spaced by its gap, exactly as before the wrappers. */
+.panel-cifras,
+.panel-cifras__resultados {
+  display: contents;
+}
+
 .panel-resultados {
   display: flex;
   gap: var(--espacio-sm);
@@ -3082,6 +3089,28 @@ body {
 
   .panel-dos-columnas > * {
     flex: 1;
+    min-width: 0;
+  }
+
+  /* `InicioCompu`: the sold headline on the left, the result figures beside it (they
+   * wrap under it when the column is narrow), as the design's two flex-wrap blocks. */
+  .panel-cifras {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--espacio-xl);
+  }
+
+  .panel-cifras > .panel-ventas {
+    flex: 1 1 320px;
+    min-width: 0;
+  }
+
+  .panel-cifras__resultados {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xl);
+    flex: 1 1 300px;
     min-width: 0;
   }
 

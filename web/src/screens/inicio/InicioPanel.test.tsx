@@ -249,6 +249,36 @@ test('Semana and Mes keep every result figure, Promoción and Consumo propio rig
   expect(screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })).toBeInTheDocument()
 })
 
+test('the sold headline and the result figures share one group, and the two blocks another, in the phone order', async () => {
+  // `InicioCompu.dc.html`: headline beside the figures, then Te deben beside Lo que te queda.
+  // The groups are what the computer layout lays out; found by what they hold, and the
+  // order stays the phone's. No test id: the phone check names its offenders by the nearest one.
+  renderInicio()
+  await screen.findByText('Vendiste hoy')
+  await userEvent.click(screen.getByRole('button', { name: 'Semana' }))
+  const headline = await screen.findByText('Vendiste esta semana')
+
+  const figures = headline.parentElement?.parentElement as HTMLElement
+  expect(figures).toContainElement(screen.getByText('Regalaste'))
+  expect(figures).toContainElement(screen.getByText('Ganancia'))
+  expect(figures).not.toContainElement(screen.getByText('Te deben'))
+
+  const debts = screen.getByText('Te deben')
+  const left = screen.getByText('Lo que te queda')
+  let blocks = debts.parentElement as HTMLElement
+  while (!blocks.contains(left)) blocks = blocks.parentElement as HTMLElement
+  expect(blocks).not.toContainElement(headline)
+  expect(blocks.parentElement).toBe(figures.parentElement)
+  expect(debts.compareDocumentPosition(left)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  expect(figures.compareDocumentPosition(blocks)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+
+  // Hoy has no result figures: its group holds the headline alone.
+  await userEvent.click(screen.getByRole('button', { name: 'Hoy' }))
+  const today = (await screen.findByText('Vendiste hoy')).parentElement?.parentElement as HTMLElement
+  expect(today).not.toContainElement(screen.getByText('Te deben'))
+  expect(within(today).queryByText('Regalaste')).toBeNull()
+})
+
 test('a low variety links to its page; every other row is plain text, and order stays by name', async () => {
   panelNow = {
     ...PANEL,
