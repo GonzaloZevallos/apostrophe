@@ -10,12 +10,17 @@ it through the API alone, prints the address and the user, and serves until stop
 runs this in the background waits for that file, then reads the address and the ids.
 
     {"url": ..., "email": ..., "password": ..., "ids": {...},
-     "accounts": {"<name>": {"email": ..., "password": ...}}}
+     "accounts": {"<name>": {"email": ..., "password": ...}},
+     "account_kinds": {"<name>": "open" | "ended"}}
 
 The top-level `email`, `password` and `ids` are La Huerta's. `accounts` is always present
-(`{}` when `ONBOARDING_ACCOUNTS` is empty): one extra business per name, seeded like La
-Huerta and still in Onboarding, so a screen that ends the Onboarding ("Listo") can be
-reached once per business in one run. An account carries no `ids`: the ids are La Huerta's.
+(`{}` when both account tuples are empty): one extra business per name, seeded like La
+Huerta. An `open` account (`ONBOARDING_ACCOUNTS`) is still in Onboarding, so a screen that
+ends the Onboarding ("Listo") can be reached once per business in one run. An `ended`
+account (`ENDED_ONBOARDING_ACCOUNTS`) has its Onboarding ended over HTTP, through
+`skip-rest`, after it is seeded, for the screens whose frames do not draw the Onboarding's
+notice. `account_kinds` has exactly the keys of `accounts`. An account carries no `ids`:
+the ids are La Huerta's.
 The data goes in over HTTP, never through the front: the front is what this app exists
 to compare, so a redesigned screen must never break the seeding. Never touches the
 human's own `apostrophe.db` or `.env`.
@@ -36,6 +41,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 from pathlib import Path
@@ -53,6 +59,12 @@ ONBOARDING_ACCOUNTS = (
     "listo_oscuro",
     "listo_compu_oscuro",
     "listo_texto130",
+)
+# One extra business per capture that must NOT show the Onboarding's notice: its Onboarding
+# is ended, always through `POST /onboarding-progress/skip-rest` and never by writing a row.
+# A screen reads one of these only when its frames do not draw the notice (`Inicio*`).
+ENDED_ONBOARDING_ACCOUNTS = (
+    "inicio",
 )
 
 
@@ -467,6 +479,53 @@ def onboarding_accounts(env: dict[str, str], base: str, today: date) -> dict[str
     return accounts
 
 
+def end_onboarding(api: Api) -> None:
+    """Ends the signed-in business's Onboarding through the app's own skip-rest, then checks
+    that the app agrees: over, and no first-run element. Any other answer stops the sample
+    run, with a message that holds no data."""
+    if api.call("POST", "/onboarding-progress/skip-rest").get("over") is not True:
+        raise SystemExit("sample-app: the Onboarding did not end")
+    if api.call("GET", "/onboarding-progress").get("over") is not True:
+        raise SystemExit("sample-app: the Onboarding did not end")
+    shown = api.call("GET", "/first-run")
+    if shown.get("kind") != "none" or shown.get("import_notice") is not False:
+        raise SystemExit("sample-app: the ended account still shows a first-run element")
+
+
+def open_ended_account(api: Api, open_business: Callable[[Api], Account], today: date) -> Account:
+    """A business opened by `open_business` (the invitation accepted over `api`), signed in,
+    seeded exactly like La Huerta and, last, with its Onboarding ended."""
+    account = open_business(api)
+    api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
+    seed(api, today)
+    end_onboarding(api)
+    return account
+
+
+def ended_onboarding_accounts(env: dict[str, str], base: str, today: date) -> dict[str, Account]:
+    """One extra business per `ENDED_ONBOARDING_ACCOUNTS` name, opened the way a new user
+    opens one, seeded exactly like La Huerta and left with its Onboarding ended. Each signs
+    in on its own `HttpApi`, so its session cookie never mixes with another business's."""
+    accounts: dict[str, Account] = {}
+    for name in ENDED_ONBOARDING_ACCOUNTS:
+
+        def accept_invitation(api: Api, name: str = name) -> Account:
+            account = Account(email=name.replace("_", "-") + "@lahuerta.com", password=PASSWORD)
+            api.call(
+                "POST",
+                f"/invitations/{new_business_token(env)}/accept",
+                {
+                    "email": account.email,
+                    "password": account.password,
+                    "business_name": BUSINESS,
+                },
+            )
+            return account
+
+        accounts[name] = open_ended_account(HttpApi(base), accept_invitation, today)
+    return accounts
+
+
 def free_port() -> int:
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
@@ -491,6 +550,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--port", type=int, default=0, help="default: a free one")
     parser.add_argument("--dir", type=Path, default=None, help="default: a new temp dir")
     args = parser.parse_args(argv)
+    if not set(ONBOARDING_ACCOUNTS).isdisjoint(ENDED_ONBOARDING_ACCOUNTS):
+        raise SystemExit("sample-app: an account is both open and ended")
 
     workdir: Path = args.dir or Path(tempfile.mkdtemp(prefix="apostrophe-sample-"))
     workdir.mkdir(parents=True, exist_ok=True)
@@ -550,11 +611,13 @@ def main(argv: list[str] | None = None) -> int:
             # A live reset link for the sample's user, so the reset screen can be compared.
             "reset_token": reset_token(env, EMAIL),
         }
-        accounts = onboarding_accounts(env, base, today)
+        open_accounts = onboarding_accounts(env, base, today)
+        ended_accounts = ended_onboarding_accounts(env, base, today)
     except BaseException:
         server.terminate()
         raise
 
+    accounts = {**open_accounts, **ended_accounts}
     facts = {
         "url": base,
         "email": EMAIL,
@@ -563,6 +626,10 @@ def main(argv: list[str] | None = None) -> int:
         "today": today.isoformat(),
         "ids": {**asdict(sample), **links},
         "accounts": {name: asdict(account) for name, account in accounts.items()},
+        "account_kinds": {
+            **dict.fromkeys(open_accounts, "open"),
+            **dict.fromkeys(ended_accounts, "ended"),
+        },
     }
     (workdir / "sample.json").write_text(json.dumps(facts, indent=2), encoding="utf-8")
     print(f"url: {base}")
