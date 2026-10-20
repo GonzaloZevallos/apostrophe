@@ -133,7 +133,7 @@ async function addProbe(context) {
 // first, one real macrotask so queued work has run, then only a hash and booleans go back.
 function sampleFrame() {
   return (async () => {
-    await window.__captureIdle()
+    const idle = await window.__captureQuiet()
     await new Promise((resolve) => {
       const channel = new MessageChannel()
       channel.port1.onmessage = () => resolve()
@@ -153,7 +153,7 @@ function sampleFrame() {
       .getAnimations()
       .some((a) => a.playState === 'running' && Number.isFinite(a.effect?.getComputedTiming().iterations))
     return {
-      idle: window.__captureInFlight() === 0,
+      idle,
       pendingFiniteAnimation,
       fontsLoaded,
       hash: window.__captureSignature(records, {

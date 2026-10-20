@@ -54,10 +54,10 @@ function install(fetch: FakeWindow['fetch']): FakeWindow {
   return win
 }
 
-// Settled promises the page has not been given yet: `resolve` hands the headers over.
-function held() {
-  const state = { resolve: (_response: FakeResponse): void => undefined, reject: (_error: Error): void => undefined }
-  const promise = new Promise<FakeResponse>((resolve, reject) => {
+// A promise the test settles by hand: for a response, `resolve` hands the headers over.
+function held<T = FakeResponse>() {
+  const state = { resolve: (_value: T): void => undefined, reject: (_error: Error): void => undefined }
+  const promise = new Promise<T>((resolve, reject) => {
     state.resolve = resolve
     state.reject = reject
   })
@@ -136,14 +136,17 @@ describe('the probe on a page whose late answer is drawn by a timer', () => {
   })
 
   it('counts a request in flight until its body is read, not until its headers arrive', async () => {
-    const headers = held()
-    const win = install(() => headers.promise)
-    const request = win.fetch('/pricing-settings')
+    const body = held<ArrayBuffer>()
+    const response: FakeResponse = {
+      clone: () => response,
+      arrayBuffer: () => body.promise,
+      json: () => body.promise.then(() => ({})),
+    }
+    const win = install(() => Promise.resolve(response))
+    await win.fetch('/pricing-settings')
     const quiet = win.__captureQuiet()
-    headers.resolve(responseOf({}))
-    const response = await request
     expect(await isPending(quiet)).toBe(true)
-    await response.json()
+    body.resolve(new ArrayBuffer(0))
     await quiet
   })
 })

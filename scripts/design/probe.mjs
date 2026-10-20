@@ -28,12 +28,21 @@ export function pageProbe(signature) {
       done()
       throw error
     }
-    result.then(done, done)
+    // Attached here, before the promise is returned, so this clone is made before the app's
+    // own continuation runs and never meets a body the app has already read. A request is in
+    // flight until that read ends, or until it fails.
+    result.then((response) => {
+      try {
+        response.clone().arrayBuffer().then(done, done)
+      } catch {
+        done()
+      }
+    }, done)
     return result
   }
-  window.__captureInFlight = () => inFlight
-  window.__captureIdle = async () => {
+  window.__captureQuiet = async () => {
     while (inFlight > 0) await new Promise((resolve) => waiting.push(resolve))
+    return true
   }
   window.__captureSignature = signature
 }
