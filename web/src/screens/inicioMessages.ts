@@ -4,10 +4,11 @@
  */
 
 import type { LimitedCopy } from '../copy/limits'
+import { EMPTY_STATES } from './emptyStates'
 
-export const EMPTY_TITLE = 'Arrancá por las variedades'
-export const EMPTY_DETAIL = 'Cargá tu primera variedad con su precio. Sin precio no se puede vender.'
-export const NOBODY_OWES = 'Nadie te debe'
+export const EMPTY_TITLE = EMPTY_STATES.homeVarietiesTitle
+export const EMPTY_DETAIL = EMPTY_STATES.homeVarietiesDetail
+export const NOBODY_OWES = EMPTY_STATES.homeNobodyOwes
 export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
 
 export const CHECKLIST_TITLE = 'Para arrancar'

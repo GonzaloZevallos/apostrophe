@@ -318,14 +318,102 @@ def seed(api: Api, today: date) -> Sample:
     )
 
 
+WORST = 999_999_999
+# One word with no break and no trailing space: a name cut at 60 never loses a character.
+LONG_NAME = "Larguísimo" * 6
+
+
+def stretch(api: Api, today: date) -> None:
+    """The phone check's worst case on top of `seed` (GH-80): a 60-character business,
+    customer, variety and category, a sale of $ 999.999.999, and the month's Ganancia and
+    Caja both reading -$ 999.999.999. Only `scripts/design/mobile_seed.py` calls it:
+    `main` never does, so the design comparisons keep their own data."""
+
+    def named(prefix: str) -> str:
+        return (prefix + " " + LONG_NAME)[:60]
+
+    assert len(named("Cliente")) == 60 == len(LONG_NAME)
+    api.call("PATCH", "/business", {"name": named("Negocio")})
+    category: int = api.call("POST", "/expense-categories", {"name": named("Categoría")})["id"]
+    variety: int = api.call("POST", "/varieties", {"name": named("Variedad")})["id"]
+    api.call(
+        "POST",
+        f"/varieties/{variety}/prices",
+        {
+            "effective_from": (today - timedelta(days=40)).isoformat(),
+            "list_price": WORST,
+            "bulk_price": None,
+            "bulk_minimum": None,
+        },
+    )
+    when = today.isoformat()
+    api.call(
+        "POST",
+        "/stock/entries",
+        {
+            "date": when,
+            "variety_id": variety,
+            "origin": "purchase",
+            "grams": "1",
+            "total_cost": 1,
+            "note": None,
+        },
+    )
+    customer: int = api.call(
+        "POST",
+        "/customers",
+        {"name": named("Cliente"), "phone": "11 5555-0199", "channel": None, "vip": False},
+    )["id"]
+    api.call(
+        "POST",
+        "/sales",
+        {
+            "date": when,
+            "customer_id": customer,
+            "shipping_charged": 0,
+            "note": None,
+            "payment": "cash",
+            "lines": [{"variety_id": variety, "grams": "1", "gift": False, "special_price": None}],
+        },
+    )
+
+    def month() -> dict[str, int]:
+        found: dict[str, int] = api.call("GET", "/panel")["periods"]["month"]
+        return found
+
+    before = month()
+    # Profit = sales - cost - expenses; cash = collected - expenses - purchases. One
+    # expense lands the profit, one purchase of a variety nobody sells lands the cash.
+    expense = before["profit"] + WORST
+    api.call(
+        "POST",
+        "/expenses",
+        {"spent_on": when, "category_id": category, "amount": expense, "detail": "Todo el negocio"},
+    )
+    purchase = before["cash"] - before["profit"]
+    if purchase > 0:
+        spare: int = api.call("POST", "/varieties", {"name": "Variedad sin ventas"})["id"]
+        api.call(
+            "POST",
+            "/stock/entries",
+            {
+                "date": when,
+                "variety_id": spare,
+                "origin": "purchase",
+                "grams": "1",
+                "total_cost": purchase,
+                "note": None,
+            },
+        )
+
+
 class HttpApi:
     """The seed's `Api` over the running server, keeping its session cookie."""
 
     def __init__(self, base: str) -> None:
         self.base = base
-        self.opener = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
-        )
+        self.jar = http.cookiejar.CookieJar()
+        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.jar))
 
     def call(self, method: str, path: str, body: object | None = None) -> Any:
         data = None if body is None else json.dumps(body).encode()

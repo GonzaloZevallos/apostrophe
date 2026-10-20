@@ -74,7 +74,8 @@ describe('the projects of the e2e run', () => {
   it('has no timed project: the run is one phase', () => {
     const names = (config.projects ?? []).map((project) => project.name)
     expect(names).not.toContain('timed')
-    expect(names).toEqual(['secure-origin', 'insecure-origin'])
+    // The phone check's two projects (GH-80) run in the same single phase.
+    expect(names).toEqual(['secure-origin', 'insecure-origin', 'mobile-setup', 'mobile'])
   })
 
   it('selects specs only with RegExp values taken from the config', () => {

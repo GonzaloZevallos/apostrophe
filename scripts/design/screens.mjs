@@ -24,6 +24,10 @@ export function assertScreens(screens) {
   for (const s of screens) {
     if ('color_scheme' in s) throw new Error(`${s.screen}: color_scheme is retired, use tema: 'oscuro'`)
     if ('tema' in s && s.tema !== 'oscuro') throw new Error(`${s.screen}: unknown tema ${JSON.stringify(s.tema)}`)
+    if (isDarkTwin(s.screen) && !('tema' in s)) throw new Error(`${s.screen}: a dark twin must carry tema: 'oscuro'`)
+    if (isOnboardingComputer(s.screen) && !('design' in s)) {
+      throw new Error(`${s.screen}: an Onboarding computer entry must name the phone design it reuses`)
+    }
     if (seen.has(s.screen)) throw new Error(`${s.screen}: screen is not unique across the file`)
     seen.add(s.screen)
     if ('text_scale' in s && s.text_scale !== TEXT_SCALE) {
@@ -189,6 +193,24 @@ export function assertAccountKinds(accounts, kinds) {
     if (!(name in accounts)) throw new Error(`account_kinds names ${name}, which is not one of the sample's accounts`)
     if (!KINDS.includes(/** @type {string} */ (kind))) throw new Error(`account ${name} must have the kind open or ended`)
   }
+}
+
+
+// The two name rules of `assertScreens`, decided here and nowhere else. A dark twin is
+// captured with `tema: 'oscuro'`; an Onboarding computer entry (with or without the
+// `Oscuro` twin suffix) reuses the phone frame, since onboarding.md draws no computer layout.
+const DARK_SUFFIX = 'Oscuro'
+
+/** @param {unknown} name */
+function isDarkTwin(name) {
+  return typeof name === 'string' && name.endsWith(DARK_SUFFIX)
+}
+
+/** @param {unknown} name */
+function isOnboardingComputer(name) {
+  if (typeof name !== 'string') return false
+  const light = name.endsWith(DARK_SUFFIX) ? name.slice(0, -DARK_SUFFIX.length) : name
+  return light.startsWith('Onboarding') && light.endsWith('Compu')
 }
 
 // Checks the selected entries against the account kinds the sample wrote, before any

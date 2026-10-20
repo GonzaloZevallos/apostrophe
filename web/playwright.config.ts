@@ -15,6 +15,33 @@
  */
 
 import { defineConfig } from '@playwright/test'
+import { freePort } from './e2e/freePort.js'
+import { E2E_HOST, mobileBaseUrl, mobileDbPath, mobileEnv, mobilePort } from './e2e/env.js'
+
+// The phone check's second server gets one port for the whole run (GH-80, invariant 7).
+// The first server is per worker (ADR-0040) and never named here. The runner decides the
+// port once and every worker it forks inherits the variable, so a worker loading this
+// file again finds it set and picks nothing.
+if (process.env.APOSTROPHE_E2E_MOBILE_PORT === undefined) {
+  process.env.APOSTROPHE_E2E_MOBILE_PORT = String(await freePort(E2E_HOST))
+}
+mobilePort()
+
+const assignments = (env: Record<string, string>): string =>
+  Object.entries(env)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(' ')
+
+// Playwright races a `url` poll against `wait` (`node_modules/playwright/lib/runner/
+// index.js:946-951`), so keeping `url` set would let another worktree's server,
+// already answering on the same port, win that race and mark this run ready against
+// a server it never started. The only readiness signal is this run's own uvicorn
+// announcing itself on its own port.
+const readyOn = (port: number): RegExp =>
+  new RegExp(`Uvicorn running on http://${E2E_HOST.replace(/\./g, '\\.')}:${port}\\b`)
+
+// One cell walks every registry screen twice (loaded, then held); a cell's own budget.
+const MOBILE_TEST_TIMEOUT_MS = 300_000
 
 // Read once. The caller names the directory (a run never overwrites an earlier one); the
 // config never computes a name from the time or the sha.
@@ -57,14 +84,47 @@ export default defineConfig({
   // every other spec shares. It needs no real DNS entry: the spec itself proxies
   // every request for that host to its own worker's real server.
   projects: [
+    // The phone check runs on its own server and clock (the `mobile` project below), so the
+    // original specs, which keep the first server and the real clock, never match it.
     {
       name: 'secure-origin',
-      testIgnore: /catalogInsecureOrigin\.spec\.ts/,
+      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /mobile\.(spec|setup)\.ts/],
     },
     {
       name: 'insecure-origin',
       testMatch: /catalogInsecureOrigin\.spec\.ts/,
       use: { baseURL: 'http://apostrophe.test' },
     },
+    // GH-80: the phone check. The setup project seeds the second server once (the walk only
+    // reads, so every cell shares that business); `npm run e2e` runs this project with its
+    // own worker count (its cells are independent), the others stay at `workers: 1`.
+    {
+      name: 'mobile-setup',
+      testMatch: /mobile\.setup\.ts/,
+      timeout: 120_000,
+      use: { baseURL: mobileBaseUrl() },
+    },
+    {
+      name: 'mobile',
+      testMatch: /mobile\.spec\.ts/,
+      dependencies: ['mobile-setup'],
+      fullyParallel: true,
+      timeout: MOBILE_TEST_TIMEOUT_MS,
+      use: { baseURL: mobileBaseUrl(), isMobile: true, hasTouch: true },
+    },
   ],
+  // Only the phone check's second server starts here: the first is each worker's own
+  // (ADR-0040, `fixtures.ts`). Its clock is pinned (`create_mobile_e2e_app`).
+  webServer: {
+    command:
+      `mkdir -p "$(dirname '${mobileDbPath()}')" && rm -f '${mobileDbPath()}' && ` +
+      `${assignments(mobileEnv())} uv run --no-project uvicorn tests.e2e_app:create_mobile_e2e_app ` +
+      `--factory --host ${E2E_HOST} --port ${mobilePort()} --no-access-log`,
+    cwd: '..',
+    reuseExistingServer: false,
+    timeout: 30_000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+    wait: { stderr: readyOn(mobilePort()) },
+  },
 })

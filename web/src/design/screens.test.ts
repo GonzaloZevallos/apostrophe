@@ -37,6 +37,45 @@ describe('assertScreens', () => {
     ).not.toThrow()
   })
 
+  it('refuses a dark twin with no tema', () => {
+    expect(() => assertScreens([{ screen: 'InicioOscuro' }])).toThrow(
+      /^InicioOscuro: a dark twin must carry tema: 'oscuro'$/,
+    )
+  })
+
+  it('refuses an Onboarding computer entry with no design, light or dark', () => {
+    const message = /^OnboardingStockCompu(Oscuro)?: an Onboarding computer entry must name the phone design it reuses$/
+    expect(() => assertScreens([{ screen: 'OnboardingStockCompu' }])).toThrow(message)
+    expect(() => assertScreens([{ screen: 'OnboardingStockCompuOscuro', tema: 'oscuro' }])).toThrow(message)
+  })
+
+  it('refuses a dark twin with no tema before an Onboarding computer entry with no design, and an unknown tema before both', () => {
+    expect(() => assertScreens([{ screen: 'OnboardingStockCompuOscuro' }])).toThrow(
+      /^OnboardingStockCompuOscuro: a dark twin must carry tema: 'oscuro'$/,
+    )
+    expect(() => assertScreens([{ screen: 'InicioOscuro', tema: 'claro' }])).toThrow(
+      /^InicioOscuro: unknown tema "claro"$/,
+    )
+  })
+
+  it('accepts a dark twin with its tema, and an Onboarding computer entry that names its design', () => {
+    expect(() => assertScreens([{ screen: 'InicioOscuro', tema: 'oscuro' }])).not.toThrow()
+    expect(() =>
+      assertScreens([{ screen: 'OnboardingStockCompuOscuro', design: 'OnboardingStock', tema: 'oscuro' }]),
+    ).not.toThrow()
+  })
+
+  it('accepts a Compu entry outside the Onboarding, and one with Compu in the middle of its name', () => {
+    expect(() => assertScreens([{ screen: 'InicioCompu' }])).not.toThrow()
+    expect(() => assertScreens([{ screen: 'OnboardingCompuTexto130' }])).not.toThrow()
+  })
+
+  it('names the phone design; its viewport is not checked here', () => {
+    expect(() =>
+      assertScreens([{ screen: 'OnboardingStockCompu', design: 'OnboardingStock' }]),
+    ).not.toThrow()
+  })
+
   it('refuses a duplicate screen name', () => {
     expect(() => assertScreens([{ screen: 'Entrar' }, { screen: 'Entrar' }])).toThrow(
       /Entrar: screen is not unique/,
@@ -152,7 +191,7 @@ describe('assertScreens', () => {
     expect(() =>
       assertScreens([
         { screen: 'OnboardingListo', route: 'ruta', account: 'listo' },
-        { screen: 'ListoOscuro', design: 'OnboardingListo', route: 'ruta', account: 'listo_oscuro' },
+        { screen: 'ListoOscuro', design: 'OnboardingListo', route: 'ruta', account: 'listo_oscuro', tema: 'oscuro' },
         { screen: 'Ficha', route: 'ruta/{customer_id}' },
       ]),
     ).not.toThrow()

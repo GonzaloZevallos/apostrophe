@@ -1,0 +1,20 @@
+[
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "pending-state",
+    "target": "button:Guardar",
+    "issue": 46
+  },
+  {
+    "screen": "Entrar",
+    "rule": "pending-state",
+    "target": "button:Entrá",
+    "issue": 49
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "pending-state",
+    "target": "button:Guardá la venta",
+    "issue": 78
+  }
+]

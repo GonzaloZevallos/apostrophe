@@ -5,9 +5,10 @@
  */
 
 import type { LimitedCopy } from '../copy/limits'
+import { EMPTY_STATES } from './emptyStates'
 
-export const EMPTY_STATE_TITLE = 'No hay nada en el catálogo hoy'
-export const EMPTY_STATE_DETAIL = 'No hay nada para copiar todavía'
+export const EMPTY_STATE_TITLE = EMPTY_STATES.catalogTitle
+export const EMPTY_STATE_DETAIL = EMPTY_STATES.catalogDetail
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },

@@ -25,7 +25,7 @@
       }
     },
     {
-      "files": ["e2e/fixtures.ts"],
+      "files": ["e2e/fixtures.ts", "e2e/mobile.spec.ts", "e2e/mobile.setup.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }

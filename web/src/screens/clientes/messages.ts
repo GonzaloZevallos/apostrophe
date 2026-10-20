@@ -6,13 +6,14 @@
  */
 
 import type { LimitedCopy } from '../../copy/limits'
+import { EMPTY_STATES } from '../emptyStates'
 
 /** Clientes' empty list. */
-export const EMPTY_CUSTOMERS = 'Todavía no agregaste ningún cliente.'
+export const EMPTY_CUSTOMERS = EMPTY_STATES.customersList
 /** Heads everyone A–Z, under "Te deben" (`Clientes.dc.html`). */
 export const EVERYONE = 'Todos · A–Z'
 /** "Te deben" with nobody owing. */
-export const NOBODY_OWES = 'Nadie te debe'
+export const NOBODY_OWES = EMPTY_STATES.homeNobodyOwes
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_CUSTOMERS },

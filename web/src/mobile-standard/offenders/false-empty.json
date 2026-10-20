@@ -1,0 +1,8 @@
+[
+  {
+    "screen": "Clientes",
+    "rule": "false-empty",
+    "target": "span:Todavía no agregaste ningún cliente.",
+    "issue": 46
+  }
+]
