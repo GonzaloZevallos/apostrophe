@@ -36,9 +36,6 @@ export function assertScreens(screens) {
     if ('needs' in s) assertNeeds(s, all, seen)
     if ('design' in s || 'section' in s) assertDesign(s)
     if ('account' in s) assertAccount(s)
-    if ('account' in s && !reachesListo(s)) {
-      throw new Error(`${s.screen}: only an entry that reaches ${LISTO} can name an account`)
-    }
     if (reachesListo(s) && !('account' in s)) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
     }
@@ -160,7 +157,9 @@ function assertAccount(s) {
 }
 
 // The entry that reaches the closing screen "Listo" ends its business's Onboarding for
-// good (ADR-0036), so each business can serve one such entry per sample run.
+// good (ADR-0036), so each `open` business can serve one such entry per sample run. An
+// `ended` business (its Onboarding ended at seed time) serves read-only entries and no
+// Listo entry.
 const LISTO = 'OnboardingListo'
 const DEFAULT_ACCOUNT = 'La Huerta'
 
@@ -171,18 +170,46 @@ function reachesListo(s) {
   return (s.design ?? s.screen) === LISTO
 }
 
-// Checks the selected entries against the account names the sample wrote, before any
+const KINDS = ['open', 'ended']
+
+// The sample writes each account's kind in `facts.account_kinds`. A refusal names the
+// account, never its credential, and never prints the value it refused.
+/**
+ * @param {Readonly<Record<string, unknown>>} accounts
+ * @param {unknown} kinds
+ * @returns {void}
+ */
+export function assertAccountKinds(accounts, kinds) {
+  if (!isPlainObject(kinds)) throw new Error('the sample has no account_kinds, rerun scripts/design/sample-app.sh')
+  const table = /** @type {Readonly<Record<string, unknown>>} */ (kinds)
+  for (const name of Object.keys(accounts)) {
+    if (!(name in table)) throw new Error(`account ${name} has no kind in account_kinds`)
+  }
+  for (const [name, kind] of Object.entries(table)) {
+    if (!(name in accounts)) throw new Error(`account_kinds names ${name}, which is not one of the sample's accounts`)
+    if (!KINDS.includes(/** @type {string} */ (kind))) throw new Error(`account ${name} must have the kind open or ended`)
+  }
+}
+
+// Checks the selected entries against the account kinds the sample wrote, before any
 // capture. The messages are fixed text: they name the screens, never a credential.
 /**
  * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} selected
- * @param {ReadonlyArray<string>} accountNames
+ * @param {Readonly<Record<string, 'open' | 'ended'>>} kinds
  * @returns {void}
  */
-export function assertSelectedAccounts(selected, accountNames) {
-  const known = new Set(accountNames)
+export function assertSelectedAccounts(selected, kinds) {
   for (const s of selected) {
-    if (typeof s.account === 'string' && !known.has(s.account)) {
+    if (typeof s.account !== 'string') continue
+    if (!Object.hasOwn(kinds, s.account)) {
       throw new Error(`${s.screen}: account is not one of the sample's accounts`)
+    }
+    const kind = kinds[s.account]
+    if (reachesListo(s) && kind !== 'open') {
+      throw new Error(`${s.screen}: reaches ${LISTO} on an ended account, and a Listo entry needs an open one`)
+    }
+    if (!reachesListo(s) && kind === 'open') {
+      throw new Error(`${s.screen}: names an open account but does not reach ${LISTO}, so only an ended account can serve it`)
     }
   }
   /** @type {Map<string, unknown>} */

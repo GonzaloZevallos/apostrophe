@@ -232,3 +232,31 @@ screen and passes the applied-check; three rows did neither.
   exactly one key of `click`, `press`, `wait` (a non-empty string), `fill` (`label` and `value`,
   strings), `select` (`label` string, `index` a non-negative integer) or `offline` (`true`). The
   message names the entry and the step's index, never the step's data.
+
+## Amendment: an account whose Onboarding the sample ended (GH-189)
+
+2026-10-18. Narrows GH-142's account rule (`design-capture.md`, "Registry enforcement tests"), which
+allowed an account only on a Listo entry. La Huerta's Onboarding is open (ADR-0036), so `Inicio`
+drew the "Seguí con la configuración" notice that the `Inicio*.dc.html` frames do not. La Huerta is
+not touched; six rows read another account instead.
+
+- **Account kinds.** The sample writes each account's kind in `facts.account_kinds`, `open` or
+  `ended`, with exactly the keys of `facts.accounts`. `comparisons.mjs` refuses a missing or
+  mismatched map (`assertAccountKinds`, exit 2, before any capture), so a stale `sample.json` is
+  refused too. No `.mjs` file names an account.
+- **`open`** is as before: a business whose Onboarding is open, reached by exactly one Listo entry.
+  An `open` account on any other entry, and two Listo entries on one account, are refused.
+- **`ended`** is a business seeded like La Huerta whose Onboarding the sample ended at seed time
+  through `POST /onboarding-progress/skip-rest`, then checked on `/onboarding-progress` (`over: true`)
+  and `/first-run` (no first-run element). Read-only entries may share it; no Listo entry names it
+  (`assertSelectedAccounts` refuses it).
+- **Rows.** `Inicio`, `InicioHoy`, `InicioOscuro`, `InicioCompu`, `InicioHoyCompu` and
+  `InicioHoyCompuOscuro` read the `inicio` account. `InicioPrimeraVez*` (the notice's own frames),
+  every Onboarding step row and every Listo row keep the account they had, and no row's steps change.
+- **Known risks.** `date.today()` is read when the sample is seeded and the server uses its own real
+  day (ADR-0043): a sample that crosses midnight leaves `inicio` with no variety priced for the new
+  day, so the six rows show "Arrancá por las variedades", an AE difference and not a pass. A fresh
+  sample per run on the same Argentina day rules it out. `skip-rest` really writes skipped passes for
+  the four optional steps, and is called only for the tooling account, never for La Huerta.
+- **History.** The evidence files of earlier tasks (`docs/evidence/GH-45-*`, `GH-131-*`) and
+  `.agentic/tasks/` keep the old helper and account names; they are not edited.
