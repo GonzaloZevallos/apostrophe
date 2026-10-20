@@ -36,6 +36,16 @@ const RESULT_LABELS = [
   'Compras de flores',
 ]
 
+/** The names of the figure groups on screen, in document order, from the closed list of
+ * figure labels (so the "Período" group never enters). */
+function figureNames(): string[] {
+  return screen
+    .getAllByRole('group')
+    .map((node) => node.getAttribute('aria-labelledby'))
+    .map((id) => (id === null ? '' : (document.getElementById(id)?.textContent ?? '')))
+    .filter((name) => RESULT_LABELS.includes(name))
+}
+
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -175,8 +185,7 @@ for (const theme of ['claro', 'oscuro'] as const) {
     expect(order[1]?.compareDocumentPosition(order[2] as Element)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
     expect(screen.getByText('2 ventas · promedio $ 7.500 · 10 g')).toBeInTheDocument()
     for (const label of RESULT_LABELS) expect(screen.queryByText(label)).not.toBeInTheDocument()
-    expect(container.querySelector('.panel-resultados')).toBeNull()
-    expect(container.querySelector('.panel-lista')).toBeNull()
+    for (const label of RESULT_LABELS) expect(screen.queryByRole('group', { name: label })).toBeNull()
     expect(screen.queryByText('incluye costo pendiente')).not.toBeInTheDocument()
   })
 }
@@ -216,16 +225,15 @@ test('Hoy hides the withdrawal lines too, even when today carries one', async ()
 })
 
 test('Semana and Mes keep every result figure, Promoción and Consumo propio right after Faltante de stock', async () => {
-  const { container } = renderInicio()
+  renderInicio()
   await screen.findByText('Vendiste hoy')
 
   await userEvent.click(screen.getByRole('button', { name: 'Semana' }))
   await screen.findByText('Vendiste esta semana')
-  for (const label of RESULT_LABELS) expect(screen.getByText(label)).toBeInTheDocument()
-  const labels = Array.from(container.querySelectorAll('.panel-lista__fila > span:first-child')).map(
-    (node) => node.textContent,
-  )
-  expect(labels).toEqual([
+  for (const label of RESULT_LABELS) expect(screen.getByRole('group', { name: label })).toBeInTheDocument()
+  // The seven list figures, then Ganancia and Caja closing them, as the design and
+  // results.md draw them.
+  expect(figureNames()).toEqual([
     'Regalaste',
     'Costo de lo vendido',
     'Faltante de stock',
@@ -233,16 +241,14 @@ test('Semana and Mes keep every result figure, Promoción and Consumo propio rig
     'Consumo propio',
     'Gastos',
     'Compras de flores',
+    'Ganancia',
+    'Caja',
   ])
-  // Ganancia and Caja close the figures, as the design and results.md draw them.
-  const list = container.querySelector('.panel-lista') as Element
-  const results = container.querySelector('.panel-resultados') as Element
-  expect(list.compareDocumentPosition(results)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
 
   await userEvent.click(screen.getByRole('button', { name: 'Mes' }))
   await screen.findByText('Vendiste este mes')
   for (const label of ['Ganancia', 'Caja', 'Costo de lo vendido', 'Gastos', 'Regalaste', 'Compras de flores']) {
-    expect(screen.getByText(label)).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: label })).toBeInTheDocument()
   }
   // The same Te deben block and Lo que te queda sit under every tab.
   expect(screen.getByText('Lo que te queda')).toBeInTheDocument()

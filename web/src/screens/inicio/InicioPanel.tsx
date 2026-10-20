@@ -16,7 +16,6 @@
  */
 
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, VARIETY, pathTo } from '../../routes'
-import { Fragment } from 'react'
 import InAppLink from '../../components/InAppLink'
 import BotonLink from '../../components/BotonLink'
 import MarcaEstado from '../../components/MarcaEstado'
@@ -29,39 +28,16 @@ import type {
 } from '../../api/panel'
 import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
-import { formatGrams, formatMoney, formatSignedMoney } from '../../format/money'
+import { formatGrams, formatMoney } from '../../format/money'
 import { detailFor, sideNoteFor } from '../../stock/detail'
 import { NOBODY_OWES } from '../inicioMessages'
-
-const PENDING_NOTE = 'incluye costo pendiente'
-
-/** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
- * when the period has one (`null` otherwise), right before Gastos. */
-const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
-  { key: 'shortfall', label: 'Faltante de stock' },
-  { key: 'promotion', label: 'Promoción' },
-  { key: 'own_use', label: 'Consumo propio' },
-]
+import PeriodPanel from './PeriodFigures'
 
 const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }
 const TABS: PanelTab[] = ['today', 'week', 'month']
-const SALES_HEADING: Record<PanelTab, string> = {
-  today: 'Vendiste hoy',
-  week: 'Vendiste esta semana',
-  month: 'Vendiste este mes',
-}
-
 function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
   if (tab === 'today') return `Hoy ${formatDateShort(period.start)}`
   return `${formatDateShort(period.start)} – ${formatDateShort(period.end)}`
-}
-
-function salesSubtitle(period: PanelPeriod): string {
-  const count = salesCount(period.sales_count)
-  const grams = formatGrams(period.grams_sold)
-  return period.average_sale === null
-    ? `${count} · ${grams}`
-    : `${count} · promedio ${formatMoney(period.average_sale)} · ${grams}`
 }
 
 export default function InicioPanel({
@@ -95,13 +71,7 @@ export default function InicioPanel({
         <span className="pie">{rangeLabel(tab, period)}</span>
       </div>
 
-      <div className="panel-ventas">
-        <span className="rotulo">{SALES_HEADING[tab]}</span>
-        <span className="cifra-xl">{formatMoney(period.sales)}</span>
-        <span className="pie">{salesSubtitle(period)}</span>
-      </div>
-
-      {tab !== 'today' && <PeriodResults period={period} />}
+      <PeriodPanel tab={tab} period={period} />
 
       {/* Both columns full-width on the phone; side by side on a computer
           (`InicioCompu.dc.html`): CSS alone switches between them, the same way
@@ -116,60 +86,6 @@ export default function InicioPanel({
               <StockRow key={variety.variety_id} variety={variety} today={today} />
             ))}
           </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-/** Semana's and Mes's result figures; Hoy never draws them (results.md). */
-function PeriodResults({ period }: { period: PanelPeriod }) {
-  return (
-    <>
-      <div className="panel-lista">
-        <div className="panel-lista__fila">
-          <span>Regalaste</span>
-          <span className="panel-lista__valor">{formatGrams(period.grams_gifted)}</span>
-        </div>
-        <div className="panel-lista__fila">
-          <span>Costo de lo vendido</span>
-          <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
-        </div>
-        {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
-        {COST_LINES.map(({ key, label }) => {
-          const line = period[key]
-          if (line === null) return null
-          return (
-            <Fragment key={key}>
-              <div className="panel-lista__fila">
-                <span>{label}</span>
-                <span className="panel-lista__valor">{formatMoney(line.amount)}</span>
-              </div>
-              {line.pending && <span className="pie">{PENDING_NOTE}</span>}
-            </Fragment>
-          )
-        })}
-        <div className="panel-lista__fila">
-          <span>Gastos</span>
-          <span className="panel-lista__valor">{formatMoney(period.expenses)}</span>
-        </div>
-        <div className="panel-lista__fila">
-          <span>Compras de flores</span>
-          <span className="panel-lista__valor">{formatMoney(period.purchases)}</span>
-        </div>
-      </div>
-
-      <div className="panel-resultados">
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Ganancia</span>
-          <span className="panel-resultados__valor panel-resultados__valor--acento">
-            {formatSignedMoney(period.profit)}
-          </span>
-          {period.profit_pending && <span className="pie">{PENDING_NOTE}</span>}
-        </div>
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Caja</span>
-          <span className="panel-resultados__valor">{formatSignedMoney(period.cash)}</span>
         </div>
       </div>
     </>

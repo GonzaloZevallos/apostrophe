@@ -1909,6 +1909,16 @@ body {
   gap: 10px;
 }
 
+/* One DOM for the phone and the computer (`PeriodFigures.tsx`): the period block's
+ * wrappers and each list figure's `.panel-lista__item` add no box, so below 900 px the
+ * headline, the list and Ganancia/Caja are laid out exactly as they were when they were
+ * siblings. A computer rearranges the same nodes in its own block further down. */
+.panel-periodo,
+.panel-cifras,
+.panel-lista__item {
+  display: contents;
+}
+
 /* `Inicio`, now the panel (`results.md`): the "Vendiste..." figure, Ganancia/Caja
  * side by side, the Costo de lo vendido/Gastos/Regalaste/Compras list and the Te
  * deben block. Reuses `.periodos`, `.cifra-xl`, `.rotulo`, `.pie`, `.fila-stock` and
@@ -1957,7 +1967,7 @@ body {
   border-bottom: 1px solid var(--linea);
 }
 
-.panel-lista__fila:last-child {
+.panel-lista__item:last-child .panel-lista__fila {
   border-bottom: 0;
 }
 
