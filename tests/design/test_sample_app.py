@@ -14,6 +14,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+import openpyxl
 import pytest
 import uvicorn
 from fastapi.testclient import TestClient
@@ -398,9 +399,11 @@ def test_expect_first_run_stops_the_sample_on_any_other_answer_without_naming_da
         "checklist": [step("a", True), step("b", False)],
     }
     wanted = (("a", True), ("b", False))
-    sample_app.expect_first_run(Answers(both), "checklist", steps=wanted, import_notice=False)
+    sample_app.expect_first_run(
+        Answers(both), "checklist", account="pre_onboarding", steps=wanted, import_notice=False
+    )
     none = {"kind": "none", "import_notice": True, "checklist": []}
-    sample_app.expect_first_run(Answers(none), "none", import_notice=True)
+    sample_app.expect_first_run(Answers(none), "none", account="imported", import_notice=True)
 
     wrong: dict[str, tuple[dict[str, Any], str]] = {
         "kind": ({**both, "kind": "none"}, "kind"),
@@ -412,13 +415,19 @@ def test_expect_first_run_stops_the_sample_on_any_other_answer_without_naming_da
     for answer, check in wrong.values():
         with pytest.raises(SystemExit) as refused:
             sample_app.expect_first_run(
-                Answers(answer), "checklist", steps=wanted, import_notice=False
+                Answers(answer),
+                "checklist",
+                account="pre_onboarding",
+                steps=wanted,
+                import_notice=False,
             )
         assert str(refused.value) == (
-            f"sample-app: the checklist account's first run is wrong: {check}"
+            f"sample-app: the pre_onboarding account's first run is wrong: {check}"
         )
     with pytest.raises(SystemExit) as refused:
-        sample_app.expect_first_run(Answers(both), "checklist", import_notice=False)
+        sample_app.expect_first_run(
+            Answers(both), "checklist", account="pre_onboarding", import_notice=False
+        )
     assert str(refused.value).endswith("steps")
 
 
@@ -435,3 +444,55 @@ def test_no_account_name_has_two_kinds_and_the_capture_accounts_are_declared() -
     assert sample_app.IMPORTED_ACCOUNTS == ("importada",)
     names = [name for group in groups for name in group]
     assert len(names) == len(set(names))
+
+
+def test_run_import_stops_the_sample_on_a_failed_import_and_on_a_reported_problem(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "sample.db"
+    with running_sample(tmp_path) as (sample_app, env, base):
+        account, _ = sample_app.accept_new_business(env, base, "importada")
+        business = sample_app.business_id_of(db_path, account.email)
+        good = tmp_path / "good.xlsx"
+        sample_app.load_import_workbook().build(good, TODAY)
+
+        # A business the import does not know: the command exits non-zero.
+        with pytest.raises(SystemExit) as failed:
+            sample_app.run_import(env, business + 100, good, dry_run=True)
+        assert str(failed.value) == "sample-app: the import dry run failed"
+
+        # A stock entry with an origin the import does not know: the dry run exits 0 but
+        # reports a blocking problem, and the sample stops on the report's heading.
+        unknown_origin = tmp_path / "unknown-origin.xlsx"
+        workbook = openpyxl.load_workbook(good)
+        workbook["Entradas"]["D2"] = "Regalo"
+        workbook.save(unknown_origin)
+        with pytest.raises(SystemExit) as reported:
+            sample_app.run_import(env, business, unknown_origin, dry_run=True)
+        assert str(reported.value) == "sample-app: the import dry run reported a problem"
+
+        # Nothing was written by either refusal, and the good workbook still imports.
+        sample_app.run_import(env, business, good, dry_run=True)
+        assert rows_of(db_path, "first_run", business) == 0
+
+
+def test_the_direct_row_write_is_refused_for_a_business_it_must_not_touch(tmp_path: Path) -> None:
+    db_path = tmp_path / "sample.db"
+    message = "sample-app: the checklist account's Onboarding row was not removed"
+    with running_sample(tmp_path) as (sample_app, env, base):
+        checklist = sample_app.pre_onboarding_account(env, base, TODAY, db_path)
+        imported = sample_app.imported_account(env, base, TODAY, db_path)
+
+        # No Onboarding row left to delete: the delete removes zero rows.
+        gone = sample_app.business_id_of(db_path, checklist.email)
+        with pytest.raises(SystemExit) as nothing:
+            sample_app.drop_onboarding_row(db_path, gone)
+        assert str(nothing.value) == message
+
+        # A business with a first_run row is refused before anything is deleted.
+        stamped = sample_app.business_id_of(db_path, imported.email)
+        assert rows_of(db_path, "onboarding", stamped) == 1
+        with pytest.raises(SystemExit) as stamped_refusal:
+            sample_app.drop_onboarding_row(db_path, stamped)
+        assert str(stamped_refusal.value) == message
+        assert rows_of(db_path, "onboarding", stamped) == 1

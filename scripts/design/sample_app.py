@@ -54,6 +54,7 @@ from contextlib import closing
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 from pathlib import Path
+from types import ModuleType
 from typing import Any, Protocol
 
 REPO = Path(__file__).resolve().parents[2]
@@ -512,19 +513,21 @@ def expect_first_run(
     api: Api,
     kind: str,
     *,
+    account: str,
     steps: tuple[tuple[str, bool], ...] | None = None,
     import_notice: bool,
 ) -> None:
     """Checks `GET /first-run` against the answer the account being built exists to
     produce, and stops the sample if it differs. `steps` is the checklist's steps in order,
-    each with whether it is done (`None`: no checklist). The message names the expected
-    kind and the check that failed, a step by its fixed name, and never an answer's data."""
+    each with whether it is done (`None`: no checklist). The message names the account's
+    kind (`account`, as in `account_kinds`) and the check that failed, a step by its fixed
+    name, and never an answer's data."""
     shown = api.call("GET", "/first-run")
     wanted = () if steps is None else steps
     got = tuple((item.get("step"), item.get("done")) for item in shown.get("checklist", ()))
 
     def stop(check: str) -> SystemExit:
-        return SystemExit(f"sample-app: the {kind} account's first run is wrong: {check}")
+        return SystemExit(f"sample-app: the {account} account's first run is wrong: {check}")
 
     if shown.get("kind") != kind:
         raise stop("kind")
@@ -550,6 +553,24 @@ def accept_new_business(env: dict[str, str], base: str, name: str) -> tuple[Acco
     return account, api
 
 
+def drop_onboarding_row(db_path: Path, business: int) -> None:
+    """The one row the design tooling writes directly: deletes `business`'s `onboarding`
+    row, so it has the stored shape of a business from before the Onboarding. Stops the
+    sample, writing nothing, when the business already has a `first_run` row, and stops it
+    when the delete does not remove exactly one row (nothing to remove, or a second row)."""
+    with closing(sqlite3.connect(db_path, timeout=30)) as conn:
+        conn.execute("PRAGMA foreign_keys=ON")
+        stamped = conn.execute(
+            "SELECT COUNT(*) FROM first_run WHERE business_id = ?", (business,)
+        ).fetchone()[0]
+        if stamped != 0:
+            raise SystemExit("sample-app: the checklist account's Onboarding row was not removed")
+        with conn:
+            dropped = conn.execute("DELETE FROM onboarding WHERE business_id = ?", (business,))
+    if dropped.rowcount != 1:
+        raise SystemExit("sample-app: the checklist account's Onboarding row was not removed")
+
+
 def pre_onboarding_account(
     env: dict[str, str], base: str, today: date, db_path: Path
 ) -> Account:
@@ -565,15 +586,7 @@ def pre_onboarding_account(
     (name,) = PRE_ONBOARDING_ACCOUNTS
     account, api = accept_new_business(env, base, name)
     business = business_id_of(db_path, account.email)
-    with closing(sqlite3.connect(db_path, timeout=30)) as conn:
-        conn.execute("PRAGMA foreign_keys=ON")
-        with conn:
-            dropped = conn.execute("DELETE FROM onboarding WHERE business_id = ?", (business,))
-        stamped = conn.execute(
-            "SELECT COUNT(*) FROM first_run WHERE business_id = ?", (business,)
-        ).fetchone()[0]
-    if dropped.rowcount != 1 or stamped != 0:
-        raise SystemExit("sample-app: the checklist account's Onboarding row was not removed")
+    drop_onboarding_row(db_path, business)
     api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
     made: int = api.call("POST", "/varieties", {"name": "Primera variedad"})["id"]
     api.call(
@@ -589,6 +602,7 @@ def pre_onboarding_account(
     expect_first_run(
         api,
         "checklist",
+        account="pre_onboarding",
         steps=(
             ("priced_variety", True),
             ("stock_entry", False),
@@ -600,7 +614,7 @@ def pre_onboarding_account(
     return account
 
 
-def load_import_workbook() -> Any:
+def load_import_workbook() -> ModuleType:
     """The sibling `import_workbook.py`, loaded by its path: this file runs as a script
     (`scripts/design/` is then on `sys.path`) and is also loaded by path by its tests."""
     path = Path(__file__).with_name("import_workbook.py")
@@ -669,7 +683,7 @@ def imported_account(env: dict[str, str], base: str, today: date, db_path: Path)
     run_import(env, business, workbook, dry_run=True)
     run_import(env, business, workbook, dry_run=False)
     api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
-    expect_first_run(api, "none", import_notice=True)
+    expect_first_run(api, "none", account="imported", import_notice=True)
     return account
 
 
