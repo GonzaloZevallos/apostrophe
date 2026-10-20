@@ -4621,6 +4621,15 @@ body {
   cursor: pointer;
 }
 
+/* On a computer the card stops at 560px, as `InicioPrimeraVezCompu.dc.html` draws it
+ * (GH-188); it applies to every tappable notice. The same literal is `NOTICE_CAP` in
+ * `web/src/architecture/noticeCap.ts`, which guards this block: change both together. */
+@media (min-width: 900px) {
+  .boton-aviso {
+    max-width: 560px;
+  }
+}
+
 .aviso-onboarding__titulo {
   display: flex;
   align-items: center;
