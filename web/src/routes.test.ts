@@ -332,6 +332,26 @@ function registryDisagreements(
   return [...missing, ...wrong];
 }
 
+/** The Configuración groups that are not forms: every screen directly under the settings list
+ * (a `/settings/…` path whose parent is `settings`), in the front's registry and in the design
+ * registry's row for the same path (navigation.md: a group is a form). */
+function settingsGroupsNotForms(
+  rows: readonly RegistryRow[],
+  screens: readonly routes.Screen[],
+): string[] {
+  return screens
+    .filter(
+      (s) => s.path.startsWith(`${routes.SETTINGS}/`) && parentOf(s.id, "phone")?.id === "settings",
+    )
+    .flatMap((s) => {
+      const row = rows.find((r) => normalise(r.path) === normalise(s.path));
+      return [
+        ...(s.kind === "form" ? [] : [`${s.path}: screen kind ${s.kind}`]),
+        ...(row?.kind === "form" ? [] : [`${s.path}: registry kind ${row?.kind}`]),
+      ];
+    });
+}
+
 describe("the registry against screens.json", () => {
   test("every routes.ts screen has a registry row that agrees on path, kind and parent, on both viewports", () => {
     expect(screensJson.registry.length).toBe(SCREENS.length);
@@ -355,6 +375,29 @@ describe("the registry against screens.json", () => {
     );
     expect(refused).toContain("nowhere: no screen declares it");
     expect(refused).toContain(`${routes.SALES}: no registry row`);
+  });
+
+  test("every Configuración group is a form, in the front and in the design registry", () => {
+    const groups = SCREENS.filter(
+      (s) => s.path.startsWith(`${routes.SETTINGS}/`) && parentOf(s.id, "phone")?.id === "settings",
+    );
+    expect(groups.length).toBeGreaterThan(0);
+    expect(settingsGroupsNotForms(screensJson.registry, SCREENS)).toEqual([]);
+  });
+
+  test("a Configuración group registered as a card, or with a card row, is refused", () => {
+    const asCard = SCREENS.map((s) =>
+      s.id === "settings-integrations" ? { ...s, kind: "card" as const } : s,
+    );
+    expect(settingsGroupsNotForms(screensJson.registry, asCard)).toEqual([
+      `${routes.SETTINGS_INTEGRATIONS}: screen kind card`,
+    ]);
+    const rows = screensJson.registry.map((r) =>
+      r.path === routes.SETTINGS_CATALOG_MESSAGE ? { ...r, kind: "card" } : r,
+    );
+    expect(settingsGroupsNotForms(rows, SCREENS)).toEqual([
+      `${routes.SETTINGS_CATALOG_MESSAGE}: registry kind card`,
+    ]);
   });
 });
 
