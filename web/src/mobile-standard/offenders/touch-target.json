@@ -124,15 +124,6 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "button:Delete this price",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-target",
     "target": "link:#/# · Own use−# g",
     "issue": 47
   },
@@ -993,15 +984,6 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "button:Delete this price",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-target",
     "target": "link:#/# · Own use−# g",
     "issue": 47
   },
@@ -1167,15 +1149,6 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "button:Delete this price",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadDetalle",
-    "rule": "touch-target",
     "target": "link:#/# · Own use−# g",
     "issue": 47
   },
@@ -1227,15 +1200,6 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "button:Delete this price",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "touch-target",
     "target": "link:#/# · Own use−# g",
     "issue": 47
   },
@@ -1283,15 +1247,6 @@
     "rule": "touch-target",
     "target": "switch:Warn when stock is low",
     "issue": 47
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "touch-target",
-    "target": "button:Delete this price",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "VariedadUmbral",
@@ -1490,15 +1445,6 @@
     "rule": "touch-target",
     "target": "link:Sales",
     "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VerTodas",
-    "rule": "touch-target",
-    "target": "button:Delete this price",
-    "issue": 47,
     "sizes": [
       "246x437"
     ]

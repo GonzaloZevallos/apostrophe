@@ -159,24 +159,6 @@
     ]
   },
   {
-    "screen": "CatalogoAtributos",
-    "rule": "figure-split",
-    "target": "span:From # g · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "figure-split",
-    "target": "span:VIP price · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "ClienteFicha",
     "rule": "figure-split",
     "target": "span:Owes you $ #.#",
@@ -414,24 +396,6 @@
     ]
   },
   {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "figure-split",
-    "target": "span:From # g · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "figure-split",
-    "target": "span:VIP price · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "VariedadDetalle",
     "rule": "figure-split",
     "target": "p:# g · low · # days · $ #.# x g",
@@ -444,24 +408,6 @@
     "screen": "VariedadDetalle",
     "rule": "figure-split",
     "target": "span:$ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadDetalle",
-    "rule": "figure-split",
-    "target": "span:From # g · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadDetalle",
-    "rule": "figure-split",
-    "target": "span:VIP price · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -486,24 +432,6 @@
     ]
   },
   {
-    "screen": "VariedadRenombrar",
-    "rule": "figure-split",
-    "target": "span:From # g · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "figure-split",
-    "target": "span:VIP price · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "VariedadUmbral",
     "rule": "figure-split",
     "target": "p:# g · low · # days · $ #.# x g",
@@ -516,24 +444,6 @@
     "screen": "VariedadUmbral",
     "rule": "figure-split",
     "target": "span:$ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "figure-split",
-    "target": "span:From # g · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "figure-split",
-    "target": "span:VIP price · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -627,24 +537,6 @@
     "screen": "VerTodas",
     "rule": "figure-split",
     "target": "span:$ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VerTodas",
-    "rule": "figure-split",
-    "target": "span:From # g · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VerTodas",
-    "rule": "figure-split",
-    "target": "span:VIP price · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
