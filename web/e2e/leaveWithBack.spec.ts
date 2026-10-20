@@ -53,6 +53,8 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Collect from Carla Volver' }).first().click()
   await page.getByRole('radio', { name: 'Cash' }).check()
+  // Back only once the form holds the choice, so the dirty state is already registered.
+  await expect(page.getByRole('radio', { name: 'Cash' })).toBeChecked()
   await page.goBack()
   await expect(page.getByText('Discard the payment?')).toBeVisible()
   await page.getByRole('button', { name: 'No, keep going' }).click()
