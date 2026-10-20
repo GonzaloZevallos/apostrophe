@@ -69,7 +69,7 @@ Success criteria:
 Success criteria, reviewing the first run (GH-45 follow-up):
 
 13. **Approved from the evidence alone.** A review of the merging head raises no important finding about the first run's agreement test, the shape of `checklist`, its theme coverage or the Hoy capture, and none is carried into another task.
-14. **A broken answer fails a test.** If `/first-run`'s `nothing_qualifies` or its checklist steps disagree with `GET /catalog` or with the data, in any reachable state (no variety; priced without stock; stock without a price; sold out; qualifying; checklist gone), a test fails.
+14. **A broken answer fails a test.** In any reachable state (no variety; priced without stock; stock without a price; sold out; qualifying; checklist gone), a test fails if `/first-run`'s `nothing_qualifies` is not exactly "the kind is the checklist and `GET /catalog` has no text", or if its checklist steps disagree with the data.
 15. **One shape for `checklist`.** Its shape outside the checklist kind is written once, here. The API, `contract.json` and the front agree on it, and a test pins it.
 16. **Both themes.** Every first-run test on Inicio runs in light and in dark.
 17. **The capture tells the truth.** `InicioHoyCompu` is compared against its own named section (design-capture.md).
@@ -205,9 +205,10 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 ### What `/first-run` answers, and how it is proven (GH-45 follow-up)
 
 - **The shape of `checklist`**: outside the checklist kind (the Onboarding notice, "Arrancá por las variedades", none), `checklist` is an empty list `[]`, never `null`. The after-import notice is its own flag and never changes it. This is the one statement of the shape: the plan, the API schema and the front read it, and the contract checker is not changed. Inicio shows the checklist only when the kind says so, never because the list has items.
+- **`nothing_qualifies`** is true exactly when the kind is the checklist and the catalog has no text to send; in every other kind it is false, whatever the catalog holds. It is read only by the checklist's rule that disables "Mandar catálogo", and outside the checklist it means nothing. It is never widened to answer for every kind.
 - **The agreement test** compares `/first-run` with its sources in eight states: no variety; priced without stock; stock without a price; sold out; qualifying; checklist gone; an open Onboarding; and an imported business, while its notice shows and once it is over. In every state:
   - the kind and the notice flag equal what their sources say: `/onboarding-progress`, the import fact and the publish fact;
-  - `nothing_qualifies` equals `GET /catalog` itself, not only the port the server reads it through.
+  - `GET /catalog` itself is read (not only the port the server reads it through), and `nothing_qualifies` equals "the kind is the checklist and `GET /catalog` has no text".
 
   Each first-run element (the Onboarding notice, the checklist, "Arrancá por las variedades", the after-import notice, none) appears in at least one state. It adds checks only; no rule or matrix here changes.
 - **Both themes**: the front tests of the Onboarding notice, the checklist, "Arrancá por las variedades", the after-import notice, "+ Nueva venta"'s missing-price line and the disabled "Mandar catálogo" each run in light and dark, keeping every assertion they had. Inicio's figures are out of this scope.
@@ -297,7 +298,7 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   - two first-run elements never show at once;
   - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
 - **First-run state isolated**: its routes are in the sweep and the gated-route test; business removal leaves 0 rows of it and exported count = deleted count.
-- **First-run agreement (criteria 13, 14)**: over the eight states, `/first-run`'s kind, notice flag and `nothing_qualifies` equal their sources and `GET /catalog`: 0 differences; each of the five elements appears in at least one state; a deliberately broken `nothing_qualifies` makes the test fail, shown once in the PR and not committed. 0 findings of these kinds on the merging head, and 0 carried into another task.
+- **First-run agreement (criteria 13, 14)**: over the eight states, `/first-run`'s kind and notice flag equal their sources, and `nothing_qualifies` equals "the kind is the checklist and `GET /catalog` has no text": 0 differences; each of the five elements appears in at least one state; a deliberately broken `nothing_qualifies` makes the test fail, shown once in the PR and not committed. 0 findings of these kinds on the merging head, and 0 carried into another task.
 - **One shape (criterion 15)**: a backend test shows `checklist == []` for every kind that is not the checklist; a front test shows `[]` is read as no checklist; the plan, the schema and the front agree, and the contract checker's code is unchanged.
 - **Both themes (criterion 16)**: each of the six first-run front tests runs in light and dark, and no test has fewer assertions than before.
 - **Nothing loosened (criterion 18)**: every suite passes; the only edited tests are the agreement test, the Inicio first-run tests and the two registry tests, each keeping its assertions; under `web/src/` nothing but tests changes, apart from the front's `/first-run` type if it declared `checklist` nullable.
@@ -332,4 +333,5 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 - Any token, wording or layout change to a screen beyond what the chrome rule gives it.
 - A business-wide list of stock withdrawals.
 - Changing the contract checker so it can declare a nullable array; a `null` checklist.
+- A `nothing_qualifies` that answers for every kind, or a catalog read added to every Inicio read for it.
 - Theme coverage of Inicio's Hoy, Semana and Mes figures as part of the first-run review.
