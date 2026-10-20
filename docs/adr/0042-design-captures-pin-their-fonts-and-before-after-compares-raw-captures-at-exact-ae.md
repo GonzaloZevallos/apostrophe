@@ -389,7 +389,7 @@ base `6541887d`, head `27eefcb0`).
 GH-261's `VariedadesCompu built: AE 2888` is **resolved**, on those repeats and on the pair.
 
 **One consequence the finding did not ask for.** Rule 5 changes pixels. The base's own tooling and the
-head's, run on the same app (`6541887d`), differ on 48 `built` lines (none on `design`), the same 49 in two
+head's, run on the same app (`6541887d`), differ on 48 `built` lines (none on `design`), the same 48 in two
 runs, mostly phone rows with a fixed bottom bar: growing the viewport to the document and taking a plain
 shot moves what depends on the viewport's height. Those 48 rows were not judged by eye. They are not
 excused: they are escalated, and captures taken by the earlier tooling are not comparable with these.
