@@ -42,7 +42,7 @@ const TAB_ITEMS = (['today', 'week', 'month'] as const).map((value) => ({
 }))
 
 function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
-  if (tab === 'today') return COMMON_TEXT.hoy0(formatDateShort(period.start))
+  if (tab === 'today') return COMMON_TEXT.todayWith(formatDateShort(period.start))
   return `${formatDateShort(period.start)} – ${formatDateShort(period.end)}`
 }
 
@@ -143,7 +143,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
             <span className="bloque-deben__nombre">{row.name}</span>
             <span className="pie">
               <span className="monto-deuda">{formatMoney(row.balance)}</span>
-              {INICIO_TEXT.desde02(formatDateShort(row.owing_since))}
+              {INICIO_TEXT.sinceDate(formatDateShort(row.owing_since))}
             </span>
           </InAppLink>
           <BotonLink

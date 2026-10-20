@@ -107,21 +107,21 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
   const failure = varietyQuery.error ?? settingsQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return (
-      <PriceFrame dialog={dialog} label={VARIETIES_TEXT.nuevoPrecio} onBackdrop={leave} form={<GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />} />
+      <PriceFrame dialog={dialog} label={COMMON_TEXT.nuevoPrecio} onBackdrop={leave} form={<GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />} />
     )
   }
   if (failure !== null) {
     return (
       <PriceFrame
         dialog={dialog}
-        label={VARIETIES_TEXT.nuevoPrecio}
+        label={COMMON_TEXT.nuevoPrecio}
         onBackdrop={leave}
         form={failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
       />
     )
   }
   if (varietyQuery.data === undefined || settingsQuery.data === undefined) {
-    return <PriceFrame dialog={dialog} label={VARIETIES_TEXT.nuevoPrecio} onBackdrop={leave} form={<Loading />} />
+    return <PriceFrame dialog={dialog} label={COMMON_TEXT.nuevoPrecio} onBackdrop={leave} form={<Loading />} />
   }
 
   return (

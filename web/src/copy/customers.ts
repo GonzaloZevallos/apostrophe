@@ -36,7 +36,6 @@ export const CUSTOMERS_TEXT = {
   borrarCobro: 'Borrar cobro',
   nuevaVentaA: 'Nueva venta a ',
   teDebeDesde: 'te debe desde ',
-  editarCliente: 'Editar cliente',
   guardaYUsa: 'Guardá y usá',
   descartasElCliente: '¿Descartás el cliente?',
   n0Clientes: (arg1: string | number) => `${arg1} clientes`,
@@ -50,6 +49,5 @@ export const CUSTOMERS_TEXT = {
   esoNoPareceUn: 'Eso no parece un teléfono con su código de área',
   eseTelefonoYaEs: 'Ese teléfono ya es de otro cliente',
   buscarCliente: 'Buscar cliente',
-  telefonoONombre: 'Teléfono o nombre',
   buscando: 'Buscando…',
 } as const

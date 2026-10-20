@@ -6,6 +6,7 @@
  * their fix).
  */
 
+import { COMMON_TEXT } from './common.ts'
 import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'es'
@@ -34,7 +35,7 @@ export const REFUSAL_TEXT = {
   },
   withdrawal: {
     'stock.withdrawal_reason_required': 'Elegí el motivo: Promoción o Consumo propio',
-    'stock.withdrawal_date_in_future': 'La fecha no puede ser futura',
+    'stock.withdrawal_date_in_future': COMMON_TEXT.laFechaNoPuede,
     'stock.withdrawal_no_lines': 'Agregá al menos una variedad con sus gramos',
     'stock.withdrawal_grams_not_positive': 'Los gramos tienen que ser más que cero',
     'stock.withdrawal_grams_too_precise': 'Los gramos admiten hasta dos decimales',

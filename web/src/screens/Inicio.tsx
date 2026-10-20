@@ -40,7 +40,7 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../shell/initials'
-import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE, INICIO_TEXT } from '../copy/inicio'
+import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
 import { inicioNotices } from './inicioNotices'
 import FirstRunChecklist from './inicio/FirstRunChecklist'
 import ImportNotice from './inicio/ImportNotice'
@@ -88,7 +88,7 @@ export default function Inicio() {
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">
             <span className="encabezado__negocio">{me.business_name}</span>
-            <span className="encabezado__titulo">{INICIO_TEXT.inicio}</span>
+            <span className="encabezado__titulo">{COMMON_TEXT.inicio}</span>
           </div>
           <InAppLink
             to={SETTINGS}

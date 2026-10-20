@@ -10,20 +10,21 @@ import { useState } from 'react'
 import ExpenseCategoriesEditor from './ExpenseCategoriesEditor'
 import SettingsGroup from './SettingsGroup'
 import { SETTINGS_TEXT } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
 
 export { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasLaCategoria,
-  detail: SETTINGS_TEXT.sePierdeLoQue,
-  keepLabel: SETTINGS_TEXT.noSeguiEditando,
-  discardLabel: SETTINGS_TEXT.siDescartala,
+  detail: COMMON_TEXT.sePierdeLoQue,
+  keepLabel: COMMON_TEXT.noSeguiEditando,
+  discardLabel: COMMON_TEXT.siDescartala,
 }
 
 export default function ExpenseCategoriesGroup() {
   const [dirty, setDirty] = useState(false)
   return (
-    <SettingsGroup title={SETTINGS_TEXT.categoriasDeGastos} dirty={dirty} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.categoriasDeGastos} dirty={dirty} leave={LEAVE}>
       <ExpenseCategoriesEditor onDirtyChange={setDirty} />
     </SettingsGroup>
   )

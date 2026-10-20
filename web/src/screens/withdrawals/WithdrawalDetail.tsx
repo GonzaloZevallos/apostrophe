@@ -130,7 +130,7 @@ export default function WithdrawalDetail() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <span className="encabezado__titulo">{STOCK_TEXT.retiro}</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.retiro}</span>
         </div>
         <dl className="retiro__datos">
           <div className="retiro__dato">

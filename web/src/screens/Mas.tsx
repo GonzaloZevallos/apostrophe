@@ -22,7 +22,7 @@ interface Item {
 const ITEMS: Item[] = [
   {
     to: EXPENSE_NEW,
-    label: SETTINGS_TEXT.cargarGasto,
+    label: COMMON_TEXT.cargarGasto,
     icon: 'agregar',
     detail: SETTINGS_TEXT.categoriaMontoYDetalle,
   },
@@ -62,8 +62,8 @@ export default function Mas() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">{SETTINGS_TEXT.mas}</span>
-        <nav className="mas__lista" aria-label={SETTINGS_TEXT.mas} data-menu>
+        <span className="encabezado__titulo">{COMMON_TEXT.mas}</span>
+        <nav className="mas__lista" aria-label={COMMON_TEXT.mas} data-menu>
           {ITEMS.map((item) => (
             <InAppLink
               key={item.to}

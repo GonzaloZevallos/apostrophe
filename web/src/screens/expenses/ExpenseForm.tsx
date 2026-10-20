@@ -196,7 +196,7 @@ export default function ExpenseForm({
   // always leave.
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">{target === 'nuevo' ? EXPENSES_TEXT.cargarGasto : EXPENSES_TEXT.editarGasto}</span>
+      <span className="gasto-form__titulo">{target === 'nuevo' ? COMMON_TEXT.cargarGasto : EXPENSES_TEXT.editarGasto}</span>
       <span className="gasto-form__cerrar">
         <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={onCancel} />
       </span>

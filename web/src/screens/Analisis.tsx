@@ -231,7 +231,7 @@ function ExpenseBreakdownView({
       ))}
       <div className="gastos__categoria-cabecera">
         <span className="gastos__categoria-nombre">
-          {ANALYSIS_TEXT.comprasDeFlores}
+          {COMMON_TEXT.comprasDeFlores}
           <span className="pie"> {PURCHASES_NOTE}</span>
         </span>
         <span className="gastos__categoria-subtotal">{formatMoney(breakdown.purchases)}</span>
@@ -333,7 +333,7 @@ function AnalisisContenido({
                       <th className="analisis__num">{ANALYSIS_TEXT.parte}</th>
                       <th className="analisis__num">{COMMON_TEXT.gramos}</th>
                       <th className="analisis__num">{ANALYSIS_TEXT.gramosRegalo}</th>
-                      <th className="analisis__num">{ANALYSIS_TEXT.costo2}</th>
+                      <th className="analisis__num">{ANALYSIS_TEXT.costLabel}</th>
                       <th className="analisis__num">{ANALYSIS_TEXT.margen2}</th>
                     </tr>
                   </thead>
@@ -396,7 +396,7 @@ function AnalisisContenido({
             <table className="analisis__tabla">
               <thead>
                 <tr>
-                  <th>{ANALYSIS_TEXT.semana}</th>
+                  <th>{COMMON_TEXT.semana}</th>
                   <th className="analisis__num">{COMMON_TEXT.ventas}</th>
                   <th className="analisis__num">{COMMON_TEXT.gramos}</th>
                   <th className="analisis__num">{COMMON_TEXT.gastos}</th>
@@ -459,7 +459,7 @@ function AnalisisContenido({
             <table className="analisis__tabla">
               <thead>
                 <tr>
-                  <th>{ANALYSIS_TEXT.mes}</th>
+                  <th>{COMMON_TEXT.mes}</th>
                   <th className="analisis__num">{COMMON_TEXT.ventas}</th>
                   <th className="analisis__num">{COMMON_TEXT.gramos}</th>
                   <th className="analisis__num">{COMMON_TEXT.gastos}</th>
@@ -549,7 +549,7 @@ export default function Analisis() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">{ANALYSIS_TEXT.analisis}</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.analisis}</span>
         </div>
 
         {query.isError && query.error instanceof NetworkError && <SinConexion />}

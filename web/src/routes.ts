@@ -211,24 +211,24 @@ export function outside<O extends Outside>(declaration: O): O {
 }
 
 export const SCREENS = [
-  screen({ id: 'home', path: HOME, kind: 'root', title: SHELL_TEXT.inicio, place: { bar: 'home', rail: 'home' } }),
-  screen({ id: 'more', path: MORE, kind: 'root', title: SHELL_TEXT.mas, place: { bar: 'more', rail: 'more' } }),
+  screen({ id: 'home', path: HOME, kind: 'root', title: COMMON_TEXT.inicio, place: { bar: 'home', rail: 'home' } }),
+  screen({ id: 'more', path: MORE, kind: 'root', title: COMMON_TEXT.mas, place: { bar: 'more', rail: 'more' } }),
 
-  screen({ id: 'sales', path: SALES, kind: 'root', title: SHELL_TEXT.ventas, place: { bar: 'sales', rail: 'sales' } }),
-  screen({ id: 'sale-new', path: SALE_NEW, kind: 'form', title: SHELL_TEXT.nuevaVenta, parent: 'sales' }),
+  screen({ id: 'sales', path: SALES, kind: 'root', title: COMMON_TEXT.ventas, place: { bar: 'sales', rail: 'sales' } }),
+  screen({ id: 'sale-new', path: SALE_NEW, kind: 'form', title: COMMON_TEXT.nuevaVenta, parent: 'sales' }),
   screen({ id: 'sale', path: SALE, kind: 'card', title: SHELL_TEXT.venta, parent: 'sales' }),
 
   screen({
     id: 'customers',
     path: CUSTOMERS,
     kind: 'root',
-    title: SHELL_TEXT.clientes,
+    title: COMMON_TEXT.clientes,
     pane: 'list',
     place: { bar: 'customers', rail: 'customers' },
   }),
-  screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', title: SHELL_TEXT.nuevoCliente, parent: 'customers' }),
+  screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', title: COMMON_TEXT.nuevoCliente, parent: 'customers' }),
   screen({ id: 'customer', path: CUSTOMER, kind: 'card', title: SHELL_TEXT.cliente, pane: 'detail', parent: 'customers' }),
-  screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', title: SHELL_TEXT.editarCliente, parent: 'customer' }),
+  screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', title: COMMON_TEXT.editarCliente, parent: 'customer' }),
   screen({
     id: 'customer-payment',
     path: CUSTOMER_PAYMENT,
@@ -246,25 +246,25 @@ export const SCREENS = [
     pane: 'list',
     place: { bar: 'varieties', rail: 'varieties' },
   }),
-  screen({ id: 'variety', path: VARIETY, kind: 'card', title: SHELL_TEXT.variedad, pane: 'detail', parent: 'varieties', backLabel: 'record' }),
-  screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', title: SHELL_TEXT.nuevaVariedad, parent: 'varieties' }),
+  screen({ id: 'variety', path: VARIETY, kind: 'card', title: COMMON_TEXT.variedad, pane: 'detail', parent: 'varieties', backLabel: 'record' }),
+  screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', title: COMMON_TEXT.nuevaVariedad, parent: 'varieties' }),
   screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', title: COMMON_TEXT.precios, parent: 'variety', backLabel: 'record' }),
-  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: SHELL_TEXT.nuevoPrecio, parent: 'variety', modalOnComputer: true }),
-  screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', title: SHELL_TEXT.entradas, parent: 'variety', backLabel: 'record' }),
-  screen({ id: 'catalog', path: CATALOG, kind: 'card', title: SHELL_TEXT.catalogo, parent: 'varieties' }),
-  screen({ id: 'stock', path: STOCK, kind: 'card', title: SHELL_TEXT.todasLasEntradas, parent: 'varieties' }),
-  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: SHELL_TEXT.entradaDeStock, parent: 'varieties' }),
-  screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', title: SHELL_TEXT.entradaDeStock, parent: 'stock' }),
+  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: COMMON_TEXT.nuevoPrecio, parent: 'variety', modalOnComputer: true }),
+  screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', title: COMMON_TEXT.entradas, parent: 'variety', backLabel: 'record' }),
+  screen({ id: 'catalog', path: CATALOG, kind: 'card', title: COMMON_TEXT.catalogo, parent: 'varieties' }),
+  screen({ id: 'stock', path: STOCK, kind: 'card', title: COMMON_TEXT.todasLasEntradas, parent: 'varieties' }),
+  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: COMMON_TEXT.entradaDeStock, parent: 'varieties' }),
+  screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', title: COMMON_TEXT.entradaDeStock, parent: 'stock' }),
   screen({
     id: 'varieties-archived',
     path: ARCHIVED_VARIETIES,
     kind: 'card',
-    title: SHELL_TEXT.archivadas,
+    title: COMMON_TEXT.archivadas,
     pane: 'list',
     parent: 'varieties',
   }),
   screen({ id: 'withdrawal-new', path: WITHDRAWAL_NEW, kind: 'form', title: COMMON_TEXT.sacarDelStock, parent: 'varieties' }),
-  screen({ id: 'withdrawal', path: WITHDRAWAL, kind: 'card', title: SHELL_TEXT.retiro, parent: 'varieties' }),
+  screen({ id: 'withdrawal', path: WITHDRAWAL, kind: 'card', title: COMMON_TEXT.retiro, parent: 'varieties' }),
   screen({ id: 'withdrawal-edit', path: WITHDRAWAL_EDIT, kind: 'form', title: COMMON_TEXT.sacarDelStock, parent: 'withdrawal' }),
 
   screen({
@@ -346,7 +346,7 @@ export const SCREENS = [
     title: COMMON_TEXT.categoriasDeGastos,
     parent: 'home',
   }),
-  screen({ id: 'onboarding-done', path: ONBOARDING_DONE, kind: 'form', title: SHELL_TEXT.listo, parent: 'home' }),
+  screen({ id: 'onboarding-done', path: ONBOARDING_DONE, kind: 'form', title: COMMON_TEXT.listo, parent: 'home' }),
 ] as const satisfies readonly Screen[]
 
 /** The ids marked `backLabel: 'record'`: the only screens `useBackParent` accepts, by type. */

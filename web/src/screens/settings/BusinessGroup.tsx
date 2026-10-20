@@ -33,8 +33,8 @@ interface Business {
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasElNombre,
-  detail: SETTINGS_TEXT.sePierdeLoQue,
-  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  detail: COMMON_TEXT.sePierdeLoQue,
+  keepLabel: COMMON_TEXT.noSeguiEditando,
   discardLabel: COMMON_TEXT.siDescartalo,
 }
 
@@ -50,7 +50,7 @@ export default function BusinessGroup() {
 
   if (isPending || isError) {
     return (
-      <SettingsGroup title={SETTINGS_TEXT.negocio} dirty={false} leave={LEAVE}>
+      <SettingsGroup title={COMMON_TEXT.negocio} dirty={false} leave={LEAVE}>
         {isPending && <Loading />}
         {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       </SettingsGroup>
@@ -108,7 +108,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
   }
 
   return (
-    <SettingsGroup title={SETTINGS_TEXT.negocio} dirty={name !== accepted} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.negocio} dirty={name !== accepted} leave={LEAVE}>
       {renamed && (
         <div className="aviso-flotante">
           <AvisoExito texto={RENAME_SUCCESS} />

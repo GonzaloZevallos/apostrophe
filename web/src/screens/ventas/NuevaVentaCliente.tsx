@@ -138,7 +138,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
           <input
             className="campo__input campo--buscar__input"
             type="text"
-            placeholder={SALES_TEXT.telefonoONombre}
+            placeholder={COMMON_TEXT.telefonoONombre}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />

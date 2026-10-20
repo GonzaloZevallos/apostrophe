@@ -127,14 +127,14 @@ export default function Variedades() {
             </BotonLink>
           )}
           <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel={VARIETIES_TEXT.entradaDeStock}>
-            {VARIETIES_TEXT.entradaDeStock2}
+            {COMMON_TEXT.entradaDeStock}
           </BotonLink>
           <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="salidaStock">
             {COMMON_TEXT.sacarDelStock}
           </BotonLink>
           <span className="variedades__nueva">
             <BotonLink to={VARIETY_NEW} variant="link">
-              {VARIETIES_TEXT.nuevaVariedad}
+              {COMMON_TEXT.nuevaVariedad}
             </BotonLink>
           </span>
         </div>

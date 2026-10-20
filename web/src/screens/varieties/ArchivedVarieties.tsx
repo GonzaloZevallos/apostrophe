@@ -29,6 +29,7 @@ import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
 import { NO_ARCHIVED_MESSAGE, VARIETIES_TEXT } from '../../copy/varieties'
 import { varietiesByName } from './varietiesByName'
+import { COMMON_TEXT } from '../../copy/common'
 
 
 /** Whether this entry was opened by a link of the app (`inAppState`), not typed or reloaded. */
@@ -53,7 +54,7 @@ export default function ArchivedVarieties() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">{VARIETIES_TEXT.archivadas2}</h1>
+        <h1 className="encabezado__titulo">{COMMON_TEXT.archivadas}</h1>
         {notice}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !loaded && <Loading />}

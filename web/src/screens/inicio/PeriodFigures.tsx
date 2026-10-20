@@ -73,7 +73,7 @@ function listFigures(period: PanelPeriod): ListFigure[] {
     },
     ...costLines,
     { key: 'expenses', label: COMMON_TEXT.gastos, value: formatMoney(period.expenses), pending: false },
-    { key: 'purchases', label: INICIO_TEXT.comprasDeFlores, value: formatMoney(period.purchases), pending: false },
+    { key: 'purchases', label: COMMON_TEXT.comprasDeFlores, value: formatMoney(period.purchases), pending: false },
   ]
 }
 

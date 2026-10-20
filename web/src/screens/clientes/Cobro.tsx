@@ -242,7 +242,7 @@ export default function Cobro({
                 checked={method === 'cash'}
                 onChange={() => setMethod('cash')}
               />
-              {PAYMENTS_TEXT.efectivo}
+              {COMMON_TEXT.efectivo}
             </label>
             <label>
               <input
@@ -251,7 +251,7 @@ export default function Cobro({
                 checked={method === 'transfer'}
                 onChange={() => setMethod('transfer')}
               />
-              {PAYMENTS_TEXT.transferencia}
+              {COMMON_TEXT.transferencia}
             </label>
             {methodError !== null && (
               <span className="campo__error" role="alert">

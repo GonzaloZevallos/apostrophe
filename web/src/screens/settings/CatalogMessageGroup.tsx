@@ -21,8 +21,8 @@ const TITLE = COMMON_TEXT.mensajeDelCatalogo
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasElMensaje,
-  detail: SETTINGS_TEXT.sePierdeLoQue,
-  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  detail: COMMON_TEXT.sePierdeLoQue,
+  keepLabel: COMMON_TEXT.noSeguiEditando,
   discardLabel: COMMON_TEXT.siDescartalo,
 }
 

@@ -41,9 +41,9 @@ const TEST_SENT_TOAST: SuccessToast = SETTINGS_TEXT.pruebaEnviada
 const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 
 const LEAVE: LeaveWording = {
-  question: SETTINGS_TEXT.descartasElCambio,
-  detail: SETTINGS_TEXT.sePierdeLoQue,
-  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  question: COMMON_TEXT.descartasElCambio,
+  detail: COMMON_TEXT.sePierdeLoQue,
+  keepLabel: COMMON_TEXT.noSeguiEditando,
   discardLabel: COMMON_TEXT.siDescartalo,
 }
 

@@ -43,8 +43,8 @@ export const VIP_HELP_LINE =
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasLosPrecios,
-  detail: SETTINGS_TEXT.sePierdeLoQue,
-  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  detail: COMMON_TEXT.sePierdeLoQue,
+  keepLabel: COMMON_TEXT.noSeguiEditando,
   discardLabel: COMMON_TEXT.siDescartalo,
 }
 

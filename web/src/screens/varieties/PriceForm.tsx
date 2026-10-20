@@ -124,7 +124,7 @@ export default function PriceForm({
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
         <span id={titleId} ref={titleRef} tabIndex={-1} className="gasto-form__titulo">
-          {VARIETIES_TEXT.nuevoPrecio}
+          {COMMON_TEXT.nuevoPrecio}
         </span>
         <span className="gasto-form__cerrar">
           <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} disabled={sending} onClick={onCancel} />
@@ -154,7 +154,7 @@ export default function PriceForm({
                   setChoosingDate(false)
                 }}
               >
-                {VARIETIES_TEXT.hoy}
+                {COMMON_TEXT.hoy}
               </Boton>
               <label className="precio-fecha__campo">
                 <span className="campo__rotulo">{VARIETIES_TEXT.rigeDesde}</span>

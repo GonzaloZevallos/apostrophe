@@ -79,7 +79,7 @@ export { OWING_HINT }
 export const PAYMENT_REQUIRED_MESSAGE = SALES_TEXT.elegiComoSePago
 export const SPECIAL_PRICE_INVALID_MESSAGE = SALES_TEXT.elPrecioEspecialTiene
 export const LINE_GRAMS_INVALID = SALES_TEXT.cargaLosGramosComa
-export const LINE_VARIETY_MISSING = SALES_TEXT.elegiUnaVariedad
+export const LINE_VARIETY_MISSING = COMMON_TEXT.elegiUnaVariedad
 
 function emptyLine(): LineState {
   return {
@@ -556,7 +556,7 @@ function NuevaVentaForm() {
                 required
               />
               <span className="fecha-pildora__texto" aria-hidden="true">
-                {date === me.today ? SALES_TEXT.hoy0(formatDateShort(date)) : formatDateLong(date)}
+                {date === me.today ? COMMON_TEXT.todayWith(formatDateShort(date)) : formatDateLong(date)}
                 <Icono nombre="abajo" />
               </span>
             </span>
@@ -708,7 +708,7 @@ function NuevaVentaForm() {
             question={SALES_TEXT.descartasLaVenta}
             detail={SALES_TEXT.noVasAPoder}
             keepLabel={COMMON_TEXT.noSeguiCargando}
-            discardLabel={SALES_TEXT.siDescartala}
+            discardLabel={COMMON_TEXT.siDescartala}
           />
         </div>
       )}

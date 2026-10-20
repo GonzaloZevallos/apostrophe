@@ -22,9 +22,9 @@ import { COMMON_TEXT } from '../../copy/common'
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasLaContrasenaNueva,
-  detail: SETTINGS_TEXT.sePierdeLoQue,
-  keepLabel: SETTINGS_TEXT.noSeguiEditando,
-  discardLabel: SETTINGS_TEXT.siDescartala,
+  detail: COMMON_TEXT.sePierdeLoQue,
+  keepLabel: COMMON_TEXT.noSeguiEditando,
+  discardLabel: COMMON_TEXT.siDescartala,
 }
 
 export default function AccountGroup() {
@@ -54,7 +54,7 @@ export default function AccountGroup() {
   }
 
   return (
-    <SettingsGroup title={SETTINGS_TEXT.tuCuenta} dirty={false} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.tuCuenta} dirty={false} leave={LEAVE}>
       {({ disarm }) => (
         <>
           {passwordChanged && (

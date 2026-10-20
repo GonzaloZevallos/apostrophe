@@ -16,7 +16,6 @@ export const LONG_REFUSALS: readonly string[] = []
 export const EXPENSES_TEXT = {
   borrasElGasto: '¿Borrás el gasto?',
   estoNoSePuede: ' Esto no se puede deshacer.',
-  cargarGasto: 'Cargar gasto',
   gastasteEnElMes: 'Gastaste en el mes',
   porCategoria: 'Por categoría',
   ultimos: 'Últimos',
@@ -34,8 +33,6 @@ export const EXPENSES_TEXT = {
   descartasElGasto: '¿Descartás el gasto?',
   pantallaMas: 'Pantalla Más',
   cargarGastoDesdeMas: 'Cargar gasto desde Más',
-  noDejala: 'No, dejala',
-  siBorrala: 'Sí, borrala',
   borrasElGastoDe: (amount: string | number, categoryName: string | number, today: string | number) => `¿Borrás el gasto de ${amount} en ${categoryName} del ${today}?`,
   n1Categoria: '1 categoría',
   n0Categorias: (categories: string | number) => `${categories} categorías`,

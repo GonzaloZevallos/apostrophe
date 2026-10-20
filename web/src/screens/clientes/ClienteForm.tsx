@@ -209,7 +209,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       <div className="cuerpo">
         <div className="encabezado-fila">
           <span className="encabezado__titulo">
-            {mode === 'nuevo' ? COMMON_TEXT.nuevoCliente : CUSTOMERS_TEXT.editarCliente}
+            {mode === 'nuevo' ? COMMON_TEXT.nuevoCliente : COMMON_TEXT.editarCliente}
           </span>
           <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={close} />
         </div>

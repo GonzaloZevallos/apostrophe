@@ -5,6 +5,7 @@
  */
 
 import { SAMPLES, type LimitedCopy } from './limits'
+import { REFUSAL_TEXT } from './refusals'
 import type { SuccessToast } from '../components/AvisoExito'
 
 export const LANGUAGE: 'es' | 'en' = 'es'
@@ -13,7 +14,7 @@ export const LANGUAGE: 'es' | 'en' = 'es'
 export const RENAME_SUCCESS: SuccessToast = 'Negocio renombrado'
 export const PASSWORD_CHANGED_SUCCESS: SuccessToast = 'Contraseña cambiada · cerramos tus otras sesiones'
 export const BUSINESS_NAME_INVALID_MESSAGE = 'Ponele un nombre al negocio, sin espacios de más'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const GENERIC_REFUSAL_MESSAGE = REFUSAL_TEXT.pinnedGeneric
 export const CATALOG_SAVED: SuccessToast = 'Catálogo guardado'
 export const PRICES_SAVED: SuccessToast = 'Precios guardados'
 export const HEADER_TOO_LONG_MESSAGE = 'El encabezado es demasiado largo'
@@ -64,12 +65,8 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const SETTINGS_TEXT = {
-  mas: 'Más',
-  tuCuenta: 'Tu cuenta',
   cerrarSesion: 'Cerrar sesión',
-  apariencia: 'Apariencia',
   tema: 'Tema',
-  negocio: 'Negocio',
   encabezado: 'Encabezado',
   pie: 'Pie',
   nuevaCategoria: 'Nueva categoría',
@@ -80,7 +77,6 @@ export const SETTINGS_TEXT = {
   borrasLaCategoria: '¿Borrás la categoría?',
   seBorra: 'Se borra “',
   estoNoSePuede: '”. Esto no se puede deshacer.',
-  categoriasDeGastos: 'Categorías de gastos',
   tokenDelBot: 'Token del bot',
   guardadoEl: 'Guardado el ',
   noSeMuestraMas: ' · no se muestra más',
@@ -91,19 +87,13 @@ export const SETTINGS_TEXT = {
   irAlCatalogo: 'Ir al catálogo',
   clientesVip: 'Clientes VIP',
   guardaLosPrecios: 'Guardá los precios',
-  configuracion: 'Configuración',
-  usuarios: 'Usuarios',
   vos: 'vos',
-  cargarGasto: 'Cargar gasto',
   categoriaMontoYDetalle: 'Categoría, monto y detalle',
   promocionOConsumoPropio: 'Promoción o consumo propio',
   porMesYPor: 'Por mes y por categoría',
   variedadesSemanasMesesY: 'Variedades, semanas, meses y días',
   negocioUsuariosBotCatalogo: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
   descartasLaContrasenaNueva: '¿Descartás la contraseña nueva?',
-  sePierdeLoQue: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  noSeguiEditando: 'No, seguí editando',
-  siDescartala: 'Sí, descartala',
   claro: 'Claro',
   oscuro: 'Oscuro',
   descartasElTema: '¿Descartás el tema?',
@@ -115,7 +105,6 @@ export const SETTINGS_TEXT = {
   categoriaEliminada: 'Categoría eliminada',
   descartasLaCategoria: '¿Descartás la categoría?',
   pruebaEnviada: 'Prueba enviada',
-  descartasElCambio: '¿Descartás el cambio?',
   lasVentasYaHechas: 'Las ventas ya hechas conservan el precio con el que se registraron. Apagar una opción no borra nada.',
   cadaVariedadNecesitaSu: 'Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera.',
   descartasLosPrecios: '¿Descartás los precios?',

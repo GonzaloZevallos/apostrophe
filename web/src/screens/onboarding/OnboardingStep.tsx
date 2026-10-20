@@ -50,7 +50,7 @@ import { CHECKLIST_REQUIRED, CHECKLIST_OPTIONAL } from '../../copy/inicio'
 
 export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
 export const DISCARD_QUESTION = ONBOARDING_TEXT.descartasLoQueEscribiste
-export const KEEP_TYPING = ONBOARDING_TEXT.noSeguiEscribiendo
+export const KEEP_TYPING = COMMON_TEXT.noSeguiEscribiendo
 export const DISCARD = COMMON_TEXT.siDescartalo
 
 type Skip = 'one' | 'rest'

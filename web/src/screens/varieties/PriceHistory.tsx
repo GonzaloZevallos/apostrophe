@@ -17,7 +17,7 @@ import { VARIETIES } from '../../routes'
 import { useBackParent } from '../../shell/useBackParent'
 import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
-import { PRICE_HISTORY_HELP, VARIETIES_TEXT } from '../../copy/varieties'
+import { PRICE_HISTORY_HELP } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
 
 export default function PriceHistory({ varietyId }: { varietyId: number }) {
@@ -52,7 +52,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">{VARIETIES_TEXT.precios}</span>
+        <span className="encabezado__titulo">{COMMON_TEXT.precios}</span>
         <PriceRows
           varietyId={varietyId}
           history={history}

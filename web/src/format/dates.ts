@@ -46,7 +46,7 @@ export function formatDateShort(iso: string): string {
 /** The "Rige desde" chip's text: `"Hoy 15/10"` for today, else `"02/10"` (no year, no
  * "Hoy"). Equality is the whole date, so the same day of another year is not today. */
 export function chipDate(iso: string, todayIso: string): string {
-  return iso === todayIso ? COMMON_TEXT.hoy0(formatDateShort(iso)) : formatDateShort(iso)
+  return iso === todayIso ? COMMON_TEXT.todayWith(formatDateShort(iso)) : formatDateShort(iso)
 }
 
 /** Always with the year: for a card or a detail with no "today" to compare against. */

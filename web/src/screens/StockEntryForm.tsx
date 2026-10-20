@@ -327,7 +327,7 @@ export default function StockEntryForm({
         </label>
         <div className="campo">
           <div className="origen-pildoras">
-            <span className="pildora pildora--activa pildora--fija">{STOCK_TEXT.stockInicial}</span>
+            <span className="pildora pildora--activa pildora--fija">{COMMON_TEXT.stockInicial}</span>
           </div>
         </div>
         <label className="campo">

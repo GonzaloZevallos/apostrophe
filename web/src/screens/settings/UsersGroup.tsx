@@ -19,6 +19,7 @@ import Loading from '../../components/Loading'
 import InvitePartner from './InvitePartner'
 import SettingsGroup from './SettingsGroup'
 import { SETTINGS_TEXT } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
 
 interface Business {
   users: { email: string }[]
@@ -26,9 +27,9 @@ interface Business {
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasLaInvitacion,
-  detail: SETTINGS_TEXT.sePierdeLoQue,
-  keepLabel: SETTINGS_TEXT.noSeguiEditando,
-  discardLabel: SETTINGS_TEXT.siDescartala,
+  detail: COMMON_TEXT.sePierdeLoQue,
+  keepLabel: COMMON_TEXT.noSeguiEditando,
+  discardLabel: COMMON_TEXT.siDescartala,
 }
 
 export default function UsersGroup() {
@@ -39,7 +40,7 @@ export default function UsersGroup() {
   })
 
   return (
-    <SettingsGroup title={SETTINGS_TEXT.usuarios} dirty={false} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.usuarios} dirty={false} leave={LEAVE}>
       {isPending && <Loading />}
       {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       {!isPending && !isError && (

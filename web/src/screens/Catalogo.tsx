@@ -37,6 +37,7 @@ import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE, CATALOG_TEXT } from '../copy/cat
 import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
 import { COMMON_TEXT } from '../copy/common'
+import { STOCK_TEXT } from '../copy/stock'
 
 export const CATALOG_COPIED = CATALOG_TEXT.catalogoCopiado
 export const COPY_FAILED_MESSAGE = CATALOG_TEXT.noSePudoCopiar
@@ -45,10 +46,10 @@ export const SHARE_FAILED_MESSAGE = CATALOG_TEXT.noSePudoCompartir
 // The one table from GET /catalog's `state` to the word that says why a variety does not
 // go out (PRD criterion 4). The front never decides the reason, it only words the server's.
 const REASON_LABEL: Record<Exclude<CatalogVarietyState, 'in'>, { word: string; tono: InsigniaTono }> = {
-  hidden: { word: 'oculta', tono: 'neutro' },
-  no_price: { word: 'sin precio', tono: 'neutro' },
-  sold_out: { word: 'agotada', tono: 'critico' },
-  no_entries: { word: 'sin entradas', tono: 'neutro' },
+  hidden: { word: CATALOG_TEXT.reasonHidden, tono: 'neutro' },
+  no_price: { word: CATALOG_TEXT.reasonNoPrice, tono: 'neutro' },
+  sold_out: { word: STOCK_TEXT.statusSoldOut, tono: 'critico' },
+  no_entries: { word: STOCK_TEXT.statusNoEntries, tono: 'neutro' },
 }
 
 export default function Catalogo() {
@@ -115,7 +116,7 @@ export default function Catalogo() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">{CATALOG_TEXT.catalogo}</h1>
+        <h1 className="encabezado__titulo">{COMMON_TEXT.catalogo}</h1>
 
         {toast !== null && <AvisoExito texto={toast} />}
 

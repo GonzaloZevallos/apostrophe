@@ -40,8 +40,8 @@ import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
 import { COMMON_TEXT } from '../copy/common'
 
 export { FLOWER_NOTICE }
-export const NO_DISCARD_TITLE = EXPENSES_TEXT.noDejala
-export const YES_DELETE_TITLE = EXPENSES_TEXT.siBorrala
+export const NO_DISCARD_TITLE = COMMON_TEXT.noDejala
+export const YES_DELETE_TITLE = COMMON_TEXT.siBorrala
 
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
   return EXPENSES_TEXT.borrasElGastoDe(formatMoney(expense.amount), categoryName, formatDate(expense.spent_on, today))
@@ -172,9 +172,9 @@ export default function Gastos() {
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.gastos}</span>
-          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={EXPENSES_TEXT.cargarGasto}>
+          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.cargarGasto}>
             <Icono nombre="agregar" />
-            <span className="gastos__cargar-texto">{EXPENSES_TEXT.cargarGasto}</span>
+            <span className="gastos__cargar-texto">{COMMON_TEXT.cargarGasto}</span>
           </InAppLink>
           <div className="gastos__mes">
             <button

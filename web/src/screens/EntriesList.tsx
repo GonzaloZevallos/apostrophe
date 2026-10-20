@@ -132,7 +132,7 @@ export default function EntriesList({ varietyId }: Props) {
   return (
     <Card>
       <h1 className="encabezado__titulo">
-        {varietyId === undefined ? COMMON_TEXT.todasLasEntradas : STOCK_TEXT.entradas}
+        {varietyId === undefined ? COMMON_TEXT.todasLasEntradas : COMMON_TEXT.entradas}
       </h1>
       {(goneNotice || goneExited) && <GoneNotice />}
       {offline && <SinConexion />}

@@ -42,14 +42,12 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const INICIO_TEXT = {
-  inicio: 'Inicio',
   loQueTeQueda: 'Lo que te queda',
   desde0: (oldest: string | number) => `desde ${oldest}`,
-  desde02: (owing_since: string | number) => ` · desde ${owing_since}`,
+  sinceDate: (owing_since: string | number) => ` · desde ${owing_since}`,
   vendisteHoy: 'Vendiste hoy',
   vendisteEstaSemana: 'Vendiste esta semana',
   vendisteEsteMes: 'Vendiste este mes',
   regalaste: 'Regalaste',
-  comprasDeFlores: 'Compras de flores',
   n0Promedio12: (count: string | number, average_sale: string | number, grams: string | number) => `${count} · promedio ${average_sale} · ${grams}`,
 } as const

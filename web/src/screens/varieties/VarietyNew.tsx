@@ -42,7 +42,7 @@ export default function VarietyNew() {
       <div className="cuerpo">
         <div className="gasto-form">
           <div className="gasto-form__cabecera">
-            <span className="gasto-form__titulo">{VARIETIES_TEXT.nuevaVariedad}</span>
+            <span className="gasto-form__titulo">{COMMON_TEXT.nuevaVariedad}</span>
             <span className="gasto-form__cerrar">
               <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={leave} />
             </span>
@@ -55,7 +55,7 @@ export default function VarietyNew() {
           blocker={blocker}
           question={VARIETIES_TEXT.descartasLaVariedad}
           detail={DISCARD_DETAIL}
-          keepLabel={VARIETIES_TEXT.noSeguiEscribiendo}
+          keepLabel={COMMON_TEXT.noSeguiEscribiendo}
           discardLabel={COMMON_TEXT.siDescartalo}
         />
       )}

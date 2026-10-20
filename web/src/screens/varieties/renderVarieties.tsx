@@ -30,6 +30,7 @@ import PriceNew from './PriceNew'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 import { VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -101,7 +102,7 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
                   <main>
                     <span>{VARIETIES_TEXT.paginaDeLaVariedad}</span>
                     <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>{VARIETIES_TEXT.verTodosLosPrecios}</InAppLink>
-                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>{VARIETIES_TEXT.nuevoPrecio}</InAppLink>
+                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>{COMMON_TEXT.nuevoPrecio}</InAppLink>
                   </main>
                 ),
               },

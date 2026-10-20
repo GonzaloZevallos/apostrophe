@@ -27,12 +27,12 @@ export default function AppearanceGroup() {
 
   return (
     <SettingsGroup
-      title={SETTINGS_TEXT.apariencia}
+      title={COMMON_TEXT.apariencia}
       dirty={false}
       leave={{
         question: SETTINGS_TEXT.descartasElTema,
-        detail: SETTINGS_TEXT.sePierdeLoQue,
-        keepLabel: SETTINGS_TEXT.noSeguiEditando,
+        detail: COMMON_TEXT.sePierdeLoQue,
+        keepLabel: COMMON_TEXT.noSeguiEditando,
         discardLabel: COMMON_TEXT.siDescartalo,
       }}
     >

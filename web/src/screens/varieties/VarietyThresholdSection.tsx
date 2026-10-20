@@ -25,6 +25,7 @@ import { warningFor } from '../../stock/detail'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED, VARIETIES_TEXT } from '../../copy/varieties'
 import { useOpenForm } from './varietyForms'
+import { COMMON_TEXT } from '../../copy/common'
 
 export default function VarietyThresholdSection({
   varietyId,
@@ -83,7 +84,7 @@ export default function VarietyThresholdSection({
         </div>
         <div className="seccion-variedad__fila">
           <span className="seccion-variedad__valor">
-            {row.threshold === null ? VARIETIES_TEXT.avisoApagado : VARIETIES_TEXT.avisameAbajoDe0(formatGrams(row.threshold))}
+            {row.threshold === null ? COMMON_TEXT.warningOff : VARIETIES_TEXT.avisameAbajoDe0(formatGrams(row.threshold))}
           </span>
         </div>
       </section>

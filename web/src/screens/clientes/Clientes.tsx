@@ -32,7 +32,7 @@ import TeDeben from './TeDeben'
 import { COMMON_TEXT } from '../../copy/common'
 
 export const SEARCH_LABEL = CUSTOMERS_TEXT.buscarCliente
-export const SEARCH_PLACEHOLDER = CUSTOMERS_TEXT.telefonoONombre
+export const SEARCH_PLACEHOLDER = COMMON_TEXT.telefonoONombre
 export const SEARCHING = CUSTOMERS_TEXT.buscando
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()

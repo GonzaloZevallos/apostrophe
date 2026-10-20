@@ -23,7 +23,6 @@ import {
   SETTINGS_PRICES,
   SETTINGS_USERS,
 } from '../../routes'
-import { SETTINGS_TEXT } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
 import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
 
@@ -46,9 +45,9 @@ export default function Settings() {
       <div className="cuerpo ajustes">
         <div className="ajustes__titulos">
           <span className="encabezado__negocio ajustes__negocio">{me.business_name}</span>
-          <h1 className="ajustes__titulo">{SETTINGS_TEXT.configuracion}</h1>
+          <h1 className="ajustes__titulo">{COMMON_TEXT.configuracion}</h1>
         </div>
-        <nav className="ajustes__lista" aria-label={SETTINGS_TEXT.configuracion} data-menu>
+        <nav className="ajustes__lista" aria-label={COMMON_TEXT.configuracion} data-menu>
           {GROUPS.map((group) => (
             <InAppLink key={group.to} to={group.to} className="ajustes__item">
               <span className="ajustes__item-icono">

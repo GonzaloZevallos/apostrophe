@@ -265,7 +265,7 @@ function VarietyPageView({
               {VARIETIES_TEXT.entrada2}
             </BotonLink>
             <BotonLink variant="secondary" icon="precio" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
-              {VARIETIES_TEXT.nuevoPrecio}
+              {COMMON_TEXT.nuevoPrecio}
             </BotonLink>
             <BotonLink variant="secondary" icon="salidaStock" to={withdrawalNewFor(varietyId)}>
               {COMMON_TEXT.sacarDelStock}
@@ -300,9 +300,9 @@ function VarietyPageView({
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question={VARIETIES_TEXT.descartasElCambio}
+          question={COMMON_TEXT.descartasElCambio}
           detail={DISCARD_DETAIL}
-          keepLabel={VARIETIES_TEXT.noSeguiEscribiendo}
+          keepLabel={COMMON_TEXT.noSeguiEscribiendo}
           discardLabel={COMMON_TEXT.siDescartalo}
         />
       )}

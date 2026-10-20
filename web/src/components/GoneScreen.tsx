@@ -16,7 +16,7 @@ export default function GoneScreen({ label, to }: { label: string; to: string })
         <div className="estado-vacio">
           <span className="estado-vacio__titulo">{GONE_DETAIL}</span>
           <BotonLink variant="primary" icon="atras" to={to}>
-            {COMMON_TEXT.volverA}{label}
+            {COMMON_TEXT.backTo}{label}
           </BotonLink>
         </div>
       </div>
