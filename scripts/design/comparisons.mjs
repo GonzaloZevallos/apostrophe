@@ -30,8 +30,9 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
+import { assertAccountKinds, assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
 import { fontCss, fontRoute } from './fonts.mjs'
+import { pageProbe } from './probe.mjs'
 import { SETTLE_ADVANCE_MS, SETTLE_BOUND, SETTLE_FRAMES, settleWith, signatureOf, sideOutcome } from './settle.mjs'
 import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
 
@@ -58,12 +59,14 @@ const facts = JSON.parse(readFileSync(values.facts, 'utf-8'))
 const { screens } = JSON.parse(readFileSync(join(HERE, 'screens.json'), 'utf-8'))
 assertScreens(screens)
 const only = values.only ? new Set(values.only.split(',')) : null
-// `facts.accounts`: the sample's extra businesses by name, each `{ email, password }`.
+// `facts.accounts`: the sample's extra businesses by name, each `{ email, password }`;
+// `facts.account_kinds`: each one's kind, `open` or `ended` (ADR-0042, GH-189).
 const accounts = facts.accounts ?? {}
 // A configuration error, like bad usage: nothing is captured, and no credential is printed.
 try {
   const selected = screens.filter((s) => !only || only.has(s.screen))
-  assertSelectedAccounts(selected, Object.keys(accounts))
+  assertAccountKinds(accounts, facts.account_kinds)
+  assertSelectedAccounts(selected, facts.account_kinds)
   assertSelectedNeeds(selected, screens)
 } catch (error) {
   console.error(`comparisons: ${error.message}`)
@@ -124,50 +127,16 @@ async function pauseClock(context) {
   await context.clock.pauseAt(CAPTURE_INSTANT)
 }
 
-// Before any page script runs: a count of the page's own `fetch` calls in flight (the one
-// request channel the built app uses, ADR-0042) and the layout signature, so the frame
-// loop can ask both without sending any page text out.
-function pageProbe(signature) {
-  let inFlight = 0
-  let waiting = []
-  const release = () => {
-    const ready = waiting
-    waiting = []
-    for (const resolve of ready) resolve()
-  }
-  const original = window.fetch
-  window.fetch = function (...args) {
-    inFlight += 1
-    const done = () => {
-      inFlight -= 1
-      if (inFlight === 0) release()
-    }
-    let result
-    try {
-      result = original.apply(this, args)
-    } catch (error) {
-      done()
-      throw error
-    }
-    result.then(done, done)
-    return result
-  }
-  window.__captureInFlight = () => inFlight
-  window.__captureIdle = async () => {
-    while (inFlight > 0) await new Promise((resolve) => waiting.push(resolve))
-  }
-  window.__captureSignature = signature
-}
-
 async function addProbe(context) {
   await context.addInitScript(`(${pageProbe.toString()})(${signatureOf.toString()})`)
 }
 
-// One frame of the fake clock, then what the page looks like: the in-flight count at zero
-// first, one real macrotask so queued work has run, then only a hash and booleans go back.
+// One frame of the fake clock, then what the page looks like: no request in flight and none
+// completed since the previous frame first (that answer is `idle`), one real macrotask so
+// queued work has run, then only a hash and booleans go back.
 function sampleFrame() {
   return (async () => {
-    await window.__captureIdle()
+    const idle = await window.__captureQuiet()
     await new Promise((resolve) => {
       const channel = new MessageChannel()
       channel.port1.onmessage = () => resolve()
@@ -187,7 +156,7 @@ function sampleFrame() {
       .getAnimations()
       .some((a) => a.playState === 'running' && Number.isFinite(a.effect?.getComputedTiming().iterations))
     return {
-      idle: window.__captureInFlight() === 0,
+      idle,
       pendingFiniteAnimation,
       fontsLoaded,
       hash: window.__captureSignature(records, {

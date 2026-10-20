@@ -197,25 +197,7 @@
     "issue": 45
   },
   {
-    "screen": "Inicio",
-    "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
-    "issue": 45
-  },
-  {
     "screen": "InicioHoy",
-    "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
     "rule": "name-overflow",
     "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
     "issue": 45
@@ -223,7 +205,7 @@
   {
     "screen": "InicioPrimeraVez",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
     "issue": 45
   },
   {

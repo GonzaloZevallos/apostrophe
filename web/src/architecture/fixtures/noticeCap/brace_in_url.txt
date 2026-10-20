@@ -1,0 +1,15 @@
+.boton-aviso {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--espacio-lg) 18px;
+}
+
+.aviso-onboarding__icono {
+  background: url(data:image/svg+xml;utf8,<svg style='fill:red}'/>);
+}
+@media (min-width: 900px) {
+  .boton-aviso {
+    max-width: 560px;
+  }
+}

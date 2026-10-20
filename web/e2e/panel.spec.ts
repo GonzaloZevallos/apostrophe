@@ -94,6 +94,11 @@ function countLabel(count: number): string {
   return `${count} ${count === 1 ? 'venta' : 'ventas'}`
 }
 
+/** `salesOwingCount`: the Te deben head's count line. */
+function owingLabel(count: number): string {
+  return `${countLabel(count)} debiendo`
+}
+
 // A local mirror of `web/src/components/MarcaEstado.tsx`'s own word table and
 // `web/src/stock/detail.ts`'s `detailFor` — this file never imports `web/src`
 // (every other e2e spec duplicates its own small formatters the same way), and
@@ -127,10 +132,9 @@ function detailFor(
 }
 
 /** `web/src/stock/detail.ts`'s own `sideNoteFor`: the one place `days_left`
- * itself shows, in `.fila-stock__insignia` — never in the detail line. */
+ * itself shows, in `.fila-stock__insignia` — never in the detail line. The status word
+ * is `MarcaEstado`'s, not this note's. */
 function sideNoteFor(variety: { status: Status; days_left: number | null }): string | null {
-  if (variety.status === 'sold_out') return 'agotada'
-  if (variety.status === 'no_entries') return 'sin entradas'
   if (variety.days_left === null) return null
   return `${variety.days_left} días`
 }
@@ -283,26 +287,26 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
 
   async function assertPeriod(period: PanelPeriod, rangeText: string, showsResults: boolean): Promise<void> {
-    await expect(page.locator('.periodos .pie')).toContainText(rangeText)
+    await expect(page.locator('.inicio__periodos .pie')).toContainText(rangeText)
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
     if (showsResults) {
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Ganancia' }).locator('.panel-resultados__valor--acento'),
+        page.getByRole('group', { name: 'Ganancia', exact: true }).locator('.panel-resultados__valor--acento'),
       ).toHaveText(signedPesos(period.profit))
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Caja' }).locator('.panel-resultados__valor'),
+        page.getByRole('group', { name: 'Caja', exact: true }).locator('.panel-resultados__valor'),
       ).toHaveText(signedPesos(period.cash))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Costo de lo vendido', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.cost_of_goods))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Gastos' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Gastos', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.expenses))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Regalaste' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Regalaste', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(grams(period.grams_gifted))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Compras de flores' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Compras de flores', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
       // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
       // never under Caja (plan, PRD: "Caja never carries it").
@@ -342,7 +346,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('button', { name: 'Hoy', exact: true }).click()
 
   // Lo que te queda: Rosa's own row, straight from the fetched answer — grams,
-  // status (shape and word), the detail line, and the side badge, which is the
+  // status (shape and word), the detail line, and the side note, which is the
   // one place days left itself shows (`sideNoteFor`, never the detail line).
   const rosa = panel.stock.find((row) => row.name === 'Rosa')
   if (rosa === undefined) throw new Error('Rosa missing from GET /panel stock')
@@ -360,14 +364,13 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // Te deben: the block shows the fetched total, count and oldest date, and the
   // teaser's own balance and "desde dd/mm" — all read, never computed here.
-  const debtsSubtitle =
-    panel.debts.oldest === null
-      ? countLabel(panel.debts.sales_owing_count)
-      : `${countLabel(panel.debts.sales_owing_count)} · desde ${shortDate(panel.debts.oldest)}`
   await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
-  // The direct child only: each teaser row below carries its own `.pie` too
-  // ("desde dd/mm"), nested inside its own `<Link>`, never a direct child here.
-  await expect(page.locator('.bloque-deben > .pie')).toHaveText(debtsSubtitle)
+  // The head's two lines, each its own element: the count (`salesOwingCount`) and the
+  // oldest date. Each teaser row carries its own "desde dd/mm", inside its own link.
+  await expect(page.locator('.bloque-deben__cuenta')).toHaveText(owingLabel(panel.debts.sales_owing_count))
+  if (panel.debts.oldest !== null) {
+    await expect(page.locator('.bloque-deben__desde')).toHaveText(`desde ${shortDate(panel.debts.oldest)}`)
+  }
 
   const [teaserRow] = panel.debts.teaser
   if (teaserRow === undefined) throw new Error('empty teaser in GET /panel')

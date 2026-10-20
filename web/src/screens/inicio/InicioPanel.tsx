@@ -16,10 +16,10 @@
  */
 
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, VARIETY, pathTo } from '../../routes'
-import { Fragment } from 'react'
 import InAppLink from '../../components/InAppLink'
 import BotonLink from '../../components/BotonLink'
 import MarcaEstado from '../../components/MarcaEstado'
+import Pestanas from '../../components/Pestanas'
 import type {
   PanelAnswer,
   PanelDebts,
@@ -27,41 +27,22 @@ import type {
   PanelTab,
   PanelVarietyOut,
 } from '../../api/panel'
-import { salesCount } from '../../format/counts'
+import { salesOwingCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
-import { formatGrams, formatMoney, formatSignedMoney } from '../../format/money'
+import { formatGrams, formatMoney } from '../../format/money'
 import { detailFor, sideNoteFor } from '../../stock/detail'
 import { NOBODY_OWES } from '../inicioMessages'
-
-const PENDING_NOTE = 'incluye costo pendiente'
-
-/** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
- * when the period has one (`null` otherwise), right before Gastos. */
-const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
-  { key: 'shortfall', label: 'Faltante de stock' },
-  { key: 'promotion', label: 'Promoción' },
-  { key: 'own_use', label: 'Consumo propio' },
-]
+import PeriodPanel from './PeriodFigures'
 
 const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }
-const TABS: PanelTab[] = ['today', 'week', 'month']
-const SALES_HEADING: Record<PanelTab, string> = {
-  today: 'Vendiste hoy',
-  week: 'Vendiste esta semana',
-  month: 'Vendiste este mes',
-}
+const TAB_ITEMS = (['today', 'week', 'month'] as const).map((value) => ({
+  value,
+  label: TAB_LABEL[value],
+}))
 
 function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
   if (tab === 'today') return `Hoy ${formatDateShort(period.start)}`
   return `${formatDateShort(period.start)} – ${formatDateShort(period.end)}`
-}
-
-function salesSubtitle(period: PanelPeriod): string {
-  const count = salesCount(period.sales_count)
-  const grams = formatGrams(period.grams_sold)
-  return period.average_sale === null
-    ? `${count} · ${grams}`
-    : `${count} · promedio ${formatMoney(period.average_sale)} · ${grams}`
 }
 
 export default function InicioPanel({
@@ -80,33 +61,12 @@ export default function InicioPanel({
 
   return (
     <>
-      <div className="periodos" role="group" aria-label="Período">
-        {TABS.map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={tab === item ? 'periodos__boton periodos__boton--activo' : 'periodos__boton'}
-            aria-pressed={tab === item}
-            onClick={() => onTab(item)}
-          >
-            {TAB_LABEL[item]}
-          </button>
-        ))}
+      <div className="inicio__periodos">
+        <Pestanas items={TAB_ITEMS} value={tab} onChange={onTab} ariaLabel="Período" />
         <span className="pie">{rangeLabel(tab, period)}</span>
       </div>
 
-      {/* The headline and, on Semana and Mes, the result figures: one group so a computer
-          lays them side by side (`InicioCompu.dc.html`); on the phone the group draws
-          nothing of its own (`display: contents`). */}
-      <div className="panel-cifras">
-        <div className="panel-ventas">
-          <span className="rotulo">{SALES_HEADING[tab]}</span>
-          <span className="cifra-xl">{formatMoney(period.sales)}</span>
-          <span className="pie">{salesSubtitle(period)}</span>
-        </div>
-
-        {tab !== 'today' && <PeriodResults period={period} />}
-      </div>
+      <PeriodPanel tab={tab} period={period} />
 
       {/* Both columns full-width on the phone; side by side on a computer
           (`InicioCompu.dc.html`): CSS alone switches between them, the same way
@@ -127,76 +87,23 @@ export default function InicioPanel({
   )
 }
 
-/** Semana's and Mes's result figures; Hoy never draws them (results.md). */
-function PeriodResults({ period }: { period: PanelPeriod }) {
-  return (
-    <div className="panel-cifras__resultados">
-      <div className="panel-lista">
-        <div className="panel-lista__fila">
-          <span>Regalaste</span>
-          <span className="panel-lista__valor">{formatGrams(period.grams_gifted)}</span>
-        </div>
-        <div className="panel-lista__fila">
-          <span>Costo de lo vendido</span>
-          <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
-        </div>
-        {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
-        {COST_LINES.map(({ key, label }) => {
-          const line = period[key]
-          if (line === null) return null
-          return (
-            <Fragment key={key}>
-              <div className="panel-lista__fila">
-                <span>{label}</span>
-                <span className="panel-lista__valor">{formatMoney(line.amount)}</span>
-              </div>
-              {line.pending && <span className="pie">{PENDING_NOTE}</span>}
-            </Fragment>
-          )
-        })}
-        <div className="panel-lista__fila">
-          <span>Gastos</span>
-          <span className="panel-lista__valor">{formatMoney(period.expenses)}</span>
-        </div>
-        <div className="panel-lista__fila">
-          <span>Compras de flores</span>
-          <span className="panel-lista__valor">{formatMoney(period.purchases)}</span>
-        </div>
-      </div>
-
-      <div className="panel-resultados">
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Ganancia</span>
-          <span className="panel-resultados__valor panel-resultados__valor--acento">
-            {formatSignedMoney(period.profit)}
-          </span>
-          {period.profit_pending && <span className="pie">{PENDING_NOTE}</span>}
-        </div>
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Caja</span>
-          <span className="panel-resultados__valor">{formatSignedMoney(period.cash)}</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 /** One variety of Lo que te queda. A low one is a link to its page, not an action. */
 function StockRow({ variety, today }: { variety: PanelVarietyOut; today: string }) {
+  const sideNote = sideNoteFor(variety)
   const content = (
     <>
-      <MarcaEstado estado={variety.status} />
-      <span className="fila-stock__texto">
+      <span className="fila-stock__encabezado">
         <span className="fila-stock__nombre">{variety.name}</span>
-        <span className="fila-stock__detalle">{detailFor(variety, today)}</span>
-      </span>
-      <span className="fila-stock__cifras">
-        <span className="fila-stock__gramos">
-          {variety.status === 'no_entries' ? '—' : formatGrams(variety.grams)}
+        <span className="fila-stock__cifras">
+          <span className="fila-stock__gramos">
+            {variety.status === 'no_entries' ? '—' : formatGrams(variety.grams)}
+          </span>
+          {sideNote !== null && <span className="fila-stock__insignia">{sideNote}</span>}
         </span>
-        {sideNoteFor(variety) !== null && (
-          <span className="fila-stock__insignia">{sideNoteFor(variety)}</span>
-        )}
+      </span>
+      <span className="fila-stock__pie">
+        <MarcaEstado estado={variety.status} />
+        <span className="fila-stock__detalle">{detailFor(variety, today)}</span>
       </span>
     </>
   )
@@ -227,16 +134,16 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
         Te deben
       </InAppLink>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
-      <span className="pie">
-        {salesCount(debts.sales_owing_count)}
-        {` · desde ${formatDateShort(debts.oldest)}`}
-      </span>
+      <span className="pie bloque-deben__cuenta">{salesOwingCount(debts.sales_owing_count)}</span>
+      <span className="pie bloque-deben__desde">{`desde ${formatDateShort(debts.oldest)}`}</span>
       {debts.teaser.map((row) => (
         <div key={row.customer_id} className="bloque-deben__fila">
           <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
-            <span>{row.name}</span>
-            <span>{formatMoney(row.balance)}</span>
-            <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
+            <span className="bloque-deben__nombre">{row.name}</span>
+            <span className="pie">
+              <span className="monto-deuda">{formatMoney(row.balance)}</span>
+              {` · desde ${formatDateShort(row.owing_since)}`}
+            </span>
           </InAppLink>
           <BotonLink
             icon="cobro"

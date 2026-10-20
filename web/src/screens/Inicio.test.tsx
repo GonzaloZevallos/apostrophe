@@ -190,34 +190,53 @@ test('switching to Semana shows the week\'s figures, including a negative Caja',
   expect(screen.getByText('−$ 12.000')).toBeInTheDocument() // cash is negative
 })
 
-/** The sibling `.pie` note immediately after a `.panel-lista__fila` row found by its
- * label — the panel-lista rows and their own pending notes sit side by side, not
- * nested (same pattern as `panel-resultados__celda`'s own note). `null` when the row
- * has no note right after it. */
-function noteAfterRow(container: HTMLElement, label: string): string | null {
-  const row = within(container).getByText(label).closest('.panel-lista__fila')
-  const next = row?.nextElementSibling ?? null
-  return next !== null && next.classList.contains('pie') ? next.textContent : null
+/** The names of the figure groups on screen, in document order, from the closed list of
+ * figure labels. */
+function figureNames(): string[] {
+  const labels = [
+    'Regalaste',
+    'Costo de lo vendido',
+    'Faltante de stock',
+    'Promoción',
+    'Consumo propio',
+    'Gastos',
+    'Compras de flores',
+    'Ganancia',
+    'Caja',
+  ]
+  return screen
+    .getAllByRole('group')
+    .map((node) => node.getAttribute('aria-labelledby'))
+    .map((id) => (id === null ? '' : (document.getElementById(id)?.textContent ?? '')))
+    .filter((name) => labels.includes(name))
+}
+
+/** A figure's pending note: it lives inside the figure's own group. `null` when that
+ * group has none. */
+function noteIn(label: string): string | null {
+  const note = within(screen.getByRole('group', { name: label })).queryByText('incluye costo pendiente')
+  return note === null ? null : note.textContent
 }
 
 test('Semana: Ganancia\'s note and the Faltante de stock row (with its own note) show; Costo de lo vendido\'s doesn\'t', async () => {
   stubFetch(PANEL)
-  const { container } = renderInicio()
+  renderInicio()
   await screen.findByText('Vendiste hoy')
   screen.getByRole('button', { name: 'Semana' }).click()
   await screen.findByText('Vendiste esta semana')
 
-  const resultados = container.querySelectorAll<HTMLElement>('.panel-resultados__celda')[0]!
-  expect(within(resultados).getByText('incluye costo pendiente')).toBeInTheDocument()
+  const ganancia = screen.getByRole('group', { name: 'Ganancia' })
+  expect(within(ganancia).getByText('incluye costo pendiente')).toBeInTheDocument()
+  expect(within(screen.getByRole('group', { name: 'Caja' })).queryByText('incluye costo pendiente')).toBeNull()
 
   // `pending_cost` is false on the week fixture: the Costo row stays unmarked even
   // though Ganancia's own flag (`profit_pending`) is true — each note reads exactly
   // one flag, never a combination.
-  expect(noteAfterRow(container, 'Costo de lo vendido')).toBeNull()
+  expect(noteIn('Costo de lo vendido')).toBeNull()
 
-  const faltante = screen.getByText('Faltante de stock').closest<HTMLElement>('.panel-lista__fila')!
+  const faltante = screen.getByRole('group', { name: 'Faltante de stock' })
   expect(within(faltante).getByText('$ 3.000')).toBeInTheDocument()
-  expect(noteAfterRow(container, 'Faltante de stock')).toBe('incluye costo pendiente')
+  expect(noteIn('Faltante de stock')).toBe('incluye costo pendiente')
 })
 
 test('Semana: Faltante de stock shows with no note of its own when its cost isn\'t pending', async () => {
@@ -232,27 +251,24 @@ test('Semana: Faltante de stock shows with no note of its own when its cost isn\
     },
   }
   stubFetch(costedShortfall)
-  const { container } = renderInicio()
+  renderInicio()
   await screen.findByText('Vendiste hoy')
   screen.getByRole('button', { name: 'Semana' }).click()
   await screen.findByText('Vendiste esta semana')
 
-  const faltante = screen.getByText('Faltante de stock').closest<HTMLElement>('.panel-lista__fila')!
+  const faltante = screen.getByRole('group', { name: 'Faltante de stock' })
   expect(within(faltante).getByText('$ 3.000')).toBeInTheDocument()
-  expect(noteAfterRow(container, 'Faltante de stock')).toBeNull()
+  expect(noteIn('Faltante de stock')).toBeNull()
 })
 
 test('Semana: Promoción and Consumo propio follow Faltante de stock and come before Gastos, each with its own note flag', async () => {
   stubFetch(PANEL)
-  const { container } = renderInicio()
+  renderInicio()
   await screen.findByText('Vendiste hoy')
   screen.getByRole('button', { name: 'Semana' }).click()
   await screen.findByText('Vendiste esta semana')
 
-  const labels = Array.from(container.querySelectorAll('.panel-lista__fila > span:first-child')).map(
-    (node) => node.textContent,
-  )
-  expect(labels.slice(0, 6)).toEqual([
+  expect(figureNames().slice(0, 6)).toEqual([
     'Regalaste',
     'Costo de lo vendido',
     'Faltante de stock',
@@ -260,12 +276,12 @@ test('Semana: Promoción and Consumo propio follow Faltante de stock and come be
     'Consumo propio',
     'Gastos',
   ])
-  const promocion = screen.getByText('Promoción').closest<HTMLElement>('.panel-lista__fila')!
+  const promocion = screen.getByRole('group', { name: 'Promoción' })
   expect(within(promocion).getByText('$ 2.000')).toBeInTheDocument()
-  expect(noteAfterRow(container, 'Promoción')).toBe('incluye costo pendiente')
-  const consumo = screen.getByText('Consumo propio').closest<HTMLElement>('.panel-lista__fila')!
+  expect(noteIn('Promoción')).toBe('incluye costo pendiente')
+  const consumo = screen.getByRole('group', { name: 'Consumo propio' })
   expect(within(consumo).getByText('$ 1.000')).toBeInTheDocument()
-  expect(noteAfterRow(container, 'Consumo propio')).toBeNull()
+  expect(noteIn('Consumo propio')).toBeNull()
 })
 
 test('Hoy and a period with no withdrawal show neither Promoción nor Consumo propio', async () => {
@@ -296,14 +312,15 @@ test('Hoy and a period with no withdrawal show neither Promoción nor Consumo pr
 
 test('Mes: Costo de lo vendido\'s note and Ganancia\'s note show; there is no Faltante de stock row', async () => {
   stubFetch(PANEL)
-  const { container } = renderInicio()
+  renderInicio()
   await screen.findByText('Vendiste hoy')
   screen.getByRole('button', { name: 'Mes' }).click()
   await screen.findByText('Vendiste este mes')
 
-  const resultados = container.querySelectorAll<HTMLElement>('.panel-resultados__celda')[0]!
-  expect(within(resultados).getByText('incluye costo pendiente')).toBeInTheDocument()
-  expect(noteAfterRow(container, 'Costo de lo vendido')).toBe('incluye costo pendiente')
+  const ganancia = screen.getByRole('group', { name: 'Ganancia' })
+  expect(within(ganancia).getByText('incluye costo pendiente')).toBeInTheDocument()
+  expect(within(screen.getByRole('group', { name: 'Caja' })).queryByText('incluye costo pendiente')).toBeNull()
+  expect(noteIn('Costo de lo vendido')).toBe('incluye costo pendiente')
   expect(screen.queryByText('Faltante de stock')).not.toBeInTheDocument()
 })
 
@@ -337,7 +354,7 @@ test('no sales shows no average, and the range reads with no year', async () => 
     },
   }
   stubFetch(noSalesThisMonth)
-  const { container } = renderInicio()
+  renderInicio()
   await screen.findByText('Vendiste hoy')
 
   screen.getByRole('button', { name: 'Mes' }).click()
@@ -347,17 +364,20 @@ test('no sales shows no average, and the range reads with no year', async () => 
   expect(screen.getByText('0 ventas · 0 g')).toBeInTheDocument()
   expect(screen.queryByText(/promedio/)).not.toBeInTheDocument()
   expect(screen.getAllByText('−$ 5.000')).toHaveLength(2) // profit and cash
-  expect(container.querySelector<HTMLElement>('.panel-resultados')).not.toBeNull()
+  expect(screen.getByRole('group', { name: 'Ganancia' })).toBeInTheDocument()
+  expect(screen.getByRole('group', { name: 'Caja' })).toBeInTheDocument()
 })
 
 test('Te deben: total, count, oldest date, and the teaser opens a customer card', async () => {
   stubFetch(PANEL)
-  renderInicio()
+  const { container } = renderInicio()
 
   expect(await screen.findByText('$ 37.000')).toBeInTheDocument()
-  expect(screen.getByText('4 ventas · desde 14/09')).toBeInTheDocument()
+  expect(screen.getByText('4 ventas debiendo')).toBeInTheDocument()
+  expect(container.querySelector('.bloque-deben__desde')).toHaveTextContent('desde 14/09')
   const row = screen.getByText('Ana Pérez').closest('a')
   expect(row).not.toBeNull()
+  expect(row).toHaveTextContent(/\$ [\d.]+ · desde \d\d\/\d\d/)
   row?.click()
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
 })
@@ -435,7 +455,7 @@ test('"Arrancá por las variedades" shows above the panel, which still shows its
     el.textContent?.includes(EMPTY_TITLE),
   )
   const panelIndex = Array.from(container.querySelectorAll('.cuerpo > *')).findIndex((el) =>
-    el.classList.contains('periodos'),
+    el.classList.contains('inicio__periodos'),
   )
   expect(titleIndex).toBeLessThan(panelIndex)
 })
