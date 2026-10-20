@@ -1,0 +1,233 @@
+import { describe, expect, it } from 'vitest'
+import { pageProbe } from '../../../scripts/design/probe.mjs'
+import {
+  SETTLE_BOUND,
+  SETTLE_FRAMES,
+  settleWith,
+  signatureOf,
+  type SettleFrame,
+  type SettlePort,
+} from '../../../scripts/design/settle.mjs'
+
+// What a page script sees of a `Response` here: headers have arrived, the body is read later.
+type FakeResponse = {
+  clone(): FakeResponse
+  arrayBuffer(): Promise<ArrayBuffer>
+  json(): Promise<unknown>
+}
+
+type FakeWindow = {
+  fetch: (...args: unknown[]) => Promise<FakeResponse>
+  __captureQuiet: () => Promise<boolean>
+  __captureSignature: unknown
+}
+
+// One real macrotask: the body of a response arrives on a turn later than its headers.
+const turn = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+// A response whose body is read once per object, as a real one is; `clone()` of a body that
+// was already read throws. A null body (a 204) reads as empty.
+function responseOf(body: unknown): FakeResponse {
+  let used = false
+  const read = async <T>(value: T): Promise<T> => {
+    if (used) throw new TypeError('body used already')
+    used = true
+    await turn()
+    return value
+  }
+  return {
+    clone: () => {
+      if (used) throw new TypeError('body used already')
+      return responseOf(body)
+    },
+    arrayBuffer: () => read(new ArrayBuffer(0)),
+    json: () => read(body),
+  }
+}
+
+// The probe installed exactly as the capture installs it: its source, serialised, run with
+// `window` bound to a plain object. Nothing outside the function is in scope for it.
+function install(fetch: FakeWindow['fetch']): FakeWindow {
+  const win = { fetch } as FakeWindow
+  const source = `(${pageProbe.toString()})(${signatureOf.toString()})`
+  new Function('window', source)(win)
+  return win
+}
+
+// Settled promises the page has not been given yet: `resolve` hands the headers over.
+function held() {
+  const state = { resolve: (_response: FakeResponse): void => undefined, reject: (_error: Error): void => undefined }
+  const promise = new Promise<FakeResponse>((resolve, reject) => {
+    state.resolve = resolve
+    state.reject = reject
+  })
+  return { promise, ...state }
+}
+
+const isPending = async (promise: Promise<unknown>) => {
+  const marker = Symbol('pending')
+  return (await Promise.race([promise, turn().then(() => marker)])) === marker
+}
+
+// The paused clock of the capture: timers run only when the clock is advanced, in order.
+function fakeClock() {
+  let now = 0
+  let sequence = 0
+  const timers: Array<{ at: number; sequence: number; run: () => void }> = []
+  return {
+    setTimeout(run: () => void, ms: number) {
+      sequence += 1
+      timers.push({ at: now + ms, sequence, run })
+    },
+    runFor(ms: number) {
+      const end = now + ms
+      for (;;) {
+        const due = timers.filter((t) => t.at <= end).sort((a, b) => a.at - b.at || a.sequence - b.sequence)
+        const next = due.at(0)
+        if (next === undefined) break
+        timers.splice(timers.indexOf(next), 1)
+        now = next.at
+        next.run()
+      }
+      now = end
+    },
+  }
+}
+
+describe('the probe on a page whose late answer is drawn by a timer', () => {
+  // The page asks for its settings from a timer that fires in the third frame, reads the
+  // body on a later turn and, as react-query's notify does, draws on `setTimeout(0)` of the
+  // paused clock. The layout hash changes only when that timer has run.
+  function pageWith(fetch: FakeWindow['fetch']) {
+    const win = install(fetch)
+    const clock = fakeClock()
+    const page = { drawn: false }
+    clock.setTimeout(() => {
+      void (async () => {
+        const response = await win.fetch('/pricing-settings')
+        await response.json()
+        clock.setTimeout(() => {
+          page.drawn = true
+        }, 0)
+      })()
+    }, 40)
+    const port: SettlePort = {
+      advance: (ms) => Promise.resolve(clock.runFor(ms)),
+      frame: async (): Promise<SettleFrame> => {
+        clock.runFor(16)
+        const idle = await win.__captureQuiet()
+        await turn()
+        return {
+          idle,
+          pendingFiniteAnimation: false,
+          fontsLoaded: true,
+          hash: page.drawn ? 'drawn' : 'undrawn',
+        }
+      },
+    }
+    return { port, page }
+  }
+  const options = { advanceMs: 0, frames: SETTLE_FRAMES, bound: SETTLE_BOUND }
+
+  it('does not settle on the page before the late line is drawn, and settles once it is', async () => {
+    const { port, page } = pageWith(() => Promise.resolve(responseOf({ is_bulk_pricing: true })))
+    expect(await settleWith(port, options)).toBeNull()
+    expect(page.drawn).toBe(true)
+  })
+
+  it('counts a request in flight until its body is read, not until its headers arrive', async () => {
+    const headers = held()
+    const win = install(() => headers.promise)
+    const request = win.fetch('/pricing-settings')
+    const quiet = win.__captureQuiet()
+    headers.resolve(responseOf({}))
+    const response = await request
+    expect(await isPending(quiet)).toBe(true)
+    await response.json()
+    await quiet
+  })
+})
+
+describe('the probe', () => {
+  it('releases the waiters when the count reaches zero, all of them at once', async () => {
+    const first = held()
+    const second = held()
+    const answers = [first, second]
+    const win = install(() => {
+      const next = answers.shift()
+      if (next === undefined) throw new Error('no more answers')
+      return next.promise
+    })
+    const a = win.fetch('/a')
+    const b = win.fetch('/b')
+    const waiters = [win.__captureQuiet(), win.__captureQuiet()]
+    first.resolve(responseOf({}))
+    await a
+    expect(await isPending(waiters[0]!)).toBe(true)
+    second.resolve(responseOf({}))
+    await b
+    await Promise.all(waiters)
+  })
+
+  it('counts a fetch that throws synchronously as done, and rethrows', async () => {
+    const win = install(() => {
+      throw new Error('blocked')
+    })
+    expect(() => win.fetch('/x')).toThrow('blocked')
+    await win.__captureQuiet()
+    expect(await isPending(win.__captureQuiet())).toBe(false)
+  })
+
+  it('counts a rejected fetch as done, and the app still sees the rejection', async () => {
+    const win = install(() => Promise.reject(new Error('offline')))
+    const request = win.fetch('/x')
+    await expect(request).rejects.toThrow('offline')
+    expect(await isPending(win.__captureQuiet())).toBe(false)
+  })
+
+  it('counts a response with no body (a 204) as done', async () => {
+    const empty: FakeResponse = {
+      clone: () => empty,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+      json: () => Promise.reject(new SyntaxError('no body')),
+    }
+    const win = install(() => Promise.resolve(empty))
+    await win.fetch('/x')
+    expect(await isPending(win.__captureQuiet())).toBe(false)
+  })
+
+  it('counts a response whose body cannot be read as done', async () => {
+    const broken: FakeResponse = {
+      clone: () => broken,
+      arrayBuffer: () => Promise.reject(new TypeError('network error')),
+      json: () => Promise.reject(new TypeError('network error')),
+    }
+    const win = install(() => Promise.resolve(broken))
+    await win.fetch('/x')
+    expect(await isPending(win.__captureQuiet())).toBe(false)
+  })
+
+  it('leaves the body to the app: it reads its own copy after the probe has read a clone', async () => {
+    const win = install(() => Promise.resolve(responseOf({ is_vip_customers: true })))
+    const response = await win.fetch('/pricing-settings')
+    expect(await response.json()).toEqual({ is_vip_customers: true })
+  })
+
+  it('answers not quiet on the first call after install, even with nothing requested', async () => {
+    const win = install(() => Promise.resolve(responseOf({})))
+    expect(await win.__captureQuiet()).toBe(false)
+    expect(await win.__captureQuiet()).toBe(true)
+  })
+
+  it('answers not quiet once for each stretch in which a request completed', async () => {
+    const win = install(() => Promise.resolve(responseOf({})))
+    await win.__captureQuiet()
+    await (await win.fetch('/a')).json()
+    expect(await win.__captureQuiet()).toBe(false)
+    expect(await win.__captureQuiet()).toBe(true)
+  })
+
+  it('exposes the layout signature it was given', () => {
+    expect(install(() => Promise.resolve(responseOf({}))).__captureSignature).toBeTypeOf('function')
+  })
+})

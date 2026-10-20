@@ -32,6 +32,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
 import { fontCss, fontRoute } from './fonts.mjs'
+import { pageProbe } from './probe.mjs'
 import { SETTLE_ADVANCE_MS, SETTLE_BOUND, SETTLE_FRAMES, settleWith, signatureOf, sideOutcome } from './settle.mjs'
 import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
 
@@ -122,41 +123,6 @@ async function run(page, step, placeholders) {
 async function pauseClock(context) {
   await context.clock.install({ time: new Date(CAPTURE_INSTANT.getTime() - 1000) })
   await context.clock.pauseAt(CAPTURE_INSTANT)
-}
-
-// Before any page script runs: a count of the page's own `fetch` calls in flight (the one
-// request channel the built app uses, ADR-0042) and the layout signature, so the frame
-// loop can ask both without sending any page text out.
-function pageProbe(signature) {
-  let inFlight = 0
-  let waiting = []
-  const release = () => {
-    const ready = waiting
-    waiting = []
-    for (const resolve of ready) resolve()
-  }
-  const original = window.fetch
-  window.fetch = function (...args) {
-    inFlight += 1
-    const done = () => {
-      inFlight -= 1
-      if (inFlight === 0) release()
-    }
-    let result
-    try {
-      result = original.apply(this, args)
-    } catch (error) {
-      done()
-      throw error
-    }
-    result.then(done, done)
-    return result
-  }
-  window.__captureInFlight = () => inFlight
-  window.__captureIdle = async () => {
-    while (inFlight > 0) await new Promise((resolve) => waiting.push(resolve))
-  }
-  window.__captureSignature = signature
 }
 
 async function addProbe(context) {
