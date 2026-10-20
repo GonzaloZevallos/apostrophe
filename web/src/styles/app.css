@@ -3196,7 +3196,7 @@ body {
    *
    *   n   8      9       10      11      12      13      14
    *   W   98     112.125 126.25  133.375 148.5   162.625 176.75
-   *   k   25.51  22.29   19.79   18.74   16.83   15.37   14.14
+   *   k   25.51  22.29   19.80   18.74   16.83   15.37   14.14
    *
    * Bound: "−$ 999.999.999", 14 characters (ADR-0048's fixture); a longer one reads 14 and
    * is held by the 17 px floor. The arbiter is `InicioCompu`'s comparison: if "$ 150.000"
@@ -3211,7 +3211,7 @@ body {
   }
 
   .panel-periodo--con-cifras [data-largo='10'] {
-    font-size: max(17px, min(25px, 19.79cqi));
+    font-size: max(17px, min(25px, 19.80cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='11'] {

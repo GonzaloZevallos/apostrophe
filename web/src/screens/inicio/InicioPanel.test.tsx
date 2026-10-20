@@ -186,6 +186,10 @@ for (const theme of ['claro', 'oscuro'] as const) {
     expect(screen.getByText('2 ventas · promedio $ 7.500 · 10 g')).toBeInTheDocument()
     for (const label of RESULT_LABELS) expect(screen.queryByText(label)).not.toBeInTheDocument()
     for (const label of RESULT_LABELS) expect(screen.queryByRole('group', { name: label })).toBeNull()
+    expect(container.querySelector('.panel-cifras')).toBeNull()
+    expect(container.querySelector('.panel-lista')).toBeNull()
+    expect(container.querySelector('.panel-resultados')).toBeNull()
+    expect(container.querySelector('.panel-periodo--con-cifras')).toBeNull()
     expect(screen.queryByText('incluye costo pendiente')).not.toBeInTheDocument()
   })
 }
