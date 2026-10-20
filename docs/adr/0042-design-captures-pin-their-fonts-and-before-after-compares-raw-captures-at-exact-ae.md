@@ -275,11 +275,24 @@ on one screen and leave the probe wrong for every other row (the Golden Cookies 
 sample one extra frame after a request completes; the cost stays bounded by `SETTLE_BOUND` and
 `TIMEOUT`. Nothing here runs in the app or the gate, and the capture is still not a gate step.
 
-**What the evidence shows.** The claim that the race is closed rests on
-`web/src/design/probe.test.ts`, which drives the real `settleWith` over the real probe and fails
-without either half of the change (the body read, the completion counter). The repeated
-whole-registry runs recorded in the PR show only that nothing regressed; they do not prove the
-race closed.
+**What the evidence shows.** Ten whole-registry `--strict` runs on one Argentina day
+(2026-10-20), each on a fresh sample, no `--only`: five of the base head `c4987540` and five of
+the fixed head `a3db92ab`; every run exited 0. `@fontsource/plus-jakarta-sans` was 5.3.0.
+`ae.mjs` compared run 1 with runs 2 to 5 on each side.
+
+- No run, before or after, showed the issue's difference (the bulk and VIP lines of a Golden
+  Cookies price row, nor `VariedadArchivadaOscuro`): every line was AE 0 except one. So the claim
+  that the request race is closed rests on `web/src/design/probe.test.ts`, which drives the real
+  `settleWith` over the real probe and fails without either half of the change (red on the
+  unchanged probe, red on the body-read-only probe, green on the fixed one). The repeats show only
+  that the fix did not regress what they cover.
+- The one non-zero line, on both sides, is `VariedadesCompu built: AE 2888` (a 88 x 52 px area at
+  x 2424-2512, y 1458-1510 of the 2560 x 2180 capture): a toggle drawn grey, mid colour
+  transition, in some runs and dark in others. It has two states: before1, after1 and after3 in
+  one, before2 to before5 and after2, after4, after5 in the other, and the fix does not change
+  which one a run lands in. It is not a request race. It is an unsettled CSS transition, a
+  separate cause that this change does not address and that a later task has to.
+- Consequently the fixed head is not AE 0 on every row and side across the five runs.
 
 **Known risk.** `probe.test.ts` models the paused clock and react-query's notify timer. It does not
 run react-query itself, so a change in how react-query schedules its notification is not covered.
