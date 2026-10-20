@@ -5,7 +5,18 @@
  * (docs/product/icon-and-text-rule.md).
  */
 
-import { NOBODY_OWES } from './common'
+import {
+  ENTERED_LOST_DETAIL,
+  NOBODY_OWES,
+  WORD_AMOUNT,
+  WORD_COLLECT,
+  WORD_DATE,
+  WORD_EDIT,
+  WORD_NAME,
+  WORD_NO_KEEP_IT,
+  WORD_YES_DELETE_IT,
+  WORD_YES_DISCARD_IT,
+} from './common'
 import { salesCount } from './format'
 import type { LimitedCopy } from './limits'
 
@@ -28,19 +39,19 @@ export const salesOwing = (count: number) => `${salesCount(count)} owing`
 /** A customer's row: what it says about money and its Collect button. */
 export const owesSince = (date: string) => `owes you since ${date}`
 export const creditOf = (amount: string) => `Credit ${amount}`
-export const COLLECT = 'Collect'
+export const COLLECT = WORD_COLLECT
 export const collectFrom = (name: string) => `Collect from ${name}`
 
 /** The customer fields shared by the form and the sale's sheet. */
 export const PHONE = 'Phone'
-export const NAME = 'Name'
+export const NAME = WORD_NAME
 
 /** The Record payment screen: its title and its leave confirmation. */
 export const RECORD_PAYMENT = 'Record payment'
 export const DISCARD_PAYMENT_QUESTION = 'Discard the payment?'
-export const LEAVE_DETAIL = "What you entered is lost: nothing has been saved yet."
+export const LEAVE_DETAIL = ENTERED_LOST_DETAIL
 export const KEEP_EDITING = 'No, keep going'
-export const DISCARD = 'Yes, discard it'
+export const DISCARD = WORD_YES_DISCARD_IT
 
 /** The customer form: its title, its refusals and its save. */
 export const EDIT_CUSTOMER = 'Edit customer'
@@ -58,13 +69,13 @@ export const balanceOf = (money: string) => `balance ${money}`
 export const CREDIT = 'Credit'
 export const YES = 'Yes'
 export const NO = 'No'
-export const EDIT = 'Edit'
+export const EDIT = WORD_EDIT
 export const PAYMENT_DELETED = 'Payment deleted'
 export const DELETE_PAYMENT = 'Delete payment'
 export const newSaleTo = (name: string) => `New sale for ${name}`
 export const DELETE_DETAIL = 'This cannot be undone.'
-export const CONFIRM_DELETE = 'Yes, delete it'
-export const CANCEL_DELETE = 'No, keep it'
+export const CONFIRM_DELETE = WORD_YES_DELETE_IT
+export const CANCEL_DELETE = WORD_NO_KEEP_IT
 export const HOW_PAID_CASH = 'Paid in cash'
 export const HOW_PAID_TRANSFER = 'Paid by transfer'
 export const HOW_PAID_OWING = 'Left owing'
@@ -75,8 +86,8 @@ export const deletePaymentQuestion = (money: string, method: string, day: string
 export const paymentRow = (method: string, day: string) => `Payment · ${method} · Applied to the sale of ${day}`
 
 /** The Record payment screen: its fields, its refusals and its toast. */
-export const AMOUNT = 'Amount'
-export const DATE = 'Date'
+export const AMOUNT = WORD_AMOUNT
+export const DATE = WORD_DATE
 export const METHOD = 'Method'
 export const OLDEST_DEBT_FIRST = 'Comes off the oldest debt first'
 export const ABOVE_BALANCE = 'The amount is more than they owe you.'

@@ -19,7 +19,6 @@ import { ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
 import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
-import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
@@ -419,7 +418,7 @@ test('with the frame, nothing written and a name typed: "Close" asks with the di
   await user.type(await screen.findByLabelText(/^Name/), 'Mango')
   await user.click(screen.getByRole('button', { name: 'Close' }))
   const dialog = await screen.findByRole('alertdialog')
-  expect(within(dialog).getByText(DISCARD_DETAIL)).toBeInTheDocument()
+  expect(within(dialog).getByText('You lose what you typed: nothing has been saved yet.')).toBeInTheDocument()
 })
 
 test('with the frame, the variety saved and a price typed: "Close" asks with the partly-saved detail', async () => {
@@ -433,5 +432,5 @@ test('with the frame, the variety saved and a price typed: "Close" asks with the
   await screen.findByRole('alert')
   await user.click(screen.getByRole('button', { name: 'Close' }))
   const dialog = await screen.findByRole('alertdialog')
-  expect(within(dialog).getByText(PARTLY_SAVED_DETAIL)).toBeInTheDocument()
+  expect(within(dialog).getByText('The variety is already saved; you lose the price you typed.')).toBeInTheDocument()
 })

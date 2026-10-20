@@ -5,7 +5,17 @@
  */
 
 import type { LimitedCopy } from './limits'
-import { SAVE } from './common'
+import {
+  CATALOG_MESSAGE,
+  EXPENSE_CATEGORIES,
+  INTEGRATIONS,
+  NO_KEEP_TYPING,
+  SAVE,
+  USERS,
+  WORD_ADD_ANOTHER_VARIETY,
+  WORD_NAME,
+  WORD_YES_DISCARD_IT,
+} from './common'
 import { MORE_SETTINGS } from './expenses'
 import { CHECKLIST_DONE, CHECKLIST_OPTIONAL, CHECKLIST_REQUIRED, STEP_STOCK_ENTRY } from './home'
 import { TAB_VARIETIES } from './shell'
@@ -42,43 +52,43 @@ export const STEP_STOCK_NAME = 'Starting stock'
 export const STEP_MESSAGE_TITLE = 'How your catalog looks'
 export const STEP_MESSAGE_WHY = 'Header and footer go on every catalog you send: keep their text or edit it.'
 export const STEP_MESSAGE_SHORT = 'catalog message'
-export const STEP_MESSAGE_NAME = 'Catalog message'
-export const STEP_MESSAGE_GROUP = 'Catalog message'
+export const STEP_MESSAGE_NAME = CATALOG_MESSAGE
+export const STEP_MESSAGE_GROUP = CATALOG_MESSAGE
 
 export const STEP_BOT_TITLE = 'Connect your Telegram bot'
 export const STEP_BOT_WHY = 'With the bot, your catalog is published and updated on its own in your channel.'
 export const STEP_BOT_SHORT = 'Telegram bot'
 export const STEP_BOT_NAME = 'Telegram bot'
-export const STEP_BOT_GROUP = 'Integrations'
+export const STEP_BOT_GROUP = INTEGRATIONS
 
 export const STEP_PARTNER_TITLE = 'Send the link to your partner'
 export const STEP_PARTNER_WHY = 'With the link your partner joins this business and sees what you see. No rush.'
 export const STEP_PARTNER_SHORT = 'partner'
 export const STEP_PARTNER_NAME = 'Partner'
-export const STEP_PARTNER_GROUP = 'Users'
+export const STEP_PARTNER_GROUP = USERS
 
-export const STEP_CATEGORIES_TITLE = 'Expense categories'
+export const STEP_CATEGORIES_TITLE = EXPENSE_CATEGORIES
 export const STEP_CATEGORIES_WHY = 'They sort what you spend. Add, rename or remove the usual ones as you like.'
 export const STEP_CATEGORIES_SHORT = 'expense categories'
-export const STEP_CATEGORIES_NAME = 'Expense categories'
-export const STEP_CATEGORIES_GROUP = 'Expense categories'
+export const STEP_CATEGORIES_NAME = EXPENSE_CATEGORIES
+export const STEP_CATEGORIES_GROUP = EXPENSE_CATEGORIES
 
 /** The steps themselves. */
 export const PUBLISH_LINE = `Whenever you want, publish it from ${TAB_VARIETIES} → Send catalog`
 export const NOTICE_TITLE = 'Keep going with setup'
 export const DISCARD_QUESTION = 'Discard what you typed?'
-export const KEEP_TYPING = 'No, keep typing'
-export const DISCARD = 'Yes, discard it'
+export const KEEP_TYPING = NO_KEEP_TYPING
+export const DISCARD = WORD_YES_DISCARD_IT
 export const LEAVE_AS_IS = 'Leave as is'
 export const CREATE_THE_LINK = 'Create the link'
 
 export const ANOTHER_PROMPT = 'Another one to add now? Each gets its name, its price and its starting stock.'
 export const CARD_DETAIL = "With today's price and its starting stock"
-export const ADD_ANOTHER_VARIETY = 'Add another variety'
+export const ADD_ANOTHER_VARIETY = WORD_ADD_ANOTHER_VARIETY
 export const ADD_VARIETY_FIRST = "First add a variety with its price for today."
 export const ADD_A_VARIETY = 'Add a variety'
 
-export const FIELD_NAME = 'Name'
+export const FIELD_NAME = WORD_NAME
 export const savedVariety = (name: string) => `Variety: ${name}`
 export const SAVE_THE_VARIETY = 'Save the variety'
 export const perGramLine = (price: string) => `${price} x g`

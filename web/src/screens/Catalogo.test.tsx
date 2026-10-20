@@ -26,7 +26,6 @@ import * as share from '../share'
 import Shell from '../shell/Shell'
 import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/catalog'
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 vi.mock('../share', () => ({
@@ -456,10 +455,10 @@ test('the empty state shows the registered title and line, each within its limit
     ),
   )
 
-  expect(await screen.findByText(EMPTY_STATE_TITLE)).toBeInTheDocument()
-  expect(screen.getByText(EMPTY_STATE_DETAIL)).toBeInTheDocument()
-  expect(Array.from(EMPTY_STATE_TITLE).length).toBeLessThanOrEqual(40)
-  expect(Array.from(EMPTY_STATE_DETAIL).length).toBeLessThanOrEqual(80)
+  expect(await screen.findByText('Nothing in the catalog today')).toBeInTheDocument()
+  expect(screen.getByText('Nothing to copy yet')).toBeInTheDocument()
+  expect(Array.from('Nothing in the catalog today').length).toBeLessThanOrEqual(40)
+  expect(Array.from('Nothing to copy yet').length).toBeLessThanOrEqual(80)
 })
 
 test('Share keeps its word and Copy is icon + text, the icons hidden; "Edit header and footer" stays a text link', async () => {

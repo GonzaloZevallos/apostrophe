@@ -6,6 +6,16 @@
 import { andPending, pendingOnly } from './format'
 import { SAMPLES, type LimitedCopy } from './limits'
 import { TAB_EXPENSES } from './shell'
+import {
+  OWN_USE,
+  PAID_CASH,
+  PROMOTION,
+  WORD_GRAMS,
+  WORD_MONTH,
+  WORD_SHARE,
+  WORD_VARIETY,
+  WORD_WEEK,
+} from './common'
 
 export const NO_HISTORY_LINE = 'Nothing to analyze yet.'
 export const EMPTY_MONTH_LINE = 'You sold and gifted nothing this month.'
@@ -16,8 +26,8 @@ export const NO_BEST_WEEK_LINE = 'None stood out'
 
 export const COST_OF_GOODS_LABEL = 'Cost of goods sold'
 export const SHORTFALL_LABEL = 'Stock shortfall'
-export const PROMOTION_LABEL = 'Promotion'
-export const OWN_USE_LABEL = 'Own use'
+export const PROMOTION_LABEL = PROMOTION
+export const OWN_USE_LABEL = OWN_USE
 
 /** The marks on the best week and the best weekday, and the table's short one. */
 export const BEST_WEEK_MARK = 'Best week'
@@ -27,11 +37,11 @@ export const BEST_WEEK_TABLE_MARK = 'best'
 /** The words Home's panel shares: the section that owns them is this one (Home imports). */
 export const SOLD_THIS_MONTH = 'You sold this month'
 export const PROFIT = 'Profit'
-export const CASH = 'Cash'
+export const CASH = PAID_CASH
 export const EXPENSES = TAB_EXPENSES
 export const FLOWER_PURCHASES = 'Flower purchases'
-export const WEEK = 'Week'
-export const MONTH = 'Month'
+export const WEEK = WORD_WEEK
+export const MONTH = WORD_MONTH
 
 export const MONTH_PREVIOUS = 'Previous month'
 export const MONTH_NEXT = 'Next month'
@@ -58,9 +68,9 @@ export const profitOf = (amount: string, pending: string) => `profit ${amount}${
 export const cashOf = (amount: string) => `cash ${amount}`
 
 /** The column headers of the computer's tables. */
-export const COL_VARIETY = 'Variety'
-export const COL_SHARE = 'Share'
-export const COL_GRAMS = 'Grams'
+export const COL_VARIETY = WORD_VARIETY
+export const COL_SHARE = WORD_SHARE
+export const COL_GRAMS = WORD_GRAMS
 export const COL_GIFT_GRAMS = 'Gifted grams'
 export const COL_COST = 'Cost'
 export const COL_MARGIN = 'Margin'

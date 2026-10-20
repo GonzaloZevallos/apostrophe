@@ -9,6 +9,15 @@
 import type { RefusalCode } from '../api/refusals'
 import type { SuccessToast } from '../components/AvisoExito'
 import type { LimitedCopy } from './limits'
+import {
+  DISCARD_THE_CHANGE,
+  ENTERED_LOST_DETAIL,
+  NO_KEEP_TYPING,
+  WORD_BULK_PRICE,
+  WORD_CATALOG_SAVED,
+  WORD_NAME,
+  WORD_PRICES,
+} from './common'
 
 export const EMPTY_TITLE = "You haven't added any varieties yet"
 export const EMPTY_DETAIL = 'Add the first one with its price so you can sell and send your catalog.'
@@ -51,7 +60,7 @@ export const PRICE_INVALID_MESSAGE = 'Check the prices you entered'
 /** A toast, not always-visible copy, so it is not in `LIMITED_COPY`. */
 export const PRICE_SAVED = 'Price saved'
 export const PRICE_DELETED = 'Price deleted'
-export const CATALOG_ATTRIBUTES_SAVED: SuccessToast = 'Catalog saved'
+export const CATALOG_ATTRIBUTES_SAVED: SuccessToast = WORD_CATALOG_SAVED
 
 export const THRESHOLD_INVALID_MESSAGE = 'Check the threshold you entered'
 export const THRESHOLD_SAVED: SuccessToast = 'Warning saved'
@@ -68,7 +77,7 @@ export const NEW_PRICE = 'New price'
 export const SEE_ALL = 'See all'
 export const STOCK_AND_ENTRIES = 'Stock and entries'
 export const perGram = (cost: string) => `${cost} per gram`
-export const PRICES = 'Prices'
+export const PRICES = WORD_PRICES
 export const LOW_STOCK_WARNING = 'Low-stock warning'
 export const EDIT_WARNING = 'Edit warning'
 export const WARN_WHEN_LOW = 'Warn when stock is low'
@@ -76,13 +85,13 @@ export const WARN_BELOW = 'Warn below'
 
 /** The forms. */
 export const RENAME_VARIETY = 'Rename variety'
-export const NAME = 'Name'
+export const NAME = WORD_NAME
 export const VARIETY_NAME_PLACEHOLDER = 'Variety name'
 export const ADD_VARIETY = 'Add variety'
 export const SAVE_PRICE = 'Save price'
 export const EFFECTIVE_FROM = 'Effective from'
 export const LIST_PRICE = 'List price'
-export const BULK_PRICE = 'Bulk price'
+export const BULK_PRICE = WORD_BULK_PRICE
 export const MINIMUM_QUANTITY = 'Minimum quantity'
 export const VIP_PRICE = 'VIP price'
 
@@ -110,10 +119,10 @@ export const noPriceBefore = (date: string) => `There will be no price before ${
 /** Leaving a form with something typed: the question, what is lost and the two answers. */
 export const DISCARD_PRICE_QUESTION = 'Discard the price?'
 export const DISCARD_VARIETY_QUESTION = 'Discard the variety?'
-export const DISCARD_CHANGE_QUESTION = 'Discard the change?'
-export const DISCARD_ENTERED_DETAIL = 'What you entered is lost: nothing has been saved yet.'
+export const DISCARD_CHANGE_QUESTION = DISCARD_THE_CHANGE
+export const DISCARD_ENTERED_DETAIL = ENTERED_LOST_DETAIL
 export const DISCARD_TYPED_DETAIL = 'What you typed is lost: nothing has been saved yet.'
-export const KEEP_TYPING = 'No, keep typing'
+export const KEEP_TYPING = NO_KEEP_TYPING
 
 /** Removing a variety: the two actions, their confirmations and the archive's detail line. */
 export const DELETE_VARIETY = 'Delete variety'

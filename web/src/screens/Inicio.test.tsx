@@ -32,7 +32,6 @@ import { invalidateResource } from '../api/keys'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import type { OnboardingProgress } from '../api/onboarding'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
-import { SIN_CONEXION_MENSAJE } from '../copy/states'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -477,7 +476,7 @@ test('shows "Sin conexión" when the panel fetch fails, with no figures', async 
   )
   renderInicio()
 
-  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText('No connection: check your internet and try again.')).toBeInTheDocument()
   expect(screen.queryByText('You sold today')).not.toBeInTheDocument()
 })
 
@@ -772,7 +771,7 @@ test('a failed dismissal keeps the notice and says so', async () => {
 
   await userEvent.click(screen.getByRole('button', { name: 'Dismiss notice' }))
 
-  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText('No connection: check your internet and try again.')).toBeInTheDocument()
   expect(screen.getByText(IMPORT_NOTICE_TEXT)).toBeInTheDocument()
 })
 
@@ -793,7 +792,7 @@ test('a failed /first-run draws no slot 1 and no error: the figures still show',
   expect(await screen.findByText('You sold today')).toBeInTheDocument()
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
   expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument()
-  expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
+  expect(screen.queryByText('No connection: check your internet and try again.')).not.toBeInTheDocument()
 })
 
 test('a stock write elsewhere makes the next read of /first-run, and the checklist goes', async () => {

@@ -6,7 +6,7 @@
  * say why Publish is blocked, with the link word the screen draws at their end.
  */
 
-import { STATUS_NO_ENTRIES, STATUS_SOLD_OUT } from './common'
+import { INTEGRATIONS, STATUS_NO_ENTRIES, STATUS_SOLD_OUT, WORD_COPY, WORD_SHARE } from './common'
 import {
   PINNED_CATALOG_NOT_READY_REASON,
   PINNED_CATALOG_REASON_LABEL,
@@ -21,8 +21,8 @@ export const EMPTY_STATE_DETAIL = 'Nothing to copy yet'
 export const CATALOG_TITLE = 'Catalog'
 export const PREVIEW_LABEL = 'How it looks in Telegram'
 export const LEFT_OUT_LABEL = "What's left out and why"
-export const SHARE = 'Share'
-export const COPY = 'Copy'
+export const SHARE = WORD_SHARE
+export const COPY = WORD_COPY
 export const PUBLISH = 'Publish'
 export const EDIT_HEADER_AND_FOOTER = 'Edit header and footer'
 
@@ -39,7 +39,7 @@ export const LEFT_OUT_SOLD_OUT = STATUS_SOLD_OUT
 export const LEFT_OUT_NO_ENTRIES = STATUS_NO_ENTRIES
 
 /** The word of the link to Settings → Integrations that ends both blocked lines. */
-export const INTEGRATIONS_LINK_WORD = 'Integrations'
+export const INTEGRATIONS_LINK_WORD = INTEGRATIONS
 export const CHANNEL_MISSING_LEAD = 'The channel is missing: add it in '
 
 export const NOT_READY_LINE = `${PINNED_CATALOG_NOT_READY_REASON} · ${INTEGRATIONS_LINK_WORD}`

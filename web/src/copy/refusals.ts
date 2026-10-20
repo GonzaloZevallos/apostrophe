@@ -6,7 +6,7 @@
  */
 
 import type { RefusalCode } from '../api/refusals'
-import { GENERIC_REFUSAL_MESSAGE } from './common'
+import { DATE_IN_FUTURE_REFUSAL, GENERIC_REFUSAL_MESSAGE } from './common'
 import type { LimitedCopy } from './limits'
 
 /** Shown after a save or a delete lands on a record that is gone (plan, "Gone
@@ -127,7 +127,7 @@ type WithdrawalRefusalCode =
 
 export const WITHDRAWAL_REFUSAL_MESSAGES = {
   'stock.withdrawal_reason_required': 'Choose a reason: Promotion or Own use',
-  'stock.withdrawal_date_in_future': "The date can't be in the future",
+  'stock.withdrawal_date_in_future': DATE_IN_FUTURE_REFUSAL,
   'stock.withdrawal_no_lines': 'Add at least one variety with its grams',
   'stock.withdrawal_grams_not_positive': 'The grams must be more than zero',
   'stock.withdrawal_grams_too_precise': 'The grams can have up to two decimals',

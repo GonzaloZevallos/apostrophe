@@ -4,6 +4,20 @@
  */
 
 import type { LimitedCopy } from './limits'
+import {
+  CATEGORY,
+  DISCARD_THE_CHANGES,
+  SETTINGS,
+  WORD_AMOUNT,
+  WORD_DATE,
+  WORD_NO_KEEP_EDITING,
+  WORD_NO_KEEP_ENTERING,
+  WORD_NO_KEEP_IT,
+  WORD_TAKE_OUT_OF_STOCK,
+  WORD_YES_DELETE_IT,
+  WORD_YES_DISCARD_IT,
+  YES_DISCARD_THEM,
+} from './common'
 
 export const FLOWER_NOTICE = "Flower purchases don't go here: enter them in Stock."
 
@@ -20,39 +34,39 @@ export const DELETE_TITLE = 'Delete the expense?'
 export const deleteQuestion = (amount: string, category: string, date: string) =>
   `Delete the ${amount} expense in ${category} from ${date}?`
 export const CANNOT_UNDO = "This can't be undone."
-export const NO_DISCARD_TITLE = 'No, keep it'
-export const YES_DELETE_TITLE = 'Yes, delete it'
+export const NO_DISCARD_TITLE = WORD_NO_KEEP_IT
+export const YES_DELETE_TITLE = WORD_YES_DELETE_IT
 export const EXPENSE_DELETED = 'Expense deleted'
 export const EXPENSE_SAVED = 'Expense saved'
 
-export const DISCARD_CHANGES_TITLE = 'Discard the changes?'
+export const DISCARD_CHANGES_TITLE = DISCARD_THE_CHANGES
 export const DISCARD_CHANGES_DETAIL = 'You lose what you changed: the expense stays as it was.'
-export const DISCARD_CHANGES_CONFIRM = 'Yes, discard them'
-export const DISCARD_CHANGES_CANCEL = 'No, keep editing'
+export const DISCARD_CHANGES_CONFIRM = YES_DISCARD_THEM
+export const DISCARD_CHANGES_CANCEL = WORD_NO_KEEP_EDITING
 
 export const DISCARD_NEW_TITLE = 'Discard the expense?'
 export const DISCARD_NEW_DETAIL = 'You lose what you entered: nothing has been saved yet.'
-export const DISCARD_NEW_CANCEL = 'No, keep entering'
-export const DISCARD_NEW_CONFIRM = 'Yes, discard it'
+export const DISCARD_NEW_CANCEL = WORD_NO_KEEP_ENTERING
+export const DISCARD_NEW_CONFIRM = WORD_YES_DISCARD_IT
 
 /** The expense form. */
 export const CATEGORY_GONE = 'That category is gone. Pick another.'
 export const FORM_TITLE_NEW = 'Add expense'
 export const FORM_TITLE_EDIT = 'Edit expense'
-export const FIELD_DATE = 'Date'
-export const FIELD_CATEGORY = 'Category'
+export const FIELD_DATE = WORD_DATE
+export const FIELD_CATEGORY = CATEGORY
 export const PICK_CATEGORY = 'Pick a category'
 export const NEW_CATEGORY_NAME = 'New category name'
 export const CREATE_CATEGORY = 'Create category'
 export const CREATE_NEW_CATEGORY = 'Create a new category'
-export const FIELD_AMOUNT = 'Amount'
+export const FIELD_AMOUNT = WORD_AMOUNT
 export const FIELD_DETAIL = 'Detail'
 export const SAVE_EXPENSE = 'Save expense'
 export const DELETE_EXPENSE = 'Delete expense'
 
 /** More: each entry's label and subtitle. */
-export const MORE_TAKE_OUT = 'Take out of stock'
-export const MORE_SETTINGS = 'Settings'
+export const MORE_TAKE_OUT = WORD_TAKE_OUT_OF_STOCK
+export const MORE_SETTINGS = SETTINGS
 export const MORE_ADD_EXPENSE_DETAIL = 'Category, amount and detail'
 export const MORE_TAKE_OUT_DETAIL = 'Promotion or own use'
 export const MORE_EXPENSES_DETAIL = 'By month and by category'

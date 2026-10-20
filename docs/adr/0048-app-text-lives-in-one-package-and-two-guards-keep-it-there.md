@@ -44,6 +44,11 @@ Zeta decides on translations later, and this makes that one edit in one place.
    gone. `SAME_IN_BOTH` stays, each entry with its reason.
 7. **Design material stays Spanish.** `pantallas/` and `muestra.md` are the design reference for
    structure, not for words; their `section` crops run on the design side only.
+8. **A shared word has one home** (`architecture/copyShared.ts`, invariant 9). A static string two
+   sections both spell out is reported; the second section imports the constant from `common`
+   (an import is not a literal). Case is kept, so a pill `hidden` and a title `Hidden` are two texts.
+   Behaviour tests assert the English a person sees, never a copy key; the registries
+   (`LIMITED_COPY`, `LONG_REFUSALS`, `LIMITS`) are the only copy exports a test reads, to measure.
 
 ## Known risks
 

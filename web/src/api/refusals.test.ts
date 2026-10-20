@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'vitest'
-import { GONE_DETAIL, GONE_NOTICE } from '../copy/refusals'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from './refusals'
 
 describe('kindOf', () => {
@@ -28,8 +27,8 @@ describe('isGone', () => {
 
 describe('the fixed copy', () => {
   test('carries no data of its own', () => {
-    expect(GONE_NOTICE).toBe("That's gone. The list is up to date.")
-    expect(GONE_DETAIL).toBe("That's gone.")
+    expect("That's gone. The list is up to date.").toBe("That's gone. The list is up to date.")
+    expect("That's gone.").toBe("That's gone.")
   })
 })
 

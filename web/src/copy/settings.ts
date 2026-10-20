@@ -9,11 +9,34 @@
 
 import { SAMPLES, type LimitedCopy } from './limits'
 import type { SuccessToast } from '../components/AvisoExito'
+import {
+  CATALOG_MESSAGE,
+  CATEGORY,
+  DISCARD_THE_CHANGE,
+  ENTERED_LOST_DETAIL,
+  EXPENSE_CATEGORIES,
+  INTEGRATIONS,
+  INVITE_A_PARTNER,
+  SETTINGS,
+  USERS,
+  WORD_BULK_PRICE,
+  WORD_CATALOG_SAVED,
+  WORD_CHANGE,
+  WORD_COPY,
+  WORD_DELETE,
+  WORD_NO_KEEP_EDITING,
+  WORD_NO_KEEP_IT,
+  WORD_PRICES,
+  WORD_SHARE,
+  WORD_YES_DELETE_IT,
+  WORD_YES_DISCARD_IT,
+  YES_DISCARD_THEM,
+} from './common'
 
 export const RENAME_SUCCESS: SuccessToast = 'Business renamed'
 export const PASSWORD_CHANGED_SUCCESS: SuccessToast = 'Password changed · we signed out your other sessions'
 export const BUSINESS_NAME_INVALID_MESSAGE = 'Give the business a name, without extra spaces'
-export const CATALOG_SAVED: SuccessToast = 'Catalog saved'
+export const CATALOG_SAVED: SuccessToast = WORD_CATALOG_SAVED
 export const PRICES_SAVED: SuccessToast = 'Prices saved'
 export const HEADER_TOO_LONG_MESSAGE = 'The header is too long'
 export const FOOTER_TOO_LONG_MESSAGE = 'The footer is too long'
@@ -37,32 +60,32 @@ export const PREVIOUS_PIN_NOTICE =
   'The previous pinned message stays as it is; unpin it yourself in Telegram.'
 
 /** The groups' names, the Settings title and the menu's accessible name. */
-export const SETTINGS_TITLE = 'Settings'
+export const SETTINGS_TITLE = SETTINGS
 export const GROUP_BUSINESS = 'Business'
-export const GROUP_USERS = 'Users'
-export const GROUP_PRICES = 'Prices'
-export const GROUP_INTEGRATIONS = 'Integrations'
-export const GROUP_CATALOG_MESSAGE = 'Catalog message'
-export const GROUP_EXPENSE_CATEGORIES = 'Expense categories'
+export const GROUP_USERS = USERS
+export const GROUP_PRICES = WORD_PRICES
+export const GROUP_INTEGRATIONS = INTEGRATIONS
+export const GROUP_CATALOG_MESSAGE = CATALOG_MESSAGE
+export const GROUP_EXPENSE_CATEGORIES = EXPENSE_CATEGORIES
 export const GROUP_APPEARANCE = 'Appearance'
 export const GROUP_ACCOUNT = 'Your account'
 
 /** What each group's leave confirmation asks: one wording per group, one shared detail. */
-const LEAVE_DETAIL = 'What you entered is lost: nothing has been saved yet.'
+const LEAVE_DETAIL = ENTERED_LOST_DETAIL
 const leaveWording = (question: string, discard: string) => ({
   question,
   detail: LEAVE_DETAIL,
-  keepLabel: 'No, keep editing',
+  keepLabel: WORD_NO_KEEP_EDITING,
   discardLabel: discard,
 })
-export const LEAVE_PASSWORD = leaveWording('Discard the new password?', 'Yes, discard it')
-export const LEAVE_THEME = leaveWording('Discard the theme?', 'Yes, discard it')
-export const LEAVE_BUSINESS_NAME = leaveWording('Discard the name?', 'Yes, discard it')
-export const LEAVE_CATALOG_MESSAGE = leaveWording('Discard the message?', 'Yes, discard it')
-export const LEAVE_INVITATION = leaveWording('Discard the invitation?', 'Yes, discard it')
-export const LEAVE_PRICES = leaveWording('Discard the prices?', 'Yes, discard them')
-export const LEAVE_CATEGORY = leaveWording('Discard the category?', 'Yes, discard it')
-export const LEAVE_CHANGE = leaveWording('Discard the change?', 'Yes, discard it')
+export const LEAVE_PASSWORD = leaveWording('Discard the new password?', WORD_YES_DISCARD_IT)
+export const LEAVE_THEME = leaveWording('Discard the theme?', WORD_YES_DISCARD_IT)
+export const LEAVE_BUSINESS_NAME = leaveWording('Discard the name?', WORD_YES_DISCARD_IT)
+export const LEAVE_CATALOG_MESSAGE = leaveWording('Discard the message?', WORD_YES_DISCARD_IT)
+export const LEAVE_INVITATION = leaveWording('Discard the invitation?', WORD_YES_DISCARD_IT)
+export const LEAVE_PRICES = leaveWording('Discard the prices?', YES_DISCARD_THEM)
+export const LEAVE_CATEGORY = leaveWording('Discard the category?', WORD_YES_DISCARD_IT)
+export const LEAVE_CHANGE = leaveWording(DISCARD_THE_CHANGE, WORD_YES_DISCARD_IT)
 
 /** Business and Your account. */
 export const SAVE_NAME = 'Save the name'
@@ -70,9 +93,9 @@ export const LOG_OUT = 'Log out'
 
 /** Users and the partner invitation. */
 export const YOU_MARK = 'you'
-export const INVITE_PARTNER = 'Invite a partner'
-export const COPY_LINK = 'Copy'
-export const SHARE_LINK = 'Share'
+export const INVITE_PARTNER = INVITE_A_PARTNER
+export const COPY_LINK = WORD_COPY
+export const SHARE_LINK = WORD_SHARE
 
 /** Appearance. */
 export const THEME_LABEL = 'Theme'
@@ -80,7 +103,7 @@ export const THEME_LIGHT = 'Light'
 export const THEME_DARK = 'Dark'
 
 /** Prices. */
-export const BULK_PRICING_LABEL = 'Bulk price'
+export const BULK_PRICING_LABEL = WORD_BULK_PRICE
 export const VIP_CUSTOMERS_LABEL = 'VIP customers'
 export const SAVE_PRICES = 'Save the prices'
 export const PAST_SALES_LINE = 'Past sales keep their recorded price. Turning an option off deletes nothing.'
@@ -97,21 +120,21 @@ export const CATEGORY_REMOVED: SuccessToast = 'Category deleted'
 export const CANNOT_REMOVE = "Can't delete it: it still has expenses. You can rename it."
 export const NEW_CATEGORY_LABEL = 'New category'
 export const ADD_CATEGORY_FORM = '+ Category'
-export const ADD_CATEGORY = 'Category'
+export const ADD_CATEGORY = CATEGORY
 export const RENAME = 'Rename'
-export const DELETE = 'Delete'
+export const DELETE = WORD_DELETE
 export const nameOf = (category: string) => `Name of ${category}`
 export const DELETE_CATEGORY_QUESTION = 'Delete the category?'
 export const deleteCategoryDetail = (category: string) =>
   `“${category}” will be deleted. This can't be undone.`
-export const KEEP_IT = 'No, keep it'
-export const DELETE_IT = 'Yes, delete it'
+export const KEEP_IT = WORD_NO_KEEP_IT
+export const DELETE_IT = WORD_YES_DELETE_IT
 
 /** Integrations. */
 export const TEST_SENT_TOAST: SuccessToast = 'Test sent'
 export const BOT_TOKEN_LABEL = 'Bot token'
 export const tokenSavedOn = (date: string) => `Saved on ${date} · not shown again`
-export const CHANGE = 'Change'
+export const CHANGE = WORD_CHANGE
 export const CHANNEL_CHAT_LABEL = 'Channel chat'
 export const OWN_CHAT_LABEL = 'Your chat'
 export const FIND_MY_CHAT = 'Find my chat'

@@ -4,6 +4,26 @@
  * (never fixture or API data). The screens render these same bindings. */
 
 import { SAMPLES, type LimitedCopy } from './limits'
+import {
+  CHOOSE_A_VARIETY,
+  DATE_IN_FUTURE_REFUSAL,
+  DISCARD_THE_CHANGES,
+  OWN_USE,
+  PROMOTION,
+  WORD_ADD_ANOTHER_VARIETY,
+  WORD_DATE,
+  WORD_DELETE,
+  WORD_EDIT,
+  WORD_GRAMS,
+  WORD_NOTE,
+  WORD_NO_KEEP_EDITING,
+  WORD_NO_KEEP_ENTERING,
+  WORD_NO_KEEP_IT,
+  WORD_TAKE_OUT_OF_STOCK,
+  WORD_VARIETY,
+  WORD_YES_DELETE_IT,
+  WORD_YES_DISCARD_IT,
+} from './common'
 
 export const EMPTY_STATE_TITLE = 'No stock entries'
 export const EMPTY_STATE_DETAIL = 'Add your opening stock or a purchase'
@@ -20,7 +40,7 @@ export const GRAMS_INVALID = 'Check the grams you entered'
 /** The refusals of the stock entry form that have a field of their own. */
 export const COST_REQUIRED = 'A purchase needs a total cost'
 export const COST_ON_NEGATIVE = 'A negative adjustment has no cost'
-export const DATE_IN_FUTURE = "The date can't be in the future"
+export const DATE_IN_FUTURE = DATE_IN_FUTURE_REFUSAL
 
 /** The grams on hand under the variety picker; `grams` is already formatted from what
  * the API answered (`formatGrams`), so the registry can measure it with `SAMPLES.grams`. */
@@ -41,20 +61,20 @@ export const ORIGIN_OPENING_STOCK = 'Opening stock'
 export const ORIGIN_ADJUSTMENT = 'Adjustment'
 
 /** The two reasons of a stock withdrawal, by their word on screen. */
-export const REASON_PROMOTION = 'Promotion'
-export const REASON_OWN_USE = 'Own use'
+export const REASON_PROMOTION = PROMOTION
+export const REASON_OWN_USE = OWN_USE
 
 /** The words of the icon-only edit and delete controls, and of the form's fields. */
-export const EDIT = 'Edit'
-export const DELETE = 'Delete'
-export const FIELD_VARIETY = 'Variety'
-export const FIELD_GRAMS = 'Grams'
+export const EDIT = WORD_EDIT
+export const DELETE = WORD_DELETE
+export const FIELD_VARIETY = WORD_VARIETY
+export const FIELD_GRAMS = WORD_GRAMS
 export const FIELD_TOTAL_COST = 'Total cost'
-export const FIELD_DATE = 'Date'
+export const FIELD_DATE = WORD_DATE
 export const FIELD_ORIGIN = 'Origin'
-export const FIELD_NOTE = 'Note'
+export const FIELD_NOTE = WORD_NOTE
 export const FIELD_REASON = 'Reason'
-export const CHOOSE_VARIETY = 'Choose a variety'
+export const CHOOSE_VARIETY = CHOOSE_A_VARIETY
 
 /** The stock entry screen: its two titles, the two submit buttons and the delete control. */
 export const NEW_ENTRY_TITLE = 'New entry'
@@ -72,8 +92,8 @@ export function costPerGramLine(money: string): string {
 
 /** The confirmation before a delete, shared by the entries list and the entry form. */
 export const BEFORE_DELETING = 'Before deleting'
-export const YES_DELETE_IT = 'Yes, delete it'
-export const NO_KEEP_IT = 'No, keep it'
+export const YES_DELETE_IT = WORD_YES_DELETE_IT
+export const NO_KEEP_IT = WORD_NO_KEEP_IT
 export function deleteEntryQuestion(date: string, variety: string, grams: string): string {
   return `Delete the ${date} entry for ${variety}, ${grams}? This can't be undone.`
 }
@@ -81,20 +101,20 @@ export function deleteEntryQuestion(date: string, variety: string, grams: string
 /** The confirmation before saving an edit, and the question when leaving with something typed. */
 export const SAVE_CHANGES_TITLE = 'Save the changes?'
 export const YES_SAVE = 'Yes, save'
-export const NO_KEEP_EDITING = 'No, keep editing'
-export const DISCARD_CHANGES_TITLE = 'Discard the changes?'
+export const NO_KEEP_EDITING = WORD_NO_KEEP_EDITING
+export const DISCARD_CHANGES_TITLE = DISCARD_THE_CHANGES
 export const DISCARD_ENTRY_TITLE = 'Discard the entry?'
 export const DISCARD_ENTRY_DETAIL = "You'll lose what you entered: nothing has been saved yet."
-export const YES_DISCARD_IT = 'Yes, discard it'
-export const NO_KEEP_ENTERING = 'No, keep entering'
+export const YES_DISCARD_IT = WORD_YES_DISCARD_IT
+export const NO_KEEP_ENTERING = WORD_NO_KEEP_ENTERING
 export const SAVE_ENTRY_DETAIL = 'This updates the entry.'
 
 /** The stock withdrawal screens: the form, the detail and the confirmations. */
-export const TAKE_OUT_OF_STOCK = 'Take out of stock'
+export const TAKE_OUT_OF_STOCK = WORD_TAKE_OUT_OF_STOCK
 export const WITHDRAWAL_TITLE = 'Withdrawal'
 export const SAVE_WITHDRAWAL = 'Save withdrawal'
 export const SAVE_WITHDRAWAL_DETAIL = 'This updates the withdrawal and the lots that come after it.'
-export const ADD_ANOTHER_VARIETY = 'Add another variety'
+export const ADD_ANOTHER_VARIETY = WORD_ADD_ANOTHER_VARIETY
 export const WITHDRAWAL_SAVED = 'Withdrawal saved'
 export const WITHDRAWAL_DELETED = 'Withdrawal deleted'
 export const DISCARD_WITHDRAWAL_TITLE = 'Discard the withdrawal?'

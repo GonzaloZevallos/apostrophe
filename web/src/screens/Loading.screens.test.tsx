@@ -47,7 +47,6 @@ import IntegrationsGroup from './settings/IntegrationsGroup'
 import UsersGroup from './settings/UsersGroup'
 import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
-import { SIN_CONEXION_MENSAJE } from '../copy/states'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 
@@ -172,7 +171,7 @@ test('a screen opened offline shows the skeleton under the offline banner, witho
   renderPending(<Ventas />, SALES, SALES)
 
   expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
-  expect(screen.getByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(screen.getByText('No connection: check your internet and try again.')).toBeInTheDocument()
 })
 
 test('the skeleton gives way to the content once the query settles', async () => {

@@ -9,9 +9,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
-import { GONE_NOTICE } from '../copy/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
-import { SIN_CONEXION_MENSAJE } from '../copy/states'
 import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { FLOWER_NOTICE } from './Gastos'
@@ -307,7 +305,7 @@ test('editing an expense that is already gone shows the gone notice and closes t
   await userEvent.click(await screen.findByText('Bolsas'))
   await userEvent.click(await screen.findByRole('button', { name: 'Save expense' }))
 
-  const notice = await screen.findByText(GONE_NOTICE)
+  const notice = await screen.findByText("That's gone. The list is up to date.")
   expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
   // The floating slot the success toasts use.
   expect(notice.closest('.aviso-flotante')).not.toBeNull()
@@ -329,7 +327,7 @@ test('deleting an expense that is already gone shows the gone notice', async () 
   await userEvent.click(await screen.findByRole('button', { name: 'Delete expense' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
   expect(screen.queryByText('Expense deleted')).not.toBeInTheDocument()
 })
 
@@ -349,8 +347,8 @@ test('a dropped network on delete shows "Offline", never the gone notice', async
   await userEvent.click(await screen.findByRole('button', { name: 'Delete expense' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  expect(await screen.findByText('No connection: check your internet and try again.')).toBeInTheDocument()
+  expect(screen.queryByText("That's gone. The list is up to date.")).not.toBeInTheDocument()
   // The confirmation stays open so the user can retry once back online.
   expect(screen.getByRole('button', { name: 'Yes, delete it' })).toBeInTheDocument()
 })

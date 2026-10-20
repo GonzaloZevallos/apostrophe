@@ -10,20 +10,18 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import { PINNED_CATALOG_REASON_LABEL } from '../copy/refusals'
 import { copyProblems, measure } from '../copy/limits'
+
 import PinPublish from './PinPublish'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import * as catalogCopy from '../copy/catalog'
 import type { PinReason } from '../copy/refusals'
+
 import {
-  INTEGRATIONS_LINK_WORD,
   LIMITED_COPY,
   LONG_REFUSALS,
-  OUT_OF_DATE_LINES,
-  NOT_READY_LINE,
-  CHANNEL_MISSING_LINE,
 } from '../copy/catalog'
+
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -149,28 +147,39 @@ test('a failed Publish shows its fixed reason', async () => {
   expect(await screen.findByRole('alert')).toHaveTextContent("The bot can't post in the channel")
 })
 
+/** The English the screen shows, written out here: the registry below must list exactly these. */
+const OUT_OF_DATE_LINES: Record<PinReason, string> = {
+  telegram_unreachable: "Out of date · Telegram didn't respond",
+  bot_cannot_post: "Out of date · The bot can't post in the channel",
+  message_gone: 'Out of date · The pinned message is gone: publish it again',
+  missing_publish: 'Out of date · It still has to be published with the new bot or channel',
+  too_long: "Out of date · It's too long for Telegram: shorten aromas or hide varieties.",
+}
+
+const REASONS = Object.keys(OUT_OF_DATE_LINES) as PinReason[]
+
 test('the blocked lines and the out-of-date reasons are the registered, measured bindings', async () => {
   renderPin({ can_publish: false, publish_blocked_by: 'not_tested', status: null })
   await screen.findByRole('button', { name: 'Publish' })
-  expect(screen.getByText(/Send yourself a test first/).textContent).toBe(NOT_READY_LINE)
+  expect(screen.getByText(/Send yourself a test first/).textContent).toBe('Send yourself a test first to see how it looks · Integrations')
 
   const registered = LIMITED_COPY.map((entry) => entry.text)
-  expect(registered).toContain(NOT_READY_LINE)
-  expect(registered).toContain(CHANNEL_MISSING_LINE)
+  expect(registered).toContain('Send yourself a test first to see how it looks · Integrations')
+  expect(registered).toContain('The channel is missing: add it in Integrations')
   for (const line of Object.values(OUT_OF_DATE_LINES)) {
     expect(registered.includes(line) || LONG_REFUSALS.includes(line)).toBe(true)
   }
   for (const entry of LIMITED_COPY) expect(measure(entry.text)).toBeLessThanOrEqual(80)
-  expect(INTEGRATIONS_LINK_WORD).toBe('Integrations')
+  expect(screen.getByText(/Send yourself a test first/).textContent).toMatch(/ · Integrations$/)
 })
 
 test('channel_missing renders the registered line, link word included', async () => {
   renderPin({ can_publish: false, publish_blocked_by: 'channel_missing', status: null })
   await screen.findByRole('button', { name: 'Publish' })
-  expect(screen.getByText(/The channel is missing/).textContent).toBe(CHANNEL_MISSING_LINE)
+  expect(screen.getByText(/The channel is missing/).textContent).toBe('The channel is missing: add it in Integrations')
 })
 
-test.each(Object.keys(PINNED_CATALOG_REASON_LABEL) as PinReason[])(
+test.each(REASONS)(
   'out_of_date with %s renders exactly its registered line, and that line fits or is listed',
   async (reason) => {
     renderOutOfDate(reason)
@@ -210,7 +219,7 @@ test('"Out of date" carries the hidden attention icon beside its reason; "Up to 
   const box = title.closest('.catalogo__publicar-estado') as HTMLElement
 
   expect(box.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(box).toHaveTextContent(`Out of date · ${PINNED_CATALOG_REASON_LABEL.message_gone}`)
+  expect(box).toHaveTextContent('Out of date · The pinned message is gone: publish it again')
   expectIconAndTextRule(document.body)
 })
 

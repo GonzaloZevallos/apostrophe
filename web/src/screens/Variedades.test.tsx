@@ -24,7 +24,6 @@ import {
   WITHDRAWAL_NEW,
   pathTo,
 } from '../routes'
-import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -420,7 +419,7 @@ describe('removing the selected variety on a computer', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe(expected))
 
     if (position === 'the only one') {
-      expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
+      expect(await screen.findByText("You haven't added any varieties yet")).toBeInTheDocument()
     } else {
       expect(linksTo(removed)).toHaveLength(0)
     }
@@ -466,8 +465,8 @@ describe('the icon and text rule', () => {
       limits: LIMITS,
       samples: SAMPLES,
     })
-    expect(screen.getByText(EMPTY_TITLE)).toHaveAttribute('data-copy', 'emptyTitle')
-    expect(screen.getByText(EMPTY_DETAIL)).toHaveAttribute('data-copy', 'emptyLine')
+    expect(screen.getByText("You haven't added any varieties yet")).toHaveAttribute('data-copy', 'emptyTitle')
+    expect(screen.getByText('Add the first one with its price so you can sell and send your catalog.')).toHaveAttribute('data-copy', 'emptyLine')
   })
 
   test('the limits check rejects an empty state longer than its limit', async () => {
@@ -477,7 +476,7 @@ describe('the icon and text rule', () => {
         'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
       },
     })
-    const title = await screen.findByText(EMPTY_TITLE)
+    const title = await screen.findByText("You haven't added any varieties yet")
     title.textContent = 'x'.repeat(LIMITS.emptyTitle + 1)
 
     const problems = iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })

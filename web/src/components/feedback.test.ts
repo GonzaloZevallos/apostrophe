@@ -5,7 +5,6 @@
  */
 
 import { expect, test } from 'vitest'
-import { GONE_NOTICE } from '../copy/refusals'
 import {
   clearSaleJustSaved,
   newSaleFor,
@@ -30,7 +29,7 @@ test('accepts "Sale deleted · the grams go back to stock", added to the closed 
 })
 
 test('accepts the fixed gone notice', () => {
-  expect(readFeedback({ notice: GONE_NOTICE })).toEqual({ kind: 'notice', message: GONE_NOTICE })
+  expect(readFeedback({ notice: "That's gone. The list is up to date." })).toEqual({ kind: 'notice', message: "That's gone. The list is up to date." })
 })
 
 test('rejects a toast string outside the closed set — never renders an arbitrary message', () => {

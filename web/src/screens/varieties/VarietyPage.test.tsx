@@ -29,7 +29,6 @@ import {
 import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
-import { SIN_CONEXION_MENSAJE } from '../../copy/states'
 
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
@@ -741,7 +740,7 @@ describe('turning the warning off', () => {
 
     await user.click(await screen.findByRole('switch'))
 
-    expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+    expect(await screen.findByText('No connection: check your internet and try again.')).toBeInTheDocument()
     expect(screen.getByRole('switch')).toBeChecked()
   })
 })

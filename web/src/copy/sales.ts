@@ -5,7 +5,18 @@
  * or API data. `pricing.ts` builds its message from `noPriceMessage`. Words other sections own
  * are imported read-only (ADR-0025). */
 
-import { GENERIC_REFUSAL_MESSAGE } from './common'
+import {
+  CHOOSE_A_VARIETY,
+  GENERIC_REFUSAL_MESSAGE,
+  WORD_ADD_ANOTHER_VARIETY,
+  WORD_CHANGE,
+  WORD_GRAMS,
+  WORD_MONTH,
+  WORD_NOTE,
+  WORD_PERIOD,
+  WORD_VARIETY,
+  WORD_WEEK,
+} from './common'
 import { SAMPLES, type LimitedCopy } from './limits'
 
 export const EMPTY_LIST = "You haven't recorded any sales in this period yet."
@@ -18,20 +29,20 @@ export function noPriceMessage(varietyName: string): string {
 }
 
 /** The Sales list: its periods, its date range and its rows. */
-export const PERIOD = 'Period'
-export const PERIOD_WEEK = 'Week'
-export const PERIOD_MONTH = 'Month'
+export const PERIOD = WORD_PERIOD
+export const PERIOD_WEEK = WORD_WEEK
+export const PERIOD_MONTH = WORD_MONTH
 export const PERIOD_DATES = 'Dates'
 export const FROM = 'From'
 export const TO = 'To'
 export const OWES = 'owes you'
 
 /** The sale form: its fields, its totals and its actions. */
-export const CHANGE = 'Change'
-export const ADD_VARIETY = 'Add another variety'
+export const CHANGE = WORD_CHANGE
+export const ADD_VARIETY = WORD_ADD_ANOTHER_VARIETY
 export const SHIPPING = 'Shipping'
 export const SHIPPING_CHARGED = 'Shipping charged'
-export const NOTE = 'Note'
+export const NOTE = WORD_NOTE
 export const TOTAL = 'Total'
 export const SAVE_SALE = 'Save sale'
 export const gramsSold = (grams: string) => `${grams} sold`
@@ -44,9 +55,9 @@ export const NO_CUSTOMER = 'No customer'
 
 /** One line of the sale: its summary, its fields and its remove button. */
 export const NO_VARIETY = 'No variety'
-export const VARIETY = 'Variety'
-export const CHOOSE_VARIETY = 'Choose a variety'
-export const GRAMS = 'Grams'
+export const VARIETY = WORD_VARIETY
+export const CHOOSE_VARIETY = CHOOSE_A_VARIETY
+export const GRAMS = WORD_GRAMS
 export const GIFT = 'Gift'
 export const SPECIAL_PRICE = 'Special price'
 export const lineSummary = (n: number, name: string) => `Line ${n}: ${name}`
@@ -62,7 +73,7 @@ export const NO_LINES_MESSAGE = 'Add at least one variety.'
 export const PAYMENT_REQUIRED_MESSAGE = 'Choose how it was paid, or leave the sale owing'
 export const SPECIAL_PRICE_INVALID_MESSAGE = 'The special price must be above $0'
 export const LINE_GRAMS_INVALID = 'Enter the grams: comma, up to two decimals'
-export const LINE_VARIETY_MISSING = 'Choose a variety'
+export const LINE_VARIETY_MISSING = CHOOSE_A_VARIETY
 export const SHIPPING_NEGATIVE = 'Shipping cannot be negative'
 export const NOTE_TOO_LONG = 'The note is too long'
 export const DATE_IN_FUTURE = 'The date cannot be in the future'
