@@ -171,8 +171,7 @@ Success criteria:
   - The check and the delete are one guarded write: a sale or entry a partner records at
     the same moment either blocks the delete or is refused as "That's gone". Nothing is
     ever orphaned.
-  - A variety already gone answers 404 and follows accounts.md: "That's gone. La lista
-    ya está al día."
+  - A variety already gone answers 404 and follows accounts.md: "That's gone. The list is up to date."
 - **Archive**: offered for a variety with history. It leaves every list and picker but
   stays in the books.
   - Archive is never refused for having or lacking history. If the variety's last sale or
@@ -252,8 +251,8 @@ Success criteria:
 - **Every unarchived variety**, hidden ones included, sorted by name, in a stable order.
 - **Each row**:
   - the name;
-  - its stock status mark (`MarcaEstado`: square = agotada as the inverted chip, filled
-    circle = baja, empty circle = ok) and its word, with "no entries" when it has none
+  - its stock status mark (`MarcaEstado`: square = sold out as the inverted chip, filled
+    circle = low, empty circle = ok) and its word, with "no entries" when it has none
     and its detail line (`stock.md`);
   - "Hidden" beside the status when the variety is hidden from the catalog. It never
     replaces the stock status: a hidden variety can still be sold, gifted, withdrawn and
@@ -264,7 +263,7 @@ Success criteria:
   - with no varieties at all: no summary line, and a fixed empty state inviting the seller
     to add the first variety;
   - with every variety ok: "N varieties · all ok";
-  - otherwise: every status that is not ok, counted by word, in stock-status order (e.g. "1 sin entradas · 1 agotada · 1 baja"). It is never blank.
+  - otherwise: every status that is not ok, counted by word, in stock-status order (e.g. "1 no entries · 1 sold out · 1 low"). It is never blank.
   - The exact wording is design's, as long as each state is told by word.
 - **"Send catalog"** at the top, opening the catalog screen (`catalog.md`). It is
   disabled, with its reason in words, only while the first-run checklist shows and nothing
