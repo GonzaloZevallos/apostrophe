@@ -96,7 +96,7 @@ function countLabel(count: number): string {
 
 /** `salesOwingCount`: the Te deben head's count line. */
 function owingLabel(count: number): string {
-  return `${countLabel(count)} debiendo`
+  return `${countLabel(count)} owing`
 }
 
 // A local mirror of `web/src/components/MarcaEstado.tsx`'s own word table and
@@ -308,15 +308,15 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
       await expect(
         page.getByRole('group', { name: 'Flower purchases', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
-      // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
+      // "includes pending cost", under both Costo de lo vendido and Ganancia only,
       // never under Caja (plan, PRD: "Caja never carries it").
-      await expect(page.getByText('incluye costo pendiente')).toHaveCount(period.pending_cost ? 2 : 0)
+      await expect(page.getByText('includes pending cost')).toHaveCount(period.pending_cost ? 2 : 0)
     } else {
       // Hoy is only what can be acted on (results.md): no result figure at all.
       for (const label of ['Profit', 'Cash', 'Cost of goods sold', 'Expenses', 'You gifted', 'Flower purchases']) {
         await expect(page.locator('main').getByText(label, { exact: true })).toHaveCount(0)
       }
-      await expect(page.getByText('incluye costo pendiente')).toHaveCount(0)
+      await expect(page.getByText('includes pending cost')).toHaveCount(0)
     }
 
     // "Vendiste ..."'s own subtitle: count, average (absent with no sales) and

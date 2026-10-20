@@ -5,9 +5,9 @@
  *
  */
 
-/** A toast's text comes from a section of `copy/`; the visible-literal guard (ADR-0049) keeps a
- * screen from writing one of its own, which is what the closed union used to prevent. */
-export type SuccessToast = string
+import type { SuccessToast } from '../copy/common.ts'
+
+export type { SuccessToast }
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

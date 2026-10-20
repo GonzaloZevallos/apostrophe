@@ -8,7 +8,6 @@
  */
 
 import { SAMPLES, type LimitedCopy } from './limits.ts'
-import type { SuccessToast } from '../components/AvisoExito'
 import {
   CATALOG_MESSAGE,
   CATEGORY,
@@ -18,6 +17,7 @@ import {
   INTEGRATIONS,
   INVITE_A_PARTNER,
   SETTINGS,
+  type SuccessToast,
   USERS,
   WORD_BULK_PRICE,
   WORD_CATALOG_SAVED,

@@ -6,6 +6,11 @@
 
 import type { LimitedCopy } from './limits.ts'
 
+/** A toast's text comes from a section of `copy/`; the visible-literal guard (ADR-0049) keeps a
+ * screen from writing one of its own, which is what the closed union used to prevent. It is
+ * defined here, not in the component, so the sections stay free of any `.tsx` import. */
+export type SuccessToast = string
+
 /** The label of an icon-only close control and of a sheet's way out. */
 export const CLOSE = 'Close'
 

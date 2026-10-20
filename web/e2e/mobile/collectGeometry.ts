@@ -231,23 +231,23 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
     // A select is never typed into: no inputmode, no type, no expected autocomplete.
     const typed = !(element instanceof HTMLSelectElement)
     const inCustomer =
-      /^(nombre|tel[eé]fono|celular|whatsapp)/.test(name) &&
-      /cliente/i.test((element.closest('form, [role=dialog], dialog, main') ?? document.body).textContent ?? '')
+      /^(name|phone|mobile|whatsapp)/.test(name) &&
+      /customer/i.test((element.closest('form, [role=dialog], dialog, main') ?? document.body).textContent ?? '')
     let expected: string | null = null
     if (!typed) expected = null
     else if (inCustomer) expected = 'off'
-    else if (type === 'password') expected = /actual/.test(name) || onSignIn ? 'current-password' : 'new-password'
+    else if (type === 'password') expected = /current/.test(name) || onSignIn ? 'current-password' : 'new-password'
     else if (onSignIn && /email/.test(name)) expected = 'username'
-    else if (/negocio/.test(name) && /^(nombre|negocio)/.test(name)) expected = 'organization'
+    else if (/business/.test(name) && /^(name|business)/.test(name)) expected = 'organization'
     if (own === null || own === '' || (expected !== null && own !== expected)) add('autocomplete', element)
 
     const mode = element.getAttribute('inputmode')
-    const grams = /gramos|\(g\)/.test(name)
-    const pesos = !grams && /precio|monto|importe|costo|pesos|\$|env[ií]o|cobr/.test(name)
+    const grams = /grams|\(g\)/.test(name)
+    const pesos = !grams && /price|amount|total|cost|pesos|\$|shipping|collect/.test(name)
     if (typed && ((grams && mode !== 'decimal') || (pesos && mode !== 'numeric'))) add('inputmode', element)
 
-    if (typed && /email|correo/.test(name) && type !== 'email') add('input-type', element)
-    if (typed && /tel[eé]fono|celular|whatsapp/.test(name) && type !== 'tel') add('input-type', element)
+    if (typed && /email/.test(name) && type !== 'email') add('input-type', element)
+    if (typed && /phone|mobile|whatsapp/.test(name) && type !== 'tel') add('input-type', element)
   }
 
   // --- gestures ----------------------------------------------------------------------

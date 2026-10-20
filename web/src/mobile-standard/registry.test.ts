@@ -89,7 +89,7 @@ describe('steps', () => {
         entry({
           steps: [
             { fill: { label: 'Email', value: '{email}' } },
-            { click: 'Entrá' },
+            { click: 'Log in' },
             { wait: 'Listo' },
             { offline: true },
           ],
@@ -98,7 +98,7 @@ describe('steps', () => {
     })
     expect(screen?.steps).toEqual([
       { fill: { label: 'Email', value: '{email}' } },
-      { click: 'Entrá' },
+      { click: 'Log in' },
       { wait: 'Listo' },
       { offline: true },
     ])

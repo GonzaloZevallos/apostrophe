@@ -101,7 +101,7 @@ test.describe('the walk rejects what it cannot reach', () => {
   test('a step waiting for text that does not exist is unreachable, not thrown', async ({ browser }) => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
-    const screen = { ...PROBE, steps: [{ wait: 'texto que no existe' }] }
+    const screen = { ...PROBE, steps: [{ wait: 'text that does not exist' }] }
     expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([
       { ...PROBE_CELL, rule: 'unreachable', target: '' },
     ])
@@ -121,7 +121,7 @@ test.describe('the walk rejects what it cannot reach', () => {
   test('a reachable screen is not reported', async ({ browser }) => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
-    const screen = { ...PROBE, steps: [{ click: 'Semana' }] }
+    const screen = { ...PROBE, steps: [{ click: 'Week' }] }
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()
   })
@@ -131,7 +131,7 @@ test.describe('the states the walk adds', () => {
   test('a state whose named element never shows is unreachable, not a pass', async ({ browser }) => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
-    const screen = asScreen({ screen: 'Probe', route: SALES, steps: [], visible: 'texto que no existe' })
+    const screen = asScreen({ screen: 'Probe', route: SALES, steps: [], visible: 'text that does not exist' })
     expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([
       { ...PROBE_CELL, rule: 'unreachable', target: '' },
     ])
@@ -146,8 +146,8 @@ test.describe('the states the walk adds', () => {
     const screen = asScreen({
       screen: 'Probe',
       route: SALE_NEW,
-      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { press: 'Cerrar' }],
-      visible: '¿Descartás la venta?',
+      steps: [{ fill: { label: 'Variety line 1', value: 'Sir Jack' } }, { press: 'Close' }],
+      visible: 'Discard the sale?',
     })
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()
@@ -158,17 +158,17 @@ test.describe('the states the walk adds', () => {
 const NONE = 'user-select:none;touch-action:manipulation'
 const BROKEN = `
   <div style="width:2000px;height:20px"></div>
-  <nav class="bar-inferior" style="position:absolute;top:5000px"><a href="#" style="display:block;height:48px">Inicio</a></nav>
+  <nav class="bar-inferior" style="position:absolute;top:5000px"><a href="#" style="display:block;height:48px">Home</a></nav>
   <button style="width:20px;height:20px">x</button>
-  <input aria-label="Gramos" style="font-size:10px;width:200px;height:48px">
+  <input aria-label="Grams" style="font-size:10px;width:200px;height:48px">
   <input aria-label="Email" style="width:200px;height:48px">
   <p style="font-size:9px">tiny</p>
   <span style="display:inline-block;width:30px;word-break:break-all">$ 999.999.999</span>
-  <div style="width:80px">LarguísimoLarguísimoLarguísimoLarguísimo</div>`
+  <div style="width:80px">VeryLongVeryLongVeryLongVeryLong</div>`
 const CLEAN = `
   <html style="overscroll-behavior:none"><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="overscroll-behavior:none;margin:0">
-  <nav class="bar-inferior" style="position:fixed;bottom:0;left:0;width:100%;${NONE}"><a href="#" style="display:block;height:48px;font-size:16px;${NONE}">Inicio</a></nav>
-  <p style="font-size:16px">Hola</p></body></html>`
+  <nav class="bar-inferior" style="position:fixed;bottom:0;left:0;width:100%;${NONE}"><a href="#" style="display:block;height:48px;font-size:16px;${NONE}">Home</a></nav>
+  <p style="font-size:16px">Hello</p></body></html>`
 
 test.describe('the geometry checkers', () => {
   async function violationsOn(browser: Browser, html: string): Promise<Violation[]> {
@@ -224,12 +224,12 @@ test.describe('the geometry checkers', () => {
   test('a select whose options look like money is not a typed field', async ({ browser }) => {
     const found = await violationsOn(
       browser,
-      `<label style="display:block">Categoría
-         <select autocomplete="off" style="font-size:16px;width:200px;height:48px"><option>Precio en $ del envío</option><option>Gramos</option></select>
+      `<label style="display:block">Category
+         <select autocomplete="off" style="font-size:16px;width:200px;height:48px"><option>Price in $ for shipping</option><option>Grams</option></select>
        </label>
-       <label style="display:block">Monto <input autocomplete="off" style="font-size:16px;width:200px;height:48px"></label>`,
+       <label style="display:block">Amount <input autocomplete="off" style="font-size:16px;width:200px;height:48px"></label>`,
     )
-    expect(targetsOf(found, 'inputmode')).toEqual(['textbox:Monto'])
+    expect(targetsOf(found, 'inputmode')).toEqual(['textbox:Amount'])
     expect(targetsOf(found, 'input-type')).toEqual([])
   })
 
@@ -304,13 +304,13 @@ test.describe('the getting-in states the walk visits', () => {
   })
 })
 
-test('opening a live invitation under the write guard shows its form, not "Sin conexión"', async ({ browser }) => {
+test('opening a live invitation under the write guard shows its form, not "No connection"', async ({ browser }) => {
   const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
   await guardWrites(context)
   const page = await context.newPage()
   await page.goto(INVITATION.replace(':token', String(readFacts()['join_token'])))
   await settle(page)
-  await expect(page.getByText('Te quedaste sin internet')).toHaveCount(0)
+  await expect(page.getByText('No connection: check your internet and try again.')).toHaveCount(0)
   await expect(page.getByLabel('Email')).toBeVisible()
   await context.close()
 })
@@ -331,28 +331,28 @@ test.describe('the colour, loading and shift checkers', () => {
   test('a faint text, a faint placeholder and a text over a picture are each reported, a legible one is not', async ({ browser }) => {
     const found = await onPage(
       browser,
-      `<style>:root{--papel:#fcfbf8}input::placeholder{color:#ccc}</style><p style="color:#bbb;font-size:16px">Gris claro</p>
-       <input aria-label="Buscar" placeholder="Buscá" style="font-size:16px;width:200px;height:48px;color:#000">
-       <div style="background-image:linear-gradient(#000,#fff)"><p style="font-size:16px">Sobre un degradado</p></div>
-       <p style="color:#1a1815;font-size:16px">Legible</p>`,
+      `<style>:root{--papel:#fcfbf8}input::placeholder{color:#ccc}</style><p style="color:#bbb;font-size:16px">Light grey</p>
+       <input aria-label="Search" placeholder="Search" style="font-size:16px;width:200px;height:48px;color:#000">
+       <div style="background-image:linear-gradient(#000,#fff)"><p style="font-size:16px">Over a gradient</p></div>
+       <p style="color:#1a1815;font-size:16px">Legible text</p>`,
       'loaded',
     )
     expect(rulesOf(found)).toEqual(['contrast', 'contrast-unprovable'])
-    expect(found.filter((v) => v.rule === 'contrast').map((v) => v.target)).toEqual(['p:Gris claro', 'textbox:Buscar::placeholder'])
-    expect(found.filter((v) => v.rule === 'contrast-unprovable').map((v) => v.target)).toEqual(['p:Sobre un degradado'])
+    expect(found.filter((v) => v.rule === 'contrast').map((v) => v.target)).toEqual(['p:Light grey', 'textbox:Search::placeholder'])
+    expect(found.filter((v) => v.rule === 'contrast-unprovable').map((v) => v.target)).toEqual(['p:Over a gradient'])
   })
 
   test('a disabled control keeps its label out of the ratio, its reason does not', async ({ browser }) => {
     const found = await onPage(
       browser,
-      `<style>:root{--papel:#fcfbf8}</style><button disabled style="color:#bbb;font-size:16px">Guardar</button><span style="color:#bbb;font-size:16px">Falta el monto</span>`,
+      `<style>:root{--papel:#fcfbf8}</style><button disabled style="color:#bbb;font-size:16px">Save</button><span style="color:#bbb;font-size:16px">Amount missing</span>`,
       'loaded',
     )
-    expect(found.map((v) => v.target)).toEqual(['span:Falta el monto'])
+    expect(found.map((v) => v.target)).toEqual(['span:Amount missing'])
   })
 
   test('a loading screen with no content area, no aria-busy, an empty-state wording and a figure is reported for each', async ({ browser }) => {
-    const found = await onPage(browser, '<p>Nadie te debe.</p>', 'loading')
+    const found = await onPage(browser, '<p>Nobody owes you</p>', 'loading')
     expect(rulesOf(found)).toEqual(['aria-busy', 'blank-while-loading', 'false-empty'])
     const busy = await onPage(
       browser,
@@ -373,8 +373,8 @@ test.describe('the colour, loading and shift checkers', () => {
     const page = await context.newPage()
     await page.setContent(
       `<div id="above" style="height:10px"></div>
-       <nav class="bar-inferior" style="height:48px">Inicio</nav>
-       <div style="height:48px">Cerca</div><div style="height:48px">Lejos</div>`,
+       <nav class="bar-inferior" style="height:48px">Home</nav>
+       <div style="height:48px">Near</div><div style="height:48px">Far</div>`,
     )
     await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))))
     await page.evaluate(() => {
@@ -382,7 +382,7 @@ test.describe('the colour, loading and shift checkers', () => {
       if (above !== null) above.style.height = '50px'
     })
     const found = await collect(page, 'released', PROBE_CELL, [SHIFT_COLLECTOR])
-    expect(found.filter((v) => v.rule === 'chrome-shift').map((v) => v.target)).toEqual(['navigation:Inicio'])
+    expect(found.filter((v) => v.rule === 'chrome-shift').map((v) => v.target)).toEqual(['navigation:Home'])
     expect(found.filter((v) => v.rule === 'content-shift')).toEqual([])
     await page.evaluate(() => {
       const above = document.getElementById('above')

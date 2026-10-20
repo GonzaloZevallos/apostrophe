@@ -2,84 +2,79 @@
   {
     "screen": "Analisis",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "Analisis",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "Archivadas",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "Catalogo",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "ClienteFicha",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "Clientes",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "Clientes",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "CobroBorrar",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
-    "issue": 59,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
+    "target": "navigation:Navigation",
+    "issue": 59
   },
   {
     "screen": "Configuracion",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "EntradasTodas",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -90,19 +85,19 @@
   {
     "screen": "EstadosConfirmar",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "EstadosGone",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -111,7 +106,7 @@
   {
     "screen": "EstadosGoneAviso",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -121,19 +116,19 @@
   {
     "screen": "EstadosReintento",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "EstadosReintento",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -142,7 +137,7 @@
   {
     "screen": "EstadosSinConexion",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -151,7 +146,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -160,7 +155,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -170,7 +165,7 @@
   {
     "screen": "GastoEditar",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -179,7 +174,7 @@
   {
     "screen": "GastoEditar",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -189,7 +184,7 @@
   {
     "screen": "Gastos",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -198,7 +193,7 @@
   {
     "screen": "Gastos",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -208,67 +203,67 @@
   {
     "screen": "Inicio",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "Inicio",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "InicioHoy",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "InicioHoy",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "Mas",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "Mas",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "RetiroDetalle",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -279,37 +274,37 @@
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "VariedadArchivada",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "VariedadDetalle",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "VariedadUmbral",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "Variedades",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -320,13 +315,13 @@
   {
     "screen": "Variedades",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "VentaAsignarCliente",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -337,19 +332,19 @@
   {
     "screen": "VentaBorrar",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "VentaDetalle",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "Ventas",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -358,7 +353,7 @@
   {
     "screen": "Ventas",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -368,7 +363,7 @@
   {
     "screen": "VentasFechas",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -379,13 +374,13 @@
   {
     "screen": "VentasFechas",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
     "screen": "VerTodas",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   }
 ]

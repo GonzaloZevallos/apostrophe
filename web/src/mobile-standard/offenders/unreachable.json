@@ -1,14 +1,5 @@
 [
   {
-    "screen": "CobroBorrar",
-    "rule": "unreachable",
-    "target": "",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "OnboardingListo",
     "rule": "unreachable",
     "target": "",

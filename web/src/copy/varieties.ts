@@ -6,13 +6,13 @@
  * always-visible line is a binding the screen renders, listed in `LIMITED_COPY` with its kind
  * (`copy/copyLimits.test.ts` measures it). */
 
-import type { RefusalCode } from '../api/refusals'
-import type { SuccessToast } from '../components/AvisoExito'
+import type { RefusalCode } from '../api/refusals.ts'
 import type { LimitedCopy } from './limits.ts'
 import {
   DISCARD_THE_CHANGE,
   ENTERED_LOST_DETAIL,
   NO_KEEP_TYPING,
+  type SuccessToast,
   WORD_BULK_PRICE,
   WORD_CATALOG_SAVED,
   WORD_NAME,

@@ -17,6 +17,8 @@
     "target": "",
     "issue": 46,
     "sizes": [
+      "320x568",
+      "375x812",
       "246x437"
     ]
   },
@@ -25,6 +27,17 @@
     "rule": "h-scroll",
     "target": "",
     "issue": 46
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",

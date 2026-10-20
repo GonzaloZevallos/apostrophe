@@ -6,6 +6,13 @@
  * could send is aborted by the walk, and these states stop before one.
  */
 
+import * as auth from '../copy/auth.ts'
+import { SAVE, WORD_YES_DELETE_IT } from '../copy/common.ts'
+import * as customers from '../copy/customers.ts'
+import * as expenses from '../copy/expenses.ts'
+import * as settings from '../copy/settings.ts'
+import * as stock from '../copy/stock.ts'
+import * as varieties from '../copy/varieties.ts'
 import {
   CUSTOMERS,
   EXPENSE_CATEGORIES,
@@ -42,7 +49,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'ClientesBusqueda',
     route: CUSTOMERS,
-    steps: [{ fill: { label: 'Buscar cliente', value: 'Nico' } }],
+    steps: [{ fill: { label: customers.SEARCH_LABEL, value: 'Nico' } }],
     visible: 'Nico Parra',
   },
 
@@ -50,90 +57,90 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'EntradasTodas',
     route: STOCK,
     steps: [],
-    visible: 'Todas las entradas',
+    visible: stock.ALL_ENTRIES_TITLE,
   },
   {
     screen: 'EntradaStockConfirmarCambios',
     route: ENTRY_ROUTE,
-    steps: [{ wait: 'Editar entrada' }, { click: 'Guardar' }],
-    visible: '¿Guardás los cambios?',
+    steps: [{ wait: stock.EDIT_ENTRY_TITLE }, { click: SAVE }],
+    visible: stock.SAVE_CHANGES_TITLE,
   },
   {
     screen: 'EntradaStockConfirmarBorrado',
     route: ENTRY_ROUTE,
-    steps: [{ click: 'Borrar entrada' }],
-    visible: 'Antes de borrar',
+    steps: [{ click: stock.DELETE_ENTRY }],
+    visible: stock.BEFORE_DELETING,
   },
 
   {
     screen: 'PrecioNuevoFormulario',
     route: LOW_VARIETY,
-    steps: [{ click: 'Nuevo precio' }],
-    visible: 'Guardá el precio',
+    steps: [{ click: varieties.NEW_PRICE }],
+    visible: varieties.SAVE_PRICE,
   },
   {
     screen: 'PrecioConfirmarBorrado',
     route: LOW_VARIETY,
-    steps: [{ press: 'Borrar este precio' }],
-    visible: 'Sí, borrala',
+    steps: [{ press: varieties.DELETE_PRICE }],
+    visible: WORD_YES_DELETE_IT,
   },
-  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: 'Nueva variedad' }], visible: 'Agregá la variedad' },
+  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: varieties.NEW_VARIETY }], visible: varieties.ADD_VARIETY },
   {
     screen: 'VariedadRenombrar',
     route: LOW_VARIETY,
-    steps: [{ press: 'Editar nombre' }],
-    visible: 'Guardá el nombre',
+    steps: [{ press: varieties.EDIT_NAME }],
+    visible: SAVE,
   },
-  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: 'Editar aviso' }], visible: 'Guardá el aviso' },
+  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: varieties.EDIT_WARNING }], visible: SAVE },
 
   {
     screen: 'CatalogoAtributos',
     route: LOW_VARIETY,
-    steps: [{ press: 'Editar catálogo' }],
-    visible: 'Guardá el catálogo',
+    steps: [{ press: varieties.EDIT_CATALOG }],
+    visible: SAVE,
   },
 
   {
     screen: 'GastoDesdeMas',
     route: MORE,
-    steps: [{ click: 'Cargar gasto' }],
-    visible: 'Guardá el gasto',
+    steps: [{ click: expenses.ADD_EXPENSE }],
+    visible: expenses.SAVE_EXPENSE,
   },
   {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
-    steps: [{ activate: 'Cargar gasto' }],
-    visible: 'Guardá el gasto',
+    steps: [{ activate: expenses.ADD_EXPENSE }],
+    visible: expenses.SAVE_EXPENSE,
   },
   {
     screen: 'GastoEditar',
     route: EXPENSES,
     steps: [{ activate: 'Bolsitas zip' }],
-    visible: 'Editar gasto',
+    visible: expenses.FORM_TITLE_EDIT,
   },
   {
     screen: 'GastoConfirmarBorrado',
     route: EXPENSES,
-    steps: [{ activate: 'Bolsitas zip' }, { activate: 'Borrar gasto' }],
-    visible: '¿Borrás el gasto?',
+    steps: [{ activate: 'Bolsitas zip' }, { activate: expenses.DELETE_EXPENSE }],
+    visible: expenses.DELETE_TITLE,
   },
 
   {
     screen: 'ConfiguracionCategoriaRenombrar',
     route: EXPENSE_CATEGORIES,
-    steps: [{ click: 'Renombrar' }],
-    visible: 'Guardar',
+    steps: [{ click: settings.RENAME }],
+    visible: SAVE,
   },
   {
     screen: 'ConfiguracionCategoriaConfirmarBorrado',
     route: EXPENSE_CATEGORIES,
-    steps: [{ click: 'Eliminar' }],
-    visible: '¿Borrás la categoría?',
+    steps: [{ click: settings.DELETE }],
+    visible: settings.DELETE_CATEGORY_QUESTION,
   },
   {
     screen: 'ConfiguracionContrasena',
     route: SETTINGS_ACCOUNT,
-    steps: [{ click: 'Cambiar contraseña' }],
-    visible: 'Contraseña actual',
+    steps: [{ click: auth.CHANGE_PASSWORD }],
+    visible: auth.CURRENT_PASSWORD_LABEL,
   },
 ]

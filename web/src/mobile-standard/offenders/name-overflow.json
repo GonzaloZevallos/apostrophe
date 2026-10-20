@@ -38,7 +38,7 @@
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "name-overflow",
-    "target": "span:Se borra “Categoría LarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:“Categoría LarguísimoLarguísimoLarguísimoLarguísimoLarg",
     "issue": 60
   },
   {
@@ -211,7 +211,7 @@
   {
     "screen": "Invitacion",
     "rule": "name-overflow",
-    "target": "button:Sumate a Negocio LarguísimoLarguísimoLarguísimoLarguí",
+    "target": "button:Join Negocio LarguísimoLarguísimoLarguísimoLarguísimo",
     "issue": 49
   },
   {

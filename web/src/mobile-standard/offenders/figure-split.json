@@ -5,7 +5,21 @@
     "target": "span:$ #.#",
     "issue": 48,
     "sizes": [
-      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#",
+    "issue": 48,
+    "sizes": [
       "375x812",
       "430x932"
     ]
@@ -14,24 +28,16 @@
     "screen": "Analisis",
     "rule": "figure-split",
     "target": "span:$ #.#.#.#[1]",
-    "issue": 48
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
     "target": "span:$ #.#.#.#[2]",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[3]",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[4]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -41,19 +47,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:$ #.#.#[1]",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#[2]",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
+    "target": "span:Own use $ #.# and # g not yet costed",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -62,56 +56,52 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:$ #.#[2]",
+    "target": "span:Own use $ #.# and # g not yet costed[1]",
     "issue": 48,
     "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Consumo propio $ #.# y # g sin costo",
-    "issue": 48,
-    "sizes": [
-      "430x932",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#",
-    "issue": 48,
-    "sizes": [
-      "430x932",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#[1]",
-    "issue": 48,
-    "sizes": [
-      "320x568",
       "375x812"
     ]
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#[2]",
+    "target": "span:Own use $ #.# and # g not yet costed[2]",
     "issue": 48,
     "sizes": [
-      "320x568",
       "375x812"
     ]
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Promoción $ #.#",
+    "target": "span:Promotion $ #.#",
+    "issue": 48,
+    "sizes": [
+      "320x568"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Promotion $ #.#[1]",
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Promotion $ #.#[2]",
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Stock shortfall $ #.#",
     "issue": 48,
     "sizes": [
       "430x932"
@@ -120,73 +110,8 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Promoción $ #.#[1]",
+    "target": "span:Stock shortfall $ #.#[1]",
     "issue": 48,
-    "sizes": [
-      "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Promoción $ #.#[2]",
-    "issue": 48,
-    "sizes": [
-      "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:gastos $ #.#.#.#",
-    "issue": 48
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "figure-split",
-    "target": "p:# g · baja · # días · $ #.# x g",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "figure-split",
-    "target": "span:Desde # g · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "figure-split",
-    "target": "span:Precio VIP · $ #.#",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 46,
     "sizes": [
       "320x568",
       "375x812",
@@ -194,10 +119,59 @@
     ]
   },
   {
-    "screen": "ClienteFicha",
+    "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Te debe $ #.#",
-    "issue": 46,
+    "target": "span:Stock shortfall $ #.#[2]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:expenses $ #.#.#.#",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "figure-split",
+    "target": "p:# g · low · # days · $ #.# x g",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "figure-split",
+    "target": "span:$ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "figure-split",
+    "target": "span:From # g · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "figure-split",
+    "target": "span:VIP price · $ #.#",
+    "issue": 47,
     "sizes": [
       "246x437"
     ]
@@ -205,23 +179,9 @@
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#[1]",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[2]",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[3]",
+    "target": "span:Owes you $ #.#",
     "issue": 46,
     "sizes": [
-      "320x568",
-      "375x812",
       "246x437"
     ]
   },
@@ -237,89 +197,34 @@
   {
     "screen": "CobroBorrar",
     "rule": "figure-split",
-    "target": "span:$ #.#[1]",
+    "target": "span:Owes you $ #.#",
     "issue": 46,
     "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
+      "246x437"
     ]
   },
   {
-    "screen": "CobroBorrar",
+    "screen": "EstadosConfirmar",
+    "rule": "figure-split",
+    "target": "span:$ #.#[1]",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosConfirmar",
     "rule": "figure-split",
     "target": "span:$ #.#[2]",
-    "issue": 46,
+    "issue": 49,
     "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
+      "246x437"
     ]
   },
   {
-    "screen": "CobroBorrar",
+    "screen": "EstadosConfirmar",
     "rule": "figure-split",
     "target": "span:$ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[1]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812"
-    ]
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "figure-split",
-    "target": "span:¿Borrás la venta de $ #.# del #/#? Vuelven # g al stock",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -368,43 +273,36 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#[1]",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[2]",
+    "target": "span:$ #.#.#.#",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#[1]",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[2]",
+    "target": "span:$ #.#.#.#",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#[1]",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[2]",
+    "target": "span:$ #.#.#.#",
     "issue": 48
   },
   {
     "screen": "Inicio",
     "rule": "figure-split",
-    "target": "span:# ventas · promedio $ #.#.# · # g",
+    "target": "span:$ #.#.#.#",
+    "issue": 45,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#[1]",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -413,8 +311,11 @@
   {
     "screen": "Inicio",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 45
+    "target": "span:$ #.#.#.#[2]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "Inicio",
@@ -438,24 +339,6 @@
     "screen": "Inicio",
     "rule": "figure-split",
     "target": "span:$ #.#[3]",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "figure-split",
-    "target": "span:$ #.#[4]",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "figure-split",
-    "target": "span:$ #.#[5]",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -476,7 +359,7 @@
   {
     "screen": "InicioHoy",
     "rule": "figure-split",
-    "target": "span:# ventas · promedio $ #.#.# · # g",
+    "target": "span:$ #.#",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -489,18 +372,9 @@
     "issue": 45
   },
   {
-    "screen": "InicioHoy",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "InicioPrimeraVez",
     "rule": "figure-split",
-    "target": "span:# ventas · promedio $ #.#.# · # g",
+    "target": "span:$ #.#",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -513,15 +387,6 @@
     "issue": 45
   },
   {
-    "screen": "InicioPrimeraVez",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "NuevaVentaConLinea",
     "rule": "figure-split",
     "target": "span:$ #.#",
@@ -531,18 +396,9 @@
     ]
   },
   {
-    "screen": "NuevaVentaConLinea",
-    "rule": "figure-split",
-    "target": "span:$ #.# x g",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
-    "target": "p:# g · baja · # días · $ #.# x g",
+    "target": "p:# g · low · # days · $ #.# x g",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -551,7 +407,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
-    "target": "span:Desde # g · $ #.#",
+    "target": "span:$ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -560,7 +416,16 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
-    "target": "span:Precio VIP · $ #.#",
+    "target": "span:From # g · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "figure-split",
+    "target": "span:VIP price · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -569,7 +434,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "figure-split",
-    "target": "p:# g · baja · # días · $ #.# x g",
+    "target": "p:# g · low · # days · $ #.# x g",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -578,7 +443,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "figure-split",
-    "target": "span:Desde # g · $ #.#",
+    "target": "span:$ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -587,7 +452,16 @@
   {
     "screen": "VariedadDetalle",
     "rule": "figure-split",
-    "target": "span:Precio VIP · $ #.#",
+    "target": "span:From # g · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "figure-split",
+    "target": "span:VIP price · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -596,7 +470,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "figure-split",
-    "target": "p:# g · baja · # días · $ #.# x g",
+    "target": "p:# g · low · # days · $ #.# x g",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -605,7 +479,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "figure-split",
-    "target": "span:Desde # g · $ #.#",
+    "target": "span:$ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -614,7 +488,16 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "figure-split",
-    "target": "span:Precio VIP · $ #.#",
+    "target": "span:From # g · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "figure-split",
+    "target": "span:VIP price · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -623,7 +506,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "figure-split",
-    "target": "p:# g · baja · # días · $ #.# x g",
+    "target": "p:# g · low · # days · $ #.# x g",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -632,7 +515,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "figure-split",
-    "target": "span:Desde # g · $ #.#",
+    "target": "span:$ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -641,7 +524,16 @@
   {
     "screen": "VariedadUmbral",
     "rule": "figure-split",
-    "target": "span:Precio VIP · $ #.#",
+    "target": "span:From # g · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "figure-split",
+    "target": "span:VIP price · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -668,7 +560,7 @@
   {
     "screen": "VentaBorrar",
     "rule": "figure-split",
-    "target": "span:¿Borrás la venta de $ #.# del #/#? Vuelven # g al stock",
+    "target": "span:$ #.#[3]",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -687,6 +579,15 @@
     "screen": "VentaDetalle",
     "rule": "figure-split",
     "target": "span:$ #.#[2]",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -725,7 +626,7 @@
   {
     "screen": "VerTodas",
     "rule": "figure-split",
-    "target": "span:Desde # g · $ #.#",
+    "target": "span:$ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -734,7 +635,16 @@
   {
     "screen": "VerTodas",
     "rule": "figure-split",
-    "target": "span:Precio VIP · $ #.#",
+    "target": "span:From # g · $ #.#",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "figure-split",
+    "target": "span:VIP price · $ #.#",
     "issue": 47,
     "sizes": [
       "246x437"
