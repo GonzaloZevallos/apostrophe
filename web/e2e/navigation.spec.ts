@@ -162,7 +162,8 @@ test.describe.serial('navigation', () => {
   })
 
   test('"Nueva venta", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
-    // The real stylesheet in a real browser (computed style is meaningless in jsdom).
+    // The real stylesheet in a real browser (computed style is meaningless in jsdom). It reads
+    // the built `web/dist`: after a CSS edit, `vite build` first, or the run sees the old rule.
     const expectAction = async (control: Locator): Promise<void> => {
       await expect(control).toBeVisible()
       const look = await control.evaluate((element) => {
