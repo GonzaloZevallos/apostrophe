@@ -110,7 +110,6 @@ export const VARIETIES_TEXT = {
   siArchivala: 'Sí, archivala',
   stockYEntradas: 'Stock y entradas',
   elGramo: ' el gramo',
-  avisameAbajoDe0: (threshold: string | number) => `Avisame abajo de ${threshold}`,
   editarAviso: 'Editar aviso',
   avisarCuandoQuedePoco: 'Avisar cuando quede poco',
   pantallaVariedades: 'Pantalla Variedades',

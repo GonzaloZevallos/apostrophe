@@ -14,6 +14,9 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const EXPENSES_TEXT = {
+  expenseOne: '1 gasto',
+  expenseMany: (expenses: number) => `${expenses} gastos`,
+  expenseCountIn: (spent: string, inCategories: string) => `${spent} en ${inCategories}`,
   borrasElGasto: '¿Borrás el gasto?',
   estoNoSePuede: ' Esto no se puede deshacer.',
   gastasteEnElMes: 'Gastaste en el mes',

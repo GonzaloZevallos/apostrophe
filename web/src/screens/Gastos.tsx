@@ -48,9 +48,9 @@ function deleteQuestion(expense: Expense, categoryName: string, today: string): 
 }
 
 function countLine(expenses: number, categories: number): string {
-  const spent = expenses === 1 ? '1 gasto' : `${expenses} gastos`
+  const spent = expenses === 1 ? EXPENSES_TEXT.expenseOne : EXPENSES_TEXT.expenseMany(expenses)
   const inCategories = categories === 1 ? EXPENSES_TEXT.n1Categoria : EXPENSES_TEXT.n0Categorias(categories)
-  return `${spent} en ${inCategories}`
+  return EXPENSES_TEXT.expenseCountIn(spent, inCategories)
 }
 
 function DeleteConfirm({

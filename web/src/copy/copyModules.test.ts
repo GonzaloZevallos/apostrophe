@@ -32,8 +32,13 @@ const sources = import.meta.glob<string>(['/src/copy/*.ts', '!/src/copy/*.test.t
 function duplicatedValues(modules: Record<string, string>): string[] {
   const homes = new Map<string, Set<string>>()
   for (const [path, source] of Object.entries(modules)) {
-    for (const match of source.matchAll(/(?<!\bkind)[:=]\s*'((?:[^'\\\n]|\\.)+)'/g)) {
-      const value = match[1] ?? ''
+    const literals = [
+      ...source.matchAll(/(?<!\bkind)[:=]\s*'((?:[^'\\\n]|\\.)+)'/g),
+      ...source.matchAll(/(?:=>|[:=])\s*`([^`]+)`/g),
+    ]
+    for (const match of literals) {
+      // A template is compared by its words: `${a}` and `${b}` are the same hole.
+      const value = (match[1] ?? '').replace(/\$\{[^}]*\}/g, '${}')
       if (value === 'es' || value === 'en') continue
       homes.set(value, (homes.get(value) ?? new Set()).add(path))
     }
@@ -90,6 +95,14 @@ describe('the copy files', () => {
       '/src/copy/c.ts': "export const C = { w: 'Otra' }",
     }
     expect(duplicatedValues(bad)).toEqual(['Guardar: /src/copy/a.ts, /src/copy/b.ts'])
+  })
+
+  test('the check rejects a template spelled in two files, whatever its hole is called', () => {
+    const bad = {
+      '/src/copy/a.ts': 'export const A = { x: (grams: string) => `Avisame abajo de ${grams}` }',
+      '/src/copy/b.ts': 'export const B = { y: (threshold: number) => `Avisame abajo de ${threshold}` }',
+    }
+    expect(duplicatedValues(bad)).toEqual(['Avisame abajo de ${}: /src/copy/a.ts, /src/copy/b.ts'])
   })
 
   test('every snapshot key still resolves to its Spanish value', () => {
