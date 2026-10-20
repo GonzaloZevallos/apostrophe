@@ -182,7 +182,8 @@
     { "screen": "VariedadArchivadaCompu", "route": "/varieties/archived", "path": "/varieties/{archived}", "viewport": [1280, 920],
       "steps": [{ "click": "Blue Dream" }, { "wait": "Stock y entradas" }] },
     { "screen": "VariedadArchivadaCompuOscuro", "design": "VariedadArchivadaCompu", "route": "/varieties/archived", "path": "/varieties/{archived}", "tema": "oscuro", "viewport": [1280, 920],
-      "steps": [{ "click": "Blue Dream" }, { "wait": "Stock y entradas" }] }
+      "steps": [{ "click": "Blue Dream" }, { "wait": "Stock y entradas" }] },
+    { "screen": "InicioCompuOscuro", "account": "inicio", "design": "InicioCompu", "section": "Semana · Ganancia y Caja sólo acá y en Mes", "route": "/", "path": "/", "tema": "oscuro", "viewport": [1280, 920], "steps": [{ "click": "Semana" }] }
   ],
   "registry": [
     { "path": "/customers/new", "kind": "form", "parent": "/customers" },

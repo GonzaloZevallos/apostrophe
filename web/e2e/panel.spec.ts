@@ -291,22 +291,22 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
     if (showsResults) {
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Ganancia' }).locator('.panel-resultados__valor--acento'),
+        page.getByRole('group', { name: 'Ganancia', exact: true }).locator('.panel-resultados__valor--acento'),
       ).toHaveText(signedPesos(period.profit))
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Caja' }).locator('.panel-resultados__valor'),
+        page.getByRole('group', { name: 'Caja', exact: true }).locator('.panel-resultados__valor'),
       ).toHaveText(signedPesos(period.cash))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Costo de lo vendido', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.cost_of_goods))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Gastos' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Gastos', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.expenses))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Regalaste' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Regalaste', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(grams(period.grams_gifted))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Compras de flores' }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Compras de flores', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
       // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
       // never under Caja (plan, PRD: "Caja never carries it").
