@@ -28,8 +28,8 @@ test('"Sin conexión" is announced as one sentence in a status, promises no retr
 
   const status = screen.getByRole('status')
   expect(status).toHaveTextContent('No connection: check your internet and try again.')
-  expect('No connection: check your internet and try again.').toMatch(/^No connection/)
-  expect('No connection: check your internet and try again.').not.toMatch(/reintent|solo|autom/i)
+  expect(status.textContent).toMatch(/^No connection/)
+  expect(status.textContent).not.toMatch(/reintent|solo|autom/i)
   expect(status.querySelectorAll('.aviso-ambar__detalle')).toHaveLength(0)
   expect(screen.queryAllByRole('button')).toHaveLength(0)
 })
