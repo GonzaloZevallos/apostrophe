@@ -20,7 +20,7 @@ import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
-import { PRICE_SAVED } from './priceMessages'
+import { PRICE_SAVED } from '../../copy/varieties'
 import {
   fieldOfCode,
   readPriceValues,

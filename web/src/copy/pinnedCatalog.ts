@@ -11,7 +11,7 @@ import {
   PINNED_CATALOG_REASON_LABEL,
   type PinReason,
 } from '../api/refusals'
-import type { LimitedCopy } from '../copy/limits'
+import type { LimitedCopy } from './limits'
 
 /** The word of the link to Configuración → Integraciones that ends both blocked lines. */
 export const INTEGRATIONS_LINK_WORD = 'Integraciones'

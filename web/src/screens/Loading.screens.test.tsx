@@ -33,7 +33,7 @@ import IntegrationsGroup from './settings/IntegrationsGroup'
 import UsersGroup from './settings/UsersGroup'
 import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
-import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../copy/common'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 

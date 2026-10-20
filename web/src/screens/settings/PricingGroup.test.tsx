@@ -14,7 +14,7 @@ import type { PricingSettings } from '../../api/pricingSettings'
 import type { Me } from '../../api/me'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { inAppState } from '../../components/inAppState'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { SETTINGS as SETTINGS_PATH, SETTINGS_PRICES } from '../../routes'
 import PricingGroup, { PAST_SALES_LINE, VIP_HELP_LINE } from './PricingGroup'
 

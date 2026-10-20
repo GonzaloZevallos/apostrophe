@@ -17,7 +17,7 @@ import { VARIETIES } from '../../routes'
 import { useBackParent } from '../../shell/useBackParent'
 import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
-import { PRICE_HISTORY_HELP } from './varietiesMessages'
+import { PRICE_HISTORY_HELP } from '../../copy/varieties'
 
 export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const id = String(varietyId)

@@ -14,7 +14,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import CatalogMessageGroup from './CatalogMessageGroup'
 

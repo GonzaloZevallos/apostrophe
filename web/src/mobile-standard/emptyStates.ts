@@ -4,6 +4,6 @@
  * state is added there once and is forbidden here without another edit.
  */
 
-import { EMPTY_STATE_WORDINGS } from '../screens/emptyStates.ts'
+import { EMPTY_STATE_WORDINGS } from '../copy/emptyStates.ts'
 
 export const FORBIDDEN_WHILE_LOADING: readonly string[] = EMPTY_STATE_WORDINGS

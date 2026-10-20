@@ -7,7 +7,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import InvitePartner from './InvitePartner'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))

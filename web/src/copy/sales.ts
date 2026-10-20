@@ -4,8 +4,8 @@
  * from `noPriceMessage`), registered here and measured with `SAMPLES` by
  * `copy/copyLimits.test.ts`, never with fixture or API data. */
 
-import { SAMPLES, type LimitedCopy } from '../copy/limits'
-import { EMPTY_STATES } from '../screens/emptyStates'
+import { SAMPLES, type LimitedCopy } from './limits'
+import { EMPTY_STATES } from './emptyStates'
 
 export const EMPTY_LIST = EMPTY_STATES.salesList
 export const GRAMS_HELP = 'Coma, hasta dos decimales'

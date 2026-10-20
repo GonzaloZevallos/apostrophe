@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { EMPTY_STATE_WORDINGS, EMPTY_STATES } from './emptyStates'
+import { EMPTY_STATE_WORDINGS, EMPTY_STATES } from '../copy/emptyStates'
 
 const sources = import.meta.glob(['/src/screens/**/*.tsx', '/src/screens/**/*.ts'], {
   query: '?raw',

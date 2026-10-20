@@ -38,7 +38,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { CATEGORIES_SAVE_AT_ONCE, GENERIC_REFUSAL_MESSAGE } from './messages'
+import { CATEGORIES_SAVE_AT_ONCE, GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
 export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
 

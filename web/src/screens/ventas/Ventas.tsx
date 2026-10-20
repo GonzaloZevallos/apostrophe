@@ -42,7 +42,7 @@ import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
-import { EMPTY_LIST } from '../../sales/messages'
+import { EMPTY_LIST } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'

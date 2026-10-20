@@ -5,8 +5,8 @@
  * (docs/product/icon-and-text-rule.md).
  */
 
-import type { LimitedCopy } from '../../copy/limits'
-import { EMPTY_STATES } from '../emptyStates'
+import type { LimitedCopy } from './limits'
+import { EMPTY_STATES } from './emptyStates'
 
 /** Clientes' empty list. */
 export const EMPTY_CUSTOMERS = EMPTY_STATES.customersList

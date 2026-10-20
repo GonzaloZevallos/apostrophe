@@ -32,7 +32,7 @@ import {
   LOAD_THE_TOKEN_FIRST,
   OWN_CHAT_INFO,
   PREVIOUS_PIN_NOTICE,
-} from './integrationsMessages'
+} from '../../copy/settings'
 
 const TITLE = 'Integraciones'
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'

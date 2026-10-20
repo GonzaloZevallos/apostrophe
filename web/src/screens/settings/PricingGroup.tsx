@@ -30,7 +30,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import SinConexion from '../../components/SinConexion'
-import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED } from './messages'
+import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 
 const TITLE = 'Precios'

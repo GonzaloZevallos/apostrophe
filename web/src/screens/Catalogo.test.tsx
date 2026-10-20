@@ -18,7 +18,7 @@ import * as share from '../share'
 import Shell from '../shell/Shell'
 import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/catalog'
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 vi.mock('../share', () => ({

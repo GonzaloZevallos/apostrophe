@@ -31,7 +31,7 @@ import { salesOwingCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { detailFor, sideNoteFor } from '../../stock/detail'
-import { NOBODY_OWES } from '../inicioMessages'
+import { NOBODY_OWES } from '../../copy/inicio'
 import PeriodPanel from './PeriodFigures'
 
 const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }

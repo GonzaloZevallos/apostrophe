@@ -14,7 +14,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../../api/refusals'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import ExpenseCategoriesGroup, { CANNOT_REMOVE } from './ExpenseCategoriesGroup'
 

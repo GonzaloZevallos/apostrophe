@@ -8,7 +8,7 @@
 import type { PricingSettings } from '../../api/pricingSettings'
 import { VARIETY_REFUSAL_TEXT, type RefusalCode } from '../../api/refusals'
 import { parseGrams, parseMoney } from '../../format/parse'
-import { GRAMS_INVALID } from '../stockMessages'
+import { GRAMS_INVALID } from '../../copy/stock'
 
 export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
 export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'

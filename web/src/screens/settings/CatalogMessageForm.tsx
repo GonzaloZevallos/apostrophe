@@ -32,7 +32,7 @@ import {
   FOOTER_TOO_LONG_MESSAGE,
   GENERIC_REFUSAL_MESSAGE,
   HEADER_TOO_LONG_MESSAGE,
-} from './messages'
+} from '../../copy/settings'
 
 const SUBMIT_LABEL = 'Guardá el mensaje'
 

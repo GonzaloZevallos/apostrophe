@@ -5,7 +5,7 @@
  * performs none (`queryClient.ts`).
  */
 
-import type { LimitedCopy } from '../copy/limits'
+import type { LimitedCopy } from './limits'
 
 export const SIN_CONEXION_MENSAJE = 'Sin conexión: revisá tu internet y probá de nuevo.'
 export const ERROR_GENERICO_MENSAJE = 'Algo falló. Probá de nuevo.'

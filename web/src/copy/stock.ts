@@ -3,7 +3,7 @@
  * same bindings, and `LIMITED_COPY` lists them for `copy/copyLimits.test.ts`, which
  * measures each with `SAMPLES` (never fixture or API data). */
 
-import { SAMPLES, type LimitedCopy } from '../copy/limits'
+import { SAMPLES, type LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
 export const EMPTY_STATE_TITLE = EMPTY_STATES.stockTitle

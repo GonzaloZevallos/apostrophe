@@ -26,7 +26,7 @@ import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
-import { EMPTY_CUSTOMERS, EVERYONE } from './messages'
+import { EMPTY_CUSTOMERS, EVERYONE } from '../../copy/customers'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
 

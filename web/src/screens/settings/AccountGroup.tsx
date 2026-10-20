@@ -16,7 +16,7 @@ import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import { logOut } from '../../session'
 import CambiarContrasena from '../CambiarContrasena'
-import { PASSWORD_CHANGED_SUCCESS } from './messages'
+import { PASSWORD_CHANGED_SUCCESS } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 
 const LEAVE = {

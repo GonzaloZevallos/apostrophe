@@ -30,7 +30,7 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
-import { COST_REQUIRED_HELP, GRAMS_INVALID, OPENING_COST_HINT, onHandHelp, perGramPreview } from './stockMessages'
+import { COST_REQUIRED_HELP, GRAMS_INVALID, OPENING_COST_HINT, onHandHelp, perGramPreview } from '../copy/stock'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'

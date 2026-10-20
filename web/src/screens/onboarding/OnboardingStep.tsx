@@ -33,7 +33,7 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import type { StepBodyProps } from './stepBodies'
-import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from './onboardingMessages'
+import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
 import {
   isFirst,
   isLast,

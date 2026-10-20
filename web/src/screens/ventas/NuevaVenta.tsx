@@ -66,7 +66,7 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
-import { OWING_HINT } from '../../sales/messages'
+import { OWING_HINT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'

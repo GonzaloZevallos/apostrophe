@@ -39,7 +39,7 @@ import { guiltyKeys, keptOptions, preselected } from './goneLines'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
 import Boton from '../../components/Boton'
-import { GRAMS_INVALID } from '../stockMessages'
+import { GRAMS_INVALID } from '../../copy/stock'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 

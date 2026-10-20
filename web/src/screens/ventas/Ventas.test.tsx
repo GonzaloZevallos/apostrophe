@@ -16,7 +16,7 @@ import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import Ventas from './Ventas'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 
 
 function jsonResponse(status: number, body: unknown): Response {

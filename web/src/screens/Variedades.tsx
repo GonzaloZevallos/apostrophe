@@ -44,7 +44,7 @@ import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
-import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
+import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 
 const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 

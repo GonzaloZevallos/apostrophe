@@ -3,7 +3,7 @@
  * `copy/copyLimits.test.ts`. `Inicio.tsx` renders these same bindings.
  */
 
-import type { LimitedCopy } from '../copy/limits'
+import type { LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
 export const EMPTY_TITLE = EMPTY_STATES.homeVarietiesTitle

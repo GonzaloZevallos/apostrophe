@@ -13,7 +13,7 @@ import { getDebtors } from '../../api/payments'
 import { salesOwingCount } from '../../format/counts'
 import { formatMoney } from '../../format/money'
 import ClienteFila from './ClienteFila'
-import { NOBODY_OWES } from './messages'
+import { NOBODY_OWES } from '../../copy/customers'
 
 export default function TeDeben() {
   const { data } = useQuery({

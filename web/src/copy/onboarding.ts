@@ -3,7 +3,7 @@
  * `LIMITED_COPY` so `copy/copyLimits.test.ts` measures the very bindings the dialogs show.
  */
 
-import type { LimitedCopy } from '../../copy/limits'
+import type { LimitedCopy } from './limits'
 
 export const DISCARD_DETAIL = 'Se pierde lo que escribiste: todavía no se guardó nada.'
 /** For a step that has already saved part of its work: the variety is kept, the price typed is not. */

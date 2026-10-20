@@ -14,7 +14,7 @@ import { PINNED_CATALOG_REASON_LABEL } from '../api/refusals'
 import { copyProblems, measure } from '../copy/limits'
 import PinPublish from './PinPublish'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
-import * as pinPublishMessages from './pinPublishMessages'
+import * as pinPublishMessages from '../copy/pinnedCatalog'
 import type { PinReason } from '../api/refusals'
 import {
   INTEGRATIONS_LINK_WORD,
@@ -23,7 +23,7 @@ import {
   OUT_OF_DATE_LINES,
   NOT_READY_LINE,
   CHANNEL_MISSING_LINE,
-} from './pinPublishMessages'
+} from '../copy/pinnedCatalog'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

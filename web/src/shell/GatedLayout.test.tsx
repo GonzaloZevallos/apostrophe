@@ -11,7 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../copy/common'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GatedLayout from './GatedLayout'
 

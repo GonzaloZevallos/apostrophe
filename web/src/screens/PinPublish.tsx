@@ -35,7 +35,7 @@ import {
   INTEGRATIONS_LINK_WORD,
   OUT_OF_DATE_SEPARATOR,
   OUT_OF_DATE_TITLE,
-} from './pinPublishMessages'
+} from '../copy/pinnedCatalog'
 
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'

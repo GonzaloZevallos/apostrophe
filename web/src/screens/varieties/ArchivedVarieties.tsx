@@ -27,7 +27,7 @@ import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
-import { NO_ARCHIVED_MESSAGE } from './varietiesMessages'
+import { NO_ARCHIVED_MESSAGE } from '../../copy/varieties'
 import { varietiesByName } from './varietiesByName'
 
 

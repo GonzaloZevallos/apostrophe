@@ -15,7 +15,7 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Boton from '../../components/Boton'
 import { GENERIC_REFUSAL_MESSAGE, type Variety } from '../Variedades'
-import { VARIETY_NAME_HELP } from './priceMessages'
+import { VARIETY_NAME_HELP } from '../../copy/varieties'
 import { SAVE_OVERRIDES } from './varietyForms'
 
 export interface VarietyNameFormProps {

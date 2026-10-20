@@ -46,7 +46,7 @@ import {
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
-import { NUEVA_VENTA_MISSING } from '../screens/inicioMessages'
+import { NUEVA_VENTA_MISSING } from '../copy/inicio'
 import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'

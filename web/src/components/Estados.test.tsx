@@ -7,7 +7,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from './ErrorGenerico'
 import GoneScreen from './GoneScreen'
 import Notice from './Notice'
 import SinConexion from './SinConexion'
-import { SIN_CONEXION_MENSAJE } from './estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../copy/common'
 
 test('the gone screen says one fixed line and offers one way back, with no data', () => {
   const { container } = render(

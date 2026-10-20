@@ -4,7 +4,7 @@
  * bindings `Catalogo` renders.
  */
 
-import type { LimitedCopy } from '../copy/limits'
+import type { LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
 export const EMPTY_STATE_TITLE = EMPTY_STATES.catalogTitle
