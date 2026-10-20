@@ -5,6 +5,8 @@ deleting it; an imported one has `imported_at`, which only the import writes, so
 tests stamp it through the same `FirstRuns` port the import uses."""
 
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
@@ -483,12 +485,6 @@ def _agrees(app: FastAPI, client: TestClient, engine: Engine) -> bool:
     return bool(qualifies == (text is not None))
 
 
-def _flag_when_checklist(client: TestClient) -> None:
-    answer = _first_run(client)
-    if answer["kind"] == "checklist":
-        assert answer["nothing_qualifies"] is (client.get("/catalog").json()["text"] is None)
-
-
 def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to_qualify(
     app: FastAPI, client: TestClient, engine: Engine
 ) -> None:
@@ -496,7 +492,6 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
     unpriced = _variety(client, "Sin precio")
     assert unpriced > 0
     assert _agrees(app, client, engine)
-    _flag_when_checklist(client)
 
     hidden = _variety(client, "Oculta")
     _price(client, hidden)
@@ -508,7 +503,6 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
     never_stocked = _variety(client, "Sin stock")
     _price(client, never_stocked)
     assert _agrees(app, client, engine)
-    _flag_when_checklist(client)
     assert _first_run(client)["nothing_qualifies"] is True
 
     sold_out = _variety(client, "Agotada")
@@ -526,3 +520,176 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
     _stock(client, qualifying)
     assert client.get("/catalog").json()["text"] is not None
     assert _agrees(app, client, engine)
+
+
+# -- the whole answer agrees with its sources and with GET /catalog ----------------------
+
+
+def _build_no_variety(client: TestClient, engine: Engine) -> None:
+    _without_onboarding(engine)
+    _variety(client, "Sin precio")
+
+
+def _build_priced_without_stock(client: TestClient, engine: Engine) -> None:
+    _without_onboarding(engine)
+    _price(client, _variety(client))
+
+
+def _build_stock_without_price(client: TestClient, engine: Engine) -> None:
+    _without_onboarding(engine)
+    _stock(client, _variety(client))
+
+
+def _build_sold_out(client: TestClient, engine: Engine) -> None:
+    _without_onboarding(engine)
+    variety_id = _variety(client)
+    _price(client, variety_id)
+    _stock(client, variety_id, grams="10")
+    sold = client.post(
+        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]}
+    )
+    assert sold.status_code == 201, sold.text
+
+
+def _build_qualifying(client: TestClient, engine: Engine) -> None:
+    _without_onboarding(engine)
+    variety_id = _variety(client)
+    _price(client, variety_id)
+    _stock(client, variety_id)
+
+
+def _build_checklist_gone_then_price_deleted(client: TestClient, engine: Engine) -> None:
+    _without_onboarding(engine)
+    variety_id = _variety(client)
+    price_id = _price(client, variety_id)
+    _stock(client, variety_id)
+    assert _first_run(client)["kind"] == "none"  # this read stamps `checklist_gone_at`
+    assert client.delete(f"/varieties/{variety_id}/prices/{price_id}").status_code == 204
+
+
+def _build_open_onboarding(client: TestClient, engine: Engine) -> None:
+    """The business `accept_invitation` made, left as it is."""
+
+
+def _build_imported_notice_showing(client: TestClient, engine: Engine) -> None:
+    _without_onboarding(engine)
+    _imported(engine, onboarding_ended=False)
+
+
+def _build_imported_notice_dismissed(client: TestClient, engine: Engine) -> None:
+    _build_imported_notice_showing(client, engine)
+    assert client.post("/first-run/import-notice/dismissal").status_code == 204
+
+
+def _build_imported_notice_ended_by_publishing(client: TestClient, engine: Engine) -> None:
+    _imported(engine, onboarding_ended=True)
+    variety_id = _variety(client)
+    _price(client, variety_id)
+    _stock(client, variety_id)
+    _publish(client)
+
+
+@dataclass(frozen=True)
+class State:
+    name: str
+    build: Callable[[TestClient, Engine], None]
+    kind: str
+    catalog_has_text: bool
+    import_notice: bool
+    done: tuple[bool, bool] = (False, False)  # priced_variety, stock_entry (checklist only)
+
+
+STATES = (
+    State("no_variety", _build_no_variety, "checklist", False, False),
+    State(
+        "priced_without_stock",
+        _build_priced_without_stock,
+        "checklist",
+        False,
+        False,
+        (True, False),
+    ),
+    State(
+        "stock_without_price", _build_stock_without_price, "checklist", False, False, (False, True)
+    ),
+    State("sold_out", _build_sold_out, "none", False, False),
+    State("qualifying", _build_qualifying, "none", True, False),
+    State(
+        "checklist_gone_then_price_deleted",
+        _build_checklist_gone_then_price_deleted,
+        "start_varieties",
+        False,
+        False,
+    ),
+    State("open_onboarding", _build_open_onboarding, "onboarding", False, False),
+    State(
+        "imported_notice_showing", _build_imported_notice_showing, "start_varieties", False, True
+    ),
+    State(
+        "imported_notice_dismissed",
+        _build_imported_notice_dismissed,
+        "start_varieties",
+        False,
+        False,
+    ),
+    State(
+        "imported_notice_ended_by_publishing",
+        _build_imported_notice_ended_by_publishing,
+        "none",
+        True,
+        False,
+    ),
+)
+
+
+def _nothing_qualifies(state: State) -> bool:
+    return state.kind == "checklist" and not state.catalog_has_text
+
+
+@pytest.mark.parametrize("state", STATES, ids=[state.name for state in STATES])
+def test_first_run_agrees_with_its_sources(
+    state: State, client: TestClient, engine: Engine
+) -> None:
+    state.build(client, engine)
+
+    answer = _first_run(client)
+    catalog_text = client.get("/catalog").json()["text"]
+    progress = client.get("/onboarding-progress").json()
+    with Session(engine) as session:
+        stored = SqlFirstRuns(session, _business_id(engine)).get()
+    imported = stored is not None and stored.imported_at is not None
+    notice_over = stored is not None and stored.import_notice_over_at is not None
+    gone = stored is not None and stored.checklist_gone_at is not None
+
+    # the flag, read from /first-run itself, against the catalog the seller sees
+    assert answer["nothing_qualifies"] is (answer["kind"] == "checklist" and catalog_text is None)
+    assert (catalog_text is not None) is state.catalog_has_text
+    assert answer["nothing_qualifies"] is _nothing_qualifies(state)
+
+    # the kind, against the Onboarding's own answer and the first-run stamps
+    assert answer["kind"] == state.kind
+    assert (answer["kind"] == "onboarding") is (progress["offered"] and not progress["over"])
+    if answer["kind"] == "checklist":
+        assert not progress["offered"] and not progress["over"]
+        assert not imported
+        assert not gone
+
+    # the notice, against the import fact and its end (a dismissal or a publication)
+    assert answer["import_notice"] is (imported and not notice_over)
+    assert answer["import_notice"] is state.import_notice
+
+    # the checklist shows only for its own kind, and then holds the four steps in order
+    if answer["kind"] != "checklist":
+        assert answer["checklist"] == []
+    else:
+        assert [item["step"] for item in answer["checklist"]] == STEPS
+        assert [item["required"] for item in answer["checklist"]] == [True, True, False, False]
+        assert [item["done"] for item in answer["checklist"]] == [*state.done, False, False]
+
+
+def test_the_agreement_table_reaches_every_value_it_must() -> None:
+    assert {_nothing_qualifies(state) for state in STATES} == {True, False}
+    assert {state.catalog_has_text for state in STATES} == {True, False}
+    assert {"onboarding", "checklist", "start_varieties", "none"} <= {s.kind for s in STATES}
+    assert any(state.import_notice for state in STATES)
+    assert len({state.name for state in STATES}) == len(STATES)
