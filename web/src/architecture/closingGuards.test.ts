@@ -49,7 +49,7 @@ describe('findRawButtons', () => {
   test('accepts the closed option and row classes, a switch and a radio, even with a dynamic class', () => {
     const accepted = [
       '<button type="button" className="pildora">a</button>',
-      `<button className={on ? 'periodos__boton periodos__boton--activo' : 'periodos__boton'} onClick={() => set(1)}>a</button>`,
+      `<button className={on ? 'gastos__mes-boton gastos__mes-boton--activo' : 'gastos__mes-boton'} onClick={() => set(1)}>a</button>`,
       '<button className="fila-gasto">a</button>',
       '<button className="x" role="switch" aria-checked>a</button>',
       '<button role="radio">a</button>',
