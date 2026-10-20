@@ -180,9 +180,9 @@ _In the app_: Gasto
 _Avoid_: cost, outflow, bill
 
 **Expense category**:
-A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. Every business starts with "Insumos de cultivo", "Packaging", "Envíos y traslados" and "Otros"; a category cannot be removed while it has expenses.
-_In the app_: Categoría
+A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A business opened after the move to English starts with "Growing supplies", "Packaging", "Shipping and transport" and "Other"; earlier businesses keep the Spanish defaults they received. A category cannot be removed while it has expenses.
 _Avoid_: type, tag, label, account, cost center
+_In the app_: Categoría
 
 **Profit**:
 Sales (shipping included, paid or not) minus cost of goods sold, stock shortfall, promotion cost, own-use cost and expenses, over a period, each counted on its own date; purchases never enter it. When any cost is pending, it is worked out over the costed part and marked "y N g sin costo", N adding the pending grams sold, gifted, taken out by negative adjustments and withdrawn in the period. It may be negative and is then shown with a minus sign; in the app: Ganancia.
@@ -202,7 +202,7 @@ _Avoid_: menu, price list, flyer
 _In the app_: Catálogo
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram channel chat by its own bot. Once first published, it is edited in place whenever the catalog text changes, and it is never posted again in that chat. When nothing qualifies, it shows the header, "Por ahora no tenemos nada para ofrecer." and the footer. _In the app_: Mensaje fijado.
+The catalog message pinned in the business's Telegram channel chat by its own bot, edited in place whenever the catalog text changes and never posted again in that chat. When nothing qualifies, it shows the header, "Nothing to offer for now." and the footer.
 _Avoid_: post, broadcast
 _In the app_: Mensaje fijado
 
@@ -260,7 +260,7 @@ One line of free text describing a variety's aroma and flavour for the catalog, 
 _Avoid_: description, notes, flavor profile
 
 **Catalog header and footer**:
-A business's own text opening and closing the catalog, multi-line and up to 500 characters each; either may be blank, and is then left out. They start as "🌿 **CATÁLOGO** 🌿" and "📩 Consultas y pedidos por privado." and are edited only in Configuración. In the app: Encabezado, Pie, under Mensaje del catálogo.
+A business's own text opening and closing the catalog, multi-line and up to 500 characters each; a blank one is left out. A business opened after the move to English starts with "🌿 **CATALOG** 🌿" and "📩 Questions and orders by private message."; earlier businesses keep what they stored. They are edited only in Configuración.
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:
@@ -452,3 +452,11 @@ _Avoid_: banner, card button, row, callout, alert
 **Design capture**:
 The side-by-side capture of a screen's design file and the built app, taken from the screens registry with pinned fonts, attached to a PR as review evidence and judged by eye. A registry row reaches its screen the way a seller does and captures its named section whole, only once the screen is at rest: no animated change running, no request pending and no control still disabled or busy while it waits; a screen that never comes to rest fails its row. Its result never depends on how loaded the machine is, and it is never a step of the gate.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
+
+**Product language**:
+The one language the product writes in for a person to read: English. It covers screens, accessible names, API messages, operator script output and the catalog's fixed lines, never the seller's own data. Numeric and date formats stay Argentine.
+_Avoid_: locale, i18n, translation, Rioplatense
+
+**Copy module**:
+The one keyed place that holds every text the front shows, accessible names included. No screen holds a text of its own, so a rewording or an added language is a change there only.
+_Avoid_: messages file, strings, translations, dictionary
