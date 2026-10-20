@@ -11,9 +11,10 @@
 // A design capture never touches the network (ADR-0042): its Google Fonts requests are
 // served from @fontsource/plus-jakarta-sans, every other non-file request is aborted. Both
 // captures run on a paused fake clock (the facts' `today` at noon, Argentina) and are taken
-// only once the page has finished drawing (ADR-0042, `settle.mjs`): the applied-check passes
-// and the layout is the same for three frames, so what is captured does not depend on how
-// loaded the machine is. A side that did not settle, whose font is not applied, or whose step
+// only once the page is at rest (ADR-0042, `settle.mjs`): the applied-check passes and, for three
+// frames, nothing is requested, mutated or animating and the layout (control state included) is
+// the same; one more frame after the shot must still be calm with the same hash. So what is
+// captured does not depend on how loaded the machine is. A side that did not settle, whose font is not applied, or whose step
 // threw has no capture (`null`); each is a note on the sheet and in `index.json`, and with
 // `--strict` the run also exits non-zero, after writing everything. Besides `<screen>.png`
 // the raw captures go to `<screen>.design.png` and `<screen>.built.png`, listed in
@@ -33,7 +34,20 @@ import { parseArgs } from 'node:util'
 import { assertAccountKinds, assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
 import { fontCss, fontRoute } from './fonts.mjs'
 import { pageProbe } from './probe.mjs'
-import { SETTLE_ADVANCE_MS, SETTLE_BOUND, SETTLE_FRAMES, settleWith, signatureOf, sideOutcome } from './settle.mjs'
+import {
+  SETTLE_ADVANCE_MS,
+  SETTLE_BOUND,
+  SETTLE_FRAMES,
+  SETTLE_QUIET_HOPS,
+  SETTLE_REASON_UNSETTLED,
+  animationRecords,
+  frameRecords,
+  settleWith,
+  shotKept,
+  signatureOf,
+  sideOutcome,
+  unfinished,
+} from './settle.mjs'
 import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -131,35 +145,43 @@ async function addProbe(context) {
   await context.addInitScript(`(${pageProbe.toString()})(${signatureOf.toString()})`)
 }
 
-// One frame of the fake clock, then what the page looks like: no request in flight and none
-// completed since the previous frame first (that answer is `idle`), one real macrotask so
-// queued work has run, then only a hash and booleans go back.
-function sampleFrame() {
+// One frame of the fake clock, then what the page looks like, in this order: no request in
+// flight and none completed since the previous frame (that answer is `idle`); every finite
+// animation that is running or pending finished, and only those (`unfinished` decides, paused
+// and infinite ones are never touched); one real macrotask so queued work has run, then
+// `quietHops` more, so a commit that lands later still counts; the mutation flag read and reset;
+// then only a hash and booleans go back. A frame that finished something or saw a mutation is
+// never calm (`settle.mjs`). The caller sends this function to the page with the pure helpers
+// from `settle.mjs` as its arguments, all by `toString()`.
+function sampleFrame(frameRecords, animationRecords, unfinished, quietHops) {
   return (async () => {
     const idle = await window.__captureQuiet()
-    await new Promise((resolve) => {
-      const channel = new MessageChannel()
-      channel.port1.onmessage = () => resolve()
-      channel.port2.postMessage(0)
+    const flagged = unfinished(animationRecords(document))
+    let unfinishedAnimation = false
+    document.getAnimations().forEach((animation, index) => {
+      if (!flagged[index]) return
+      unfinishedAnimation = true
+      try {
+        animation.finish()
+      } catch {
+        // Nothing to do: the frame already counts as not calm.
+      }
     })
-    const drawn = [document.body, ...document.body.querySelectorAll('*')].filter((e) => e instanceof HTMLElement)
-    const records = drawn.map((e) => ({
-      tag: e.tagName,
-      left: e.offsetLeft,
-      top: e.offsetTop,
-      width: e.offsetWidth,
-      height: e.offsetHeight,
-      text: [...e.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE).map((n) => n.textContent).join(''),
-    }))
+    for (let hop = 0; hop <= quietHops; hop += 1) {
+      await new Promise((resolve) => {
+        const channel = new MessageChannel()
+        channel.port1.onmessage = () => resolve()
+        channel.port2.postMessage(0)
+      })
+    }
+    const mutated = window.__captureMutated()
     const fontsLoaded = document.fonts.status === 'loaded'
-    const pendingFiniteAnimation = document
-      .getAnimations()
-      .some((a) => a.playState === 'running' && Number.isFinite(a.effect?.getComputedTiming().iterations))
     return {
       idle,
-      pendingFiniteAnimation,
+      unfinishedAnimation,
+      mutated,
       fontsLoaded,
-      hash: window.__captureSignature(records, {
+      hash: window.__captureSignature(frameRecords(document), {
         scrollWidth: document.documentElement.scrollWidth,
         scrollHeight: document.documentElement.scrollHeight,
         imagesComplete: [...document.images].every((i) => i.complete),
@@ -168,6 +190,12 @@ function sampleFrame() {
     }
   })()
 }
+
+const SAMPLE_FRAME_SOURCE = `(${sampleFrame})(${frameRecords}, ${animationRecords}, ${unfinished}, ${SETTLE_QUIET_HOPS})`
+
+// The hash of each page's last settled frame, which the frame sampled after its screenshot
+// must equal.
+const settledHash = new WeakMap()
 
 // A wait bound, not an assertion: a fetch that never settles must not hang the capture.
 function withinTimeout(promise) {
@@ -192,16 +220,39 @@ async function settle(page, { advanceMs, afterGoto = false, ofFirstText }) {
   const applied = await appliedCheck(page, ofFirstText)
   if (applied) return applied
   const clock = page.context().clock
-  return settleWith(
+  let lastHash = null
+  const reason = await settleWith(
     {
       advance: (ms) => clock.runFor(ms),
       frame: async () => {
         await clock.runFor(16)
-        return withinTimeout(page.evaluate(sampleFrame))
+        const frame = await withinTimeout(page.evaluate(SAMPLE_FRAME_SOURCE))
+        lastHash = frame.hash
+        return frame
       },
     },
     { advanceMs, frames: SETTLE_FRAMES, bound: SETTLE_BOUND },
   )
+  if (reason === null) settledHash.set(page, lastHash)
+  return reason
+}
+
+// One more frame, sampled right after a screenshot with NO clock advance: a late refetch lands
+// after the settled frames. The shot is kept only if that frame is calm and has the last
+// settled frame's hash; any miss, or a frame that cannot be read, is the one rest failure
+// (`null` when the page is still at rest). Playwright's own screenshot sets and restores a
+// `style` on the page's text inputs, which the observer sees; the mutation flag is read and
+// discarded first, so only what happens after the shot counts as a mutation. A refetch the
+// shot caused is still caught by the frame's other conditions (a request completed since the
+// last frame, a control's state in the hash).
+async function restAfterShot(page) {
+  try {
+    await withinTimeout(page.evaluate(() => window.__captureMutated()))
+    const frame = await withinTimeout(page.evaluate(SAMPLE_FRAME_SOURCE))
+    return shotKept(frame, settledHash.get(page)) ? null : SETTLE_REASON_UNSETTLED
+  } catch {
+    return SETTLE_REASON_UNSETTLED
+  }
 }
 
 const firstLine = (error) => String(error?.code ?? error?.message ?? error).split('\n')[0]
@@ -295,10 +346,11 @@ async function applyTextScale(page, s, side, ofFirstText) {
   return settle(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText })
 }
 
-// The screenshot has been taken: the scaled text is checked once more, and a miss discards it.
+// The screenshot has been taken: the scaled text is checked once more, then the page must still
+// be at rest; a miss in either discards it.
 async function verifyAfterShot(page, s, side, png) {
   const miss = s.text_scale ? await scaleMisses(page, s, side, 'después de la captura') : null
-  return sideOutcome(miss, png)
+  return sideOutcome(miss ?? (await restAfterShot(page)), png)
 }
 
 // The design file an entry is compared against: `design`, else the entry's own name.
@@ -333,6 +385,16 @@ async function sectionClip(block) {
   })
 }
 
+// A full-page shot of a page taller than its viewport makes Chromium resize the viewport for a
+// moment; at 900 px or more that flips the app's viewport query and remounts the screen, which
+// re-reads every query it shows (GH-273). The capture does it first and settles on the result:
+// the viewport grows to the height of the document, same width, so the shot never has to.
+async function fitViewport(page) {
+  const height = await page.evaluate(() => document.documentElement.scrollHeight)
+  const { width, height: current } = page.viewportSize()
+  if (height > current) await page.setViewportSize({ width, height })
+}
+
 const SHOT = { animations: 'disabled', caret: 'hide' }
 
 async function captureDesign(browser, s, options, ctx) {
@@ -356,6 +418,7 @@ async function captureDesign(browser, s, options, ctx) {
       if (count !== 1) throw new Error(`${s.screen}: section matches ${count} elements, expected 1`)
       block = label.locator('xpath=..')
     }
+    await fitViewport(page)
     const clip = block ? await sectionClip(block) : null
     const last = await settle(page, { advanceMs: 0, ofFirstText: true })
     if (last) return sideOutcome(last, null)
@@ -425,6 +488,7 @@ async function captureBuiltIn(context, s, options, ctx, notes) {
   const width = options.viewport.width
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
   if (scrollWidth > width) notes.push(`desborda: ${scrollWidth}px de ancho en ${width}px`)
+  await fitViewport(page)
   const last = await settle(page, { advanceMs: 0, ofFirstText: false })
   if (last) return sideOutcome(last, null)
   const png = await page.screenshot({ fullPage: true, ...SHOT })
