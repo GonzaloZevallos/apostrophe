@@ -168,7 +168,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - it records nothing itself and has no toasts of its own;
   - its one main action is the shell's "+ New sale"; "Collect" on debtor rows is the only other direct action, besides the notices, which only open where their fix is.
 - The figures are read when the panel is opened, with no live updates.
-- A dropped network shows "Sin conexión"; a server error shows the generic retry (accounts.md).
+- A dropped network shows "No connection: check your internet and try again."; a server error shows the generic retry (accounts.md).
 
 ### Constraints
 

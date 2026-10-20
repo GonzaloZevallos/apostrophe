@@ -74,7 +74,7 @@ Success criteria:
 - **The skip controls**: "Skip" and, when it shows, "Skip the rest" sit together on one line as text links, as the design draws them; neither is a button.
 - **The step frame follows the drawn design** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); where this file and the drawing disagree on what a step shows, this file wins and the difference is a defect in the design.
 - **Unsaved changes**: leaving a step with something typed and not saved, by "Close", "Back" or "Skip", asks before discarding. An untouched step leaves at once.
-- **Inside the steps**, the owners' own behaviour applies unchanged: field rules, refusals inline keeping what was typed, toasts, Probarlo's and Buscar mi chat's reasons, "Sin conexión", the generic retry and "Eso ya no está.".
+- **Inside the steps**, the owners' own behaviour applies unchanged: field rules, refusals inline keeping what was typed, toasts, Probarlo's and Buscar mi chat's reasons, "No connection: check your internet and try again.", the generic retry and "That's gone.".
 
 ### The six steps, in order
 
@@ -145,8 +145,8 @@ Success criteria:
 ### Empty states and errors
 
 - Step 1 starts with empty fields while the business has no variety. No step shows a figure, a placeholder or sample data.
-- Refusals and failures belong to each setting's owner: inline, keeping what was typed, carrying no data. No network shows "Sin conexión", a server error the generic retry.
-- A record that is gone follows accounts.md's "Eso ya no está." rule.
+- Refusals and failures belong to each setting's owner: inline, keeping what was typed, carrying no data. No network shows "No connection: check your internet and try again.", a server error the generic retry.
+- A record that is gone follows accounts.md's "That's gone." rule.
 - Data a partner created shows "Done" on the next open. No live updates.
 
 ### Design

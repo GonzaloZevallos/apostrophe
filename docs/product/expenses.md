@@ -57,8 +57,8 @@ Success criteria:
   - trimmed, inner spaces collapsed, up to 60 characters;
   - unique within a business whatever the case or spacing;
   - two businesses may each have a category with the same name.
-- **Default categories**: "Insumos de cultivo", "Packaging", "Envíos y traslados" and
-  "Otros".
+- **Default categories**: "Growing supplies", "Packaging", "Shipping and travel" and
+  "Other".
   - A new business opens with them.
   - A business opened before expenses existed receives them once, when the app is
     upgraded.
@@ -153,12 +153,12 @@ Success criteria:
   add, rename and "Eliminar". A blocked removal shows the fixed refusal above. Creating
   one inside the expense form stays as described.
 - **An expense or category that is gone** when it is saved, deleted or opened follows the
-  app's rule in `accounts.md`: "Eso ya no está." Opening one offers "Volver a Gastos" on
+  app's rule in `accounts.md`: "That's gone." Opening one offers "Back to Expenses" on
   the current month.
 - **Toasts**: "Expense saved", "Expense deleted", "Categoría guardada" and "Categoría
   eliminada", with no amounts in them.
 - **Refusals** show inline and keep what was typed.
-- **Feedback**: network loss shows "Sin conexión", and a server error shows a generic
+- **Feedback**: network loss shows "No connection: check your internet and try again.", and a server error shows a generic
   retry (accounts.md).
 
 ### Constraints

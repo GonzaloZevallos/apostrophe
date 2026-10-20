@@ -55,7 +55,7 @@ Success criteria:
 7. **One structure, said once.** The product docs, CONTEXT.md, the design (`docs/product/design-system/pantallas/`, phone and computer) and `scripts/design/screens.json` state the same structure and routes.
 8. **Configuración, group by group.** Each group is its own subscreen with "Close"; leaving with unsaved changes asks first, an untouched group closes at once. Renaming, "Invite a partner", the pricing switches, the bot (token, chats, Probarlo), the header and footer, categories (add, rename, remove, the refused removal included), Apariencia, changing the password and logging out all work from the phone, and the end-to-end front run goes through every group.
 9. **Chrome by kind, everywhere.** Every screen, the Variedades screens included (the two-pane list, a variety's page, its "Ver todas" lists of prices and entries, Nuevo precio, Nueva variedad, "Todas las entradas" and the stock entry form), is exactly one kind with a parent. The stock entry form reads "Close", never "Volver".
-10. **One move back.** Back or "Close" leaves a screen in one tap and never lands on the same screen twice in history, the "Eso ya no está." exits and Registrar cobro included. With no history, back goes to the screen the form, sheet or card belongs to.
+10. **One move back.** Back or "Close" leaves a screen in one tap and never lands on the same screen twice in history, the "That's gone." exits and Registrar cobro included. With no history, back goes to the screen the form, sheet or card belongs to.
 11. **Every address opens its screen.** A reload on any Variedades route, parameterised ones included, opens the screen and never the API's answer. Every old Spanish path, `/variedades/{id}` and `/mi-stock/entradas/{id}` included, answers a permanent redirect to its new route with the id carried across.
 12. **First run, one element at a time.** A brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the first-run checklist; an imported business sees the dismissable after-import notice; never two first-run elements at once, and each leads to its fix.
 
@@ -144,7 +144,7 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 | An archived variety's page | Archivadas |
 | An Onboarding step or "All set" | Inicio |
 
-- **A gone exit is the same move as "Close".** When saving, deleting or undoing in the stock entry form, the customer form or Registrar cobro hits a record that no longer exists, the screen goes back one step in history when it was opened from inside the app, or to its parent when it was opened by a direct link. The list refreshes and "Eso ya no está. La lista ya está al día." shows, as accounts.md defines it. No history entry is ever duplicated.
+- **A gone exit is the same move as "Close".** When saving, deleting or undoing in the stock entry form, the customer form or Registrar cobro hits a record that no longer exists, the screen goes back one step in history when it was opened from inside the app, or to its parent when it was opened by a direct link. The list refreshes and "That's gone. The list is up to date." shows, as accounts.md defines it. No history entry is ever duplicated.
 - **"Collect from <name>"** on a debtor row (Clientes or Inicio) opens Registrar cobro with that customer chosen, as an entry in the app's history; back or "Close" closes it in one move, back to the screen it came from.
 
 ### Routes
@@ -226,9 +226,9 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 - Whatever decides the Onboarding notice, the checklist and the after-import notice is answered by the server for the session's business only.
 - No business id in a URL; no personal data or money in the console or browser storage (accounts.md). The theme choice is the only thing kept on the device; the first-run facts are kept on the server, never in the browser.
 - Feedback follows accounts.md, in Configuración, the Onboarding and Inicio as everywhere:
-  - no network shows "Sin conexión";
+  - no network shows "No connection: check your internet and try again.";
   - a server error shows a generic retry;
-  - a record that is gone follows the "Eso ya no está." rule.
+  - a record that is gone follows the "That's gone." rule.
 
 ## Metrics
 
