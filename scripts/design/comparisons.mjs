@@ -143,6 +143,11 @@ async function pauseClock(context) {
 
 async function addProbe(context) {
   await context.addInitScript(`(${pageProbe.toString()})(${signatureOf.toString()})`)
+  await context.addInitScript(() => {
+    const sheet = new CSSStyleSheet()
+    sheet.replaceSync('*, *::before, *::after { caret-color: transparent !important; }')
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]
+  })
 }
 
 // One frame of the fake clock, then what the page looks like, in this order: no request in
@@ -238,16 +243,12 @@ async function settle(page, { advanceMs, afterGoto = false, ofFirstText }) {
 }
 
 // One more frame, sampled right after a screenshot with NO clock advance: a late refetch lands
-// after the settled frames. The shot is kept only if that frame is calm and has the last
-// settled frame's hash; any miss, or a frame that cannot be read, is the one rest failure
-// (`null` when the page is still at rest). Playwright's own screenshot sets and restores a
-// `style` on the page's text inputs, which the observer sees; the mutation flag is read and
-// discarded first, so only what happens after the shot counts as a mutation. A refetch the
-// shot caused is still caught by the frame's other conditions (a request completed since the
-// last frame, a control's state in the hash).
+// after the settled frames. The shot is kept only if that frame is calm (no mutation since the
+// last settled frame included) and has the last settled frame's hash; any miss, or a frame that
+// cannot be read, is the one rest failure (`null` when the page is still at rest). Nothing is
+// discarded: the shot itself does not mutate the page (see `SHOT` and `hideCaret`).
 async function restAfterShot(page) {
   try {
-    await withinTimeout(page.evaluate(() => window.__captureMutated()))
     const frame = await withinTimeout(page.evaluate(SAMPLE_FRAME_SOURCE))
     return shotKept(frame, settledHash.get(page)) ? null : SETTLE_REASON_UNSETTLED
   } catch {
@@ -395,7 +396,19 @@ async function fitViewport(page) {
   if (height > current) await page.setViewportSize({ width, height })
 }
 
-const SHOT = { animations: 'disabled', caret: 'hide' }
+// A shot of a page that now fits its viewport is a plain one: asking for `fullPage` is what
+// makes Chromium resize the viewport (measured: the remount still happened after `fitViewport`
+// with `fullPage: true`). A page wider than its viewport still needs it, and keeps it.
+async function fullPageIfWide(page) {
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
+  return { fullPage: wide, ...SHOT }
+}
+
+// Playwright's `caret: 'hide'` sets and restores a `style` attribute on the page's text inputs,
+// a DOM mutation the probe would see in the frame after the shot. The caret is hidden instead by
+// a constructed stylesheet (`hideCaret`), which is not a DOM mutation, and the shot leaves its
+// own caret option alone: the pixels are the same and the page is untouched.
+const SHOT = { animations: 'disabled', caret: 'initial' }
 
 async function captureDesign(browser, s, options, ctx) {
   const context = await browser.newContext(options)
@@ -423,9 +436,9 @@ async function captureDesign(browser, s, options, ctx) {
     const last = await settle(page, { advanceMs: 0, ofFirstText: true })
     if (last) return sideOutcome(last, null)
     const png = !block
-      ? await page.screenshot({ fullPage: true, ...SHOT })
+      ? await page.screenshot(await fullPageIfWide(page))
       : clip
-        ? await page.screenshot({ fullPage: true, clip, ...SHOT })
+        ? await page.screenshot({ clip, ...(await fullPageIfWide(page)) })
         : await block.screenshot(SHOT)
     return await verifyAfterShot(page, s, 'diseño', png)
   } finally {
@@ -491,7 +504,7 @@ async function captureBuiltIn(context, s, options, ctx, notes) {
   await fitViewport(page)
   const last = await settle(page, { advanceMs: 0, ofFirstText: false })
   if (last) return sideOutcome(last, null)
-  const png = await page.screenshot({ fullPage: true, ...SHOT })
+  const png = await page.screenshot(await fullPageIfWide(page))
   return await verifyAfterShot(page, s, 'construido', png)
 }
 

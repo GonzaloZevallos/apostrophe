@@ -5,6 +5,7 @@ import {
   SETTLE_FRAMES,
   SETTLE_REASON_UNSETTLED,
   settleWith,
+  shotKept,
   signatureOf,
   type SettleFrame,
   type SettlePort,
@@ -355,5 +356,21 @@ describe('the probe\'s mutation flag', () => {
     expect(await settleWith(port, { advanceMs: 0, frames: SETTLE_FRAMES, bound: SETTLE_BOUND })).toBe(
       SETTLE_REASON_UNSETTLED,
     )
+  })
+
+  it('rejects a shot when the DOM mutated after the last settled frame, whatever the hash', async () => {
+    const observers = fakeObservers()
+    const win = install(() => Promise.resolve(responseOf({})), observers)
+    const frame = async (): Promise<SettleFrame> => {
+      const idle = await win.__captureQuiet()
+      return { idle, unfinishedAnimation: false, mutated: win.__captureMutated(), fontsLoaded: true, hash: 'same' }
+    }
+    const port: SettlePort = { advance: () => Promise.resolve(), frame }
+    expect(await settleWith(port, { advanceMs: 0, frames: SETTLE_FRAMES, bound: SETTLE_BOUND })).toBeNull()
+    // At rest: the frame after the shot is calm and the shot is kept.
+    expect(shotKept(await frame(), 'same')).toBe(true)
+    // The shot (or the app) mutates the page: nothing is discarded, the shot is rejected.
+    observers.state.mutate()
+    expect(shotKept(await frame(), 'same')).toBe(false)
   })
 })
