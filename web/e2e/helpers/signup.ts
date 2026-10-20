@@ -37,10 +37,10 @@ export interface SignedUpBusiness {
 /**
  * A new-business accept lands in the Onboarding (GH-86); the specs that sign up are
  * about something else, so they close it to reach Inicio, the way a seller who skips it
- * does. "Cerrar" on an untouched step sends nothing.
+ * does. "Close" on an untouched step sends nothing.
  */
 export async function leaveOnboarding(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Cerrar' }).click()
+  await page.getByRole('button', { name: 'Close' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
 }
 

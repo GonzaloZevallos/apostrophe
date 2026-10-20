@@ -5,25 +5,68 @@
 
 import { andPending, pendingOnly } from './format'
 import { SAMPLES, type LimitedCopy } from './limits'
+import { TAB_EXPENSES } from './shell'
 
-export const NO_HISTORY_LINE = 'Todavía no hay nada para analizar.'
-export const EMPTY_MONTH_LINE = 'No vendiste ni regalaste nada este mes.'
-export const VARIETY_TOTAL_NOTE = 'La tabla de variedades suma las ventas del mes sin el envío.'
-export const SINCE_FIRST_RECORD_LABEL =
-  'Movido desde tu primer registro, no es la plata que tenés en caja'
-export const PURCHASES_NOTE = 'Van aparte, se cargan en Stock'
-export const NO_BEST_WEEK_LINE = 'Ninguna se destacó'
+export const NO_HISTORY_LINE = 'Nothing to analyze yet.'
+export const EMPTY_MONTH_LINE = 'You sold and gifted nothing this month.'
+export const VARIETY_TOTAL_NOTE = "The varieties table adds up the month's sales without shipping."
+export const SINCE_FIRST_RECORD_LABEL = 'Moved since your first record, not the cash you have on hand'
+export const PURCHASES_NOTE = 'Listed apart, entered in Stock'
+export const NO_BEST_WEEK_LINE = 'None stood out'
 
-export const COST_OF_GOODS_LABEL = 'Costo de lo vendido'
-export const SHORTFALL_LABEL = 'Faltante de stock'
-export const PROMOTION_LABEL = 'Promoción'
-export const OWN_USE_LABEL = 'Consumo propio'
+export const COST_OF_GOODS_LABEL = 'Cost of goods sold'
+export const SHORTFALL_LABEL = 'Stock shortfall'
+export const PROMOTION_LABEL = 'Promotion'
+export const OWN_USE_LABEL = 'Own use'
+
+/** The marks on the best week and the best weekday, and the table's short one. */
+export const BEST_WEEK_MARK = 'Best week'
+export const BEST_WEEKDAY_MARK = 'Best day'
+export const BEST_WEEK_TABLE_MARK = 'best'
+
+/** The words Home's panel shares: the section that owns them is this one (Home imports). */
+export const SOLD_THIS_MONTH = 'You sold this month'
+export const PROFIT = 'Profit'
+export const CASH = 'Cash'
+export const EXPENSES = TAB_EXPENSES
+export const FLOWER_PURCHASES = 'Flower purchases'
+export const WEEK = 'Week'
+export const MONTH = 'Month'
+
+export const MONTH_PREVIOUS = 'Previous month'
+export const MONTH_NEXT = 'Next month'
+
+export const BY_VARIETY = 'By variety'
+export const WEEK_BY_WEEK = 'Week by week · last 8'
+export const MONTH_BY_MONTH = 'Month by month · last 12'
+export const BY_WEEKDAY = 'By weekday'
+export const MONTH_EXPENSES_TITLE = "This month's expenses"
+export const SINCE_FIRST_RECORD_EXPENSES_TITLE = 'Expenses since the first record'
+
+/** The phone's inline labels, each after its figure or before it as the sentence reads. */
+export const soldAndGifted = (sold: string, gifted: string) => `${sold} sold · ${gifted} gifted`
+export const averageMargin = (percent: number | null, pending: string) =>
+  percent === null ? ` · average margin${pending}` : ` · average margin ${percent}%${pending}`
+export const shareOfMonth = (percent: number) => `${percent}% of the month`
+export const gramsSold = (grams: string) => `${grams} sold`
+export const gramsGifted = (grams: string) => `${grams} gifted`
+export const costOf = (amount: string, pending: string) => `cost ${amount}${pending}`
+export const marginOf = (amount: string, percent: number | null, pending: string) =>
+  `margin ${amount}${percent === null ? '' : ` (${percent}%)`}${pending}`
+export const expensesOf = (amount: string) => `expenses ${amount}`
+export const profitOf = (amount: string, pending: string) => `profit ${amount}${pending}`
+export const cashOf = (amount: string) => `cash ${amount}`
+
+/** The column headers of the computer's tables. */
+export const COL_VARIETY = 'Variety'
+export const COL_SHARE = 'Share'
+export const COL_GRAMS = 'Grams'
+export const COL_GIFT_GRAMS = 'Gifted grams'
+export const COL_COST = 'Cost'
+export const COL_MARGIN = 'Margin'
+
 const PENDING_ONLY = pendingOnly(SAMPLES.grams)
 const AMOUNT_AND_PENDING = `${SAMPLES.amount} ${andPending(SAMPLES.grams)}`
-
-/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
- * section that says so. Removed with the section's English wording (ADR-0048). */
-export const PENDING = true
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: NO_HISTORY_LINE },

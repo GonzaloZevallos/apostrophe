@@ -40,12 +40,15 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../shell/initials'
+import { TAB_HOME, settingsOf } from '../copy/shell'
 import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from '../copy/home'
 import { inicioNotices } from './inicioNotices'
 import FirstRunChecklist from './inicio/FirstRunChecklist'
 import ImportNotice from './inicio/ImportNotice'
 import InicioPanel from './inicio/InicioPanel'
 import OnboardingNotice from './onboarding/OnboardingNotice'
+
+const FIRST_TAB = 'today' as const
 
 export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
 
@@ -55,7 +58,7 @@ interface PinnedCatalogStatus {
 
 export default function Inicio() {
   const me = useOutletContext<Me>()
-  const [tab, setTab] = useState<PanelTab>('today')
+  const [tab, setTab] = useState<PanelTab>(FIRST_TAB)
 
   const panelQuery = useQuery({
     queryKey: keys.panel(),
@@ -87,11 +90,11 @@ export default function Inicio() {
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">
             <span className="encabezado__negocio">{me.business_name}</span>
-            <span className="encabezado__titulo">Inicio</span>
+            <span className="encabezado__titulo">{TAB_HOME}</span>
           </div>
           <InAppLink
             to={SETTINGS}
-            aria-label={`Configuración de ${me.business_name}`}
+            aria-label={settingsOf(me.business_name)}
             className="inicio__avatar"
           >
             {initialsOf(me.business_name)}

@@ -37,18 +37,18 @@ async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
   const counter: Counter = { taps: 0 }
   const here = new URL(page.url()).pathname
   if (here === EXPENSES) {
-    await tap(counter, page.getByRole('link', { name: 'Cargar gasto' }))
+    await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   } else if (here === MORE) {
-    await tap(counter, page.getByRole('link', { name: /^\+ Cargar gasto/ }))
+    await tap(counter, page.getByRole('link', { name: /^\+ Add expense/ }))
   } else if (computer) {
     await tap(counter, page.locator('.riel-lateral').getByRole('link', { name: 'Expenses' }))
-    await tap(counter, page.getByRole('link', { name: 'Cargar gasto' }))
+    await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   } else {
     await tap(counter, page.locator('.bar-inferior').getByRole('link', { name: 'More' }))
-    await tap(counter, page.getByRole('link', { name: /^\+ Cargar gasto/ }))
+    await tap(counter, page.getByRole('link', { name: /^\+ Add expense/ }))
   }
   await expectPath(page, EXPENSE_NEW)
-  await expect(page.getByRole('button', { name: 'Cerrar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
   return counter.taps
 }
 
@@ -93,19 +93,19 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await signUpNewBusiness(page, { businessName: `Flores de Más ${uniqueTag()}`, email: `duena-mas-${uniqueTag()}@example.com` })
 
   await page.goto(MORE)
-  await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
-  await page.getByRole('button', { name: 'Cerrar' }).click()
+  await page.getByRole('link', { name: /^\+ Add expense/ }).click()
+  await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, MORE)
 
-  await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
-  await page.getByRole('combobox', { name: 'Categoría' }).selectOption({ label: 'Packaging' })
-  await page.getByLabel('Monto').fill('3200')
-  await page.getByLabel('Detalle').fill('Cajas de cartón')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
+  await page.getByRole('link', { name: /^\+ Add expense/ }).click()
+  await page.getByRole('combobox', { name: 'Category' }).selectOption({ label: 'Packaging' })
+  await page.getByLabel('Amount').fill('3200')
+  await page.getByLabel('Detail').fill('Cajas de cartón')
+  await page.getByRole('button', { name: 'Save expense' }).click()
   await expectPath(page, MORE)
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }).click()
   await expect(page.getByText('Cajas de cartón')).toBeVisible()
   expect(consoleMessages).toEqual([])
 })
@@ -161,9 +161,7 @@ test('the sale form, Record payment, the catalog and a stock entry open within t
       if (root === HOME || root === CUSTOMERS) {
         await page.goto(root)
         counter = { taps: 0 }
-        // Home's own row still says "Cobrar a" until its screen is rebuilt in English.
-        const collect = root === HOME ? 'Cobrar a Carla Toques' : 'Collect from Carla Toques'
-        await tap(counter, page.getByRole('link', { name: collect }).first())
+        await tap(counter, page.getByRole('link', { name: 'Collect from Carla Toques' }).first())
         await expectPath(page, CUSTOMER_PAYMENT)
         await expect(page.getByRole('button', { name: 'Close' }), label).toBeVisible()
         measure(`payment ${root}`, device, counter.taps)

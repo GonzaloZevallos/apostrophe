@@ -15,6 +15,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import type { StepBodyProps } from './stepBodies'
 import { HOME } from '../../routes'
+import { FAILURE } from './steps'
 
 type Failure = 'offline' | 'error'
 
@@ -44,9 +45,9 @@ export function useOnboardingWrite(onProgress: StepBodyProps['onProgress']): Onb
       const answer = await send()
       onProgress(answer, to?.(answer))
     } catch (caught) {
-      if (caught instanceof NetworkError) setFailure('offline')
+      if (caught instanceof NetworkError) setFailure(FAILURE.offline)
       else if (caught instanceof ApiError && isGone(caught.code)) void navigate(HOME)
-      else setFailure('error')
+      else setFailure(FAILURE.error)
     } finally {
       setSending(false)
     }

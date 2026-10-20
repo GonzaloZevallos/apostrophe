@@ -124,54 +124,54 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Record an expense, with a category created inline.
   await openGastos(page)
-  await page.getByRole('link', { name: 'Cargar gasto' }).click()
-  await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
-  await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
-  await page.getByRole('button', { name: 'Crear categoría' }).click()
-  await page.getByLabel('Monto').fill('4500')
-  await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByRole('link', { name: 'Add expense' }).click()
+  await page.getByRole('button', { name: 'Create a new category' }).click()
+  await page.getByLabel('New category name').fill('Flete')
+  await page.getByRole('button', { name: 'Create category' }).click()
+  await page.getByLabel('Amount').fill('4500')
+  await page.getByLabel('Detail').fill('Flete al mercado')
+  await page.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
   await expect(page.getByText('Flete al mercado')).toBeVisible()
 
   // Edit it.
   await page.getByText('Flete al mercado').click()
-  await page.getByLabel('Detalle').fill('Flete al mercado central')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByLabel('Detail').fill('Flete al mercado central')
+  await page.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toBeVisible()
 
   // Delete it.
   await page.getByText('Flete al mercado central').click()
-  await page.getByRole('button', { name: 'Borrar gasto' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page.getByText('Gasto eliminado')).toBeVisible()
+  await page.getByRole('button', { name: 'Delete expense' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await expect(page.getByText('Expense deleted')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
   // Move between months: the month lives in the URL, one step back and one forward.
-  await page.getByRole('button', { name: 'Mes anterior' }).click()
+  await page.getByRole('button', { name: 'Previous month' }).click()
   await expectPath(page, EXPENSES, /\?month=\d{4}-\d{2}/)
-  await page.getByRole('button', { name: 'Mes siguiente' }).click()
-  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
+  await page.getByRole('button', { name: 'Next month' }).click()
+  await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
   // app shows the English screen (the one old Gastos path and one old Más path of
   // the run; every other step reaches a screen through the nav or its real path).
   await page.goto(`${legacyFor(EXPENSES)}?month=2026-01`)
   await expectPath(page, EXPENSES, '?month=2026-01')
-  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
+  await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
   await page.reload()
   await expectPath(page, EXPENSES, '?month=2026-01')
-  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
+  await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
   await page.goto(legacyFor(MORE))
   await expectPath(page, MORE)
   await expect(
-    page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
+    page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }),
   ).toBeVisible()
   await page.reload()
   await expectPath(page, MORE)
   await expect(
-    page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
+    page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }),
   ).toBeVisible()
 
   // Add and remove an expense category. "Growing supplies", "Packaging",

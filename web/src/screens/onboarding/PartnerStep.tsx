@@ -11,21 +11,23 @@ import InvitePartner from '../settings/InvitePartner'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import * as copy from '../../copy/onboarding'
+import { PASS, SLUG } from './steps'
 
-const CREATE_LINK = { label: 'Crear el link', variant: 'primary' } as const
+const CREATE_LINK = { label: copy.CREATE_THE_LINK, variant: 'primary' } as const
 
 export default function PartnerStep({ progress, onProgress }: StepBodyProps) {
   const [created, setCreated] = useState(false)
   const { run, sending, notice } = useOnboardingWrite(onProgress)
-  const done = progress.steps.find((item) => item.step === 'partner')?.state === 'done'
+  const done = progress.steps.find((item) => item.step === SLUG.partner)?.state === 'done'
 
   return (
     <>
-      {done && <span className="onboarding__insignia">Hecho</span>}
+      {done && <span className="onboarding__insignia">{copy.DONE}</span>}
       <InvitePartner onLinkCreated={() => setCreated(true)} action={CREATE_LINK} />
       {(created || done) && (
-        <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass('partner', 'done'))}>
-          Seguir
+        <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass(SLUG.partner, PASS.done))}>
+          {copy.CONTINUE}
         </StepSubmit>
       )}
       {notice}

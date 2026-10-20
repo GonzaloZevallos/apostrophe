@@ -266,12 +266,12 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // An expense, in the business's own default "Other" category.
   await openGastos(page)
-  await page.getByRole('link', { name: 'Cargar gasto' }).click()
-  await page.getByLabel('Categoría').selectOption({ label: 'Other' })
-  await page.getByLabel('Monto').fill('1500')
-  await page.getByLabel('Detalle').fill('Bolsas de regalo')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByRole('link', { name: 'Add expense' }).click()
+  await page.getByLabel('Category').selectOption({ label: 'Other' })
+  await page.getByLabel('Amount').fill('1500')
+  await page.getByLabel('Detail').fill('Bolsas de regalo')
+  await page.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
   // figure for figure, never recomputed here (plan invariant).
@@ -280,36 +280,36 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   )
 
   await page.goto(HOME)
-  await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
+  await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
 
   async function assertPeriod(period: PanelPeriod, rangeText: string, showsResults: boolean): Promise<void> {
     await expect(page.locator('.periodos .pie')).toContainText(rangeText)
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
     if (showsResults) {
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Ganancia' }).locator('.panel-resultados__valor--acento'),
+        page.locator('.panel-resultados__celda').filter({ hasText: 'Profit' }).locator('.panel-resultados__valor--acento'),
       ).toHaveText(signedPesos(period.profit))
       await expect(
-        page.locator('.panel-resultados__celda').filter({ hasText: 'Caja' }).locator('.panel-resultados__valor'),
+        page.locator('.panel-resultados__celda').filter({ hasText: 'Cash' }).locator('.panel-resultados__valor'),
       ).toHaveText(signedPesos(period.cash))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' }).locator('.panel-lista__valor'),
+        page.locator('.panel-lista__fila').filter({ hasText: 'Cost of goods sold' }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.cost_of_goods))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Gastos' }).locator('.panel-lista__valor'),
+        page.locator('.panel-lista__fila').filter({ hasText: 'Expenses' }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.expenses))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Regalaste' }).locator('.panel-lista__valor'),
+        page.locator('.panel-lista__fila').filter({ hasText: 'You gifted' }).locator('.panel-lista__valor'),
       ).toHaveText(grams(period.grams_gifted))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Compras de flores' }).locator('.panel-lista__valor'),
+        page.locator('.panel-lista__fila').filter({ hasText: 'Flower purchases' }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
       // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
       // never under Caja (plan, PRD: "Caja never carries it").
       await expect(page.getByText('incluye costo pendiente')).toHaveCount(period.pending_cost ? 2 : 0)
     } else {
       // Hoy is only what can be acted on (results.md): no result figure at all.
-      for (const label of ['Ganancia', 'Caja', 'Costo de lo vendido', 'Gastos', 'Regalaste', 'Compras de flores']) {
+      for (const label of ['Profit', 'Cash', 'Cost of goods sold', 'Expenses', 'You gifted', 'Flower purchases']) {
         await expect(page.locator('main').getByText(label, { exact: true })).toHaveCount(0)
       }
       await expect(page.getByText('incluye costo pendiente')).toHaveCount(0)
@@ -322,24 +322,24 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     const subtitle =
       period.average_sale === null
         ? `${count} · ${gramsSoldText}`
-        : `${count} · promedio ${pesos(period.average_sale)} · ${gramsSoldText}`
+        : `${count} · average ${pesos(period.average_sale)} · ${gramsSoldText}`
     await expect(page.locator('.panel-ventas .pie')).toHaveText(subtitle)
   }
 
   // Hoy: the panel opens here (plan, "Front").
-  await expect(page.getByRole('button', { name: 'Hoy', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Today', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await assertPeriod(panel.periods.today, shortDate(todayIso), false)
 
   // Semana.
-  await page.getByRole('button', { name: 'Semana' }).click()
+  await page.getByRole('button', { name: 'Week' }).click()
   await assertPeriod(panel.periods.week, `${shortDate(panel.periods.week.start)} – ${shortDate(panel.periods.week.end)}`, true)
 
   // Mes.
-  await page.getByRole('button', { name: 'Mes' }).click()
+  await page.getByRole('button', { name: 'Month' }).click()
   await assertPeriod(panel.periods.month, `${shortDate(panel.periods.month.start)} – ${shortDate(panel.periods.month.end)}`, true)
 
   // Back to Hoy for the rest of the run.
-  await page.getByRole('button', { name: 'Hoy', exact: true }).click()
+  await page.getByRole('button', { name: 'Today', exact: true }).click()
 
   // Lo que te queda: Rosa's own row, straight from the fetched answer — grams,
   // status (shape and word), the detail line, and the side badge, which is the
@@ -363,7 +363,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const debtsSubtitle =
     panel.debts.oldest === null
       ? countLabel(panel.debts.sales_owing_count)
-      : `${countLabel(panel.debts.sales_owing_count)} · desde ${shortDate(panel.debts.oldest)}`
+      : `${countLabel(panel.debts.sales_owing_count)} · since ${shortDate(panel.debts.oldest)}`
   await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
   // The direct child only: each teaser row below carries its own `.pie` too
   // ("desde dd/mm"), nested inside its own `<Link>`, never a direct child here.
@@ -373,15 +373,15 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   if (teaserRow === undefined) throw new Error('empty teaser in GET /panel')
   const teaserLink = page.locator('.bloque-deben__fila').filter({ hasText: teaserRow.name })
   await expect(teaserLink).toContainText(pesos(teaserRow.balance))
-  await expect(teaserLink).toContainText(`desde ${shortDate(teaserRow.owing_since)}`)
+  await expect(teaserLink).toContainText(`since ${shortDate(teaserRow.owing_since)}`)
 
   // Opens Te deben from the block's own heading, then goes back to Inicio.
-  await page.getByRole('link', { name: 'Te deben' }).click()
+  await page.getByRole('link', { name: 'Owed to you' }).click()
   await expectPath(page, CUSTOMERS)
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
   await page.goBack()
   await expectPath(page, HOME)
-  await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
+  await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
 
   // The teaser: Carla's own row, opening her card.
   await page.getByRole('link', { name: teaserRow.name }).first().click()

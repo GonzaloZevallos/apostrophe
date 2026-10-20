@@ -18,6 +18,8 @@ import {
   STEP_STOCK_ENTRY,
 } from '../../copy/home'
 
+const CHECKLIST_ID = 'checklist-titulo'
+
 const LABEL: Record<ChecklistStepName, string> = {
   priced_variety: STEP_PRICED_VARIETY,
   stock_entry: STEP_STOCK_ENTRY,
@@ -27,11 +29,11 @@ const LABEL: Record<ChecklistStepName, string> = {
 
 export default function FirstRunChecklist({ steps }: { steps: ChecklistStepAnswer[] }) {
   return (
-    <section className="checklist" aria-labelledby="checklist-titulo">
-      <h2 className="checklist__titulo" id="checklist-titulo">
+    <section className="checklist" aria-labelledby={CHECKLIST_ID}>
+      <h2 className="checklist__titulo" id={CHECKLIST_ID}>
         {CHECKLIST_TITLE}
       </h2>
-      <ul className="checklist__lista" aria-labelledby="checklist-titulo">
+      <ul className="checklist__lista" aria-labelledby={CHECKLIST_ID}>
         {steps.map((step) => (
           <li key={step.step} className="checklist__paso">
             <span

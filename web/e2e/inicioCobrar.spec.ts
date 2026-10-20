@@ -63,14 +63,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
 
     // "Cerrar" returns to Inicio in one move.
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await expect(page.locator('.panel__titulo', { hasText: 'Record payment' })).toBeVisible()
     await page.getByRole('button', { name: 'Close' }).click()
     await expectPath(page, HOME)
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
 
     // A partial payment: back on Inicio, the row keeps its new balance.
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByLabel('Amount').fill('2000')
     await page.getByRole('radio', { name: 'Cash' }).check()
     await page.getByRole('button', { name: 'Save' }).click()
@@ -81,14 +81,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 3.000')
 
     // The rest, with "Todo": the row leaves and the block reads "Nobody owes you".
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'All: $ 3.000' }).click()
     await page.getByRole('radio', { name: 'Transfer' }).check()
     await page.getByRole('button', { name: 'Save' }).click()
     await expectPath(page, HOME)
     await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
     await expect(page.getByText('Nobody owes you')).toBeVisible()
-    await expect(page.getByRole('link', { name: /^Cobrar a / })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: /^Collect from / })).toHaveCount(0)
 
     // One move: Back from Inicio does not land on Record payment again.
     await page.goBack()

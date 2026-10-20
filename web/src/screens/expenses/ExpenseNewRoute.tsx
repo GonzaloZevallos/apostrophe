@@ -19,9 +19,13 @@ import type { SuccessToast } from '../../components/AvisoExito'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { DISCARD_NEW_CANCEL, DISCARD_NEW_CONFIRM, DISCARD_NEW_DETAIL, DISCARD_NEW_TITLE } from '../../copy/expenses'
 import { useFlash } from '../../flash/useFlash'
 import { EXPENSES } from '../../routes'
 import ExpenseForm from './ExpenseForm'
+
+const EXPENSES_KEY = 'expenses' as const
+const NEW_TARGET = 'nuevo' as const
 
 export default function ExpenseNewRoute() {
   const queryClient = useQueryClient()
@@ -31,7 +35,7 @@ export default function ExpenseNewRoute() {
   const leave = useBackOr(EXPENSES)
 
   function onDone(saved: SuccessToast): void {
-    invalidateResource(queryClient, 'expenses')
+    invalidateResource(queryClient, EXPENSES_KEY)
     flash.armAfterLeaving(saved)
     disarm()
     leave()
@@ -40,15 +44,15 @@ export default function ExpenseNewRoute() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <ExpenseForm target="nuevo" onDone={onDone} onCancel={leave} onDirtyChange={setDirty} />
+        <ExpenseForm target={NEW_TARGET} onDone={onDone} onCancel={leave} onDirtyChange={setDirty} />
       </div>
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el gasto?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={DISCARD_NEW_TITLE}
+          detail={DISCARD_NEW_DETAIL}
+          keepLabel={DISCARD_NEW_CANCEL}
+          discardLabel={DISCARD_NEW_CONFIRM}
         />
       )}
     </main>

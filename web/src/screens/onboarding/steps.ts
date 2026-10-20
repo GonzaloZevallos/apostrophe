@@ -14,6 +14,20 @@ import {
   ONBOARDING_STOCK,
   ONBOARDING_VARIETY,
 } from '../../routes'
+import * as copy from '../../copy/onboarding'
+
+/** The API's slugs, answers and states: codes, never shown. */
+export const SLUG = {
+  variety: 'variety',
+  stock: 'stock',
+  header_footer: 'header_footer',
+  bot: 'bot',
+  partner: 'partner',
+  categories: 'categories',
+} as const
+export const PASS = { done: 'done', skipped: 'skipped' } as const
+export const STATE = { pending: 'pending' } as const
+export const FAILURE = { offline: 'offline', error: 'error' } as const
 
 export interface StepInfo {
   slug: StepSlug
@@ -21,74 +35,74 @@ export interface StepInfo {
   required: boolean
   title: string
   why: string
-  /** How the notice names it after "Falta:". */
+  /** How the notice names it after "Missing:". */
   shortName: string
   /** How "Listo" names it. */
   name: string
-  /** Where a skipped step is done later: "Configuración → <group>". */
+  /** Where a skipped step is done later: "Settings → <group>". */
   later: string
 }
 
 export const STEPS: readonly StepInfo[] = [
   {
-    slug: 'variety',
+    slug: SLUG.variety,
     path: ONBOARDING_VARIETY,
     required: true,
-    title: 'Cargá tu primera variedad',
-    why: 'Para vender, cada variedad necesita un nombre y su precio de hoy.',
-    shortName: 'variedad con precio',
-    name: 'Variedad con precio',
-    later: 'Variedades',
+    title: copy.STEP_VARIETY_TITLE,
+    why: copy.STEP_VARIETY_WHY,
+    shortName: copy.STEP_VARIETY_SHORT,
+    name: copy.STEP_VARIETY_NAME,
+    later: copy.LATER_VARIETIES,
   },
   {
-    slug: 'stock',
+    slug: SLUG.stock,
     path: ONBOARDING_STOCK,
     required: true,
-    title: 'Cargá lo que tenés hoy',
-    why: 'Sin stock no se puede vender: contanos cuántos gramos tenés de esta variedad.',
-    shortName: 'stock inicial',
-    name: 'Stock inicial',
-    later: 'Variedades',
+    title: copy.STEP_STOCK_TITLE,
+    why: copy.STEP_STOCK_WHY,
+    shortName: copy.STEP_STOCK_SHORT,
+    name: copy.STEP_STOCK_NAME,
+    later: copy.LATER_VARIETIES,
   },
   {
-    slug: 'header_footer',
+    slug: SLUG.header_footer,
     path: ONBOARDING_CATALOG_MESSAGE,
     required: false,
-    title: 'Cómo sale tu catálogo',
-    why: 'El encabezado y el pie van en cada catálogo que mandás. Ya tienen un texto: dejalo así o cambialo.',
-    shortName: 'mensaje del catálogo',
-    name: 'Mensaje del catálogo',
-    later: 'Configuración → Mensaje del catálogo',
+    title: copy.STEP_MESSAGE_TITLE,
+    why: copy.STEP_MESSAGE_WHY,
+    shortName: copy.STEP_MESSAGE_SHORT,
+    name: copy.STEP_MESSAGE_NAME,
+    later: copy.laterIn(copy.STEP_MESSAGE_GROUP),
   },
   {
-    slug: 'bot',
+    slug: SLUG.bot,
     path: ONBOARDING_BOT,
     required: false,
-    title: 'Conectá tu bot de Telegram',
-    why: 'Con el bot, tu catálogo se publica y se actualiza solo en tu canal.',
-    shortName: 'bot de Telegram',
-    name: 'Bot de Telegram',
-    later: 'Configuración → Integraciones',
+    title: copy.STEP_BOT_TITLE,
+    why: copy.STEP_BOT_WHY,
+    shortName: copy.STEP_BOT_SHORT,
+    name: copy.STEP_BOT_NAME,
+    later: copy.laterIn(copy.STEP_BOT_GROUP),
   },
   {
-    slug: 'partner',
+    slug: SLUG.partner,
     path: ONBOARDING_PARTNER,
     required: false,
-    title: 'Enviale el link a tu socio',
-    why: 'Con el link tu socio entra a este negocio y ve lo mismo que vos. No hace falta que se sume ahora.',
-    shortName: 'socio',
-    name: 'Socio',
-    later: 'Configuración → Usuarios',
+    title: copy.STEP_PARTNER_TITLE,
+    why: copy.STEP_PARTNER_WHY,
+    shortName: copy.STEP_PARTNER_SHORT,
+    name: copy.STEP_PARTNER_NAME,
+    later: copy.laterIn(copy.STEP_PARTNER_GROUP),
   },
   {
-    slug: 'categories',
+    slug: SLUG.categories,
     path: ONBOARDING_CATEGORIES,
     required: false,
-    title: 'Categorías de gastos',
-    why: 'Ordenan lo que gastás. Ya tenés las más comunes: sumá, renombrá o sacá las que quieras.',
-    shortName: 'categorías de gastos',
-    name: 'Categorías de gastos',
-    later: 'Configuración → Categorías de gastos',
+    title: copy.STEP_CATEGORIES_TITLE,
+    why: copy.STEP_CATEGORIES_WHY,
+    shortName: copy.STEP_CATEGORIES_SHORT,
+    name: copy.STEP_CATEGORIES_NAME,
+    later: copy.laterIn(copy.STEP_CATEGORIES_GROUP),
   },
 ]
 
@@ -108,12 +122,12 @@ export function isOptional(slug: StepSlug): slug is OptionalStepSlug {
   return !stepInfo(slug).required
 }
 
-/** The first step has no step before it: no "Atrás". */
+/** The first step has no step before it: no "Back". */
 export function isFirst(slug: StepSlug): boolean {
   return stepNumber(slug) === 1
 }
 
-/** The last step has no step after it: no "Saltar el resto". */
+/** The last step has no step after it: no "Skip the rest". */
 export function isLast(slug: StepSlug): boolean {
   return stepNumber(slug) === STEP_COUNT
 }
@@ -125,5 +139,5 @@ export function previousPath(slug: StepSlug): string | undefined {
 
 /** The sentence under a skippable step's buttons, saying where it can be done later. */
 export function laterHint(info: StepInfo): string {
-  return `Si lo salteás, lo hacés después en ${info.later}.`
+  return copy.laterHint(info.later)
 }

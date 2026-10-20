@@ -32,6 +32,8 @@ import {
 import { SAVE_OVERRIDES } from '../varieties/varietyForms'
 import { hasAnotherVariety } from './anotherVariety'
 
+const VARIETIES_KEY = 'varieties' as const
+
 export interface VarietyWithPriceOptions {
   /** The variety already saved without a price (the progress' `price_target`), if any. */
   seed: OnboardingTarget | null
@@ -91,7 +93,7 @@ export function useVarietyWithPrice({
       else setNameError(nameLine(caught))
       return null
     }
-    invalidateResource(queryClient, 'varieties')
+    invalidateResource(queryClient, VARIETIES_KEY)
     if (hasAnotherVariety(location.state)) {
       flushSync(() => onDirtyChange(false, true))
       await navigate(location.pathname, { replace: true })
@@ -108,12 +110,12 @@ export function useVarietyWithPrice({
   async function savePrice(variety: OnboardingTarget, amounts: PriceAmounts): Promise<boolean> {
     try {
       await post(`/varieties/${variety.id}/prices`, { effective_from: today, ...amounts })
-      invalidateResource(queryClient, 'varieties')
+      invalidateResource(queryClient, VARIETIES_KEY)
       return true
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         // The variety went away: the name field comes back, and the answer says what is left.
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, VARIETIES_KEY)
         setSaved(null)
         void refreshProgress(queryClient)
       } else if (caught instanceof ApiError) {

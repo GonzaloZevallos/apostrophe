@@ -41,7 +41,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // From Más: a promotion of 5 g. The reason has no default, so saving waits for it.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Sacar del stock/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Take out of stock/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === WITHDRAWAL_NEW)
   await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
   await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: 'Rosa' })
@@ -66,7 +66,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // A third one, a promotion of 1 g, to delete.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Sacar del stock/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Take out of stock/ }).click()
   await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Promotion', exact: true }).click()
@@ -97,30 +97,30 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // Inicio: Hoy shows neither line; Semana and Mes show both, at lot cost.
   await page.goto(HOME)
-  await expect(page.getByText('Vendiste hoy')).toBeVisible()
-  await expect(page.getByText('Promoción')).toHaveCount(0)
-  await expect(page.getByText('Consumo propio')).toHaveCount(0)
+  await expect(page.getByText('You sold today')).toBeVisible()
+  await expect(page.getByText('Promotion')).toHaveCount(0)
+  await expect(page.getByText('Own use')).toHaveCount(0)
   for (const [tab, heading] of [
-    ['Semana', 'Vendiste esta semana'],
-    ['Mes', 'Vendiste este mes'],
+    ['Week', 'You sold this week'],
+    ['Month', 'You sold this month'],
   ] as const) {
     await page.getByRole('button', { name: tab, exact: true }).click()
     await expect(page.getByText(heading)).toBeVisible()
-    const promotion = page.locator('.panel-lista__fila').filter({ hasText: 'Promoción' })
+    const promotion = page.locator('.panel-lista__fila').filter({ hasText: 'Promotion' })
     await expect(promotion).toContainText('$ 1.600')
-    const ownUse = page.locator('.panel-lista__fila').filter({ hasText: 'Consumo propio' })
+    const ownUse = page.locator('.panel-lista__fila').filter({ hasText: 'Own use' })
     await expect(ownUse).toContainText('$ 800')
-    await expect(page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' })).toContainText(
+    await expect(page.locator('.panel-lista__fila').filter({ hasText: 'Cost of goods sold' })).toContainText(
       '$ 0',
     )
   }
 
   // Análisis: the same two figures, apart from Faltante de stock.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Analysis/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === ANALYSIS)
-  await expect(page.getByText('Promoción $ 1.600').first()).toBeVisible()
-  await expect(page.getByText('Consumo propio $ 800').first()).toBeVisible()
+  await expect(page.getByText('Promotion $ 1.600').first()).toBeVisible()
+  await expect(page.getByText('Own use $ 800').first()).toBeVisible()
 
   expect(consoleMessages).toEqual([])
 })

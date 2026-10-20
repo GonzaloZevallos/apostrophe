@@ -23,12 +23,12 @@ const VIEWPORTS = [
   { name: 'computer', width: 1280, height: 800 },
 ]
 
-const ONBOARDING_NOTICE = 'Seguí con la configuración'
+const ONBOARDING_NOTICE = 'Keep going with setup'
 const NOT_THERE = [
-  'Para arrancar',
-  'Arrancá por las variedades',
-  'Conectá el bot para que el catálogo fijado se actualice solo',
-  'Cargale un precio a una variedad para poder vender',
+  'To get started',
+  'Start with varieties',
+  'Connect the bot so the pinned catalog updates itself',
+  'Add a price to a variety to be able to sell',
 ]
 
 for (const viewport of VIEWPORTS) {
