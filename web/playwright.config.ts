@@ -40,8 +40,10 @@ const assignments = (env: Record<string, string>): string =>
 const readyOn = (port: number): RegExp =>
   new RegExp(`Uvicorn running on http://${E2E_HOST.replace(/\./g, '\\.')}:${port}\\b`)
 
-// One cell walks every registry screen twice (loaded, then held); a cell's own budget.
-const MOBILE_TEST_TIMEOUT_MS = 300_000
+// One cell walks every registry screen twice (loaded, then held); a cell's own budget. Alone
+// on a box under load (average ~30 on 16 cores) one cell passed in 234 s, and the eight cells
+// together overran the former 300 s, so the budget is at least 2x that longest duration.
+const MOBILE_TEST_TIMEOUT_MS = 600_000
 
 // Read once. The caller names the directory (a run never overwrites an earlier one); the
 // config never computes a name from the time or the sha.
