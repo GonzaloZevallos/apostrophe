@@ -304,7 +304,7 @@ Success criteria:
   line answers varieties' existing `variety.archived` (kind `gone`); there is no
   withdrawal-specific code for it.
 - No note, grams or amount goes to logs, the console or browser storage.
-- Copy is in Rioplatense Spanish with vos.
+- Copy is in English (`app-text.md`).
 
 ## Metrics
 

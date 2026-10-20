@@ -153,7 +153,7 @@ Success criteria:
 
 - Design-system elements only: tokens, components and both themes. No illustrations, animation, marketing copy, new colours or new components.
 - If nothing existing fits the progress indicator or the step layout, design draws it from tokens only, inside the design system, before it is built; it is never invented in code.
-- Rioplatense Spanish with vos. Nothing clipped at 320–430 px or at 130 % text; controls at least 44 px tall and inputs at least 16 px.
+- English (`app-text.md`). Nothing clipped at 320–430 px or at 130 % text; controls at least 44 px tall and inputs at least 16 px.
 - Every step and "All set" go into `scripts/design/screens.json`; `scripts/design/compare.sh` runs before and after, phone and computer, judged by eye.
 
 ### Reviewing a change against the design (criterion 6)

@@ -143,7 +143,7 @@ Success criteria:
 - **Computer**: the `AnalisisCompu` layout.
 - **Week and month rows**: how Cost of goods sold and Stock shortfall sit on a row (lines or sub-rows), on the phone and on a computer, is design's call. Each figure is in words, and pending and negative are told by word or sign, never by color alone, in both themes.
 - **Charts**: the accent and the tokens only; every bar carries its figure. Best marks, pending marks and negatives are told by word or shape, never by color alone.
-- **Language and formats**: Rioplatense Spanish with vos. Money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
+- **Language and formats**: English (`app-text.md`). Money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
 - **Read only**: no forms and no toasts. Figures come from the API on every open; the browser computes nothing, including whether a figure is fully pending.
 - **Feedback**: network loss and server errors follow accounts.md.
 

@@ -159,7 +159,7 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 - The old Catálogo had no separate paths for the bot or the header and footer, so nothing redirects to Integraciones or Mensaje del catálogo. Precios is new, so nothing redirects to it.
 - An unknown or mistyped address goes to Inicio (`/`), as it always has. An Onboarding path opened for a business whose Onboarding is over, or that never had one, goes to Inicio too. A later task that removes a path with no counterpart decides where that path goes.
 - No route carries a business (ADR-0004); a record's own id in a path is allowed. `/invitation/{token}` and `/reset/{token}` stay as they are (accounts.md).
-- Screen text stays in Rioplatense Spanish; only the routes change.
+- Screen text is English (`app-text.md`); the routes are English too, and the old Spanish paths redirect.
 
 ### Routes for screens still to be rebuilt
 

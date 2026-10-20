@@ -94,8 +94,7 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
 (the contract) and its screens in `docs/product/design-system/pantallas/`.
 
 - **Names in code are English**, the `CONTEXT.md` terms, as in the backend. **Every word
-  on screen is Spanish**, rioplatense with vos ("Cargá", "Te debe"), using the glossary's
-  `_In the app_` word.
+  on screen is English**, using the glossary's `_In the app_` word.
 - **The backend decides; the front shows.** A line's price, a sale's total, a balance and
   where a payment goes come from the API. The front may preview a computation before
   saving (the design's `precios.ts`), but what it shows after saving is what the API

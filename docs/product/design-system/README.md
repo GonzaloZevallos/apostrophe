@@ -53,7 +53,10 @@ un solo azul usado con cuentagotas.
 - **Líneas finas antes que tarjetas.** Sin sombras, sin bordes en los paneles.
 - **Un solo color de acento**, y sólo para acción, enlace y ganancia.
 - Rótulos en minúscula, escritos como frases ("Vendiste esta semana").
-- Castellano rioplatense con vos: Cargá, Guardá, Te debe, Elegí.
+- El idioma de la app es el inglés. Las pantallas de `pantallas/` y `muestra.md` están
+  escritas en castellano rioplatense: son la referencia de la estructura, no de las
+  palabras. Cada texto de la app lo escribe el módulo `web/src/copy/` en inglés, con la
+  palabra `_In the app_` del glosario.
 
 ## Accesibilidad — no se negocia
 

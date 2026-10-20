@@ -6,7 +6,7 @@ Two things are never app text:
 - seller data: what a seller typed or a stored seeded value now theirs;
 - the words the spreadsheet import reads from the sheet.
 
-**Precedence.** This file states the language rule for every capability. Until each capability file's quoted copy is updated, it wins over any "Rioplatense Spanish with vos" line and any quoted Spanish wording elsewhere in `docs/product/`. Those quotations keep their meaning and are rendered faithfully in English (GH-53).
+**Precedence.** This file states the language rule for every capability. Until each capability file's quoted copy is updated, it wins over any quoted Spanish wording elsewhere in `docs/product/`. Those quotations keep their meaning and are rendered faithfully in English (GH-53).
 
 ## Jobs
 
