@@ -59,7 +59,7 @@ function blank(css: string): string {
     const char = css.charAt(at)
     let stop = at + 1
     let piece = char
-    if (char === '/' && css.charAt(at + 1) === '*') {
+    if (css.startsWith('/*', at)) {
       const close = css.indexOf('*/', at + 2)
       stop = close < 0 ? css.length : close + 2
       piece = css.slice(at, stop).replace(/[^\n]/g, ' ')
