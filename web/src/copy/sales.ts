@@ -30,7 +30,10 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const SALES_TEXT = {
-  hoy0: (date: string | number) => `Hoy ${date}`,
+  ruleList: 'lista',
+  ruleBulk: 'por cantidad',
+  ruleGift: 'regalo',
+  ruleSpecial: 'especial',
   elegirCliente: 'Elegir cliente',
   envioCobrado: 'Envío cobrado',
   envio: 'Envío',
@@ -39,9 +42,7 @@ export const SALES_TEXT = {
   guardaLaVenta: 'Guardá la venta',
   descartasLaVenta: '¿Descartás la venta?',
   noVasAPoder: 'No vas a poder recuperar lo que cargaste.',
-  siDescartala: 'Sí, descartala',
   buscar: 'Buscar',
-  telefonoONombre: 'Teléfono o nombre',
   sinCliente: 'Sin cliente',
   crearCliente: 'Crear cliente',
   linea01: (n: string | number, displayName: string | number) => `Línea ${n}: ${displayName}`,
@@ -67,7 +68,6 @@ export const SALES_TEXT = {
   elegiComoSePago: 'Elegí cómo se pagó, o dejá la venta debiendo',
   elPrecioEspecialTiene: 'El precio especial tiene que ser mayor a $0',
   cargaLosGramosComa: 'Cargá los gramos: coma, hasta dos decimales',
-  elegiUnaVariedad: 'Elegí una variedad',
   elEnvioNoPuede: 'El envío no puede ser negativo',
   laNotaEsDemasiado: 'La nota es demasiado larga',
   sinVariedad: 'Sin variedad',
