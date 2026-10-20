@@ -137,10 +137,7 @@ export const WITHDRAWAL_REFUSAL_MESSAGES = {
 
 /** The refusals' texts are not always-visible copy: none is a help line, notice or empty
  * state, and the long ones are the pin's reasons, which `catalog.ts` measures behind
- * their "Desactualizado" title. */
-/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
- * section that says so. Removed with the section's English wording (ADR-0048). */
-export const PENDING = true
+ * their "Out of date" title. */
 
 export const LIMITED_COPY: readonly LimitedCopy[] = []
 export const LONG_REFUSALS: readonly string[] = []

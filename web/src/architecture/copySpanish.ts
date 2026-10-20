@@ -1,6 +1,6 @@
 /**
- * The Spanish rule over `web/src/copy/` (ADR-0048). Every section that does not export
- * `PENDING = true` is read; each value is rendered (a function entry is called with the
+ * The Spanish rule over `web/src/copy/` (ADR-0048). Every section is read, none can opt out;
+ * each value is rendered (a function entry is called with the
  * `SAMPLES` the limits use), NFC-normalised, trimmed and case-folded, and fails when:
  *
  * - it equals any value of `fixtures/copyBaseline.es.json` (the Spanish the app had, keys
@@ -10,8 +10,7 @@
  * - it trips `spanishMarkers.json` (the accented letters and `¿ ¡`, and a closed stoplist of
  *   unambiguous Spanish words), the list the backend guard shares.
  *
- * A violation names the section and the entry, never the text. `PENDING` and the
- * `SAME_IN_BOTH` allowance are both removed in the closing subtask.
+ * A violation names the section and the entry, never the text.
  *
  * It is a ratchet, not a proof: an unaccented Spanish word that is in neither list passes,
  * and review owns it (ADR-0048, known risks).
@@ -28,13 +27,12 @@ export interface SameInBoth {
 
 /** What a section of `web/src/copy/` exports besides its texts. */
 export interface Section {
-  PENDING?: unknown
   SAME_IN_BOTH?: readonly SameInBoth[]
   [name: string]: unknown
 }
 
 /** Exports that repeat texts the section already exports, or are not texts. */
-const NOT_TEXT = new Set(['PENDING', 'SAME_IN_BOTH', 'LIMITED_COPY', 'LONG_REFUSALS'])
+const NOT_TEXT = new Set(['SAME_IN_BOTH', 'LIMITED_COPY', 'LONG_REFUSALS'])
 
 /** The arguments a function entry is rendered with: each placeholder at its worst case,
  * flags both ways, a count of one and of many. Every combination is tried up to three
@@ -113,9 +111,8 @@ export function spanishMarker(text: string): string | null {
 }
 
 /** The violations of one section, each a sentence naming the section and the entry. Empty
- * when the section is sound or `PENDING`. */
+ * when the section is sound. */
 export function spanishProblems(path: string, section: Section, baseline: ReadonlySet<string> = BASELINE): string[] {
-  if (section.PENDING === true) return []
   const problems: string[] = []
   const allowed = new Map<string, string>()
   for (const { value, reason } of section.SAME_IN_BOTH ?? []) {

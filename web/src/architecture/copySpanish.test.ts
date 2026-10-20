@@ -1,10 +1,10 @@
 /** `spanishProblems` on fixtures: each way Spanish survives in a section is refused, and
- * English, a same-in-both word and a skipped `PENDING` section pass. */
+ * English and a same-in-both word pass. No section can opt out. */
 
 import { describe, expect, test } from 'vitest'
 import { fold, spanishMarker, spanishProblems, type Section } from './copySpanish'
 
-describe('a section that is not PENDING', () => {
+describe('a section', () => {
   test('refuses a renamed key that keeps a baseline text', () => {
     // 'Precio guardado' is a baseline text no marker catches: only the baseline does.
     const section: Section = { PRICE_SAVED_TOAST: 'Precio guardado' }
@@ -78,9 +78,11 @@ describe('a section that is not PENDING', () => {
   })
 })
 
-describe('a PENDING section is skipped', () => {
-  test('whatever it says', () => {
-    expect(spanishProblems('copy/sales.ts', { PENDING: true, SAVE: 'Guardar' })).toEqual([])
+describe('a section cannot opt out', () => {
+  test('a leftover PENDING export does not skip it', () => {
+    expect(spanishProblems('copy/sales.ts', { PENDING: true, SAVE: 'Guardar' })).toEqual([
+      'copy/sales.ts: SAVE trips the Spanish marker "guardar"',
+    ])
   })
 })
 

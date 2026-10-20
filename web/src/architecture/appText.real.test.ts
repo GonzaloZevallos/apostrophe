@@ -1,9 +1,8 @@
-/** The visible-literal rule over the real tree (ADR-0048): every non-test `.ts`/`.tsx`
- * that writes a text of its own is in exactly one text-ledger, and a ledger only shrinks. */
+/** The visible-literal rule over the real tree (ADR-0048): no non-test `.ts`/`.tsx` writes a
+ * text of its own. There is no allowance: a file that does is moved to `src/copy/`. */
 
 import { expect, test } from 'vitest'
 import { findVisibleLiterals, isScanned } from './appText'
-import { ledgerProblems } from './textLedger'
 
 const sources = import.meta.glob(['/src/**/*.ts', '/src/**/*.tsx'], {
   query: '?raw',
@@ -11,27 +10,7 @@ const sources = import.meta.glob(['/src/**/*.ts', '/src/**/*.tsx'], {
   eager: true,
 }) as Record<string, string>
 
-const ledgerModules = import.meta.glob<string[]>('./textLeft/*.json', { import: 'default', eager: true })
-
-const OWNERS = [
-  'getting-in-settings',
-  'home-analysis-expenses-onboarding',
-  'sales-customers',
-  'shared',
-  'varieties-stock-catalog',
-]
-
-function ledgers(): Record<string, string[]> {
-  return Object.fromEntries(
-    Object.entries(ledgerModules).map(([path, files]) => [path.replace(/^.*\/(.*)\.json$/, '$1'), files]),
-  )
-}
-
-test('the ledgers are exactly the owners the plan names', () => {
-  expect(Object.keys(ledgers()).sort()).toEqual(OWNERS)
-})
-
-test('every file that writes a visible literal is in one ledger, and every ledger entry still offends', () => {
+test('no scanned file writes a visible literal of its own, and there is no text-ledger left', () => {
   const scanned = Object.entries(sources)
     .map(([path, source]) => ({ path: path.replace(/^\//, ''), source }))
     .filter(({ path }) => isScanned(path))
@@ -39,5 +18,10 @@ test('every file that writes a visible literal is in one ledger, and every ledge
   const offenders = scanned
     .filter(({ path, source }) => findVisibleLiterals(path, source).length > 0)
     .map(({ path }) => path)
-  expect(ledgerProblems(offenders, ledgers())).toEqual([])
+  expect(offenders).toEqual([])
+})
+
+test('the text-ledger directory is gone', () => {
+  const ledgers = import.meta.glob('./textLeft/*.json', { eager: true })
+  expect(Object.keys(ledgers)).toEqual([])
 })

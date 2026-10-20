@@ -30,8 +30,7 @@
  *   literals, or a local alias of one.
  *
  * A context added later is added to this list with its reason, never as a per-file
- * exemption: the only allowance is a text-ledger (`textLeft/<owner>.json`), which only
- * shrinks (`appText.real.test.ts`).
+ * exemption: the rule has no allowance at all (`appText.real.test.ts`).
  *
  * The scan reads files and nothing else, so it gives the same verdict on any date.
  */
