@@ -1,7 +1,7 @@
 /**
  * Semana's and Mes's figures on their own (Testing Library, no `fetch`): every figure is a
  * named group, in results.md's order, a missing withdrawal line is no group at all, a
- * negative Ganancia and Caja read "−$ X", and Hoy draws the headline with no figure group.
+ * negative Profit and Caja read "−$ X", and Hoy draws the headline with no figure group.
  */
 
 import { render, screen, within } from '@testing-library/react'
@@ -15,15 +15,15 @@ const WEEK: PanelPeriod = PANEL.periods.week
 const MONTH: PanelPeriod = PANEL.periods.month
 
 const FIGURE_LABELS = [
-  'Regalaste',
-  'Costo de lo vendido',
-  'Faltante de stock',
-  'Promoción',
-  'Consumo propio',
-  'Gastos',
-  'Compras de flores',
-  'Ganancia',
-  'Caja',
+  'You gifted',
+  'Cost of goods sold',
+  'Stock shortfall',
+  'Promotion',
+  'Own use',
+  'Expenses',
+  'Flower purchases',
+  'Profit',
+  'Cash',
 ]
 
 /** The names of the figure groups on screen, in document order, from the closed list of
@@ -36,27 +36,27 @@ function figureNames(): string[] {
     .filter((name) => FIGURE_LABELS.includes(name))
 }
 
-test('Semana draws the seven list figures in results.md order, then Ganancia and Caja', () => {
+test('Semana draws the seven list figures in results.md order, then Profit and Caja', () => {
   render(<PeriodFigures tab="week" period={WEEK} />)
 
   expect(figureNames()).toEqual(FIGURE_LABELS)
-  const gastos = screen.getByRole('group', { name: 'Gastos' })
+  const gastos = screen.getByRole('group', { name: 'Expenses' })
   expect(within(gastos).getByText('$ 12.000')).toBeInTheDocument()
-  expect(within(screen.getByRole('group', { name: 'Regalaste' })).getByText('2 g')).toBeInTheDocument()
+  expect(within(screen.getByRole('group', { name: 'You gifted' })).getByText('2 g')).toBeInTheDocument()
 })
 
 test('a withdrawal line the period does not have is no group, never a $ 0 one', () => {
   render(<PeriodFigures tab="month" period={MONTH} />)
 
   expect(figureNames()).toEqual([
-    'Regalaste',
-    'Costo de lo vendido',
-    'Gastos',
-    'Compras de flores',
-    'Ganancia',
-    'Caja',
+    'You gifted',
+    'Cost of goods sold',
+    'Expenses',
+    'Flower purchases',
+    'Profit',
+    'Cash',
   ])
-  for (const label of ['Faltante de stock', 'Promoción', 'Consumo propio']) {
+  for (const label of ['Stock shortfall', 'Promotion', 'Own use']) {
     expect(screen.queryByRole('group', { name: label })).toBeNull()
   }
 })
@@ -64,8 +64,8 @@ test('a withdrawal line the period does not have is no group, never a $ 0 one', 
 test('each pending note sits inside the group it qualifies, and never inside Caja', () => {
   render(<PeriodFigures tab="week" period={{ ...WEEK, pending_cost: true }} />)
 
-  const note = 'incluye costo pendiente'
-  const withNote = ['Costo de lo vendido', 'Faltante de stock', 'Promoción', 'Ganancia']
+  const note = 'includes pending cost'
+  const withNote = ['Cost of goods sold', 'Stock shortfall', 'Promotion', 'Profit']
   for (const label of FIGURE_LABELS) {
     const group = screen.getByRole('group', { name: label })
     if (withNote.includes(label)) expect(within(group).getByText(note)).toBeInTheDocument()
@@ -74,12 +74,12 @@ test('each pending note sits inside the group it qualifies, and never inside Caj
   expect(screen.getAllByText(note)).toHaveLength(withNote.length)
 })
 
-test('a negative Ganancia and Caja read "−$ X", and Ganancia keeps its accent', () => {
+test('a negative Profit and Caja read "−$ X", and Profit keeps its accent', () => {
   render(<PeriodFigures tab="week" period={{ ...WEEK, profit: -5000, cash: -12000 }} />)
 
-  const ganancia = within(screen.getByRole('group', { name: 'Ganancia' })).getByText('−$ 5.000')
+  const ganancia = within(screen.getByRole('group', { name: 'Profit' })).getByText('−$ 5.000')
   expect(ganancia).toHaveClass('panel-resultados__valor--acento')
-  const caja = within(screen.getByRole('group', { name: 'Caja' })).getByText('−$ 12.000')
+  const caja = within(screen.getByRole('group', { name: 'Cash' })).getByText('−$ 12.000')
   expect(caja).not.toHaveClass('panel-resultados__valor--acento')
 })
 
@@ -88,16 +88,16 @@ test('the periods wrapper carries the figures modifier on Semana and Mes, never 
   expect(container.querySelector('.panel-periodo')).not.toBeNull()
   expect(container.querySelector('.panel-periodo--con-cifras')).toBeNull()
   expect(container.querySelector('.panel-cifras')).toBeNull()
-  expect(screen.getByText('Vendiste hoy')).toBeInTheDocument()
+  expect(screen.getByText('You sold today')).toBeInTheDocument()
   expect(screen.queryAllByRole('group')).toHaveLength(0)
 
   rerender(<PeriodPanel tab="week" period={WEEK} />)
   expect(container.querySelector('.panel-periodo--con-cifras')).not.toBeNull()
-  expect(screen.getByText('Vendiste esta semana')).toBeInTheDocument()
+  expect(screen.getByText('You sold this week')).toBeInTheDocument()
 
   rerender(<PeriodPanel tab="month" period={MONTH} />)
   expect(container.querySelector('.panel-periodo--con-cifras')).not.toBeNull()
-  expect(screen.getByText('Vendiste este mes')).toBeInTheDocument()
+  expect(screen.getByText('You sold this month')).toBeInTheDocument()
 })
 
 test('two instances together: every aria-labelledby resolves to exactly one element, and no id repeats', () => {
@@ -126,9 +126,9 @@ function valueOf(label: string, text: string): HTMLElement {
 test('data-largo carries the length of the formatted figure, 8 to 14, and is absent below 8', () => {
   render(<PeriodFigures tab="week" period={{ ...WEEK, expenses: 93000, purchases: 9000 }} />)
 
-  expect(valueOf('Gastos', '$ 93.000')).toHaveAttribute('data-largo', '8')
-  expect(valueOf('Compras de flores', '$ 9.000')).not.toHaveAttribute('data-largo')
-  expect(valueOf('Regalaste', '2 g')).not.toHaveAttribute('data-largo')
+  expect(valueOf('Expenses', '$ 93.000')).toHaveAttribute('data-largo', '8')
+  expect(valueOf('Flower purchases', '$ 9.000')).not.toHaveAttribute('data-largo')
+  expect(valueOf('You gifted', '2 g')).not.toHaveAttribute('data-largo')
 })
 
 test('data-largo is 14 for "−$ 999.999.999" and stays 14 for anything longer', () => {
@@ -139,14 +139,14 @@ test('data-largo is 14 for "−$ 999.999.999" and stays 14 for anything longer',
     />,
   )
 
-  expect(valueOf('Ganancia', '−$ 999.999.999')).toHaveAttribute('data-largo', '14')
-  expect(valueOf('Caja', '$ 1.000.000.000')).toHaveAttribute('data-largo', '14')
-  expect(valueOf('Costo de lo vendido', '$ 12.345.678')).toHaveAttribute('data-largo', '12')
+  expect(valueOf('Profit', '−$ 999.999.999')).toHaveAttribute('data-largo', '14')
+  expect(valueOf('Cash', '$ 1.000.000.000')).toHaveAttribute('data-largo', '14')
+  expect(valueOf('Cost of goods sold', '$ 12.345.678')).toHaveAttribute('data-largo', '12')
 })
 
 test('data-largo counts the sign as the character it is, and says nothing else', () => {
   render(<PeriodFigures tab="week" period={{ ...WEEK, profit: -5000, cash: 5000 }} />)
 
-  expect(valueOf('Ganancia', '−$ 5.000')).toHaveAttribute('data-largo', '8')
-  expect(valueOf('Caja', '$ 5.000')).not.toHaveAttribute('data-largo')
+  expect(valueOf('Profit', '−$ 5.000')).toHaveAttribute('data-largo', '8')
+  expect(valueOf('Cash', '$ 5.000')).not.toHaveAttribute('data-largo')
 })

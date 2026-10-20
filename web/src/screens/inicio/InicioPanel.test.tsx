@@ -380,7 +380,7 @@ test('Registrar cobro opened from Inicio: a partial payment returns in one move,
   expect(within(row).getByText('$ 6.000')).toBeInTheDocument()
 })
 
-test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guardado", the row leaves and the teaser refills to 3', async () => {
+test('Registrar cobro opened from Inicio: a full payment says plain "Payment saved", the row leaves and the teaser refills to 3', async () => {
   paymentAnswer = {
     ...paymentFixture,
     after: { balance: 0, owing_since: null, standing: 'settled' },
@@ -404,8 +404,8 @@ test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guard
   expect(await screen.findByText('Payment saved')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(HOME)
   await waitFor(() => expect(screen.queryByText('Ana Pérez')).not.toBeInTheDocument())
-  expect(screen.getAllByRole('link', { name: /^Cobrar a / })).toHaveLength(3)
-  expect(screen.getByRole('link', { name: 'Cobrar a Dani Ruiz' })).toBeInTheDocument()
+  expect(screen.getAllByRole('link', { name: /^Collect from / })).toHaveLength(3)
+  expect(screen.getByRole('link', { name: 'Collect from Dani Ruiz' })).toBeInTheDocument()
   expect(screen.getByText('3 sales owing')).toBeInTheDocument()
 })
 
@@ -436,20 +436,20 @@ test('"Cerrar" on Registrar cobro opened from Inicio returns to Inicio in one mo
 
 test('the period switch is text tabs (Pestanas) with the range last in the same row', async () => {
   const { container } = renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
   const row = container.querySelector<HTMLElement>('.inicio__periodos')!
-  const group = within(row).getByRole('group', { name: 'Período' })
+  const group = within(row).getByRole('group', { name: 'Period' })
   expect(group).toHaveClass('pestanas')
-  expect(within(group).getByRole('button', { name: 'Hoy' })).toHaveAttribute('aria-pressed', 'true')
-  expect(within(group).getByRole('button', { name: 'Hoy' })).toHaveClass('pestanas__opcion--activa')
+  expect(within(group).getByRole('button', { name: 'Today' })).toHaveAttribute('aria-pressed', 'true')
+  expect(within(group).getByRole('button', { name: 'Today' })).toHaveClass('pestanas__opcion--activa')
   expect(within(group).getByRole('button', { name: 'Week' })).toHaveAttribute('aria-pressed', 'false')
   expect(container.querySelector('.periodos, .periodos__boton')).toBeNull()
   expect(row.lastElementChild).toHaveClass('pie')
-  expect(row.lastElementChild?.textContent).toMatch(/^Hoy \d\d\/\d\d$/)
+  expect(row.lastElementChild?.textContent).toMatch(/^Today \d\d\/\d\d$/)
 })
 
-test('a Te deben row reads the name, then the amount in amber with its date, Cobrar beside it', async () => {
+test('a Owed to you row reads the name, then the amount in amber with its date, Collect beside it', async () => {
   const { container } = renderInicio()
   await screen.findByText('$ 37.000')
 
@@ -463,12 +463,12 @@ test('a Te deben row reads the name, then the amount in amber with its date, Cob
   expect(data.firstElementChild).toHaveTextContent('Ana Pérez')
   expect(data.querySelector('.monto-deuda')).toHaveTextContent(/^\$ [\d.]+$/)
   expect(data.lastElementChild).toHaveTextContent(/^\$ [\d.]+ · since \d\d\/\d\d$/)
-  const cobrar = within(row).getByRole('link', { name: 'Cobrar a Ana Pérez' })
-  expect(cobrar).toHaveTextContent('Cobrar')
+  const cobrar = within(row).getByRole('link', { name: 'Collect from Ana Pérez' })
+  expect(cobrar).toHaveTextContent('Collect')
   expect(data.contains(cobrar)).toBe(false)
 })
 
-test('Lo que te queda: every status has its word once and days only as the side figure', async () => {
+test('What you have left: every status has its word once and days only as the side figure', async () => {
   panelNow = {
     ...PANEL,
     stock: [
@@ -484,8 +484,8 @@ test('Lo que te queda: every status has its word once and days only as the side 
   const rows = Array.from(container.querySelectorAll<HTMLElement>('.fila-stock'))
   expect(rows.map((row) => row.querySelectorAll('.marca-estado__palabra').length)).toEqual([1, 1, 1, 1])
   expect(rows.map((row) => row.querySelector('.fila-stock__insignia')?.textContent ?? null)).toEqual([
-    '5 días',
-    '40 días',
+    '5 days',
+    '40 days',
     null,
     null,
   ])

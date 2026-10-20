@@ -77,6 +77,8 @@ describe('isScanned', () => {
     ['src/architecture/appText.ts', false],
     ['src/test/contrast.ts', false],
     ['src/design/ae.test.ts', false],
+    ['src/mobile-standard/states.ts', false],
+    ['src/mobility/Walk.tsx', true],
     ['src/routes.ts', false],
     ['src/vite-env.d.ts', false],
     ['e2e/flow.spec.ts', false],

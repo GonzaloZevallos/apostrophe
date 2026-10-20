@@ -194,12 +194,12 @@ test('switching to Week shows the week\'s figures, including a negative Cash', a
 function figureNames(): string[] {
   const labels = [
     'You gifted',
-    'Costo de lo vendido',
-    'Faltante de stock',
+    'Cost of goods sold',
+    'Stock shortfall',
     'Promotion',
-    'Consumo propio',
+    'Own use',
     'Expenses',
-    'Compras de flores',
+    'Flower purchases',
     'Profit',
     'Cash',
   ]
@@ -213,7 +213,7 @@ function figureNames(): string[] {
 /** A figure's pending note: it lives inside the figure's own group. `null` when that
  * group has none. */
 function noteIn(label: string): string | null {
-  const note = within(screen.getByRole('group', { name: label })).queryByText('incluye costo pendiente')
+  const note = within(screen.getByRole('group', { name: label })).queryByText('includes pending cost')
   return note === null ? null : note.textContent
 }
 

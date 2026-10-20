@@ -123,6 +123,7 @@ export const CODE_VALUED_PROPERTIES: readonly string[] = [
   'status',
   'type',
   'kind',
+  'key',
   'rule',
   'tone',
   'field',
@@ -154,8 +155,15 @@ const LETTER = /\p{L}/u
 
 /** Directories under `web/src` the rule does not read, and why: the section files are where
  * texts live, the architecture folder is the guards and their fixtures, `test/` is test
- * support, `design/` holds the design-evidence tooling. */
-const SKIPPED_DIRECTORIES = ['src/copy/', 'src/architecture/', 'src/test/', 'src/design/']
+ * support, `design/` holds the design-evidence tooling, `mobile-standard/` the phone check's
+ * browserless walk data (the routes, selectors and the names it clicks). */
+const SKIPPED_DIRECTORIES = [
+  'src/copy/',
+  'src/architecture/',
+  'src/test/',
+  'src/design/',
+  'src/mobile-standard/',
+]
 
 /** Whether the visible-literal rule reads this file: a non-test `.ts`/`.tsx` under
  * `web/src` outside the skipped directories and `routes.ts`. `path` is relative to `web/`,

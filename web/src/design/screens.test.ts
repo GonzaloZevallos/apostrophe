@@ -400,7 +400,7 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(dark.design).toBe('InicioCompu')
     expect(dark.tema).toBe('oscuro')
     expect(dark.section).toBe(SEMANA_COMPU)
-    expect(clicks(dark)).toEqual(['Semana'])
+    expect(clicks(dark)).toEqual(['Week'])
   })
 
   it('refuses a section that Compu draws more than once, the reason InicioHoyCompu has none', () => {
@@ -431,7 +431,7 @@ describe('assertScreens checks every step against one closed list of shapes', ()
     expect(() =>
       assertScreens(
         withSteps([
-          { click: 'Semana' },
+          { click: 'Week' },
           { press: 'Borrar venta' },
           { wait: 'Stock and entries' },
           { fill: { label: 'Gramos', value: '{email}' } },
