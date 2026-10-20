@@ -32,10 +32,10 @@ interface Business {
 }
 
 const LEAVE = {
-  question: '¿Descartás el nombre?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
+  question: SETTINGS_TEXT.descartasElNombre,
+  detail: SETTINGS_TEXT.sePierdeLoQue,
+  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  discardLabel: COMMON_TEXT.siDescartalo,
 }
 
 const RENAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {

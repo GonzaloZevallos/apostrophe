@@ -21,6 +21,7 @@ import StepIndicator from './StepIndicator'
 import { STEP_COUNT, STEPS, type StepInfo } from './steps'
 import { COMMON_TEXT } from '../../copy/common'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
+import { CHECKLIST_DONE } from '../../copy/inicio'
 
 function plural(n: number, one: string, many: string): string {
   return n === 1 ? `1 ${one}` : `${n} ${many}`
@@ -33,13 +34,13 @@ export default function Listo() {
   function lineOf(info: StepInfo): { done: boolean; text: string } {
     const state = progress.steps.find((item) => item.step === info.slug)?.state ?? 'pending'
     if (state === 'done') return { done: true, text: doneText(info.slug) }
-    return { done: false, text: `Para después — en ${info.later}` }
+    return { done: false, text: ONBOARDING_TEXT.paraDespuesEn0(info.later) }
   }
 
   function doneText(slug: StepSlug): string {
-    if (slug === 'variety') return `Hecho · ${plural(progress.varieties_count, 'variedad', 'variedades')}`
-    if (slug === 'stock') return `Hecho · ${plural(progress.stock_entries_count, 'entrada', 'entradas')}`
-    return 'Hecho'
+    if (slug === 'variety') return ONBOARDING_TEXT.hecho0(plural(progress.varieties_count, 'variedad', 'variedades'))
+    if (slug === 'stock') return ONBOARDING_TEXT.hecho0(plural(progress.stock_entries_count, 'entrada', 'entradas'))
+    return CHECKLIST_DONE
   }
 
   async function firstSale(): Promise<void> {

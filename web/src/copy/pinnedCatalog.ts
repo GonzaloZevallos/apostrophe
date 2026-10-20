@@ -13,6 +13,8 @@ import {
 } from '../api/refusals'
 import type { LimitedCopy } from './limits'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 /** The word of the link to Configuración → Integraciones that ends both blocked lines. */
 export const INTEGRATIONS_LINK_WORD = 'Integraciones'
 export const CHANNEL_MISSING_LEAD = 'Falta el canal: cargalo en '
@@ -51,4 +53,5 @@ export const PINNED_CATALOG_TEXT = {
   alDia: 'Al día',
   elUltimoFueEl: '· El último fue el ',
   publicar: 'Publicar',
+  catalogoPublicado: 'Catálogo publicado',
 } as const

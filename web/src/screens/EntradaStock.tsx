@@ -166,8 +166,8 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
           initial={initial}
           preselectedVarietyId={chosenVariety}
           preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : undefined}
-          onSaved={() => leave('Entrada guardada')}
-          onDeleted={() => leave('Entrada eliminada')}
+          onSaved={() => leave(COMMON_TEXT.entradaGuardada)}
+          onDeleted={() => leave(COMMON_TEXT.entradaEliminada)}
           onGone={entryIsGone}
           onDirtyChange={onDirtyChange}
           dialogHost={dialogHost}

@@ -22,9 +22,9 @@ export default function VarietyCatalogSection({ row, readOnly = false }: { row: 
   const openForm = useOpenForm()
   if (readOnly) {
     const stored: [string, string | null][] = [
-      ['Emoji', row.emoji],
-      ['% índica', row.indica_share === null ? null : `${row.indica_share} %`],
-      ['Aroma/sabor', row.aroma],
+      [VARIETIES_TEXT.emoji, row.emoji],
+      [VARIETIES_TEXT.indica, row.indica_share === null ? null : `${row.indica_share} %`],
+      [VARIETIES_TEXT.aromaSabor, row.aroma],
     ]
     return (
       <section id={CATALOG_SECTION_ID} className="seccion-variedad">

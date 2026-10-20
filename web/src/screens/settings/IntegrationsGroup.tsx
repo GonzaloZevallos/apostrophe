@@ -31,19 +31,20 @@ import {
   CHANNEL_CHAT_HELP,
   LOAD_THE_TOKEN_FIRST,
   OWN_CHAT_INFO,
-  PREVIOUS_PIN_NOTICE, SETTINGS_TEXT,
+  PREVIOUS_PIN_NOTICE, SETTINGS_TEXT, GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE,
 } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
+import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
 
-const TITLE = 'Integraciones'
-const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
-const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+const TITLE = INTEGRATIONS_LINK_WORD
+const TEST_SENT_TOAST: SuccessToast = SETTINGS_TEXT.pruebaEnviada
+const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 
 const LEAVE: LeaveWording = {
-  question: '¿Descartás el cambio?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
+  question: SETTINGS_TEXT.descartasElCambio,
+  detail: SETTINGS_TEXT.sePierdeLoQue,
+  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  discardLabel: COMMON_TEXT.siDescartalo,
 }
 
 export interface PinnedCatalog {

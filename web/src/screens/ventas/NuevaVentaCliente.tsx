@@ -55,7 +55,7 @@ type Field = 'name' | 'phone' | 'form'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
-  'customer.name_too_long': { field: 'name', message: 'El nombre es demasiado largo' },
+  'customer.name_too_long': { field: 'name', message: COMMON_TEXT.elNombreEsDemasiado },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }

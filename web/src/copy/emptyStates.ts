@@ -6,6 +6,8 @@
  * screen fails `emptyStates.test.ts`.
  */
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const EMPTY_STATES = {
   salesList: 'Todavía no registraste ninguna venta en este período.',
   customersList: 'Todavía no agregaste ningún cliente.',

@@ -2,6 +2,8 @@
 
 import type { LimitedCopy } from './limits'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const LIMITED_COPY: readonly LimitedCopy[] = []
 export const LONG_REFUSALS: readonly string[] = []
 
@@ -16,4 +18,10 @@ export const PAYMENTS_TEXT = {
   aLaVentaDel: ' a la venta del ',
   leQuedaDebiendo: 'Le queda debiendo ',
   descartasElCobro: '¿Descartás el cobro?',
+  elMontoSuperaLo: 'El monto supera lo que te debe.',
+  laFechaNoPuede: 'La fecha no puede ser futura.',
+  ingresaUnMontoValido: 'Ingresá un monto válido.',
+  elegiEfectivoOTransferencia: 'Elegí efectivo o transferencia.',
+  cobroGuardadoQuedaDebiendo: (balance: string): `Cobro guardado · queda debiendo ${string}` => `Cobro guardado · queda debiendo ${balance}`,
+  cobroGuardado: 'Cobro guardado',
 } as const

@@ -71,11 +71,11 @@ interface Item {
 }
 
 const ITEMS: Item[] = [
-  { to: HOME, label: 'Inicio', icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
-  { to: SALES, label: 'Ventas', icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
+  { to: HOME, label: SHELL_TEXT.inicio, icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
+  { to: SALES, label: SHELL_TEXT.ventas, icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
   {
     to: CUSTOMERS,
-    label: 'Clientes',
+    label: SHELL_TEXT.clientes,
     icono: 'clientes',
     placement: 'both',
     group: 'main',
@@ -83,15 +83,15 @@ const ITEMS: Item[] = [
   },
   {
     to: VARIETIES,
-    label: 'Variedades',
+    label: COMMON_TEXT.variedades,
     icono: 'variedades',
     placement: 'both',
     group: 'main',
     place: 'varieties',
   },
-  { to: EXPENSES, label: 'Gastos', icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
-  { to: ANALYSIS, label: 'Análisis', icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
-  { to: MORE, label: 'Más', icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
+  { to: EXPENSES, label: COMMON_TEXT.gastos, icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
+  { to: ANALYSIS, label: COMMON_TEXT.analisis, icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
+  { to: MORE, label: SHELL_TEXT.mas, icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
 ]
 
 const BAR_ITEMS = ITEMS.filter((item) => item.placement !== 'rail')

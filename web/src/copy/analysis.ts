@@ -6,6 +6,8 @@
 import { SAMPLES, type LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const NO_HISTORY_LINE = EMPTY_STATES.analysisNoHistory
 export const EMPTY_MONTH_LINE = EMPTY_STATES.analysisEmptyMonth
 export const VARIETY_TOTAL_NOTE = 'La tabla de variedades suma las ventas del mes sin el envío.'
@@ -70,4 +72,13 @@ export const ANALYSIS_TEXT = {
   gastosDelMes: 'Gastos del mes',
   gastosDesdeElPrimer: 'Gastos desde el primer registro',
   analisis: 'Análisis',
+  mejorSemana: 'Mejor semana',
+  mejorDia: 'Mejor día',
+  lun: 'Lun',
+  mar: 'Mar',
+  mie: 'Mié',
+  jue: 'Jue',
+  vie: 'Vie',
+  sab: 'Sáb',
+  dom: 'Dom',
 } as const

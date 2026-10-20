@@ -24,16 +24,18 @@ import {
   SETTINGS_USERS,
 } from '../../routes'
 import { SETTINGS_TEXT } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
+import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
 
 const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
-  { to: SETTINGS_BUSINESS, label: 'Negocio', icon: 'negocio' },
-  { to: SETTINGS_USERS, label: 'Usuarios', icon: 'usuarios' },
-  { to: SETTINGS_PRICES, label: 'Precios', icon: 'precio' },
-  { to: SETTINGS_INTEGRATIONS, label: 'Integraciones', icon: 'integraciones' },
-  { to: SETTINGS_CATALOG_MESSAGE, label: 'Mensaje del catálogo', icon: 'mensaje' },
-  { to: EXPENSE_CATEGORIES, label: 'Categorías de gastos', icon: 'categorias' },
-  { to: SETTINGS_APPEARANCE, label: 'Apariencia', icon: 'apariencia' },
-  { to: SETTINGS_ACCOUNT, label: 'Tu cuenta', icon: 'cuenta' },
+  { to: SETTINGS_BUSINESS, label: COMMON_TEXT.negocio, icon: 'negocio' },
+  { to: SETTINGS_USERS, label: COMMON_TEXT.usuarios, icon: 'usuarios' },
+  { to: SETTINGS_PRICES, label: COMMON_TEXT.precios, icon: 'precio' },
+  { to: SETTINGS_INTEGRATIONS, label: INTEGRATIONS_LINK_WORD, icon: 'integraciones' },
+  { to: SETTINGS_CATALOG_MESSAGE, label: COMMON_TEXT.mensajeDelCatalogo, icon: 'mensaje' },
+  { to: EXPENSE_CATEGORIES, label: COMMON_TEXT.categoriasDeGastos, icon: 'categorias' },
+  { to: SETTINGS_APPEARANCE, label: COMMON_TEXT.apariencia, icon: 'apariencia' },
+  { to: SETTINGS_ACCOUNT, label: COMMON_TEXT.tuCuenta, icon: 'cuenta' },
 ]
 
 export default function Settings() {

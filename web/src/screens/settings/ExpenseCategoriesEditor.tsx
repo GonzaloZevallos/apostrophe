@@ -41,7 +41,7 @@ import Loading from '../../components/Loading'
 import { CATEGORIES_SAVE_AT_ONCE, GENERIC_REFUSAL_MESSAGE, SETTINGS_TEXT } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
 
-export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
+export const CANNOT_REMOVE = SETTINGS_TEXT.noSePuedeBorrar
 
 const REMOVE_OVERRIDES: Partial<Record<RefusalCode, 'in-use'>> = {
   'expense_category.in_use': 'in-use',
@@ -171,7 +171,7 @@ function Categories({
         focusAddAction.current = true
         setAdding(false)
       }
-      flash('Categoría guardada')
+      flash(SETTINGS_TEXT.categoriaGuardada)
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
       else if (isRefusal(caught)) setError(GENERIC_REFUSAL_MESSAGE)
@@ -193,11 +193,11 @@ function Categories({
             onRenamed={(renamed) => {
               setDraft(category.id, undefined)
               accept(accepted.map((each) => (each.id === renamed.id ? renamed : each)))
-              flash('Categoría guardada')
+              flash(SETTINGS_TEXT.categoriaGuardada)
             }}
             onRemoved={() => {
               drop(category.id)
-              flash('Categoría eliminada')
+              flash(SETTINGS_TEXT.categoriaEliminada)
             }}
             onGone={() => {
               drop(category.id)

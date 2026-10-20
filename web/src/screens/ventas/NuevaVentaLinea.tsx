@@ -96,7 +96,7 @@ export default function NuevaVentaLinea({
   // changes are for.
   const isComputer = useViewport() === 'computer'
   if (!isOpen) {
-    const displayName = variety?.name ?? 'Sin variedad'
+    const displayName = variety?.name ?? SALES_TEXT.sinVariedad
     const messageId = `linea-mensaje-${line.key}`
     return (
       <Boton

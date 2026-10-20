@@ -23,7 +23,7 @@ import { STEP_COUNT, stepInfo } from './steps'
 import { HOME } from '../../routes'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
-export const NOTICE_TITLE = 'Seguí con la configuración'
+export const NOTICE_TITLE = ONBOARDING_TEXT.seguiConLaConfiguracion
 
 export default function OnboardingNotice({ progress }: { progress: OnboardingProgress }) {
   const navigate = useNavigate()

@@ -9,11 +9,12 @@
 
 import type { PricingRule } from '../sales/pricing'
 import Insignia from './Insignia'
+import { COMMON_TEXT } from '../copy/common'
 
 const RULE_BADGE: Record<PricingRule, { text: string; tone: 'neutro' | 'acento' }> = {
   list: { text: 'lista', tone: 'neutro' },
   bulk: { text: 'por cantidad', tone: 'acento' },
-  vip: { text: 'VIP', tone: 'acento' },
+  vip: { text: COMMON_TEXT.vip, tone: 'acento' },
   gift: { text: 'regalo', tone: 'acento' },
   special: { text: 'especial', tone: 'acento' },
 }

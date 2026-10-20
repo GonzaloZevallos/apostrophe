@@ -6,6 +6,8 @@
 import type { LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const EMPTY_TITLE = EMPTY_STATES.homeVarietiesTitle
 export const EMPTY_DETAIL = EMPTY_STATES.homeVarietiesDetail
 export const NOBODY_OWES = EMPTY_STATES.homeNobodyOwes
@@ -44,4 +46,10 @@ export const INICIO_TEXT = {
   loQueTeQueda: 'Lo que te queda',
   desde0: (oldest: string | number) => `desde ${oldest}`,
   desde02: (owing_since: string | number) => ` · desde ${owing_since}`,
+  vendisteHoy: 'Vendiste hoy',
+  vendisteEstaSemana: 'Vendiste esta semana',
+  vendisteEsteMes: 'Vendiste este mes',
+  regalaste: 'Regalaste',
+  comprasDeFlores: 'Compras de flores',
+  n0Promedio12: (count: string | number, average_sale: string | number, grams: string | number) => `${count} · promedio ${average_sale} · ${grams}`,
 } as const

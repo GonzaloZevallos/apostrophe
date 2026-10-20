@@ -34,18 +34,18 @@ import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED, SETTINGS_TEXT } from '../../copy
 import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
 
-const TITLE = 'Precios'
+const TITLE = COMMON_TEXT.precios
 
 export const PAST_SALES_LINE =
-  'Las ventas ya hechas conservan el precio con el que se registraron. Apagar una opción no borra nada.'
+  SETTINGS_TEXT.lasVentasYaHechas
 export const VIP_HELP_LINE =
-  'Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera.'
+  SETTINGS_TEXT.cadaVariedadNecesitaSu
 
 const LEAVE = {
-  question: '¿Descartás los precios?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
+  question: SETTINGS_TEXT.descartasLosPrecios,
+  detail: SETTINGS_TEXT.sePierdeLoQue,
+  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  discardLabel: COMMON_TEXT.siDescartalo,
 }
 
 export default function PricingGroup() {

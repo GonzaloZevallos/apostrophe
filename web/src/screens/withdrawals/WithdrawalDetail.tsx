@@ -79,7 +79,7 @@ export default function WithdrawalDetail() {
     try {
       await deleteWithdrawal(withdrawalId)
       invalidateStockAfterDeleting(queryClient, withdrawalId)
-      flash.armAfterLeaving('Retiro eliminado')
+      flash.armAfterLeaving(STOCK_TEXT.retiroEliminado)
       back()
     } catch (caught) {
       setConfirmingDelete(false)
@@ -123,8 +123,8 @@ export default function WithdrawalDetail() {
   const date = formatDate(withdrawal.date, me.today)
   const confirmation =
     withdrawal.reason === 'promotion'
-      ? `¿Borrás la promoción del ${date}? Vuelven ${formatGrams(withdrawal.total_grams)} al stock.`
-      : `¿Borrás el consumo propio del ${date}? Vuelven ${formatGrams(withdrawal.total_grams)} al stock.`
+      ? STOCK_TEXT.borrasLaPromocionDel(date, formatGrams(withdrawal.total_grams))
+      : STOCK_TEXT.borrasElConsumoPropio(date, formatGrams(withdrawal.total_grams))
 
   return (
     <main className="pantalla">

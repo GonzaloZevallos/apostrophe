@@ -52,9 +52,9 @@ import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 
 const HOW_PAID_LABEL: Record<Exclude<HowPaid, 'none'>, string> = {
-  cash: 'Pagada por efectivo',
-  transfer: 'Pagada por transferencia',
-  owing: 'Quedó debiendo',
+  cash: CUSTOMERS_TEXT.pagadaPorEfectivo,
+  transfer: CUSTOMERS_TEXT.pagadaPorTransferencia,
+  owing: CUSTOMERS_TEXT.quedoDebiendo,
 }
 
 const METHOD_LABEL: Record<PaymentMethod, string> = {
@@ -63,7 +63,7 @@ const METHOD_LABEL: Record<PaymentMethod, string> = {
 }
 
 function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
-  return `¿Borrás el cobro de ${formatMoney(payment.amount)} (${METHOD_LABEL[payment.method]}) del ${formatDateShort(payment.paid_on)}?`
+  return CUSTOMERS_TEXT.borrasElCobroDe(formatMoney(payment.amount), METHOD_LABEL[payment.method], formatDateShort(payment.paid_on))
 }
 
 /** One account row's own text (plan, "Front"), never built from a sign
@@ -74,14 +74,14 @@ function rowLabel(row: AccountRow): string {
     return row.sale.how_paid === 'none' ? '' : HOW_PAID_LABEL[row.sale.how_paid]
   }
   if (row.kind === 'payment') {
-    return `Cobro · ${METHOD_LABEL[row.payment.method]} · A cuenta de la venta del ${formatDateShort(row.applied_to.sale_date)}`
+    return CUSTOMERS_TEXT.cobro0ACuenta(METHOD_LABEL[row.payment.method], formatDateShort(row.applied_to.sale_date))
   }
-  return 'A favor'
+  return CUSTOMERS_TEXT.aFavorLabel
 }
 
 function rowAmount(row: AccountRow): string {
   return row.standing === 'credit'
-    ? `A favor ${formatMoneyMagnitude(row.running_balance)}`
+    ? CUSTOMERS_TEXT.aFavor0(formatMoneyMagnitude(row.running_balance))
     : `saldo ${formatMoney(row.running_balance)}`
 }
 

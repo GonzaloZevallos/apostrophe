@@ -35,9 +35,10 @@ import SinConexion from '../../components/SinConexion'
 import { parseMoney } from '../../format/parse'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const CATEGORY_GONE = EXPENSES_TEXT.esaCategoriaYaNo
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 // `expense_category.not_found` is the one code the expense form handles on its
 // own field instead of the generic gone notice (PM round 3): the expense itself
@@ -170,7 +171,7 @@ export default function ExpenseForm({
       } else {
         await editExpense(target.id, body)
       }
-      onDone('Gasto guardado')
+      onDone(EXPENSES_TEXT.gastoGuardado)
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)

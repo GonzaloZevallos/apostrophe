@@ -14,10 +14,10 @@ import { SETTINGS_TEXT } from '../../copy/settings'
 export { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
 
 const LEAVE = {
-  question: '¿Descartás la categoría?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
+  question: SETTINGS_TEXT.descartasLaCategoria,
+  detail: SETTINGS_TEXT.sePierdeLoQue,
+  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  discardLabel: SETTINGS_TEXT.siDescartala,
 }
 
 export default function ExpenseCategoriesGroup() {

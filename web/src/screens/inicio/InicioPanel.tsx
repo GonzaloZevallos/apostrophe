@@ -35,14 +35,14 @@ import { NOBODY_OWES, INICIO_TEXT } from '../../copy/inicio'
 import PeriodPanel from './PeriodFigures'
 import { COMMON_TEXT } from '../../copy/common'
 
-const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }
+const TAB_LABEL: Record<PanelTab, string> = { today: COMMON_TEXT.hoy, week: COMMON_TEXT.semana, month: COMMON_TEXT.mes }
 const TAB_ITEMS = (['today', 'week', 'month'] as const).map((value) => ({
   value,
   label: TAB_LABEL[value],
 }))
 
 function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
-  if (tab === 'today') return `Hoy ${formatDateShort(period.start)}`
+  if (tab === 'today') return COMMON_TEXT.hoy0(formatDateShort(period.start))
   return `${formatDateShort(period.start)} – ${formatDateShort(period.end)}`
 }
 

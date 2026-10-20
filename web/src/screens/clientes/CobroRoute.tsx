@@ -33,7 +33,7 @@ import CobroFrame from './CobroFrame'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENTS_TEXT } from '../../copy/payments'
 
-const LABEL = 'Registrar cobro'
+const LABEL = COMMON_TEXT.registrarCobro
 
 /** The element focus returns to after "No, seguí cargando": the title when it is gone or is `body`. */
 function stillFocusable(element: Element | null): element is HTMLElement {

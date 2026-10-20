@@ -7,6 +7,8 @@
 import { SAMPLES, type LimitedCopy } from './limits'
 import type { SuccessToast } from '../components/AvisoExito'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 
 export const RENAME_SUCCESS: SuccessToast = 'Negocio renombrado'
 export const PASSWORD_CHANGED_SUCCESS: SuccessToast = 'Contraseña cambiada · cerramos tus otras sesiones'
@@ -92,4 +94,30 @@ export const SETTINGS_TEXT = {
   configuracion: 'Configuración',
   usuarios: 'Usuarios',
   vos: 'vos',
+  cargarGasto: 'Cargar gasto',
+  categoriaMontoYDetalle: 'Categoría, monto y detalle',
+  promocionOConsumoPropio: 'Promoción o consumo propio',
+  porMesYPor: 'Por mes y por categoría',
+  variedadesSemanasMesesY: 'Variedades, semanas, meses y días',
+  negocioUsuariosBotCatalogo: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
+  descartasLaContrasenaNueva: '¿Descartás la contraseña nueva?',
+  sePierdeLoQue: 'Se pierde lo que cargaste: todavía no se guardó nada.',
+  noSeguiEditando: 'No, seguí editando',
+  siDescartala: 'Sí, descartala',
+  claro: 'Claro',
+  oscuro: 'Oscuro',
+  descartasElTema: '¿Descartás el tema?',
+  descartasElNombre: '¿Descartás el nombre?',
+  guardaElMensaje: 'Guardá el mensaje',
+  descartasElMensaje: '¿Descartás el mensaje?',
+  noSePuedeBorrar: 'No se puede borrar: todavía tiene gastos. Podés renombrarla.',
+  categoriaGuardada: 'Categoría guardada',
+  categoriaEliminada: 'Categoría eliminada',
+  descartasLaCategoria: '¿Descartás la categoría?',
+  pruebaEnviada: 'Prueba enviada',
+  descartasElCambio: '¿Descartás el cambio?',
+  lasVentasYaHechas: 'Las ventas ya hechas conservan el precio con el que se registraron. Apagar una opción no borra nada.',
+  cadaVariedadNecesitaSu: 'Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera.',
+  descartasLosPrecios: '¿Descartás los precios?',
+  descartasLaInvitacion: '¿Descartás la invitación?',
 } as const

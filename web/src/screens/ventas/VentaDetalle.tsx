@@ -57,7 +57,7 @@ import NuevaVentaCliente from './NuevaVentaCliente'
 import { COMMON_TEXT } from '../../copy/common'
 import { SALES_TEXT } from '../../copy/sales'
 
-export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = 'Esta venta ya tiene cliente.'
+export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = SALES_TEXT.estaVentaYaTiene
 const ASSIGN_TOAST_MS = 2500
 
 /** `PUT /sales/{id}/customer`'s own refusals, matched only through `RefusalCode`
@@ -82,7 +82,7 @@ function paymentSummary(payment: Sale['payment']): string {
     case 'transfer':
       return 'pagada por transferencia'
     case 'owing':
-      return 'quedó debiendo'
+      return SALES_TEXT.quedoDebiendo
     case 'none':
       return ''
   }
@@ -94,7 +94,7 @@ function paymentSummary(payment: Sale['payment']): string {
 function summaryLine(sale: SaleDetail): string {
   const parts = [
     formatGrams(sale.total_grams),
-    sale.customer === null ? 'Sin cliente' : sale.customer.name,
+    sale.customer === null ? SALES_TEXT.sinCliente : sale.customer.name,
     paymentSummary(sale.payment),
   ]
   return parts.filter((part) => part !== '').join(' · ')
@@ -104,11 +104,11 @@ function deleteTitle(sale: SaleDetail): string {
   const money = formatMoney(sale.total)
   const day = formatDateShort(sale.date)
   const grams = formatGrams(sale.total_grams)
-  return `¿Borrás la venta de ${money} del ${day}? Vuelven ${grams} al stock.`
+  return SALES_TEXT.borrasLaVentaDe(money, day, grams)
 }
 
-const DELETE_TOAST = 'Venta eliminada'
-const UNDO_TOAST = 'Venta eliminada · los gramos vuelven al stock'
+const DELETE_TOAST = COMMON_TEXT.ventaEliminada
+const UNDO_TOAST = COMMON_TEXT.ventaEliminadaLosGramos
 
 /** One sheet stack per screen (ADR-0027): Asignar cliente is level 1, Nuevo cliente level 2. */
 export default function VentaDetalle() {

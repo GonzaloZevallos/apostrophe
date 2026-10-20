@@ -34,9 +34,9 @@ export interface SelectorPagoProps {
 }
 
 const OPTIONS: { value: PaymentChoice; label: string }[] = [
-  { value: 'cash', label: 'Efectivo' },
-  { value: 'transfer', label: 'Transferencia' },
-  { value: 'owing', label: 'Debiendo' },
+  { value: 'cash', label: COMMON_TEXT.efectivo },
+  { value: 'transfer', label: COMMON_TEXT.transferencia },
+  { value: 'owing', label: COMMON_TEXT.debiendo },
 ]
 
 export default function SelectorPago({

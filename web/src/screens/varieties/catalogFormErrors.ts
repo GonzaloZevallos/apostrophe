@@ -1,3 +1,4 @@
+import { VARIETIES_TEXT } from '../../copy/varieties'
 /**
  * "En el catálogo"'s form: which of its fields a refusal of `PUT /catalog/varieties/{id}`
  * is shown under. The one table from the server's code to a field and its fixed Spanish
@@ -8,9 +9,9 @@
 
 export type CatalogField = 'emoji' | 'indica_share' | 'aroma'
 
-export const EMOJI_INVALID_MESSAGE = 'Poné exactamente un emoji'
-export const INDICA_SHARE_INVALID_MESSAGE = 'El porcentaje de índica va de 0 a 100'
-export const AROMA_TOO_LONG_MESSAGE = 'El aroma es demasiado largo'
+export const EMOJI_INVALID_MESSAGE = VARIETIES_TEXT.poneExactamenteUnEmoji
+export const INDICA_SHARE_INVALID_MESSAGE = VARIETIES_TEXT.elPorcentajeDeIndica
+export const AROMA_TOO_LONG_MESSAGE = VARIETIES_TEXT.elAromaEsDemasiado
 
 const FIELD_OF_CODE = new Map<string, { field: CatalogField; message: string }>([
   ['catalog.emoji_invalid', { field: 'emoji', message: EMOJI_INVALID_MESSAGE }],

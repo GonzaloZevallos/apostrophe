@@ -51,10 +51,10 @@ export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 export { EMPTY_LIST }
 
 const PERIOD_LABEL: Record<Period, string> = {
-  hoy: 'Hoy',
-  semana: 'Semana',
-  mes: 'Mes',
-  fechas: 'Fechas',
+  hoy: COMMON_TEXT.hoy,
+  semana: COMMON_TEXT.semana,
+  mes: COMMON_TEXT.mes,
+  fechas: SALES_TEXT.fechas,
 }
 
 const PERIODS: Period[] = ['hoy', 'semana', 'mes', 'fechas']

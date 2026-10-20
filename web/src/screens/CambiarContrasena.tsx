@@ -30,9 +30,10 @@ import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { changePassword } from '../session'
 import { BRAKE_MESSAGE, WEAK_PASSWORD_MESSAGE, AUTH_TEXT } from '../copy/auth'
 import { COMMON_TEXT } from '../copy/common'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
-export const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es esa.'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const WRONG_CURRENT_PASSWORD_MESSAGE = AUTH_TEXT.laContrasenaActualNo
+export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 const CURRENT_PASSWORD_WRONG_CODE: RefusalCode = 'account.current_password_wrong'
 
 export interface CambiarContrasenaProps {

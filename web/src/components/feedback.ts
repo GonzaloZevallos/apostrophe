@@ -28,17 +28,18 @@
  */
 
 import { GONE_NOTICE } from '../api/refusals'
+import { COMMON_TEXT } from '../copy/common'
 
 /** Every plain success toast a screen can show by navigating away (PRD,
  * "Feedback"; sales.md round 3). "Venta guardada" is deliberately not here —
  * it carries Deshacer, so it is the separate `'saved'` marker below, never a
  * plain toast string. */
 export const TOAST_MESSAGES = [
-  'Cliente guardado',
-  'Venta eliminada',
-  'Venta eliminada · los gramos vuelven al stock',
-  'Entrada guardada',
-  'Entrada eliminada',
+  COMMON_TEXT.clienteGuardado,
+  COMMON_TEXT.ventaEliminada,
+  COMMON_TEXT.ventaEliminadaLosGramos,
+  COMMON_TEXT.entradaGuardada,
+  COMMON_TEXT.entradaEliminada,
 ] as const
 
 export type ToastMessage = (typeof TOAST_MESSAGES)[number]
@@ -50,7 +51,7 @@ function isToastMessage(value: unknown): value is ToastMessage {
 /** The fixed text `VentaDetalle` announces alongside its own Deshacer button
  * (plan, invariants: "Venta guardada" is the only success notice with
  * Deshacer) — exported so that screen never invents the copy itself. */
-export const SALE_SAVED = 'Venta guardada'
+export const SALE_SAVED = COMMON_TEXT.ventaGuardada
 
 export interface Feedback {
   kind: 'toast' | 'notice' | 'saved'

@@ -30,14 +30,15 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import { formatDateShort } from '../format/dates'
 import { expiryLine, NOT_USABLE_DETAIL, NOT_USABLE_TITLE, WEAK_PASSWORD_MESSAGE, AUTH_TEXT } from '../copy/auth'
 import { COMMON_TEXT } from '../copy/common'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE, BUSINESS_NAME_INVALID_MESSAGE as COPY_BUSINESS_NAME_INVALID_MESSAGE } from '../copy/settings'
 
 export { NOT_USABLE_DETAIL, NOT_USABLE_TITLE }
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
-export const EMAIL_TAKEN_MESSAGE = 'Ya hay una cuenta con ese email'
+export const EMAIL_TAKEN_MESSAGE = AUTH_TEXT.yaHayUnaCuenta
 export { WEAK_PASSWORD_MESSAGE }
-export const EMAIL_INVALID_MESSAGE = 'Ingresá un email válido'
-export const BUSINESS_NAME_INVALID_MESSAGE = 'Ponele un nombre al negocio, sin espacios de más'
+export const EMAIL_INVALID_MESSAGE = AUTH_TEXT.ingresaUnEmailValido
+export const BUSINESS_NAME_INVALID_MESSAGE = COPY_BUSINESS_NAME_INVALID_MESSAGE
 
 type AcceptAction = { kind: 'inline'; message: string } | { kind: 'not_usable' }
 
@@ -157,12 +158,12 @@ export default function Invitacion() {
   return (
     <AuthPage
       titleClass="invitacion__titulo"
-      eyebrow={isNewBusiness ? 'Invitación válida' : 'Te invitaron a'}
+      eyebrow={isNewBusiness ? AUTH_TEXT.invitacionValida : AUTH_TEXT.teInvitaronA}
       title={isNewBusiness ? AUTH_TEXT.armaTuNegocio : (view.business_name ?? undefined)}
       subtitle={
         isNewBusiness
-          ? 'Ponele un nombre y creá tu usuario. Después podés invitar a un socio.'
-          : 'Creá tu usuario y vas a ver las ventas, el stock y los clientes de este negocio. Sólo de este.'
+          ? AUTH_TEXT.poneleUnNombreY
+          : AUTH_TEXT.creaTuUsuarioY
       }
     >
       <form className="formulario" onSubmit={onSubmit}>

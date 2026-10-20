@@ -1,3 +1,5 @@
+import { COMMON_TEXT } from '../copy/common'
+import { DATES_TEXT } from '../copy/dates'
 /**
  * Formats API dates (`"YYYY-MM-DD"` strings, the business day, ADR-0001) and API
  * months (`"YYYY-MM"`). The front never turns an API date into `Date` or passes it
@@ -44,7 +46,7 @@ export function formatDateShort(iso: string): string {
 /** The "Rige desde" chip's text: `"Hoy 15/10"` for today, else `"02/10"` (no year, no
  * "Hoy"). Equality is the whole date, so the same day of another year is not today. */
 export function chipDate(iso: string, todayIso: string): string {
-  return iso === todayIso ? `Hoy ${formatDateShort(iso)}` : formatDateShort(iso)
+  return iso === todayIso ? COMMON_TEXT.hoy0(formatDateShort(iso)) : formatDateShort(iso)
 }
 
 /** Always with the year: for a card or a detail with no "today" to compare against. */
@@ -59,8 +61,8 @@ export function sinceWhen(iso: string, todayIso: string): string {
 }
 
 const MONTH_NAMES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  DATES_TEXT.enero, DATES_TEXT.febrero, DATES_TEXT.marzo, DATES_TEXT.abril, DATES_TEXT.mayo, DATES_TEXT.junio,
+  DATES_TEXT.julio, DATES_TEXT.agosto, DATES_TEXT.septiembre, DATES_TEXT.octubre, DATES_TEXT.noviembre, DATES_TEXT.diciembre,
 ]
 
 const SEARCH_MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/

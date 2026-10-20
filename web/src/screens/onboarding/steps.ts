@@ -14,6 +14,9 @@ import {
   ONBOARDING_STOCK,
   ONBOARDING_VARIETY,
 } from '../../routes'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
+import { COMMON_TEXT } from '../../copy/common'
+import { STEP_STOCK_ENTRY } from '../../copy/inicio'
 
 export interface StepInfo {
   slug: StepSlug
@@ -34,61 +37,61 @@ export const STEPS: readonly StepInfo[] = [
     slug: 'variety',
     path: ONBOARDING_VARIETY,
     required: true,
-    title: 'Cargá tu primera variedad',
-    why: 'Para vender, cada variedad necesita un nombre y su precio de hoy.',
+    title: ONBOARDING_TEXT.cargaTuPrimeraVariedad,
+    why: ONBOARDING_TEXT.paraVenderCadaVariedad,
     shortName: 'variedad con precio',
-    name: 'Variedad con precio',
-    later: 'Variedades',
+    name: COMMON_TEXT.variedadConPrecio,
+    later: COMMON_TEXT.variedades,
   },
   {
     slug: 'stock',
     path: ONBOARDING_STOCK,
     required: true,
-    title: 'Cargá lo que tenés hoy',
-    why: 'Sin stock no se puede vender: contanos cuántos gramos tenés de esta variedad.',
+    title: STEP_STOCK_ENTRY,
+    why: ONBOARDING_TEXT.sinStockNoSe,
     shortName: 'stock inicial',
-    name: 'Stock inicial',
-    later: 'Variedades',
+    name: COMMON_TEXT.stockInicial,
+    later: COMMON_TEXT.variedades,
   },
   {
     slug: 'header_footer',
     path: ONBOARDING_CATALOG_MESSAGE,
     required: false,
-    title: 'Cómo sale tu catálogo',
-    why: 'El encabezado y el pie van en cada catálogo que mandás. Ya tienen un texto: dejalo así o cambialo.',
-    shortName: 'mensaje del catálogo',
-    name: 'Mensaje del catálogo',
-    later: 'Configuración → Mensaje del catálogo',
+    title: ONBOARDING_TEXT.comoSaleTuCatalogo,
+    why: ONBOARDING_TEXT.elEncabezadoYEl,
+    shortName: ONBOARDING_TEXT.mensajeDelCatalogo,
+    name: COMMON_TEXT.mensajeDelCatalogo,
+    later: ONBOARDING_TEXT.configuracionMensajeDelCatalogo,
   },
   {
     slug: 'bot',
     path: ONBOARDING_BOT,
     required: false,
-    title: 'Conectá tu bot de Telegram',
-    why: 'Con el bot, tu catálogo se publica y se actualiza solo en tu canal.',
-    shortName: 'bot de Telegram',
-    name: 'Bot de Telegram',
-    later: 'Configuración → Integraciones',
+    title: ONBOARDING_TEXT.conectaTuBotDe,
+    why: ONBOARDING_TEXT.conElBotTu,
+    shortName: ONBOARDING_TEXT.botDeTelegram,
+    name: COMMON_TEXT.botDeTelegram,
+    later: ONBOARDING_TEXT.configuracionIntegraciones,
   },
   {
     slug: 'partner',
     path: ONBOARDING_PARTNER,
     required: false,
-    title: 'Enviale el link a tu socio',
-    why: 'Con el link tu socio entra a este negocio y ve lo mismo que vos. No hace falta que se sume ahora.',
+    title: ONBOARDING_TEXT.envialeElLinkA,
+    why: ONBOARDING_TEXT.conElLinkTu,
     shortName: 'socio',
-    name: 'Socio',
-    later: 'Configuración → Usuarios',
+    name: COMMON_TEXT.socio,
+    later: ONBOARDING_TEXT.configuracionUsuarios,
   },
   {
     slug: 'categories',
     path: ONBOARDING_CATEGORIES,
     required: false,
-    title: 'Categorías de gastos',
-    why: 'Ordenan lo que gastás. Ya tenés las más comunes: sumá, renombrá o sacá las que quieras.',
-    shortName: 'categorías de gastos',
-    name: 'Categorías de gastos',
-    later: 'Configuración → Categorías de gastos',
+    title: COMMON_TEXT.categoriasDeGastos,
+    why: ONBOARDING_TEXT.ordenanLoQueGastas,
+    shortName: ONBOARDING_TEXT.categoriasDeGastos,
+    name: COMMON_TEXT.categoriasDeGastos,
+    later: ONBOARDING_TEXT.configuracionCategoriasDeGastos,
   },
 ]
 
@@ -125,5 +128,5 @@ export function previousPath(slug: StepSlug): string | undefined {
 
 /** The sentence under a skippable step's buttons, saying where it can be done later. */
 export function laterHint(info: StepInfo): string {
-  return `Si lo salteás, lo hacés después en ${info.later}.`
+  return ONBOARDING_TEXT.siLoSalteasLo(info.later)
 }

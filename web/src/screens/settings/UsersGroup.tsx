@@ -25,10 +25,10 @@ interface Business {
 }
 
 const LEAVE = {
-  question: '¿Descartás la invitación?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
+  question: SETTINGS_TEXT.descartasLaInvitacion,
+  detail: SETTINGS_TEXT.sePierdeLoQue,
+  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  discardLabel: SETTINGS_TEXT.siDescartala,
 }
 
 export default function UsersGroup() {

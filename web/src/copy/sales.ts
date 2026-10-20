@@ -7,6 +7,8 @@
 import { SAMPLES, type LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const EMPTY_LIST = EMPTY_STATES.salesList
 export const GRAMS_HELP = 'Coma, hasta dos decimales'
 export const OWING_HINT = 'Para dejar debiendo elegí un cliente'
@@ -61,4 +63,16 @@ export const SALES_TEXT = {
   desde: 'Desde',
   hasta: 'Hasta',
   teDebe: 'te debe',
+  cargaAlMenosUna: 'Cargá al menos una variedad.',
+  elegiComoSePago: 'Elegí cómo se pagó, o dejá la venta debiendo',
+  elPrecioEspecialTiene: 'El precio especial tiene que ser mayor a $0',
+  cargaLosGramosComa: 'Cargá los gramos: coma, hasta dos decimales',
+  elegiUnaVariedad: 'Elegí una variedad',
+  elEnvioNoPuede: 'El envío no puede ser negativo',
+  laNotaEsDemasiado: 'La nota es demasiado larga',
+  sinVariedad: 'Sin variedad',
+  estaVentaYaTiene: 'Esta venta ya tiene cliente.',
+  quedoDebiendo: 'quedó debiendo',
+  borrasLaVentaDe: (money: string | number, day: string | number, grams: string | number) => `¿Borrás la venta de ${money} del ${day}? Vuelven ${grams} al stock.`,
+  fechas: 'Fechas',
 } as const

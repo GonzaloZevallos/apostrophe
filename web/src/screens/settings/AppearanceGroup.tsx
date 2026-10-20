@@ -10,10 +10,11 @@ import { useState } from 'react'
 import { chooseTheme, currentTheme } from '../../theme'
 import SettingsGroup from './SettingsGroup'
 import { SETTINGS_TEXT } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
 
 const CHOICES = [
-  { value: 'claro', label: 'Claro' },
-  { value: 'oscuro', label: 'Oscuro' },
+  { value: 'claro', label: SETTINGS_TEXT.claro },
+  { value: 'oscuro', label: SETTINGS_TEXT.oscuro },
 ] as const
 
 export default function AppearanceGroup() {
@@ -29,10 +30,10 @@ export default function AppearanceGroup() {
       title={SETTINGS_TEXT.apariencia}
       dirty={false}
       leave={{
-        question: '¿Descartás el tema?',
-        detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-        keepLabel: 'No, seguí editando',
-        discardLabel: 'Sí, descartalo',
+        question: SETTINGS_TEXT.descartasElTema,
+        detail: SETTINGS_TEXT.sePierdeLoQue,
+        keepLabel: SETTINGS_TEXT.noSeguiEditando,
+        discardLabel: COMMON_TEXT.siDescartalo,
       }}
     >
       <span className="rotulo ajustes-tema__rotulo" id="ajustes-tema-rotulo">

@@ -21,7 +21,7 @@ import type { StepBodyProps } from './stepBodies'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
-export const PUBLISH_LINE = 'Cuando quieras, publicalo desde Variedades → Mandar catálogo'
+export const PUBLISH_LINE = ONBOARDING_TEXT.cuandoQuierasPublicaloDesde
 
 export default function BotStep({ progress, onDirtyChange, onProgress }: StepBodyProps) {
   const query = useQuery({

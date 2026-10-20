@@ -14,14 +14,16 @@
 import { useState } from 'react'
 import CatalogMessageForm from './CatalogMessageForm'
 import SettingsGroup from './SettingsGroup'
+import { COMMON_TEXT } from '../../copy/common'
+import { SETTINGS_TEXT } from '../../copy/settings'
 
-const TITLE = 'Mensaje del catálogo'
+const TITLE = COMMON_TEXT.mensajeDelCatalogo
 
 const LEAVE = {
-  question: '¿Descartás el mensaje?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
+  question: SETTINGS_TEXT.descartasElMensaje,
+  detail: SETTINGS_TEXT.sePierdeLoQue,
+  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  discardLabel: COMMON_TEXT.siDescartalo,
 }
 
 export default function CatalogMessageGroup() {

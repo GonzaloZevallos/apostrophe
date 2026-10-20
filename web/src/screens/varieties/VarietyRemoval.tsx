@@ -39,10 +39,10 @@ const HAS_HISTORY_CODE = 'variety.has_history'
 
 /** The detail line of the archive confirmation: the grams on hand when there are any. */
 function archiveDetail(grams: number | null): string {
-  const tail = 'dejan de verse en Inicio y en las listas, pero el stock queda guardado.'
-  if (grams === null || grams === 0) return `Si la archivás, ${tail}`
-  if (grams < 0) return `Tiene un faltante de ${formatGrams(-grams)}. Si la archivás, ${tail}`
-  return `Te quedan ${formatGrams(grams)}. Si la archivás, ${tail}`
+  const tail = VARIETIES_TEXT.dejanDeVerseEn
+  if (grams === null || grams === 0) return VARIETIES_TEXT.siLaArchivas0(tail)
+  if (grams < 0) return VARIETIES_TEXT.tieneUnFaltanteDe(formatGrams(-grams), tail)
+  return VARIETIES_TEXT.teQuedan0Si(formatGrams(grams), tail)
 }
 
 /** Where a computer goes once `varietyId` leaves the list: the next by name, else the
@@ -83,7 +83,7 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
         list.filter((variety) => variety.id !== varietyId),
       )
     }
-    flash.armAfterLeaving(removal === 'delete' ? 'Variedad eliminada' : 'Variedad archivada')
+    flash.armAfterLeaving(removal === 'delete' ? VARIETIES_TEXT.variedadEliminada : VARIETIES_TEXT.variedadArchivada)
     void navigate(next === null ? VARIETIES : pathTo(VARIETY, { id: next }), { replace: true })
     // Mark stale without refetching now: the page still mounted would read the variety it
     // just deleted, a 404 the browser writes to its console (`invalidateResource`'s note).

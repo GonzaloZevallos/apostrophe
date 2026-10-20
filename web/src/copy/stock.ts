@@ -6,6 +6,8 @@
 import { SAMPLES, type LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const EMPTY_STATE_TITLE = EMPTY_STATES.stockTitle
 export const EMPTY_STATE_DETAIL = EMPTY_STATES.stockDetail
 
@@ -72,4 +74,10 @@ export const STOCK_TEXT = {
   estoActualizaElRetiro: 'Esto actualiza el retiro y los lotes que vienen después.',
   descartasElRetiro: '¿Descartás el retiro?',
   sePierdeLoQue: 'Se pierde lo que cambiaste: el retiro sigue como estaba.',
+  unaCompraNecesitaUn: 'Una compra necesita un costo total',
+  unAjusteNegativoNo: 'Un ajuste negativo no lleva costo',
+  retiroEliminado: 'Retiro eliminado',
+  borrasLaPromocionDel: (date: string | number, total_grams: string | number) => `¿Borrás la promoción del ${date}? Vuelven ${total_grams} al stock.`,
+  borrasElConsumoPropio: (date: string | number, total_grams: string | number) => `¿Borrás el consumo propio del ${date}? Vuelven ${total_grams} al stock.`,
+  retiroGuardado: 'Retiro guardado',
 } as const

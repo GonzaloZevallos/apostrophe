@@ -14,7 +14,7 @@ import type { StepBodyProps } from './stepBodies'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
-const CREATE_LINK = { label: 'Crear el link', variant: 'primary' } as const
+const CREATE_LINK = { label: ONBOARDING_TEXT.crearElLink, variant: 'primary' } as const
 
 export default function PartnerStep({ progress, onProgress }: StepBodyProps) {
   const [created, setCreated] = useState(false)

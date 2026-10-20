@@ -40,16 +40,16 @@ import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
 import { COMMON_TEXT } from '../copy/common'
 
 export { FLOWER_NOTICE }
-export const NO_DISCARD_TITLE = 'No, dejala'
-export const YES_DELETE_TITLE = 'Sí, borrala'
+export const NO_DISCARD_TITLE = EXPENSES_TEXT.noDejala
+export const YES_DELETE_TITLE = EXPENSES_TEXT.siBorrala
 
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
-  return `¿Borrás el gasto de ${formatMoney(expense.amount)} en ${categoryName} del ${formatDate(expense.spent_on, today)}?`
+  return EXPENSES_TEXT.borrasElGastoDe(formatMoney(expense.amount), categoryName, formatDate(expense.spent_on, today))
 }
 
 function countLine(expenses: number, categories: number): string {
   const spent = expenses === 1 ? '1 gasto' : `${expenses} gastos`
-  const inCategories = categories === 1 ? '1 categoría' : `${categories} categorías`
+  const inCategories = categories === 1 ? EXPENSES_TEXT.n1Categoria : EXPENSES_TEXT.n0Categorias(categories)
   return `${spent} en ${inCategories}`
 }
 
@@ -306,7 +306,7 @@ export default function Gastos() {
           onCancel={() => setDeleteTarget(null)}
           onDone={() => {
             setDeleteTarget(null)
-            flash.showNow('Gasto eliminado')
+            flash.showNow(EXPENSES_TEXT.gastoEliminado)
           }}
           onGone={() => {
             setDeleteTarget(null)

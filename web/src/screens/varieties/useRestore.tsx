@@ -30,6 +30,7 @@ import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
 import { restoreLanding, type Landing } from './restoreLanding'
+import { VARIETIES_TEXT } from '../../copy/varieties'
 
 type Problem = 'gone' | 'offline' | 'failed'
 
@@ -77,7 +78,7 @@ export function useRestore(): {
 
   function restore(varietyId: number): Promise<void> {
     return send(varietyId, () => {
-      flash.showNow('Variedad restaurada')
+      flash.showNow(VARIETIES_TEXT.variedadRestaurada)
       refresh()
     })
   }
@@ -100,7 +101,7 @@ export function useRestore(): {
       queryClient.setQueryData<ArchivedAttributes[]>(keys.archivedCatalog(), (old) =>
         old?.filter((attributes) => attributes.variety_id !== varietyId),
       )
-      flash.armAfterLeaving('Variedad restaurada')
+      flash.armAfterLeaving(VARIETIES_TEXT.variedadRestaurada)
       leaveTo(landing)
       invalidateResource(queryClient, 'varieties', { refetchType: 'none' })
       invalidateResource(queryClient, 'stock', { refetchType: 'none' })

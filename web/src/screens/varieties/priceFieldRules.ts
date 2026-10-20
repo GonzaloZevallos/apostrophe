@@ -9,9 +9,10 @@ import type { PricingSettings } from '../../api/pricingSettings'
 import { VARIETY_REFUSAL_TEXT, type RefusalCode } from '../../api/refusals'
 import { parseGrams, parseMoney } from '../../format/parse'
 import { GRAMS_INVALID } from '../../copy/stock'
+import { VARIETIES_TEXT } from '../../copy/varieties'
 
-export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
-export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
+export const DUPLICATE_DATE_MESSAGE = VARIETIES_TEXT.yaCargasteUnPrecio
+export const PRICE_INVALID_MESSAGE = VARIETIES_TEXT.revisaLosPreciosCargados
 
 export type PriceField = 'effectiveFrom' | 'listPrice' | 'bulkPrice' | 'bulkMinimum' | 'vipPrice' | 'form'
 export type PriceErrors = Partial<Record<PriceField, string>>

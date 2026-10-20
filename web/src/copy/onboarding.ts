@@ -5,6 +5,8 @@
 
 import type { LimitedCopy } from './limits'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const DISCARD_DETAIL = 'Se pierde lo que escribiste: todavía no se guardó nada.'
 /** For a step that has already saved part of its work: the variety is kept, the price typed is not. */
 export const PARTLY_SAVED_DETAIL = 'La variedad ya quedó guardada; se pierde el precio que escribiste.'
@@ -36,4 +38,29 @@ export const ONBOARDING_TEXT = {
   cargarUnaVariedad: 'Cargar una variedad',
   variedad0: (name: string | number) => `Variedad: ${name}`,
   guardaLaVariedad: 'Guardá la variedad',
+  cuandoQuierasPublicaloDesde: 'Cuando quieras, publicalo desde Variedades → Mandar catálogo',
+  paraDespuesEn0: (later: string | number) => `Para después — en ${later}`,
+  hecho0: (arg1: string | number) => `Hecho · ${arg1}`,
+  seguiConLaConfiguracion: 'Seguí con la configuración',
+  descartasLoQueEscribiste: '¿Descartás lo que escribiste?',
+  noSeguiEscribiendo: 'No, seguí escribiendo',
+  crearElLink: 'Crear el link',
+  cargaTuPrimeraVariedad: 'Cargá tu primera variedad',
+  paraVenderCadaVariedad: 'Para vender, cada variedad necesita un nombre y su precio de hoy.',
+  sinStockNoSe: 'Sin stock no se puede vender: contanos cuántos gramos tenés de esta variedad.',
+  comoSaleTuCatalogo: 'Cómo sale tu catálogo',
+  elEncabezadoYEl: 'El encabezado y el pie van en cada catálogo que mandás. Ya tienen un texto: dejalo así o cambialo.',
+  mensajeDelCatalogo: 'mensaje del catálogo',
+  configuracionMensajeDelCatalogo: 'Configuración → Mensaje del catálogo',
+  conectaTuBotDe: 'Conectá tu bot de Telegram',
+  conElBotTu: 'Con el bot, tu catálogo se publica y se actualiza solo en tu canal.',
+  botDeTelegram: 'bot de Telegram',
+  configuracionIntegraciones: 'Configuración → Integraciones',
+  envialeElLinkA: 'Enviale el link a tu socio',
+  conElLinkTu: 'Con el link tu socio entra a este negocio y ve lo mismo que vos. No hace falta que se sume ahora.',
+  configuracionUsuarios: 'Configuración → Usuarios',
+  ordenanLoQueGastas: 'Ordenan lo que gastás. Ya tenés las más comunes: sumá, renombrá o sacá las que quieras.',
+  categoriasDeGastos: 'categorías de gastos',
+  configuracionCategoriasDeGastos: 'Configuración → Categorías de gastos',
+  siLoSalteasLo: (later: string | number) => `Si lo salteás, lo hacés después en ${later}.`,
 } as const

@@ -31,9 +31,9 @@ import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
 import { COMMON_TEXT } from '../../copy/common'
 
-export const SEARCH_LABEL = 'Buscar cliente'
-export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
-export const SEARCHING = 'Buscando…'
+export const SEARCH_LABEL = CUSTOMERS_TEXT.buscarCliente
+export const SEARCH_PLACEHOLDER = CUSTOMERS_TEXT.telefonoONombre
+export const SEARCHING = CUSTOMERS_TEXT.buscando
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()

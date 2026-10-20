@@ -38,9 +38,9 @@ import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
 import { COMMON_TEXT } from '../copy/common'
 
-export const CATALOG_COPIED = 'Catálogo copiado'
-export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
-export const SHARE_FAILED_MESSAGE = 'No se pudo compartir.'
+export const CATALOG_COPIED = CATALOG_TEXT.catalogoCopiado
+export const COPY_FAILED_MESSAGE = CATALOG_TEXT.noSePudoCopiar
+export const SHARE_FAILED_MESSAGE = CATALOG_TEXT.noSePudoCompartir
 
 // The one table from GET /catalog's `state` to the word that says why a variety does not
 // go out (PRD criterion 4). The front never decides the reason, it only words the server's.

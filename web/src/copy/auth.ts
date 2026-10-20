@@ -5,6 +5,8 @@
 
 import { SAMPLES, type LimitedCopy } from './limits'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const WEAK_PASSWORD_MESSAGE = 'La contraseña tiene que tener al menos 10 caracteres'
 export const DEAD_LINK_MESSAGE = 'Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'
 export const BRAKE_MESSAGE = '5 intentos fallidos · probá de nuevo en 15 minutos'
@@ -48,4 +50,12 @@ export const AUTH_TEXT = {
   entrar: 'Entrar',
   elegiTuContrasenaNueva: 'Elegí tu contraseña nueva',
   guardarYEntrar: 'Guardar y entrar',
+  laContrasenaActualNo: 'La contraseña actual no es esa.',
+  emailOContrasenaIncorrectos: 'Email o contraseña incorrectos',
+  yaHayUnaCuenta: 'Ya hay una cuenta con ese email',
+  ingresaUnEmailValido: 'Ingresá un email válido',
+  invitacionValida: 'Invitación válida',
+  teInvitaronA: 'Te invitaron a',
+  poneleUnNombreY: 'Ponele un nombre y creá tu usuario. Después podés invitar a un socio.',
+  creaTuUsuarioY: 'Creá tu usuario y vas a ver las ventas, el stock y los clientes de este negocio. Sólo de este.',
 } as const

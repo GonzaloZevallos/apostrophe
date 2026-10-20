@@ -23,9 +23,10 @@ import AuthPage from '../components/AuthPage'
 import Boton from '../components/Boton'
 import PasswordField from '../components/PasswordField'
 import { BRAKE_MESSAGE, INVITE_ONLY_LINE, LOGIN_HINT, AUTH_TEXT } from '../copy/auth'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
-export const CREDENTIALS_WRONG = 'Email o contraseña incorrectos'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const CREDENTIALS_WRONG = AUTH_TEXT.emailOContrasenaIncorrectos
+export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 export { BRAKE_MESSAGE, LOGIN_HINT, ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 
 const LOGIN_OVERRIDES: Partial<Record<RefusalCode, 'locked'>> = {

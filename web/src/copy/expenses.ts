@@ -5,6 +5,8 @@
 
 import type { LimitedCopy } from './limits'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [{ kind: 'help', text: FLOWER_NOTICE }]
@@ -32,4 +34,12 @@ export const EXPENSES_TEXT = {
   descartasElGasto: '¿Descartás el gasto?',
   pantallaMas: 'Pantalla Más',
   cargarGastoDesdeMas: 'Cargar gasto desde Más',
+  noDejala: 'No, dejala',
+  siBorrala: 'Sí, borrala',
+  borrasElGastoDe: (amount: string | number, categoryName: string | number, today: string | number) => `¿Borrás el gasto de ${amount} en ${categoryName} del ${today}?`,
+  n1Categoria: '1 categoría',
+  n0Categorias: (categories: string | number) => `${categories} categorías`,
+  gastoEliminado: 'Gasto eliminado',
+  esaCategoriaYaNo: 'Esa categoría ya no está. Elegí otra.',
+  gastoGuardado: 'Gasto guardado',
 } as const

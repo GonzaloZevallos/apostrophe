@@ -71,14 +71,15 @@ import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
 import { COMMON_TEXT } from '../../copy/common'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
-export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
+export const NO_LINES_MESSAGE = SALES_TEXT.cargaAlMenosUna
 export { OWING_HINT }
-export const PAYMENT_REQUIRED_MESSAGE = 'Elegí cómo se pagó, o dejá la venta debiendo'
-export const SPECIAL_PRICE_INVALID_MESSAGE = 'El precio especial tiene que ser mayor a $0'
-export const LINE_GRAMS_INVALID = 'Cargá los gramos: coma, hasta dos decimales'
-export const LINE_VARIETY_MISSING = 'Elegí una variedad'
+export const PAYMENT_REQUIRED_MESSAGE = SALES_TEXT.elegiComoSePago
+export const SPECIAL_PRICE_INVALID_MESSAGE = SALES_TEXT.elPrecioEspecialTiene
+export const LINE_GRAMS_INVALID = SALES_TEXT.cargaLosGramosComa
+export const LINE_VARIETY_MISSING = SALES_TEXT.elegiUnaVariedad
 
 function emptyLine(): LineState {
   return {
@@ -144,9 +145,9 @@ const SUBMIT_OVERRIDES: Partial<
   >
 > = {
   'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
-  'sale.shipping_negative': { field: 'shipping', message: 'El envío no puede ser negativo' },
-  'sale.note_too_long': { field: 'note', message: 'La nota es demasiado larga' },
-  'sale.date_in_future': { field: 'date', message: 'La fecha no puede ser futura' },
+  'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.elEnvioNoPuede },
+  'sale.note_too_long': { field: 'note', message: SALES_TEXT.laNotaEsDemasiado },
+  'sale.date_in_future': { field: 'date', message: COMMON_TEXT.laFechaNoPuede },
   'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
   'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
@@ -463,7 +464,7 @@ function NuevaVentaForm() {
     }
     const shippingCharged = parseShipping(shipping)
     if (shippingCharged === null) {
-      setShippingError('El envío no puede ser negativo')
+      setShippingError(SALES_TEXT.elEnvioNoPuede)
       return
     }
 

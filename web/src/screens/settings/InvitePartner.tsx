@@ -20,6 +20,7 @@ import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
 import { inviteExpiry } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
+import { STEP_SECOND_USER } from '../../copy/inicio'
 
 interface Invite {
   url: string
@@ -33,7 +34,7 @@ export interface InviteAction {
   variant: 'primary' | 'secondary'
 }
 
-const DEFAULT_ACTION: InviteAction = { label: 'Invitá a un socio', variant: 'secondary' }
+const DEFAULT_ACTION: InviteAction = { label: STEP_SECOND_USER, variant: 'secondary' }
 
 export default function InvitePartner({
   onLinkCreated,

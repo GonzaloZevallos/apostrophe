@@ -46,14 +46,15 @@ import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
 import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE, VARIETIES_TEXT } from '../copy/varieties'
 import { COMMON_TEXT } from '../copy/common'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
 const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 
-export const VARIETY_SAVED = 'Variedad guardada'
-export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
-export const NAME_TAKEN_MESSAGE = 'Ya existe una variedad con ese nombre'
-export const NAME_INVALID_MESSAGE = 'Ponele un nombre a la variedad, sin espacios de más'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const VARIETY_SAVED = VARIETIES_TEXT.variedadGuardada
+export const NO_PRICE_TODAY = VARIETIES_TEXT.sinPrecioNoSe
+export const NAME_TAKEN_MESSAGE = VARIETIES_TEXT.yaExisteUnaVariedad
+export const NAME_INVALID_MESSAGE = VARIETIES_TEXT.poneleUnNombreA
+export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 
 interface PriceEntry {
   id: number
@@ -76,7 +77,7 @@ export interface Variety {
 function figuresOf(row: VarietyStock, today: string): string {
   const grams = formatGrams(row.grams)
   if (row.status === 'sold_out' || row.status === 'no_entries') return `${grams} · ${detailFor(row, today)}`
-  return row.days_left === null ? grams : `${grams} · ${row.days_left} días`
+  return row.days_left === null ? grams : VARIETIES_TEXT.n01Dias(grams, row.days_left)
 }
 
 export default function Variedades() {

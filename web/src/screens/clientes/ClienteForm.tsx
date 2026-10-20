@@ -46,18 +46,19 @@ import Loading from '../../components/Loading'
 import CustomerFields from './CustomerFields'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const SAVED_TOAST = 'Cliente guardado'
-export const NAME_REQUIRED = 'Ponele un nombre'
-export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
-export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const SAVED_TOAST = COMMON_TEXT.clienteGuardado
+export const NAME_REQUIRED = CUSTOMERS_TEXT.poneleUnNombre
+export const PHONE_INVALID = CUSTOMERS_TEXT.esoNoPareceUn
+export const PHONE_TAKEN = CUSTOMERS_TEXT.eseTelefonoYaEs
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 type Field = 'name' | 'phone' | 'form'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
-  'customer.name_too_long': { field: 'name', message: 'El nombre es demasiado largo' },
+  'customer.name_too_long': { field: 'name', message: COMMON_TEXT.elNombreEsDemasiado },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }

@@ -23,8 +23,9 @@ import { INDICA_SHARE_INVALID_MESSAGE, fieldOfRefusal, type CatalogField } from 
 import Boton from '../../components/Boton'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
+import { CATALOG_SAVED } from '../../copy/settings'
 
-export const CATALOG_ATTRIBUTES_SAVED: SuccessToast = 'Catálogo guardado'
+export const CATALOG_ATTRIBUTES_SAVED: SuccessToast = CATALOG_SAVED
 
 export interface CatalogAttributesFormProps {
   row: Pick<CatalogVariety, 'id' | 'shown' | 'emoji' | 'indica_share' | 'aroma'>

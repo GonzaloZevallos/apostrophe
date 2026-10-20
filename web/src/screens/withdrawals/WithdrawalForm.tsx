@@ -41,8 +41,9 @@ import type { Variety } from '../Variedades'
 import Boton from '../../components/Boton'
 import { GRAMS_INVALID, STOCK_TEXT } from '../../copy/stock'
 import { COMMON_TEXT } from '../../copy/common'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 const REFUSAL_MESSAGES: Partial<Record<RefusalCode, string>> = WITHDRAWAL_REFUSAL_MESSAGES
 
@@ -341,7 +342,7 @@ export default function WithdrawalForm({
       if (target === 'new') await recordWithdrawal(body)
       else await editWithdrawal(String(target.id), body)
       invalidateResource(queryClient, 'stock')
-      onDone('Retiro guardado')
+      onDone(STOCK_TEXT.retiroGuardado)
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)

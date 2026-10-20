@@ -34,7 +34,7 @@ import {
   HEADER_TOO_LONG_MESSAGE, SETTINGS_TEXT,
 } from '../../copy/settings'
 
-const SUBMIT_LABEL = 'Guardá el mensaje'
+const SUBMIT_LABEL = SETTINGS_TEXT.guardaElMensaje
 
 interface HeaderFooter {
   header: string

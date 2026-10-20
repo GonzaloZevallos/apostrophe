@@ -21,10 +21,10 @@ import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
 
 const LEAVE = {
-  question: '¿Descartás la contraseña nueva?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
+  question: SETTINGS_TEXT.descartasLaContrasenaNueva,
+  detail: SETTINGS_TEXT.sePierdeLoQue,
+  keepLabel: SETTINGS_TEXT.noSeguiEditando,
+  discardLabel: SETTINGS_TEXT.siDescartala,
 }
 
 export default function AccountGroup() {

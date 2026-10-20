@@ -73,11 +73,11 @@ const GONE_CODES: ReadonlySet<PaymentRefusalCode> = new Set([
 ])
 
 const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
-  'payment.above_balance': 'El monto supera lo que te debe.',
-  'payment.future_date': 'La fecha no puede ser futura.',
-  'payment.amount_invalid': 'Ingresá un monto válido.',
+  'payment.above_balance': PAYMENTS_TEXT.elMontoSuperaLo,
+  'payment.future_date': PAYMENTS_TEXT.laFechaNoPuede,
+  'payment.amount_invalid': PAYMENTS_TEXT.ingresaUnMontoValido,
 }
-const METHOD_REQUIRED_MESSAGE = 'Elegí efectivo o transferencia.'
+const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.elegiEfectivoOTransferencia
 
 /** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
@@ -154,7 +154,7 @@ export default function Cobro({
     setMethodError(null)
     setOffline(false)
     if (!parsedAmount.ok) {
-      setAmountError('Ingresá un monto válido.')
+      setAmountError(PAYMENTS_TEXT.ingresaUnMontoValido)
       return
     }
     if (method === null) {
@@ -166,8 +166,8 @@ export default function Cobro({
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
-          ? `Cobro guardado · queda debiendo ${formatMoney(recorded.after.balance)}`
-          : 'Cobro guardado',
+          ? PAYMENTS_TEXT.cobroGuardadoQuedaDebiendo(formatMoney(recorded.after.balance))
+          : PAYMENTS_TEXT.cobroGuardado,
       )
       onDone()
     } catch (caught) {

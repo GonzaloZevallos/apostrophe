@@ -36,9 +36,10 @@ import {
   OUT_OF_DATE_SEPARATOR,
   OUT_OF_DATE_TITLE, PINNED_CATALOG_TEXT,
 } from '../copy/pinnedCatalog'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
-const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
-const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+const PUBLISHED_TOAST: SuccessToast = PINNED_CATALOG_TEXT.catalogoPublicado
+const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 const INTEGRATIONS_PATH = SETTINGS_INTEGRATIONS
 
 interface PinStatus {

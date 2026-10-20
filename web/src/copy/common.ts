@@ -7,6 +7,8 @@
 
 import type { LimitedCopy } from './limits'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const SIN_CONEXION_MENSAJE = 'Sin conexión: revisá tu internet y probá de nuevo.'
 export const ERROR_GENERICO_MENSAJE = 'Algo falló. Probá de nuevo.'
 
@@ -76,4 +78,37 @@ export const COMMON_TEXT = {
   cambiar: 'Cambiar',
   precioPorCantidad: 'Precio por cantidad',
   nuevaVenta: 'Nueva venta',
+  efectivo: 'Efectivo',
+  transferencia: 'Transferencia',
+  debiendo: 'Debiendo',
+  clienteGuardado: 'Cliente guardado',
+  ventaEliminada: 'Venta eliminada',
+  ventaEliminadaLosGramos: 'Venta eliminada · los gramos vuelven al stock',
+  entradaGuardada: 'Entrada guardada',
+  entradaEliminada: 'Entrada eliminada',
+  ventaGuardada: 'Venta guardada',
+  hoy0: (iso: string | number) => `Hoy ${iso}`,
+  precios: 'Precios',
+  analisis: 'Análisis',
+  configuracion: 'Configuración',
+  negocio: 'Negocio',
+  usuarios: 'Usuarios',
+  mensajeDelCatalogo: 'Mensaje del catálogo',
+  categoriasDeGastos: 'Categorías de gastos',
+  apariencia: 'Apariencia',
+  tuCuenta: 'Tu cuenta',
+  variedadConPrecio: 'Variedad con precio',
+  stockInicial: 'Stock inicial',
+  botDeTelegram: 'Bot de Telegram',
+  socio: 'Socio',
+  laFechaNoPuede: 'La fecha no puede ser futura',
+  compra: 'Compra',
+  cosecha: 'Cosecha',
+  ajuste: 'Ajuste',
+  elNombreEsDemasiado: 'El nombre es demasiado largo',
+  hoy: 'Hoy',
+  semana: 'Semana',
+  mes: 'Mes',
+  vuelveARegir0: (list_price: string | number, effective_from: string | number) => `Vuelve a regir ${list_price} x g desde el ${effective_from}`,
+  noVaAHaber: (effective_from: string | number) => `No va a haber precio antes del ${effective_from}`,
 } as const

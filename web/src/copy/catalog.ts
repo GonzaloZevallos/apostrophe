@@ -7,6 +7,8 @@
 import type { LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 export const EMPTY_STATE_TITLE = EMPTY_STATES.catalogTitle
 export const EMPTY_STATE_DETAIL = EMPTY_STATES.catalogDetail
 
@@ -22,4 +24,7 @@ export const CATALOG_TEXT = {
   comoSeVeEn: 'Cómo se ve en Telegram',
   queNoSaleY: 'Qué no sale y por qué',
   editarEncabezadoYPie: 'Editar encabezado y pie',
+  catalogoCopiado: 'Catálogo copiado',
+  noSePudoCopiar: 'No se pudo copiar.',
+  noSePudoCompartir: 'No se pudo compartir.',
 } as const

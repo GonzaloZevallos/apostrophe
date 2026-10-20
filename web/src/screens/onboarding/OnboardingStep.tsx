@@ -49,9 +49,9 @@ import { COMMON_TEXT } from '../../copy/common'
 import { CHECKLIST_REQUIRED, CHECKLIST_OPTIONAL } from '../../copy/inicio'
 
 export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
-export const DISCARD_QUESTION = '¿Descartás lo que escribiste?'
-export const KEEP_TYPING = 'No, seguí escribiendo'
-export const DISCARD = 'Sí, descartalo'
+export const DISCARD_QUESTION = ONBOARDING_TEXT.descartasLoQueEscribiste
+export const KEEP_TYPING = ONBOARDING_TEXT.noSeguiEscribiendo
+export const DISCARD = COMMON_TEXT.siDescartalo
 
 type Skip = 'one' | 'rest'
 type Failure = 'offline' | 'error'

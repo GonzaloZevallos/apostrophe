@@ -59,18 +59,18 @@ export {
   SINCE_FIRST_RECORD_LABEL,
   VARIETY_TOTAL_NOTE,
 }
-export const BEST_WEEK_MARK = 'Mejor semana'
-export const BEST_WEEKDAY_MARK = 'Mejor día'
+export const BEST_WEEK_MARK = ANALYSIS_TEXT.mejorSemana
+export const BEST_WEEKDAY_MARK = ANALYSIS_TEXT.mejorDia
 export const BEST_WEEK_TABLE_MARK = 'mejor'
 
 const WEEKDAY_LABEL: Record<number, string> = {
-  1: 'Lun',
-  2: 'Mar',
-  3: 'Mié',
-  4: 'Jue',
-  5: 'Vie',
-  6: 'Sáb',
-  7: 'Dom',
+  1: ANALYSIS_TEXT.lun,
+  2: ANALYSIS_TEXT.mar,
+  3: ANALYSIS_TEXT.mie,
+  4: ANALYSIS_TEXT.jue,
+  5: ANALYSIS_TEXT.vie,
+  6: ANALYSIS_TEXT.sab,
+  7: ANALYSIS_TEXT.dom,
 }
 
 /** "y N g sin costo" (PM, round 1): never shown for a figure with nothing pending. */

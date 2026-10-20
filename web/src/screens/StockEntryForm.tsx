@@ -32,17 +32,18 @@ import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
 import { COST_REQUIRED_HELP, GRAMS_INVALID, OPENING_COST_HINT, onHandHelp, perGramPreview, STOCK_TEXT } from '../copy/stock'
 import { COMMON_TEXT } from '../copy/common'
+import { GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
-export const COST_REQUIRED = 'Una compra necesita un costo total'
-export const COST_ON_NEGATIVE = 'Un ajuste negativo no lleva costo'
-export const DATE_IN_FUTURE = 'La fecha no puede ser futura'
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
+export const COST_REQUIRED = STOCK_TEXT.unaCompraNecesitaUn
+export const COST_ON_NEGATIVE = STOCK_TEXT.unAjusteNegativoNo
+export const DATE_IN_FUTURE = COMMON_TEXT.laFechaNoPuede
 
 const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
-  { value: 'purchase', label: 'Compra' },
-  { value: 'harvest', label: 'Cosecha' },
-  { value: 'opening_stock', label: 'Stock inicial' },
-  { value: 'adjustment', label: 'Ajuste' },
+  { value: 'purchase', label: COMMON_TEXT.compra },
+  { value: 'harvest', label: COMMON_TEXT.cosecha },
+  { value: 'opening_stock', label: COMMON_TEXT.stockInicial },
+  { value: 'adjustment', label: COMMON_TEXT.ajuste },
 ]
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {

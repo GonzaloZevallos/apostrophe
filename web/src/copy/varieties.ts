@@ -6,6 +6,8 @@ import { type LimitedCopy } from './limits'
 import type { RefusalCode } from '../api/refusals'
 import type { SuccessToast } from '../components/AvisoExito'
 
+export const LANGUAGE: 'es' | 'en' = 'es'
+
 
 export const EMPTY_TITLE = 'Todavía no cargaste ninguna variedad'
 export const EMPTY_DETAIL = 'Agregá la primera con su precio para poder vender y mandar tu catálogo.'
@@ -126,4 +128,22 @@ export const VARIETIES_TEXT = {
   paginaDeLaVariedad: 'Página de la variedad',
   verTodosLosPrecios: 'Ver todos los precios',
   pantallaArchivadas: 'Pantalla Archivadas',
+  variedadGuardada: 'Variedad guardada',
+  sinPrecioNoSe: 'Sin precio: no se puede vender',
+  yaExisteUnaVariedad: 'Ya existe una variedad con ese nombre',
+  poneleUnNombreA: 'Ponele un nombre a la variedad, sin espacios de más',
+  n01Dias: (grams: string | number, days_left: string | number) => `${grams} · ${days_left} días`,
+  precioEliminado: 'Precio eliminado',
+  dejanDeVerseEn: 'dejan de verse en Inicio y en las listas, pero el stock queda guardado.',
+  siLaArchivas0: (tail: string | number) => `Si la archivás, ${tail}`,
+  tieneUnFaltanteDe: (grams: string | number, tail: string | number) => `Tiene un faltante de ${grams}. Si la archivás, ${tail}`,
+  teQuedan0Si: (grams: string | number, tail: string | number) => `Te quedan ${grams}. Si la archivás, ${tail}`,
+  variedadEliminada: 'Variedad eliminada',
+  variedadArchivada: 'Variedad archivada',
+  poneExactamenteUnEmoji: 'Poné exactamente un emoji',
+  elPorcentajeDeIndica: 'El porcentaje de índica va de 0 a 100',
+  elAromaEsDemasiado: 'El aroma es demasiado largo',
+  yaCargasteUnPrecio: 'Ya cargaste un precio con esa fecha',
+  revisaLosPreciosCargados: 'Revisá los precios cargados',
+  variedadRestaurada: 'Variedad restaurada',
 } as const
