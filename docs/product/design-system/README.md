@@ -215,3 +215,15 @@ Decidido en el grill del 02/10/2026 (issue #3). Está aislado en la función
 
 Los cinco `.ts` compilan con `tsc --strict`. Las reglas de precio, los formatos
 y la imputación de cobros pasan 24 pruebas de comportamiento.
+
+## Abiertos tras la pasada de la app en inglés
+
+La corrida entera de `comparisons.mjs --strict` salió en 0 (156 hojas). Se miraron a ojo
+sólo algunas hojas: la lista está en la entrega de GH-53 (`close`); el resto no se miró.
+Quedan dos recortes sin arreglar, para un seguimiento:
+
+- **Análisis, franja de resumen** (`Analisis`, `AnalisisOscuro`, `AnalisisCompu`,
+  `AnalisisCompuOscuro`): los importes de la franja se cortan a la mitad en dos líneas. No
+  se encontró la clase para arreglarlo sólo con CSS.
+- **Análisis, bloque «Moved since your first record»**: las métricas quedan pegadas entre
+  sí. Es un problema del marcado, no de CSS.
