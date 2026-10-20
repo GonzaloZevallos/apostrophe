@@ -249,6 +249,38 @@ test('Semana and Mes keep every result figure, Promoción and Consumo propio rig
   expect(screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })).toBeInTheDocument()
 })
 
+test('the sold headline and the result figures share one group, and the two blocks share another, in the same order', async () => {
+  // `InicioCompu.dc.html`: headline beside the figures, then Te deben beside Lo que te queda.
+  // The wrappers are the hooks the computer layout lays out; the order stays the phone's.
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  await userEvent.click(screen.getByRole('button', { name: 'Semana' }))
+  await screen.findByText('Vendiste esta semana')
+
+  const figures = container.querySelector('.panel-cifras') as Element
+  expect(figures).not.toBeNull()
+  expect(Array.from(figures.children).map((child) => child.className)).toEqual([
+    'panel-ventas',
+    'panel-cifras__resultados',
+  ])
+  const results = figures.querySelector('.panel-cifras__resultados') as Element
+  expect(Array.from(results.children).map((child) => child.className)).toEqual([
+    'panel-lista',
+    'panel-resultados',
+  ])
+
+  const blocks = container.querySelector('.panel-dos-columnas') as Element
+  expect(blocks.children[0]?.classList.contains('bloque-deben')).toBe(true)
+  expect(blocks.children[1]?.querySelector('.lista-stock')).not.toBeNull()
+  expect(figures.compareDocumentPosition(blocks)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+
+  // Hoy has no result figures: its group holds the headline alone.
+  await userEvent.click(screen.getByRole('button', { name: 'Hoy' }))
+  await screen.findByText('Vendiste hoy')
+  const today = container.querySelector('.panel-cifras') as Element
+  expect(Array.from(today.children).map((child) => child.className)).toEqual(['panel-ventas'])
+})
+
 test('a low variety links to its page; every other row is plain text, and order stays by name', async () => {
   panelNow = {
     ...PANEL,
