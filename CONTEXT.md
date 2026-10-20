@@ -450,5 +450,5 @@ A notice the seller taps to open what it points to, such as Inicio's "Seguí con
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-The side-by-side capture of a screen's design file and the built app, taken from the screens registry with pinned fonts, attached to a PR as review evidence and judged by eye. A registry row reaches its screen the way a seller does and captures its named section whole, only once the screen has finished drawing. Its result never depends on how loaded the machine is, and it is never a step of the gate.
+The side-by-side capture of a screen's design file and the built app, taken from the screens registry with pinned fonts, attached to a PR as review evidence and judged by eye. A registry row reaches its screen the way a seller does and captures its named section whole, only once the screen has finished drawing and every animated change that ends has finished; a screen that never comes to rest fails its row. Its result never depends on how loaded the machine is, and it is never a step of the gate.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
