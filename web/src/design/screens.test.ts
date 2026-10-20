@@ -354,7 +354,7 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(clicks(row('InicioHoy'))).toEqual([])
     expect(row('InicioHoy')).toMatchObject({ design: 'Inicio', section: HOY_PHONE })
     expect(clicks(row('InicioHoyCompu'))).toEqual([])
-    expect(row('InicioHoyCompu')).toMatchObject({ design: 'InicioCompu', viewport: [1280, 920] })
+    expect(row('InicioHoyCompu')).toMatchObject({ design: 'InicioCompu', viewport: [1280, 920], section: HOY_PHONE })
   })
 
   it('captures the dark computer Hoy against the light computer drawing, as the other CompuOscuro twins do', () => {
@@ -364,7 +364,8 @@ describe('the Inicio rows of the real screens.json', () => {
       tema: 'oscuro',
       viewport: [1280, 920],
     })
-    expect(row('InicioHoyCompuOscuro').section).toBeUndefined()
+    // GH-274: the computer Hoy rows crop to the one caption InicioCompu now draws for Hoy.
+    expect(row('InicioHoyCompuOscuro').section).toBe(HOY_PHONE)
   })
 
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
@@ -811,9 +812,11 @@ describe('assertSelectedAccounts', () => {
     expect(open.length).toBeGreaterThan(0)
     expect(ended.length).toBeGreaterThan(0)
     expect(open.filter((name) => ended.includes(name))).toEqual([])
-    const real: Record<string, 'open' | 'ended'> = {
+    const real: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported'> = {
       ...Object.fromEntries(open.map((name) => [name, 'open' as const])),
       ...Object.fromEntries(ended.map((name) => [name, 'ended' as const])),
+      ...Object.fromEntries(namesOf('PRE_ONBOARDING_ACCOUNTS').map((name) => [name, 'pre_onboarding' as const])),
+      ...Object.fromEntries(namesOf('IMPORTED_ACCOUNTS').map((name) => [name, 'imported' as const])),
     }
     expect(() => assertSelectedAccounts(screens.screens, real)).not.toThrow()
   })
@@ -971,6 +974,24 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
     expect(namesOf('IMPORTED_ACCOUNTS')).toEqual(['importada'])
     const all = groups.flatMap(namesOf)
     expect(new Set(all).size).toBe(all.length)
+  })
+
+  it('names each of them on exactly its three rows, each cropped to a label of its own drawing', () => {
+    const rows = screens.screens as { screen: string; account?: string; design?: string; section?: string }[]
+    const named = (account: string) => rows.filter((r) => r.account === account).map((r) => r.screen)
+    expect(named('checklist')).toEqual(['InicioChecklist', 'InicioChecklistCompu', 'InicioChecklistOscuro'])
+    expect(named('importada')).toEqual(['InicioImportado', 'InicioImportadoCompu', 'InicioImportadoOscuro'])
+    for (const r of rows.filter((x) => x.account === 'checklist' || x.account === 'importada')) {
+      expect(typeof r.section, r.screen).toBe('string')
+    }
+  })
+
+  it('refuses a first-run row whose label is not in its drawing, or occurs twice', () => {
+    const row = { screen: 'InicioChecklist', route: '/', path: '/', account: 'checklist' }
+    expect(() => assertScreens([{ ...row, section: 'Una etiqueta que no está dibujada' }])).toThrow(/InicioChecklist/)
+    expect(() => assertScreens([{ screen: 'InicioHoyCompu', design: 'InicioCompu', route: '/', path: '/', section: 'Hoy' }])).toThrow(
+      /InicioHoyCompu: section "Hoy" occurs \d+ times in InicioCompu\.dc\.html, expected exactly once/,
+    )
   })
 
   it('names none of them on a Listo entry of the real registry', () => {
