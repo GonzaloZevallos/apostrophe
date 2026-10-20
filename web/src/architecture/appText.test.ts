@@ -86,3 +86,15 @@ describe('isScanned', () => {
     expect(isScanned(path)).toBe(expected)
   })
 })
+
+describe('a table key is code, a label is text', () => {
+  test('a `key` value is not flagged', () => {
+    const source = "export const rows = [{ key: 'Shortfall', value: 1 }]\n"
+    expect(findVisibleLiterals('src/screens/Rows.ts', source)).toEqual([])
+  })
+
+  test('a `label` value in the same table is flagged', () => {
+    const source = "export const rows = [{ key: 'shortfall', label: 'Stock shortfall' }]\n"
+    expect(findVisibleLiterals('src/screens/Rows.ts', source)).toEqual([{ line: 1, node: 'string' }])
+  })
+})

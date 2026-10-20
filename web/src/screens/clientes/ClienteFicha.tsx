@@ -289,7 +289,7 @@ export default function ClienteFicha() {
             return (
               <div key={rowKey(row)} className="cuenta-cliente__fila">
                 <span className="cuenta-cliente__fecha">{formatDateShort(row.date)}</span>
-                {label !== '' && <span>{label}</span>}
+                {label !== '' && <span className="cuenta-cliente__etiqueta">{label}</span>}
                 <span className="cuenta-cliente__monto">{rowOwnAmount(row)}</span>
                 <span className="cuenta-cliente__saldo">{rowAmount(row)}</span>
                 {deleteIndices.has(index) && row.kind !== 'sale' && (

@@ -802,6 +802,8 @@ body {
   border: 0;
   font-size: 20px;
   cursor: pointer;
+  /* A header row never squeezes the 44 px target when its title is long. */
+  flex-shrink: 0;
 }
 
 .lista-variedades,
@@ -2494,8 +2496,9 @@ body {
 
 .cuenta-cliente__fila {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   padding: 8px 0;
   border-bottom: 1px solid var(--deuda-linea);
 }
@@ -2503,6 +2506,12 @@ body {
 .cuenta-cliente__monto,
 .cuenta-cliente__saldo {
   white-space: nowrap;
+}
+
+.cuenta-cliente__etiqueta {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .cuenta-cliente__fecha {
@@ -3410,6 +3419,14 @@ body {
  * text, no underline, `min-height: var(--alto-tocable)`. As `.boton--enlace` they keep that
  * look and tap height in these places, and a form's own links shrink to their words instead of
  * stretching their underline across the sheet. */
+.campo__mostrar .boton--enlace {
+  /* "Show" is a short word: the target is still a full 44 px wide. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--alto-tocable);
+}
+
 .campo__mostrar .boton--enlace,
 .formulario > .boton--enlace,
 .encabezado-fila .boton--enlace,

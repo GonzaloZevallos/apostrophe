@@ -283,15 +283,6 @@
   {
     "screen": "Cobro",
     "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Cobro",
-    "rule": "touch-target",
     "target": "textbox:Cash",
     "issue": 46
   },
@@ -331,15 +322,6 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "touch-target",
     "target": "textbox:Cash",
     "issue": 46
   },
@@ -348,15 +330,6 @@
     "rule": "touch-target",
     "target": "textbox:Transfer",
     "issue": 46
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "CobroDesdeInicio",
@@ -410,12 +383,6 @@
     "issue": 60
   },
   {
-    "screen": "ConfiguracionContrasena",
-    "rule": "touch-target",
-    "target": "button:Show",
-    "issue": 60
-  },
-  {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-target",
     "target": "link:Go to the catalog",
@@ -431,15 +398,6 @@
     ]
   },
   {
-    "screen": "ElegirCliente",
-    "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "EntradasTodas",
     "rule": "touch-target",
     "target": "link:Home",
@@ -465,18 +423,6 @@
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "Entrar",
-    "rule": "touch-target",
-    "target": "button:Show",
-    "issue": 49
-  },
-  {
-    "screen": "EntrarFreno",
-    "rule": "touch-target",
-    "target": "button:Show",
-    "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
@@ -884,12 +830,6 @@
     "issue": 45
   },
   {
-    "screen": "Invitacion",
-    "rule": "touch-target",
-    "target": "button:Show",
-    "issue": 49
-  },
-  {
     "screen": "Mas",
     "rule": "touch-target",
     "target": "link:Home",
@@ -912,21 +852,6 @@
     "rule": "touch-target",
     "target": "link:Sales",
     "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "NegocioNuevo",
-    "rule": "touch-target",
-    "target": "button:Show",
-    "issue": 49
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 78,
     "sizes": [
       "246x437"
     ]
@@ -948,15 +873,6 @@
     "issue": 78,
     "sizes": [
       "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 78,
-    "sizes": [
       "246x437"
     ]
   },
@@ -1017,19 +933,7 @@
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-target",
-    "target": "button:Delete",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingCategorias",
-    "rule": "touch-target",
     "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingCategoriasTexto130",
-    "rule": "touch-target",
-    "target": "button:Delete",
     "issue": 49
   },
   {
@@ -1145,12 +1049,6 @@
     "rule": "touch-target",
     "target": "switch:Warn when stock is low",
     "issue": 47
-  },
-  {
-    "screen": "Reset",
-    "rule": "touch-target",
-    "target": "button:Show",
-    "issue": 49
   },
   {
     "screen": "ResetMuerto",
