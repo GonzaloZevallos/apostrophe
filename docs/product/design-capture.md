@@ -88,7 +88,7 @@ Success criteria, Inicio's first-run and Hoy evidence (GH-45 follow-up) (numbere
 
 1. **Every first-run element has a drawing and registry rows.** `pantallas/` draws the first-run checklist with its "Hecho" marks and the after-import notice, and each has registry rows that reach it the way a seller sees it, capturing its section whole.
 2. **Hoy is compared as Hoy.** `InicioHoyCompu` and `InicioHoyCompuOscuro` crop to a section holding only Hoy, never one that also draws Semana.
-3. **Whole registry green, nothing a seller sees changes.** One whole-registry `--strict` run with no `--only` exits 0, with no row removed, skipped or excused. No capability doc's rule, screen, route or app copy changes. The only edited tests are the two registry tests within their declared seams; every other test passes unedited.
+3. **Whole registry green, nothing a seller sees changes.** One whole-registry `--strict` run with no `--only` exits 0, with no row removed, skipped or excused. No capability doc's rule, screen, route or app copy changes. The only edited tests are the two registry tests within their declared seams and `tests/design/test_sample_app.py`, this plan's own declared seam, extended only; every other test passes unedited.
 4. **Docs win.** Wherever a drawing and the docs disagree on wording or on what is shown (navigation.md for the checklist and the after-import notice, results.md for Inicio's order), the docs win, the drawing is the defect, and the PR lists every difference.
 
 ## Behaviour
@@ -144,8 +144,13 @@ Success criteria, Inicio's first-run and Hoy evidence (GH-45 follow-up) (numbere
   - its capture account is a business the spreadsheet import really loaded, as the import records it (import.md, ADR-0046), captured before the notice is dismissed and before the bot is first published;
   - an imported business that also showed the checklist is a product defect (navigation.md), never a state to capture.
 - **The Hoy label**: only `InicioCompu.dc.html` changes. It gains a label for its Hoy section that occurs exactly once in the file, worded like the `InicioHoy` section label ("Hoy · la pestaña con la que abre el panel"). It is a drawing annotation, not app copy. `InicioHoyCompu` and `InicioHoyCompuOscuro` crop to that section by that text. The built screen is untouched; if the crop could only be named by changing the built screen, the work stops and comes back to the PM as a copy question.
-- **Capture accounts**: written by design tooling alone, never by product code, a product route or the seed `muestra.md` is rendered from. No Listo entry ever names one, and any new account kind is declared in `facts.account_kinds`, refused when missing or mismatched as before. The mechanism is the Tech Lead's.
-- **Edited files**: `scripts/design/`, the drawings under `pantallas/`, and the two registry tests within their declared seams, every guard kept. Nothing else under `app/` or `web/src/` changes.
+- **Capture accounts**: written by design tooling alone, never by product code, a product route or the seed `muestra.md` is rendered from. No Listo entry ever names one, and any new account kind is declared in `facts.account_kinds`, refused when missing or mismatched as before. The mechanism is the Tech Lead's, and so is recording it as an amendment to ADR-0042, next to the GH-189 amendment that defined the account kinds.
+- **Edited files**:
+  - `scripts/design/`, the drawings under `pantallas/`, and the two registry tests within their declared seams, every guard kept;
+  - `tests/design/test_sample_app.py`, declared as a seam of this plan only, like GH-141's muestra seam: it is only extended with cases for the new capture accounts, and every existing case and assertion is kept, none loosened or rewritten;
+  - the ADR-0042 amendment, append-only.
+
+  Nothing else under `app/`, `web/src/` or `tests/` changes, and any other edited test means the implementation is wrong.
 - **No before/after AE pair** is required: nothing a seller sees changes, the six rows are new, and the Hoy rows change only their crop.
 
 ### Captured whole
@@ -175,6 +180,7 @@ Success criteria, Inicio's first-run and Hoy evidence (GH-45 follow-up) (numbere
 - A change to `scripts/design/screens.json` rows declares both registry enforcement tests, `web/src/design/screens.test.ts` and `routes.test.ts`, as its seams. Its invariants read "screens.json plus the two registry tests", with the design tooling the change needs named alongside.
 - Any other edited test means the implementation is wrong.
 - The muestra guard seam of GH-141's follow-up (below) is declared for that plan only and does not change this rule.
+- The `tests/design/test_sample_app.py` seam of GH-45's first-run follow-up (above) is declared for that plan only, extended only, and does not change this rule either.
 - No plan invariant asks for an idle or unloaded machine for a capture run.
 
 ### Failures
@@ -265,7 +271,7 @@ No telemetry; read from the PR evidence and from tests.
 - **Nothing a seller sees changes (Load criterion 9)**: every suite passes and no test is loosened, read from the diff.
 - **First-run rows exist (First-run criterion 1)**: `index.json` holds a result for each of the 6 new rows, 0 missing sides and no one-sided `null`; each capture shows its whole section, judged by eye. The checklist captures show at least one "Hecho" and at least one pending step and never both required steps "Hecho", judged against navigation.md; the after-import capture shows the notice alone with its icon and dismiss control.
 - **Hoy compared as Hoy (First-run criterion 2)**: the Hoy label occurs exactly once in `InicioCompu.dc.html`; the two Hoy computer captures show no Semana content, judged by eye.
-- **Whole registry green (First-run criterion 3)**: the PR holds one whole-registry `--strict` output, no `--only`, exit 0, and the installed fontsource version; every suite passes; the diff touches only `scripts/design/`, `pantallas/`, the two registry tests and this file; no step is added to `.agentic/stack.yaml`, CI or the gate.
+- **Whole registry green (First-run criterion 3)**: the PR holds one whole-registry `--strict` output, no `--only`, exit 0, and the installed fontsource version; every suite passes; the diff touches only `scripts/design/`, `pantallas/`, the two registry tests, `tests/design/test_sample_app.py` (new cases only, every existing assertion kept), the ADR-0042 amendment and this file; the plan's Seams line names the three tests; no step is added to `.agentic/stack.yaml`, CI or the gate.
 - **Docs win (First-run criterion 4)**: every drawing-versus-docs difference is listed in the PR with its screen: 0 unlisted.
 - **First-run business measure**: spec-scope findings for missing first-run or Hoy design evidence on a merging head: goal 0.
 
@@ -284,7 +290,7 @@ No telemetry; read from the PR evidence and from tests.
 - Checking, by rule, a row whose path names no record while its route does.
 - Removing, skipping or excusing a row, or keeping a list of rows known to fail, to make a `--strict` run exit 0.
 - Loosening the applied-check, letting a capture load fonts from the network, or changing the app's own font loading to make a capture pass.
-- Widening the standing seam rule so every registry change declares the muestra guard files.
+- Widening the standing seam rule so every registry change declares the muestra guard files, or `tests/design/test_sample_app.py`.
 - Fixing, in GH-141's follow-up, design differences GH-141 did not cause: they are filed as follow-ups.
 - Any change to Análisis's behaviour, figures or copy.
 - Requiring an idle or unloaded machine for a capture.
