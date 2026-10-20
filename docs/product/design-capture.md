@@ -38,6 +38,12 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - Same protagonist as the job above; it refines that job and is not a new product job.
 - Before it (GH-150's follow-up): a plan invariant asked for `compare.sh` runs with no foreign load; all six runs had load, so it could never hold, and it was recorded as unsatisfiable and shipped past.
 
+**When** I review a change to Inicio's first-run elements before approving it, **I want** the tests, the `/first-run` contract and the design capture to prove what navigation.md, results.md and ADR-0046 say in every state they can be in and in both themes, **so I can** approve from the evidence alone, without trusting partial checks or carrying open findings into the next task.
+
+- Same protagonist as the jobs above; it refines this file's second and third jobs for Inicio's rows and is not a new product job. Its test and contract side is navigation.md's.
+- Served here by the `InicioHoyCompu` row naming its own section, and by a by-eye audit of the other `Inicio*` rows.
+- Before it (GH-45's follow-up): `InicioHoyCompu` named no section, so its Hoy-only capture was compared with the whole `InicioCompu.dc.html`, which also draws Semana, and its difference was non-zero by construction.
+
 Success criteria:
 
 1. **One green run.** One `--strict` call over Inicio* and the Onboarding block exits 0.
@@ -78,6 +84,12 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 8. **The gate is untouched.** The capture stays review evidence judged by eye and is never a gate step. No elapsed-time check is added (ADR-0038).
 9. **Nothing a seller sees changes.** No screen, copy, route or product rule changes. Every suite passes with no test loosened.
 
+Success criteria, the Inicio Hoy capture (GH-45 follow-up) (numbered on their own; Metrics cites them as "Hoy criterion N"):
+
+1. **The capture tells the truth.** `InicioHoyCompu` is compared against its own named section, not the whole `InicioCompu.dc.html`, so a non-zero difference there is a real difference.
+2. **Every Inicio row accounted for.** The PR audits every other `Inicio*` row by eye; each declaration-only fix is made in the same task, every other fix is a linked follow-up issue, and nothing found is left unexplained.
+3. **Nothing loosened, nothing a seller sees.** Only `screens.json` and the two registry tests change, within their declared seams, each keeping every guard it had. No screen, copy or capability rule changes, and no capture step joins the gate.
+
 ## Behaviour
 
 ### What a capture is
@@ -106,6 +118,13 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
   - a fix to its declaration alone is made in the task that finds it;
   - a fix needing different steps or sample data becomes a follow-up issue linked from that task's PR;
   - nothing found is left unexplained in the PR.
+
+### A row captures the part it names (GH-45 follow-up)
+
+- **`InicioHoyCompu`** names its own `section`: the Hoy part of `InicioCompu.dc.html`, never the whole drawing, which also draws Semana. The section matches exactly one element on each side (ADR-0042's strict crop); any other count fails the row under `--strict`. Its route, steps and record are unchanged. The exact section name is the Tech Lead's.
+- **No generic check** is added for a row that captures one part of a screen and names no section: no static rule can tell which part of a design file a row means, and a guess or an exemption list is refused.
+- **The audit instead**: the PR carries a by-eye audit of every other `Inicio*` row, done as "A row names what it reaches" above. A row that compares a one-tab capture with a multi-tab drawing and names no section is fixed in the task when the fix is a declaration only; any other fix becomes a follow-up issue linked from the PR; nothing found is left unexplained.
+- The change touches `scripts/design/screens.json` and the two registry tests only, as their declared seams. The corrected row's capture is attached and judged by eye, with a before/after under ADR-0042.
 
 ### Registry rows for Listo
 
@@ -156,6 +175,7 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 - A capture that shows a screen other than its row names, or a clipped section, is caught by eye in review and blocks approval. Neither is ever accepted as a pass.
 - A Listo entry naming an account the sample does not write fails the registry test.
 - An entry whose path names placeholders different from its route's fails the registry test.
+- A row whose section matches no element or more than one fails under `--strict`; it is a defect to fix, never a known failure.
 
 ### Evidence in the PR
 
@@ -166,6 +186,7 @@ Success criteria, captures under load (numbered on their own; Metrics cites them
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
 - No before/after AE pair is required for a change with no seller-visible difference whose "before" row never reached its screen.
 - For a change that corrects a row's record: the captures of the corrected row and its twin, light and dark, judged by eye, and the audit of every row (rows checked, fixes made, follow-ups linked).
+- For a change that gives a row its own section: the corrected row's capture judged by eye, its before/after under ADR-0042 with every non-zero difference listed, and the audit of the rows of its family.
 
 ### The Onboarding restyle's evidence (GH-164 follow-up)
 
@@ -231,6 +252,9 @@ No telemetry; read from the PR evidence and from tests.
 - **Unfinished screen fails**: a deliberately unsettled row under `--strict` exits non-zero and is not captured as a pass, shown once in the PR.
 - **Gate untouched (Load criterion 8)**: no change to `.agentic/stack.yaml` or CI, no new gate step, no elapsed-time assertion.
 - **Nothing a seller sees changes (Load criterion 9)**: every suite passes and no test is loosened, read from the diff.
+- **Hoy capture tells the truth (Hoy criterion 1)**: `InicioHoyCompu` names a section that matches exactly one element on both sides; its capture is attached and judged by eye; its before/after is attached under ADR-0042 (one script, one install, one Argentina day, fontsource version recorded), with every non-zero difference listed.
+- **Inicio rows accounted for (Hoy criterion 2)**: the PR lists every other `Inicio*` row checked, each declaration-only fix made and each follow-up linked: 0 unexplained.
+- **Nothing loosened (Hoy criterion 3)**: the diff touches only `scripts/design/screens.json` and the two registry tests among design tooling; both keep every guard; no capture step is added to `.agentic/stack.yaml`, CI or the gate.
 
 ## Out of scope
 
@@ -245,6 +269,8 @@ No telemetry; read from the PR evidence and from tests.
 - Changing a row's route, steps or sample data to make its declaration truthful: that is a follow-up issue. Changing a row's steps or sample data so it reaches its screen as a seller does is in scope.
 - Any change to ADR-0033's normalisation, or any exemption in the registry cross-check.
 - Checking, by rule, a row whose path names no record while its route does.
+- A static registry check for a row that captures one part of a screen and names no section; an exemption list for such rows.
+- Fixing, in the Inicio Hoy task, an audited row whose fix is more than a declaration: it is a linked follow-up issue.
 - Removing, skipping or excusing a row, or keeping a list of rows known to fail, to make a `--strict` run exit 0.
 - Loosening the applied-check, letting a capture load fonts from the network, or changing the app's own font loading to make a capture pass.
 - Widening the standing seam rule so every registry change declares the muestra guard files.
