@@ -35,12 +35,12 @@ _In the app_: Price (price history)
 
 **Current price**:
 For a variety on a given date, the price entry with the latest effective date on or before that date. A variety with no such entry has no price that day.
-_In the app_: Current price
+_In the app_: Current today
 _Avoid_: today's price, active price
 
 **List price**:
 The price per gram of a variety when no other rule applies.
-_In the app_: Price per g
+_In the app_: List price
 _Avoid_: base price, regular price
 
 **Bulk price**:
