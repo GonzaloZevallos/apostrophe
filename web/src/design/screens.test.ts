@@ -10,6 +10,7 @@ import {
 import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
 import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
+import { spanishMarker } from '../architecture/copySpanish'
 
 describe('assertScreens', () => {
   it('refuses an entry with color_scheme', () => {
@@ -744,5 +745,34 @@ describe('the customer dark twins of the real screens.json', () => {
 
   it('refuses a twin whose design file does not exist', () => {
     expect(() => assertScreens([{ screen: 'ClientesOscuro', design: 'NoExiste', tema: 'oscuro', route: 'ruta' }])).toThrow(/ClientesOscuro/)
+  })
+})
+
+type Step = Record<string, unknown>
+
+/** The words a step looks for in the built app: what it clicks, presses, waits for, and the
+ * label of a field it fills. (`section` and `design` name the Spanish design side.) */
+function builtSideTexts(steps: readonly Step[]): string[] {
+  const texts: string[] = []
+  for (const step of steps) {
+    for (const key of ['click', 'press', 'wait']) {
+      if (typeof step[key] === 'string') texts.push(step[key])
+    }
+    const fill = step.fill as { label?: unknown } | undefined
+    if (typeof fill?.label === 'string') texts.push(fill.label)
+  }
+  return texts
+}
+
+describe('the built-side steps of the real screens.json speak the app’s English', () => {
+  it('has no Spanish word in a click, press, wait or fill label', () => {
+    const texts = (screens.screens as { steps?: Step[] }[]).flatMap((entry) => builtSideTexts(entry.steps ?? []))
+    expect(texts.length).toBeGreaterThan(50)
+    expect(texts.filter((text) => spanishMarker(text) !== null)).toEqual([])
+  })
+
+  it('refuses a step that still waits for a Spanish text', () => {
+    const texts = builtSideTexts([{ click: 'Guardá la entrada' }, { wait: 'Sin conexión' }, { fill: { label: 'Gramos' } }])
+    expect(texts.filter((text) => spanishMarker(text) !== null)).toEqual(['Guardá la entrada', 'Sin conexión'])
   })
 })

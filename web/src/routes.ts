@@ -159,7 +159,7 @@ export const ONBOARDING_PARTNER = '/onboarding/partner'
 export const ONBOARDING_CATEGORIES = '/onboarding/categories'
 export const ONBOARDING_DONE = '/onboarding/done'
 
-/** Fills a template's `:name` segments: `pathTo(SALE, { id: 7 })` is `/ventas/7`. */
+/** Fills a template's `:name` segments: `pathTo(SALE, { id: 7 })` is `/sales/7`. */
 export function pathTo(template: string, params: Readonly<Record<string, string | number>> = {}): string {
   return template.replace(/:([A-Za-z]+)/g, (_match, name: string) => {
     const value = params[name]

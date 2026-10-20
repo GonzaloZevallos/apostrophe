@@ -818,3 +818,25 @@ describe("source scan for path literals", () => {
     expect(findMatchMediaCalls(files)).toEqual([]);
   });
 });
+
+describe("no route is Spanish", () => {
+  const segmentsOf = (path: string) => path.split("/").filter((s) => s !== "" && !s.startsWith(":") && !s.startsWith("{"));
+  const legacy = JSON.parse(readFileSync(resolve(__dirname, "../../app/legacy_front_paths.json"), "utf8")) as { old: string; now: string }[];
+  const oldWords = new Set(legacy.flatMap(({ old, now }) => segmentsOf(old).filter((word) => !segmentsOf(now).includes(word))));
+  const spanish = (paths: string[]) =>
+    paths.filter((path) => segmentsOf(path).some((word) => oldWords.has(word)) || !/^[\x20-\x7e]*$/.test(path));
+
+  test("every path of the registry is ASCII and shares no word with an old Spanish path", () => {
+    const paths: string[] = [];
+    for (const value of Object.values(routes)) {
+      if (typeof value === "string" && value.startsWith("/")) paths.push(value);
+    }
+    expect(paths.length).toBeGreaterThan(20);
+    expect(oldWords.has("ventas")).toBe(true);
+    expect(spanish(paths)).toEqual([]);
+  });
+
+  test("a Spanish or non-ASCII path is refused", () => {
+    expect(spanish(["/sales", "/ventas/nueva", "/más"])).toEqual(["/ventas/nueva", "/más"]);
+  });
+});
