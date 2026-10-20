@@ -138,4 +138,21 @@ From head run 1 (`27eefcb0`); each at rest, nothing mid-change:
 - `NuevaVentaOscuro` built: the `Regalo` switch off, thumb left, enabled.
 - `VariedadArchivada` built: the archived variety shows its low-stock notice as text, with no switch.
 
-Not viewed: the remaining `Configuracion*`, `NuevaVenta*`, `Catalogo*` and the other `VariedadArchivada*`/`ArchivadasCompu` rows. They are AE 0 across the five head runs and the five base runs, which shows they repeat, not that they were judged.
+The remaining rows, also from head run 1, viewed on contact sheets of the built captures (the `Compu` tiles were shown at about 0.19 scale, so for those the judgment is coarse: layout, presence and on/off of a control, not text). Each is at rest: no half-drawn control, no loading placeholder, no grey switch.
+
+- `VariedadArchivadaOscuro`, `VariedadArchivadaCompu`, `VariedadArchivadaCompuOscuro` built: the low-stock notice is plain text ("Avisame abajo de 15 g"), no switch, as in the light row.
+- `Archivadas`, `ArchivadasOscuro`, `ArchivadasCompu`, `ArchivadasCompuOscuro` built: the list of archived varieties, each with its "Restaurar" button; no switch.
+- `Catalogo`, `CatalogoOscuro`, `CatalogoCompu`, `CatalogoCompuOscuro` built: the Telegram preview, "Copiar", and a dimmed "Publicar" button in all four. I did not check why it is dimmed (it is not a switch); it is identical in all ten runs (AE 0), and the settle saw no request and no mutation before it, so it is a resting state, not a capture in the middle of a refresh.
+- `NuevaVenta` built: `Regalo` off, thumb left, enabled (as in the dark row above). `NuevaVentaCompu`, `NuevaVentaCompuOscuro`: the `Regalo` control is off (coarse).
+- `NuevaVentaCliente`, `NuevaVentaClienteOscuro` built: the client picker sheet over the form.
+- `Configuracion`, `ConfiguracionCompu` built: the settings list.
+- `ConfiguracionNegocio`, `ConfiguracionNegocioCompu` built: the business-name form.
+- `ConfiguracionUsuarios`, `ConfiguracionUsuariosCompu` built: the user list and "Invitá a un socio".
+- `ConfiguracionPreciosCompu` built: both switches on, blue (as in the phone row above; coarse). No dark `ConfiguracionPrecios*` row exists.
+- `ConfiguracionIntegraciones`, `ConfiguracionIntegracionesOscuro`, `ConfiguracionIntegracionesCompu`, `ConfiguracionIntegracionesCompuOscuro` built: empty token and chat fields, "Probarlo" enabled, "Cargá el token primero".
+- `ConfiguracionMensaje`, `ConfiguracionMensajeCompu` built: the two text areas filled ("Encabezado", "Pie") and "Guardá el mensaje" enabled.
+- `ConfiguracionCategorias`, `ConfiguracionCategoriasCompu` built: the five categories with edit and delete buttons, an empty "Nueva categoría" field and a dimmed "+ Categoría" (not checked why; I take it to be the empty field, and it is a button, not a switch).
+- `ConfiguracionApariencia`, `ConfiguracionAparienciaCompu` built: the theme selector with "Claro" selected.
+- `ConfiguracionCuenta`, `ConfiguracionCuentaCompu` built: "Cambiar contraseña" and "Cerrar sesión".
+
+Where a dark row does not exist in the registry (`VariedadesCompu`, `ConfiguracionPrecios*`, and the `Configuracion*` rows other than `Integraciones`), only the light one was viewed. Every row in the list was judged by eye as well as being AE 0 across the five head runs and the five base runs.
