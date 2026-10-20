@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
-import { jsonResponse, writes, type FetchImpl } from './renderVarieties'
+import { jsonResponse, writes, type FetchImpl } from '../../test/renderVarieties'
 import RenameForm from './RenameForm'
 
 afterEach(() => {
@@ -48,17 +48,17 @@ function renderHost(fetchImpl: FetchImpl) {
   return { fetchMock, queryClient }
 }
 
-test('starts on the saved name; a save patches the new name and hands "Variedad guardada" to its host', async () => {
+test('starts on the saved name; a save patches the new name and hands "Variety saved" to its host', async () => {
   const user = userEvent.setup()
   const { fetchMock } = renderHost(async () => jsonResponse(200, { id: 1, name: 'Gold 24K' }))
 
-  const input = screen.getByLabelText('Nombre')
+  const input = screen.getByLabelText('Name')
   expect(input).toHaveValue('24K Gold')
   await user.clear(input)
   await user.type(input, 'Gold 24K')
-  await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await user.click(screen.getByRole('button', { name: 'Save' }))
 
-  expect(await screen.findByText(/state: saved Variedad guardada/)).toBeInTheDocument()
+  expect(await screen.findByText(/state: saved Variety saved/)).toBeInTheDocument()
   expect(writes(fetchMock)).toEqual([{ call: 'PATCH /varieties/1', body: { name: 'Gold 24K' } }])
 })
 
@@ -67,8 +67,8 @@ test('a save marks the catalog stale', async () => {
   const { queryClient } = renderHost(async () => jsonResponse(200, { id: 1, name: 'Gold' }))
   queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
 
-  await user.type(screen.getByLabelText('Nombre'), 'x')
-  await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await user.type(screen.getByLabelText('Name'), 'x')
+  await user.click(screen.getByRole('button', { name: 'Save' }))
   await screen.findByText(/state: saved/)
 
   expect(queryClient.getQueryState(catalogQueryOptions().queryKey)?.isInvalidated).toBe(true)
@@ -79,7 +79,7 @@ test('it tells its host when something was typed', async () => {
   renderHost(async () => jsonResponse(200, {}))
 
   expect(screen.getByText(/dirty: false/)).toBeInTheDocument()
-  await user.type(screen.getByLabelText('Nombre'), 'x')
+  await user.type(screen.getByLabelText('Name'), 'x')
   expect(screen.getByText(/dirty: true/)).toBeInTheDocument()
 })
 
@@ -87,13 +87,13 @@ test('a taken name is refused under the name and keeps what was typed', async ()
   const user = userEvent.setup()
   renderHost(async () => jsonResponse(409, { code: 'variety.name_taken' }))
 
-  await user.type(screen.getByLabelText('Nombre'), ' 2')
-  await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await user.type(screen.getByLabelText('Name'), ' 2')
+  await user.click(screen.getByRole('button', { name: 'Save' }))
 
   const alert = await screen.findByRole('alert')
-  expect(alert.closest('label')).toHaveTextContent('Nombre')
-  expect(alert).toHaveTextContent('Ya existe una variedad con ese nombre')
-  expect(screen.getByLabelText(/^Nombre/)).toHaveValue('24K Gold 2')
+  expect(alert.closest('label')).toHaveTextContent('Name')
+  expect(alert).toHaveTextContent('A variety with that name already exists')
+  expect(screen.getByLabelText(/^Name/)).toHaveValue('24K Gold 2')
   expect(screen.getByText(/state: open/)).toBeInTheDocument()
 })
 
@@ -101,21 +101,21 @@ test('a name held by an archived variety is refused under the name with its own 
   const user = userEvent.setup()
   renderHost(async () => jsonResponse(409, { code: 'variety.name_archived' }))
 
-  await user.type(screen.getByLabelText('Nombre'), ' 2')
-  await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await user.type(screen.getByLabelText('Name'), ' 2')
+  await user.click(screen.getByRole('button', { name: 'Save' }))
 
   const alert = await screen.findByRole('alert')
-  expect(alert.closest('label')).toHaveTextContent('Nombre')
-  expect(alert).toHaveTextContent('Ese nombre es de una variedad archivada. Buscala en Archivadas.')
-  expect(screen.getByLabelText(/^Nombre/)).toHaveValue('24K Gold 2')
+  expect(alert.closest('label')).toHaveTextContent('Name')
+  expect(alert).toHaveTextContent('That name belongs to an archived variety. Look for it in Archived.')
+  expect(screen.getByLabelText(/^Name/)).toHaveValue('24K Gold 2')
 })
 
 test('an invalid name is refused under the name', async () => {
   const user = userEvent.setup()
   renderHost(async () => jsonResponse(422, { code: 'variety.name_invalid' }))
 
-  await user.type(screen.getByLabelText('Nombre'), '!')
-  await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await user.type(screen.getByLabelText('Name'), '!')
+  await user.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(screen.getByText(/state: open/)).toBeInTheDocument()
@@ -125,17 +125,17 @@ test('a variety that is gone is handed to the host', async () => {
   const user = userEvent.setup()
   renderHost(async () => jsonResponse(404, { code: 'variety.not_found' }))
 
-  await user.type(screen.getByLabelText('Nombre'), 'x')
-  await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await user.type(screen.getByLabelText('Name'), 'x')
+  await user.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(/state: gone/)).toBeInTheDocument()
 })
 
-test('"Cerrar" hands the exit to the host', async () => {
+test('"Close" hands the exit to the host', async () => {
   const user = userEvent.setup()
   renderHost(async () => jsonResponse(200, {}))
 
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(screen.getByText(/state: closed/)).toBeInTheDocument()
 })

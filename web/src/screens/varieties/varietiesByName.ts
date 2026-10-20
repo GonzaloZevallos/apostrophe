@@ -5,6 +5,6 @@ import type { Variety } from '../Variedades'
 
 export function varietiesByName(varieties: readonly Variety[]): Variety[] {
   return [...varieties].sort(
-    (a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }) || a.id - b.id,
+    (a, b) => a.name.localeCompare(b.name, 'es' as const, { sensitivity: 'base' as const }) || a.id - b.id,
   )
 }

@@ -33,6 +33,9 @@ import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import type { Variety } from '../Variedades'
 import PriceForm from './PriceForm'
 import PriceFrame from './PriceFrame'
+import { TAB_VARIETIES } from '../../copy/shell'
+import { NO_KEEP_ENTERING, YES_DISCARD_IT } from '../../copy/stock'
+import { DISCARD_ENTERED_DETAIL, DISCARD_PRICE_QUESTION, NEW_PRICE } from '../../copy/varieties'
 
 /** The element focus returns to after "No, seguí cargando": the title when it is gone or is `body`. */
 function stillFocusable(element: Element | null): element is HTMLElement {
@@ -105,21 +108,21 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
   const failure = varietyQuery.error ?? settingsQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return (
-      <PriceFrame dialog={dialog} label="Nuevo precio" onBackdrop={leave} form={<GoneScreen label="Variedades" to={VARIETIES} />} />
+      <PriceFrame dialog={dialog} label={NEW_PRICE} onBackdrop={leave} form={<GoneScreen label={TAB_VARIETIES} to={VARIETIES} />} />
     )
   }
   if (failure !== null) {
     return (
       <PriceFrame
         dialog={dialog}
-        label="Nuevo precio"
+        label={NEW_PRICE}
         onBackdrop={leave}
         form={failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
       />
     )
   }
   if (varietyQuery.data === undefined || settingsQuery.data === undefined) {
-    return <PriceFrame dialog={dialog} label="Nuevo precio" onBackdrop={leave} form={<Loading />} />
+    return <PriceFrame dialog={dialog} label={NEW_PRICE} onBackdrop={leave} form={<Loading />} />
   }
 
   return (
@@ -148,10 +151,10 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
       {blocked && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el precio?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={DISCARD_PRICE_QUESTION}
+          detail={DISCARD_ENTERED_DETAIL}
+          keepLabel={NO_KEEP_ENTERING}
+          discardLabel={YES_DISCARD_IT}
         />
       )}
     </PriceFrame>

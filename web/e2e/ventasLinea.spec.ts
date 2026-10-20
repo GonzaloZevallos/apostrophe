@@ -20,15 +20,15 @@ const MIN_INPUT_FONT = 16
 async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Line ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Jazmín con un nombre bastante largo')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Jazmín con un nombre bastante largo')
+  await page.getByRole('button', { name: 'Add variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel(/^Precio de lista/).fill('500')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByRole('link', { name: 'New price' }).click()
+  await page.getByLabel(/^List price/).fill('500')
+  await page.getByRole('button', { name: 'Save price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 }
 
 async function box(target: Locator): Promise<{ x: number; width: number; height: number }> {

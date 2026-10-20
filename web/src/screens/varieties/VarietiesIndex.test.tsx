@@ -1,7 +1,7 @@
 /**
  * `VarietiesIndex`'s first-variety selection on a computer, and the one case it must leave
  * alone: when the browser's history has already moved to an entry the seller pushed (a tap
- * that left Variedades while the viewport turned computer), the stale index never replaces
+ * that left Varieties while the viewport turned computer), the stale index never replaces
  * it (`isStillCurrent`). The varieties list is faked at `fetch`.
  */
 

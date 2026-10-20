@@ -31,13 +31,13 @@ export async function openCatalog(page: Page): Promise<void> {
   await page.setViewportSize(PHONE)
   await page.goto(HOME)
   await page.getByRole('link', { name: 'Varieties', exact: true }).click()
-  await page.getByRole('link', { name: 'Mandar catálogo' }).click()
+  await page.getByRole('link', { name: 'Send catalog' }).click()
   // Wait for the move before the viewport changes back: on a computer Variedades would select its
   // first variety and take the click's navigation over. The address changes before React commits
   // the new screen (the router renders a navigation in a transition), and a viewport change in
   // between re-renders the screen still on show: Variedades, which on a computer selects its first
   // variety. So wait for the catalog's own heading too, not only the address.
   await expectPath(page, CATALOG)
-  await expect(page.getByRole('heading', { name: 'Catálogo', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Catalog', level: 1 })).toBeVisible()
   if (before !== null) await page.setViewportSize(before)
 }

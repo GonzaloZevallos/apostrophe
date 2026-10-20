@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 /**
  * The pinned-catalog task's own end-to-end run (plan, "Front", "End to end"; PRD
- * metric 6, "No curl"): a seller finds Publicar disabled on the catalog screen, follows
+ * metric 6, "No curl"): a seller finds Publish disabled on the catalog screen, follows
  * its link to Configuración → Integraciones, enters the bot's token and own chat, runs
  * Send me a test, adds the channel chat, tests it too, then publishes from the catalog screen —
  * all through the built front, against the real backend wired to `FakeTelegram`
@@ -37,26 +37,26 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
 
   // A variety with a price, so the catalog has something to publish.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
+  await page.getByRole('button', { name: 'Add variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel(/^Precio de lista/).fill('9000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByRole('link', { name: 'New price' }).click()
+  await page.getByLabel(/^List price/).fill('9000')
+  await page.getByRole('button', { name: 'Save price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 
   await openCatalog(page)
   await expectPath(page, CATALOG)
 
-  // The catalog screen has no bot settings; with no bot yet, Publicar is disabled and
+  // The catalog screen has no bot settings; with no bot yet, Publish is disabled and
   // says where to go. No pin yet, so it shows no status either.
   await expect(page.getByLabel('Bot token')).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Publicar' })).toBeDisabled()
-  await expect(page.getByText('Al día')).toHaveCount(0)
-  await expect(page.getByText('Desactualizado')).toHaveCount(0)
-  await page.getByRole('link', { name: 'Integraciones' }).click()
+  await expect(page.getByRole('button', { name: 'Publish' })).toBeDisabled()
+  await expect(page.getByText('Up to date')).toHaveCount(0)
+  await expect(page.getByText('Out of date')).toHaveCount(0)
+  await page.getByRole('link', { name: 'Integrations' }).click()
   await expectPath(page, SETTINGS_INTEGRATIONS)
 
   // Enter the token and the seller's own chat; the channel is still blank, which
@@ -73,7 +73,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.getByRole('alert')).toHaveText(
     'Open your bot in Telegram and tap Start, then send the test again.',
   )
-  await expect(page.getByText('The bot cannot post in the channel')).toHaveCount(0)
+  await expect(page.getByText("The bot can't post in the channel")).toHaveCount(0)
   await expect(page.getByLabel('Bot token')).toHaveValue(TOKEN)
   await expect(page.getByLabel('Your chat')).toHaveValue('222222')
 
@@ -87,7 +87,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await page.getByRole('button', { name: 'Send me a test' }).click()
   await expect(page.getByText('Test sent')).toBeVisible()
   await expect(page.getByText('Saved on')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Publicar' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Publish' })).toHaveCount(0)
 
   // Now the channel chat, tested again.
   // The first toast may still be on screen, so wait for this attempt's own answer.
@@ -102,11 +102,11 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   // Everything is saved, so leaving asks nothing: the link leads to the catalog screen.
   await page.getByRole('link', { name: 'Go to the catalog' }).click()
   await expectPath(page, CATALOG)
-  await expect(page.getByRole('button', { name: 'Publicar' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Publish' })).toBeEnabled()
 
-  await page.getByRole('button', { name: 'Publicar' }).click()
-  await expect(page.getByText('Catálogo publicado')).toBeVisible()
-  await expect(page.getByText('Al día')).toBeVisible()
+  await page.getByRole('button', { name: 'Publish' }).click()
+  await expect(page.getByText('Catalog published')).toBeVisible()
+  await expect(page.getByText('Up to date')).toBeVisible()
 
   await page.goto(HOME)
   await expect(page.getByText('Tu catálogo en Telegram está desactualizado')).toHaveCount(0)

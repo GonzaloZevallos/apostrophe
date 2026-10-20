@@ -1,5 +1,5 @@
 /**
- * `WithdrawalForm`: "Sacar del stock" (`stock.md`, "Stock withdrawal"), shared by the
+ * `WithdrawalForm`: "Take out of stock" (`stock.md`, "Stock withdrawal"), shared by the
  * new and edit routes. It knows nothing about where it is shown: its host supplies every
  * exit (`onDone`, `onCancel`, `onGone`) and learns whether something was typed through
  * `onDirtyChange`, so the host alone decides how leaving works (as `ExpenseForm` does).
@@ -33,9 +33,26 @@ import { guiltyKeys, keptOptions, preselected } from './goneLines'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
 import Boton from '../../components/Boton'
-import { GRAMS_INVALID } from '../../copy/stock'
-
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+import { CLOSE, GENERIC_REFUSAL_MESSAGE as GENERIC_REFUSAL, SAVE } from '../../copy/common'
+import {
+  ADD_ANOTHER_VARIETY,
+  CHOOSE_VARIETY,
+  FIELD_DATE,
+  FIELD_NOTE,
+  FIELD_REASON,
+  GRAMS_INVALID,
+  NO_KEEP_EDITING,
+  SAVE_CHANGES_TITLE,
+  SAVE_WITHDRAWAL,
+  SAVE_WITHDRAWAL_DETAIL,
+  TAKE_OUT_OF_STOCK,
+  WITHDRAWAL_SAVED,
+  YES_SAVE,
+  gramsLine,
+  removeVarietyLine,
+  varietyAndGrams,
+  varietyLine,
+} from '../../copy/stock'
 
 const REFUSAL_MESSAGES: Partial<Record<RefusalCode, string>> = WITHDRAWAL_REFUSAL_MESSAGES
 
@@ -333,8 +350,8 @@ export default function WithdrawalForm({
     try {
       if (target === 'new') await recordWithdrawal(body)
       else await editWithdrawal(String(target.id), body)
-      invalidateResource(queryClient, 'stock')
-      onDone('Retiro guardado')
+      invalidateResource(queryClient, 'stock' as const)
+      onDone(WITHDRAWAL_SAVED)
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)
@@ -342,13 +359,13 @@ export default function WithdrawalForm({
         const message = resolveOverride(REFUSAL_MESSAGES, caught.code)
         if (caught.code === 'stock.withdrawal_variety_not_found') {
           // The withdrawal itself still has somewhere to go: only a line's variety is gone.
-          invalidateResource(queryClient, 'varieties')
+          invalidateResource(queryClient, 'varieties' as const)
           setFormError(message ?? GENERIC_REFUSAL)
         } else if (caught.code === 'variety.archived') {
           // Before the generic gone branch: the withdrawal is fine, a line's variety is not.
           await settleArchived(sent)
         } else if (isGone(caught.code)) {
-          invalidateResource(queryClient, 'stock')
+          invalidateResource(queryClient, 'stock' as const)
           onGone()
         } else if (message !== undefined) {
           setFormError(message)
@@ -378,9 +395,9 @@ export default function WithdrawalForm({
 
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">Sacar del stock</span>
+      <span className="gasto-form__titulo">{TAKE_OUT_OF_STOCK}</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={onCancel} />
       </span>
     </div>
   )
@@ -402,7 +419,7 @@ export default function WithdrawalForm({
       {header}
       <form className="formulario" onSubmit={onSubmit}>
         <fieldset className="campo">
-          <legend className="campo__rotulo">Motivo</legend>
+          <legend className="campo__rotulo">{FIELD_REASON}</legend>
           <div className="origen-pildoras">
             {REASON_OPTIONS.map((option) => (
               <button
@@ -418,7 +435,7 @@ export default function WithdrawalForm({
           </div>
         </fieldset>
         <label className="campo">
-          <span className="campo__rotulo">Fecha</span>
+          <span className="campo__rotulo">{FIELD_DATE}</span>
           <input
             className="campo__input"
             type="date"
@@ -431,17 +448,17 @@ export default function WithdrawalForm({
         {form.lines.map((line, index) => (
           <fieldset className="campo" key={line.key}>
             <legend className="campo__rotulo">
-              {form.lines.length === 1 ? 'Variedad y gramos' : `Variedad y gramos ${index + 1}`}
+              {varietyAndGrams(form.lines.length === 1 ? null : index + 1)}
             </legend>
             <select
               className="campo__input"
-              aria-label={`Variedad ${index + 1}`}
+              aria-label={varietyLine(index + 1)}
               aria-describedby={marked(line.key) ? `${messageId}-${line.key}` : undefined}
               value={line.varietyId}
               onChange={(event) => setLine(line.key, { varietyId: event.target.value })}
               required
             >
-              <option value="">Elegí una variedad</option>
+              <option value="">{CHOOSE_VARIETY}</option>
               {keptOptions([line], varieties, names).map((option) => (
                 <option key={option.value} value={option.value} disabled={option.disabled}>
                   {option.label}
@@ -455,7 +472,7 @@ export default function WithdrawalForm({
             )}
             <input
               className="campo__input"
-              aria-label={`Gramos ${index + 1}`}
+              aria-label={gramsLine(index + 1)}
               inputMode="decimal"
               enterKeyHint={index === form.lines.length - 1 ? 'done' : 'next'}
               value={line.grams}
@@ -466,7 +483,7 @@ export default function WithdrawalForm({
               <Boton
                 variant="icon"
                 action="delete"
-                ariaLabel={`Quitar variedad ${index + 1}`}
+                ariaLabel={removeVarietyLine(index + 1)}
                 onClick={() =>
                   setForm((previous) => ({
                     ...previous,
@@ -491,10 +508,10 @@ export default function WithdrawalForm({
             }))
           }}
         >
-          Agregar otra variedad
+          {ADD_ANOTHER_VARIETY}
         </Boton>
         <label className="campo">
-          <span className="campo__rotulo">Nota</span>
+          <span className="campo__rotulo">{FIELD_NOTE}</span>
           <input
             className="campo__input"
             value={form.note}
@@ -510,15 +527,15 @@ export default function WithdrawalForm({
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          {target === 'new' ? 'Guardá el retiro' : 'Guardar'}
+          {target === 'new' ? SAVE_WITHDRAWAL : SAVE}
         </Boton>
       </form>
       {confirmingSave && (
         <ConfirmDialog
-          title="¿Guardás los cambios?"
-          detail="Esto actualiza el retiro y los lotes que vienen después."
-          confirmText="Sí, guardar"
-          cancelText="No, seguir editando"
+          title={SAVE_CHANGES_TITLE}
+          detail={SAVE_WITHDRAWAL_DETAIL}
+          confirmText={YES_SAVE}
+          cancelText={NO_KEEP_EDITING}
           onConfirm={() => {
             if (!sending) void save()
           }}

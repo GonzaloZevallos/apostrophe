@@ -17,7 +17,7 @@ import { SheetRouterProvider } from '../components/useSheetStack'
 import WITHDRAWAL from '../api/fixtures/withdrawal.json'
 import { router } from '../router'
 import { SALE as SALE_PATH, SCREENS, pathTo, type ScreenId } from '../routes'
-import { HISTORY, SETTINGS_ON, VARIETY_ROW, jsonResponse } from '../screens/varieties/renderVarieties'
+import { HISTORY, SETTINGS_ON, VARIETY_ROW, jsonResponse } from '../test/renderVarieties'
 import Shell from '../shell/Shell'
 import { CARDS_EXEMPT } from './backExempt'
 
@@ -69,11 +69,11 @@ const LOADED: Partial<Record<ScreenId, string>> = {
   customer: 'Ana Pérez',
   settings: 'Settings',
   variety: '24K Gold',
-  'variety-prices': 'Precios',
-  'variety-entries': 'Entradas',
-  stock: 'Todas las entradas',
+  'variety-prices': 'Prices',
+  'variety-entries': 'Entries',
+  stock: 'All entries',
   catalog: 'Sir Jack',
-  'varieties-archived': 'Archivada',
+  'varieties-archived': 'Archived',
   withdrawal: 'Zkittlez',
 }
 

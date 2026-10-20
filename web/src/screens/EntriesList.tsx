@@ -1,14 +1,14 @@
 /**
- * `EntriesList` (`stock.md`, "Todas las entradas"; `TodasLasEntradas.dc.html`): every stock
+ * `EntriesList` (`stock.md`, "All entries"; `TodasLasEntradas.dc.html`): every stock
  * entry, newest first, and no withdrawal; or with a `varietyId` that variety's movements as
  * `GET /stock/varieties/{id}/movements` answers them: its entries and the withdrawals that
- * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card; the shell draws its one back ("‹ Variedades",
+ * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card; the shell draws its one back ("‹ Varieties",
  * or "‹ <variety>" for one variety's list, declared through `useBackParent`). Each row
- * links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
+ * links to the entry's form to edit it and deletes it after "Before deleting", naming the
  * date, variety and grams. Every figure is what `GET /stock` answered; a variety's name
  * comes from `GET /varieties`, joined by id. One archived variety's list is read-only: its
  * entry rows have no edit or delete and open nothing (they stay editable and deletable from
- * "Todas las entradas"); its withdrawal rows still open the withdrawal's detail.
+ * "All entries"); its withdrawal rows still open the withdrawal's detail.
  */
 
 import { useState } from 'react'
@@ -36,9 +36,27 @@ import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from '../routes'
 import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/stock'
+import {
+  ALL_ENTRIES_TITLE,
+  BEFORE_DELETING,
+  DELETE,
+  EDIT,
+  EMPTY_STATE_DETAIL,
+  EMPTY_STATE_TITLE,
+  ENTRIES_TITLE,
+  NO_COST,
+  NO_KEEP_IT,
+  YES_DELETE_IT,
+  costPerGramLine,
+  deleteEntryQuestion,
+} from '../copy/stock'
 import { ENTRY_DELETED } from '../copy/common'
+import { TAB_VARIETIES } from '../copy/shell'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
+
+/** Row keys of the merged movement list: an identity, never a word. */
+const WITHDRAWAL_KEY_PREFIX = 'withdrawal-'
+const ENTRY_KEY_PREFIX = 'entry-'
 
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -74,7 +92,7 @@ export default function EntriesList({ varietyId }: Props) {
     enabled: varietyId !== undefined,
   })
 
-  useBackParent('variety-entries', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
+  useBackParent('variety-entries' as const, varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
 
   const [confirming, setConfirming] = useState<StockEntry | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -85,7 +103,7 @@ export default function EntriesList({ varietyId }: Props) {
 
   const error = stockQuery.error ?? varietyQuery.error ?? movementsQuery.error
   if (varietyQuery.error instanceof ApiError && isGone(varietyQuery.error.code)) {
-    return <GoneScreen label="Variedades" to={VARIETIES} />
+    return <GoneScreen label={TAB_VARIETIES} to={VARIETIES} />
   }
   if (error !== null) {
     return <Card>{error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Card>
@@ -125,13 +143,13 @@ export default function EntriesList({ varietyId }: Props) {
       setConfirming(null)
       setDeleting(false)
     }
-    invalidateResource(queryClient, 'stock')
+    invalidateResource(queryClient, 'stock' as const)
   }
 
   return (
     <Card>
       <h1 className="encabezado__titulo">
-        {varietyId === undefined ? 'Todas las entradas' : 'Entradas'}
+        {varietyId === undefined ? ALL_ENTRIES_TITLE : ENTRIES_TITLE}
       </h1>
       {(goneNotice || goneExited) && <GoneNotice />}
       {offline && <SinConexion />}
@@ -146,7 +164,7 @@ export default function EntriesList({ varietyId }: Props) {
         <ul className="lista-entradas">
           {rows.map((entry) =>
             entry.kind === 'withdrawal' ? (
-              <li key={`withdrawal-${entry.id}`} className="fila-entrada">
+              <li key={`${WITHDRAWAL_KEY_PREFIX}${entry.id}`} className="fila-entrada">
                 <InAppLink to={pathTo(WITHDRAWAL, { id: entry.id })} className="fila-entrada__enlace">
                   <span className="fila-entrada__texto">
                     <span className="fila-entrada__linea1">
@@ -159,7 +177,7 @@ export default function EntriesList({ varietyId }: Props) {
                 </InAppLink>
               </li>
             ) : (
-              <li key={`entry-${entry.id}`} className="fila-entrada">
+              <li key={`${ENTRY_KEY_PREFIX}${entry.id}`} className="fila-entrada">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
                     {formatDate(entry.date, me.today)} · {nameOf(entry.variety_id)}
@@ -170,13 +188,13 @@ export default function EntriesList({ varietyId }: Props) {
                 </span>
                 <span className="fila-entrada__cifras">
                   {entry.total_cost === null ? (
-                    <span className="fila-entrada__costo fila-entrada__costo--sin">Sin costo</span>
+                    <span className="fila-entrada__costo fila-entrada__costo--sin">{NO_COST}</span>
                   ) : (
                     <>
                       <span className="fila-entrada__costo">{formatMoney(entry.total_cost)}</span>
                       {entry.cost_per_gram !== null && (
                         <span className="fila-entrada__linea2">
-                          {formatMoney(entry.cost_per_gram)} x g
+                          {costPerGramLine(formatMoney(entry.cost_per_gram))}
                         </span>
                       )}
                     </>
@@ -184,11 +202,11 @@ export default function EntriesList({ varietyId }: Props) {
                 </span>
                 {!readOnly && (
                   <span className="fila-entrada__acciones">
-                    <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(STOCK_ENTRY, { id: entry.id })} />
+                    <BotonLink variant="icon" action="edit" ariaLabel={EDIT} to={pathTo(STOCK_ENTRY, { id: entry.id })} />
                     <Boton
                       variant="icon"
                       action="delete"
-                      ariaLabel="Borrar"
+                      ariaLabel={DELETE}
                       onClick={() => setConfirming(entry)}
                     />
                   </span>
@@ -201,10 +219,14 @@ export default function EntriesList({ varietyId }: Props) {
 
       {confirming !== null && (
         <ConfirmDialog
-          title="Antes de borrar"
-          detail={`¿Borrás la entrada del ${formatDate(confirming.date, me.today)} de ${nameOf(confirming.variety_id)}, ${formatGrams(confirming.grams)}? Esto no se puede deshacer.`}
-          confirmText="Sí, borrala"
-          cancelText="No, dejala"
+          title={BEFORE_DELETING}
+          detail={deleteEntryQuestion(
+            formatDate(confirming.date, me.today),
+            nameOf(confirming.variety_id),
+            formatGrams(confirming.grams),
+          )}
+          confirmText={YES_DELETE_IT}
+          cancelText={NO_KEEP_IT}
           onConfirm={() => {
             if (!deleting) void onConfirmDelete(confirming)
           }}

@@ -20,6 +20,16 @@ import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
+import { NO_KEEP_IT, YES_DELETE_IT } from '../../copy/stock'
+import {
+  CURRENT_TODAY,
+  DELETE_PRICE,
+  PRICE_DELETED,
+  bulkFrom,
+  deletePriceTitle,
+  effectiveFrom,
+  vipLine,
+} from '../../copy/varieties'
 import { deleteNotice } from '../priceDeleteNotice'
 
 export interface PriceRow {
@@ -59,13 +69,13 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
     setFailed(false)
     try {
       await del(`/varieties/${varietyId}/prices/${entry.id}`)
-      invalidateResource(queryClient, 'varieties')
+      invalidateResource(queryClient, 'varieties' as const)
       setDeleting(null)
-      flash.showNow('Precio eliminado')
+      flash.showNow(PRICE_DELETED)
     } catch (caught) {
       setDeleting(null)
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
         setGone(true)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
@@ -87,32 +97,32 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
         {rows.map((entry) => (
           <div key={entry.id} className="historial-fila">
             <span className="historial-fila__fecha">
-              Rige desde {formatDateShort(entry.effective_from)}
-              {currentPriceId === entry.id && <span className="historial-fila__vigente">Vigente hoy</span>}
+              {effectiveFrom(formatDateShort(entry.effective_from))}
+              {currentPriceId === entry.id && <span className="historial-fila__vigente">{CURRENT_TODAY}</span>}
             </span>
             <span>
               <span className="historial-fila__precio">{formatMoney(entry.list_price)}</span>
               {showBulk && entry.bulk_price !== null && entry.bulk_minimum !== null && (
                 <span className="historial-fila__detalle">
-                  Desde {formatGrams(entry.bulk_minimum)} · {formatMoney(entry.bulk_price)}
+                  {bulkFrom(formatGrams(entry.bulk_minimum), formatMoney(entry.bulk_price))}
                 </span>
               )}
               {showVip && entry.vip_price !== null && (
-                <span className="historial-fila__detalle">Precio VIP · {formatMoney(entry.vip_price)}</span>
+                <span className="historial-fila__detalle">{vipLine(formatMoney(entry.vip_price))}</span>
               )}
             </span>
             {!readOnly && (
-              <Boton variant="icon" action="delete" ariaLabel="Borrar este precio" onClick={() => setDeleting(entry)} />
+              <Boton variant="icon" action="delete" ariaLabel={DELETE_PRICE} onClick={() => setDeleting(entry)} />
             )}
           </div>
         ))}
       </div>
       {deleting !== null && (
         <ConfirmDialog
-          title={`¿Borrás el precio desde el ${formatDateShort(deleting.effective_from)}?`}
+          title={deletePriceTitle(formatDateShort(deleting.effective_from))}
           detail={deleteNotice(history, deleting.id)}
-          confirmText="Sí, borrala"
-          cancelText="No, dejala"
+          confirmText={YES_DELETE_IT}
+          cancelText={NO_KEEP_IT}
           onConfirm={() => {
             if (!sending) void onConfirmDelete(deleting)
           }}

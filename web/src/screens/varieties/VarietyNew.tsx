@@ -12,7 +12,15 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { VARIETIES } from '../../routes'
-import { VARIETY_SAVED } from '../Variedades'
+import { CLOSE } from '../../copy/common'
+import { YES_DISCARD_IT } from '../../copy/stock'
+import {
+  DISCARD_TYPED_DETAIL,
+  DISCARD_VARIETY_QUESTION,
+  KEEP_TYPING,
+  NEW_VARIETY,
+  VARIETY_SAVED,
+} from '../../copy/varieties'
 import Boton from '../../components/Boton'
 import VarietyNameForm from './VarietyNameForm'
 
@@ -39,9 +47,9 @@ export default function VarietyNew() {
       <div className="cuerpo">
         <div className="gasto-form">
           <div className="gasto-form__cabecera">
-            <span className="gasto-form__titulo">Nueva variedad</span>
+            <span className="gasto-form__titulo">{NEW_VARIETY}</span>
             <span className="gasto-form__cerrar">
-              <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={leave} />
+              <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={leave} />
             </span>
           </div>
           <VarietyNameForm onSaved={onSaved} onDirtyChange={setDirty} />
@@ -50,10 +58,10 @@ export default function VarietyNew() {
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás la variedad?"
-          detail="Se pierde lo que escribiste: todavía no se guardó nada."
-          keepLabel="No, seguí escribiendo"
-          discardLabel="Sí, descartalo"
+          question={DISCARD_VARIETY_QUESTION}
+          detail={DISCARD_TYPED_DETAIL}
+          keepLabel={KEEP_TYPING}
+          discardLabel={YES_DISCARD_IT}
         />
       )}
     </main>

@@ -30,14 +30,14 @@ Success criteria:
 1. **No step of my own**: once a change that affects the catalog is saved, the pin already shows it the next time anyone looks at Telegram. This includes a price entry whose date arrives with nobody saving anything.
 2. **One message, always the same one**: publishing or syncing edits the pinned message in place. The chat never fills with old catalogs. Switching the bot or the channel leaves the previous chat's pin untouched, and the seller is told so.
 3. **What customers read is the catalog**: the same text as the in-app preview and as Send me a test's test send, with real bold from the same left-to-right `**` pairing (ADR-0022).
-4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, withdrawal, catalog edit, archive or restore, pricing settings) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
+4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, withdrawal, catalog edit, archive or restore, pricing settings) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Out of date", with a one-line reason, on the catalog screen and on Inicio.
 5. **Businesses never mix and the token stays secret**: one bot, token, channel chat and own chat per business. The token is never shown again once saved. Nothing about the settings or a sync leaks across businesses (ADR-0004, ADR-0005).
 6. **Done from the phone**: setup, Find my chat and Send me a test in Integrations, Publicar and seeing whether the pin is out of date on the catalog screen all work from the phone, with no API call by hand. From Integrations a plain link leads on to the catalog screen to publish.
 7. **Each cause of a failed Send me a test has its own fixed reason**, with a concrete action.
    - An invalid token and an own chat not started each show their own reason.
    - Telegram's "chat not found" can't tell a wrong number from a chat not started. Its one reason names both fixes, so it never points at the wrong one.
    - No reason repeats what was typed, and everything typed stays in the form.
-8. **Send me a test never blames the channel**: no Send me a test failure says "The bot cannot post in the channel", because Send me a test does not touch the channel. That reason stays unchanged for Publicar and upkeep, with their states and Inicio's notice.
+8. **Send me a test never blames the channel**: no Send me a test failure says "The bot can't post in the channel", because Send me a test does not touch the channel. That reason stays unchanged for Publicar and upkeep, with their states and Inicio's notice.
 9. **The help line tells the truth**: before testing, the own-chat help says to tap Start on the bot and where to get the number, and the screen does what it promises.
 10. **The seller gets to a successful test alone**: with a valid token, the seller goes from a failed Send me a test to a successful one from the phone, following only the screen's reasons and help.
 11. **A restyle of Integrations changes only what it meant to**:
@@ -94,7 +94,7 @@ Setup (token, chats, Find my chat, first Send me a test and Publicar) is judged 
 | More than one person wrote privately | "More than one person wrote to your bot: look up your number with @userinfobot and type it here." |
 | Messages can't be read (for example a bot with a webhook), or any other failure | "We could not read your bot's messages: look up your number with @userinfobot and type it here." |
 | Invalid token | "The token is not valid: copy it again from @BotFather." |
-| Telegram down, 429 or no connection | "Telegram did not respond" |
+| Telegram down, 429 or no connection | "Telegram didn't respond" |
 
 - **The app never changes the bot's setup.** It neither asks the seller to change it in Telegram nor changes it itself. An unreadable bot is rare, since the app never sets a webhook, and the manual path through @userinfobot is enough.
 
@@ -110,8 +110,8 @@ Setup (token, chats, Find my chat, first Send me a test and Publicar) is judged 
 | Invalid token (401) | "The token is not valid: copy it again from @BotFather." |
 | Own chat not started, or the seller blocked the bot (403) | "Open your bot in Telegram and tap Start, then send the test again." |
 | Own chat not found (400 "chat not found"): a wrong number, or a right number whose chat was never started, which Telegram does not tell apart | "We could not find your chat: check the number and tap Start in your bot." |
-| Telegram down, 429 or no connection | "Telegram did not respond" |
-| Text over Telegram's limit | "It is too long for Telegram: shorten the aromas or hide some varieties." |
+| Telegram down, 429 or no connection | "Telegram didn't respond" |
+| Text over Telegram's limit | "It's too long for Telegram: shorten aromas or hide varieties." |
 | Any other failure | "We could not send you the test: check the token and your chat." |
 
 - **None of Send me a test's reasons mentions the channel.** Reasons depend on the action, not only on Telegram's answer.
@@ -125,10 +125,10 @@ Setup (token, chats, Find my chat, first Send me a test and Publicar) is judged 
   - A later Publicar edits that same message and pins it again, so a message unpinned by hand is pinned back.
   - If that message no longer exists (deleted by hand), Publicar posts and pins a new one in the same chat. Upkeep then edits the new one.
   - It always sends, whether or not the text changed.
-  - On success it shows the toast "Catálogo publicado".
+  - On success it shows the toast "Catalog published".
 - **Failure**:
-  - A wrong channel, or a bot that can't post or pin there, fails inline with a fixed reason that never repeats what was typed. A 401, 403 or 400 against the channel reads "The bot cannot post in the channel", as before; Publicar has no token reason of its own.
-  - A text over Telegram's limit fails inline with "It is too long for Telegram: shorten the aromas or hide some varieties." Nothing is sent.
+  - A wrong channel, or a bot that can't post or pin there, fails inline with a fixed reason that never repeats what was typed. A 401, 403 or 400 against the channel reads "The bot can't post in the channel", as before; Publicar has no token reason of its own.
+  - A text over Telegram's limit fails inline with "It's too long for Telegram: shorten aromas or hide varieties." Nothing is sent.
 
 ### Upkeep (automatic sync)
 
@@ -156,35 +156,35 @@ Setup (token, chats, Find my chat, first Send me a test and Publicar) is judged 
 ### Status
 
 - **Two states only**:
-  - "Al día";
-  - "Desactualizado", with one fixed reason that carries no data:
-    - "Telegram did not respond": retrying will do;
-    - "The bot cannot post in the channel": the bot was removed or isn't an admin, and the seller must fix it in Telegram;
+  - "Up to date";
+  - "Out of date", with one fixed reason that carries no data:
+    - "Telegram didn't respond": retrying will do;
+    - "The bot can't post in the channel": the bot was removed or isn't an admin, and the seller must fix it in Telegram;
     - "The pinned message is gone: publish it again": the message was deleted by hand;
-    - "Publish it again with the new bot or channel": a token or channel change was tested and saved, but not yet published;
-    - "It is too long for Telegram: shorten the aromas or hide some varieties.": the text exceeds Telegram's limit.
-- **"El último fue el dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publicar there.
+    - "It still has to be published with the new bot or channel": a token or channel change was tested and saved, but not yet published;
+    - "It's too long for Telegram: shorten aromas or hide varieties.": the text exceeds Telegram's limit.
+- **"Last published on dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publicar there.
 - **What it reflects**: the result of the last attempt, or the unpublished token or channel change. There is no pending state: while a sync runs, the previous state stays.
 - **Not affected by Send me a test or Find my chat**: their failures never change the status.
 - **Before the first Publicar ever**: no status shows.
 - **Retrying**: a failed sync is retried automatically on the next trigger, or by Publicar. There is no "Reintentar".
 - **Where it shows**:
   - on the catalog screen, next to Publicar (catalog.md);
-  - on Inicio: while the status is "Desactualizado", the fixed line "Tu catálogo en Telegram está desactualizado", which opens the catalog screen. It is a notice, not a figure (results.md);
+  - on Inicio: while the status is "Out of date", the fixed line "Tu catálogo en Telegram está desactualizado", which opens the catalog screen. It is a notice, not a figure (results.md);
   - never in Integrations.
 
 ### Nothing qualifies
 
 - The pin, Send me a test and Publicar use: the header, then "Por ahora no tenemos nada para ofrecer.", then the footer. A blank header or footer is left out.
-- This counts as "Al día".
+- This counts as "Up to date".
 - The catalog screen's own empty state and Copiar are unchanged: there is nothing to copy (catalog.md).
 - When a variety qualifies again, upkeep restores the full catalog.
 
 ### Changing the channel or the token
 
 - The app never edits, unpins or deletes the old pinned message again.
-- After the successful test that saves the change, the status reads "Desactualizado · Falta publicarlo con el bot o el canal nuevo".
-- The next Publicar posts and pins a new message, and "El último fue" restarts from it.
+- After the successful test that saves the change, the status reads "Out of date · It still has to be published with the new bot or channel".
+- The next Publicar posts and pins a new message, and "Last published on" restarts from it.
 - Changing either one shows, in Integrations: "The previous pinned message stays as it is; unpin it yourself in Telegram."
 
 ### The text
@@ -236,13 +236,13 @@ Setup (token, chats, Find my chat, first Send me a test and Publicar) is judged 
 - **Too long (criteria 3, 4)**: a text over Telegram's limit is never split or cut, and nothing is sent. Send me a test and Publicar refuse it inline. Upkeep leaves the pin as it was and reports the length reason. The triggering save succeeds. 100% passing.
 - **Resilience (criterion 4)**: with the fake adapter failing:
   - every triggering save, a withdrawal included, succeeds and answers normally;
-  - the status reads "Desactualizado" with the right reason on the catalog screen, and Inicio shows its line, which opens the catalog screen;
+  - the status reads "Out of date" with the right reason on the catalog screen, and Inicio shows its line, which opens the catalog screen;
   - the next successful trigger or Publicar clears it.
 
   100% passing.
 - **Settings changes (criteria 2, 4)**:
   - changing only the own chat keeps upkeep running and the status unchanged;
-  - a tested token or channel change reads "Publish it again with the new bot or channel", with no "El último fue", until Publicar.
+  - a tested token or channel change reads "It still has to be published with the new bot or channel", with no "Last published on", until Publicar.
 - **Unavailable Publicar**: with no saved channel or no successful Send me a test since the last change, the catalog screen shows Publicar disabled with its reason in words and a link that opens Integrations.
 - **Integrations**: a front test shows:
   - the link to the catalog screen, no pin status and no Publicar;
@@ -251,7 +251,7 @@ Setup (token, chats, Find my chat, first Send me a test and Publicar) is judged 
 - **Send me a test's reasons (criterion 7)**: 100% passing.
   - There is one test per cause: 401; 403 (both "can't initiate conversation" and "blocked by the user"); 400 chat not found, which shows "We could not find your chat: check the number and tap Start in your bot."; Telegram down, 429 or no connection; too long; and any other failure.
   - Each shows its fixed text, repeats nothing typed, keeps the form and saves nothing.
-- **Send me a test never blames the channel (criterion 8)**: across every Send me a test failure, "The bot cannot post in the channel" never appears. Publicar and upkeep against the channel still produce it, and their states and Inicio's notice are unchanged. 100% passing.
+- **Send me a test never blames the channel (criterion 8)**: across every Send me a test failure, "The bot can't post in the channel" never appears. Publicar and upkeep against the channel still produce it, and their states and Inicio's notice are unchanged. 100% passing.
 - **Help line (criterion 9)**: a front test shows the new own-chat help line and the unchanged channel help line.
 - **Find my chat**: 100% passing.
   - Exactly one private chat (with several messages) fills the field and replaces an existing number.
@@ -272,7 +272,7 @@ Setup (token, chats, Find my chat, first Send me a test and Publicar) is judged 
   - fills the own chat with Find my chat and enters the channel chat;
   - runs Send me a test successfully;
   - follows Integrations' link to the catalog screen, sees Publicar enabled and runs it;
-  - sees "Al día" on the catalog screen and no line on Inicio.
+  - sees "Up to date" on the catalog screen and no line on Inicio.
 - **Integrations looks as designed (criterion 11)**, read from the PR, with no telemetry:
   - before and after captures are attached, with the undo diff that defines "before" when the restyle had already merged; the PR records the script, the single install, the date and the fontsource version;
   - four sides (phone and computer, light and dark), each with a result in `index.json` and in `ae.mjs`'s output: 0 missing;

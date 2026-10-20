@@ -14,8 +14,9 @@ import { kindOf, resolveOverride } from '../../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Boton from '../../components/Boton'
-import { GENERIC_REFUSAL_MESSAGE, type Variety } from '../Variedades'
-import { VARIETY_NAME_HELP } from '../../copy/varieties'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
+import { ADD_VARIETY, NAME, VARIETY_NAME_HELP, VARIETY_NAME_PLACEHOLDER } from '../../copy/varieties'
+import type { Variety } from '../Variedades'
 import { SAVE_OVERRIDES } from './varietyForms'
 
 export interface VarietyNameFormProps {
@@ -42,7 +43,7 @@ export default function VarietyNameForm({ onSaved, onDirtyChange }: VarietyNameF
     setSending(true)
     try {
       const saved = await post<Variety>('/varieties', { name })
-      invalidateResource(queryClient, 'varieties')
+      invalidateResource(queryClient, 'varieties' as const)
       onSaved({ id: saved.id, name: saved.name })
     } catch (caught) {
       if (caught instanceof ApiError) {
@@ -63,11 +64,11 @@ export default function VarietyNameForm({ onSaved, onDirtyChange }: VarietyNameF
   return (
     <form className="formulario" onSubmit={onSubmit}>
       <label className="campo">
-        <span className="campo__rotulo">Nombre</span>
+        <span className="campo__rotulo">{NAME}</span>
         <input
           className="campo__input"
           type="text"
-          placeholder="Nombre de la variedad"
+          placeholder={VARIETY_NAME_PLACEHOLDER}
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
@@ -81,7 +82,7 @@ export default function VarietyNameForm({ onSaved, onDirtyChange }: VarietyNameF
       </label>
       {offline && <SinConexion />}
       <Boton textOnly="submit" type="submit" disabled={sending}>
-        Agregá la variedad
+        {ADD_VARIETY}
       </Boton>
     </form>
   )

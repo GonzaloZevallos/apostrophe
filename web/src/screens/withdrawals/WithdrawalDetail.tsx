@@ -1,14 +1,14 @@
 /**
  * `WithdrawalDetail` (`/withdrawals/:id`, `RetiroDetalle`): a detail under the navigation
- * rule, with the bar or sidebar and the shell's one back, "‹ Variedades"
- * (history, or Variedades with none; `useBackOr` serves the delete's exit), and no "+ Nueva venta" (a `card`
+ * rule, with the bar or sidebar and the shell's one back, "‹ Varieties"
+ * (history, or Variedades with none; `useBackOr` serves the delete's exit), and no "+ New sale" (a `card`
  * in `routes.ts`). It shows the date, the reason by word, every line and the note, with
- * "Editar" (the same form, filled in) and "Borrar" ("Antes de borrar", naming the reason,
+ * "Edit" (the same form, filled in) and "Delete" ("Before deleting", naming the reason,
  * the date and the total grams: `stock.md`).
  *
- * A withdrawal that is gone shows "Eso ya no está." with "Volver a Variedades"; a delete
- * that finds it gone leaves by the gone exit (`useGoneExit`) to Variedades with "Eso ya no
- * está. La lista ya está al día."
+ * A withdrawal that is gone shows "That's gone." with "Back to Varieties"; a delete
+ * that finds it gone leaves by the gone exit (`useGoneExit`) to Varieties with "That's
+ * gone. The list is up to date."
  */
 
 import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -33,6 +33,20 @@ import { formatDate } from '../../format/dates'
 import { formatGrams } from '../../format/money'
 import { VARIETIES, WITHDRAWAL_EDIT, pathTo } from '../../routes'
 import { REASON_OPTIONS } from './withdrawalReasons'
+import { TAB_VARIETIES } from '../../copy/shell'
+import {
+  BEFORE_DELETING,
+  DELETE,
+  EDIT,
+  FIELD_DATE,
+  FIELD_NOTE,
+  FIELD_REASON,
+  WITHDRAWAL_DELETED,
+  WITHDRAWAL_TITLE,
+  YES_DELETE_IT,
+  NO_KEEP_IT,
+  deleteWithdrawalQuestion,
+} from '../../copy/stock'
 
 
 /** A deleted withdrawal's own query shares the `'stock'` prefix every other stock figure
@@ -44,7 +58,7 @@ function invalidateStockAfterDeleting(queryClient: QueryClient, id: string): voi
   queryClient.invalidateQueries({
     queryKey: keys.stockWithdrawal(id),
     exact: true,
-    refetchType: 'none',
+    refetchType: 'none' as const,
   })
   queryClient.invalidateQueries({
     predicate: (query) =>
@@ -57,7 +71,7 @@ export default function WithdrawalDetail() {
   const { id } = useParams<{ id: string }>()
   const withdrawalId = id ?? ''
   const back = useBackOr(VARIETIES)
-  const goneExit = useGoneExit('withdrawal', { id: withdrawalId })
+  const goneExit = useGoneExit('withdrawal' as const, { id: withdrawalId })
   const queryClient = useQueryClient()
   const flash = useFlash()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -77,7 +91,7 @@ export default function WithdrawalDetail() {
     try {
       await deleteWithdrawal(withdrawalId)
       invalidateStockAfterDeleting(queryClient, withdrawalId)
-      flash.armAfterLeaving('Retiro eliminado')
+      flash.armAfterLeaving(WITHDRAWAL_DELETED)
       back()
     } catch (caught) {
       setConfirmingDelete(false)
@@ -96,7 +110,7 @@ export default function WithdrawalDetail() {
 
   if (query.isError) {
     if (query.error instanceof ApiError && isGone(query.error.code)) {
-      return <GoneScreen label="Variedades" to={VARIETIES} />
+      return <GoneScreen label={TAB_VARIETIES} to={VARIETIES} />
     }
     return (
       <main className="pantalla">
@@ -119,28 +133,29 @@ export default function WithdrawalDetail() {
   const withdrawal = query.data
   const reasonWord = REASON_OPTIONS.find((option) => option.value === withdrawal.reason)?.label ?? ''
   const date = formatDate(withdrawal.date, me.today)
-  const confirmation =
-    withdrawal.reason === 'promotion'
-      ? `¿Borrás la promoción del ${date}? Vuelven ${formatGrams(withdrawal.total_grams)} al stock.`
-      : `¿Borrás el consumo propio del ${date}? Vuelven ${formatGrams(withdrawal.total_grams)} al stock.`
+  const confirmation = deleteWithdrawalQuestion(
+    withdrawal.reason === 'promotion',
+    date,
+    formatGrams(withdrawal.total_grams),
+  )
 
   return (
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <span className="encabezado__titulo">Retiro</span>
+          <span className="encabezado__titulo">{WITHDRAWAL_TITLE}</span>
         </div>
         <dl className="retiro__datos">
           <div className="retiro__dato">
-            <dt className="campo__rotulo">Motivo</dt>
+            <dt className="campo__rotulo">{FIELD_REASON}</dt>
             <dd>{reasonWord}</dd>
           </div>
           <div className="retiro__dato">
-            <dt className="campo__rotulo">Fecha</dt>
+            <dt className="campo__rotulo">{FIELD_DATE}</dt>
             <dd>{date}</dd>
           </div>
         </dl>
-        <ul className="retiro__lineas" aria-label="Variedades">
+        <ul className="retiro__lineas" aria-label={TAB_VARIETIES}>
           {withdrawal.lines.map((line, index) => (
             // A variety may repeat in several lines with no merging: the position is the identity.
             <li key={index} className="retiro__linea">
@@ -151,7 +166,7 @@ export default function WithdrawalDetail() {
         </ul>
         {withdrawal.note !== null && (
           <div className="retiro__dato">
-            <span className="campo__rotulo">Nota</span>
+            <span className="campo__rotulo">{FIELD_NOTE}</span>
             <span>{withdrawal.note}</span>
           </div>
         )}
@@ -162,18 +177,18 @@ export default function WithdrawalDetail() {
           </span>
         )}
         <div className="retiro__acciones">
-          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })} />
+          <BotonLink variant="icon" action="edit" ariaLabel={EDIT} to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })} />
           <Boton variant="destructive" icon="tacho" onClick={() => setConfirmingDelete(true)}>
-            Borrar
+            {DELETE}
           </Boton>
         </div>
       </div>
       {confirmingDelete && (
         <ConfirmDialog
-          title="Antes de borrar"
+          title={BEFORE_DELETING}
           detail={confirmation}
-          confirmText="Sí, borralo"
-          cancelText="No, dejalo"
+          confirmText={YES_DELETE_IT}
+          cancelText={NO_KEEP_IT}
           onConfirm={() => {
             if (!deleting) void onConfirmDelete()
           }}

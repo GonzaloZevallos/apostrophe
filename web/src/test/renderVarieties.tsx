@@ -10,9 +10,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
-import type { Me } from '../../api/me'
-import InAppLink from '../../components/InAppLink'
-import FlashProvider from '../../flash/FlashProvider'
+import type { Me } from '../api/me'
+import InAppLink from '../components/InAppLink'
+import FlashProvider from '../flash/FlashProvider'
 import {
   ARCHIVED_VARIETIES,
   VARIETIES,
@@ -22,13 +22,13 @@ import {
   VARIETY_PRICES,
   pathTo,
   relative,
-} from '../../routes'
-import Shell from '../../shell/Shell'
-import EntriesList from '../EntriesList'
-import PriceHistory from './PriceHistory'
-import PriceNew from './PriceNew'
-import VarietyPage from './VarietyPage'
-import VarietyRoute from './VarietyRoute'
+} from '../routes'
+import Shell from '../shell/Shell'
+import EntriesList from '../screens/EntriesList'
+import PriceHistory from '../screens/varieties/PriceHistory'
+import PriceNew from '../screens/varieties/PriceNew'
+import VarietyPage from '../screens/varieties/VarietyPage'
+import VarietyRoute from '../screens/varieties/VarietyRoute'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -91,16 +91,16 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
               {
                 path: relative(VARIETIES),
                 handle: { screen: 'varieties' },
-                element: <main>Pantalla Variedades</main>,
+                element: <main>Varieties screen</main>,
               },
               {
                 path: relative(VARIETY),
                 handle: { screen: 'variety' },
                 element: (
                   <main>
-                    <span>Página de la variedad</span>
-                    <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>Ver todos los precios</InAppLink>
-                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>Nuevo precio</InAppLink>
+                    <span>Variety page</span>
+                    <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>See all prices</InAppLink>
+                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>New price</InAppLink>
                   </main>
                 ),
               },
@@ -174,10 +174,10 @@ export function renderVarietiesInShell(initialEntries: string[], fetchImpl: Fetc
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES), element: <main>Pantalla Variedades</main>, handle: { screen: 'varieties' } },
+              { path: relative(VARIETIES), element: <main>Varieties screen</main>, handle: { screen: 'varieties' } },
               {
                 path: relative(ARCHIVED_VARIETIES),
-                element: <main>Pantalla Archivadas</main>,
+                element: <main>Archived screen</main>,
                 handle: { screen: 'varieties-archived' },
               },
               {

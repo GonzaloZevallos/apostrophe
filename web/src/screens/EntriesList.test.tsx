@@ -1,7 +1,7 @@
 /**
- * `EntriesList` at the screen seam (`stock.md`, "Todas las entradas"): every entry newest
+ * `EntriesList` at the screen seam (`stock.md`, "All entries"): every entry newest
  * first, or only one variety's through `entriesOf`; each can be edited (a link to its
- * form) or deleted after "Antes de borrar". The API is faked at `fetch`.
+ * form) or deleted after "Before deleting". The API is faked at `fetch`.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -155,20 +155,20 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('"Todas las entradas" lists every entry newest first with its variety, origin, grams and costs', async () => {
+test('"All entries" lists every entry newest first with its variety, origin, grams and costs', async () => {
   fakeApi()
   renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(3)
   expect(within(rows[0]!).getByText('05/10 · 24K Gold')).toBeInTheDocument()
-  expect(within(rows[0]!).getByText('Compra · 30 g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('Purchase · 30 g')).toBeInTheDocument()
   expect(within(rows[0]!).getByText('$ 150.000')).toBeInTheDocument()
-  expect(within(rows[0]!).getByText('$ 5.000 x g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('$ 5.000 per g')).toBeInTheDocument()
   expect(within(rows[1]!).getByText('26/08 · Sir Jack')).toBeInTheDocument()
-  expect(within(rows[1]!).getByText('Cosecha · 10 g')).toBeInTheDocument()
-  expect(within(rows[1]!).getByText('Sin costo')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Todas las entradas' })).toBeInTheDocument()
+  expect(within(rows[1]!).getByText('Harvest · 10 g')).toBeInTheDocument()
+  expect(within(rows[1]!).getByText('No cost')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'All entries' })).toBeInTheDocument()
 })
 
 test("a variety's list shows only its entries", async () => {
@@ -189,8 +189,8 @@ test("an archived variety's list is read-only: entry rows have no edit, no delet
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
   expect(within(rows[0]!).getByText('05/10 · 24K Gold')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Borrar' })).toBeNull()
-  expect(screen.queryByRole('link', { name: 'Editar' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Edit' })).toBeNull()
   expect(within(screen.getByRole('list')).queryAllByRole('link')).toHaveLength(0)
 })
 
@@ -208,7 +208,7 @@ test("an archived variety's withdrawal rows still open the withdrawal's detail",
   const rows = await screen.findAllByRole('listitem')
   expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 9 }))
   expect(within(rows[1]!).queryByRole('link')).toBeNull()
-  expect(within(rows[1]!).queryByRole('button', { name: 'Borrar' })).toBeNull()
+  expect(within(rows[1]!).queryByRole('button', { name: 'Delete' })).toBeNull()
 })
 
 test("a variety's list holds its withdrawals, told by reason word and minus sign, each opening its detail", async () => {
@@ -223,18 +223,18 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
-  expect(within(rows[0]!).getByText('Promoción · −5,5 g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('Promotion · −5,5 g')).toBeInTheDocument()
   expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 9 }))
-  expect(within(rows[0]!).queryByRole('button', { name: 'Borrar' })).not.toBeInTheDocument()
-  expect(within(rows[1]!).getByText('Compra · 30 g')).toBeInTheDocument()
+  expect(within(rows[0]!).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+  expect(within(rows[1]!).getByText('Purchase · 30 g')).toBeInTheDocument()
 })
 
 /**
- * "Todas las entradas" renders what `GET /stock` answers and never reaches for the movements
+ * "All entries" renders what `GET /stock` answers and never reaches for the movements
  * that carry withdrawals; that `GET /stock` itself holds no withdrawal is pinned by
  * `test_the_business_wide_entries_list_holds_no_withdrawal`.
  */
-test('"Todas las entradas" shows the entry and no withdrawal, and never asks for movements', async () => {
+test('"All entries" shows the entry and no withdrawal, and never asks for movements', async () => {
   const recorded = entry(12, '2026-10-05', 3, 30, 150000)
   fakeApi({
     'GET /stock': () => jsonResponse(200, { total: 30, varieties: [], entries: [recorded] }),
@@ -248,14 +248,14 @@ test('"Todas las entradas" shows the entry and no withdrawal, and never asks for
 
   const rows = await screen.findAllByRole('listitem')
   expect(within(rows[0]!).getByText('05/10 · 24K Gold')).toBeInTheDocument()
-  expect(within(rows[0]!).getByText('Compra · 30 g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('Purchase · 30 g')).toBeInTheDocument()
   expect(rows).toHaveLength(1)
 
   const asked = vi.mocked(fetch).mock.calls.map(([url]) => String(url))
   expect(asked.filter((url) => url.includes('/movements'))).toEqual([])
 
   const list = screen.getByRole('list')
-  expect(within(list).queryByText(/Promoción|Consumo propio/)).toBeNull()
+  expect(within(list).queryByText(/Promotion|Own use/)).toBeNull()
   expect(within(list).queryByText(/−/)).toBeNull()
 })
 
@@ -264,31 +264,31 @@ test('Editar links to the entry form', async () => {
   renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
-  await userEvent.click(within(rows[1]!).getByRole('link', { name: 'Editar' }))
+  await userEvent.click(within(rows[1]!).getByRole('link', { name: 'Edit' }))
   expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(STOCK_ENTRY, { id: 11 }))
 })
 
-test('Borrar asks "Antes de borrar" naming date, variety and grams, then deletes and says so', async () => {
+test('Delete asks "Before deleting" naming date, variety and grams, then deletes and says so', async () => {
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
   renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
-  await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
-  const dialog = await screen.findByRole('alertdialog', { name: 'Antes de borrar' })
-  expect(dialog).toHaveTextContent('¿Borrás la entrada del 05/10 de 24K Gold, 30 g?')
+  await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Delete' }))
+  const dialog = await screen.findByRole('alertdialog', { name: 'Before deleting' })
+  expect(dialog).toHaveTextContent("Delete the 05/10 entry for 24K Gold, 30 g? This can't be undone.")
 
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
   expect(await screen.findByText('Entry deleted')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/12', expect.objectContaining({ method: 'DELETE' }))
 })
 
-test('declining "Antes de borrar" deletes nothing', async () => {
+test('declining "Before deleting" deletes nothing', async () => {
   fakeApi()
   renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
-  await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'No, dejala' }))
+  await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Delete' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'No, keep it' }))
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(fetch).not.toHaveBeenCalledWith(expect.stringContaining('/stock/entries'), expect.anything())
 })
@@ -301,8 +301,8 @@ test('deleting an entry that is already gone says so and refreshes the list', as
   renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
-  await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Delete' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, delete it' }))
   expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
   expect(screen.queryByText('Entry deleted')).not.toBeInTheDocument()
 })
@@ -318,8 +318,8 @@ test('with no entries the empty state shows, with no rows', async () => {
   )
   renderAt(STOCK_PATH)
 
-  expect(await screen.findByText('Sin entradas de stock')).toBeInTheDocument()
-  expect(screen.getByText('Cargá tu stock inicial o una compra')).toBeInTheDocument()
+  expect(await screen.findByText('No stock entries')).toBeInTheDocument()
+  expect(screen.getByText('Add your opening stock or a purchase')).toBeInTheDocument()
   expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
 })
 
@@ -337,23 +337,23 @@ test('a delete marks the catalog stale and the stock list refetches', async () =
   renderAt(STOCK_PATH, client)
 
   const rows = await screen.findAllByRole('listitem')
-  await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Delete' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, delete it' }))
   await screen.findByText('Entry deleted')
   const stockCalls = vi.mocked(fetch).mock.calls.filter(([url]) => url === '/stock')
   expect(stockCalls.length).toBeGreaterThanOrEqual(2)
   expect(client.getQueryState(catalogQueryOptions().queryKey)?.isInvalidated).toBe(true)
 })
 
-test('the list keeps the icon and text rule: Borrar is the icon-only control with its word as name', async () => {
+test('the list keeps the icon and text rule: Delete is the icon-only control with its word as name', async () => {
   fakeApi()
   renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
-  const borrar = within(rows[0]!).getByRole('button', { name: 'Borrar' })
-  expect(borrar).toHaveClass('boton-icono')
-  expect(borrar).toHaveTextContent('')
-  expect(borrar.querySelector('svg')).not.toBeNull()
+  const deleteButton = within(rows[0]!).getByRole('button', { name: 'Delete' })
+  expect(deleteButton).toHaveClass('boton-icono')
+  expect(deleteButton).toHaveTextContent('')
+  expect(deleteButton.querySelector('svg')).not.toBeNull()
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
 
@@ -368,7 +368,7 @@ test('the empty state keeps the title and the line within their limits', async (
   )
   renderAt(STOCK_PATH)
 
-  await screen.findByText('Sin entradas de stock')
+  await screen.findByText('No stock entries')
   expect(document.querySelectorAll('[data-copy="emptyTitle"], [data-copy="emptyLine"]')).toHaveLength(2)
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

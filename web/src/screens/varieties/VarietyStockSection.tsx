@@ -12,9 +12,14 @@ import InAppLink from '../../components/InAppLink'
 import { type Movement, type StockView, entriesOf } from '../../api/stock'
 import { formatDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
+import { SEE_ALL, STOCK_AND_ENTRIES, perGram } from '../../copy/varieties'
 import { VARIETY_ENTRIES, WITHDRAWAL, pathTo } from '../../routes'
 import { ORIGIN_LABEL } from '../originLabel'
 import { REASON_LABEL } from '../withdrawals/withdrawalReasons'
+
+/** Row keys of the merged movement list: an identity, never a word. */
+const WITHDRAWAL_KEY_PREFIX = 'withdrawal-'
+const ENTRY_KEY_PREFIX = 'entry-'
 
 const LAST = 3
 
@@ -35,13 +40,13 @@ export default function VarietyStockSection({
   return (
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
-        <h2 className="seccion-variedad__titulo">Stock y entradas</h2>
-        <BotonLink variant="link" to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>Ver todas</BotonLink>
+        <h2 className="seccion-variedad__titulo">{STOCK_AND_ENTRIES}</h2>
+        <BotonLink variant="link" to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>{SEE_ALL}</BotonLink>
       </div>
       <ul className="lista-entradas">
         {rows.map((movement) =>
           movement.kind === 'withdrawal' ? (
-            <li key={`withdrawal-${movement.id}`} className="fila-entrada">
+            <li key={`${WITHDRAWAL_KEY_PREFIX}${movement.id}`} className="fila-entrada">
               <InAppLink to={pathTo(WITHDRAWAL, { id: movement.id })} className="fila-entrada__enlace">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
@@ -54,13 +59,13 @@ export default function VarietyStockSection({
               </InAppLink>
             </li>
           ) : (
-            <li key={`entry-${movement.id}`} className="fila-entrada">
+            <li key={`${ENTRY_KEY_PREFIX}${movement.id}`} className="fila-entrada">
               <span className="fila-entrada__texto">
                 <span className="fila-entrada__linea1">
                   {formatDate(movement.date, today)} · {ORIGIN_LABEL[movement.origin]}
                 </span>
                 {movement.cost_per_gram !== null && (
-                  <span className="fila-entrada__linea2">{formatMoney(movement.cost_per_gram)} el gramo</span>
+                  <span className="fila-entrada__linea2">{perGram(formatMoney(movement.cost_per_gram))}</span>
                 )}
               </span>
               <span className="fila-entrada__cifras">

@@ -17,10 +17,11 @@ import { isGone, kindOf } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
-import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
+import { CLOSE, GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
-import { PRICE_SAVED } from '../../copy/varieties'
+import { TODAY } from '../../copy/format'
+import { EFFECTIVE_FROM, NEW_PRICE, PRICE_SAVED, SAVE_PRICE } from '../../copy/varieties'
 import {
   fieldOfCode,
   readPriceValues,
@@ -97,11 +98,11 @@ export default function PriceForm({
         effective_from: effectiveFrom,
         ...read.amounts,
       })
-      invalidateResource(queryClient, 'varieties')
+      invalidateResource(queryClient, 'varieties' as const)
       onDone(PRICE_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
         onGone()
       } else if (caught instanceof ApiError) {
         const mapped = fieldOfCode(caught.code)
@@ -123,15 +124,15 @@ export default function PriceForm({
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
         <span id={titleId} ref={titleRef} tabIndex={-1} className="gasto-form__titulo">
-          Nuevo precio
+          {NEW_PRICE}
         </span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" disabled={sending} onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={CLOSE} disabled={sending} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <div className="campo">
-          <span id={captionId} className="campo__rotulo">Rige desde</span>
+          <span id={captionId} className="campo__rotulo">{EFFECTIVE_FROM}</span>
           <span className="precio-chip">
             <Boton
               variant="secondary"
@@ -153,10 +154,10 @@ export default function PriceForm({
                   setChoosingDate(false)
                 }}
               >
-                Hoy
+                {TODAY}
               </Boton>
               <label className="precio-fecha__campo">
-                <span className="campo__rotulo">Rige desde</span>
+                <span className="campo__rotulo">{EFFECTIVE_FROM}</span>
                 <input
                   className="campo__input"
                   type="date"
@@ -181,7 +182,7 @@ export default function PriceForm({
         <FieldError message={errors.form} />
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardá el precio
+          {SAVE_PRICE}
         </Boton>
       </form>
     </div>

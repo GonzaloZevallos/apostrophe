@@ -28,6 +28,20 @@ import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams } from '../../format/money'
+import { YES_DELETE_IT, NO_KEEP_IT } from '../../copy/stock'
+import {
+  ARCHIVE_DETAIL_NO_STOCK,
+  ARCHIVE_VARIETY,
+  ARCHIVE_VARIETY_QUESTION,
+  DELETE_VARIETY,
+  DELETE_VARIETY_DETAIL,
+  DELETE_VARIETY_QUESTION,
+  VARIETY_ARCHIVED,
+  VARIETY_DELETED,
+  YES_ARCHIVE_IT,
+  archiveDetailLeft,
+  archiveDetailShortfall,
+} from '../../copy/varieties'
 import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
@@ -37,10 +51,9 @@ const HAS_HISTORY_CODE = 'variety.has_history'
 
 /** The detail line of the archive confirmation: the grams on hand when there are any. */
 function archiveDetail(grams: number | null): string {
-  const tail = 'dejan de verse en Inicio y en las listas, pero el stock queda guardado.'
-  if (grams === null || grams === 0) return `Si la archivás, ${tail}`
-  if (grams < 0) return `Tiene un faltante de ${formatGrams(-grams)}. Si la archivás, ${tail}`
-  return `Te quedan ${formatGrams(grams)}. Si la archivás, ${tail}`
+  if (grams === null || grams === 0) return ARCHIVE_DETAIL_NO_STOCK
+  if (grams < 0) return archiveDetailShortfall(formatGrams(-grams))
+  return archiveDetailLeft(formatGrams(grams))
 }
 
 /** Where a computer goes once `varietyId` leaves the list: the next by name, else the
@@ -81,11 +94,11 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
         list.filter((variety) => variety.id !== varietyId),
       )
     }
-    flash.armAfterLeaving(removal === 'delete' ? 'Variedad eliminada' : 'Variedad archivada')
+    flash.armAfterLeaving(removal === 'delete' ? VARIETY_DELETED : VARIETY_ARCHIVED)
     void navigate(next === null ? VARIETIES : pathTo(VARIETY, { id: next }), { replace: true })
     // Mark stale without refetching now: the page still mounted would read the variety it
     // just deleted, a 404 the browser writes to its console (`invalidateResource`'s note).
-    invalidateResource(queryClient, 'varieties', { refetchType: 'none' })
+    invalidateResource(queryClient, 'varieties' as const, { refetchType: 'none' as const })
     // The archived list is not the deleted page's own query: a mounted left pane ("Archivadas (N)")
     // reads it again now.
     if (removal === 'archive') void queryClient.invalidateQueries({ queryKey: keys.archivedVarieties() })
@@ -102,9 +115,9 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
     } catch (caught) {
       setAsking(false)
       if (caught instanceof ApiError && caught.code === HAS_HISTORY_CODE) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
       } else if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'varieties')
+        invalidateResource(queryClient, 'varieties' as const)
         setGone(true)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
@@ -125,24 +138,20 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
       <div className="variedad-retiro">
         {deleting ? (
           <Boton variant="critical" icon="tacho" onClick={() => setAsking(true)}>
-            Eliminar variedad
+            {DELETE_VARIETY}
           </Boton>
         ) : (
           <Boton variant="secondary" icon="archivar" onClick={() => setAsking(true)}>
-            Archivar variedad
+            {ARCHIVE_VARIETY}
           </Boton>
         )}
       </div>
       {asking && (
         <ConfirmDialog
-          title={deleting ? '¿Eliminás esta variedad?' : '¿Archivás esta variedad?'}
-          detail={
-            deleting
-              ? 'No tiene ventas ni entradas. Se borra para siempre, con sus precios. Esto no se puede deshacer.'
-              : archiveDetail(grams)
-          }
-          confirmText={deleting ? 'Sí, eliminala' : 'Sí, archivala'}
-          cancelText="No, dejala"
+          title={deleting ? DELETE_VARIETY_QUESTION : ARCHIVE_VARIETY_QUESTION}
+          detail={deleting ? DELETE_VARIETY_DETAIL : archiveDetail(grams)}
+          confirmText={deleting ? YES_DELETE_IT : YES_ARCHIVE_IT}
+          cancelText={NO_KEEP_IT}
           onConfirm={() => {
             if (!sending) void onConfirm()
           }}

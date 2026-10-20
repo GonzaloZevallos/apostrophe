@@ -1,6 +1,6 @@
 /**
- * Variedades' first-variety selection on a computer never takes over a tap the seller already
- * made (`VarietiesIndex.tsx`): leaving Variedades on the phone ("Mandar catálogo") while the
+ * Varieties' first-variety selection on a computer never takes over a tap the seller already
+ * made (`VarietiesIndex.tsx`): leaving Varieties on the phone ("Send catalog") while the
  * viewport turns computer before the new screen has rendered lands on the catalog, not on the
  * first variety. The CPU is slowed through the browser's own throttling so the tap's render is
  * still pending when the viewport changes, the window the race needs (it made
@@ -16,7 +16,7 @@ import { uniqueTag } from './helpers/unique.js'
 const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 720 }
 
-test('a tap that leaves Variedades on the phone is not replaced when the viewport turns computer', async ({
+test('a tap that leaves Varieties on the phone is not replaced when the viewport turns computer', async ({
   page,
   context,
 }) => {
@@ -25,23 +25,23 @@ test('a tap that leaves Variedades on the phone is not replaced when the viewpor
     email: `seleccion-${uniqueTag()}@example.com`,
   })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
+  await page.getByRole('button', { name: 'Add variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
 
   const cdp = await context.newCDPSession(page)
   for (let round = 0; round < 3; round++) {
     await page.setViewportSize(PHONE)
     await page.goto(VARIETIES)
-    const send = page.getByRole('link', { name: 'Mandar catálogo' })
+    const send = page.getByRole('link', { name: 'Send catalog' })
     await send.waitFor()
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 20 })
     await send.click({ noWaitAfter: true })
     await page.setViewportSize(COMPUTER)
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
     await expectPath(page, CATALOG)
-    await expect(page.getByRole('heading', { name: 'Catálogo', level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Catalog', level: 1 })).toBeVisible()
     await expectPath(page, CATALOG)
   }
 })

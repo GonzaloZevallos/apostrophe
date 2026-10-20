@@ -176,27 +176,27 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A priced variety.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
+  await page.getByRole('button', { name: 'Add variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
   // Backdated well before this run's own month (sales.spec.ts does the same for
   // Jazmín): the extra, month-only sale seeded below needs a price that reaches
   // back that far too.
   await setPriceDate(page, '2000-01-01')
-  await page.getByLabel(/^Precio de lista/).fill('1000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByLabel(/^List price/).fill('1000')
+  await page.getByRole('button', { name: 'Save price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 
   // A purchase: the "Origen" pill defaults to "Compra" (`EntradaStock.tsx`).
   await page.goto(STOCK_ENTRY_NEW)
-  await page.getByLabel('Gramos').fill('50')
-  await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
-  await expect(page.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByLabel('Costo total').fill('45000')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await expect(page.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByLabel('Total cost').fill('45000')
+  await page.getByRole('button', { name: 'Save entry' }).click()
   await expect(page.getByText('Entry saved')).toBeVisible()
 
   // A customer, for the sale left owing.

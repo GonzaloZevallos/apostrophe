@@ -26,6 +26,7 @@ import SinConexion from '../../components/SinConexion'
 import { inAppState } from '../../components/inAppState'
 import { useBackOr } from '../../components/useBackOr'
 import { useFlash } from '../../flash/useFlash'
+import { VARIETY_RESTORED } from '../../copy/varieties'
 import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
@@ -49,8 +50,8 @@ export function useRestore(): {
   const [problem, setProblem] = useState<Problem | null>(null)
 
   function refresh(): void {
-    invalidateResource(queryClient, 'varieties')
-    invalidateResource(queryClient, 'stock')
+    invalidateResource(queryClient, 'varieties' as const)
+    invalidateResource(queryClient, 'stock' as const)
   }
 
   /** The one request: `onRestored` runs after it succeeded, every failure is a notice. */
@@ -64,11 +65,11 @@ export function useRestore(): {
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         refresh()
-        setProblem('gone')
+        setProblem('gone' as const)
       } else if (caught instanceof NetworkError) {
-        setProblem('offline')
+        setProblem('offline' as const)
       } else {
-        setProblem('failed')
+        setProblem('failed' as const)
       }
     } finally {
       setSending(false)
@@ -77,7 +78,7 @@ export function useRestore(): {
 
   function restore(varietyId: number): Promise<void> {
     return send(varietyId, () => {
-      flash.showNow('Variedad restaurada')
+      flash.showNow(VARIETY_RESTORED)
       refresh()
     })
   }
@@ -100,10 +101,10 @@ export function useRestore(): {
       queryClient.setQueryData<ArchivedAttributes[]>(keys.archivedCatalog(), (old) =>
         old?.filter((attributes) => attributes.variety_id !== varietyId),
       )
-      flash.armAfterLeaving('Variedad restaurada')
+      flash.armAfterLeaving(VARIETY_RESTORED)
       leaveTo(landing)
-      invalidateResource(queryClient, 'varieties', { refetchType: 'none' })
-      invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+      invalidateResource(queryClient, 'varieties' as const, { refetchType: 'none' as const })
+      invalidateResource(queryClient, 'stock' as const, { refetchType: 'none' as const })
     })
   }
 

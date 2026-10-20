@@ -53,15 +53,28 @@ import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
-import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
+import { daysLeft } from '../copy/common'
+// Kept so the onboarding hook that imports it from here still resolves; the text lives in copy/common.
+export { GENERIC_REFUSAL_MESSAGE } from '../copy/common'
+import { TAB_VARIETIES } from '../copy/shell'
+import { ALL_ENTRIES_TITLE, TAKE_OUT_OF_STOCK } from '../copy/stock'
+import {
+  CATALOG_DISABLED_REASON,
+  EMPTY_DETAIL,
+  EMPTY_TITLE,
+  HIDDEN,
+  NEW_VARIETY,
+  NO_PRICE_TODAY,
+  SEND_CATALOG,
+  STOCK_ENTRY,
+  STOCK_ENTRY_ACCESSIBLE_NAME,
+  archivedCount as archivedLabel,
+  pricePerGram,
+} from '../copy/varieties'
 
 const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 
-export const VARIETY_SAVED = 'Variedad guardada'
-export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
-export const NAME_TAKEN_MESSAGE = 'Ya existe una variedad con ese nombre'
-export const NAME_INVALID_MESSAGE = 'Ponele un nombre a la variedad, sin espacios de más'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+const ACTIVE_ROW_CLASS = 'variedad-fila variedad-fila--activa'
 
 interface PriceEntry {
   id: number
@@ -84,7 +97,7 @@ export interface Variety {
 function figuresOf(row: VarietyStock, today: string): string {
   const grams = formatGrams(row.grams)
   if (row.status === 'sold_out' || row.status === 'no_entries') return `${grams} · ${detailFor(row, today)}`
-  return row.days_left === null ? grams : `${grams} · ${row.days_left} días`
+  return row.days_left === null ? grams : `${grams} · ${daysLeft(row.days_left)}`
 }
 
 export default function Variedades() {
@@ -116,13 +129,13 @@ export default function Variedades() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">Variedades</h1>
+        <h1 className="encabezado__titulo">{TAB_VARIETIES}</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
           {catalogDisabled ? (
             <>
               <Boton icon="telegram" disabled ariaDescribedBy={CATALOG_REASON_ID}>
-                Mandar catálogo
+                {SEND_CATALOG}
               </Boton>
               <p className="variedades__motivo" id={CATALOG_REASON_ID} data-copy="help">
                 {CATALOG_DISABLED_REASON}
@@ -130,18 +143,18 @@ export default function Variedades() {
             </>
           ) : (
             <BotonLink to={CATALOG} icon="telegram">
-              Mandar catálogo
+              {SEND_CATALOG}
             </BotonLink>
           )}
-          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel="+ Entrada de stock">
-            Entrada de stock
+          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel={STOCK_ENTRY_ACCESSIBLE_NAME}>
+            {STOCK_ENTRY}
           </BotonLink>
           <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="salidaStock">
-            Sacar del stock
+            {TAKE_OUT_OF_STOCK}
           </BotonLink>
           <span className="variedades__nueva">
             <BotonLink to={VARIETY_NEW} variant="link">
-              Nueva variedad
+              {NEW_VARIETY}
             </BotonLink>
           </span>
         </div>
@@ -166,19 +179,19 @@ export default function Variedades() {
                 to={pathTo(VARIETY, { id: variety.id })}
                 replace={computer}
                 className="variedad-fila"
-                activeClassName="variedad-fila variedad-fila--activa"
+                activeClassName={ACTIVE_ROW_CLASS}
               >
                 <span className="variedad-fila__encabezado">
                   <MarcaEstado estado={row.status} />
                   <span className="variedad-fila__nombre">{variety.name}</span>
-                  {hidden.has(variety.id) && <span className="variedad-fila__oculta">Oculta</span>}
+                  {hidden.has(variety.id) && <span className="variedad-fila__oculta">{HIDDEN}</span>}
                 </span>
                 <span className="variedad-fila__pie">
                   <span className="variedad-fila__detalle">{figuresOf(row, me.today)}</span>
                   <span className="variedad-fila__precio">
                     {variety.current_price === null
                       ? NO_PRICE_TODAY
-                      : `${formatMoney(variety.current_price.list_price)} x g`}
+                      : pricePerGram(formatMoney(variety.current_price.list_price))}
                   </span>
                 </span>
               </PaneRowLink>
@@ -186,12 +199,12 @@ export default function Variedades() {
           </div>
         )}
         <InAppLink to={STOCK} className="variedades__todas">
-          <span>Todas las entradas</span>
+          <span>{ALL_ENTRIES_TITLE}</span>
           <span aria-hidden="true">›</span>
         </InAppLink>
         {archivedCount > 0 && (
           <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
-            <span>Archivadas ({archivedCount})</span>
+            <span>{archivedLabel(archivedCount)}</span>
             <span aria-hidden="true">›</span>
           </InAppLink>
         )}

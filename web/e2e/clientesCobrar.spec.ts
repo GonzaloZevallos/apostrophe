@@ -77,15 +77,15 @@ for (const viewport of VIEWPORTS) {
     })
 
     await page.goto(VARIETIES)
-    await page.getByRole('link', { name: 'Nueva variedad' }).click()
-    await page.getByLabel('Nombre').fill('Rosa')
-    await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-    await expect(page.getByText('Variedad guardada')).toBeVisible()
+    await page.getByRole('link', { name: 'New variety' }).click()
+    await page.getByLabel('Name').fill('Rosa')
+    await page.getByRole('button', { name: 'Add variety' }).click()
+    await expect(page.getByText('Variety saved')).toBeVisible()
     await page.getByRole('link', { name: /Rosa/ }).click()
-    await page.getByRole('link', { name: 'Nuevo precio' }).click()
-    await page.getByLabel(/^Precio de lista/).fill('1000')
-    await page.getByRole('button', { name: 'Guardá el precio' }).click()
-    await expect(page.getByText('Precio guardado')).toBeVisible()
+    await page.getByRole('link', { name: 'New price' }).click()
+    await page.getByLabel(/^List price/).fill('1000')
+    await page.getByRole('button', { name: 'Save price' }).click()
+    await expect(page.getByText('Price saved')).toBeVisible()
 
     // Three debtors, none with a phone number, and one customer who owes nothing. Zoe is last
     // by name but owes since the oldest date; Beto and Carla owe since today, so they tie.

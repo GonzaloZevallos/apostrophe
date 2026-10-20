@@ -1,12 +1,12 @@
 /**
  * `EntradaStock` (`stock.md`, "On screen"): records a new stock entry or edits one,
  * shared by `/varieties/entries/new` and `/varieties/entries/:id`, the way
- * `ClienteForm` shares add and edit. It is a form ("Cerrar", no bar): Cerrar and a save go
- * back by history, or with none to Variedades (new) / "Todas las entradas" (edit), and leaving
- * with something typed asks first. `?variety={id}` chooses that variety, and "Stock inicial"
+ * `ClienteForm` shares add and edit. It is a form ("Close", no bar): Close and a save go
+ * back by history, or with none to Varieties (new) / "All entries" (edit), and leaving
+ * with something typed asks first. `?variety={id}` chooses that variety, and "Opening stock"
  * with it when `entriesOf` finds none for it. Editing confirms before saving; deleting confirms
- * through `ConfirmDialog`, naming the date, variety and grams (`stock.md`: "Antes de
- * borrar"). The form itself (fields, refusals, the cost-per-gram preview, the confirmations)
+ * through `ConfirmDialog`, naming the date, variety and grams (`stock.md`: "Before
+ * deleting"). The form itself (fields, refusals, the cost-per-gram preview, the confirmations)
  * is `StockEntryForm`; this screen keeps the chrome, the leave guard and the navigation.
  */
 
@@ -17,7 +17,7 @@ import { ApiError, NetworkError } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { isGone } from '../api/refusals'
-import { type StockEntry, entriesOf, getEntry, readStock } from '../api/stock'
+import { type Origin, type StockEntry, entriesOf, getEntry, readStock } from '../api/stock'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico from '../components/ErrorGenerico'
 import GoneScreen from '../components/GoneScreen'
@@ -29,8 +29,20 @@ import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
 import { STOCK, VARIETIES } from '../routes'
 import Boton from '../components/Boton'
-import { ENTRY_DELETED, ENTRY_SAVED } from '../copy/common'
+import { CLOSE, ENTRY_DELETED, ENTRY_SAVED } from '../copy/common'
+import { TAB_VARIETIES } from '../copy/shell'
+import {
+  DISCARD_CHANGES_TITLE,
+  DISCARD_ENTRY_DETAIL,
+  DISCARD_ENTRY_TITLE,
+  EDIT_ENTRY_TITLE,
+  NEW_ENTRY_TITLE,
+  NO_KEEP_ENTERING,
+  YES_DISCARD_IT,
+} from '../copy/stock'
 import StockEntryForm from './StockEntryForm'
+
+const OPENING_STOCK_CODE: Origin = 'opening_stock'
 
 interface Props {
   mode: 'nuevo' | 'editar'
@@ -86,7 +98,7 @@ export default function EntradaStock({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Variedades" to={VARIETIES} />
+      return <GoneScreen label={TAB_VARIETIES} to={VARIETIES} />
     }
     return <Frame>{errorOf(existing.error)}</Frame>
   }
@@ -124,7 +136,7 @@ interface BodyProps {
 function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEntries }: BodyProps) {
   const flash = useFlash()
   const back = useBackOr(mode === 'nuevo' ? VARIETIES : STOCK)
-  const goneExit = useGoneExit('stock-entry', { id: entryId })
+  const goneExit = useGoneExit('stock-entry' as const, { id: entryId })
   const [dirty, setDirty] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)
   // The form's dialogs sit after the body, as the screen always drew them.
@@ -152,10 +164,10 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
       <div className="cuerpo">
         <div className="gasto-form__cabecera">
           <span className="gasto-form__titulo">
-            {mode === 'nuevo' ? 'Nueva entrada' : 'Editar entrada'}
+            {mode === 'nuevo' ? NEW_ENTRY_TITLE : EDIT_ENTRY_TITLE}
           </span>
           <span className="gasto-form__cerrar">
-            <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={back} />
+            <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={back} />
           </span>
         </div>
         <StockEntryForm
@@ -164,7 +176,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
           entryId={entryId}
           initial={initial}
           preselectedVarietyId={chosenVariety}
-          preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : undefined}
+          preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? OPENING_STOCK_CODE : undefined}
           onSaved={() => leave(ENTRY_SAVED)}
           onDeleted={() => leave(ENTRY_DELETED)}
           onGone={entryIsGone}
@@ -175,10 +187,10 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
       <div ref={setDialogHost} className="sin-caja" />
       {blocker.state === 'blocked' && (
         <ConfirmDialog
-          title={mode === 'nuevo' ? '¿Descartás la entrada?' : '¿Descartás los cambios?'}
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          confirmText="Sí, descartalo"
-          cancelText="No, seguí cargando"
+          title={mode === 'nuevo' ? DISCARD_ENTRY_TITLE : DISCARD_CHANGES_TITLE}
+          detail={DISCARD_ENTRY_DETAIL}
+          confirmText={YES_DISCARD_IT}
+          cancelText={NO_KEEP_ENTERING}
           onConfirm={() => blocker.proceed()}
           onCancel={() => blocker.reset()}
         />

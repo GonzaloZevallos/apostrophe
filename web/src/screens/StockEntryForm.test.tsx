@@ -72,18 +72,18 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
 
   // The step's title already says it is opening stock, so no "Origen" label is drawn over the
   // static chip: not a button, not a radio, no other origin.
-  const chip = screen.getByText('Stock inicial')
-  expect(screen.queryByText('Origen')).not.toBeInTheDocument()
+  const chip = screen.getByText('Opening stock')
+  expect(screen.queryByText('Origin')).not.toBeInTheDocument()
   expect(chip.closest('button')).toBeNull()
   expect(screen.queryByRole('radio')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Compra' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Purchase' })).not.toBeInTheDocument()
   // The variety is named, not chosen.
   expect(await screen.findByText('Sir Jack')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Variedad')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Variety')).not.toBeInTheDocument()
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
 
-  await userEvent.type(screen.getByLabelText('Gramos'), '30')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await userEvent.type(screen.getByLabelText('Grams'), '30')
+  await userEvent.click(screen.getByRole('button', { name: 'Save entry' }))
 
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
   const post = fetchMock.mock.calls.find(([url]) => String(url) === '/stock/entries')
@@ -109,15 +109,15 @@ test('the locked form asks only for grams and the optional cost, and the no-cost
   renderForm(vi.fn())
 
   await screen.findByText('Sir Jack')
-  expect(screen.queryByLabelText('Fecha')).not.toBeInTheDocument()
-  expect(screen.queryByLabelText('Nota')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Date')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Note')).not.toBeInTheDocument()
   expect(screen.getAllByRole('textbox').map((box) => box.closest('label')?.textContent)).toEqual([
-    expect.stringContaining('Gramos'),
-    expect.stringContaining('Costo total'),
+    expect.stringContaining('Grams'),
+    expect.stringContaining('Total cost'),
   ])
-  const costField = screen.getByLabelText(/^Costo total/).closest('label')
-  expect(costField).toHaveTextContent('Opcional · si no lo cargás, el lote cuesta $ 0')
-  expect(screen.queryByText('Obligatorio cuando es una compra')).not.toBeInTheDocument()
+  const costField = screen.getByLabelText(/^Total cost/).closest('label')
+  expect(costField).toHaveTextContent('Optional · if you leave it out, the lot costs $ 0')
+  expect(screen.queryByText('Required for a purchase')).not.toBeInTheDocument()
 })
 
 test('with a cost typed, the locked form posts it', async () => {
@@ -133,9 +133,9 @@ test('with a cost typed, the locked form posts it', async () => {
   renderForm(onSaved)
 
   await screen.findByText('Sir Jack')
-  await userEvent.type(screen.getByLabelText('Gramos'), '30')
-  await userEvent.type(screen.getByLabelText(/^Costo total/), '9000')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await userEvent.type(screen.getByLabelText('Grams'), '30')
+  await userEvent.type(screen.getByLabelText(/^Total cost/), '9000')
+  await userEvent.click(screen.getByRole('button', { name: 'Save entry' }))
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
   const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')
   expect(JSON.parse(String(post?.[1]?.body))).toMatchObject({ total_cost: 9000 })
@@ -157,11 +157,11 @@ test('without the locked props the form is the owner\'s whole form', async () =>
     </QueryClientProvider>,
   )
 
-  expect(await screen.findByLabelText('Fecha')).toHaveValue('2026-10-03')
-  expect(screen.getByLabelText('Variedad')).toBeEnabled()
-  expect(screen.getByLabelText('Nota')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Compra' })).toBeInTheDocument()
-  expect(screen.getByText('Obligatorio cuando es una compra')).toBeInTheDocument()
+  expect(await screen.findByLabelText('Date')).toHaveValue('2026-10-03')
+  expect(screen.getByLabelText('Variety')).toBeEnabled()
+  expect(screen.getByLabelText('Note')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Purchase' })).toBeInTheDocument()
+  expect(screen.getByText('Required for a purchase')).toBeInTheDocument()
 })
 
 // The locked props are accepted only on a new entry with no starting entry: these are the
@@ -198,9 +198,9 @@ test('the owner refuses the entry inline and the form does not report it saved',
   renderForm(onSaved)
 
   await screen.findByText('Sir Jack')
-  await userEvent.type(screen.getByLabelText('Gramos'), '30')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await userEvent.type(screen.getByLabelText('Grams'), '30')
+  await userEvent.click(screen.getByRole('button', { name: 'Save entry' }))
 
-  expect(await screen.findByText('La fecha no puede ser futura')).toBeInTheDocument()
+  expect(await screen.findByText("The date can't be in the future")).toBeInTheDocument()
   expect(onSaved).not.toHaveBeenCalled()
 })

@@ -73,7 +73,7 @@ test('a failed Probarlo shows its reason and does not call onSaved', async () =>
   await userEvent.type(screen.getByLabelText('Your chat'), '555')
   await userEvent.click(screen.getByRole('button', { name: 'Send me a test' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('Telegram did not respond')
+  expect(await screen.findByRole('alert')).toHaveTextContent("Telegram didn't respond")
   expect(onSaved).not.toHaveBeenCalled()
 })
 

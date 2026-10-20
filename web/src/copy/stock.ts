@@ -1,39 +1,115 @@
-/** The fixed Spanish of the stock entry form and the entries list that is always on
- * screen: help lines, the preview line and the empty state. The screens render these
- * same bindings, and `LIMITED_COPY` lists them for `copy/copyLimits.test.ts`, which
- * measures each with `SAMPLES` (never fixture or API data). */
+/** The stock entry form, the entries list and the stock withdrawal screens (ADR-0048). The
+ * fixed lines that are always on screen (help lines, the preview line and the empty state) are
+ * listed in `LIMITED_COPY` for `copy/copyLimits.test.ts`, which measures each with `SAMPLES`
+ * (never fixture or API data). The screens render these same bindings. */
 
 import { SAMPLES, type LimitedCopy } from './limits'
 
-export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
-export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
+export const EMPTY_STATE_TITLE = 'No stock entries'
+export const EMPTY_STATE_DETAIL = 'Add your opening stock or a purchase'
 
-export const COST_REQUIRED_HELP = 'Obligatorio cuando es una compra'
+export const COST_REQUIRED_HELP = 'Required for a purchase'
 
 /** The locked (Onboarding) form's line under the cost: the cost is optional and, left out,
  * the lot costs $ 0 (the entry is posted without `total_cost`). */
-export const OPENING_COST_HINT = 'Opcional · si no lo cargás, el lote cuesta $ 0'
+export const OPENING_COST_HINT = 'Optional · if you leave it out, the lot costs $ 0'
 
 /** The refusal of a bad grams amount, shared by the price, stock entry and withdrawal forms. */
-export const GRAMS_INVALID = 'Revisá los gramos cargados'
+export const GRAMS_INVALID = 'Check the grams you entered'
+
+/** The refusals of the stock entry form that have a field of their own. */
+export const COST_REQUIRED = 'A purchase needs a total cost'
+export const COST_ON_NEGATIVE = 'A negative adjustment has no cost'
+export const DATE_IN_FUTURE = "The date can't be in the future"
 
 /** The grams on hand under the variety picker; `grams` is already formatted from what
  * the API answered (`formatGrams`), so the registry can measure it with `SAMPLES.grams`. */
 export function onHandHelp(grams: string): string {
-  return `Hoy tiene ${grams}`
+  return `On hand today: ${grams}`
 }
 
 /** The per-gram cost previewed while typing; `perGram` is the front's preview, already
  * formatted (`formatMoney`), so the registry can measure it with `SAMPLES.amount`. */
 export function perGramPreview(perGram: string): string {
-  return `Te queda en ${perGram} el gramo`
+  return `Works out at ${perGram} a gram`
+}
+
+/** The word for a stock entry's origin, shared by every list of entries and the form's pills. */
+export const ORIGIN_PURCHASE = 'Purchase'
+export const ORIGIN_HARVEST = 'Harvest'
+export const ORIGIN_OPENING_STOCK = 'Opening stock'
+export const ORIGIN_ADJUSTMENT = 'Adjustment'
+
+/** The two reasons of a stock withdrawal, by their word on screen. */
+export const REASON_PROMOTION = 'Promotion'
+export const REASON_OWN_USE = 'Own use'
+
+/** The words of the icon-only edit and delete controls, and of the form's fields. */
+export const EDIT = 'Edit'
+export const DELETE = 'Delete'
+export const FIELD_VARIETY = 'Variety'
+export const FIELD_GRAMS = 'Grams'
+export const FIELD_TOTAL_COST = 'Total cost'
+export const FIELD_DATE = 'Date'
+export const FIELD_ORIGIN = 'Origin'
+export const FIELD_NOTE = 'Note'
+export const FIELD_REASON = 'Reason'
+export const CHOOSE_VARIETY = 'Choose a variety'
+
+/** The stock entry screen: its two titles, the two submit buttons and the delete control. */
+export const NEW_ENTRY_TITLE = 'New entry'
+export const EDIT_ENTRY_TITLE = 'Edit entry'
+export const SAVE_ENTRY = 'Save entry'
+export const DELETE_ENTRY = 'Delete entry'
+
+/** The entries list: its two titles and the row's cost words. */
+export const ALL_ENTRIES_TITLE = 'All entries'
+export const ENTRIES_TITLE = 'Entries'
+export const NO_COST = 'No cost'
+export function costPerGramLine(money: string): string {
+  return `${money} per g`
+}
+
+/** The confirmation before a delete, shared by the entries list and the entry form. */
+export const BEFORE_DELETING = 'Before deleting'
+export const YES_DELETE_IT = 'Yes, delete it'
+export const NO_KEEP_IT = 'No, keep it'
+export function deleteEntryQuestion(date: string, variety: string, grams: string): string {
+  return `Delete the ${date} entry for ${variety}, ${grams}? This can't be undone.`
+}
+
+/** The confirmation before saving an edit, and the question when leaving with something typed. */
+export const SAVE_CHANGES_TITLE = 'Save the changes?'
+export const YES_SAVE = 'Yes, save'
+export const NO_KEEP_EDITING = 'No, keep editing'
+export const DISCARD_CHANGES_TITLE = 'Discard the changes?'
+export const DISCARD_ENTRY_TITLE = 'Discard the entry?'
+export const DISCARD_ENTRY_DETAIL = "You'll lose what you entered: nothing has been saved yet."
+export const YES_DISCARD_IT = 'Yes, discard it'
+export const NO_KEEP_ENTERING = 'No, keep entering'
+export const SAVE_ENTRY_DETAIL = 'This updates the entry.'
+
+/** The stock withdrawal screens: the form, the detail and the confirmations. */
+export const TAKE_OUT_OF_STOCK = 'Take out of stock'
+export const WITHDRAWAL_TITLE = 'Withdrawal'
+export const SAVE_WITHDRAWAL = 'Save withdrawal'
+export const SAVE_WITHDRAWAL_DETAIL = 'This updates the withdrawal and the lots that come after it.'
+export const ADD_ANOTHER_VARIETY = 'Add another variety'
+export const WITHDRAWAL_SAVED = 'Withdrawal saved'
+export const WITHDRAWAL_DELETED = 'Withdrawal deleted'
+export const DISCARD_WITHDRAWAL_TITLE = 'Discard the withdrawal?'
+export const DISCARD_WITHDRAWAL_EDIT_DETAIL = "You'll lose what you changed: the withdrawal stays as it was."
+export const varietyAndGrams = (position: number | null) =>
+  position === null ? 'Variety and grams' : `Variety and grams ${position}`
+export const varietyLine = (position: number) => `Variety ${position}`
+export const gramsLine = (position: number) => `Grams ${position}`
+export const removeVarietyLine = (position: number) => `Remove variety ${position}`
+export function deleteWithdrawalQuestion(promotion: boolean, date: string, grams: string): string {
+  const what = promotion ? 'promotion' : 'own-use withdrawal'
+  return `Delete the ${what} of ${date}? ${grams} will go back to stock.`
 }
 
 /** Checked by `copy/copyLimits.test.ts`: placeholders filled from `SAMPLES`. */
-/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
- * section that says so. Removed with the section's English wording (ADR-0048). */
-export const PENDING = true
-
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },
   { kind: 'emptyLine', text: EMPTY_STATE_DETAIL },

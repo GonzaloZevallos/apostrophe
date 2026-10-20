@@ -22,8 +22,14 @@ import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams } from '../../format/money'
 import { warningFor } from '../../stock/detail'
-import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
-import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from '../../copy/varieties'
+import { GENERIC_REFUSAL_MESSAGE, WARNING_OFF, warnMeBelow } from '../../copy/common'
+import {
+  EDIT_WARNING,
+  LOW_STOCK_WARNING,
+  THRESHOLD_OVERRIDES,
+  THRESHOLD_SAVED,
+  WARN_WHEN_LOW,
+} from '../../copy/varieties'
 import { useOpenForm } from './varietyForms'
 
 export default function VarietyThresholdSection({
@@ -54,11 +60,11 @@ export default function VarietyThresholdSection({
     setSaving(true)
     try {
       await setThreshold(varietyId, null)
-      invalidateResource(queryClient, 'stock')
+      invalidateResource(queryClient, 'stock' as const)
       flash.showNow(THRESHOLD_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'stock')
+        invalidateResource(queryClient, 'stock' as const)
         onGone()
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(THRESHOLD_OVERRIDES, caught.code)
@@ -79,11 +85,11 @@ export default function VarietyThresholdSection({
     return (
       <section className="seccion-variedad">
         <div className="seccion-variedad__cabecera">
-          <h2 className="seccion-variedad__titulo">Aviso de stock bajo</h2>
+          <h2 className="seccion-variedad__titulo">{LOW_STOCK_WARNING}</h2>
         </div>
         <div className="seccion-variedad__fila">
           <span className="seccion-variedad__valor">
-            {row.threshold === null ? 'Aviso apagado' : `Avisame abajo de ${formatGrams(row.threshold)}`}
+            {row.threshold === null ? WARNING_OFF : warnMeBelow(formatGrams(row.threshold))}
           </span>
         </div>
       </section>
@@ -93,8 +99,8 @@ export default function VarietyThresholdSection({
   return (
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
-        <h2 className="seccion-variedad__titulo">Aviso de stock bajo</h2>
-        <Boton variant="icon" action="edit" ariaLabel="Editar aviso" onClick={() => openForm('threshold')} />
+        <h2 className="seccion-variedad__titulo">{LOW_STOCK_WARNING}</h2>
+        <Boton variant="icon" action="edit" ariaLabel={EDIT_WARNING} onClick={() => openForm('threshold' as const)} />
       </div>
       <div className="seccion-variedad__fila">
         <span className={row.status === 'low' ? 'seccion-variedad__valor seccion-variedad__valor--aviso' : 'seccion-variedad__valor'}>
@@ -104,12 +110,12 @@ export default function VarietyThresholdSection({
           type="button"
           role="switch"
           aria-checked={on}
-          aria-label="Avisar cuando quede poco"
+          aria-label={WARN_WHEN_LOW}
           className="interruptor"
           disabled={saving || refreshing}
           onClick={() => {
             if (on) void turnOff()
-            else openForm('threshold')
+            else openForm('threshold' as const)
           }}
         >
           <span className="interruptor__perilla" aria-hidden="true" />
