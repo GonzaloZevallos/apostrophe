@@ -168,7 +168,7 @@ test('an empty month shows $ 0, no categories, the flower line and the record ac
   renderExpenses([EXPENSES], store([]))
 
   expect(await screen.findByText('$ 0', { selector: '.cifra-xl' })).toBeInTheDocument()
-  expect(screen.queryByText('Por categoría')).not.toBeInTheDocument()
+  expect(screen.queryByText('By category')).not.toBeInTheDocument()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
   expect(screen.getByText(FLOWER_NOTICE)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Add expense' })).toBeInTheDocument()

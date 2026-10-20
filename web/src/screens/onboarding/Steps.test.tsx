@@ -280,7 +280,7 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
 
   const header = await screen.findByLabelText('Header')
   await user.type(header, '!')
-  expect(screen.queryByRole('button', { name: 'Dejar así' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Leave as is' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Save the message' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Save' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
@@ -393,7 +393,7 @@ test('step 5 offers Continue only once a link is created, and passes done', asyn
 
   expect(await screen.findByRole('heading', { name: 'Send the link to your partner' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Invitá a un socio' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Invite a partner' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Create the link' }))
   await user.click(await screen.findByRole('button', { name: 'Continue' }))
 

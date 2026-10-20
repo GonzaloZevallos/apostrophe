@@ -109,7 +109,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.getByText('Up to date')).toBeVisible()
 
   await page.goto(HOME)
-  await expect(page.getByText('Tu catálogo en Telegram está desactualizado')).toHaveCount(0)
+  await expect(page.getByText('Your Telegram catalog is out of date')).toHaveCount(0)
 
   // The refused Send me a test answers 422, and Chromium logs every failed resource load by
   // itself; that one line carries no data, so it is excluded by exact text.

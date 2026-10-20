@@ -583,7 +583,7 @@ describe('the openers push a history entry, so Back closes the form', () => {
 
     expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument()
     expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
-    expect(screen.queryByText(/Próximamente/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Coming soon/)).not.toBeInTheDocument()
   })
 })
 
