@@ -144,10 +144,9 @@ test('data-largo is 14 for "−$ 999.999.999" and stays 14 for anything longer',
   expect(valueOf('Costo de lo vendido', '$ 12.345.678')).toHaveAttribute('data-largo', '12')
 })
 
-test('data-largo says only a length: never an amount or a sign', () => {
+test('data-largo counts the sign as the character it is, and says nothing else', () => {
   render(<PeriodFigures tab="week" period={{ ...WEEK, profit: -5000, cash: 5000 }} />)
 
-  const ganancia = valueOf('Ganancia', '−$ 5.000')
-  const caja = valueOf('Caja', '$ 5.000')
-  expect(ganancia.getAttribute('data-largo')).toBe(caja.getAttribute('data-largo'))
+  expect(valueOf('Ganancia', '−$ 5.000')).toHaveAttribute('data-largo', '8')
+  expect(valueOf('Caja', '$ 5.000')).not.toHaveAttribute('data-largo')
 })
