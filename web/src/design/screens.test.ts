@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  assertAccountKinds,
   assertScreens,
   assertSelectedAccounts,
   assertSelectedNeeds,
@@ -168,13 +169,13 @@ describe('assertScreens', () => {
     ).not.toThrow()
   })
 
-  it('refuses an account on an entry that does not reach Listo, by name and never by credential', () => {
-    expect(() => assertScreens([{ screen: 'Inicio', route: 'ruta', account: 'listo_compu' }])).toThrow(
-      /^Inicio: only an entry that reaches OnboardingListo can name an account$/,
-    )
+  it('leaves an account on an entry that does not reach Listo to the sample-time check', () => {
     expect(() =>
-      assertScreens([{ screen: 'Ventas', design: 'Estados', route: 'ruta', account: 'listo' }]),
-    ).toThrow(/Ventas: only an entry that reaches OnboardingListo can name an account/)
+      assertScreens([
+        { screen: 'Inicio', route: 'ruta', account: 'inicio' },
+        { screen: 'Ventas', design: 'Estados', route: 'ruta', account: 'inicio' },
+      ]),
+    ).not.toThrow()
   })
 
   it('refuses an entry that reaches Listo with no account', () => {
@@ -194,6 +195,18 @@ describe('assertScreens', () => {
         { screen: 'Ficha', route: 'ruta/{customer_id}' },
       ]),
     ).not.toThrow()
+  })
+
+  it('still refuses a malformed account on an entry that does not reach Listo', () => {
+    expect(() => assertScreens([{ screen: 'Inicio', route: 'ruta', account: 7 }])).toThrow(
+      /Inicio: account must be a non-empty string/,
+    )
+    expect(() => assertScreens([{ screen: 'Inicio', route: 'ruta/{customer_id}', account: 'inicio' }])).toThrow(
+      /Inicio: an account entry can only use \{email\}/,
+    )
+    expect(() => assertScreens([{ screen: 'Inicio', route: 'ruta', account: 'inicio', signed_out: true }])).toThrow(
+      /Inicio: account cannot be used with signed_out/,
+    )
   })
 
   it('refuses a text_scale that is not exactly the model\'s, whatever it looks like', () => {
@@ -676,13 +689,18 @@ describe('an entry whose path names a record names the same placeholders in its 
 })
 
 describe('assertSelectedAccounts', () => {
-  const accounts = ['listo', 'listo_compu', 'listo_oscuro']
+  const kinds = {
+    listo: 'open',
+    listo_compu: 'open',
+    listo_oscuro: 'open',
+    inicio: 'ended',
+  } as const
 
   it('refuses an account the sample did not write, without naming a credential', () => {
     expect(() =>
-      assertSelectedAccounts([{ screen: 'ListoX', account: 'listo_otro' }], accounts),
+      assertSelectedAccounts([{ screen: 'ListoX', account: 'listo_otro' }], kinds),
     ).toThrow(/^ListoX: account is not one of the sample's accounts$/)
-    expect(() => assertSelectedAccounts([{ screen: 'ListoX', account: 'listo_compu' }], [])).toThrow(
+    expect(() => assertSelectedAccounts([{ screen: 'ListoX', account: 'listo_compu' }], {})).toThrow(
       /ListoX: account is not one of/,
     )
   })
@@ -694,7 +712,7 @@ describe('assertSelectedAccounts', () => {
           { screen: 'OnboardingListo', account: 'listo' },
           { screen: 'ListoOscuro', design: 'OnboardingListo', account: 'listo', tema: 'oscuro' },
         ],
-        accounts,
+        kinds,
       ),
     ).toThrow(/ListoOscuro: reaches OnboardingListo with the same account as OnboardingListo/)
     expect(() =>
@@ -703,7 +721,7 @@ describe('assertSelectedAccounts', () => {
           { screen: 'A', design: 'OnboardingListo', account: 'listo_compu' },
           { screen: 'B', design: 'OnboardingListo', account: 'listo_compu' },
         ],
-        accounts,
+        kinds,
       ),
     ).toThrow(/B: reaches OnboardingListo with the same account as A/)
   })
@@ -715,12 +733,12 @@ describe('assertSelectedAccounts', () => {
           { screen: 'OnboardingListo' },
           { screen: 'ListoOscuro', design: 'OnboardingListo', tema: 'oscuro' },
         ],
-        accounts,
+        kinds,
       ),
     ).toThrow(/ListoOscuro: reaches OnboardingListo with the same account as OnboardingListo/)
   })
 
-  it('accepts one Listo entry per account', () => {
+  it('accepts one Listo entry per open account', () => {
     expect(() =>
       assertSelectedAccounts(
         [
@@ -729,18 +747,111 @@ describe('assertSelectedAccounts', () => {
           { screen: 'ListoOscuro', design: 'OnboardingListo', account: 'listo_oscuro', tema: 'oscuro' },
           { screen: 'Inicio' },
         ],
-        accounts,
+        kinds,
       ),
     ).not.toThrow()
   })
 
-  it("accepts the real screens.json with the accounts sample_app.py seeds", () => {
-    const source = readFileSync(resolve(process.cwd(), '..', 'scripts/design/sample_app.py'), 'utf-8')
-    const declared = /^ONBOARDING_ACCOUNTS = \(([^)]*)\)/m.exec(source)?.[1]
-    if (declared === undefined) throw new Error('sample_app.py declares no ONBOARDING_ACCOUNTS')
-    const seeded = declared.match(/"[^"]+"/g)?.map((name) => name.slice(1, -1)) ?? []
-    expect(seeded.length).toBeGreaterThan(0)
-    expect(() => assertSelectedAccounts(screens.screens, seeded)).not.toThrow()
+  it('accepts entries on an ended account, and lets several of them share it', () => {
+    expect(() =>
+      assertSelectedAccounts(
+        [
+          { screen: 'Inicio', account: 'inicio' },
+          { screen: 'InicioHoy', design: 'Inicio', account: 'inicio' },
+          { screen: 'InicioOscuro', account: 'inicio', tema: 'oscuro' },
+        ],
+        kinds,
+      ),
+    ).not.toThrow()
+  })
+
+  it('refuses an ended account on an entry that reaches Listo, by name and never by credential', () => {
+    expect(() =>
+      assertSelectedAccounts([{ screen: 'OnboardingListo', account: 'inicio' }], kinds),
+    ).toThrow(/^OnboardingListo: reaches OnboardingListo on an ended account, and a Listo entry needs an open one$/)
+    expect(() =>
+      assertSelectedAccounts([{ screen: 'ListoX', design: 'OnboardingListo', account: 'inicio' }], kinds),
+    ).toThrow(/ListoX: reaches OnboardingListo on an ended account/)
+  })
+
+  it('refuses an open account on an entry that does not reach Listo', () => {
+    expect(() => assertSelectedAccounts([{ screen: 'Inicio', account: 'listo_compu' }], kinds)).toThrow(
+      /^Inicio: names an open account but does not reach OnboardingListo, so only an ended account can serve it$/,
+    )
+    expect(() =>
+      assertSelectedAccounts([{ screen: 'Ventas', design: 'Estados', account: 'listo' }], kinds),
+    ).toThrow(/Ventas: names an open account but does not reach OnboardingListo/)
+  })
+
+  it('refuses an account that is missing from the kinds, even when the sample wrote it', () => {
+    expect(() =>
+      assertSelectedAccounts([{ screen: 'Inicio', account: 'inicio' }], { listo: 'open' }),
+    ).toThrow(/^Inicio: account is not one of the sample's accounts$/)
+  })
+
+  // Both constants must exist in sample_app.py: a rename or a removal fails here, it never goes quiet.
+  const source = readFileSync(resolve(process.cwd(), '..', 'scripts/design/sample_app.py'), 'utf-8')
+  it("accepts the real screens.json with the kinds sample_app.py seeds", () => {
+    const namesOf = (constant: string): string[] => {
+      const declared = new RegExp(`^${constant} = \\(([^)]*)\\)`, 'm').exec(source)?.[1]
+      if (declared === undefined) throw new Error(`sample_app.py declares no ${constant}`)
+      return declared.match(/"[^"]+"/g)?.map((name) => name.slice(1, -1)) ?? []
+    }
+    const open = namesOf('ONBOARDING_ACCOUNTS')
+    const ended = namesOf('ENDED_ONBOARDING_ACCOUNTS')
+    expect(open.length).toBeGreaterThan(0)
+    expect(ended.length).toBeGreaterThan(0)
+    expect(open.filter((name) => ended.includes(name))).toEqual([])
+    const real: Record<string, 'open' | 'ended'> = {
+      ...Object.fromEntries(open.map((name) => [name, 'open' as const])),
+      ...Object.fromEntries(ended.map((name) => [name, 'ended' as const])),
+    }
+    expect(() => assertSelectedAccounts(screens.screens, real)).not.toThrow()
+  })
+
+  it('puts the six Inicio rows on an ended account and leaves the notice rows on La Huerta', () => {
+    const accountOf = (key: string) => (screens.screens.find((s) => s.screen === key) as { account?: string }).account
+    for (const key of ['Inicio', 'InicioHoy', 'InicioOscuro', 'InicioCompu', 'InicioHoyCompu', 'InicioHoyCompuOscuro']) {
+      expect(accountOf(key), key).toBe('inicio')
+    }
+    for (const key of ['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro']) {
+      expect(accountOf(key), key).toBeUndefined()
+    }
+  })
+})
+
+describe('assertAccountKinds', () => {
+  const accounts = { listo: { email: 'a', password: 'b' }, inicio: { email: 'c', password: 'd' } }
+
+  it('accepts a kind for each account, and an empty sample with an empty kinds object', () => {
+    expect(() => assertAccountKinds(accounts, { listo: 'open', inicio: 'ended' })).not.toThrow()
+    expect(() => assertAccountKinds({}, {})).not.toThrow()
+  })
+
+  it('refuses a missing kinds object, a stale sample, without naming a credential', () => {
+    for (const kinds of [undefined, null, [], 'open']) {
+      expect(() => assertAccountKinds(accounts, kinds)).toThrow(/^the sample has no account_kinds, rerun scripts\/design\/sample-app\.sh$/)
+    }
+  })
+
+  it('refuses an account with no kind', () => {
+    expect(() => assertAccountKinds(accounts, { listo: 'open' })).toThrow(
+      /^account inicio has no kind in account_kinds$/,
+    )
+  })
+
+  it('refuses a kind that names no account', () => {
+    expect(() => assertAccountKinds(accounts, { listo: 'open', inicio: 'ended', fantasma: 'open' })).toThrow(
+      /^account_kinds names fantasma, which is not one of the sample's accounts$/,
+    )
+  })
+
+  it('refuses a value other than open or ended, without printing it', () => {
+    for (const value of ['closed', 'OPEN', '', 1, null, true]) {
+      expect(() => assertAccountKinds(accounts, { listo: 'open', inicio: value })).toThrow(
+        /^account inicio must have the kind open or ended$/,
+      )
+    }
   })
 })
 
