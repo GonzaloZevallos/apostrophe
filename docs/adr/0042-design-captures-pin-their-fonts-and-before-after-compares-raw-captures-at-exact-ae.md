@@ -232,3 +232,54 @@ screen and passes the applied-check; three rows did neither.
   exactly one key of `click`, `press`, `wait` (a non-empty string), `fill` (`label` and `value`,
   strings), `select` (`label` string, `index` a non-negative integer) or `offline` (`true`). The
   message names the entry and the step's index, never the step's data.
+
+## Amendment: a request ends when its body is read, and a frame in which one ended is not calm (GH-261)
+
+Supersedes only the GH-220 amendment's sentence on what the in-flight counter covers, as to when a
+request ends. Everything else there stands, including that the counter covers `fetch` only.
+
+GH-247's whole-registry run showed one row (`VariedadArchivadaOscuro`, built) at AE 20214 against
+AE 0 on the first run of the same code. The cause is in the probe every row shares
+(`scripts/design/probe.mjs`), not in that row: the counter released a request when its `Response`
+resolved, which is when the headers arrive. `web/src/api/client.ts` then reads the body with
+`await response.json()`, and react-query tells its observers on a `setTimeout(0)` of the paused
+clock. A frame could therefore see "no request in flight", hash the page before the answer was
+drawn, and complete the run of three equal frames. The late lines of PriceRows (bulk and VIP, which
+wait on `GET /pricing-settings`) are one instance, not the only one.
+
+**The rules**
+
+1. A request is in flight until its response body has been read, or until it fails. The wrapper
+   reads `response.clone().arrayBuffer()` inside a `.then` it attaches before it returns the
+   promise, so the clone is made before the app's own continuation and never meets a body the app
+   already read. A rejected fetch, a synchronous throw, a body that cannot be read and a response
+   with no body (a 204 reads as empty) all count as done.
+2. A frame in which any request completed since the previous frame is not idle, and neither is the
+   first frame after a navigation. `window.__captureQuiet()` waits for no request in flight, then
+   answers whether the number of completed requests is unchanged since its previous call, and
+   records it. The next `clock.runFor(16)` fires the notify timer and the render. `settleWith` and
+   `settle.mjs` are unchanged: a frame that is not idle already resets the run.
+3. Every response the app reads is finite. `api/client.ts` holds the only `fetch` in `web/src`;
+   there is no `EventSource`, stream reader, long poll or `refetchInterval`, and `retry` is off. A
+   streaming or long-poll channel, or any new request channel, is excluded or counted by name in
+   the diff that adds it. A body that never ends holds the counter until `withinTimeout` rejects,
+   and the row fails with `SETTLE_REASON_REJECTED`; that is a real failure and is never excused.
+
+**Why not a `wait` step on the issue's row.** The issue named `VariedadArchivadaOscuro`. GH-131
+moved every `VariedadArchivada*` row to Blue Dream, which is seeded with no bulk and no VIP price,
+so `PriceRows` has no conditional line to draw there. A `wait` in the registry would fix one query
+on one screen and leave the probe wrong for every other row (the Golden Cookies rows
+`VariedadDetalle`, `VariedadesCompu`, `VerTodas` and `PrecioNuevoCompu*` still show the lines).
+
+**Cost.** Each `fetch` in a capture reads its body one more time, through a clone, and a settle may
+sample one extra frame after a request completes; the cost stays bounded by `SETTLE_BOUND` and
+`TIMEOUT`. Nothing here runs in the app or the gate, and the capture is still not a gate step.
+
+**What the evidence shows.** The claim that the race is closed rests on
+`web/src/design/probe.test.ts`, which drives the real `settleWith` over the real probe and fails
+without either half of the change (the body read, the completion counter). The repeated
+whole-registry runs recorded in the PR show only that nothing regressed; they do not prove the
+race closed.
+
+**Known risk.** `probe.test.ts` models the paused clock and react-query's notify timer. It does not
+run react-query itself, so a change in how react-query schedules its notification is not covered.

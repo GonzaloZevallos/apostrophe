@@ -129,8 +129,9 @@ async function addProbe(context) {
   await context.addInitScript(`(${pageProbe.toString()})(${signatureOf.toString()})`)
 }
 
-// One frame of the fake clock, then what the page looks like: the in-flight count at zero
-// first, one real macrotask so queued work has run, then only a hash and booleans go back.
+// One frame of the fake clock, then what the page looks like: no request in flight and none
+// completed since the previous frame first (that answer is `idle`), one real macrotask so
+// queued work has run, then only a hash and booleans go back.
 function sampleFrame() {
   return (async () => {
     const idle = await window.__captureQuiet()

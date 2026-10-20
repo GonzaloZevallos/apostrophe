@@ -9,6 +9,9 @@
 export function pageProbe(signature) {
   let inFlight = 0
   let waiting = []
+  // Requests completed, and the value `__captureQuiet` last reported (null before its first call).
+  let completed = 0
+  let reported = null
   const release = () => {
     const ready = waiting
     waiting = []
@@ -19,6 +22,7 @@ export function pageProbe(signature) {
     inFlight += 1
     const done = () => {
       inFlight -= 1
+      completed += 1
       if (inFlight === 0) release()
     }
     let result
@@ -40,9 +44,14 @@ export function pageProbe(signature) {
     }, done)
     return result
   }
+  // Waits for no request in flight, then says whether none completed since the previous call.
+  // A frame in which one did has not drawn its answer yet (the app's notify is a timer on the
+  // paused clock), so the first call after a navigation, with no previous value, is not quiet.
   window.__captureQuiet = async () => {
     while (inFlight > 0) await new Promise((resolve) => waiting.push(resolve))
-    return true
+    const quiet = reported === completed
+    reported = completed
+    return quiet
   }
   window.__captureSignature = signature
 }
