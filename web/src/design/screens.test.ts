@@ -388,8 +388,17 @@ describe('the Inicio rows of the real screens.json', () => {
       'InicioCompu',
       'InicioHoyCompu',
       'InicioHoyCompuOscuro',
+      'InicioCompuOscuro',
     ])
     expect(() => assertScreens(inicio)).not.toThrow()
+  })
+
+  it('pairs the dark InicioCompu with the light drawing and the same Semana crop', () => {
+    const dark = row('InicioCompuOscuro')
+    expect(dark.design).toBe('InicioCompu')
+    expect(dark.tema).toBe('oscuro')
+    expect(dark.section).toBe(SEMANA_COMPU)
+    expect(clicks(dark)).toEqual(['Semana'])
   })
 
   it('refuses a section that Compu draws more than once, the reason InicioHoyCompu has none', () => {
