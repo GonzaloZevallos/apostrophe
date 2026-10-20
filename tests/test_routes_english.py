@@ -51,7 +51,8 @@ def screens_json_paths(data: dict[str, list[dict[str, object]]]) -> list[str]:
 
 
 def _legacy() -> list[dict[str, str]]:
-    return json.loads(LEGACY.read_text(encoding="utf-8"))
+    table: list[dict[str, str]] = json.loads(LEGACY.read_text(encoding="utf-8"))
+    return table
 
 
 def test_the_legacy_table_has_old_spanish_words() -> None:
@@ -72,14 +73,14 @@ def test_no_path_of_the_design_registry_is_spanish() -> None:
 
 def test_a_spanish_or_non_ascii_path_is_refused() -> None:
     banned = old_words(_legacy())
-    assert spanish_paths(["/sales", "/ventas/nueva", "/customers/{id}", "/clientes", "/más"], banned) == [
-        "/clientes",
-        "/más",
-        "/ventas/nueva",
-    ]
+    paths = ["/sales", "/ventas/nueva", "/customers/{id}", "/clientes", "/más"]
+    assert spanish_paths(paths, banned) == ["/clientes", "/más", "/ventas/nueva"]
 
 
 def test_the_scanners_read_both_files_shapes() -> None:
     assert routes_ts_paths("export const A = '/sales/:id'") == ["/sales/:id"]
-    data = {"screens": [{"route": "/login", "path": "/login"}], "registry": [{"path": "/a", "parent": "/b"}]}
+    data: dict[str, list[dict[str, object]]] = {
+        "screens": [{"route": "/login", "path": "/login"}],
+        "registry": [{"path": "/a", "parent": "/b"}],
+    }
     assert screens_json_paths(data) == ["/login", "/login", "/a", "/b"]

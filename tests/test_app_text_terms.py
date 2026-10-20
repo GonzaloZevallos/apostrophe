@@ -65,5 +65,9 @@ def test_a_word_no_copy_value_holds_is_refused() -> None:
 
 
 def test_a_line_with_no_word_of_its_own_asks_for_nothing() -> None:
-    context = "_In the app_: no word of its own\n_In the app_: Balance / Owes\n_In the app_: Price (price history)\n"
+    context = (
+        "_In the app_: no word of its own\n"
+        "_In the app_: Balance / Owes\n"
+        "_In the app_: Price (price history)\n"
+    )
     assert glossary_words(context) == ["Balance", "Owes", "Price"]
