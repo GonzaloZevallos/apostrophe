@@ -392,13 +392,17 @@ def test_expect_first_run_stops_the_sample_on_any_other_answer_without_naming_da
     def step(name: str, done: bool) -> dict[str, Any]:
         return {"step": name, "required": True, "done": done}
 
-    both = {"kind": "checklist", "import_notice": False, "checklist": [step("a", True), step("b", False)]}
+    both: dict[str, Any] = {
+        "kind": "checklist",
+        "import_notice": False,
+        "checklist": [step("a", True), step("b", False)],
+    }
     wanted = (("a", True), ("b", False))
     sample_app.expect_first_run(Answers(both), "checklist", steps=wanted, import_notice=False)
     none = {"kind": "none", "import_notice": True, "checklist": []}
     sample_app.expect_first_run(Answers(none), "none", import_notice=True)
 
-    wrong = {
+    wrong: dict[str, tuple[dict[str, Any], str]] = {
         "kind": ({**both, "kind": "none"}, "kind"),
         "step flipped": ({**both, "checklist": [step("a", True), step("b", True)]}, "step b"),
         "step missing": ({**both, "checklist": [step("a", True)]}, "step b"),
@@ -407,8 +411,27 @@ def test_expect_first_run_stops_the_sample_on_any_other_answer_without_naming_da
     }
     for answer, check in wrong.values():
         with pytest.raises(SystemExit) as refused:
-            sample_app.expect_first_run(Answers(answer), "checklist", steps=wanted, import_notice=False)
-        assert str(refused.value) == f"sample-app: the checklist account's first run is wrong: {check}"
+            sample_app.expect_first_run(
+                Answers(answer), "checklist", steps=wanted, import_notice=False
+            )
+        assert str(refused.value) == (
+            f"sample-app: the checklist account's first run is wrong: {check}"
+        )
     with pytest.raises(SystemExit) as refused:
         sample_app.expect_first_run(Answers(both), "checklist", import_notice=False)
     assert str(refused.value).endswith("steps")
+
+
+def test_no_account_name_has_two_kinds_and_the_capture_accounts_are_declared() -> None:
+    sample_app = load_script()
+    groups = (
+        sample_app.ONBOARDING_ACCOUNTS,
+        sample_app.ENDED_ONBOARDING_ACCOUNTS,
+        sample_app.PRE_ONBOARDING_ACCOUNTS,
+        sample_app.IMPORTED_ACCOUNTS,
+    )
+
+    assert sample_app.PRE_ONBOARDING_ACCOUNTS == ("checklist",)
+    assert sample_app.IMPORTED_ACCOUNTS == ("importada",)
+    names = [name for group in groups for name in group]
+    assert len(names) == len(set(names))

@@ -324,3 +324,43 @@ not touched; six rows read another account instead.
   the four optional steps, and is called only for the tooling account, never for La Huerta.
 - **History.** The evidence files of earlier tasks (`docs/evidence/GH-45-*`, `GH-131-*`) and
   `.agentic/tasks/` keep the old helper and account names; they are not edited.
+
+## Amendment: capture accounts for a pre-Onboarding and an imported business (GH-274)
+
+2026-10-20. The first-run checklist and the after-import notice (docs/adr/0046) each need a
+business the sample could not reach over HTTP: one with no `onboarding` row, one the import loaded.
+This adds two kinds to GH-189's `open` and `ended`. No product code, route or seed changes.
+
+- **Kinds.** `facts.account_kinds` may now say `pre_onboarding` or `imported` as well, still with
+  exactly the keys of `facts.accounts`, and `KINDS` in `screens.mjs` lists the four. The sample's
+  accounts are `checklist` (`pre_onboarding`) and `importada` (`imported`); `main` refuses a name
+  that sits in two kinds. `assertSelectedAccounts` is stated by rule: a Listo entry needs an `open`
+  account, an `open` account serves only a Listo entry, any other kind is read-only and may be
+  shared, and two Listo entries on one account are refused. No Listo entry names either new account.
+- **The one direct row write.** `pre_onboarding_account` opens a business by the operator's
+  invitation, accepted over HTTP, and then deletes that business's `onboarding` row before anything
+  reads it (`sqlite3` on the sample's own `sample.db`: `timeout=30`, foreign keys on, one
+  transaction, exactly one row, and no `first_run` row either). ADR-0036 has no backfill and ADR-0046
+  creates `first_run` on its first stamp, so this is the stored shape of a business from before the
+  Onboarding, and no route makes it. It is the only row the tooling writes; one variety is then
+  priced from the sample's `today` over HTTP and nothing else is seeded, so step 1 is done and the
+  required steps are never both done (the checklist would go for good).
+- **The import, as the operator runs it.** `imported_account` opens a business by invitation and
+  leaves it empty, writes a workbook with `scripts/design/import_workbook.py` into the sample's
+  directory, and runs `scripts/import-spreadsheet.sh <id> <xlsx> --dry-run` and then the same
+  command without it, as subprocesses with the sample's environment. `imported_at` is written by
+  that command and by nothing else. A non-zero exit, or a problem heading in a report, stops the
+  sample; the report is never echoed, because it can name customers and amounts. The script sources
+  the repository's `.env` after the environment, so the sample refuses to run it when `.env`
+  assigns `APOSTROPHE_DATABASE_URL`: the import would otherwise go to the human's own database.
+- **Self-checks.** Each builder ends in `expect_first_run` on `GET /first-run`: the checklist
+  account must answer `checklist` with steps done `[true, false, false, false]` and no notice, the
+  imported one `none` with the notice. A mismatch stops the sample with a fixed message naming the
+  expected kind and the failed check, never data.
+- **The workbook layout is hard-coded**, from `import.md` and `layout.py`, which its header names.
+  The dry run guards it: when the import's layout moves, the sample stops there and the fix is in
+  `import_workbook.py`, never in `app/`. The module imports no `app` module and reads no clock.
+- **Known risks.** The host day and the server's Argentina day, and a run that crosses midnight,
+  are GH-189's risk unchanged: a price from the host's `today` is a future one on a server that is
+  still on the day before, and the self-check stops the sample. One fresh sample per run on one
+  Argentina day. A price effective on day D stays current on D+1, so step 1 survives midnight.

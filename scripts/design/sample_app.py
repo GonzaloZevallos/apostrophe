@@ -11,7 +11,7 @@ runs this in the background waits for that file, then reads the address and the 
 
     {"url": ..., "email": ..., "password": ..., "ids": {...},
      "accounts": {"<name>": {"email": ..., "password": ...}},
-     "account_kinds": {"<name>": "open" | "ended"}}
+     "account_kinds": {"<name>": "open" | "ended" | "pre_onboarding" | "imported"}}
 
 The top-level `email`, `password` and `ids` are La Huerta's. `accounts` is always present
 (`{}` when both account tuples are empty): one extra business per name, seeded like La
@@ -19,7 +19,12 @@ Huerta. An `open` account (`ONBOARDING_ACCOUNTS`) is still in Onboarding, so a s
 ends the Onboarding ("Listo") can be reached once per business in one run. An `ended`
 account (`ENDED_ONBOARDING_ACCOUNTS`) has its Onboarding ended over HTTP, through
 `skip-rest`, after it is seeded, for the screens whose frames do not draw the Onboarding's
-notice. `account_kinds` has exactly the keys of `accounts`. An account carries no `ids`:
+notice. A `pre_onboarding` account (`PRE_ONBOARDING_ACCOUNTS`) is a business with no
+Onboarding row and one priced variety, which shows the first-run checklist; an `imported` account
+(`IMPORTED_ACCOUNTS`) is one the real `scripts/import-spreadsheet.sh` loaded, which shows the
+after-import notice. Both are read-only for the screens that name them, and each checks its own
+`/first-run` answer and stops the sample if it differs. `account_kinds` has exactly the keys of
+`accounts`. An account carries no `ids`:
 the ids are La Huerta's.
 The data goes in over HTTP, never through the front: the front is what this app exists
 to compare, so a redesigned screen must never break the seeding. Never touches the
@@ -739,8 +744,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--port", type=int, default=0, help="default: a free one")
     parser.add_argument("--dir", type=Path, default=None, help="default: a new temp dir")
     args = parser.parse_args(argv)
-    if not set(ONBOARDING_ACCOUNTS).isdisjoint(ENDED_ONBOARDING_ACCOUNTS):
-        raise SystemExit("sample-app: an account is both open and ended")
+    names = (
+        ONBOARDING_ACCOUNTS,
+        ENDED_ONBOARDING_ACCOUNTS,
+        PRE_ONBOARDING_ACCOUNTS,
+        IMPORTED_ACCOUNTS,
+    )
+    if len({name for group in names for name in group}) != sum(len(group) for group in names):
+        raise SystemExit("sample-app: an account has more than one kind")
 
     workdir: Path = args.dir or Path(tempfile.mkdtemp(prefix="apostrophe-sample-"))
     workdir.mkdir(parents=True, exist_ok=True)
@@ -802,11 +813,18 @@ def main(argv: list[str] | None = None) -> int:
         }
         open_accounts = onboarding_accounts(env, base, today)
         ended_accounts = ended_onboarding_accounts(env, base, today)
+        db_path = workdir / "sample.db"
+        (checklist_name,) = PRE_ONBOARDING_ACCOUNTS
+        (imported_name,) = IMPORTED_ACCOUNTS
+        capture_accounts = {
+            checklist_name: pre_onboarding_account(env, base, today, db_path),
+            imported_name: imported_account(env, base, today, db_path),
+        }
     except BaseException:
         server.terminate()
         raise
 
-    accounts = {**open_accounts, **ended_accounts}
+    accounts = {**open_accounts, **ended_accounts, **capture_accounts}
     facts = {
         "url": base,
         "email": EMAIL,
@@ -818,6 +836,8 @@ def main(argv: list[str] | None = None) -> int:
         "account_kinds": {
             **dict.fromkeys(open_accounts, "open"),
             **dict.fromkeys(ended_accounts, "ended"),
+            checklist_name: "pre_onboarding",
+            imported_name: "imported",
         },
     }
     (workdir / "sample.json").write_text(json.dumps(facts, indent=2), encoding="utf-8")

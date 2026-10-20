@@ -905,3 +905,80 @@ describe('the customer dark twins of the real screens.json', () => {
     expect(() => assertScreens([{ screen: 'ClientesOscuro', design: 'NoExiste', tema: 'oscuro', route: 'ruta' }])).toThrow(/ClientesOscuro/)
   })
 })
+
+describe.each(['pre_onboarding', 'imported'] as const)('the %s account kind (GH-274)', (kind) => {
+  const accounts = { listo: {}, inicio: {}, capture: {} }
+  const kinds = { listo: 'open', inicio: 'ended', capture: kind } as const
+
+  it('is a kind the sample may write', () => {
+    expect(() => assertAccountKinds(accounts, kinds)).not.toThrow()
+  })
+
+  it('refuses a kinds map that leaves its account out, naming the account', () => {
+    expect(() => assertAccountKinds(accounts, { listo: 'open', inicio: 'ended' })).toThrow(
+      /^account capture has no kind in account_kinds$/,
+    )
+  })
+
+  it('refuses a kinds map with a key that is not an account', () => {
+    expect(() => assertAccountKinds({ listo: {}, inicio: {} }, kinds)).toThrow(
+      /^account_kinds names capture, which is not one of the sample's accounts$/,
+    )
+  })
+
+  it('refuses a kind it does not know, without printing it', () => {
+    expect(() => assertAccountKinds(accounts, { ...kinds, capture: `${kind}_x` })).toThrow(
+      /^account capture must have the kind open or ended$/,
+    )
+  })
+
+  it('refuses a Listo entry on it, by name and never by credential', () => {
+    expect(() => assertSelectedAccounts([{ screen: 'OnboardingListo', account: 'capture' }], kinds)).toThrow(
+      new RegExp(`^OnboardingListo: reaches OnboardingListo on an? ${kind} account, and a Listo entry needs an open one$`),
+    )
+  })
+
+  it('serves read-only entries, and lets several of them share it', () => {
+    expect(() =>
+      assertSelectedAccounts(
+        [
+          { screen: 'Inicio', account: 'capture' },
+          { screen: 'InicioOscuro', design: 'Inicio', account: 'capture', tema: 'oscuro' },
+        ],
+        kinds,
+      ),
+    ).not.toThrow()
+  })
+
+  it('does not weaken the rule that an open account serves only a Listo entry', () => {
+    expect(() => assertSelectedAccounts([{ screen: 'Inicio', account: 'listo' }], kinds)).toThrow(
+      /^Inicio: names an open account but does not reach OnboardingListo/,
+    )
+  })
+})
+
+describe('the capture accounts of sample_app.py (GH-274)', () => {
+  const source = readFileSync(resolve(process.cwd(), '..', 'scripts/design/sample_app.py'), 'utf-8')
+  const namesOf = (constant: string): string[] => {
+    const declared = new RegExp(`^${constant} = \\(([^)]*)\\)`, 'm').exec(source)?.[1]
+    if (declared === undefined) throw new Error(`sample_app.py declares no ${constant}`)
+    return declared.match(/"[^"]+"/g)?.map((name) => name.slice(1, -1)) ?? []
+  }
+
+  it('declares the checklist and the imported accounts, apart from every other kind', () => {
+    const groups = ['ONBOARDING_ACCOUNTS', 'ENDED_ONBOARDING_ACCOUNTS', 'PRE_ONBOARDING_ACCOUNTS', 'IMPORTED_ACCOUNTS']
+    expect(namesOf('PRE_ONBOARDING_ACCOUNTS')).toEqual(['checklist'])
+    expect(namesOf('IMPORTED_ACCOUNTS')).toEqual(['importada'])
+    const all = groups.flatMap(namesOf)
+    expect(new Set(all).size).toBe(all.length)
+  })
+
+  it('names none of them on a Listo entry of the real registry', () => {
+    const capture = [...namesOf('PRE_ONBOARDING_ACCOUNTS'), ...namesOf('IMPORTED_ACCOUNTS')]
+    const real = Object.fromEntries(capture.map((name) => [name, 'imported' as const]))
+    const listo = screens.screens.filter((s) => (s as { design?: string }).design === 'OnboardingListo' || s.screen === 'OnboardingListo')
+    expect(listo.length).toBeGreaterThan(0)
+    for (const entry of listo) expect(capture).not.toContain((entry as { account?: string }).account)
+    expect(() => assertSelectedAccounts(screens.screens, { ...real, ...Object.fromEntries(namesOf('ONBOARDING_ACCOUNTS').map((n) => [n, 'open' as const])), inicio: 'ended' })).not.toThrow()
+  })
+})
