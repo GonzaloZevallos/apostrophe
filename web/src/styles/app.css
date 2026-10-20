@@ -1689,6 +1689,8 @@ body {
 .inicio__periodos .pestanas__opcion {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: var(--alto-tocable);
   min-height: var(--alto-tocable);
 }
 

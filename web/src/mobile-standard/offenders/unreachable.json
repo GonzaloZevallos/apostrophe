@@ -9,15 +9,6 @@
     ]
   },
   {
-    "screen": "CobroDesdeInicio",
-    "rule": "unreachable",
-    "target": "",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "OnboardingListo",
     "rule": "unreachable",
     "target": "",
