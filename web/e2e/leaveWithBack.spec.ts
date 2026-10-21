@@ -53,6 +53,8 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Collect from Carla Volver' }).first().click()
   await page.getByRole('radio', { name: 'Cash' }).check()
+  // Back only once the form has taken the choice: a Back sent before it counts the form clean leaves unasked.
+  await expect(page.getByRole('radio', { name: 'Cash' })).toBeChecked()
   await page.goBack()
   await expect(page.getByText('Discard the payment?')).toBeVisible()
   await page.getByRole('button', { name: 'No, keep entering' }).click()
