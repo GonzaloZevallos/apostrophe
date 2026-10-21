@@ -15,11 +15,11 @@ const WEEK: PanelPeriod = PANEL.periods.week
 const MONTH: PanelPeriod = PANEL.periods.month
 
 const FIGURE_LABELS = [
-  'Regalaste',
-  'Costo de lo vendido',
-  'Faltante de stock',
-  'Promoción',
-  'Consumo propio',
+  'You gave away',
+  'Cost of goods sold',
+  'Stock shortfall',
+  'Promotion',
+  'Own use',
   'Expenses',
   'Flower purchases',
   'Profit',
@@ -42,21 +42,21 @@ test('Semana draws the seven list figures in results.md order, then Ganancia and
   expect(figureNames()).toEqual(FIGURE_LABELS)
   const gastos = screen.getByRole('group', { name: 'Expenses' })
   expect(within(gastos).getByText('$ 12.000')).toBeInTheDocument()
-  expect(within(screen.getByRole('group', { name: 'Regalaste' })).getByText('2 g')).toBeInTheDocument()
+  expect(within(screen.getByRole('group', { name: 'You gave away' })).getByText('2 g')).toBeInTheDocument()
 })
 
 test('a withdrawal line the period does not have is no group, never a $ 0 one', () => {
   render(<PeriodFigures tab="month" period={MONTH} />)
 
   expect(figureNames()).toEqual([
-    'Regalaste',
-    'Costo de lo vendido',
+    'You gave away',
+    'Cost of goods sold',
     'Expenses',
     'Flower purchases',
     'Profit',
     'Cash',
   ])
-  for (const label of ['Faltante de stock', 'Promoción', 'Consumo propio']) {
+  for (const label of ['Stock shortfall', 'Promotion', 'Own use']) {
     expect(screen.queryByRole('group', { name: label })).toBeNull()
   }
 })
@@ -64,8 +64,8 @@ test('a withdrawal line the period does not have is no group, never a $ 0 one', 
 test('each pending note sits inside the group it qualifies, and never inside Caja', () => {
   render(<PeriodFigures tab="week" period={{ ...WEEK, pending_cost: true }} />)
 
-  const note = 'incluye costo pendiente'
-  const withNote = ['Costo de lo vendido', 'Faltante de stock', 'Promoción', 'Profit']
+  const note = 'includes pending cost'
+  const withNote = ['Cost of goods sold', 'Stock shortfall', 'Promotion', 'Profit']
   for (const label of FIGURE_LABELS) {
     const group = screen.getByRole('group', { name: label })
     if (withNote.includes(label)) expect(within(group).getByText(note)).toBeInTheDocument()
@@ -88,16 +88,16 @@ test('the periods wrapper carries the figures modifier on Semana and Mes, never 
   expect(container.querySelector('.panel-periodo')).not.toBeNull()
   expect(container.querySelector('.panel-periodo--con-cifras')).toBeNull()
   expect(container.querySelector('.panel-cifras')).toBeNull()
-  expect(screen.getByText('Vendiste hoy')).toBeInTheDocument()
+  expect(screen.getByText('You sold today')).toBeInTheDocument()
   expect(screen.queryAllByRole('group')).toHaveLength(0)
 
   rerender(<PeriodPanel tab="week" period={WEEK} />)
   expect(container.querySelector('.panel-periodo--con-cifras')).not.toBeNull()
-  expect(screen.getByText('Vendiste esta semana')).toBeInTheDocument()
+  expect(screen.getByText('You sold this week')).toBeInTheDocument()
 
   rerender(<PeriodPanel tab="month" period={MONTH} />)
   expect(container.querySelector('.panel-periodo--con-cifras')).not.toBeNull()
-  expect(screen.getByText('Vendiste este mes')).toBeInTheDocument()
+  expect(screen.getByText('You sold this month')).toBeInTheDocument()
 })
 
 test('two instances together: every aria-labelledby resolves to exactly one element, and no id repeats', () => {
@@ -128,7 +128,7 @@ test('data-largo carries the length of the formatted figure, 8 to 14, and is abs
 
   expect(valueOf('Expenses', '$ 93.000')).toHaveAttribute('data-largo', '8')
   expect(valueOf('Flower purchases', '$ 9.000')).not.toHaveAttribute('data-largo')
-  expect(valueOf('Regalaste', '2 g')).not.toHaveAttribute('data-largo')
+  expect(valueOf('You gave away', '2 g')).not.toHaveAttribute('data-largo')
 })
 
 test('data-largo is 14 for "−$ 999.999.999" and stays 14 for anything longer', () => {
@@ -141,7 +141,7 @@ test('data-largo is 14 for "−$ 999.999.999" and stays 14 for anything longer',
 
   expect(valueOf('Profit', '−$ 999.999.999')).toHaveAttribute('data-largo', '14')
   expect(valueOf('Cash', '$ 1.000.000.000')).toHaveAttribute('data-largo', '14')
-  expect(valueOf('Costo de lo vendido', '$ 12.345.678')).toHaveAttribute('data-largo', '12')
+  expect(valueOf('Cost of goods sold', '$ 12.345.678')).toHaveAttribute('data-largo', '12')
 })
 
 test('data-largo counts the sign as the character it is, and says nothing else', () => {

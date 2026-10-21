@@ -61,7 +61,7 @@ export {
 }
 export const BEST_WEEK_MARK = ANALYSIS_TEXT.mejorSemana
 export const BEST_WEEKDAY_MARK = ANALYSIS_TEXT.mejorDia
-export const BEST_WEEK_TABLE_MARK = 'mejor'
+export const BEST_WEEK_TABLE_MARK = ANALYSIS_TEXT.bestInTable
 
 const WEEKDAY_LABEL: Record<number, string> = {
   1: ANALYSIS_TEXT.lun,
@@ -73,9 +73,9 @@ const WEEKDAY_LABEL: Record<number, string> = {
   7: ANALYSIS_TEXT.dom,
 }
 
-/** "y N g sin costo" (PM, round 1): never shown for a figure with nothing pending. */
+/** " and N g without cost" (PM, round 1): never shown for a figure with nothing pending. */
 function pendingSuffix(grams: number): string {
-  return grams > 0 ? ` y ${formatGrams(grams)} sin costo` : ''
+  return grams > 0 ? ANALYSIS_TEXT.pendingSuffix(formatGrams(grams)) : ''
 }
 
 /** One cost line, "Faltante de stock $ 3.000 y 1 g sin costo": the label and

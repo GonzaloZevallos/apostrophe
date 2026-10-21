@@ -11,16 +11,16 @@ export const LANGUAGE: 'es' | 'en' = 'es'
 export const EMPTY_STATES = {
   salesList: 'Todavía no registraste ninguna venta en este período.',
   customersList: 'Todavía no agregaste ningún cliente.',
-  homeNobodyOwes: 'Nadie te debe',
-  homeVarietiesTitle: 'Arrancá por las variedades',
+  homeNobodyOwes: 'Nobody owes you',
+  homeVarietiesTitle: 'Start with your varieties',
   homeVarietiesDetail:
-    'Cargá tu primera variedad con su precio. Sin precio no se puede vender.',
+    'Add your first variety with its price. Without a price it cannot be sold.',
   stockTitle: 'Sin entradas de stock',
   stockDetail: 'Cargá tu stock inicial o una compra',
   catalogTitle: 'No hay nada en el catálogo hoy',
   catalogDetail: 'No hay nada para copiar todavía',
-  analysisNoHistory: 'Todavía no hay nada para analizar.',
-  analysisEmptyMonth: 'No vendiste ni regalaste nada este mes.',
+  analysisNoHistory: 'There is nothing to analyze yet.',
+  analysisEmptyMonth: 'You did not sell or give away anything this month.',
 } as const
 
 export const EMPTY_STATE_WORDINGS: readonly string[] = Object.values(EMPTY_STATES)

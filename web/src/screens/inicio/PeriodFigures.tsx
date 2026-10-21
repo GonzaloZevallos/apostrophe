@@ -19,7 +19,7 @@ import { COMMON_TEXT } from '../../copy/common'
 import { SHORTFALL_LABEL, PROMOTION_LABEL, OWN_USE_LABEL, COST_OF_GOODS_LABEL } from '../../copy/analysis'
 import { INICIO_TEXT } from '../../copy/inicio'
 
-const PENDING_NOTE = 'incluye costo pendiente'
+const PENDING_NOTE = INICIO_TEXT.pendingCostNote
 
 /** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
  * when the period has one (`null` otherwise), right before Gastos. */

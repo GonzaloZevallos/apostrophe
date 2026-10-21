@@ -6,22 +6,22 @@
 import { SAMPLES, type LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const NO_HISTORY_LINE = EMPTY_STATES.analysisNoHistory
 export const EMPTY_MONTH_LINE = EMPTY_STATES.analysisEmptyMonth
-export const VARIETY_TOTAL_NOTE = 'La tabla de variedades suma las ventas del mes sin el envío.'
+export const VARIETY_TOTAL_NOTE = 'The variety table adds up the sales of the month without shipping.'
 export const SINCE_FIRST_RECORD_LABEL =
-  'Movido desde tu primer registro, no es la plata que tenés en caja'
-export const PURCHASES_NOTE = 'Van aparte, se cargan en Stock'
-export const NO_BEST_WEEK_LINE = 'Ninguna se destacó'
+  'Moved since your first record, not the money you have in cash'
+export const PURCHASES_NOTE = 'Kept apart, added in Stock'
+export const NO_BEST_WEEK_LINE = 'None stood out'
 
-export const COST_OF_GOODS_LABEL = 'Costo de lo vendido'
-export const SHORTFALL_LABEL = 'Faltante de stock'
-export const PROMOTION_LABEL = 'Promoción'
-export const OWN_USE_LABEL = 'Consumo propio'
-const PENDING_ONLY = `${SAMPLES.grams} sin costo`
-const AMOUNT_AND_PENDING = `${SAMPLES.amount} y ${SAMPLES.grams} sin costo`
+export const COST_OF_GOODS_LABEL = 'Cost of goods sold'
+export const SHORTFALL_LABEL = 'Stock shortfall'
+export const PROMOTION_LABEL = 'Promotion'
+export const OWN_USE_LABEL = 'Own use'
+const PENDING_ONLY = `${SAMPLES.grams} without cost`
+const AMOUNT_AND_PENDING = `${SAMPLES.amount} and ${SAMPLES.grams} without cost`
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: NO_HISTORY_LINE },
@@ -30,7 +30,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: SINCE_FIRST_RECORD_LABEL },
   { kind: 'help', text: PURCHASES_NOTE },
   { kind: 'help', text: NO_BEST_WEEK_LINE },
-  // The cost lines on the rows, the month header and "Desde el primer registro"
+  // The cost lines on the rows, the month header and "Since the first record"
   // (`formatRowCost`): each label with its longest form, a fully pending one reading
   // only its grams.
   ...[COST_OF_GOODS_LABEL, SHORTFALL_LABEL, PROMOTION_LABEL, OWN_USE_LABEL].flatMap(
@@ -44,35 +44,38 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const ANALYSIS_TEXT = {
-  vendisteEnElMes: 'Vendiste en el mes',
-  vendidos: ' vendidos · ',
-  regalados: ' regalados',
-  margenPromedio01: (percent: string | number, pending_grams: string | number) => ` · margen promedio ${percent}%${pending_grams}`,
-  margenPromedio0: (pending_grams: string | number) => ` · margen promedio${pending_grams}`,
-  porVariedad: 'Por variedad',
-  delMes: '% del mes',
-  costo: 'costo ',
-  margen: 'margen ',
-  parte: 'Parte',
-  gramosRegalo: 'Gramos regalo',
+  vendisteEnElMes: 'You sold this month',
+  vendidos: ' sold · ',
+  regalados: ' given away',
+  margenPromedio01: (percent: string | number, pending_grams: string | number) => ` · average margin ${percent}%${pending_grams}`,
+  margenPromedio0: (pending_grams: string | number) => ` · average margin${pending_grams}`,
+  porVariedad: 'By variety',
+  delMes: '% of the month',
+  costo: 'cost ',
+  margen: 'margin ',
+  parte: 'Share',
+  gramosRegalo: 'Gift grams',
   costLabel: 'Costo',
   margen2: 'Margen',
-  semanaASemanaUltimas: 'Semana a semana · últimas 8',
-  gastos: 'gastos ',
-  ganancia: 'ganancia ',
-  caja: 'caja ',
-  mesAMesUltimos: 'Mes a mes · últimos 12',
-  porDiaDeLa: 'Por día de la semana',
-  ventas: ' ventas',
-  gastosDelMes: 'Gastos del mes',
-  gastosDesdeElPrimer: 'Gastos desde el primer registro',
-  mejorSemana: 'Mejor semana',
-  mejorDia: 'Mejor día',
-  lun: 'Lun',
-  mar: 'Mar',
-  mie: 'Mié',
-  jue: 'Jue',
-  vie: 'Vie',
-  sab: 'Sáb',
-  dom: 'Dom',
+  semanaASemanaUltimas: 'Week by week · last 8',
+  gastos: 'expenses ',
+  ganancia: 'profit ',
+  caja: 'cash ',
+  mesAMesUltimos: 'Month by month · last 12',
+  porDiaDeLa: 'By day of the week',
+  ventas: ' sales',
+  gastosDelMes: 'Expenses of the month',
+  gastosDesdeElPrimer: 'Expenses since the first record',
+  mejorSemana: 'Best week',
+  mejorDia: 'Best day',
+  lun: 'Mon',
+  mar: 'Tue',
+  mie: 'Wed',
+  jue: 'Thu',
+  vie: 'Fri',
+  sab: 'Sat',
+  dom: 'Sun',
+  pendingSuffix: (grams: string | number) => ` and ${grams} without cost`,
+  noCostAlone: (grams: string | number) => `${grams} without cost`,
+  bestInTable: 'best',
 } as const

@@ -4,13 +4,13 @@ import { expect, test } from 'vitest'
 import { formatRowCost } from './analisisCost'
 
 test('a fully pending figure reads only its grams, never a peso amount', () => {
-  expect(formatRowCost({ amount: 0, pending_grams: 4, all_pending: true })).toBe('4 g sin costo')
-  expect(formatRowCost({ amount: 0, pending_grams: 2.5, all_pending: true })).toBe('2,5 g sin costo')
+  expect(formatRowCost({ amount: 0, pending_grams: 4, all_pending: true })).toBe('4 g without cost')
+  expect(formatRowCost({ amount: 0, pending_grams: 2.5, all_pending: true })).toBe('2,5 g without cost')
 })
 
 test('a partly pending figure reads its amount and its own grams', () => {
   expect(formatRowCost({ amount: 9000, pending_grams: 2.5, all_pending: false })).toBe(
-    '$ 9.000 y 2,5 g sin costo',
+    '$ 9.000 and 2,5 g without cost',
   )
 })
 
@@ -21,6 +21,6 @@ test('a fully costed figure reads its amount, and a real $0 reads $ 0', () => {
 
 test('it follows all_pending, not the amount: a costed $0 with pending grams keeps its $ 0', () => {
   expect(formatRowCost({ amount: 0, pending_grams: 1, all_pending: false })).toBe(
-    '$ 0 y 1 g sin costo',
+    '$ 0 and 1 g without cost',
   )
 })
