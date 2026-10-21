@@ -114,11 +114,11 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
   )
   await userEvent.click(await screen.findByRole('link', { name: 'Edit' }))
 
-  expect(await screen.findByLabelText('Gramos 1')).toHaveValue('5.5')
+  expect(await screen.findByLabelText('Grams 1')).toHaveValue('5.5')
   expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
   expect(screen.getByRole('button', { name: 'Promoción' })).toHaveAttribute('aria-pressed', 'true')
-  await userEvent.clear(screen.getByLabelText('Gramos 1'))
-  await userEvent.type(screen.getByLabelText('Gramos 1'), '6')
+  await userEvent.clear(screen.getByLabelText('Grams 1'))
+  await userEvent.type(screen.getByLabelText('Grams 1'), '6')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   expect(puts).toEqual([])
 

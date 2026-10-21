@@ -25,7 +25,7 @@ test('lists every price newest first with "Effective from", the one in force and
   const rows = (await screen.findAllByText(/^Effective from/)).map((node) => node.textContent)
   expect(rows).toEqual(['Effective from 25/09Vigente hoy', 'Effective from 01/09', 'Effective from 05/07'])
   expect(screen.getByText('In force today')).toBeInTheDocument()
-  expect(screen.getByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+  expect(screen.getByText('From 10 g · $ 10.000')).toBeInTheDocument()
   expect(screen.getByText('$ 11.000')).toBeInTheDocument()
   expect(screen.getAllByRole('button', { name: 'Delete this price' })).toHaveLength(3)
   expect(screen.getByText('Each sale uses the price in force that day, even if you change it later.')).toBeInTheDocument()
@@ -93,7 +93,7 @@ test('deleting says what takes the entry\'s place, then toasts "Price deleted"',
   const buttons = await screen.findAllByRole('button', { name: 'Delete this price' })
   await user.click(buttons[0]!)
   const dialog = await screen.findByRole('alertdialog')
-  expect(within(dialog).getByText('¿Borrás el precio desde el 25/09?')).toBeInTheDocument()
+  expect(within(dialog).getByText('Delete the price from 25/09?')).toBeInTheDocument()
   expect(within(dialog).getByText('Back to $ 10.500 x g from 01/09')).toBeInTheDocument()
   await user.click(within(dialog).getByRole('button', { name: 'Yes, delete it' }))
 
@@ -159,14 +159,14 @@ test('with both rules on, an entry shows its bulk tier and its "VIP price"', asy
   renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api())
 
   expect(await screen.findByText('VIP price · $ 9.000')).toBeInTheDocument()
-  expect(screen.getByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+  expect(screen.getByText('From 10 g · $ 10.000')).toBeInTheDocument()
   expect(screen.getAllByText(/Precio VIP/)).toHaveLength(1)
 })
 
 test('with Clientes VIP off there is no trace of the VIP price, the bulk tier stays', async () => {
   renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api(switches(true, false)))
 
-  expect(await screen.findByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+  expect(await screen.findByText('From 10 g · $ 10.000')).toBeInTheDocument()
   expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
   expect(screen.queryByText(/9\.000/)).not.toBeInTheDocument()
 })
@@ -190,7 +190,7 @@ test('an entry with no VIP price shows no VIP line even with Clientes VIP on', a
   const bare = HISTORY.map((entry) => ({ ...entry, vip_price: null }))
   renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api({ 'GET /varieties/1/prices': () => jsonResponse(200, bare) }))
 
-  await screen.findByText('Desde 10 g · $ 10.000')
+  await screen.findByText('From 10 g · $ 10.000')
   expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
 })
 
@@ -219,7 +219,7 @@ test("an archived variety's price history follows the switches like a live one",
   const archived = { 'GET /varieties/1': () => jsonResponse(200, { ...VARIETY_ROW, archived: true }) }
   renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api({ ...archived, ...switches(true, false) }))
 
-  expect(await screen.findByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+  expect(await screen.findByText('From 10 g · $ 10.000')).toBeInTheDocument()
   expect(screen.getAllByText(/^Effective from/)).toHaveLength(3)
   expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
 })

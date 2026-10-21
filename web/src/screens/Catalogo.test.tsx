@@ -81,7 +81,7 @@ afterEach(() => {
 })
 
 const CATALOG = {
-  text: '🌿 **CATÁLOGO** 🌿\n\n🥇 **24K Gold**\n• 60% índica / 40% sativa\n• Aroma/flavor: cítrico\n• Precio x gramo: $11.000\n• Desde 10 g: $10.000 c/u\n\n📩 Consultas y pedidos por privado.',
+  text: '🌿 **CATÁLOGO** 🌿\n\n🥇 **24K Gold**\n• 60% índica / 40% sativa\n• Aroma/flavor: cítrico\n• Precio x gramo: $11.000\n• From 10 g: $10.000 c/u\n\n📩 Consultas y pedidos por privado.',
   header: '🌿 **CATÁLOGO** 🌿',
   footer: '📩 Consultas y pedidos por privado.',
   varieties: [
@@ -231,7 +231,7 @@ test('"What does not go out and why" lists every variety out of the catalog with
   await screen.findByText('What does not go out and why')
   const rows = within(reasonsSection()).getAllByRole('listitem')
   expect(rows.map((row) => row.textContent)).toEqual([
-    'Sir Jackoculta',
+    'Sir Jackhidden',
     'Mango Bombsin precio',
     'Golden Cookiesagotada',
     'Lemon Hazesin entradas',

@@ -203,7 +203,7 @@ describe('the summary line', () => {
   test('no price in force says it cannot be sold', async () => {
     renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, NO_PRICE_ROW) })
 
-    expect(await screen.findByText(/Sin precio: no se puede vender/)).toBeInTheDocument()
+    expect(await screen.findByText(/No price: no se puede vender/)).toBeInTheDocument()
   })
 
   test('a variety left out of the catalog is marked "Hidden" beside its status', async () => {
@@ -291,14 +291,14 @@ describe("an archived variety's summary line and its one action", () => {
     expect(screen.queryByText(/24 días/)).not.toBeInTheDocument()
   })
 
-  test('its grams show as a figure even when negative, and no price says Sin precio', async () => {
+  test('its grams show as a figure even when negative, and no price says No price', async () => {
     renderPage(VARIETY_ONE, {
       ...ARCHIVED,
       'GET /varieties/1': () => json(200, { ...NO_PRICE_ROW, archived: true, removal: null }),
       'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, grams: -4, status: 'sold_out' })),
     })
 
-    expect(await screen.findByText(/Sin precio/)).toHaveTextContent('-4 g · No price: cannot be sold')
+    expect(await screen.findByText(/No price/)).toHaveTextContent('-4 g · No price: cannot be sold')
   })
 
   test('Restore is the only action: no entry, price, withdrawal, archive or delete', async () => {
@@ -334,7 +334,7 @@ describe("an archived variety's four sections, read-only", () => {
     expect(prices.getByRole('link', { name: 'See all' })).toBeInTheDocument()
     expect(prices.queryByRole('button', { name: 'Delete this price' })).toBeNull()
     const warning = await section('Low stock warning')
-    expect(warning.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
+    expect(warning.getByText('Warn me below 20 g')).toBeInTheDocument()
     expect(warning.queryByText(/Avisando/)).toBeNull()
     const catalog = await section('In the catalog')
     expect(catalog.getByText('Not shown')).toBeInTheDocument()
@@ -450,7 +450,7 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Prices' })).closest('section')
     const inside = within(section as HTMLElement)
-    expect(await inside.findByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+    expect(await inside.findByText('From 10 g · $ 10.000')).toBeInTheDocument()
     expect(inside.queryByText(/VIP/)).not.toBeInTheDocument()
   })
 
@@ -480,14 +480,14 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Low stock warning' })).closest('section')
     const inside = within(section as HTMLElement)
-    expect(inside.getByText('Avisando: quedan 18 g')).toBeInTheDocument()
+    expect(inside.getByText('Warning: 18 g left')).toBeInTheDocument()
     expect(inside.getByRole('switch')).toBeChecked()
     expect(inside.getByRole('button', { name: /Edit/ })).toBeInTheDocument()
   })
 
   test.each([
     ['no threshold', { threshold: null, status: 'ok', grams: 90, days_left: 60 }, 'Warning off'],
-    ['a threshold not reached', { threshold: 15, status: 'ok', grams: 90, days_left: 60 }, 'Avisame abajo de 15 g'],
+    ['a threshold not reached', { threshold: 15, status: 'ok', grams: 90, days_left: 60 }, 'Warn me below 15 g'],
   ])('Low stock warning with %s', async (_name, patch, expected) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
@@ -915,7 +915,7 @@ describe('In the catalog: the form', () => {
     await user.clear(screen.getByLabelText('Emoji'))
     await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 
-    expect(await screen.findByText('Catalog guardado')).toBeInTheDocument()
+    expect(await screen.findByText('Catalog saved')).toBeInTheDocument()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
     expect(putOf(fetchMock)).toEqual({
       url: '/catalog/varieties/1',
@@ -940,7 +940,7 @@ describe('In the catalog: the form', () => {
     expect(alert).toHaveTextContent('The aroma is too long')
     expect(alert.closest('label')).toHaveTextContent('Aroma/flavor')
     expect(screen.getAllByRole('alert')).toHaveLength(1)
-    expect(screen.getByLabelText(/^Aroma\/sabor/)).toHaveValue('Galletita y vainilla larguísimo')
+    expect(screen.getByLabelText(/^Aroma\/flavor/)).toHaveValue('Galletita y vainilla larguísimo')
     expect(screen.getByLabelText(/^Emoji/)).toHaveValue('🍪x')
     expect(screen.getByLabelText(/^% indica/)).toHaveValue('40')
   })

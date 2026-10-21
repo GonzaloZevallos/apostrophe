@@ -148,7 +148,7 @@ test('a new entry starts dated today and shows "Hoy tiene N g" once a variety is
   await screen.findByRole('option', { name: 'Sir Jack' })
   await userEvent.selectOptions(screen.getByLabelText('Variety'), 'Sir Jack')
 
-  expect(await screen.findByText('Hoy tiene 18,5 g')).toBeInTheDocument()
+  expect(await screen.findByText('It has 18,5 g today')).toBeInTheDocument()
 })
 
 test('records an entry and lands back on the list with the saved toast', async () => {
@@ -775,7 +775,7 @@ test('the form keeps the icon and text rule, its help lines within their limits'
   renderForm(STOCK_ENTRY_NEW)
   await screen.findByRole('option', { name: 'Sir Jack' })
   await userEvent.selectOptions(screen.getByLabelText('Variety'), 'Sir Jack')
-  await screen.findByText('Hoy tiene 18,5 g')
+  await screen.findByText('It has 18,5 g today')
 
   expect(document.querySelectorAll('[data-copy="help"]').length).toBeGreaterThanOrEqual(2)
   expectIconAndTextRule(document.body, { limits: LIMITS, optionClasses: ['pildora'] })

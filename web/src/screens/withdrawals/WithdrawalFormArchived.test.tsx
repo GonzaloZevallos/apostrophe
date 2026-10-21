@@ -131,7 +131,7 @@ test.each([
   const state = world([GELATO])
   const { router } = render_([withdrawalNewFor(id)], state)
 
-  expect(await screen.findByLabelText('Variedad 1')).toHaveValue('')
+  expect(await screen.findByLabelText('Variety 1')).toHaveValue('')
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 
@@ -147,7 +147,7 @@ test('editing a line on a variety archived since keeps its id and name, also whi
   state.listGate = gate()
   const { router } = render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
 
-  const select = await screen.findByLabelText('Variedad 1')
+  const select = await screen.findByLabelText('Variety 1')
   expect(select).toHaveValue('1')
   expect(select).toHaveDisplayValue('Zkittlez')
   expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
@@ -191,7 +191,7 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   expect(await within(lineOf(1)).findByText(GONE)).toBeInTheDocument()
   expect(variety(1)).toHaveValue('1')
   expect(variety(1)).toHaveDisplayValue('Zkittlez')
-  expect(screen.getByLabelText('Gramos 1')).toHaveValue('2')
+  expect(screen.getByLabelText('Grams 1')).toHaveValue('2')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
   expect(router.state.location.pathname).toBe(WITHDRAWAL_NEW)
   expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
@@ -224,7 +224,7 @@ test('removing the guilty line clears its message and frees the save; the health
   expect(variety(2)).toHaveValue('2')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Quitar variety 1' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Remove variety 1' }))
 
   expect(screen.queryByText(GONE)).not.toBeInTheDocument()
   expect(variety(1)).toHaveValue('2')
@@ -253,7 +253,7 @@ test('the list changing twice before the save still leaves the guilty line named
 /** An edit of withdrawal 1 (stored line: Zkittlez, archived since) plus two added lines. */
 async function editWithTwoAddedLines(state: World) {
   render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
-  await screen.findByLabelText('Variedad 1')
+  await screen.findByLabelText('Variety 1')
   await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled())
   for (const [position, name] of [
     [2, 'Gelato'],

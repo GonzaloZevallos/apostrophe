@@ -241,7 +241,7 @@ describe('deleting', () => {
       overrides: { 'DELETE /varieties/2': () => new Response(null, { status: 204 }) },
     })
     await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
-    expect(screen.getByRole('alertdialog')).toHaveTextContent('This can't be undone.')
+    expect(screen.getByRole('alertdialog')).toHaveTextContent("This can't be undone.")
     expect(writes(fetchMock)).toEqual([])
 
     await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
