@@ -994,7 +994,7 @@
   {
     "screen": "ConfiguracionUsuarios",
     "rule": "touch-action",
-    "target": "button:Invitá a un socio",
+    "target": "button:Invite a partner",
     "issue": 60
   },
   {
@@ -3178,7 +3178,7 @@
   {
     "screen": "SacarDelStock",
     "rule": "touch-action",
-    "target": "button:Consumo propio",
+    "target": "button:Own use",
     "issue": 47
   },
   {
@@ -3190,7 +3190,7 @@
   {
     "screen": "SacarDelStock",
     "rule": "touch-action",
-    "target": "button:Promoción",
+    "target": "button:Promotion",
     "issue": 47
   },
   {

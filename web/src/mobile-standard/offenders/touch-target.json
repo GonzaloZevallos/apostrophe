@@ -129,7 +129,7 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
@@ -140,13 +140,13 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
@@ -967,7 +967,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
@@ -978,13 +978,13 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
@@ -1137,7 +1137,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
@@ -1148,13 +1148,13 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
@@ -1193,7 +1193,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
@@ -1204,13 +1204,13 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
@@ -1249,7 +1249,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
@@ -1260,13 +1260,13 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
