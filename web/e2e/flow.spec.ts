@@ -75,7 +75,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
   // "All entries" (stock.md).
   await page.goto(STOCK)
-  await expect(page.getByText('Sin entradas de stock')).toBeVisible()
+  await expect(page.getByText('No stock entries')).toBeVisible()
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)

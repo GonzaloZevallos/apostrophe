@@ -272,7 +272,7 @@
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "combobox:Variety Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
@@ -302,7 +302,7 @@
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "combobox:Variety Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
@@ -332,7 +332,7 @@
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "combobox:Variety Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
@@ -362,7 +362,7 @@
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "combobox:Variety Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
@@ -794,7 +794,7 @@
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Bulk price $ Opcional · menor al precio de lista",
+    "target": "textbox:Bulk price $ Optional · below the list price",
     "issue": 47
   },
   {
@@ -818,7 +818,7 @@
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Bulk price $ Opcional · menor al precio de lista",
+    "target": "textbox:Bulk price $ Optional · below the list price",
     "issue": 47
   },
   {
@@ -848,7 +848,7 @@
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "combobox:Variedad #",
+    "target": "combobox:Variety #",
     "issue": 47
   },
   {
@@ -860,7 +860,7 @@
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "textbox:Gramos #",
+    "target": "textbox:Grams #",
     "issue": 47
   },
   {
@@ -872,13 +872,13 @@
   {
     "screen": "VariedadNueva",
     "rule": "autocomplete",
-    "target": "textbox:Name Hasta # caracteres · no puede repetir el nombre",
+    "target": "textbox:Name Up to # characters · cannot repeat another vari",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Name Hasta # caracteres · no puede repetir el nombre",
+    "target": "textbox:Name Up to # characters · cannot repeat another vari",
     "issue": 47
   },
   {

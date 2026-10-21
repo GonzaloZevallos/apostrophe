@@ -1342,49 +1342,49 @@
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldAdjustment · -# g",
+    "target": "button:Delete@#/# · #K GoldAdjustment · -# g",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldPurchase · # g$ #[1]",
+    "target": "button:Delete@#/# · #K GoldPurchase · # g$ #[1]",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldPurchase · # g$ #[2]",
+    "target": "button:Delete@#/# · #K GoldPurchase · # g$ #[2]",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Golden CookiesPurchase ·",
+    "target": "button:Delete@#/# · Golden CookiesPurchase ·",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Initial stock · # gSin c",
+    "target": "button:Delete@#/# · Initial stock · # gNo co",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Sir JackHarvest · # gSin",
+    "target": "button:Delete@#/# · Sir JackHarvest · # gNo ",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Variedad LarguísimoLargu",
+    "target": "button:Delete@#/# · Variedad LarguísimoLargu",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Variedad sin ventasPurch",
+    "target": "button:Delete@#/# · Variedad sin ventasPurch",
     "issue": 47
   },
   {
@@ -3196,49 +3196,49 @@
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldAdjustment · -# g",
+    "target": "button:Delete@#/# · #K GoldAdjustment · -# g",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldPurchase · # g$ #[1]",
+    "target": "button:Delete@#/# · #K GoldPurchase · # g$ #[1]",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldPurchase · # g$ #[2]",
+    "target": "button:Delete@#/# · #K GoldPurchase · # g$ #[2]",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Golden CookiesPurchase ·",
+    "target": "button:Delete@#/# · Golden CookiesPurchase ·",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Initial stock · # gSin c",
+    "target": "button:Delete@#/# · Initial stock · # gNo co",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Sir JackHarvest · # gSin",
+    "target": "button:Delete@#/# · Sir JackHarvest · # gNo ",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Variedad LarguísimoLargu",
+    "target": "button:Delete@#/# · Variedad LarguísimoLargu",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Variedad sin ventasPurch",
+    "target": "button:Delete@#/# · Variedad sin ventasPurch",
     "issue": 47
   },
   {

@@ -136,7 +136,7 @@ function detailFor(
  * is `MarcaEstado`'s, not this note's. */
 function sideNoteFor(variety: { status: Status; days_left: number | null }): string | null {
   if (variety.days_left === null) return null
-  return `${variety.days_left} días`
+  return `${variety.days_left} days`
 }
 
 /** `web/src/format/dates.ts`'s own `formatDate`: dd/mm, or dd/mm/yyyy when the
