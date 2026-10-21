@@ -203,22 +203,13 @@
   {
     "screen": "InicioChecklist",
     "rule": "touch-target",
-    "target": "link:Configuración de Negocio LarguísimoLarguísimoLarguísimo",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-target",
-    "target": "link:Inicio",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:Home",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -227,13 +218,22 @@
   {
     "screen": "InicioChecklist",
     "rule": "touch-target",
-    "target": "link:Te deben",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Owed to you",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -242,13 +242,13 @@
   {
     "screen": "InicioImportado",
     "rule": "touch-target",
-    "target": "link:Configuración de Negocio LarguísimoLarguísimoLarguísimo",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -257,7 +257,7 @@
   {
     "screen": "InicioImportado",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -266,13 +266,13 @@
   {
     "screen": "InicioImportado",
     "rule": "touch-target",
-    "target": "link:Te deben",
+    "target": "link:Owed to you",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 45,
     "sizes": [
       "246x437"

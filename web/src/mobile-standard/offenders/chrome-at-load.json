@@ -220,13 +220,13 @@
   {
     "screen": "InicioChecklist",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "InicioChecklist",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
@@ -244,13 +244,13 @@
   {
     "screen": "InicioImportado",
     "rule": "chrome-at-load",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "InicioImportado",
     "rule": "chrome-at-load",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {

@@ -185,13 +185,13 @@
   {
     "screen": "InicioChecklist",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "InicioChecklist",
     "rule": "chrome-mid-scroll",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {
@@ -209,13 +209,13 @@
   {
     "screen": "InicioImportado",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
     "screen": "InicioImportado",
     "rule": "chrome-mid-scroll",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 59
   },
   {

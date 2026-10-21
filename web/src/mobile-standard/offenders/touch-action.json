@@ -2080,55 +2080,55 @@
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Today",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Month",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Varieties",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 45
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 45
   },
   {
@@ -2188,55 +2188,55 @@
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Today",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Month",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Varieties",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 45
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 45
   },
   {
