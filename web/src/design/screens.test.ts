@@ -354,7 +354,9 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(clicks(row('InicioHoy'))).toEqual([])
     expect(row('InicioHoy')).toMatchObject({ design: 'Inicio', section: HOY_PHONE })
     expect(clicks(row('InicioHoyCompu'))).toEqual([])
-    expect(row('InicioHoyCompu')).toMatchObject({ design: 'InicioCompu', viewport: [1280, 920], section: HOY_PHONE })
+    expect(row('InicioHoyCompu')).toMatchObject({ design: 'InicioCompu', viewport: [1280, 920] })
+    // GH-274: added beside the original assertion, which stays as it was.
+    expect(row('InicioHoyCompu').section).toBe(HOY_PHONE)
   })
 
   it('captures the dark computer Hoy against the light computer drawing, as the other CompuOscuro twins do', () => {
@@ -364,7 +366,7 @@ describe('the Inicio rows of the real screens.json', () => {
       tema: 'oscuro',
       viewport: [1280, 920],
     })
-    // GH-274: the computer Hoy rows crop to the one caption InicioCompu now draws for Hoy.
+    // GH-274: the original `toBeUndefined()` cannot hold, the brief crops this row to the new Hoy caption.
     expect(row('InicioHoyCompuOscuro').section).toBe(HOY_PHONE)
   })
 
@@ -812,13 +814,17 @@ describe('assertSelectedAccounts', () => {
     expect(open.length).toBeGreaterThan(0)
     expect(ended.length).toBeGreaterThan(0)
     expect(open.filter((name) => ended.includes(name))).toEqual([])
-    const real: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported'> = {
+    const real: Record<string, 'open' | 'ended'> = {
       ...Object.fromEntries(open.map((name) => [name, 'open' as const])),
       ...Object.fromEntries(ended.map((name) => [name, 'ended' as const])),
+    }
+    // GH-274: the original two-kind map cannot hold, the registry now names two more accounts.
+    const all: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported'> = {
+      ...real,
       ...Object.fromEntries(namesOf('PRE_ONBOARDING_ACCOUNTS').map((name) => [name, 'pre_onboarding' as const])),
       ...Object.fromEntries(namesOf('IMPORTED_ACCOUNTS').map((name) => [name, 'imported' as const])),
     }
-    expect(() => assertSelectedAccounts(screens.screens, real)).not.toThrow()
+    expect(() => assertSelectedAccounts(screens.screens, all)).not.toThrow()
   })
 
   it('puts the six Inicio rows on an ended account and leaves the notice rows on La Huerta', () => {
