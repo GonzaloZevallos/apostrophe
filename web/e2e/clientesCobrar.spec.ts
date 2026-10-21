@@ -42,7 +42,7 @@ async function registerCustomer(page: Page, name: string): Promise<void> {
 /** Sells `grams` g of Rosa ($1.000 a gram) to the customer on credit, from the customer's card,
  * optionally dated `owingSince` instead of today. */
 async function sellOnCredit(page: Page, name: string, grams: string, older = false): Promise<void> {
-  await page.getByRole('link', { name: `Nueva venta a ${name}` }).click()
+  await page.getByRole('link', { name: `New sale to ${name}` }).click()
   await expectPath(page, SALE_NEW)
   if (older) {
     const date = page.getByLabel('Date')
@@ -113,7 +113,7 @@ for (const viewport of VIEWPORTS) {
     await expectPath(page, CUSTOMER_PAYMENT)
     await expect(page.locator('.panel__titulo', { hasText: 'Record payment' })).toBeVisible()
     await expect(page.locator('.cobro__cliente')).toContainText('Carla Deudora')
-    await expect(page.locator('.cobro__cliente')).toContainText('te debe $ 5.000')
+    await expect(page.locator('.cobro__cliente')).toContainText('owes you $ 5.000')
 
     // "All" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'All: $ 5.000' }).click()

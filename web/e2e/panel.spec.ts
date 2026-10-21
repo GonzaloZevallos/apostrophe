@@ -121,7 +121,7 @@ function detailFor(
     case 'sold_out':
       return variety.sold_out_since === null
         ? 'Sin gramos'
-        : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
+        : `Sin gramos since ${formatDate(variety.sold_out_since, today)}`
     case 'low':
       return variety.threshold === null
         ? 'Avisás por debajo del umbral'
