@@ -4,6 +4,7 @@
  */
 
 import type { LimitedCopy } from './limits'
+import { STOCK_TEXT } from './stock.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -24,8 +25,8 @@ export const ONBOARDING_TEXT = {
   varietyWithPriceLower: 'variety with price',
   initialStockLower: 'initial stock',
   partnerLower: 'partner',
-  varietyOne: 'variety',
-  varietyMany: 'varieties',
+  varietyOne: STOCK_TEXT.varietyOne,
+  varietyMany: STOCK_TEXT.varietyMany,
   entryOne: 'entry',
   entryMany: 'entries',
   leaveAsIs: 'Leave as is',

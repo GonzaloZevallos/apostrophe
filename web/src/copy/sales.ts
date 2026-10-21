@@ -6,6 +6,7 @@
 
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { EMPTY_STATES } from './emptyStates.ts'
+import { VARIETIES_TEXT } from './varieties.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -57,7 +58,7 @@ export const SALES_TEXT = {
   saleOf: (date: string | number) => `Sale of ${date}`,
   undo: 'Undo',
   lines: 'Lines',
-  perGram: ' per gram',
+  perGram: VARIETIES_TEXT.elGramo,
   customerAssigned: 'Customer assigned',
   assignCustomer: 'Assign customer',
   deleteSale: 'Delete sale',

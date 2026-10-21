@@ -6,6 +6,7 @@
 
 import { SAMPLES, type LimitedCopy } from './limits'
 import { REFUSAL_TEXT } from './refusals'
+import { STOCK_TEXT } from './stock'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -71,7 +72,7 @@ export const SETTINGS_TEXT = {
   addCategory: '+ Category',
   nameOf: (name: string | number) => `Name of ${name}`,
   rename: 'Rename',
-  delete: 'Delete',
+  delete: STOCK_TEXT.borrar,
   deleteTheCategory: 'Delete the category?',
   thisDeletes: 'This deletes “',
   closingQuoteCannotUndo: '”. This can\'t be undone.',

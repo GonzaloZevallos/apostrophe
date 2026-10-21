@@ -202,7 +202,8 @@ test('"Done" entered with the flag has one line per step and never an amount', a
   expect(screen.getAllByText('Done · 2 entries')).toHaveLength(1)
   expect(screen.getByText('For later — in Settings → Integrations')).toBeInTheDocument()
   expect(screen.getByText('For later — in Settings → Users')).toBeInTheDocument()
-  expect(screen.getAllByText(CHECKLIST_DONE)).toHaveLength(2)
+  // The two done lines and the heading, which share the word.
+  expect(screen.getAllByText(CHECKLIST_DONE)).toHaveLength(3)
 })
 
 test('the resume notice names the partner step in English', () => {
