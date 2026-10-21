@@ -125,7 +125,7 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
   await page.goto(SALE_NEW)
   const save = page.getByRole('button', { name: 'Guardá la venta' })
   await expect(save).toBeVisible()
-  const grams = page.getByText('vendidos')
+  const grams = page.getByText('sold')
   await expect(grams).toBeVisible()
 
   await page.setViewportSize({ width: 375, height: 380 })
