@@ -38,7 +38,7 @@ describe('findCopyLiterals', () => {
       '  /* <b title="Hola" /> */',
       '  return (',
       '    <section aria-label={SALES_TEXT.resumen} title={label} className="resumen total">',
-      '      <a href="/ventas">{SALES_TEXT.hoy}</a>',
+      '      <a href="#top">{SALES_TEXT.hoy}</a>',
       '      <span>·</span> <span>—</span>',
       '      {label}',
       '      <input placeholder={label} type="text" aria-hidden="true" />',
