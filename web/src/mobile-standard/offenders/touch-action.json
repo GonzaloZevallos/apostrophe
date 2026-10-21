@@ -50,7 +50,7 @@
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "button:Restaurar",
+    "target": "button:Restore",
     "issue": 47
   },
   {
@@ -152,13 +152,13 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
@@ -170,25 +170,25 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Guardá el catálogo",
+    "target": "button:Save the catalog",
     "issue": 47
   },
   {
@@ -236,13 +236,13 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "switch:Mostrar en el catálogo",
+    "target": "switch:Show in the catalog",
     "issue": 47
   },
   {
@@ -1132,7 +1132,7 @@
   {
     "screen": "EntradaStock",
     "rule": "touch-action",
-    "target": "button:Guardá la entrada",
+    "target": "button:Save the entry",
     "issue": 47
   },
   {
@@ -1162,7 +1162,7 @@
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Borrar entrada",
+    "target": "button:Delete entry",
     "issue": 47
   },
   {
@@ -1216,7 +1216,7 @@
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Borrar entrada",
+    "target": "button:Delete entry",
     "issue": 47
   },
   {
@@ -1240,7 +1240,7 @@
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:No, seguir editando",
+    "target": "button:No, keep editing",
     "issue": 47
   },
   {
@@ -1258,7 +1258,7 @@
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Sí, guardar",
+    "target": "button:Yes, save",
     "issue": 47
   },
   {
@@ -1270,7 +1270,7 @@
   {
     "screen": "EntradaStockEditar",
     "rule": "touch-action",
-    "target": "button:Borrar entrada",
+    "target": "button:Delete entry",
     "issue": 47
   },
   {
@@ -1318,7 +1318,7 @@
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "touch-action",
-    "target": "button:Guardá la entrada",
+    "target": "button:Save the entry",
     "issue": 47
   },
   {
@@ -2956,7 +2956,7 @@
   {
     "screen": "OnboardingStock",
     "rule": "touch-action",
-    "target": "button:Guardá la entrada",
+    "target": "button:Save the entry",
     "issue": 49
   },
   {
@@ -2974,37 +2974,37 @@
   {
     "screen": "OnboardingStockTexto130",
     "rule": "touch-action",
-    "target": "button:Guardá la entrada",
+    "target": "button:Save the entry",
     "issue": 49
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
@@ -3064,7 +3064,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
@@ -3076,7 +3076,7 @@
   {
     "screen": "PrecioNuevo",
     "rule": "touch-action",
-    "target": "button:Guardá el precio",
+    "target": "button:Save the price",
     "issue": 47
   },
   {
@@ -3094,7 +3094,7 @@
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "touch-action",
-    "target": "button:Guardá el precio",
+    "target": "button:Save the price",
     "issue": 47
   },
   {
@@ -3118,7 +3118,7 @@
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "button:Borrar",
+    "target": "button:Delete",
     "issue": 47
   },
   {
@@ -3184,7 +3184,7 @@
   {
     "screen": "SacarDelStock",
     "rule": "touch-action",
-    "target": "button:Guardá el retiro",
+    "target": "button:Save the withdrawal",
     "issue": 47
   },
   {
@@ -3286,7 +3286,7 @@
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "button:Borrar",
+    "target": "button:Delete",
     "issue": 47
   },
   {
@@ -3334,7 +3334,7 @@
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "button:Restaurar",
+    "target": "button:Restore",
     "issue": 47
   },
   {
@@ -3382,31 +3382,31 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
@@ -3454,13 +3454,13 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "VariedadNueva",
     "rule": "touch-action",
-    "target": "button:Agregá la variedad",
+    "target": "button:Add the variety",
     "issue": 47
   },
   {
@@ -3472,7 +3472,7 @@
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "touch-action",
-    "target": "button:Agregá la variedad",
+    "target": "button:Add the variety",
     "issue": 47
   },
   {
@@ -3484,13 +3484,13 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
@@ -3502,19 +3502,19 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
@@ -3568,19 +3568,19 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
@@ -3592,25 +3592,25 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Guardá el aviso",
+    "target": "button:Save the warning",
     "issue": 47
   },
   {
@@ -3658,7 +3658,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
@@ -4104,7 +4104,7 @@
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {

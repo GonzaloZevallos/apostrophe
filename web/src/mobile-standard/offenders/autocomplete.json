@@ -2,13 +2,13 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "autocomplete",
-    "target": "textbox:% índica",
+    "target": "textbox:% indica",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "autocomplete",
-    "target": "textbox:Aroma/sabor",
+    "target": "textbox:Aroma/flavor",
     "issue": 47
   },
   {
@@ -890,7 +890,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "autocomplete",
-    "target": "textbox:Avisar con menos de",
+    "target": "textbox:Warn when below",
     "issue": 47
   },
   {
