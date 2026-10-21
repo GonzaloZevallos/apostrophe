@@ -46,7 +46,7 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
   {
     screen: 'EstadosGoneAviso',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: 'Borrar venta' }, { click: COMMON_TEXT.yesDelete }],
+    steps: [{ click: 'Delete sale' }, { click: COMMON_TEXT.yesDelete }],
     visible: GONE_NOTICE,
     writes: [{ method: 'DELETE', path: /^\/sales\/\d+$/, status: 404, body: { code: 'sale.not_found' } }],
   },

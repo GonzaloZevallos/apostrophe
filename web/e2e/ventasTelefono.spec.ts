@@ -85,14 +85,14 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
     await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
     if (customer === 'existing') {
-      await page.getByRole('button', { name: 'Elegir cliente' }).click()
+      await page.getByRole('button', { name: 'Pick a customer' }).click()
       await page.getByRole('button', { name: /Marta Gómez/ }).click()
     } else if (customer === 'new') {
-      await page.getByRole('button', { name: 'Elegir cliente' }).click()
+      await page.getByRole('button', { name: 'Pick a customer' }).click()
       await page.getByRole('button', { name: 'New customer' }).click()
       await page.getByLabel('Teléfono').fill('+5491155550012')
       await page.getByLabel('Name').fill('Luz Díaz')
-      await page.getByRole('button', { name: 'Crear cliente' }).click()
+      await page.getByRole('button', { name: 'Create customer' }).click()
       // The sheets close by history, a moment after the customer is saved; until then the
       // picker's own list also names customers, so the chosen one is read once it is gone.
       await expect(page.locator('.cliente-sheet')).toHaveCount(0)
@@ -100,7 +100,7 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
     }
     await page.getByRole('radio', { name: 'Cash' }).check()
     await expect(page.locator('.nueva-venta__pie')).toContainText('$ 5.000')
-    await page.getByRole('button', { name: 'Guardá la venta' }).click()
+    await page.getByRole('button', { name: 'Save sale' }).click()
     await expect(page.getByText('Sale saved')).toBeVisible()
   }
 })
@@ -128,7 +128,7 @@ test.describe('phone sales sweep', () => {
     await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
     await page.getByRole('radio', { name: 'Cash' }).check()
-    await page.getByRole('button', { name: 'Guardá la venta' }).click()
+    await page.getByRole('button', { name: 'Save sale' }).click()
     await expect(page.getByText('Sale saved')).toBeVisible()
     session = await context.storageState()
     await context.close()
@@ -256,11 +256,11 @@ async function sweep(page: Page, { name, scale }: PhoneCase): Promise<void> {
   await expectThumbSized(page, `${name}: Ventas`, scale)
 
   await page.locator('.fila-venta').first().click()
-  await expect(page.getByRole('button', { name: 'Borrar venta' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Delete sale' })).toBeVisible()
   await settled(page)
   await expectNoSidewaysOverflow(page, `${name}: the detail`, scale)
   await expectThumbSized(page, `${name}: the detail`, scale)
-  await page.getByRole('button', { name: 'Borrar venta' }).click()
+  await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(page.getByRole('alertdialog')).toBeVisible()
   await settled(page)
   await expectThumbSized(page, `${name}: the delete dialog`, scale)

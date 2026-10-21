@@ -19,7 +19,7 @@ describe('showsPending', () => {
 
 describe('PENDING_TAPS', () => {
   test('are the three primary actions the PRD names, each on a name a Violation may carry', () => {
-    expect(PENDING_TAPS.map((tap) => tap.button)).toEqual(['Guardá la venta', 'Save', 'Entrá'])
+    expect(PENDING_TAPS.map((tap) => tap.button)).toEqual(['Save sale', 'Save', 'Entrá'])
     for (const tap of PENDING_TAPS) expect(SCREEN_NAMES.has(tap.screen)).toBe(true)
   })
 })

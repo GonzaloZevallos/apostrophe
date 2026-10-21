@@ -2,6 +2,7 @@
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import { COMMON_TEXT } from '../copy/common.ts'
+import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkState } from './states.ts'
 
 export const SALES_STATES: readonly WalkState[] = [
@@ -9,8 +10,8 @@ export const SALES_STATES: readonly WalkState[] = [
     screen: 'NuevaVentaConLinea',
     route: SALE_NEW,
     steps: [
-      { fill: { label: 'Variedad línea 1', value: 'Golden Cookies' } },
-      { fill: { label: 'Gramos línea 1', value: '10' } },
+      { fill: { label: SALES_TEXT.lineVariety(1), value: 'Golden Cookies' } },
+      { fill: { label: SALES_TEXT.lineGrams(1), value: '10' } },
       { click: COMMON_TEXT.addAnotherVariety },
     ],
     visible: '$ 120.000',
@@ -18,35 +19,35 @@ export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'ElegirCliente',
     route: SALE_NEW,
-    steps: [{ click: 'Elegir cliente' }, { fill: { label: 'Buscar', value: 'Nico' } }],
+    steps: [{ click: SALES_TEXT.pickCustomer }, { fill: { label: SALES_TEXT.search, value: 'Nico' } }],
     visible: 'Nico Parra',
   },
   {
     screen: 'NuevoClienteEnVenta',
     route: SALE_NEW,
-    steps: [{ click: 'Elegir cliente' }, { click: COMMON_TEXT.newCustomer }],
-    visible: 'Crear cliente',
+    steps: [{ click: SALES_TEXT.pickCustomer }, { click: COMMON_TEXT.newCustomer }],
+    visible: SALES_TEXT.createCustomer,
   },
   {
     screen: 'DescartarVenta',
     route: SALE_NEW,
     steps: [
-      { fill: { label: 'Variedad línea 1', value: 'Sir Jack' } },
-      { fill: { label: 'Gramos línea 1', value: '5' } },
+      { fill: { label: SALES_TEXT.lineVariety(1), value: 'Sir Jack' } },
+      { fill: { label: SALES_TEXT.lineGrams(1), value: '5' } },
       { press: COMMON_TEXT.close },
     ],
-    visible: '¿Descartás la venta?',
+    visible: SALES_TEXT.discardSale,
   },
   {
     screen: 'VentaAsignarCliente',
     route: SALES,
-    steps: [{ click: 'Sin cliente' }, { click: 'Asignar cliente' }],
-    visible: 'Elegir cliente',
+    steps: [{ click: SALES_TEXT.noCustomer }, { click: SALES_TEXT.assignCustomer }],
+    visible: SALES_TEXT.pickCustomer,
   },
   {
     screen: 'VentaBorrar',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: 'Borrar venta' }],
+    steps: [{ click: SALES_TEXT.deleteSale }],
     visible: COMMON_TEXT.yesDelete,
   },
   {
@@ -70,7 +71,7 @@ export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'VentasFechas',
     route: SALES,
-    steps: [{ click: 'Fechas' }],
-    visible: 'Hasta',
+    steps: [{ click: SALES_TEXT.dates }],
+    visible: SALES_TEXT.to,
   },
 ]

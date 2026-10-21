@@ -27,10 +27,10 @@ export const PENDING_TAPS: readonly PendingTap[] = [
     screen: 'NuevaVentaConLinea',
     route: SALE_NEW,
     steps: [
-      { fill: { label: 'Variedad línea 1', value: 'Golden Cookies' } },
-      { fill: { label: 'Gramos línea 1', value: '10' } },
+      { fill: { label: 'Line 1 variety', value: 'Golden Cookies' } },
+      { fill: { label: 'Line 1 grams', value: '10' } },
     ],
-    button: 'Guardá la venta',
+    button: 'Save sale',
     write: { method: 'POST', path: /^\/sales$/ },
   },
   {

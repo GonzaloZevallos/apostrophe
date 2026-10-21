@@ -178,7 +178,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Debiendo is disabled and explained while there is no customer.
   await expect(page.getByRole('radio', { name: 'Owing' })).toBeDisabled()
-  await expect(page.getByText('Para dejar debiendo elegí un cliente')).toBeVisible()
+  await expect(page.getByText('To leave it owing, pick a customer')).toBeVisible()
 
   // A variety with no price that day is caught on its own line, before saving.
   await fillSaleLine(page, 1, { variety: 'Mimosa', grams: '5' })
@@ -187,16 +187,16 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // Swap it for a priced variety and add a second line.
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
   await fillSaleLine(page, 2, { variety: 'Lirio', grams: '20' })
-  await page.getByLabel('Envío').fill('1000')
+  await page.getByLabel('Shipping').fill('1000')
   await page.getByLabel('Note').fill('Pedido para el grupo')
 
   // A brand-new customer, created from inside the sheet, without leaving the sale.
-  await page.getByRole('button', { name: 'Elegir cliente' }).click()
+  await page.getByRole('button', { name: 'Pick a customer' }).click()
   await page.getByRole('button', { name: 'New customer' }).click()
   await page.getByLabel('Teléfono').fill('+5491155550010')
   await page.getByLabel('Name').fill('Carla Pérez')
-  await page.getByRole('button', { name: 'Crear cliente' }).click()
-  await expect(page.getByText('Elegir cliente')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Create customer' }).click()
+  await expect(page.getByText('Pick a customer')).toHaveCount(0)
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')
 
   // Choosing a customer turns Debiendo back on; Efectivo is used here instead.
@@ -208,12 +208,12 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // Line 1 (Jazmín) is now the closed row — "Add another variety" closed it
   // when line 2 opened (plan, "Line editor": one open line at a time); line 2
   // (Lirio) is still the open editor.
-  const previewJazmin = page.getByRole('button', { name: /^Línea 1: Jazmín/ })
+  const previewJazmin = page.getByRole('button', { name: /^Line 1: Jazmín/ })
   await expect(previewJazmin.locator('.insignia')).toHaveText('lista')
   await expect(previewJazmin.getByText('$ 500 x g', { exact: true })).toBeVisible()
   await expect(previewJazmin.getByText('$ 5.000', { exact: true })).toBeVisible()
 
-  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Variedad línea 2') })
+  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Line 2 variety') })
   await expect(previewLirio.locator('.insignia')).toHaveText('lista')
   await expect(previewLirio.getByText('$ 300 x g', { exact: true })).toBeVisible()
   await expect(previewLirio.getByText('$ 6.000', { exact: true })).toBeVisible()
@@ -221,7 +221,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.cifra-xl')).toHaveText('$ 12.000') // 5.000 + 6.000 + 1.000 shipping.
   await expect(page.getByText('30 g sold')).toBeVisible()
 
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -230,23 +230,23 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.cifra-xl')).toHaveText('$ 12.000')
   const detailJazmin = page.locator('.venta-detalle__linea').filter({ hasText: 'Jazmín' })
   await expect(detailJazmin.locator('.insignia')).toHaveText('lista')
-  await expect(detailJazmin.locator('.venta-detalle__precio')).toHaveText('$ 500 por gramo')
+  await expect(detailJazmin.locator('.venta-detalle__precio')).toHaveText('$ 500 per gram')
   await expect(detailJazmin.locator('.venta-detalle__total')).toHaveText('$ 5.000')
   const detailLirio = page.locator('.venta-detalle__linea').filter({ hasText: 'Lirio' })
   await expect(detailLirio.locator('.insignia')).toHaveText('lista')
-  await expect(detailLirio.locator('.venta-detalle__precio')).toHaveText('$ 300 por gramo')
+  await expect(detailLirio.locator('.venta-detalle__precio')).toHaveText('$ 300 per gram')
   await expect(detailLirio.locator('.venta-detalle__total')).toHaveText('$ 6.000')
-  await expect(page.getByText('Envío cobrado')).toBeVisible()
+  await expect(page.getByText('Shipping charged')).toBeVisible()
   await expect(page.getByText('$ 1.000')).toBeVisible()
   await expect(page.getByText('Pedido para el grupo')).toBeVisible()
   await expect(page.getByText('Carla Pérez')).toBeVisible()
 
   // Deshacer, right after saving: nothing of this sale survives.
-  await page.getByRole('button', { name: 'Deshacer' }).click()
+  await page.getByRole('button', { name: 'Undo' }).click()
   await expectPath(page, SALES)
   await expect(page.getByText('Sale deleted')).toBeVisible()
   await expect(page.getByText('0 ventas')).toBeVisible()
-  await expect(page.getByText('Todavía no registraste ninguna venta en este período.')).toBeVisible()
+  await expect(page.getByText("You haven't recorded any sales in this period yet.")).toBeVisible()
 
   // --- Sale B: "Nueva venta a <name>", a gift line, no payment needed for $0. ---
   await page.goto(CUSTOMERS)
@@ -258,44 +258,44 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')
 
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4', gift: true })
-  await expect(page.getByLabel('Precio especial línea 1')).toBeDisabled()
+  await expect(page.getByLabel('Line 1 special price')).toBeDisabled()
 
   // A $0 sale — a gift line marked by hand on a variety that does have a price
   // (Jazmín): saving is never blocked for a missing payment method when the total
   // is $0.
   await expect(page.locator('.cifra-xl')).toHaveText('$ 0')
-  const saveButtonB = page.getByRole('button', { name: 'Guardá la venta' })
+  const saveButtonB = page.getByRole('button', { name: 'Save sale' })
   await expect(saveButtonB).toBeEnabled()
   await saveButtonB.click()
   await expectPath(page, SALE)
   const saleBUrl = page.url()
   await expect(page.getByText('Sale saved')).toBeVisible()
   await expect(page.locator('.cifra-xl')).toHaveText('$ 0')
-  await expect(page.getByRole('button', { name: 'Asignar cliente' })).toHaveCount(0) // already has one.
+  await expect(page.getByRole('button', { name: 'Assign customer' })).toHaveCount(0) // already has one.
 
   // --- Sale C: no customer, assigned afterwards, then deleted. ---
   await page.goto(SALES)
   await page.getByRole('link', { name: 'New sale' }).last().click()
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Cash' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
-  await expect(page.getByText('Sin cliente')).toBeVisible()
+  await expect(page.getByText('No customer')).toBeVisible()
 
-  // Assigning a customer: the sheet never offers "Sin cliente" here.
-  await page.getByRole('button', { name: 'Asignar cliente' }).click()
-  await expect(page.getByRole('button', { name: 'Sin cliente' })).toHaveCount(0)
-  await page.getByLabel('Buscar').fill('Carla')
+  // Assigning a customer: the sheet never offers "No customer" here.
+  await page.getByRole('button', { name: 'Assign customer' }).click()
+  await expect(page.getByRole('button', { name: 'No customer' })).toHaveCount(0)
+  await page.getByLabel('Search').fill('Carla')
   await page.getByRole('button', { name: /Carla Pérez/ }).click()
-  await expect(page.getByText('Cliente asignado')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Asignar cliente' })).toHaveCount(0)
+  await expect(page.getByText('Customer assigned')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Assign customer' })).toHaveCount(0)
 
-  // Borrar venta, confirmed with the date and the amount, then gone from the list.
-  await page.getByRole('button', { name: 'Borrar venta' }).click()
+  // Delete sale, confirmed with the date and the amount, then gone from the list.
+  await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(
     page.getByRole('alertdialog', {
-      name: `¿Borrás la venta de $ 1.000 del ${shortDate(todayIso)}? Vuelven 2 g al stock.`,
+      name: `Delete the sale of $ 1.000 from ${shortDate(todayIso)}? 2 g go back to stock.`,
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
@@ -361,7 +361,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.ventas__rango')).toContainText(countLabel(mes.count))
   await expect(page.locator('.ventas__total')).toHaveText(pesos(mes.total))
 
-  await page.getByRole('button', { name: 'Fechas' }).click()
+  await page.getByRole('button', { name: 'Dates' }).click()
   // Fechas opens on the current month's own range too (Ventas.tsx: its `custom`
   // state starts as `monthRange(me.today)`), so it answers exactly like Mes here.
   await expect(page.locator('.ventas__rango')).toContainText(countLabel(mes.count))
@@ -420,7 +420,7 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
   await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
 
-  const regalo = page.getByRole('switch', { name: 'Regalo línea 1' })
+  const regalo = page.getByRole('switch', { name: 'Line 1 gift' })
   const row = page.locator('.opcion-interruptor')
   await expect(row).toHaveCount(1)
   await expect(regalo).not.toBeChecked()
@@ -447,7 +447,7 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
   await expect(regalo).not.toBeChecked()
 
   // A special price makes the gift inert: pressing it shows nothing and changes nothing.
-  await page.getByLabel('Precio especial línea 1').fill('500')
+  await page.getByLabel('Line 1 special price').fill('500')
   await expect(regalo).toBeDisabled()
   const inactive = await whilePressed(page, '.opcion-interruptor')
   expect(inactive.pressed.transform).toBe('none')
