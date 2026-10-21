@@ -4,8 +4,8 @@
  * from `noPriceMessage`), registered here and measured with `SAMPLES` by
  * `copy/copyLimits.test.ts`, never with fixture or API data. */
 
-import { SAMPLES, type LimitedCopy } from './limits'
-import { EMPTY_STATES } from './emptyStates'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
+import { EMPTY_STATES } from './emptyStates.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 

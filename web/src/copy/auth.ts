@@ -3,7 +3,7 @@
  * constant from another screen: what two of them say lives here.
  */
 
-import { SAMPLES, type LimitedCopy } from './limits'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
