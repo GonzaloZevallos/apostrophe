@@ -264,7 +264,7 @@ Success criteria:
   - with no varieties at all: no summary line, and a fixed empty state inviting the seller
     to add the first variety;
   - with every variety ok: "N variedades · todo ok";
-  - otherwise: every status that is not ok, counted by word, in stock-status order (e.g. "1 sin entradas · 1 agotada · 1 baja"). It is never blank.
+  - otherwise: every status that is not ok, counted by word, in stock-status order (e.g. "1 no entries · 1 sold out · 1 low"). It is never blank.
   - The exact wording is design's, as long as each state is told by word.
 - **"Send catalog"** at the top, opening the catalog screen (`catalog.md`). It is
   disabled, with its reason in words, only while the first-run checklist shows and nothing
@@ -336,8 +336,8 @@ Success criteria:
     - Its exact treatment is design's, inside the existing tokens and the icon and text
       rule; a style the design system lacks is drawn from tokens before it is built.
   - with history: "Archive variety", through a confirmation that names the grams on hand
-    when stock is not zero (e.g. "Te quedan 12 g. Si la archivás, dejan de verse en Home
-    y en las listas, pero el stock queda guardado.") and simply asks with zero stock (the
+    when stock is not zero (e.g. "You have 12 g left. If you archive it, they stop showing on Home
+    and in the lists, but the stock is kept.") and simply asks with zero stock (the
     exact wording is design's), then the toast "Variety archived". Its trigger keeps a
     non-destructive look, clearly distinct from "Delete variety": archiving loses
     nothing and can be undone.
@@ -392,8 +392,8 @@ Success criteria:
   an untouched one closes at once.
 - **Deleting a price entry**: confirmed with "Before deleting" ("Delete…? / No, keep it /
   Yes, delete it"), and the copy says what takes the entry's place:
-  - with an earlier entry, the price that applies again and its date, e.g. "Vuelve a regir
-    $ 9.000 x g desde el 12/09";
+  - with an earlier entry, the price that applies again and its date, e.g. "Back to
+    $ 9.000 x g from 12/09";
   - for the first entry, that there is no price before the next entry's date;
   - for the only entry, that the variety is left "No price: cannot be sold".
 

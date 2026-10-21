@@ -61,7 +61,7 @@ Success criteria:
 ### Credit
 
 - Only deleting a sale that later payments had settled can leave money over. It stays visible and is never floored to $0:
-  - the balance goes below zero and shows as "A favor $ X";
+  - the balance goes below zero and shows as "Credit $ X";
   - the credit applies automatically to the customer's next sales left owing;
   - it counts in no debt figure;
   - a credit that should not exist is fixed by deleting the mistaken payment;
@@ -78,23 +78,23 @@ Success criteria:
 - **Its head**: the total owed and the count of sales still owing.
   - The count reads "1 sale owing" for one sale still owing, and "N sales owing" for two or more (e.g. "4 sales owing"). This is the same singular and plural rule Home's "Owed to you" block uses for the same count (results.md).
 - **Its rows**: only customers whose balance is above $0, by owing since (oldest first), ties by name.
-  - Each row shows the balance in amber and "desde dd/mm", never as a chip.
+  - Each row shows the balance in amber and "since dd/mm", never as a chip.
   - Each row carries **"Collect"** (accessible name "Collect from <name>"), which opens Record payment with that customer already chosen. Tapping the rest of the row opens the customer's card.
 - **Nobody owes**: the section reads a fixed "Nobody owes you", with nothing to tap.
 - **Customers' header** carries no tappable debt figure: the section itself is on screen.
-- **Search**: while a query is typed, Customers collapses into one flat list by name (customers.md); a customer who owes keeps their balance, "te debe desde dd/mm" and "Collect" there.
-- **Customers in credit** never appear in the section and count in no figure. In everyone A–Z they show "A favor $ X" in the neutral/blue treatment, never green or amber.
+- **Search**: while a query is typed, Customers collapses into one flat list by name (customers.md); a customer who owes keeps their balance, "owes you since dd/mm" and "Collect" there.
+- **Customers in credit** never appear in the section and count in no figure. In everyone A–Z they show "Credit $ X" in the neutral/blue treatment, never green or amber.
 
 ### On screen: the customer's card (`ClienteFicha`)
 
-- It shows "Owes you $ X since dd/mm". For a credit it shows "A favor $ X" with no "desde". With a balance of $0 it shows neither.
+- It shows "Owes you $ X since dd/mm". For a credit it shows "Credit $ X" with no "since". With a balance of $0 it shows neither.
 - "Record payment" shows only when the balance is above $0. Otherwise it is hidden.
 - The account lists sales and payments in date order, with the running balance:
   - a sale paid on the spot: "Paid in cash" or "Paid by transfer", with no payment row of its own;
   - a sale left owing: "Left owing";
   - a later payment: one row per sale it reaches, "Payment · <method> · On account of the sale of dd/mm", with the amount applied to that sale;
   - any part beyond every debt: "Credit".
-- **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "A favor $ X".
+- **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "Credit $ X".
   - It is the running figure only, not a credit, and counts in no figure.
   - The card's own balance reads "Credit" only when the balance today is below zero.
 - **"Delete payment"** exists only on later payments.
@@ -110,7 +110,7 @@ Success criteria:
   - "All: $ X" fills the amount with the whole balance in one tap;
   - the date comes filled with today;
   - Cash · Transfer, required.
-- **Before saving**, the API's preview shows which sales the payment settles ("Taken from the oldest debt") and "Le queda debiendo $ X" when something remains.
+- **Before saving**, the API's preview shows which sales the payment settles ("Taken from the oldest debt") and "They still owe $ X" when something remains.
 - **After saving**:
   - "Payment saved · still owing $ X" when something remains;
   - "Payment saved" when nothing does.

@@ -124,7 +124,7 @@ Success criteria:
   2. no price today ("no price");
   3. Stock's own words: sold out ("sold out") or no entries ("no entries").
 
-  Every reason is told by word, never by color alone (e.g. "Sir Jack, agotada · Mango Bomb, sin precio · X, oculta"). The exact wording is design's. Archived varieties are not listed here.
+  Every reason is told by word, never by color alone (e.g. "Sir Jack, sold out · Mango Bomb, no price · X, hidden"). The exact wording is design's. Archived varieties are not listed here.
 - **Links**: each variety named in the preview or in what does not go out opens that variety's "In the catalog" section on its page. "Edit header and footer" opens Settings → Catalog message, or the temporary place until that exists.
 - **The screen itself edits no header, footer or bot setting**: it only links out (navigation.md).
 - **The temporary place** (a deliberate, temporary exception while Settings → Integrations and Catalog message do not exist):

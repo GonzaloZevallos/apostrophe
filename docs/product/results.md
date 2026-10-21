@@ -121,7 +121,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 - **Figures**: the total owed, the count of sales still owing ("1 sale owing" or "N sales owing") and the oldest owing-since date, as payments.md defines them.
 - **Teaser**: up to 3 customers with the highest balance above $0. Ties go by owing since (oldest first), then by name. The design may tune the number.
-  - Each row shows the balance in amber and "desde dd/mm", and carries "Collect" (accessible name "Collect from <name>"), which opens Record payment with that customer already chosen (payments.md), as an entry in the app's history.
+  - Each row shows the balance in amber and "since dd/mm", and carries "Collect" (accessible name "Collect from <name>"), which opens Record payment with that customer already chosen (payments.md), as an entry in the app's history.
   - Tapping the rest of the row opens that customer's card.
 - Tapping the block's heading opens Customers, on its Owed to you section.
 - Customers in credit never appear and count in no figure.
@@ -218,7 +218,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Recording anything from the panel other than through "+ New sale" and "Collect".
 - Live updates between partners.
 - Margins per variety (#8), stock shortfall per variety, and promotion or own-use cost per variety.
-- Pending grams counted on the panel ("y N g sin costo"): the panel's note is fixed and carries no grams; Analysis shows the counts.
+- Pending grams counted on the panel ("and N g without cost"): the panel's note is fixed and carries no grams; Analysis shows the counts.
 - Stock's total grams on the panel.
 - Dismissing the Onboarding notice.
 - Archived varieties on the panel.

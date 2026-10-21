@@ -49,19 +49,19 @@ Success criteria:
 - **Cost of goods sold, expenses and cash**: CONTEXT.md's definitions, read through Results' (#7) computation, never a second one.
   - Cost of goods sold is what the grams of the period's sale lines (gifts included) cost, from their lots as they stand today. It never includes a negative adjustment or a withdrawal.
   - Cash is payments (on-the-spot and later) on their own dates − expenses − purchases on their dates.
-- **Stock shortfall**: the cost of the grams negative adjustments take out in the period, on the adjustment's date, from their lots as they stand today, oldest first, through the same allocation as sale lines. A part beyond every lot is pending, and the figure carries its own "y N g sin costo". It never includes a withdrawal and never enters cost of goods sold.
-- **Promotion cost ("Promotion") and own-use cost ("Own use")**: the cost of the grams the period's withdrawals of that reason take out, on the withdrawal's date, from their lots as they stand today, oldest first, through the same allocation. A part beyond every lot is pending, and each figure carries its own "y N g sin costo", counting only its own reason's pending grams.
+- **Stock shortfall**: the cost of the grams negative adjustments take out in the period, on the adjustment's date, from their lots as they stand today, oldest first, through the same allocation as sale lines. A part beyond every lot is pending, and the figure carries its own "and N g without cost". It never includes a withdrawal and never enters cost of goods sold.
+- **Promotion cost ("Promotion") and own-use cost ("Own use")**: the cost of the grams the period's withdrawals of that reason take out, on the withdrawal's date, from their lots as they stand today, oldest first, through the same allocation. A part beyond every lot is pending, and each figure carries its own "and N g without cost", counting only its own reason's pending grams.
 - **Sales of costed grams**: per sale line, line total × costed grams ÷ line grams, rounded half up to the peso. A fully costed line counts its whole total, a fully pending line $0, a gift $0.
 - **Profit**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
   - When any of its cost is pending, profit is worked out over the costed part, leaving out the sales of pending grams: sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses.
-  - It carries "y N g sin costo", where N adds every pending gram behind it: grams sold or gifted, grams taken out by negative adjustments and grams withdrawn, each counted in the period of its own date.
-  - Example: a week that sold 4 g with no cost yet, whose count took out 2 g with no cost yet, and that withdrew 1 g for promotion with no cost yet reads profit "and 7 g without cost", its Stock shortfall "2 g sin costo" and its Promotion "1 g sin costo".
+  - It carries "and N g without cost", where N adds every pending gram behind it: grams sold or gifted, grams taken out by negative adjustments and grams withdrawn, each counted in the period of its own date.
+  - Example: a week that sold 4 g with no cost yet, whose count took out 2 g with no cost yet, and that withdrew 1 g for promotion with no cost yet reads profit "and 7 g without cost", its Stock shortfall "2 g without cost" and its Promotion "1 g without cost".
   - The sales figure shown next to it stays the full sales.
-- **Pending grams** are never costed $0 anywhere. Every figure they touch carries "y N g sin costo", with N counting only the grams behind that figure.
+- **Pending grams** are never costed $0 anywhere. Every figure they touch carries "and N g without cost", with N counting only the grams behind that figure.
 - **A fully pending cost figure**:
-  - When every gram behind Cost of goods sold, Stock shortfall, Promotion or Own use is pending, the figure shows only its pending grams in words (e.g. "2 g sin costo"), never "$ 0" and never "$ 0 y N g sin costo". The exact wording is design's.
+  - When every gram behind Cost of goods sold, Stock shortfall, Promotion or Own use is pending, the figure shows only its pending grams in words (e.g. "2 g without cost"), never "$ 0" and never "$ 0 and N g without cost". The exact wording is design's.
   - This holds wherever the figure appears in Analysis: the week and month rows, the month header, and the since-the-first-record lines.
-  - A partly pending figure shows its costed amount plus "y N g sin costo".
+  - A partly pending figure shows its costed amount plus "and N g without cost".
   - The line is never hidden because its cost is pending.
   - Profit, margins, margin percentages and the average margin keep their own rules.
   - The API says whether a figure is fully pending, once per figure; the front only formats it.
@@ -75,7 +75,7 @@ Success criteria:
 - **Cost of goods sold**: what its sold and gifted grams cost, from their lots as they stand today, with the pending mark when it applies.
 - **Margin**: sales of costed grams − costed cost of goods sold, in pesos; it can be negative. With no pending grams, sales of costed grams equal sales without shipping.
 - **Margin percentage**: margin over the variety's sales of costed grams. Not shown when those are $0 (only gifted, or every gram pending).
-- **Pending grams**: margin and percentage carry "y N g sin costo", N counting only that variety's sold and gifted pending grams. Example: 10 g sold for $10.000, 6 g from a $3.000 purchase and 4 g pending, shows sales $10.000, margin $3.000 "y 4 g sin costo" and 50%.
+- **Pending grams**: margin and percentage carry "and N g without cost", N counting only that variety's sold and gifted pending grams. Example: 10 g sold for $10.000, 6 g from a $3.000 purchase and 4 g pending, shows sales $10.000, margin $3.000 "and 4 g without cost" and 50%.
 - **Sorting**: by margin in pesos, highest first. A marked margin sorts by its shown figure and keeps its mark.
 - **Month header**:
   - sales (shipping included), grams sold or gifted, and the average margin;
@@ -103,16 +103,16 @@ Success criteria:
 - **Cost of goods sold** on a row is the period's cost of goods sold, past periods included. A period with no sales shows a real $0. It never includes a shortfall or a withdrawal.
 - **Stock shortfall** on a row is the period's stock shortfall, a separate figure that never enters Cost of goods sold. A period with no negative adjustment has no Stock shortfall line.
 - **Pending grams on a row**:
-  - Cost of goods sold, Stock shortfall, Promotion and Own use each show their costed amount plus their own "y N g sin costo", or only their pending grams when fully pending (see Shared definitions).
+  - Cost of goods sold, Stock shortfall, Promotion and Own use each show their costed amount plus their own "and N g without cost", or only their pending grams when fully pending (see Shared definitions).
   - N counts only the grams behind that figure, each in the period of its own date:
     - Cost of goods sold: sold and gifted grams;
     - Stock shortfall: grams taken out by negative adjustments;
     - Promotion and Own use: grams withdrawn for that reason.
   - Profit keeps its own rule and its total N.
   - Example: a week with 4 g sold, 2 g adjusted out and 1 g withdrawn for promotion, all with no cost yet, reads:
-    - Cost of goods sold "4 g sin costo";
-    - Stock shortfall "2 g sin costo";
-    - Promotion "1 g sin costo";
+    - Cost of goods sold "4 g without cost";
+    - Stock shortfall "2 g without cost";
+    - Promotion "1 g without cost";
     - profit "and 7 g without cost".
 - **Agreement with Inicio**: for the current week and the current month, the row's Cost of goods sold and Stock shortfall equal Home's Week and Month. Any difference is a defect.
 - **Profit** includes stock shortfall, promotion and own-use cost, and carries the pending mark when it applies.
@@ -173,17 +173,17 @@ Success criteria:
     - best week or best weekday;
     - cost of goods sold or stock shortfall.
   - The 4 g / 2 g / 1 g example week reads:
-    - Cost of goods sold "4 g sin costo";
-    - Stock shortfall "2 g sin costo";
-    - Promotion "1 g sin costo";
+    - Cost of goods sold "4 g without cost";
+    - Stock shortfall "2 g without cost";
+    - Promotion "1 g without cost";
     - profit "and 7 g without cost".
   - Each row figure's N counts only its own grams. Profit's N is unchanged.
-  - A fully pending figure shows grams, never "$ 0": on a row, in the month header (Stock shortfall, Promotion, Own use) and on the since-the-first-record lines. A current month whose only shortfall is 2 g with no cost reads "2 g sin costo" in the header and on the row alike.
+  - A fully pending figure shows grams, never "$ 0": on a row, in the month header (Stock shortfall, Promotion, Own use) and on the since-the-first-record lines. A current month whose only shortfall is 2 g with no cost reads "2 g without cost" in the header and on the row alike.
 - **Rows explain profit (criterion 6)**: a front test over a seeded history reads Cost of goods sold on all 8 week rows and all 12 month rows, in the stated order, and Stock shortfall only on periods with a negative adjustment.
 - **Margin matrix**: 100% passing. It covers:
   - a variety only gifted (negative margin, no percentage);
   - a mix of sold and gifted;
-  - pending grams: 10 g for $10.000, with 6 g costing $3.000, shows $3.000 "y 4 g sin costo" and 50%, sorted by shown figure;
+  - pending grams: 10 g for $10.000, with 6 g costing $3.000, shows $3.000 "and 4 g without cost" and 50%, sorted by shown figure;
   - a line split across costed and pending grams, with the half-up rounding of its costed sales;
   - a negative adjustment kept out of the variety table and counted as shortfall;
   - a withdrawal kept out of the variety table and counted on its reason's line;
@@ -208,7 +208,7 @@ Success criteria:
   - the by-variety table;
   - best week.
 
-  The only display change outside the rows is a fully pending Stock shortfall, Promotion or Own use in the header or since the first record, which now shows only its grams instead of "$ 0 y N g sin costo".
+  The only display change outside the rows is a fully pending Stock shortfall, Promotion or Own use in the header or since the first record, which now shows only its grams instead of "$ 0 and N g without cost".
 - **Isolation (criterion 5)**: every analysis route is in the sweep and answers only its own business's figures, never the seeded other business's data.
 - **No echo**: after a full front run, the console and browser storage hold no amounts or names.
 - **Speed**: the screen answers in under 300 ms with a year of a few hundred sales and a few dozen varieties (ADR-0010's revisit trigger).

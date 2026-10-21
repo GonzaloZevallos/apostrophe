@@ -42,7 +42,7 @@ const readyOn = (port: number): RegExp =>
 
 // One cell walks every registry screen twice (loaded, then held); a cell's own budget.
 // Measured (GH-53 integration, ADR-0048): all eight cells together, pinned to two cores
-// (`taskset -c 0,1 npx playwright test --project=mobile --workers=3`), took 238.9 to 246.2 s each,
+// (`taskset -c 0,1 npx playwright test --project=mobile --workers=3 --timeout=1800000`), took 238.9 to 246.2 s each,
 // slowest 430x932 claro at 246.2 s: a margin of 59% under 600 s (the rule is at least 25%). On a
 // loaded 16-core box the slowest cells took 294 to 305 s (GH-53 delivery gate), about half the
 // ceiling. The CI job is not measured: CI is off for billing (human decision, GH-53).

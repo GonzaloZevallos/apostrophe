@@ -218,8 +218,8 @@ Success criteria:
   los últimos 30 días", "Add its first entry" only for no entries), plus days
   left.
 - **Status marks** (`MarcaEstado`): told by shape and word, never by color alone.
-  - square = agotada, as the inverted chip, not red;
-  - filled circle = baja;
+  - square = sold out, as the inverted chip, not red;
+  - filled circle = low;
   - empty circle = ok.
 - **"Stock and entries"** on a variety's page: its last 3 movements (entries and
   withdrawals) and "See all" for all of that variety's movements, newest date first,
@@ -242,7 +242,7 @@ Success criteria:
   - origin: Compra · Cosecha · Stock inicial · Ajuste;
   - total cost, with "Required for a purchase";
   - note;
-  - the cost per gram before saving ("Te queda en $ 8.500 el gramo") whenever there is a
+  - the cost per gram before saving ("It comes to $ 8.500 per gram") whenever there is a
     cost.
 - **Sacar del stock**, the withdrawal form, a form (navigation.md): "Close", no bar, no
   "+ New sale", and a confirmation when leaving with something typed. It follows the
@@ -280,7 +280,7 @@ Success criteria:
   grams.
 - **Pending cost**, wherever a line's cost shows:
   - "Pending cost" when none of the line is costed;
-  - the costed part plus "y N g sin costo" for a split line;
+  - the costed part plus "and N g without cost" for a split line;
   - a gift reads "Gift".
 - **Toasts**: "Entry saved", "Entry deleted", "Warning saved", "Retiro
   guardado" and "Retiro eliminado". None carries grams or amounts.
@@ -323,8 +323,8 @@ Success criteria:
   negative and the status reads sold out.
 - **Status (criterion 4)**: the matrix of nothing moved (no entries), sales without
   entries (sold out), a withdrawal only (not "no entries"), entries netting to 0 (sold
-  out), low, ok and no threshold, plus days left counting withdrawn grams and "Sin gramos
-  desde" following a withdrawal's date: 100%. No status is told by color alone.
+  out), low, ok and no threshold, plus days left counting withdrawn grams and "No grams
+  since" following a withdrawal's date: 100%. No status is told by color alone.
 - **Entry from a variety**: an entry started from a variety's page comes with that
   variety chosen, and with "Initial stock" preselected only when it has no entries.
 - **Not a sale, not a loss (criterion 9)**: after recording a withdrawal, 0 differences in

@@ -43,7 +43,7 @@ Success criteria:
    - While Customers VIP is off, no VIP mark or field shows on any customer screen.
    - Switched back on, every stored VIP mark is back as it was, including for customers edited while it was off.
 9. **Collect fast.** Record payment opens with the customer chosen in at most 2 taps from any tab root ("Collect" on a Customers row or an Home row). A payment is recorded in under a minute, and "All" settles the whole balance in one tap. On a computer it takes no more taps than on the phone.
-10. **Who owes, at a glance.** Customers opens on "Owed to you": the total owed, the count line ("1 sale owing" or "N sales owing") and every debtor oldest owing-since first, each with balance and "desde dd/mm". Everyone A–Z sits below. Every figure comes from the API and equals Home's "Owed to you" block and a direct computation. No scrolling through the A–Z list and no sums.
+10. **Who owes, at a glance.** Customers opens on "Owed to you": the total owed, the count line ("1 sale owing" or "N sales owing") and every debtor oldest owing-since first, each with balance and "since dd/mm". Everyone A–Z sits below. Every figure comes from the API and equals Home's "Owed to you" block and a direct computation. No scrolling through the A–Z list and no sums.
 11. **The card closes the loop.** From a customer's card the seller sees their balance and account, "Record payment" (when they owe) and "New sale to <name>", with that customer already chosen.
 
 ## Behaviour
@@ -97,15 +97,15 @@ Success criteria:
   1. **"Owed to you"**, on top: the total owed, the count line ("1 sale owing" or "N sales owing"), and every customer whose balance is above $0, oldest owing-since first, ties by name, each row with "Collect" (`payments.md`). With nobody owing it reads a fixed "Nobody owes you", with nothing to tap, above the full A–Z list.
   2. **Everyone, A–Z**, below, sorted by name.
 - Every figure of Owed to you comes from the API and equals Home's "Owed to you" block; the browser computes nothing.
-- **Every row of a customer who owes**, in either section and in search results, shows the amount in amber with "te debe desde dd/mm" under it, never as a chip, and a "Collect" button (accessible name "Collect from <name>") that opens Record payment with that customer already chosen, as an entry in the app's history; back or "Close" leaves it in one move. Tapping the rest of the row opens the customer's card.
-- **A customer in credit** never appears in Owed to you and counts in no figure. In everyone A–Z they show "A favor $ X" in the neutral/blue treatment, never green or amber.
+- **Every row of a customer who owes**, in either section and in search results, shows the amount in amber with "owes you since dd/mm" under it, never as a chip, and a "Collect" button (accessible name "Collect from <name>") that opens Record payment with that customer already chosen, as an entry in the app's history; back or "Close" leaves it in one move. Tapping the rest of the row opens the customer's card.
+- **A customer in credit** never appears in Owed to you and counts in no figure. In everyone A–Z they show "Credit $ X" in the neutral/blue treatment, never green or amber.
 - **A customer with a $0 balance** shows nothing about money.
 - **A customer without a number** shows nothing in the number's place: no dash, no empty label, no "No phone".
 - **The VIP mark** shows on the list and the card only while Customers VIP is on. While it is off, nothing shows in its place.
-- **Search** by part of the name or of the phone number: while a query is typed, both sections collapse into one flat list sorted by name, matched as above; a customer who owes keeps their balance, "te debe desde dd/mm" and "Collect". Clearing the query brings the two sections back.
+- **Search** by part of the name or of the phone number: while a query is typed, both sections collapse into one flat list sorted by name, matched as above; a customer who owes keeps their balance, "owes you since dd/mm" and "Collect". Clearing the query brings the two sections back.
 - **A customer's card** (`ClienteFicha`), a card with "‹ Customers":
   - phone (only when there is one; with none, the line is left out entirely) and VIP (only while Customers VIP is on);
-  - "Owes you $ X since dd/mm" or "A favor $ X" (neither for a $0 balance), the account, "Record payment" only when the balance is above $0, and "Delete payment" on later payments (`payments.md`);
+  - "Owes you $ X since dd/mm" or "Credit $ X" (neither for a $0 balance), the account, "Record payment" only when the balance is above $0, and "Delete payment" on later payments (`payments.md`);
   - **"New sale to <name>"**, which opens New sale with that customer already chosen (sales.md). The card shows no "+ New sale".
   - Adding a number later is the card's ordinary edit; there is no prompt to fill it in.
 - **Registrar cobro** (`Payment`) follows payments.md unchanged and its design, `Cobro.dc.html`, opened with the customer chosen from a debtor row or from the card.

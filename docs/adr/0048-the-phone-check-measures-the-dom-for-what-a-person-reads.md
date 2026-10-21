@@ -56,7 +56,7 @@ check. The phone check (`web/e2e/mobile.spec.ts`, GH-80) reads the page itself.
 `MOBILE_TEST_TIMEOUT_MS` (`web/playwright.config.ts`) is 600 000 ms. Measured on the English copy,
 the integration head:
 
-- command: `taskset -c 0,1 npx playwright test --project=mobile --workers=3` (all eight cells in
+- command: `taskset -c 0,1 npx playwright test --project=mobile --workers=3 --timeout=1800000` (all eight cells in
   one run, 12.3 minutes in all);
 - each cell: 320x568 claro 238.9 s, oscuro 239.6 s; 375x812 claro 241.2 s, oscuro 244.2 s;
   430x932 claro 246.2 s, oscuro 245.3 s; 246x437 claro 243.5 s, oscuro 241.8 s;
