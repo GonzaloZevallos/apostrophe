@@ -2508,6 +2508,20 @@ body {
   font-size: 13px;
 }
 
+/* A figure never breaks between "$" and its number: when the row is short of room the
+ * whole figure drops to the next line. From 300 px up; the 246 px cell (a 320 px phone with
+ * text at 130%) keeps its listed overflow under #46, which the phone check holds. */
+@media (min-width: 300px) {
+  .cuenta-cliente__fila {
+    flex-wrap: wrap;
+  }
+
+  .cuenta-cliente__monto,
+  .cuenta-cliente__saldo {
+    white-space: nowrap;
+  }
+}
+
 .marca-estado {
   display: inline-flex;
   align-items: center;

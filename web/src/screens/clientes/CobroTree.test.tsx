@@ -118,7 +118,7 @@ describe('on a computer', () => {
   test('with something typed, Escape asks first and does not leave', async () => {
     const router = renderApp([{ pathname: PAYMENT }], 'computer')
     await screen.findByRole('dialog', { name: 'Record payment' })
-    await userEvent.click(screen.getByLabelText('Cash'))
+    await userEvent.click(await screen.findByLabelText('Cash'))
 
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
