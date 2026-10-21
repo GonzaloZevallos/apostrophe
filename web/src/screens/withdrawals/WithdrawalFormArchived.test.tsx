@@ -97,13 +97,13 @@ function render_(entries: string[], state: World) {
 }
 
 function lineOf(position: number): HTMLElement {
-  const fieldset = screen.getByLabelText(`Variedad ${position}`).closest('fieldset')
+  const fieldset = screen.getByLabelText(`Variety ${position}`).closest('fieldset')
   if (fieldset === null) throw new Error('a line is a fieldset')
   return fieldset
 }
 
 function variety(position: number): HTMLSelectElement {
-  return screen.getByLabelText(`Variedad ${position}`) as HTMLSelectElement
+  return screen.getByLabelText(`Variety ${position}`) as HTMLSelectElement
 }
 
 const SUBMIT_NEW = 'Save the withdrawal'
@@ -113,8 +113,8 @@ async function fillNew(names: string[]) {
   await userEvent.click(await screen.findByRole('button', { name: 'Promoción' }))
   for (const [index, name] of names.entries()) {
     if (index > 0) await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
-    await userEvent.selectOptions(await screen.findByLabelText(`Variedad ${index + 1}`), name)
-    await userEvent.type(screen.getByLabelText(`Gramos ${index + 1}`), '2')
+    await userEvent.selectOptions(await screen.findByLabelText(`Variety ${index + 1}`), name)
+    await userEvent.type(screen.getByLabelText(`Grams ${index + 1}`), '2')
   }
 }
 
@@ -260,8 +260,8 @@ async function editWithTwoAddedLines(state: World) {
     [3, 'Gorilla'],
   ] as const) {
     await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
-    await userEvent.selectOptions(await screen.findByLabelText(`Variedad ${position}`), name)
-    await userEvent.type(screen.getByLabelText(`Gramos ${position}`), '1')
+    await userEvent.selectOptions(await screen.findByLabelText(`Variety ${position}`), name)
+    await userEvent.type(screen.getByLabelText(`Grams ${position}`), '1')
   }
 }
 

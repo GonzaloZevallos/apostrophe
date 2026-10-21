@@ -1,4 +1,6 @@
 {
   "common.COMMON_TEXT.vip": "VIP is the same word in both languages",
-  "common.COMMON_TEXT.perGram": "' x g' is the price-per-gram shorthand, a format and not a word"
+  "common.COMMON_TEXT.perGram": "' x g' is the price-per-gram shorthand, a format and not a word",
+  "stock.STOCK_TEXT.statusOk": "'ok' is the same word in both languages",
+  "varieties.VARIETIES_TEXT.emoji": "'Emoji' is the same word in both languages"
 }

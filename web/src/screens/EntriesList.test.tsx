@@ -275,7 +275,7 @@ test('Delete asks "Before deleting" naming date, variety and grams, then deletes
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Delete' }))
   const dialog = await screen.findByRole('alertdialog', { name: 'Before deleting' })
-  expect(dialog).toHaveTextContent('¿Borrás la entrada del 05/10 de 24K Gold, 30 g?')
+  expect(dialog).toHaveTextContent('Delete the 05/10 entry of 24K Gold, 30 g?')
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
   expect(await screen.findByText('Entry deleted')).toBeInTheDocument()

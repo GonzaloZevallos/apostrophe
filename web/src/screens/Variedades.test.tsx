@@ -143,15 +143,15 @@ describe('the list', () => {
     ])
     expect(rows[0]).toHaveTextContent('24K Gold')
     expect(rows[0]).toHaveTextContent('ok')
-    expect(rows[0]).toHaveTextContent('135 g · 270 días')
+    expect(rows[0]).toHaveTextContent('135 g · 270 days')
     expect(rows[0]).toHaveTextContent('$ 12.000 x g')
     expect(rows[1]).toHaveTextContent('low')
-    expect(rows[1]).toHaveTextContent('18 g · 24 días')
+    expect(rows[1]).toHaveTextContent('18 g · 24 days')
     expect(rows[2]).toHaveTextContent('no entries')
     expect(rows[2]).toHaveTextContent('0 g · Add its first entry')
     expect(rows[2]).toHaveTextContent(NO_PRICE_TODAY)
     expect(rows[3]).toHaveTextContent('sold out')
-    expect(rows[3]).toHaveTextContent('0 g · No grams desde el 01/10')
+    expect(rows[3]).toHaveTextContent('0 g · No grams since 01/10')
   })
 
   test('"Hidden" sits beside the status of a hidden variety, never in its place', async () => {
@@ -436,7 +436,7 @@ describe('the icon and text rule', () => {
     renderApp(VARIETIES_PATH)
     await screen.findByText('24K Gold')
 
-    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variety-fila', 'variedades__todas'] })
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
     for (const name of ['Send catalog', '+ Stock entry', 'Take from stock']) {
       const link = screen.getByRole('link', { name })
       expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
@@ -448,7 +448,7 @@ describe('the icon and text rule', () => {
     await screen.findByText('24K Gold')
     screen.getByRole('link', { name: 'Take from stock' }).querySelector('svg')?.remove()
 
-    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variety-fila', 'variedades__todas'] })
+    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
     expect(problems).toHaveLength(1)
     expect(problems[0]).toContain('Take from stock')
   })

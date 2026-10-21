@@ -8,8 +8,8 @@
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 
-import { EMPTY_STATE_TITLE as STOCK_EMPTY_TITLE, EMPTY_STATE_DETAIL as STOCK_EMPTY_DETAIL } from './stock'
-import { EMPTY_STATE_TITLE as CATALOG_EMPTY_TITLE, EMPTY_STATE_DETAIL as CATALOG_EMPTY_DETAIL } from './catalog'
+import { EMPTY_STATE_TITLE as STOCK_EMPTY_TITLE, EMPTY_STATE_DETAIL as STOCK_EMPTY_DETAIL } from './stock.ts'
+import { EMPTY_STATE_TITLE as CATALOG_EMPTY_TITLE, EMPTY_STATE_DETAIL as CATALOG_EMPTY_DETAIL } from './catalog.ts'
 
 export const EMPTY_STATES = {
   salesList: 'Todavía no registraste ninguna venta en este período.',
@@ -18,6 +18,13 @@ export const EMPTY_STATES = {
   homeVarietiesTitle: 'Arrancá por las variedades',
   homeVarietiesDetail:
     'Cargá tu primera variedad con su precio. Sin precio no se puede vender.',
+  // The stock and catalog wordings below are English in `copy/stock.ts` and `copy/catalog.ts`;
+  // these keys stay (still Spanish, unused by any screen) only until this file flips to 'en',
+  // because the snapshot check needs every key of an 'es' file to resolve.
+  stockTitle: 'Sin entradas de stock',
+  stockDetail: 'Cargá tu stock inicial o una compra',
+  catalogTitle: 'No hay nada en el catálogo hoy',
+  catalogDetail: 'No hay nada para copiar todavía',
   analysisNoHistory: 'Todavía no hay nada para analizar.',
   analysisEmptyMonth: 'No vendiste ni regalaste nada este mes.',
 } as const

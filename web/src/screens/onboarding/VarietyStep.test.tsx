@@ -211,7 +211,7 @@ test('a name refusal sends no price request and keeps what was typed', async () 
   await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('Ya existe una variedad con ese nombre')
+  expect(await screen.findByRole('alert')).toHaveTextContent('A variety with that name already exists')
   expect(screen.getByLabelText(/^Name/)).toHaveValue('Mango Bomb')
   expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
   expect(calls.filter((call) => call.endsWith('/prices'))).toEqual([])
@@ -227,7 +227,7 @@ test('a refused price keeps everything typed, shows on its field, and the retry 
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent('Revisá los precios cargados')
+  expect(alert).toHaveTextContent('Check the prices entered')
   expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   expect(screen.getByText('Variedad: Mango Bomb')).toBeInTheDocument()

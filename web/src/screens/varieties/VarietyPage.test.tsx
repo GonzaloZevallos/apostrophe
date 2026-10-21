@@ -184,15 +184,15 @@ describe('the summary line', () => {
   test('tells grams, status by shape and word, days left and today\'s price', async () => {
     renderPage(VARIETY_ONE)
 
-    const line = await screen.findByText(/24 días/)
-    expect(line).toHaveTextContent('18 g · low · 24 días · $ 11.000 x g')
+    const line = await screen.findByText(/24 days/)
+    expect(line).toHaveTextContent('18 g · low · 24 days · $ 11.000 x g')
     expect(screen.getByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
   })
 
   test.each([
     ['sold_out', { grams: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, '0 g · sold out'],
     ['no_entries', { grams: 0, status: 'no_entries', days_left: null }, '0 g · no entries'],
-    ['ok', { grams: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 días'],
+    ['ok', { grams: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 days'],
   ])('a %s variety', async (_name, patch, expected) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
@@ -203,7 +203,7 @@ describe('the summary line', () => {
   test('no price in force says it cannot be sold', async () => {
     renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, NO_PRICE_ROW) })
 
-    expect(await screen.findByText(/No price: no se puede vender/)).toBeInTheDocument()
+    expect(await screen.findByText(/No price: cannot be sold/)).toBeInTheDocument()
   })
 
   test('a variety left out of the catalog is marked "Hidden" beside its status', async () => {
@@ -211,7 +211,7 @@ describe('the summary line', () => {
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
     const line = (await screen.findByText('Hidden')).closest('p')
-    expect(line).toHaveTextContent('18 g · low · Hidden · 24 días')
+    expect(line).toHaveTextContent('18 g · low · Hidden · 24 days')
   })
 })
 
@@ -288,7 +288,7 @@ describe("an archived variety's summary line and its one action", () => {
     expect(screen.getByText('Archived')).toHaveClass('insignia')
     expect(screen.queryByText('Hidden') !== null).toBe(hidden)
     expect(screen.queryByText(/baja|ok|sold out|no entries/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/24 días/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/24 days/)).not.toBeInTheDocument()
   })
 
   test('its grams show as a figure even when negative, and no price says No price', async () => {
@@ -423,7 +423,7 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Prices' })).closest('section')
     const inside = within(section as HTMLElement)
-    expect(inside.getAllByText(/Rige desde/)).toHaveLength(3)
+    expect(inside.getAllByText(/Effective from/)).toHaveLength(3)
     expect(inside.getByText('In force today')).toBeInTheDocument()
     expect(inside.queryByText('$ 9.800')).not.toBeInTheDocument()
     expect(inside.getByRole('link', { name: 'See all' })).toHaveAttribute('href', pathTo(VARIETY_PRICES, { id: 1 }))
@@ -464,7 +464,7 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Prices' })).closest('section')
     const inside = within(section as HTMLElement)
-    expect(await inside.findAllByText(/Rige desde/)).not.toHaveLength(0)
+    expect(await inside.findAllByText(/Effective from/)).not.toHaveLength(0)
     expect(inside.queryByText(/VIP/)).not.toBeInTheDocument()
     expect(inside.queryByRole('button', { name: 'Delete this price' })).toBeNull()
   })
@@ -915,7 +915,7 @@ describe('In the catalog: the form', () => {
     await user.clear(screen.getByLabelText('Emoji'))
     await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 
-    expect(await screen.findByText('Catalog saved')).toBeInTheDocument()
+    expect(await screen.findByText('Catálogo guardado')).toBeInTheDocument()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
     expect(putOf(fetchMock)).toEqual({
       url: '/catalog/varieties/1',

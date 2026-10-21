@@ -76,7 +76,7 @@ test('Delete names the promotion, the date and the grams; confirming deletes and
   await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   const dialog = await screen.findByRole('alertdialog', { name: 'Before deleting' })
-  expect(dialog).toHaveTextContent('¿Borrás la promoción del 02/10? Vuelven 5,5 g al stock.')
+  expect(dialog).toHaveTextContent('Delete the promotion from 02/10? 5,5 g go back to stock.')
   await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep it' }))
   expect(deletes).not.toHaveBeenCalled()
 
@@ -96,7 +96,7 @@ test('Delete on an own-use withdrawal says "el consumo propio"', async () => {
   await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   expect(await screen.findByRole('alertdialog')).toHaveTextContent(
-    '¿Borrás el consumo propio del 02/10? Vuelven 5,5 g al stock.',
+    'Delete the own use from 02/10? 5,5 g go back to stock.',
   )
 })
 

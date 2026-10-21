@@ -514,8 +514,8 @@ test('Lo que te queda: every status has its word once and days only as the side 
   const rows = Array.from(container.querySelectorAll<HTMLElement>('.fila-stock'))
   expect(rows.map((row) => row.querySelectorAll('.marca-estado__palabra').length)).toEqual([1, 1, 1, 1])
   expect(rows.map((row) => row.querySelector('.fila-stock__insignia')?.textContent ?? null)).toEqual([
-    '5 días',
-    '40 días',
+    '5 days',
+    '40 days',
     null,
     null,
   ])

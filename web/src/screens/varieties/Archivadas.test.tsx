@@ -155,14 +155,14 @@ afterEach(() => vi.unstubAllGlobals())
 describe('Archivadas (N) on Variedades', () => {
   test('shows the count of archived varieties and links to the card', async () => {
     renderAt(VARIETIES)
-    const link = await screen.findByRole('link', { name: /Archivadas \(2\)/ })
+    const link = await screen.findByRole('link', { name: /Archived \(2\)/ })
     expect(link.getAttribute('href')).toBe(ARCHIVED_VARIETIES)
   })
 
   test('shows nothing when there are none', async () => {
     renderAt(VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
     await screen.findByText('All entries')
-    await waitFor(() => expect(screen.queryByText(/Archivadas \(/)).toBeNull())
+    await waitFor(() => expect(screen.queryByText(/Archived \(/)).toBeNull())
   })
 })
 
@@ -181,7 +181,7 @@ describe('the Archivadas card', () => {
     renderAt(ARCHIVED_VARIETIES)
     await screen.findByText('Alfa Vieja')
 
-    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variety-fila'] })
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila'] })
   })
 
   test('lists the archived varieties by name, each marked Archived with Restore', async () => {
@@ -189,8 +189,8 @@ describe('the Archivadas card', () => {
     await screen.findByText('Alfa Vieja')
     const names = screen.getAllByText(/Vieja$/).map((node) => node.textContent)
     expect(names).toEqual(['Alfa Vieja', 'Zeta Vieja'])
-    expect(screen.getAllByText('Archived')).toHaveLength(2)
-    for (const mark of screen.getAllByText('Archived')) expect(mark.className).toBe('insignia')
+    expect(screen.getAllByText('Archived', { selector: '.insignia' })).toHaveLength(2)
+    for (const mark of screen.getAllByText('Archived', { selector: '.insignia' })) expect(mark.className).toBe('insignia')
     expect(screen.queryByText('Hidden')).toBeNull()
     expect(screen.getAllByRole('button', { name: 'Restore' })).toHaveLength(2)
     expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeTruthy()

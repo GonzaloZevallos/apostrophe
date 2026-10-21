@@ -21,7 +21,7 @@ import VarietyRoute from './VarietyRoute'
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const GONE_TEXT = 'That is gone. The list is up to date.'
 const ARCHIVE_DETAIL =
-  'Te quedan 12 g. Si la archivás, they stop showing on Home and in the lists, but the stock is kept.'
+  'You have 12 g left. If you archive it, they stop showing on Home and in the lists, but the stock is kept.'
 
 function variety(id: number, name: string, removal: 'delete' | 'archive' | null = 'archive') {
   return { id, name, archived: false, removal, current_price: null }
@@ -194,19 +194,19 @@ describe('archiving', () => {
     await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'Si la archivás, they stop showing on Home and in the lists, but the stock is kept.',
+      'If you archive it, they stop showing on Home and in the lists, but the stock is kept.',
     )
-    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Te quedan')
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('You have')
   })
 
-  test('with negative stock it says the shortfall, not "Te quedan"', async () => {
+  test('with negative stock it says the shortfall, not "You have"', async () => {
     const user = userEvent.setup()
     renderPage({ grams: -5 })
 
     await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    expect(screen.getByRole('alertdialog')).toHaveTextContent('Tiene un faltante de 5 g.')
-    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Te quedan')
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('It has a shortfall of 5 g.')
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('You have')
   })
 
   test('"No, keep it" closes the dialog and sends nothing', async () => {

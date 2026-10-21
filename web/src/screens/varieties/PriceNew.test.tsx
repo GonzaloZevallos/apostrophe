@@ -241,7 +241,7 @@ test('with Clientes VIP off the form has no "VIP price" and says nothing about i
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
-  expect(screen.queryByLabelText(/Precio VIP/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/VIP price/)).not.toBeInTheDocument()
   expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
   expect(screen.getByLabelText(/^Bulk price/)).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Save the price' }))
@@ -273,7 +273,7 @@ test('with both rules off only the list price is asked for', async () => {
 
   await screen.findByLabelText(/^List price/)
 
-  expect(screen.queryByLabelText(/Precio VIP/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/VIP price/)).not.toBeInTheDocument()
   expect(screen.queryByLabelText(/Bulk price/)).not.toBeInTheDocument()
   expect(screen.queryByLabelText(/Mínimo en gramos/)).not.toBeInTheDocument()
 })
@@ -339,7 +339,7 @@ test('the date is a chip reading "Hoy dd/mm" with "Effective from" as its descri
   const chip = await screen.findByRole('button', CHIP_TODAY)
   expect(chip).toHaveAccessibleDescription('Effective from')
   expect(chip).toHaveAttribute('aria-expanded', 'false')
-  expect(screen.queryByRole('button', { name: /Rige desde/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Effective from/ })).not.toBeInTheDocument()
   expect(screen.queryByLabelText('Effective from')).not.toBeInTheDocument()
 })
 

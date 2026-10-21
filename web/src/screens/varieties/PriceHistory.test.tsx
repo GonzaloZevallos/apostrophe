@@ -23,7 +23,7 @@ test('lists every price newest first with "Effective from", the one in force and
 
   expect(await screen.findByRole('button', { name: '‹ 24K Gold' })).toBeInTheDocument()
   const rows = (await screen.findAllByText(/^Effective from/)).map((node) => node.textContent)
-  expect(rows).toEqual(['Effective from 25/09Vigente hoy', 'Effective from 01/09', 'Effective from 05/07'])
+  expect(rows).toEqual(['Effective from 25/09In force today', 'Effective from 01/09', 'Effective from 05/07'])
   expect(screen.getByText('In force today')).toBeInTheDocument()
   expect(screen.getByText('From 10 g · $ 10.000')).toBeInTheDocument()
   expect(screen.getByText('$ 11.000')).toBeInTheDocument()
@@ -160,7 +160,7 @@ test('with both rules on, an entry shows its bulk tier and its "VIP price"', asy
 
   expect(await screen.findByText('VIP price · $ 9.000')).toBeInTheDocument()
   expect(screen.getByText('From 10 g · $ 10.000')).toBeInTheDocument()
-  expect(screen.getAllByText(/Precio VIP/)).toHaveLength(1)
+  expect(screen.getAllByText(/VIP price/)).toHaveLength(1)
 })
 
 test('with Clientes VIP off there is no trace of the VIP price, the bulk tier stays', async () => {

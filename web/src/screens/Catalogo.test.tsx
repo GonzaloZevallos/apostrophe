@@ -232,9 +232,9 @@ test('"What does not go out and why" lists every variety out of the catalog with
   const rows = within(reasonsSection()).getAllByRole('listitem')
   expect(rows.map((row) => row.textContent)).toEqual([
     'Sir Jackhidden',
-    'Mango Bombsin precio',
-    'Golden Cookiesagotada',
-    'Lemon Hazesin entradas',
+    'Mango Bombno price',
+    'Golden Cookiessold out',
+    'Lemon Hazeno entries',
   ])
   expect(within(reasonsSection()).queryByText('24K Gold')).not.toBeInTheDocument()
 })
@@ -319,7 +319,7 @@ test('a failed share shows only the fixed message and leaves Copiar available', 
   await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
 
   const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent(/^No se pudo compartir\.$/)
+  expect(alert).toHaveTextContent(/^Could not share\.$/)
   expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled()
   await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
   expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG.text)

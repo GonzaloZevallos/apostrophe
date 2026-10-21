@@ -73,7 +73,7 @@ const LOADED: Partial<Record<ScreenId, string>> = {
   'variety-entries': 'Entries',
   stock: 'All entries',
   catalog: 'Sir Jack',
-  'varieties-archived': 'Archivada',
+  'varieties-archived': 'Archived',
   withdrawal: 'Zkittlez',
 }
 

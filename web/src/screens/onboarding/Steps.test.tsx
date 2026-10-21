@@ -203,7 +203,7 @@ test('step 1 with no target saves the variety and its price with one action; a r
   await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('Revisá los precios cargados')
+  expect(await screen.findByRole('alert')).toHaveTextContent('Check the prices entered')
   expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
 
   refuse = false
@@ -234,11 +234,11 @@ test('step 2 saves the opening stock of the stock target through the owner, then
 
   expect(await screen.findByText('Mango Bomb')).toBeInTheDocument()
   expect(screen.getByLabelText(/^Total cost/).closest('label')).toHaveTextContent(
-    'Opcional · si no lo cargás, el lote cuesta $ 0',
+    'Optional · if you leave it out, the lot costs $ 0',
   )
   expect(screen.queryByLabelText('Date')).not.toBeInTheDocument()
   await user.type(screen.getByLabelText('Grams'), '500')
-  await user.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await user.click(screen.getByRole('button', { name: 'Save the entry' }))
 
   expect(await screen.findByRole('button', { name: 'Add another variety' })).toBeInTheDocument()
   expect(bodies).toEqual([
