@@ -35,7 +35,7 @@ test('a new business goes from the invitation to Nueva venta from "Done", with n
   await expect(page).toHaveURL(/\/onboarding\/variety$/)
   await priceAVariety(page, 'Rosa')
 
-  await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Add what you have today' })).toBeVisible()
   await expect(page.getByText('Rosa', { exact: true })).toBeVisible()
   await page.getByLabel('Grams').fill('500')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
@@ -65,12 +65,12 @@ test('a new business goes from the invitation to Nueva venta from "Done", with n
 test('leaving after step 1 keeps it, and Inicio\'s notice resumes at step 2', async ({ page }) => {
   await signUpNewBusiness(page, { stayInOnboarding: true })
   await priceAVariety(page, 'Lirio')
-  await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Add what you have today' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Close' }).click()
   await expect(page.getByText(NOTICE)).toBeVisible()
   await page.getByText(NOTICE).click()
-  await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Add what you have today' })).toBeVisible()
   await expect(page.getByText('Paso 2 de 6')).toBeVisible()
   await expectOnlyTheThemeStored(page)
 })
@@ -78,7 +78,7 @@ test('leaving after step 1 keeps it, and Inicio\'s notice resumes at step 2', as
 test('the catalog message saved in step 3 reads the same in Configuración', async ({ page }) => {
   await signUpNewBusiness(page, { stayInOnboarding: true })
   await priceAVariety(page, 'Jazmín')
-  await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Add what you have today' })).toBeVisible()
   await expect(page.getByText('Jazmín', { exact: true })).toBeVisible()
   await page.getByLabel('Grams').fill('300')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
