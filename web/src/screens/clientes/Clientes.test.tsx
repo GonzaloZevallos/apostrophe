@@ -227,7 +227,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
     within(section).getByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`),
   ).toBeInTheDocument()
   expect(within(section).getAllByRole('link').map((link) => link.textContent)).toEqual([
-    'Ana Pérez$ 15.000owes you since 14/09',
+    'APAna Pérez$ 15.000owes you since 14/09',
     'Collect',
   ])
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
@@ -364,6 +364,34 @@ test('a customer who owes shows the amber mark; one in credit shows the blue "Cr
 
   expect(await screen.findByText('owes you since 14/09')).toBeInTheDocument()
   expect(screen.getByText('Credit $ 2.000')).toBeInTheDocument()
+})
+
+test('every row has a decorative initials avatar; only the rows that owe nothing end in a chevron', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() =>
+      jsonResponse(200, [
+        { id: 1, name: 'Ana Pérez', phone: '+5491100000001', vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+        { id: 2, name: 'Lu Fernández', phone: '+5491100000002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
+        { id: 3, name: 'Mica Solano', phone: '+5491100000003', vip: false, balance: 0, owing_since: null, standing: 'settled' },
+      ]),
+    ),
+  )
+  renderClientes()
+
+  const ana = await screen.findByRole('link', { name: /^Ana Pérez/ })
+  const lu = screen.getByRole('link', { name: /^Lu Fernández/ })
+  const mica = screen.getByRole('link', { name: /^Mica Solano/ })
+  const avatars = (row: HTMLElement) => Array.from(row.querySelectorAll('.avatar'))
+  expect(avatars(ana).map((a) => a.textContent)).toEqual(['AP'])
+  expect(avatars(lu).map((a) => a.textContent)).toEqual(['LF'])
+  expect(avatars(mica).map((a) => a.textContent)).toEqual(['MS'])
+  for (const row of [ana, lu, mica]) expect(avatars(row)[0]).toHaveAttribute('aria-hidden', 'true')
+  expect(ana).not.toHaveAccessibleName(/^AP/)
+  expect(ana.querySelector('svg')).toBeNull()
+  expect(lu.lastElementChild?.tagName.toLowerCase()).toBe('svg')
+  expect(mica.lastElementChild?.tagName.toLowerCase()).toBe('svg')
+  expect(screen.getByRole('link', { name: 'Collect from Ana Pérez' })).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Collect from Lu Fernández' })).toBeNull()
 })
 
 // Opening a customer or a payment from the list (navigation.md, "In-app entries").

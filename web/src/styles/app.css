@@ -1045,6 +1045,26 @@ body {
   background: var(--acento);
 }
 
+/* A person's initials in a circle (`ClientesCompu.dc.html`): --superficie fill, --papel on a
+ * selected row; no colour of its own, so the text takes the row's --tinta. */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lista-clientes__fila > svg {
+  flex-shrink: 0;
+  color: var(--tenue);
+}
+
 .lista-clientes__fila {
   display: flex;
   align-items: center;

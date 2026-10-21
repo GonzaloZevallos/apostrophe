@@ -48,7 +48,7 @@ import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/b
 import BackArrow from './BackArrow'
 import { NUEVA_VENTA_MISSING } from '../copy/inicio'
 import { chromeOf } from './chrome'
-import { initialsOf } from './initials'
+import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useViewport } from './useViewport'
 import { SHELL_TEXT } from '../copy/shell'

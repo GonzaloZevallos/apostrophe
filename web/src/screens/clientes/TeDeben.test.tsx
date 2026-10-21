@@ -64,8 +64,8 @@ test("heads with the total owed and lists debtors in the API's own order", async
     .getAllByRole('link')
     .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Collect')
   expect(rows.map((row) => row.textContent)).toEqual([
-    'Ana Pérez$ 15.000owes you since 14/09',
-    'Beto$ 22.000owes you since 20/09',
+    'APAna Pérez$ 15.000owes you since 14/09',
+    'BBeto$ 22.000owes you since 20/09',
   ])
   expect(screen.getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label'))).toEqual([
     'Collect from Ana Pérez',
