@@ -9,6 +9,7 @@ carry its own `code`, not one inherited from the base.
 """
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -217,3 +218,48 @@ def test_the_overlap_check_rejects_a_segment_with_no_shared_path() -> None:
         check_front_segment_overlap(
             {"expenses", "settings"}, {"expenses", "settings"}, SHARED_FRONT_PATHS
         )
+
+
+REFUSALS_COPY_PATH = (
+    Path(__file__).resolve().parent.parent / "web" / "src" / "copy" / "refusals.ts"
+)
+
+
+def copy_codes_of(source: str) -> set[str]:
+    """The refusal codes `REFUSAL_BY_CODE` (web/src/copy/refusals.ts) has a key for."""
+    start = source.index("export const REFUSAL_BY_CODE")
+    return set(re.findall(r"^\s*'([A-Za-z_]+(?:\.[a-z_]+)?)':", source[start:], re.MULTILINE))
+
+
+def check_copy_covers(contract_codes: set[str], copy_codes: set[str]) -> None:
+    """Raises `AssertionError` naming a contract code `copy/refusals` has no key for, or a
+    key for a code the contract does not list."""
+    missing = contract_codes - copy_codes
+    if missing:
+        raise AssertionError(f"copy/refusals has no key for {sorted(missing)}")
+    extra = copy_codes - contract_codes
+    if extra:
+        raise AssertionError(f"copy/refusals has keys for {sorted(extra)}, not in contract.json")
+
+
+def test_every_contract_code_has_a_key_in_the_refusal_copy() -> None:
+    contract = json.loads(CONTRACT_PATH.read_text())
+
+    check_copy_covers(set(contract["refusalCodes"]), copy_codes_of(REFUSALS_COPY_PATH.read_text()))
+
+
+def test_the_copy_check_fails_for_a_code_with_no_key_and_for_a_key_with_no_code() -> None:
+    with pytest.raises(AssertionError, match="no key for.*a.code"):
+        check_copy_covers({"a.code", "b.code"}, {"b.code"})
+    with pytest.raises(AssertionError, match="c.code.*not in contract.json"):
+        check_copy_covers({"a.code"}, {"a.code", "c.code"})
+
+
+def test_the_refusal_copy_is_english_and_repeats_no_input() -> None:
+    source = REFUSALS_COPY_PATH.read_text()
+    texts = re.findall(r"^\s+\w+: '((?:[^'\\]|\\.)+)',?$", source, re.MULTILINE)
+
+    assert texts, "no refusal text found"
+    for text in texts:
+        assert not re.search(r"[áéíóúñ¿¡]", text), "a Spanish letter in the refusal copy"
+        assert "${" not in text, "a refusal must repeat nothing typed"
