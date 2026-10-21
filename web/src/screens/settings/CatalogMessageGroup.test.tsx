@@ -1,5 +1,5 @@
 /**
- * `CatalogMessageGroup` at the screen seam (plan, "Mensaje del catálogo"; `catalog.md`): the
+ * `CatalogMessageGroup` at the screen seam (plan, "Catalog message"; `catalog.md`): the
  * header and footer, inline refusals that keep what was typed, and the unsaved-changes rule
  * measured against what the server last accepted. The API is faked at `fetch`, never mocked
  * deeper (CODING_STANDARDS §10).
@@ -164,7 +164,7 @@ test('an untouched group closes at once', async () => {
   renderGroup(serving())
   await screen.findByLabelText('Encabezado')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
@@ -174,10 +174,10 @@ test('closing with unsaved changes asks first, and keeping stays on the group', 
   await screen.findByLabelText('Encabezado')
   await type('Pie', 'Sin guardar')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('¿Descartás el mensaje?')).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí editando' }))
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
   expect(screen.getByLabelText('Pie')).toHaveValue('Sin guardar')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()
 })
@@ -187,8 +187,8 @@ test('discarding leaves the group', async () => {
   await screen.findByLabelText('Encabezado')
   await type('Pie', 'Sin guardar')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
@@ -207,7 +207,7 @@ test('after saving, dirty is measured against what the server accepted, not the 
   act(() => {
     client.setQueryData(keys.catalog(), { ...CATALOG, header: 'Otro', footer: 'Otro' })
   })
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(screen.getByText('Lista de grupos')).toBeInTheDocument())
   expect(screen.queryByText('¿Descartás el mensaje?')).not.toBeInTheDocument()
@@ -221,7 +221,7 @@ test('after saving, a real change asks again', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
   await screen.findByText('Catálogo guardado')
   await type('Pie', 'Otra vez')
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('¿Descartás el mensaje?')).toBeInTheDocument()
 })

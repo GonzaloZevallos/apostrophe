@@ -24,7 +24,7 @@ describe('tolerances', () => {
 })
 
 describe('judgeShifts', () => {
-  const cell = { screen: 'Ventas', size: '375x812', theme: 'claro' } as const
+  const cell = { screen: 'Sales', size: '375x812', theme: 'claro' } as const
   const raw = (label: string) => ({ testid: '', role: 'div', label, identity: '' })
   const move = (node: number, chrome: boolean, by: number, label = 'x'): ShiftSample => ({
     node,

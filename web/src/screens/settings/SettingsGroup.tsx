@@ -47,7 +47,7 @@ export default function SettingsGroup({ title, dirty, leave, children }: Setting
       <div className="ajustes-grupo__tarjeta">
         <div className="ajustes-grupo__encabezado">
           <span className="ajustes-grupo__titulo">{title}</span>
-          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={close} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
         </div>
         <div className="ajustes-grupo__cuerpo">
           {typeof children === 'function' ? children({ disarm }) : children}

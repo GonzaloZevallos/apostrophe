@@ -35,7 +35,7 @@ import { NOBODY_OWES, INICIO_TEXT } from '../../copy/inicio'
 import PeriodPanel from './PeriodFigures'
 import { COMMON_TEXT } from '../../copy/common'
 
-const TAB_LABEL: Record<PanelTab, string> = { today: COMMON_TEXT.hoy, week: COMMON_TEXT.semana, month: COMMON_TEXT.mes }
+const TAB_LABEL: Record<PanelTab, string> = { today: COMMON_TEXT.today, week: COMMON_TEXT.week, month: COMMON_TEXT.month }
 const TAB_ITEMS = (['today', 'week', 'month'] as const).map((value) => ({
   value,
   label: TAB_LABEL[value],
@@ -63,7 +63,7 @@ export default function InicioPanel({
   return (
     <>
       <div className="inicio__periodos">
-        <Pestanas items={TAB_ITEMS} value={tab} onChange={onTab} ariaLabel={COMMON_TEXT.periodo} />
+        <Pestanas items={TAB_ITEMS} value={tab} onChange={onTab} ariaLabel={COMMON_TEXT.period} />
         <span className="pie">{rangeLabel(tab, period)}</span>
       </div>
 
@@ -123,7 +123,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
   if (debts.oldest === null) {
     return (
       <div className="bloque-deben">
-        <span className="rotulo">{COMMON_TEXT.teDeben}</span>
+        <span className="rotulo">{COMMON_TEXT.owedToYou}</span>
         <span className="pie">{NOBODY_OWES}</span>
       </div>
     )
@@ -132,7 +132,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
   return (
     <div className="bloque-deben">
       <InAppLink to={CUSTOMERS} className="bloque-deben__titulo">
-        {COMMON_TEXT.teDeben}
+        {COMMON_TEXT.owedToYou}
       </InAppLink>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
       <span className="pie bloque-deben__cuenta">{salesOwingCount(debts.sales_owing_count)}</span>
@@ -149,9 +149,9 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
           <BotonLink
             icon="cobro"
             to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
-            ariaLabel={COMMON_TEXT.cobrarA0(row.name)}
+            ariaLabel={COMMON_TEXT.collectFrom(row.name)}
           >
-            {COMMON_TEXT.cobrar}
+            {COMMON_TEXT.collect}
           </BotonLink>
         </div>
       ))}

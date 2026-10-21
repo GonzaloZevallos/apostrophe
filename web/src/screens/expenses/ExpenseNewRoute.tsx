@@ -48,9 +48,9 @@ export default function ExpenseNewRoute() {
         <LeaveConfirm
           blocker={blocker}
           question={EXPENSES_TEXT.descartasElGasto}
-          detail={COMMON_TEXT.sePierdeLoQue}
-          keepLabel={COMMON_TEXT.noSeguiCargando}
-          discardLabel={COMMON_TEXT.siDescartalo}
+          detail={COMMON_TEXT.losesWhatYouEntered}
+          keepLabel={COMMON_TEXT.noKeepEntering}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </main>

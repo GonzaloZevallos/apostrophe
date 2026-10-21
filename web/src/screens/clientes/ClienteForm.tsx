@@ -48,7 +48,7 @@ import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const SAVED_TOAST = COMMON_TEXT.clienteGuardado
+export const SAVED_TOAST = COMMON_TEXT.customerSaved
 export const NAME_REQUIRED = CUSTOMERS_TEXT.poneleUnNombre
 export const PHONE_INVALID = CUSTOMERS_TEXT.esoNoPareceUn
 export const PHONE_TAKEN = CUSTOMERS_TEXT.eseTelefonoYaEs
@@ -58,7 +58,7 @@ type Field = 'name' | 'phone' | 'form'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
-  'customer.name_too_long': { field: 'name', message: COMMON_TEXT.elNombreEsDemasiado },
+  'customer.name_too_long': { field: 'name', message: COMMON_TEXT.nameTooLong },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
@@ -81,7 +81,7 @@ export default function ClienteForm({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label={COMMON_TEXT.clientes} to={CUSTOMERS} />
+      return <GoneScreen label={COMMON_TEXT.customers} to={CUSTOMERS} />
     }
     if (existing.error instanceof NetworkError) {
       return (
@@ -209,9 +209,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       <div className="cuerpo">
         <div className="encabezado-fila">
           <span className="encabezado__titulo">
-            {mode === 'nuevo' ? COMMON_TEXT.nuevoCliente : COMMON_TEXT.editarCliente}
+            {mode === 'nuevo' ? COMMON_TEXT.newCustomer : COMMON_TEXT.editCustomer}
           </span>
-          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={close} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
         </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields
@@ -240,9 +240,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         <LeaveConfirm
           blocker={blocker}
           question={CUSTOMERS_TEXT.descartasElCliente}
-          detail={COMMON_TEXT.sePierdeLoQue}
-          keepLabel={COMMON_TEXT.noSeguiCargando}
-          discardLabel={COMMON_TEXT.siDescartalo}
+          detail={COMMON_TEXT.losesWhatYouEntered}
+          keepLabel={COMMON_TEXT.noKeepEntering}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </main>

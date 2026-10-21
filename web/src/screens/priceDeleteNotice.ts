@@ -22,11 +22,11 @@ export function deleteNotice(history: readonly HistoryEntry[], entryId: number):
   const index = chronological.findIndex((entry) => entry.id === entryId)
   const earlier = index > 0 ? chronological[index - 1] : undefined
   if (earlier !== undefined) {
-    return COMMON_TEXT.vuelveARegir0(formatMoney(earlier.list_price), formatDateShort(earlier.effective_from))
+    return COMMON_TEXT.returnsTo(formatMoney(earlier.list_price), formatDateShort(earlier.effective_from))
   }
   const next = chronological[index + 1]
   if (next !== undefined) {
-    return COMMON_TEXT.noVaAHaber(formatDateShort(next.effective_from))
+    return COMMON_TEXT.noPriceBefore(formatDateShort(next.effective_from))
   }
   return NO_PRICE_TODAY
 }

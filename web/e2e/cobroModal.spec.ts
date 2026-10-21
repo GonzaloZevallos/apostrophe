@@ -14,35 +14,35 @@ import { expectPath } from './helpers/url.js'
 
 test.use({ viewport: { width: 1280, height: 800 } })
 
-/** Signs up, sells "Carla Cobrar" a rose on credit and opens "Registrar cobro" from her card. */
+/** Signs up, sells "Carla Cobrar" a rose on credit and opens "Record payment" from her card. */
 async function openCobroModal(page: Page): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^Precio de lista/).fill('1000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Nombre').fill('Carla Cobrar')
+  await page.getByLabel('Name').fill('Carla Cobrar')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Nueva venta a Carla Cobrar' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
-  await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).first().click()
-  await expect(page.getByRole('dialog', { name: 'Registrar cobro' })).toBeVisible()
+  await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).first().click()
+  await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
   // The host takes focus to the title once the form is there: its effects have run.
   await expect(page.locator('.cobro-modal .panel__titulo')).toBeFocused()
 }

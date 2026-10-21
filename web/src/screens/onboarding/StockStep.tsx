@@ -65,7 +65,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
             disabled={sending}
             onClick={() => void navigate(ONBOARDING_VARIETY, { state: inAppState(location, anotherVarietyState()) })}
           >
-            {COMMON_TEXT.agregarOtraVariedad}
+            {COMMON_TEXT.addAnotherVariety}
           </Boton>
         </div>
         {notice}

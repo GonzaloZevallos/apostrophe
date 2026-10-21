@@ -4,7 +4,7 @@
  * only ever shows one line's own fields at a time — a line's `aria-label`s
  * ("Variedad línea N", "Gramos línea N", ...) exist only while it is open.
  *
- * Line `n` opens first, if it isn't already: clicking "Agregar otra variedad"
+ * Line `n` opens first, if it isn't already: clicking "Add another variety"
  * when it doesn't exist yet, or tapping its own closed row (named "Línea N: " plus
  * its variety, or "Sin variedad") when it does but isn't the one currently open.
  * Only then are its fields filled.
@@ -29,13 +29,13 @@ export async function fillSaleLine(
   // The lines render only once the varieties have arrived, and `count()` below does not
   // wait: read before that, it would see no line and add a second one. "Agregar otra
   // variedad" is on screen exactly when the lines are.
-  await expect(page.getByRole('button', { name: 'Agregar otra variedad' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Add another variety' })).toBeVisible()
   if ((await varietyField.count()) === 0) {
     const closedRow = page.getByRole('button', { name: new RegExp(`^Línea ${n}:`) })
     if ((await closedRow.count()) > 0) {
       await closedRow.click()
     } else {
-      await page.getByRole('button', { name: 'Agregar otra variedad' }).click()
+      await page.getByRole('button', { name: 'Add another variety' }).click()
     }
   }
   await expect(varietyField).toBeVisible()

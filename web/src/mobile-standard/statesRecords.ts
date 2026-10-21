@@ -18,6 +18,7 @@ import {
   VARIETIES,
   VARIETY,
 } from '../routes.ts'
+import { COMMON_TEXT } from '../copy/common.ts'
 import type { WalkState } from './states.ts'
 
 /*
@@ -50,12 +51,12 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'EntradasTodas',
     route: STOCK,
     steps: [],
-    visible: 'Todas las entradas',
+    visible: COMMON_TEXT.allEntries,
   },
   {
     screen: 'EntradaStockConfirmarCambios',
     route: ENTRY_ROUTE,
-    steps: [{ wait: 'Editar entrada' }, { click: 'Guardar' }],
+    steps: [{ wait: 'Editar entrada' }, { click: COMMON_TEXT.save }],
     visible: '¿Guardás los cambios?',
   },
   {
@@ -68,21 +69,21 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'PrecioNuevoFormulario',
     route: LOW_VARIETY,
-    steps: [{ click: 'Nuevo precio' }],
+    steps: [{ click: COMMON_TEXT.newPrice }],
     visible: 'Guardá el precio',
   },
   {
     screen: 'PrecioConfirmarBorrado',
     route: LOW_VARIETY,
     steps: [{ press: 'Borrar este precio' }],
-    visible: 'Sí, borrala',
+    visible: COMMON_TEXT.yesDelete,
   },
-  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: 'Nueva variedad' }], visible: 'Agregá la variedad' },
+  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: COMMON_TEXT.newVariety }], visible: 'Agregá la variedad' },
   {
     screen: 'VariedadRenombrar',
     route: LOW_VARIETY,
     steps: [{ press: 'Editar nombre' }],
-    visible: 'Guardá el nombre',
+    visible: COMMON_TEXT.saveTheName,
   },
   { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: 'Editar aviso' }], visible: 'Guardá el aviso' },
 
@@ -96,13 +97,13 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'GastoDesdeMas',
     route: MORE,
-    steps: [{ click: 'Cargar gasto' }],
+    steps: [{ click: COMMON_TEXT.addExpense }],
     visible: 'Guardá el gasto',
   },
   {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
-    steps: [{ activate: 'Cargar gasto' }],
+    steps: [{ activate: COMMON_TEXT.addExpense }],
     visible: 'Guardá el gasto',
   },
   {
@@ -122,7 +123,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'ConfiguracionCategoriaRenombrar',
     route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Renombrar' }],
-    visible: 'Guardar',
+    visible: COMMON_TEXT.save,
   },
   {
     screen: 'ConfiguracionCategoriaConfirmarBorrado',
@@ -133,7 +134,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'ConfiguracionContrasena',
     route: SETTINGS_ACCOUNT,
-    steps: [{ click: 'Cambiar contraseña' }],
+    steps: [{ click: COMMON_TEXT.changePassword }],
     visible: 'Contraseña actual',
   },
 ]

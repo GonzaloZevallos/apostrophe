@@ -109,7 +109,7 @@ export default function Variedades() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">{COMMON_TEXT.variedades}</h1>
+        <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
           {catalogDisabled ? (
@@ -127,14 +127,14 @@ export default function Variedades() {
             </BotonLink>
           )}
           <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel={VARIETIES_TEXT.entradaDeStock}>
-            {COMMON_TEXT.entradaDeStock}
+            {COMMON_TEXT.stockEntry}
           </BotonLink>
           <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="salidaStock">
-            {COMMON_TEXT.sacarDelStock}
+            {COMMON_TEXT.takeFromStock}
           </BotonLink>
           <span className="variedades__nueva">
             <BotonLink to={VARIETY_NEW} variant="link">
-              {COMMON_TEXT.nuevaVariedad}
+              {COMMON_TEXT.newVariety}
             </BotonLink>
           </span>
         </div>
@@ -171,7 +171,7 @@ export default function Variedades() {
                   <span className="variedad-fila__precio">
                     {variety.current_price === null
                       ? NO_PRICE_TODAY
-                      : COMMON_TEXT.n0XG(formatMoney(variety.current_price.list_price))}
+                      : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
                   </span>
                 </span>
               </PaneRowLink>
@@ -179,7 +179,7 @@ export default function Variedades() {
           </div>
         )}
         <InAppLink to={STOCK} className="variedades__todas">
-          <span>{COMMON_TEXT.todasLasEntradas}</span>
+          <span>{COMMON_TEXT.allEntries}</span>
           <span aria-hidden="true">›</span>
         </InAppLink>
         {archivedCount > 0 && (

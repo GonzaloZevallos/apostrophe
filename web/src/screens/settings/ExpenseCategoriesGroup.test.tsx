@@ -1,7 +1,7 @@
 /**
  * `ExpenseCategoriesGroup` at the screen seam: add, rename and remove a category, the fixed
  * refusal when removal is blocked because the category still has expenses
- * (`docs/product/expenses.md`, "Expense category"), and the form rule: "Cerrar", and the
+ * (`docs/product/expenses.md`, "Expense category"), and the form rule: "Close", and the
  * unsaved-changes ask measured against what the server last accepted, never the query cache.
  * The API is faked at `fetch`.
  */
@@ -101,7 +101,7 @@ test('a blocked removal shows the fixed refusal, naming no data', async () => {
 
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(CANNOT_REMOVE)).toBeInTheDocument()
   expect(screen.getByText('Packaging')).toBeInTheDocument()
@@ -119,7 +119,7 @@ test('removing a category toasts "Categoría eliminada" and drops the row', asyn
 
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('Categoría eliminada')).toBeInTheDocument()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
@@ -140,7 +140,7 @@ test('renaming a category toasts "Categoría guardada" and shows what the server
   const input = screen.getByLabelText('Nombre de Packaging')
   await userEvent.clear(input)
   await userEvent.type(input, '  empaque  ')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Categoría guardada')).toBeInTheDocument()
   expect(screen.getByText('Empaque')).toBeInTheDocument()
@@ -175,7 +175,7 @@ test('after an add or a rename the list keeps the server order, by name without 
   const input = screen.getByLabelText('Nombre de Packaging')
   await userEvent.clear(input)
   await userEvent.type(input, 'Cajas')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await screen.findByText('Cajas')
 
   // Cajas sorts between Bolsas and alquiler's case-folded place: alquiler, Bolsas, Cajas.
@@ -194,7 +194,7 @@ test('renaming a category that is already gone shows the gone notice and drops t
 
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   const notice = await screen.findByText(GONE_NOTICE)
   // Same floating slot the "Categoría guardada"/"Categoría eliminada" toast uses.
@@ -214,7 +214,7 @@ test('removing a category that is already gone shows the gone notice, not the re
 
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
   expect(screen.queryByText(CANNOT_REMOVE)).not.toBeInTheDocument()
@@ -241,7 +241,7 @@ test('an untouched group closes at once, and so does one whose rename was opened
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
@@ -251,10 +251,10 @@ test('closing with a new name typed asks first, and keeping stays on the group',
   await screen.findByText('Packaging')
   await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Sin guardar')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('¿Descartás la categoría?')).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí editando' }))
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
   expect(screen.getByLabelText('Nueva categoría')).toHaveValue('Sin guardar')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()
 })
@@ -265,13 +265,13 @@ test('closing with a rename edited and not saved asks, and discarding leaves the
   await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
   await userEvent.type(screen.getByLabelText('Nombre de Packaging'), 's')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
 
-test('after a save, "Cerrar" closes at once even while the refetch is pending and would differ', async () => {
+test('after a save, "Close" closes at once even while the refetch is pending and would differ', async () => {
   let reads = 0
   renderGroup(async (url, init) => {
     if (url === '/expense-categories' && init?.method === 'POST') {
@@ -287,7 +287,7 @@ test('after a save, "Cerrar" closes at once even while the refetch is pending an
   await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
   await screen.findByText('Categoría guardada')
   expect(reads).toBeGreaterThan(1)
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(screen.getByText('Lista de grupos')).toBeInTheDocument())
   expect(screen.queryByText('¿Descartás la categoría?')).not.toBeInTheDocument()
@@ -308,7 +308,7 @@ test('a partner changing the list behind the screen does not make a clean group 
   await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
   await screen.findByText('Categoría guardada')
   await waitFor(() => expect(reads).toBeGreaterThan(1))
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
@@ -338,7 +338,7 @@ test('"Renombrar" is the icon-only edit: a 44 px control named "Renombrar" with 
   expect(rename).toHaveClass('boton-icono')
   expect(rename).toHaveTextContent('')
   expect(rename.querySelector('svg')).not.toBeNull()
-  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
+  expect(screen.getByRole('button', { name: 'Close' })).toHaveClass('boton-icono')
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()
   expectIconAndTextRule(document.body)
 })

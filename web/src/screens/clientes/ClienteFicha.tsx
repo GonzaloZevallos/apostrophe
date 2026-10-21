@@ -164,7 +164,7 @@ export default function ClienteFicha() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label={COMMON_TEXT.clientes} to={CUSTOMERS} />
+      return <GoneScreen label={COMMON_TEXT.customers} to={CUSTOMERS} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -202,7 +202,7 @@ export default function ClienteFicha() {
       <div className="cuerpo">
         <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo">{data.name}</span>
-          <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.editar} to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
+          <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
@@ -222,7 +222,7 @@ export default function ClienteFicha() {
             )}
             <div className="clientes__accion">
               <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
-                {COMMON_TEXT.registrarCobro}
+                {COMMON_TEXT.recordPayment}
               </BotonLink>
             </div>
           </div>
@@ -287,9 +287,9 @@ export default function ClienteFicha() {
       {confirmingDelete !== null && (
         <ConfirmDialog
           title={deletePaymentTitle(confirmingDelete)}
-          detail={COMMON_TEXT.estoNoSePuede}
-          confirmText={COMMON_TEXT.siBorralo}
-          cancelText={COMMON_TEXT.noDejalo}
+          detail={COMMON_TEXT.cannotUndo}
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => void onConfirmDeletePayment()}
           onCancel={() => setConfirmingDelete(null)}
         />

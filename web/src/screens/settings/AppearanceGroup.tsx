@@ -27,13 +27,13 @@ export default function AppearanceGroup() {
 
   return (
     <SettingsGroup
-      title={COMMON_TEXT.apariencia}
+      title={COMMON_TEXT.appearance}
       dirty={false}
       leave={{
         question: SETTINGS_TEXT.descartasElTema,
-        detail: COMMON_TEXT.sePierdeLoQue,
-        keepLabel: COMMON_TEXT.noSeguiEditando,
-        discardLabel: COMMON_TEXT.siDescartalo,
+        detail: COMMON_TEXT.losesWhatYouEntered,
+        keepLabel: COMMON_TEXT.noKeepEditing,
+        discardLabel: COMMON_TEXT.yesDiscard,
       }}
     >
       <span className="rotulo ajustes-tema__rotulo" id="ajustes-tema-rotulo">

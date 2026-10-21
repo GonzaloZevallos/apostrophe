@@ -231,7 +231,7 @@ function Categories({
       ) : (
         <div ref={addRef}>
           <Boton variant="secondary" icon="agregar" onClick={() => setAdding(true)}>
-            {COMMON_TEXT.categoria}
+            {COMMON_TEXT.category}
           </Boton>
         </div>
       )}
@@ -326,7 +326,7 @@ function CategoryRow({
           aria-label={SETTINGS_TEXT.nombreDe0(category.name)}
         />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {COMMON_TEXT.guardar}
+          {COMMON_TEXT.save}
         </Boton>
         {error !== null && (
           <span className="campo__error" role="alert">
@@ -360,10 +360,10 @@ function CategoryRow({
             </span>
             <div className="panel__botones">
               <AnswerButton kind="keep" onClick={() => setConfirming(false)}>
-                {COMMON_TEXT.noDejala}
+                {COMMON_TEXT.noKeep}
               </AnswerButton>
               <AnswerButton kind="confirm" disabled={sending} onClick={remove}>
-                {COMMON_TEXT.siBorrala}
+                {COMMON_TEXT.yesDelete}
               </AnswerButton>
             </div>
           </div>

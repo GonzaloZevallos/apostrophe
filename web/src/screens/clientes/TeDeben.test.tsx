@@ -62,14 +62,14 @@ test("heads with the total owed and lists debtors in the API's own order", async
 
   const rows = screen
     .getAllByRole('link')
-    .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Cobrar')
+    .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Collect')
   expect(rows.map((row) => row.textContent)).toEqual([
     'Ana Pérez$ 15.000te debe desde 14/09',
     'Beto$ 22.000te debe desde 20/09',
   ])
-  expect(screen.getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label'))).toEqual([
-    'Cobrar a Ana Pérez',
-    'Cobrar a Beto',
+  expect(screen.getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label'))).toEqual([
+    'Collect from Ana Pérez',
+    'Collect from Beto',
   ])
 })
 
@@ -95,7 +95,7 @@ test('nobody owing shows the fixed "Nadie te debe"', async () => {
   renderTeDeben()
 
   expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
-  expect(screen.getByRole('region', { name: 'Te deben' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
 })
 
 test('a dropped network shows nothing here: Clientes shows Sin conexión on its own list', async () => {
@@ -103,6 +103,6 @@ test('a dropped network shows nothing here: Clientes shows Sin conexión on its 
   renderTeDeben()
 
   await waitFor(() => expect(fetch).toHaveBeenCalled())
-  expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument()
   expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
 })
