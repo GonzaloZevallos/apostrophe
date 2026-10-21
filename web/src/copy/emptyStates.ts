@@ -8,6 +8,9 @@
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 
+import { EMPTY_STATE_TITLE as STOCK_EMPTY_TITLE, EMPTY_STATE_DETAIL as STOCK_EMPTY_DETAIL } from './stock'
+import { EMPTY_STATE_TITLE as CATALOG_EMPTY_TITLE, EMPTY_STATE_DETAIL as CATALOG_EMPTY_DETAIL } from './catalog'
+
 export const EMPTY_STATES = {
   salesList: 'Todavía no registraste ninguna venta en este período.',
   customersList: 'Todavía no agregaste ningún cliente.',
@@ -15,12 +18,16 @@ export const EMPTY_STATES = {
   homeVarietiesTitle: 'Arrancá por las variedades',
   homeVarietiesDetail:
     'Cargá tu primera variedad con su precio. Sin precio no se puede vender.',
-  stockTitle: 'Sin entradas de stock',
-  stockDetail: 'Cargá tu stock inicial o una compra',
-  catalogTitle: 'No hay nada en el catálogo hoy',
-  catalogDetail: 'No hay nada para copiar todavía',
   analysisNoHistory: 'Todavía no hay nada para analizar.',
   analysisEmptyMonth: 'No vendiste ni regalaste nada este mes.',
 } as const
 
-export const EMPTY_STATE_WORDINGS: readonly string[] = Object.values(EMPTY_STATES)
+/** The stock and catalog wordings are written in their own copy files (translated with their
+ * area); they are listed here so a loading screen is still forbidden from showing them. */
+export const EMPTY_STATE_WORDINGS: readonly string[] = [
+  ...Object.values(EMPTY_STATES),
+  STOCK_EMPTY_TITLE,
+  STOCK_EMPTY_DETAIL,
+  CATALOG_EMPTY_TITLE,
+  CATALOG_EMPTY_DETAIL,
+]

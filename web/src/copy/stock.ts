@@ -1,35 +1,35 @@
-/** The fixed Spanish of the stock entry form and the entries list that is always on
+/** The fixed English of the stock entry form and the entries list that is always on
  * screen: help lines, the preview line and the empty state. The screens render these
  * same bindings, and `LIMITED_COPY` lists them for `copy/copyLimits.test.ts`, which
  * measures each with `SAMPLES` (never fixture or API data). */
 
 import { SAMPLES, type LimitedCopy } from './limits'
-import { EMPTY_STATES } from './emptyStates'
+import { COMMON_TEXT } from './common'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const EMPTY_STATE_TITLE = EMPTY_STATES.stockTitle
-export const EMPTY_STATE_DETAIL = EMPTY_STATES.stockDetail
+export const EMPTY_STATE_TITLE = 'No stock entries'
+export const EMPTY_STATE_DETAIL = 'Enter your initial stock or a purchase'
 
-export const COST_REQUIRED_HELP = 'Obligatorio cuando es una compra'
+export const COST_REQUIRED_HELP = 'Required for a purchase'
 
 /** The locked (Onboarding) form's line under the cost: the cost is optional and, left out,
  * the lot costs $ 0 (the entry is posted without `total_cost`). */
-export const OPENING_COST_HINT = 'Opcional · si no lo cargás, el lote cuesta $ 0'
+export const OPENING_COST_HINT = 'Optional · if you leave it out, the lot costs $ 0'
 
 /** The refusal of a bad grams amount, shared by the price, stock entry and withdrawal forms. */
-export const GRAMS_INVALID = 'Revisá los gramos cargados'
+export const GRAMS_INVALID = 'Check the grams entered'
 
 /** The grams on hand under the variety picker; `grams` is already formatted from what
  * the API answered (`formatGrams`), so the registry can measure it with `SAMPLES.grams`. */
 export function onHandHelp(grams: string): string {
-  return `Hoy tiene ${grams}`
+  return `It has ${grams} today`
 }
 
 /** The per-gram cost previewed while typing; `perGram` is the front's preview, already
  * formatted (`formatMoney`), so the registry can measure it with `SAMPLES.amount`. */
 export function perGramPreview(perGram: string): string {
-  return `Te queda en ${perGram} el gramo`
+  return `It comes to ${perGram} per gram`
 }
 
 /** Checked by `copy/copyLimits.test.ts`: placeholders filled from `SAMPLES`. */
@@ -46,53 +46,53 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const STOCK_TEXT = {
-  statusNoEntries: 'sin entradas',
-  statusSoldOut: 'agotada',
-  statusSoldOutMany: 'agotadas',
-  statusLow: 'baja',
-  statusLowMany: 'bajas',
+  statusNoEntries: 'no entries',
+  statusSoldOut: 'sold out',
+  statusSoldOutMany: 'sold out',
+  statusLow: 'low',
+  statusLowMany: 'low',
   statusOk: 'ok',
-  varietyOne: 'variedad',
-  varietyMany: 'variedades',
-  allOkSuffix: ' · todo ok',
-  firstEntry: 'Cargale la primera entrada',
-  noGrams: 'Sin gramos',
-  noGramsSince: (date: string) => `Sin gramos desde el ${date}`,
-  warnBelowThreshold: 'Avisás por debajo del umbral',
-  warnBelow: (grams: string) => `Avisás abajo de ${grams}`,
-  atPace: 'Al ritmo de los últimos 30 días',
-  daysLeft: (days: number) => `${days} días`,
-  warningLow: (grams: string) => `Avisando: quedan ${grams}`,
-  warnMeBelow: (grams: string) => `Avisame abajo de ${grams}`,
-  nuevaEntrada: 'Nueva entrada',
-  editarEntrada: 'Editar entrada',
-  descartasLaEntrada: '¿Descartás la entrada?',
-  sinCosto: 'Sin costo',
-  borrar: 'Borrar',
-  antesDeBorrar: 'Antes de borrar',
-  borrasLaEntradaDel: (today: string | number, variety_id: string | number, grams: string | number) => `¿Borrás la entrada del ${today} de ${variety_id}, ${grams}? Esto no se puede deshacer.`,
-  guardasLosCambios: '¿Guardás los cambios?',
-  estoActualizaLaEntrada: 'Esto actualiza la entrada.',
-  siGuardar: 'Sí, guardar',
-  noSeguirEditando: 'No, seguir editando',
-  costoTotal: 'Costo total',
-  origen: 'Origen',
-  guardaLaEntrada: 'Guardá la entrada',
-  borrarEntrada: 'Borrar entrada',
-  motivo: 'Motivo',
-  variedadYGramos: 'Variedad y gramos',
-  variedadYGramos0: (arg1: string | number) => `Variedad y gramos ${arg1}`,
-  variedad0: (arg1: string | number) => `Variedad ${arg1}`,
-  gramos0: (arg1: string | number) => `Gramos ${arg1}`,
-  quitarVariedad0: (arg1: string | number) => `Quitar variedad ${arg1}`,
-  guardaElRetiro: 'Guardá el retiro',
-  estoActualizaElRetiro: 'Esto actualiza el retiro y los lotes que vienen después.',
-  descartasElRetiro: '¿Descartás el retiro?',
-  sePierdeLoQue: 'Se pierde lo que cambiaste: el retiro sigue como estaba.',
-  unaCompraNecesitaUn: 'Una compra necesita un costo total',
-  unAjusteNegativoNo: 'Un ajuste negativo no lleva costo',
-  retiroEliminado: 'Retiro eliminado',
-  borrasLaPromocionDel: (date: string | number, total_grams: string | number) => `¿Borrás la promoción del ${date}? Vuelven ${total_grams} al stock.`,
-  borrasElConsumoPropio: (date: string | number, total_grams: string | number) => `¿Borrás el consumo propio del ${date}? Vuelven ${total_grams} al stock.`,
-  retiroGuardado: 'Retiro guardado',
+  varietyOne: 'variety',
+  varietyMany: 'varieties',
+  allOkSuffix: ' · all ok',
+  firstEntry: 'Add its first entry',
+  noGrams: 'No grams',
+  noGramsSince: (date: string) => `No grams since ${date}`,
+  warnBelowThreshold: 'You are warned below the threshold',
+  warnBelow: (grams: string) => `You are warned below ${grams}`,
+  atPace: 'At the pace of the last 30 days',
+  daysLeft: (days: number) => `${days} days`,
+  warningLow: (grams: string) => `Warning: ${grams} left`,
+  warnMeBelow: (grams: string) => `Warn me below ${grams}`,
+  nuevaEntrada: 'New entry',
+  editarEntrada: 'Edit entry',
+  descartasLaEntrada: 'Discard the entry?',
+  sinCosto: 'No cost',
+  borrar: 'Delete',
+  antesDeBorrar: 'Before deleting',
+  borrasLaEntradaDel: (today: string | number, variety_id: string | number, grams: string | number) => `Delete the ${today} entry of ${variety_id}, ${grams}? ${COMMON_TEXT.cannotUndo}`,
+  guardasLosCambios: 'Save the changes?',
+  estoActualizaLaEntrada: 'This updates the entry.',
+  siGuardar: 'Yes, save',
+  noSeguirEditando: COMMON_TEXT.noKeepEditing,
+  costoTotal: 'Total cost',
+  origen: 'Origin',
+  guardaLaEntrada: 'Save the entry',
+  borrarEntrada: 'Delete entry',
+  motivo: 'Reason',
+  variedadYGramos: 'Variety and grams',
+  variedadYGramos0: (arg1: string | number) => `Variety and grams ${arg1}`,
+  variedad0: (arg1: string | number) => `Variety ${arg1}`,
+  gramos0: (arg1: string | number) => `Grams ${arg1}`,
+  quitarVariedad0: (arg1: string | number) => `Remove variety ${arg1}`,
+  guardaElRetiro: 'Save the withdrawal',
+  estoActualizaElRetiro: 'This updates the withdrawal and the lots after it.',
+  descartasElRetiro: 'Discard the withdrawal?',
+  sePierdeLoQue: 'What you changed is lost: the withdrawal stays as it was.',
+  unaCompraNecesitaUn: 'A purchase needs a total cost',
+  unAjusteNegativoNo: 'A negative adjustment carries no cost',
+  retiroEliminado: 'Withdrawal deleted',
+  borrasLaPromocionDel: (date: string | number, total_grams: string | number) => `Delete the promotion from ${date}? ${total_grams} go back to stock.`,
+  borrasElConsumoPropio: (date: string | number, total_grams: string | number) => `Delete the own use from ${date}? ${total_grams} go back to stock.`,
+  retiroGuardado: 'Withdrawal saved',
 } as const

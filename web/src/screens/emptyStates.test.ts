@@ -29,7 +29,7 @@ export function literalCopies(
 
 describe('the empty-state wordings', () => {
   test('are all listed, non-empty and distinct', () => {
-    expect(EMPTY_STATE_WORDINGS).toEqual(Object.values(EMPTY_STATES))
+    expect(EMPTY_STATE_WORDINGS).toEqual(expect.arrayContaining(Object.values(EMPTY_STATES)))
     expect(new Set(EMPTY_STATE_WORDINGS).size).toBe(EMPTY_STATE_WORDINGS.length)
     for (const wording of EMPTY_STATE_WORDINGS) expect(wording).not.toBe('')
   })

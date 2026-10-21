@@ -9,18 +9,20 @@
  */
 
 import type { COMMON_TEXT } from '../copy/common'
-import type { PRICE_SAVED } from '../copy/varieties'
+import type { PRICE_SAVED, THRESHOLD_SAVED, VARIETIES_TEXT } from '../copy/varieties'
+import type { STOCK_TEXT } from '../copy/stock'
+import type { CATALOG_TEXT } from '../copy/catalog'
 
 export type SuccessToast =
   | (typeof COMMON_TEXT)['customerSaved']
   | (typeof COMMON_TEXT)['entrySaved']
   | (typeof COMMON_TEXT)['entryDeleted']
-  | 'Variedad guardada'
-  | 'Variedad eliminada'
-  | 'Variedad archivada'
-  | 'Variedad restaurada'
+  | (typeof VARIETIES_TEXT)['variedadGuardada']
+  | (typeof VARIETIES_TEXT)['variedadEliminada']
+  | (typeof VARIETIES_TEXT)['variedadArchivada']
+  | (typeof VARIETIES_TEXT)['variedadRestaurada']
   | typeof PRICE_SAVED
-  | 'Precio eliminado'
+  | (typeof VARIETIES_TEXT)['precioEliminado']
   | 'Gasto guardado'
   | 'Gasto eliminado'
   | 'Categoría guardada'
@@ -29,17 +31,17 @@ export type SuccessToast =
   | 'Contraseña cambiada · cerramos tus otras sesiones'
   | 'Invitación lista'
   | 'Cliente asignado'
-  | 'Aviso guardado'
+  | typeof THRESHOLD_SAVED
   | 'Catálogo guardado'
   | 'Precios guardados'
-  | 'Catálogo copiado'
+  | (typeof CATALOG_TEXT)['catalogoCopiado']
   | 'Cobro eliminado'
   | 'Cobro guardado'
   | `Cobro guardado · queda debiendo ${string}`
   | 'Prueba enviada'
   | 'Catálogo publicado'
-  | 'Retiro guardado'
-  | 'Retiro eliminado'
+  | (typeof STOCK_TEXT)['retiroGuardado']
+  | (typeof STOCK_TEXT)['retiroEliminado']
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (
