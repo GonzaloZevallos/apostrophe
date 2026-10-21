@@ -598,6 +598,7 @@ class State:
     catalog_has_text: bool
     import_notice: bool
     done: tuple[bool, bool] = (False, False)  # priced_variety, stock_entry (checklist only)
+    published: bool = False  # the pinned catalog was published at least once
 
 
 STATES = (
@@ -639,6 +640,7 @@ STATES = (
         "none",
         True,
         False,
+        published=True,
     ),
 )
 
@@ -656,6 +658,8 @@ def test_first_run_agrees_with_its_sources(
     answer = _first_run(client)
     catalog_text = client.get("/catalog").json()["text"]
     progress = client.get("/onboarding-progress").json()
+    pin = client.get("/pinned-catalog/status").json()["status"]
+    published = pin is not None and pin["last_published_on"] is not None
     with Session(engine) as session:
         stored = SqlFirstRuns(session, _business_id(engine)).get()
     imported = stored is not None and stored.imported_at is not None
@@ -678,6 +682,9 @@ def test_first_run_agrees_with_its_sources(
     # the notice, against the import fact and its end (a dismissal or a publication)
     assert answer["import_notice"] is (imported and not notice_over)
     assert answer["import_notice"] is state.import_notice
+    assert published is state.published
+    if published:  # a publication ends the notice, whatever else was stamped
+        assert answer["import_notice"] is False
 
     # the checklist shows only for its own kind, and then holds the four steps in order
     if answer["kind"] != "checklist":
@@ -685,7 +692,7 @@ def test_first_run_agrees_with_its_sources(
     else:
         assert [item["step"] for item in answer["checklist"]] == STEPS
         assert [item["required"] for item in answer["checklist"]] == [True, True, False, False]
-        assert [item["done"] for item in answer["checklist"]] == [*state.done, False, False]
+        assert [item["done"] for item in answer["checklist"]] == [*state.done, published, False]
 
 
 def test_the_agreement_table_reaches_every_value_it_must() -> None:
@@ -693,4 +700,5 @@ def test_the_agreement_table_reaches_every_value_it_must() -> None:
     assert {state.catalog_has_text for state in STATES} == {True, False}
     assert {"onboarding", "checklist", "start_varieties", "none"} <= {s.kind for s in STATES}
     assert any(state.import_notice for state in STATES)
+    assert {state.published for state in STATES} == {True, False}
     assert len({state.name for state in STATES}) == len(STATES)
