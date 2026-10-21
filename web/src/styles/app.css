@@ -4508,6 +4508,25 @@ body {
   text-decoration: none;
 }
 
+/* Clientes' header (Clientes.dc.html): the title on the left, "New customer" (icon + word) at
+ * the end of the same row. Tokens only. */
+.clientes__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.clientes__encabezado > .boton {
+  width: auto;
+  height: auto;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  font-size: 14px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
 /* "Editar" on a customer's card keeps its plain accent link look: no underline. */
 .ficha-cliente__encabezado .boton--enlace {
   box-shadow: none;
