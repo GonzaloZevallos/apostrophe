@@ -5,7 +5,7 @@
 
 import type { LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
-import { NOBODY_OWES } from './customers'
+import { NOBODY_OWES } from './customers.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 

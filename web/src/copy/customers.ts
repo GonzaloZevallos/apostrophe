@@ -5,7 +5,7 @@
  * (docs/product/icon-and-text-rule.md).
  */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 

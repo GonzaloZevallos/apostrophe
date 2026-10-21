@@ -302,7 +302,7 @@
   "onboarding.ONBOARDING_TEXT.sinStockNoSe": "Sin stock no se puede vender: contanos cuántos gramos tenés de esta variedad.",
   "onboarding.ONBOARDING_TEXT.tenesOtraParaCargar": "¿Tenés otra para cargar ahora? Cada una lleva su nombre, su precio y su stock inicial.",
   "onboarding.PARTLY_SAVED_DETAIL": "La variedad ya quedó guardada; se pierde el precio que escribiste.",
-  "payments.PAYMENTS_TEXT.toTheSaleOf": " to the sale of ",
+  "payments.PAYMENTS_TEXT.toTheSaleOf": " a la venta del ",
   "payments.PAYMENTS_TEXT.saved": "Cobro guardado",
   "payments.PAYMENTS_TEXT.discardThePayment": "¿Descartás el cobro?",
   "payments.PAYMENTS_TEXT.amountOverBalance": "El monto supera lo que te debe.",

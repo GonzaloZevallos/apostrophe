@@ -1,6 +1,6 @@
 /** The payments words that are not a named message. */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 

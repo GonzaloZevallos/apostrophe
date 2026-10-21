@@ -6,7 +6,7 @@
  * screen fails `emptyStates.test.ts`.
  */
 
-import { EMPTY_CUSTOMERS, NOBODY_OWES } from './customers'
+import { EMPTY_CUSTOMERS, NOBODY_OWES } from './customers.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 
