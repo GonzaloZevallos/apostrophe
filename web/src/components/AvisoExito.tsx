@@ -9,6 +9,8 @@
  */
 
 import type { COMMON_TEXT } from '../copy/common'
+import type { CUSTOMERS_TEXT } from '../copy/customers'
+import type { PAYMENTS_TEXT } from '../copy/payments'
 import type { PRICE_SAVED } from '../copy/varieties'
 
 export type SuccessToast =
@@ -33,9 +35,9 @@ export type SuccessToast =
   | 'Catálogo guardado'
   | 'Precios guardados'
   | 'Catálogo copiado'
-  | 'Cobro eliminado'
-  | 'Cobro guardado'
-  | `Cobro guardado · queda debiendo ${string}`
+  | (typeof CUSTOMERS_TEXT)['paymentDeleted']
+  | (typeof PAYMENTS_TEXT)['saved']
+  | ReturnType<(typeof PAYMENTS_TEXT)['savedStillOwing']>
   | 'Prueba enviada'
   | 'Catálogo publicado'
   | 'Retiro guardado'

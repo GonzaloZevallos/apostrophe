@@ -340,11 +340,11 @@ test('every stock row says its state in a word as well as its mark, in both them
   }
 })
 
-test('"Nadie te debe" shows with nothing to tap when nobody owes', async () => {
+test('"Nobody owes you" shows with nothing to tap when nobody owes', async () => {
   panelNow = { ...PANEL, debts: debts([], 0, 0) }
   renderInicio()
 
-  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
+  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /Cobrar a/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
@@ -401,8 +401,8 @@ test('Registrar cobro opened from Inicio: a partial payment returns in one move,
   const { router } = renderInicio()
   await payFromInicio('5000')
 
-  expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
-  expect(screen.getByText('Cobro guardado · queda debiendo $ 6.000').textContent).not.toMatch(/Ana/)
+  expect(await screen.findByText('Payment saved · still owing $ 6.000')).toBeInTheDocument()
+  expect(screen.getByText('Payment saved · still owing $ 6.000').textContent).not.toMatch(/Ana/)
   expect(router.state.location.pathname).toBe(HOME)
   expect(router.state.historyAction).toBe('POP')
   expect(await screen.findByText('$ 27.000')).toBeInTheDocument()
@@ -410,7 +410,7 @@ test('Registrar cobro opened from Inicio: a partial payment returns in one move,
   expect(within(row).getByText('$ 6.000')).toBeInTheDocument()
 })
 
-test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guardado", the row leaves and the teaser refills to 3', async () => {
+test('Registrar cobro opened from Inicio: a full payment says plain "Payment saved", the row leaves and the teaser refills to 3', async () => {
   paymentAnswer = {
     ...paymentFixture,
     after: { balance: 0, owing_since: null, standing: 'settled' },
@@ -431,7 +431,7 @@ test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guard
   const { router } = renderInicio()
   await payFromInicio('11000')
 
-  expect(await screen.findByText('Cobro guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Payment saved')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(HOME)
   await waitFor(() => expect(screen.queryByText('Ana Pérez')).not.toBeInTheDocument())
   expect(screen.getAllByRole('link', { name: /^Collect from / })).toHaveLength(3)
@@ -439,7 +439,7 @@ test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guard
   expect(screen.getByText('3 ventas debiendo')).toBeInTheDocument()
 })
 
-test('Registrar cobro opened from Inicio: with nobody left owing the block reads "Nadie te debe"', async () => {
+test('Registrar cobro opened from Inicio: with nobody left owing the block reads "Nobody owes you"', async () => {
   paymentAnswer = {
     ...paymentFixture,
     after: { balance: 0, owing_since: null, standing: 'settled' },
@@ -449,7 +449,7 @@ test('Registrar cobro opened from Inicio: with nobody left owing the block reads
   renderInicio()
   await payFromInicio('11000')
 
-  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
+  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /Cobrar a/ })).not.toBeInTheDocument()
 })
 

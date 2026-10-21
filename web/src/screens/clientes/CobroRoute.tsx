@@ -145,7 +145,7 @@ export default function CobroRoute() {
       {blocked && (
         <LeaveConfirm
           blocker={blocker}
-          question={PAYMENTS_TEXT.descartasElCobro}
+          question={PAYMENTS_TEXT.discardThePayment}
           detail={COMMON_TEXT.losesWhatYouEntered}
           keepLabel={COMMON_TEXT.noKeepEntering}
           discardLabel={COMMON_TEXT.yesDiscard}

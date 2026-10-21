@@ -29,7 +29,7 @@ import { uniqueTag } from './helpers/unique.js'
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "A favor" are what these specs read. */
 function cardOf(page: Page) {
-  return page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') })
+  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
 }
 
 test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
@@ -59,7 +59,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Registered with no phone number at all.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill('Noe Sinnumero')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -74,18 +74,18 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // The card shows no phone field either.
   await row.click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Teléfono')).toHaveCount(0)
+  await expect(page.getByText('Phone')).toHaveCount(0)
 
   // Edited: still no phone number, and the edit form shows no required marker on
   // the phone field while it stays usable.
   await page.getByRole('link', { name: 'Edit' }).click()
-  await expect(page.getByLabel('Teléfono')).toHaveValue('')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await expect(page.getByLabel('Phone')).toHaveValue('')
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expect(page.getByText('Customer saved')).toBeVisible()
-  await expect(page.getByText('Teléfono')).toHaveCount(0)
+  await expect(page.getByText('Phone')).toHaveCount(0)
 
   // Chosen for a sale, left owing — $4.000.
-  await page.getByRole('link', { name: 'Nueva venta a Noe Sinnumero' }).click()
+  await page.getByRole('link', { name: 'New sale to Noe Sinnumero' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4' })
   await page.getByRole('radio', { name: 'Owing' }).check()
@@ -95,10 +95,10 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Noe Sinnumero' }).first().click()
-  await expect(page.getByText('Te debe $ 4.000')).toBeVisible()
+  await expect(page.getByText('Owes you $ 4.000')).toBeVisible()
 
   // The balance is set in `cifra-m`: 25px on a 27.5px line, tracked at -0.035em.
-  const owed = await page.getByText('Te debe $ 4.000').evaluate((node) => {
+  const owed = await page.getByText('Owes you $ 4.000').evaluate((node) => {
     const style = getComputedStyle(node)
     return {
       fontSize: parseFloat(style.fontSize),
@@ -112,11 +112,11 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // Paid in full through Registrar cobro.
   await page.getByRole('link', { name: 'Record payment' }).click()
-  await page.getByRole('button', { name: 'Todo: $ 4.000' }).click()
+  await page.getByRole('button', { name: 'All: $ 4.000' }).click()
   await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
-  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
+  await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
+  await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
 
   // A second customer, also without a phone number, created straight from Elegir
   // cliente inside a new sale, chosen and sold to in one run.

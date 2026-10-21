@@ -10,8 +10,8 @@ export const LANGUAGE: 'es' | 'en' = 'es'
 
 export const EMPTY_STATES = {
   salesList: 'Todavía no registraste ninguna venta en este período.',
-  customersList: 'Todavía no agregaste ningún cliente.',
-  homeNobodyOwes: 'Nadie te debe',
+  customersList: 'You have not added any customers yet.',
+  homeNobodyOwes: 'Nobody owes you',
   homeVarietiesTitle: 'Arrancá por las variedades',
   homeVarietiesDetail:
     'Cargá tu primera variedad con su precio. Sin precio no se puede vender.',

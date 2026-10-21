@@ -4,7 +4,7 @@
  * never in the URL (plan, invariants: "No customer search query ... in a front
  * URL"). Debounced at 150 ms before it becomes the query key
  * (`keys.customers(q)`), so a result that is still catching up to a newer
- * keystroke stays marked `aria-busy` with "Buscando…" instead of ever being shown
+ * keystroke stays marked `aria-busy` with "Searching…" instead of ever being shown
  * as the answer to the query currently typed (`keepPreviousData`). A dropped
  * network or a server error on the list itself shows the matching state instead
  * of a misleading "no customers yet" (PRD, "Feedback").
@@ -31,9 +31,13 @@ import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
 import { COMMON_TEXT } from '../../copy/common'
 
-export const SEARCH_LABEL = CUSTOMERS_TEXT.buscarCliente
+export const SEARCH_LABEL = CUSTOMERS_TEXT.searchCustomer
 export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
-export const SEARCHING = CUSTOMERS_TEXT.buscando
+export const SEARCHING = CUSTOMERS_TEXT.searching
+/** "1 customer" or "n customers": the plural is two keys. */
+const customerCountLine = (count: number): string =>
+  count === 1 ? CUSTOMERS_TEXT.oneCustomer : CUSTOMERS_TEXT.customerCount(count)
+
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
@@ -71,7 +75,7 @@ export default function Clientes() {
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
         </div>
         <div className="campo__rotulo">
-          <span>{CUSTOMERS_TEXT.n0Clientes(total.data?.length ?? 0)}</span>
+          <span>{customerCountLine(total.data?.length ?? 0)}</span>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">

@@ -254,13 +254,13 @@
   {
     "screen": "ClienteEditar",
     "rule": "touch-action",
-    "target": "button:Guardá y usá",
+    "target": "button:Save and use",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "button:Borrar cobro",
+    "target": "button:Delete payment",
     "issue": 46
   },
   {
@@ -314,7 +314,7 @@
   {
     "screen": "ClienteNuevo",
     "rule": "touch-action",
-    "target": "button:Guardá y usá",
+    "target": "button:Save and use",
     "issue": 46
   },
   {
@@ -404,13 +404,13 @@
   {
     "screen": "Cobro",
     "rule": "touch-action",
-    "target": "button:Todo: $ #.#",
+    "target": "button:All: $ #.#",
     "issue": 46
   },
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "button:Borrar cobro",
+    "target": "button:Delete payment",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -532,7 +532,7 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-action",
-    "target": "button:Todo: $ #.#",
+    "target": "button:All: $ #.#",
     "issue": 46
   },
   {
@@ -550,7 +550,7 @@
   {
     "screen": "CobroDesdeInicio",
     "rule": "touch-action",
-    "target": "button:Todo: $ #.#",
+    "target": "button:All: $ #.#",
     "issue": 46
   },
   {

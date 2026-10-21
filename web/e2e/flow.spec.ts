@@ -42,9 +42,9 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Add a customer.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Teléfono').fill(PHONE)
+  await page.getByLabel('Phone').fill(PHONE)
   await page.getByLabel('Name').fill('Marisa Gómez')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 

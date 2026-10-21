@@ -90,7 +90,7 @@ test('searching by part of the name calls the API with that query, never the URL
 
   await waitFor(() => expect(fetch).toHaveBeenCalledWith('/customers', expect.anything()))
 
-  await userEvent.type(screen.getByLabelText('Buscar cliente'), 'nico')
+  await userEvent.type(screen.getByLabelText('Search customer'), 'nico')
 
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/customers?q=nico', expect.anything()),
@@ -102,7 +102,7 @@ test('searching by digits of the phone also never touches the URL', async () => 
   renderClientes()
   await waitFor(() => expect(fetch).toHaveBeenCalledWith('/customers', expect.anything()))
 
-  await userEvent.type(screen.getByLabelText('Buscar cliente'), '6033')
+  await userEvent.type(screen.getByLabelText('Search customer'), '6033')
 
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/customers?q=6033', expect.anything()),
@@ -128,7 +128,7 @@ test('a stale answer still in flight shows marked pending, never as the current 
   )
   renderClientes()
 
-  const input = screen.getByLabelText('Buscar cliente')
+  const input = screen.getByLabelText('Search customer')
   await userEvent.type(input, 'ni')
 
   // The newer query ("ni") already answered while the first (empty query) is
@@ -178,10 +178,10 @@ test('a result still catching up to a newer keystroke is marked pending, not cur
   renderClientes()
   await waitFor(() => expect(screen.getByText('Mica Solano')).toBeInTheDocument())
 
-  await userEvent.type(screen.getByLabelText('Buscar cliente'), 'x')
+  await userEvent.type(screen.getByLabelText('Search customer'), 'x')
 
-  await waitFor(() => expect(screen.getByText('Buscando…')).toBeInTheDocument())
-  const list = screen.getByText('Buscando…').closest('.lista-clientes')
+  await waitFor(() => expect(screen.getByText('Searching…')).toBeInTheDocument())
+  const list = screen.getByText('Searching…').closest('.lista-clientes')
   expect(list).toHaveAttribute('aria-busy', 'true')
   resolveX?.(jsonResponse(200, []))
 })
@@ -191,7 +191,7 @@ test('a dropped network on the list shows Sin conexión, never the empty-list te
   renderClientes()
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
-  expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
+  expect(screen.queryByText('You have not added any customers yet.')).not.toBeInTheDocument()
 })
 
 test('a server error on the list shows the generic retry, never the empty-list text', async () => {
@@ -199,7 +199,7 @@ test('a server error on the list shows the generic retry, never the empty-list t
   renderClientes()
 
   expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
-  expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
+  expect(screen.queryByText('You have not added any customers yet.')).not.toBeInTheDocument()
 })
 
 test('Te deben sits above everyone A–Z, and the header carries no debt figure', async () => {
@@ -221,13 +221,13 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   expect(await screen.findByText('2 clientes')).toBeInTheDocument()
   expect(screen.queryByText(/ te deben \$/)).not.toBeInTheDocument()
   const section = await screen.findByRole('region', { name: 'Owed to you' })
-  const everyone = await screen.findByRole('region', { name: 'Todos · A–Z' })
+  const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
   expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(
     within(section).getByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`),
   ).toBeInTheDocument()
   expect(within(section).getAllByRole('link').map((link) => link.textContent)).toEqual([
-    'Ana Pérez$ 15.000te debe desde 14/09',
+    'Ana Pérez$ 15.000owes you since 14/09',
     'Collect',
   ])
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
@@ -272,9 +272,9 @@ test('a customer in credit is only in A–Z, never in Te deben', async () => {
   )
   renderClientes()
 
-  const everyone = screen.getByRole('region', { name: 'Todos · A–Z' })
-  expect(await within(everyone).findByText('A favor $ 2.000')).toBeInTheDocument()
-  expect(within(screen.getByRole('region', { name: 'Owed to you' })).queryByText(/A favor/)).not.toBeInTheDocument()
+  const everyone = screen.getByRole('region', { name: 'Everyone · A–Z' })
+  expect(await within(everyone).findByText('Credit $ 2.000')).toBeInTheDocument()
+  expect(within(screen.getByRole('region', { name: 'Owed to you' })).queryByText(/Credit/)).not.toBeInTheDocument()
 })
 
 test('searching collapses both sections into one flat list that keeps Cobrar, and clearing brings them back', async () => {
@@ -291,18 +291,18 @@ test('searching collapses both sections into one flat list that keeps Cobrar, an
   renderClientes()
   await screen.findByRole('region', { name: 'Owed to you' })
 
-  const input = screen.getByLabelText('Buscar cliente')
+  const input = screen.getByLabelText('Search customer')
   await userEvent.type(input, 'ana')
 
   await waitFor(() => expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument())
-  expect(screen.queryByRole('region', { name: 'Todos · A–Z' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: 'Everyone · A–Z' })).not.toBeInTheDocument()
   expect(await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })).toHaveLength(1)
-  expect(screen.getByText('te debe desde 14/09')).toBeInTheDocument()
+  expect(screen.getByText('owes you since 14/09')).toBeInTheDocument()
 
   await userEvent.clear(input)
 
   expect(await screen.findByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
-  expect(screen.getByRole('region', { name: 'Todos · A–Z' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
 })
 
 test('"Collect from X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
@@ -327,16 +327,16 @@ test('"Collect from X" is on every row that owes, in the section and in the list
   expect(screen.queryByRole('link', { name: 'Collect from Lu' })).not.toBeInTheDocument()
 })
 
-test('with nobody owing, a fixed "Nadie te debe" with nothing to tap sits above the full A–Z list', async () => {
+test('with nobody owing, a fixed "Nobody owes you" with nothing to tap sits above the full A–Z list', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED])))
   renderClientes()
 
-  const nobody = await screen.findByText('Nadie te debe')
+  const nobody = await screen.findByText('Nobody owes you')
   expect(nobody.closest('a, button')).toBeNull()
   const section = screen.getByRole('region', { name: 'Owed to you' })
   expect(within(section).queryByRole('link')).not.toBeInTheDocument()
   expect(within(section).queryByText(/debiendo/)).not.toBeInTheDocument()
-  const everyone = await screen.findByRole('region', { name: 'Todos · A–Z' })
+  const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
   expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
 })
@@ -362,8 +362,8 @@ test('a customer who owes shows the amber mark; one in credit shows the blue "A 
   )
   renderClientes()
 
-  expect(await screen.findByText('te debe desde 14/09')).toBeInTheDocument()
-  expect(screen.getByText('A favor $ 2.000')).toBeInTheDocument()
+  expect(await screen.findByText('owes you since 14/09')).toBeInTheDocument()
+  expect(screen.getByText('Credit $ 2.000')).toBeInTheDocument()
 })
 
 // Opening a customer or a payment from the list (navigation.md, "In-app entries").
@@ -581,7 +581,7 @@ test('on a computer the list stays on the left beside a customer\'s card, and /c
 
   const alone = renderTwoPanes([CUSTOMERS])
   await screen.findAllByRole('link', { name: /Ana Pérez/ })
-  expect(screen.getAllByRole('region', { name: 'Todos · A–Z' })).toHaveLength(1)
+  expect(screen.getAllByRole('region', { name: 'Everyone · A–Z' })).toHaveLength(1)
   expect(screen.queryByRole('button', { name: 'Record payment' })).not.toBeInTheDocument()
   expect(alone.state.location.pathname).toBe(CUSTOMERS)
 })
@@ -591,9 +591,9 @@ test('on a computer, a customer\'s card has the list beside it, once', async () 
   vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
   renderTwoPanes([ANA])
 
-  expect(await screen.findByRole('region', { name: 'Todos · A–Z' })).toBeInTheDocument()
+  expect(await screen.findByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
   expect(await screen.findByText('Record payment')).toBeInTheDocument()
-  expect(screen.getAllByRole('region', { name: 'Todos · A–Z' })).toHaveLength(1)
+  expect(screen.getAllByRole('region', { name: 'Everyone · A–Z' })).toHaveLength(1)
 })
 
 test('on a phone, a customer\'s card is alone, with no list behind it', async () => {
@@ -602,5 +602,5 @@ test('on a phone, a customer\'s card is alone, with no list behind it', async ()
   renderTwoPanes([ANA])
 
   expect(await screen.findByText('Record payment')).toBeInTheDocument()
-  expect(screen.queryByRole('region', { name: 'Todos · A–Z' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: 'Everyone · A–Z' })).not.toBeInTheDocument()
 })

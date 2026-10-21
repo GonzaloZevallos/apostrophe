@@ -90,7 +90,7 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
     } else if (customer === 'new') {
       await page.getByRole('button', { name: 'Elegir cliente' }).click()
       await page.getByRole('button', { name: 'New customer' }).click()
-      await page.getByLabel('Teléfono').fill('+5491155550012')
+      await page.getByLabel('Phone').fill('+5491155550012')
       await page.getByLabel('Name').fill('Luz Díaz')
       await page.getByRole('button', { name: 'Crear cliente' }).click()
       // The sheets close by history, a moment after the customer is saved; until then the

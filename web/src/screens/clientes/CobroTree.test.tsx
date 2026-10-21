@@ -86,7 +86,7 @@ describe('on a computer', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
     expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(dialog).toHaveTextContent('Ana Pérez · te debe $ 11.000 desde el 14/09')
+    expect(dialog).toHaveTextContent('Ana Pérez · owes you $ 11.000 since 14/09')
     for (const selector of ['.cobro-paneles__lista', '.cobro-paneles__detalle']) {
       const pane = document.querySelector(selector)
       expect(pane).not.toBeNull()
@@ -121,7 +121,7 @@ describe('on a computer', () => {
     await userEvent.click(screen.getByLabelText('Cash'))
 
     fireEvent.keyDown(document, { key: 'Escape' })
-    expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
+    expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(PAYMENT)
     // A second Escape does nothing while the question shows.
     fireEvent.keyDown(document, { key: 'Escape' })
@@ -148,7 +148,7 @@ describe.each<Viewport>(['phone', 'computer'])('opened from a list, on a %s', (v
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
-    expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
+    expect(await screen.findByText('Payment saved · still owing $ 6.000')).toBeInTheDocument()
     await act(() => router.navigate(-1))
     expect(router.state.location.pathname).toBe(HOME)
   })

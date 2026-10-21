@@ -176,7 +176,7 @@ test('a customer with no phone shows no phone element, no dash, no empty label',
   renderFicha('4')
 
   await screen.findByText('Caro')
-  expect(screen.queryByText('Teléfono')).not.toBeInTheDocument()
+  expect(screen.queryByText('Phone')).not.toBeInTheDocument()
   expect(screen.queryByText('-')).not.toBeInTheDocument()
   expect(screen.queryByText('Sin teléfono')).not.toBeInTheDocument()
 })
@@ -190,7 +190,7 @@ test('"Nueva venta a <name>" opens the sale form with this customer chosen, by i
   )
   renderFicha('3')
 
-  const link = await screen.findByRole('link', { name: 'Nueva venta a Fer' })
+  const link = await screen.findByRole('link', { name: 'New sale to Fer' })
   expect(link).toHaveAttribute('href', SALE_NEW)
   await userEvent.click(link)
 
@@ -225,7 +225,7 @@ test('on a computer the customer\'s card under the real shell keeps "Nueva venta
     </QueryClientProvider>,
   )
 
-  expect(await screen.findByRole('link', { name: 'Nueva venta a Fer' })).toHaveAttribute('href', SALE_NEW)
+  expect(await screen.findByRole('link', { name: 'New sale to Fer' })).toHaveAttribute('href', SALE_NEW)
   const rail = container.querySelector('.riel-lateral') as HTMLElement
   expect(within(rail).queryByRole('link', { name: /^New sale/ })).not.toBeInTheDocument()
 })
@@ -264,10 +264,10 @@ test('a customer who owes shows "Te debe" since the oldest debt, Registrar cobro
   )
   renderFicha('1')
 
-  expect(await screen.findByText('Te debe $ 11.000')).toBeInTheDocument()
-  expect(screen.getByText('desde el 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Owes you $ 11.000')).toBeInTheDocument()
+  expect(screen.getByText('since 14/09')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Record payment' })).toBeInTheDocument()
-  expect(await screen.findByText('Quedó debiendo')).toBeInTheDocument()
+  expect(await screen.findByText('Left owing')).toBeInTheDocument()
 })
 
 const CREDIT_CUSTOMER = {
@@ -289,7 +289,7 @@ test('a customer in credit shows "A favor", never "Te debe", and no Registrar co
   )
   renderFicha('2')
 
-  expect(await screen.findByText('A favor $ 2.000')).toBeInTheDocument()
+  expect(await screen.findByText('Credit $ 2.000')).toBeInTheDocument()
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Record payment' })).not.toBeInTheDocument()
 })
@@ -308,12 +308,12 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   )
   renderFicha('2')
 
-  await screen.findByText('Quedó debiendo')
+  await screen.findByText('Left owing')
   const account = document.querySelector('.cuenta-cliente')
   expect(account).not.toBeNull()
   const inAccount = within(account as HTMLElement)
-  expect(inAccount.getByText('Cobro · efectivo · A cuenta de la venta del 14/09')).toBeInTheDocument()
-  expect(inAccount.getByText('A favor')).toBeInTheDocument()
+  expect(inAccount.getByText('Payment · cash · On account of the sale of 14/09')).toBeInTheDocument()
+  expect(inAccount.getByText('Credit')).toBeInTheDocument()
 
   // Each row shows its own figure (`.cuenta-cliente__monto`) next to the running
   // balance it left (`.cuenta-cliente__saldo`) — plan, "On screen": "with the
@@ -351,10 +351,10 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   // (also "A favor $ 2.000" here) both drop their sign, picked only by `kind`/
   // `standing`, never a comparison on the number itself.
   expect(creditFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 2.000')
-  expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('A favor $ 2.000')
+  expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('Credit $ 2.000')
 })
 
-test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refreshes the account', async () => {
+test('Delete payment asks before deleting, then shows "Payment deleted" and refreshes the account', async () => {
   let deleted = false
   api.mockImplementation(
     dispatchFetch({
@@ -388,7 +388,7 @@ test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refres
   )
   renderFicha('1')
 
-  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  const borrar = await screen.findByRole('button', { name: 'Delete payment' })
   await userEvent.click(borrar)
 
   expect(
@@ -400,7 +400,7 @@ test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refres
   await waitFor(() =>
     expect(api).toHaveBeenCalledWith('/payments/5', expect.objectContaining({ method: 'DELETE' })),
   )
-  expect(await screen.findByText('Cobro eliminado')).toBeInTheDocument()
+  expect(await screen.findByText('Payment deleted')).toBeInTheDocument()
 })
 
 const CREDIT_ONLY_CUSTOMER = {
@@ -427,7 +427,7 @@ const CREDIT_ONLY_ACCOUNT = {
   ],
 }
 
-test('a payment that shows only as "A favor" offers Borrar cobro, and deleting it brings the balance back to nothing', async () => {
+test('a payment that shows only as "A favor" offers Delete payment, and deleting it brings the balance back to nothing', async () => {
   let deleted = false
   api.mockImplementation(
     dispatchFetch({
@@ -441,8 +441,8 @@ test('a payment that shows only as "A favor" offers Borrar cobro, and deleting i
   )
   renderFicha('1')
 
-  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
-  expect(screen.getAllByRole('button', { name: 'Borrar cobro' })).toHaveLength(1)
+  const borrar = await screen.findByRole('button', { name: 'Delete payment' })
+  expect(screen.getAllByRole('button', { name: 'Delete payment' })).toHaveLength(1)
   await userEvent.click(borrar)
 
   expect(
@@ -451,13 +451,13 @@ test('a payment that shows only as "A favor" offers Borrar cobro, and deleting i
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-  expect(await screen.findByText('Cobro eliminado')).toBeInTheDocument()
-  await waitFor(() => expect(screen.queryByText(/A favor/)).not.toBeInTheDocument())
-  expect(screen.queryByText(/Te debe/)).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Payment deleted')).toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByText(/Credit/)).not.toBeInTheDocument())
+  expect(screen.queryByText(/Owes you/)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
 })
 
-test('Borrar cobro on a credit-only payment already gone closes the dialog and shows the gone notice', async () => {
+test('Delete payment on a credit-only payment already gone closes the dialog and shows the gone notice', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, CREDIT_ONLY_CUSTOMER),
@@ -467,15 +467,15 @@ test('Borrar cobro on a credit-only payment already gone closes the dialog and s
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Borrar cobro' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Delete payment' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
   expect(screen.queryByText('¿Borrás el cobro de $ 44.000 (efectivo) del 06/10?')).not.toBeInTheDocument()
-  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
+  expect(screen.queryByText('Payment deleted')).not.toBeInTheDocument()
 })
 
-test('a payment split between a sale and a credit offers one Borrar cobro, on its payment row', async () => {
+test('a payment split between a sale and a credit offers one Delete payment, on its payment row', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, CREDIT_ONLY_CUSTOMER),
@@ -514,20 +514,20 @@ test('a payment split between a sale and a credit offers one Borrar cobro, on it
   )
   renderFicha('1')
 
-  await screen.findByRole('button', { name: 'Borrar cobro' })
-  expect(screen.getAllByRole('button', { name: 'Borrar cobro' })).toHaveLength(1)
+  await screen.findByRole('button', { name: 'Delete payment' })
+  expect(screen.getAllByRole('button', { name: 'Delete payment' })).toHaveLength(1)
   const filas = Array.from(document.querySelectorAll<HTMLElement>('.cuenta-cliente__fila'))
   expect(filas).toHaveLength(3)
   const [saleFila, paymentFila, creditFila] = filas
   if (saleFila === undefined || paymentFila === undefined || creditFila === undefined) {
     throw new Error('expected three account rows')
   }
-  expect(within(saleFila).queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
-  expect(within(paymentFila).getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
-  expect(within(creditFila).queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+  expect(within(saleFila).queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
+  expect(within(paymentFila).getByRole('button', { name: 'Delete payment' })).toBeInTheDocument()
+  expect(within(creditFila).queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
 })
 
-test('a sale paid on the spot offers no Borrar cobro', async () => {
+test('a sale paid on the spot offers no Delete payment', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, SETTLED_CUSTOMER),
@@ -550,11 +550,11 @@ test('a sale paid on the spot offers no Borrar cobro', async () => {
   )
   renderFicha('1')
 
-  expect(await screen.findByText('Pagada por efectivo')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Paid in cash')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
 })
 
-test('registering a payment shows "Cobro guardado · queda debiendo $ X" when something remains', async () => {
+test('registering a payment shows "Payment saved · still owing $ X" when something remains', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
@@ -574,7 +574,7 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
 
   // `payment.json`'s own `after.balance` (plan, invariants: "used by the front's
   // fetch fakes").
-  expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
+  expect(await screen.findByText('Payment saved · still owing $ 6.000')).toBeInTheDocument()
 })
 
 test('"Todo" fills the amount with the balance, and the debounced preview shows the splits and what is left', async () => {
@@ -596,15 +596,15 @@ test('"Todo" fills the amount with the balance, and the debounced preview shows 
   expect(sheet).not.toBeNull()
   const within_ = within(sheet as HTMLElement)
 
-  await userEvent.click(within_.getByRole('button', { name: 'Todo: $ 11.000' }))
+  await userEvent.click(within_.getByRole('button', { name: 'All: $ 11.000' }))
   expect(within_.getByLabelText('Amount')).toHaveValue('11000')
 
-  expect(await within_.findByText('Se descuenta de la deuda más vieja')).toBeInTheDocument()
+  expect(await within_.findByText('Taken from the oldest debt')).toBeInTheDocument()
   expect(await within_.findByText('$ 11.000 a la venta del 14/09')).toBeInTheDocument()
-  expect(within_.queryByText(/Le queda debiendo/)).not.toBeInTheDocument()
+  expect(within_.queryByText(/They still owe/)).not.toBeInTheDocument()
 })
 
-test('a partial amount\'s preview shows "Le queda debiendo $ X", from the preview\'s own after.balance', async () => {
+test('a partial amount\'s preview shows "They still owe $ X", from the preview\'s own after.balance', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
@@ -625,10 +625,10 @@ test('a partial amount\'s preview shows "Le queda debiendo $ X", from the previe
   await userEvent.type(within_.getByLabelText('Amount'), '5000')
 
   expect(await within_.findByText('$ 5.000 a la venta del 14/09')).toBeInTheDocument()
-  expect(await within_.findByText('Le queda debiendo $ 6.000')).toBeInTheDocument()
+  expect(await within_.findByText('They still owe $ 6.000')).toBeInTheDocument()
 })
 
-test('registering a payment that settles everything shows the plain "Cobro guardado" toast', async () => {
+test('registering a payment that settles everything shows the plain "Payment saved" toast', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
@@ -646,12 +646,12 @@ test('registering a payment that settles everything shows the plain "Cobro guard
   await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))
   const sheet = (await screen.findByRole('button', { name: 'Save' })).closest('form')
   expect(sheet).not.toBeNull()
-  await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Todo: $ 11.000' }))
+  await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'All: $ 11.000' }))
   await userEvent.click(within(sheet as HTMLElement).getByLabelText('Cash'))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
-  expect(await screen.findByText('Cobro guardado')).toBeInTheDocument()
-  expect(screen.queryByText(/queda debiendo/)).not.toBeInTheDocument()
+  expect(await screen.findByText('Payment saved')).toBeInTheDocument()
+  expect(screen.queryByText(/still owing/)).not.toBeInTheDocument()
 })
 
 test('a payment deleted by a partner meanwhile shows the gone notice, never the generic retry', async () => {
@@ -679,12 +679,12 @@ test('a payment deleted by a partner meanwhile shows the gone notice, never the 
   )
   renderFicha('1')
 
-  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  const borrar = await screen.findByRole('button', { name: 'Delete payment' })
   await userEvent.click(borrar)
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
-  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
+  expect(screen.queryByText('Payment deleted')).not.toBeInTheDocument()
 })
 
 const ACCOUNT_WITH_ONE_PAYMENT = {
@@ -703,7 +703,7 @@ const ACCOUNT_WITH_ONE_PAYMENT = {
   ],
 }
 
-test('Borrar cobro when the connection drops shows "Sin conexión", never the generic retry or the gone notice', async () => {
+test('Delete payment when the connection drops shows "Sin conexión", never the generic retry or the gone notice', async () => {
   const base = dispatchFetch({
     'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
     'GET /customers/1/account': () => jsonResponse(200, ACCOUNT_WITH_ONE_PAYMENT),
@@ -717,18 +717,18 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
   })
   renderFicha('1')
 
-  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  const borrar = await screen.findByRole('button', { name: 'Delete payment' })
   await userEvent.click(borrar)
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
-  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
+  expect(screen.queryByText('Payment deleted')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Delete payment' })).toBeInTheDocument()
 })
 
-test('Borrar cobro refused for a reason other than "gone" shows the generic retry, never "Sin conexión" or the gone notice', async () => {
+test('Delete payment refused for a reason other than "gone" shows the generic retry, never "Sin conexión" or the gone notice', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
@@ -739,15 +739,15 @@ test('Borrar cobro refused for a reason other than "gone" shows the generic retr
   )
   renderFicha('1')
 
-  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  const borrar = await screen.findByRole('button', { name: 'Delete payment' })
   await userEvent.click(borrar)
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
-  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
+  expect(screen.queryByText('Payment deleted')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Delete payment' })).toBeInTheDocument()
 })
 
 test('a payment above the balance shows the fixed refusal inline and keeps what was typed', async () => {
@@ -768,7 +768,7 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
   await userEvent.click(within(sheet as HTMLElement).getByLabelText('Cash'))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
-  expect(await screen.findByText('El monto supera lo que te debe.')).toBeInTheDocument()
+  expect(await screen.findByText('The amount is more than they owe you.')).toBeInTheDocument()
   expect(within(sheet as HTMLElement).getByLabelText('Amount')).toHaveValue('999000')
 })
 
@@ -797,7 +797,7 @@ test('an untouched sheet leaves at once on history back', async () => {
   await act(() => router.navigate(-1))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
-  expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument()
 })
 
 test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
@@ -806,13 +806,13 @@ test('a touched sheet asks before history back leaves, "No" keeps what was typed
   await userEvent.click(await screen.findByLabelText('Cash'))
   await act(() => router.navigate(-1))
 
-  expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
+  expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 }))
   await userEvent.click(screen.getByRole('button', { name: 'No, keep entering' }))
   // React takes the dialog off the screen after the click, not inside it: wait for it
   // before reading anything else (`waitFor`, not `waitForElementToBeRemoved`, which
   // throws when the element is already gone).
-  await waitFor(() => expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument())
   // A regression check that "No" did not navigate, not a sync point.
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
   expect(await screen.findByLabelText('Cash')).toBeChecked()
@@ -837,7 +837,7 @@ test('after a save the sheet is not in history: back from the card goes to what 
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
-  expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
+  expect(await screen.findByText('Payment saved · still owing $ 6.000')).toBeInTheDocument()
   await router.navigate(-1)
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
@@ -984,7 +984,7 @@ test.each([
 
 const RULE = { limits: LIMITS, samples: { name: SAMPLES.name } }
 
-test('the card and its form follow the icon and text rule: Borrar cobro is icon-only, the rest keep their words', async () => {
+test('the card and its form follow the icon and text rule: Delete payment is icon-only, the rest keep their words', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
@@ -1008,13 +1008,13 @@ test('the card and its form follow the icon and text rule: Borrar cobro is icon-
   )
   renderFicha('1')
 
-  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  const borrar = await screen.findByRole('button', { name: 'Delete payment' })
   expect(borrar).toHaveClass('boton-icono')
   expect(borrar).toHaveTextContent('')
   expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   const registrar = screen.getByRole('link', { name: 'Record payment' })
   expect(registrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  const nueva = screen.getByRole('link', { name: /^Nueva venta a / })
+  const nueva = screen.getByRole('link', { name: /^New sale to / })
   expect(nueva.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expectIconAndTextRule(document.body, RULE)
 

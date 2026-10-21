@@ -44,13 +44,13 @@
   {
     "screen": "Clientes",
     "rule": "autocomplete",
-    "target": "textbox:Buscar cliente",
+    "target": "textbox:Search customer",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "autocomplete",
-    "target": "textbox:Buscar cliente",
+    "target": "textbox:Search customer",
     "issue": 46
   },
   {
@@ -206,7 +206,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
@@ -584,7 +584,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
@@ -662,7 +662,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
@@ -896,7 +896,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78,
     "sizes": [
       "320x568",

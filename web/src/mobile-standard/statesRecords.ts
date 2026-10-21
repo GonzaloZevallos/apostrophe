@@ -19,6 +19,7 @@ import {
   VARIETY,
 } from '../routes.ts'
 import { COMMON_TEXT } from '../copy/common.ts'
+import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import type { WalkState } from './states.ts'
 
 /*
@@ -43,7 +44,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'ClientesBusqueda',
     route: CUSTOMERS,
-    steps: [{ fill: { label: 'Buscar cliente', value: 'Nico' } }],
+    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' } }],
     visible: 'Nico Parra',
   },
 

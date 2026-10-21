@@ -1,7 +1,7 @@
 /**
  * `Inicio`, now the panel (plan, "Front": built only from
  * `web/src/api/fixtures/panel.json`): every figure on every tab, negative
- * Ganancia/Caja, the pending-cost note's placement, no-average, "Nadie te debe",
+ * Ganancia/Caja, the pending-cost note's placement, no-average, "Nobody owes you",
  * navigation, stock rows, a no-year range across a year boundary, the
  * "Arrancá por las variedades" banner above the figures, and a remount with a
  * different answer never showing the first answer's figures (`gcTime: 0`).
@@ -420,7 +420,7 @@ test('tapping "Owed to you" opens Clientes, where the debtors section is', async
   expect(await screen.findByText('pantalla clientes')).toBeInTheDocument()
 })
 
-test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
+test('"Nobody owes you" with nothing to tap when nobody owes', async () => {
   const empty: PanelAnswer = {
     ...PANEL,
     debts: { total_owed: 0, sales_owing_count: 0, oldest: null, teaser: [] },
@@ -428,7 +428,7 @@ test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
   stubFetch(empty)
   renderInicio()
 
-  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
+  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
 

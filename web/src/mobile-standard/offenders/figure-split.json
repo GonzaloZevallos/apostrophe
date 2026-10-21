@@ -196,7 +196,7 @@
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
-    "target": "span:Te debe $ #.#",
+    "target": "span:Owes you $ #.#",
     "issue": 46,
     "sizes": [
       "246x437"

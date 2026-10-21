@@ -2,7 +2,7 @@
   {
     "screen": "Clientes",
     "rule": "contrast",
-    "target": "textbox:Buscar cliente::placeholder",
+    "target": "textbox:Search customer::placeholder",
     "issue": 46
   },
   {
@@ -44,7 +44,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "contrast",
-    "target": "textbox:Buscar::placeholder",
+    "target": "textbox:Search::placeholder",
     "issue": 78
   },
   {
@@ -74,7 +74,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "contrast",
-    "target": "textbox:Buscar::placeholder",
+    "target": "textbox:Search::placeholder",
     "issue": 78
   },
   {
@@ -104,7 +104,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "contrast",
-    "target": "textbox:Buscar::placeholder",
+    "target": "textbox:Search::placeholder",
     "issue": 78,
     "sizes": [
       "320x568",

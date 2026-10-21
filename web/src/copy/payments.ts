@@ -2,24 +2,24 @@
 
 import type { LimitedCopy } from './limits'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = []
 export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const PAYMENTS_TEXT = {
-  teDebe0Desde: (balance: string | number, owing_since: string | number) => ` · te debe ${balance} desde el ${owing_since}`,
-  todo: 'Todo: ',
-  metodo: 'Método',
-  seDescuentaDeLa: 'Se descuenta de la deuda más vieja',
-  aLaVentaDel: ' a la venta del ',
-  leQuedaDebiendo: 'Le queda debiendo ',
-  descartasElCobro: '¿Descartás el cobro?',
-  elMontoSuperaLo: 'El monto supera lo que te debe.',
-  laFechaNoPuede: 'La fecha no puede ser futura.',
-  ingresaUnMontoValido: 'Ingresá un monto válido.',
-  elegiEfectivoOTransferencia: 'Elegí efectivo o transferencia.',
-  cobroGuardadoQuedaDebiendo: (balance: string): `Cobro guardado · queda debiendo ${string}` => `Cobro guardado · queda debiendo ${balance}`,
-  cobroGuardado: 'Cobro guardado',
+  owesYouSince: (balance: string | number, owing_since: string | number) => ` · owes you ${balance} since ${owing_since}`,
+  all: 'All: ',
+  method: 'Method',
+  takenFromOldestDebt: 'Taken from the oldest debt',
+  toTheSaleOf: ' to the sale of ',
+  stillOwes: 'They still owe ',
+  discardThePayment: 'Discard the payment?',
+  amountOverBalance: 'The amount is more than they owe you.',
+  dateInFuture: 'The date cannot be in the future.',
+  enterValidAmount: 'Enter a valid amount.',
+  chooseCashOrTransfer: 'Choose cash or transfer.',
+  savedStillOwing: (balance: string): `Payment saved · still owing ${string}` => `Payment saved · still owing ${balance}`,
+  saved: 'Payment saved',
 } as const

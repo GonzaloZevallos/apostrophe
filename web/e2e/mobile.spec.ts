@@ -338,7 +338,7 @@ test.describe('the colour, loading and shift checkers', () => {
       'loaded',
     )
     expect(rulesOf(found)).toEqual(['contrast', 'contrast-unprovable'])
-    expect(found.filter((v) => v.rule === 'contrast').map((v) => v.target)).toEqual(['p:Gris claro', 'textbox:Buscar::placeholder'])
+    expect(found.filter((v) => v.rule === 'contrast').map((v) => v.target)).toEqual(['p:Gris claro', 'textbox:Search::placeholder'])
     expect(found.filter((v) => v.rule === 'contrast-unprovable').map((v) => v.target)).toEqual(['p:Sobre un degradado'])
   })
 

@@ -49,9 +49,9 @@ import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
 export const SAVED_TOAST = COMMON_TEXT.customerSaved
-export const NAME_REQUIRED = CUSTOMERS_TEXT.poneleUnNombre
-export const PHONE_INVALID = CUSTOMERS_TEXT.esoNoPareceUn
-export const PHONE_TAKEN = CUSTOMERS_TEXT.eseTelefonoYaEs
+export const NAME_REQUIRED = CUSTOMERS_TEXT.giveItAName
+export const PHONE_INVALID = CUSTOMERS_TEXT.notAPhone
+export const PHONE_TAKEN = CUSTOMERS_TEXT.phoneTaken
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 type Field = 'name' | 'phone' | 'form'
@@ -232,14 +232,14 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           )}
           {offline && <SinConexion />}
           <Boton textOnly="submit" type="submit" disabled={save.isPending}>
-            {CUSTOMERS_TEXT.guardaYUsa}
+            {CUSTOMERS_TEXT.saveAndUse}
           </Boton>
         </form>
       </div>
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question={CUSTOMERS_TEXT.descartasElCliente}
+          question={CUSTOMERS_TEXT.discardTheCustomer}
           detail={COMMON_TEXT.losesWhatYouEntered}
           keepLabel={COMMON_TEXT.noKeepEntering}
           discardLabel={COMMON_TEXT.yesDiscard}
