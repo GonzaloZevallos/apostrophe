@@ -248,7 +248,7 @@
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -278,7 +278,7 @@
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -308,7 +308,7 @@
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -338,7 +338,7 @@
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -368,7 +368,7 @@
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -770,7 +770,7 @@
   {
     "screen": "OnboardingStock",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Opcional · si no lo cargás, el lote cues",
+    "target": "textbox:Total cost Optional · if you leave it out, the lot c",
     "issue": 49
   },
   {
@@ -782,7 +782,7 @@
   {
     "screen": "OnboardingStockTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Opcional · si no lo cargás, el lote cues",
+    "target": "textbox:Total cost Optional · if you leave it out, the lot c",
     "issue": 49
   },
   {
@@ -800,19 +800,19 @@
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Mínimo en gramos Desde cuántos gramos aplica",
+    "target": "textbox:Minimum in grams From how many grams it applies",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Precio VIP $ Opcional · menor al precio de lista",
+    "target": "textbox:VIP price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Precio de lista $ Por gramo, en pesos enteros",
+    "target": "textbox:List price $ Per gram, in whole pesos",
     "issue": 47
   },
   {
@@ -824,19 +824,19 @@
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Mínimo en gramos Desde cuántos gramos aplica",
+    "target": "textbox:Minimum in grams From how many grams it applies",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Precio VIP $ Opcional · menor al precio de lista",
+    "target": "textbox:VIP price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Precio de lista $ Por gramo, en pesos enteros",
+    "target": "textbox:List price $ Per gram, in whole pesos",
     "issue": 47
   },
   {
