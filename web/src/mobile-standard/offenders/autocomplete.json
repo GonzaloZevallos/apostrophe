@@ -116,13 +116,13 @@
   {
     "screen": "ConfiguracionContrasena",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña actual",
+    "target": "textbox:Current password",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña nueva",
+    "target": "textbox:New password",
     "issue": 60
   },
   {
@@ -392,25 +392,25 @@
   {
     "screen": "Entrar",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña",
+    "target": "textbox:Password",
     "issue": 49
   },
   {
     "screen": "Entrar",
     "rule": "autocomplete",
-    "target": "textbox:Email",
+    "target": "textbox:Email address",
     "issue": 49
   },
   {
     "screen": "EntrarFreno",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña",
+    "target": "textbox:Password",
     "issue": 49
   },
   {
     "screen": "EntrarFreno",
     "rule": "autocomplete",
-    "target": "textbox:Email",
+    "target": "textbox:Email address",
     "issue": 49
   },
   {
@@ -512,13 +512,13 @@
   {
     "screen": "Invitacion",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña",
+    "target": "textbox:Password",
     "issue": 49
   },
   {
     "screen": "Invitacion",
     "rule": "autocomplete",
-    "target": "textbox:Email",
+    "target": "textbox:Email address",
     "issue": 49
   },
   {
@@ -530,13 +530,13 @@
   {
     "screen": "NegocioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña",
+    "target": "textbox:Password",
     "issue": 49
   },
   {
     "screen": "NegocioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Email",
+    "target": "textbox:Email address",
     "issue": 49
   },
   {
@@ -842,7 +842,7 @@
   {
     "screen": "Reset",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña nueva",
+    "target": "textbox:New password",
     "issue": 49
   },
   {

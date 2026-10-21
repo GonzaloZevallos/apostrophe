@@ -1023,7 +1023,7 @@
   {
     "screen": "ResetMuerto",
     "rule": "touch-target",
-    "target": "link:Entrar",
+    "target": "link:Go to sign in",
     "issue": 49
   },
   {

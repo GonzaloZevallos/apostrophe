@@ -2194,7 +2194,7 @@
   {
     "screen": "Invitacion",
     "rule": "touch-action",
-    "target": "button:Sumate a Negocio LarguísimoLarguísimoLarguísimoLarguí",
+    "target": "button:Join Negocio LarguísimoLarguísimoLarguísimoLarguísimo",
     "issue": 49
   },
   {
@@ -2236,7 +2236,7 @@
   {
     "screen": "NegocioNuevo",
     "rule": "touch-action",
-    "target": "button:Creá el negocio",
+    "target": "button:Create the business",
     "issue": 49
   },
   {
@@ -3106,7 +3106,7 @@
   {
     "screen": "Reset",
     "rule": "touch-action",
-    "target": "button:Guardar y entrar",
+    "target": "button:Save and sign in",
     "issue": 49
   },
   {

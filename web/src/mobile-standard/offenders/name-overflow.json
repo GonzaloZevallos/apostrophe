@@ -211,7 +211,7 @@
   {
     "screen": "Invitacion",
     "rule": "name-overflow",
-    "target": "button:Sumate a Negocio LarguísimoLarguísimoLarguísimoLarguí",
+    "target": "button:Join Negocio LarguísimoLarguísimoLarguísimoLarguísimo",
     "issue": 49
   },
   {
