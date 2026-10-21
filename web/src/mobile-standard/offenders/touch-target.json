@@ -99,23 +99,6 @@
     ]
   },
   {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Sir Jack",
-    "issue": 47
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Variedad sin ventas",
-    "issue": 47,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
     "target": "link:#/# · Consumo propio−# g",
