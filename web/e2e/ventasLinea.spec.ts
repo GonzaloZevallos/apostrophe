@@ -18,7 +18,7 @@ const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
 
 async function signUpWithAVariety(page: Page): Promise<void> {
-  await signUpNewBusiness(page, { businessName: `Vivero Línea ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Vivero Line ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Jazmín con un nombre bastante largo')
