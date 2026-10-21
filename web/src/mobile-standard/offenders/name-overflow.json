@@ -2,25 +2,25 @@
   {
     "screen": "Analisis",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "span:Variety LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
     "issue": 48
   },
   {
     "screen": "Catalogo",
     "rule": "name-overflow",
-    "target": "link:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "link:Variety LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
     "issue": 47
   },
   {
@@ -32,7 +32,7 @@
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 60
   },
   {
@@ -44,7 +44,7 @@
   {
     "screen": "ConfiguracionCategorias",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 60
   },
   {
@@ -67,7 +67,7 @@
   {
     "screen": "EstadosGoneAviso",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "span:Variety LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
     "issue": 49,
     "sizes": [
       "320x568",
@@ -89,7 +89,7 @@
   {
     "screen": "EstadosSinConexion",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "span:Variety LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
     "issue": 49,
     "sizes": [
       "320x568",
@@ -100,7 +100,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -109,7 +109,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -120,7 +120,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -131,7 +131,7 @@
   {
     "screen": "GastoEditar",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -140,7 +140,7 @@
   {
     "screen": "GastoEditar",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -151,7 +151,7 @@
   {
     "screen": "GastoEditar",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -162,7 +162,7 @@
   {
     "screen": "Gastos",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -171,7 +171,7 @@
   {
     "screen": "Gastos",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -182,7 +182,7 @@
   {
     "screen": "Gastos",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -193,19 +193,19 @@
   {
     "screen": "Inicio",
     "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "target": "span:Business LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "target": "span:Business LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "target": "span:Business LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
     "issue": 45
   },
   {
@@ -217,7 +217,7 @@
   {
     "screen": "Invitacion",
     "rule": "name-overflow",
-    "target": "h#:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguísim",
+    "target": "h#:Business LarguísimoLarguísimoLarguísimoLarguísimoLarguísim",
     "issue": 49
   },
   {
@@ -235,13 +235,13 @@
   {
     "screen": "OnboardingCategorias",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:Category LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 49
   },
   {
@@ -253,7 +253,7 @@
   {
     "screen": "Variedades",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "span:Variety LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
     "issue": 47
   },
   {
@@ -281,7 +281,7 @@
   {
     "screen": "Ventas",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "span:Variety LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -303,7 +303,7 @@
   {
     "screen": "VentasFechas",
     "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "target": "span:Variety LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
     "issue": 78,
     "sizes": [
       "320x568",

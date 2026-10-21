@@ -8,7 +8,7 @@
   {
     "screen": "DescartarVenta",
     "rule": "contrast",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
@@ -20,7 +20,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "contrast",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
@@ -32,7 +32,7 @@
   {
     "screen": "NuevaVenta",
     "rule": "contrast",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
@@ -50,7 +50,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "contrast",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
@@ -62,7 +62,7 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "contrast",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
@@ -80,7 +80,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "contrast",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
