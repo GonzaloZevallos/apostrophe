@@ -68,7 +68,7 @@
   {
     "screen": "Catalogo",
     "rule": "touch-target",
-    "target": "link:Editar encabezado y pie",
+    "target": "link:Edit header and footer",
     "issue": 47
   },
   {
@@ -78,17 +78,6 @@
     "issue": 47,
     "sizes": [
       "246x437"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Mango Bomb",
-    "issue": 47,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
     ]
   },
   {
@@ -107,23 +96,6 @@
     "issue": 47,
     "sizes": [
       "246x437"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Sir Jack",
-    "issue": 47
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Variedad sin ventas",
-    "issue": 47,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
     ]
   },
   {
@@ -179,13 +151,13 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "switch:Mostrar en el catálogo",
+    "target": "switch:Show in the catalog",
     "issue": 47
   },
   {
@@ -1017,7 +989,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
@@ -1187,7 +1159,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
@@ -1243,7 +1215,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
@@ -1299,7 +1271,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {

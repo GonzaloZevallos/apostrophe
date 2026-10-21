@@ -27,14 +27,14 @@ test('a tap that leaves Variedades on the phone is not replaced when the viewpor
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
 
   const cdp = await context.newCDPSession(page)
   for (let round = 0; round < 3; round++) {
     await page.setViewportSize(PHONE)
     await page.goto(VARIETIES)
-    const send = page.getByRole('link', { name: 'Mandar catálogo' })
+    const send = page.getByRole('link', { name: 'Send catalog' })
     await send.waitFor()
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 20 })
     await send.click({ noWaitAfter: true })

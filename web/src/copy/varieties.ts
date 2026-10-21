@@ -1,20 +1,20 @@
-/** The fixed Spanish of the varieties list, Archivadas and the whole price history that is
+/** The fixed English of the varieties list, Archivadas and the whole price history that is
  * always on screen: the empty states and the one help line. Each is a binding the screen
  * renders, listed in `LIMITED_COPY` with its kind (`copy/copyLimits.test.ts` measures it). */
 
-import { type LimitedCopy } from './limits'
-import type { RefusalCode } from '../api/refusals'
-import type { SuccessToast } from '../components/AvisoExito'
+import { type LimitedCopy } from './limits.ts'
+import type { RefusalCode } from '../api/refusals.ts'
+import { COMMON_TEXT } from './common.ts'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
 
-export const EMPTY_TITLE = 'Todavía no cargaste ninguna variedad'
-export const EMPTY_DETAIL = 'Agregá la primera con su precio para poder vender y mandar tu catálogo.'
-export const NO_ARCHIVED_MESSAGE = 'No tenés variedades archivadas'
-export const PRICE_HISTORY_HELP = 'Cada venta usa el precio que regía ese día, aunque lo cambies después.'
+export const EMPTY_TITLE = 'No varieties yet'
+export const EMPTY_DETAIL = 'Add the first one with its price so you can sell and send your catalog.'
+export const NO_ARCHIVED_MESSAGE = 'You have no archived varieties'
+export const PRICE_HISTORY_HELP = 'Each sale uses the price in force that day, even if you change it later.'
 /** Why "Mandar catálogo" is disabled, only while the first-run checklist shows and nothing qualifies. */
-export const CATALOG_DISABLED_REASON = 'Cargá una variedad con precio y su stock'
+export const CATALOG_DISABLED_REASON = 'Add a variety with a price and its stock'
 
 const LIMITED_COPY_0: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_TITLE },
@@ -29,13 +29,13 @@ const LIMITED_COPY_0: readonly LimitedCopy[] = [
  * for `copy/copyLimits.test.ts`. */
 
 
-export const PRICE_PER_GRAM_HELP = 'Por gramo, en pesos enteros'
-export const PRICE_DISCOUNT_HELP = 'Opcional · menor al precio de lista'
-export const PRICE_FROM_GRAMS_HELP = 'Desde cuántos gramos aplica'
-export const VARIETY_NAME_HELP = 'Hasta 60 caracteres · no puede repetir el nombre de otra variedad'
+export const PRICE_PER_GRAM_HELP = 'Per gram, in whole pesos'
+export const PRICE_DISCOUNT_HELP = 'Optional · below the list price'
+export const PRICE_FROM_GRAMS_HELP = 'From how many grams it applies'
+export const VARIETY_NAME_HELP = 'Up to 60 characters · cannot repeat another variety\'s name'
 
 /** A toast, not always-visible copy, so it is not in `LIMITED_COPY`. */
-export const PRICE_SAVED = 'Precio guardado'
+export const PRICE_SAVED = 'Price saved'
 
 const LIMITED_COPY_1: readonly LimitedCopy[] = [
   { kind: 'help', text: PRICE_PER_GRAM_HELP },
@@ -43,12 +43,12 @@ const LIMITED_COPY_1: readonly LimitedCopy[] = [
   { kind: 'help', text: PRICE_FROM_GRAMS_HELP },
   { kind: 'help', text: VARIETY_NAME_HELP },
 ]
-/** The fixed Spanish of the low-stock warning's form and switch, and the one table from a
+/** The fixed English of the low-stock warning's form and switch, and the one table from a
  * refusal of `PUT /stock/varieties/{id}/threshold` to its message. */
 
 
-export const THRESHOLD_INVALID_MESSAGE = 'Revisá el umbral cargado'
-export const THRESHOLD_SAVED: SuccessToast = 'Aviso guardado'
+export const THRESHOLD_INVALID_MESSAGE = 'Check the threshold entered'
+export const THRESHOLD_SAVED = 'Warning saved'
 
 export const THRESHOLD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.threshold_invalid': THRESHOLD_INVALID_MESSAGE,
@@ -62,76 +62,76 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const VARIETIES_TEXT = {
-  mandarCatalogo: 'Mandar catálogo',
-  entradaDeStock: '+ Entrada de stock',
-  oculta: 'Oculta',
-  archivadas: 'Archivadas (',
-  archivada: 'Archivada',
-  restaurar: 'Restaurar',
-  enElCatalogo: 'En el catálogo',
-  mostrarEnElCatalogo: 'Mostrar en el catálogo',
+  mandarCatalogo: 'Send catalog',
+  entradaDeStock: '+ Stock entry',
+  oculta: 'Hidden',
+  archivadas: 'Archived (',
+  archivada: COMMON_TEXT.archived,
+  restaurar: 'Restore',
+  enElCatalogo: 'In the catalog',
+  mostrarEnElCatalogo: 'Show in the catalog',
   emoji: 'Emoji',
-  indica: '% índica',
-  aromaSabor: 'Aroma/sabor',
-  guardaElCatalogo: 'Guardá el catálogo',
-  precioDeLista: 'Precio de lista',
-  minimoEnGramos: 'Mínimo en gramos',
-  precioVip: 'Precio VIP',
-  rigeDesde: 'Rige desde',
-  guardaElPrecio: 'Guardá el precio',
-  descartasElPrecio: '¿Descartás el precio?',
-  rigeDesde2: 'Rige desde ',
-  vigenteHoy: 'Vigente hoy',
-  desde: 'Desde ',
-  precioVip2: 'Precio VIP · ',
-  borrarEstePrecio: 'Borrar este precio',
-  borrasElPrecioDesde: (effective_from: string | number) => `¿Borrás el precio desde el ${effective_from}?`,
-  renombrarVariedad: 'Renombrar variedad',
-  avisoDeStockBajo: 'Aviso de stock bajo',
-  avisarConMenosDe: 'Avisar con menos de',
-  guardaElAviso: 'Guardá el aviso',
-  seMuestra: 'Se muestra',
-  noSeMuestra: 'No se muestra',
-  editarCatalogo: 'Editar catálogo',
-  nombreDeLaVariedad: 'Nombre de la variedad',
-  agregaLaVariedad: 'Agregá la variedad',
-  descartasLaVariedad: '¿Descartás la variedad?',
-  editarNombre: 'Editar nombre',
-  dias: ' días',
-  entrada: '+ Entrada',
-  entrada2: 'Entrada',
-  verTodas: 'Ver todas',
-  eliminarVariedad: 'Eliminar variedad',
-  archivarVariedad: 'Archivar variedad',
-  eliminasEstaVariedad: '¿Eliminás esta variedad?',
-  archivasEstaVariedad: '¿Archivás esta variedad?',
-  noTieneVentasNi: 'No tiene ventas ni entradas. Se borra para siempre, con sus precios. Esto no se puede deshacer.',
-  siEliminala: 'Sí, eliminala',
-  siArchivala: 'Sí, archivala',
-  stockYEntradas: 'Stock y entradas',
-  elGramo: ' el gramo',
-  editarAviso: 'Editar aviso',
-  avisarCuandoQuedePoco: 'Avisar cuando quede poco',
-  pantallaVariedades: 'Pantalla Variedades',
-  paginaDeLaVariedad: 'Página de la variedad',
-  verTodosLosPrecios: 'Ver todos los precios',
-  pantallaArchivadas: 'Pantalla Archivadas',
-  variedadGuardada: 'Variedad guardada',
-  sinPrecioNoSe: 'Sin precio: no se puede vender',
-  yaExisteUnaVariedad: 'Ya existe una variedad con ese nombre',
-  poneleUnNombreA: 'Ponele un nombre a la variedad, sin espacios de más',
-  n01Dias: (grams: string | number, days_left: string | number) => `${grams} · ${days_left} días`,
-  precioEliminado: 'Precio eliminado',
-  dejanDeVerseEn: 'dejan de verse en Inicio y en las listas, pero el stock queda guardado.',
-  siLaArchivas0: (tail: string | number) => `Si la archivás, ${tail}`,
-  tieneUnFaltanteDe: (grams: string | number, tail: string | number) => `Tiene un faltante de ${grams}. Si la archivás, ${tail}`,
-  teQuedan0Si: (grams: string | number, tail: string | number) => `Te quedan ${grams}. Si la archivás, ${tail}`,
-  variedadEliminada: 'Variedad eliminada',
-  variedadArchivada: 'Variedad archivada',
-  poneExactamenteUnEmoji: 'Poné exactamente un emoji',
-  elPorcentajeDeIndica: 'El porcentaje de índica va de 0 a 100',
-  elAromaEsDemasiado: 'El aroma es demasiado largo',
-  yaCargasteUnPrecio: 'Ya cargaste un precio con esa fecha',
-  revisaLosPreciosCargados: 'Revisá los precios cargados',
-  variedadRestaurada: 'Variedad restaurada',
+  indica: '% indica',
+  aromaSabor: 'Aroma/flavor',
+  guardaElCatalogo: 'Save the catalog',
+  precioDeLista: 'List price',
+  minimoEnGramos: 'Minimum in grams',
+  precioVip: 'VIP price',
+  rigeDesde: 'Effective from',
+  guardaElPrecio: 'Save the price',
+  descartasElPrecio: 'Discard the price?',
+  rigeDesde2: 'Effective from ',
+  vigenteHoy: 'In force today',
+  desde: 'From ',
+  precioVip2: 'VIP price · ',
+  borrarEstePrecio: 'Delete this price',
+  borrasElPrecioDesde: (effective_from: string | number) => `Delete the price from ${effective_from}?`,
+  renombrarVariedad: 'Rename variety',
+  avisoDeStockBajo: 'Low stock warning',
+  avisarConMenosDe: 'Warn when below',
+  guardaElAviso: 'Save the warning',
+  seMuestra: 'Shown',
+  noSeMuestra: 'Not shown',
+  editarCatalogo: 'Edit catalog',
+  nombreDeLaVariedad: 'Variety name',
+  agregaLaVariedad: 'Add the variety',
+  descartasLaVariedad: 'Discard the variety?',
+  editarNombre: 'Edit name',
+  dias: ' days',
+  entrada: '+ Entry',
+  entrada2: 'Entry',
+  verTodas: 'See all',
+  eliminarVariedad: 'Delete variety',
+  archivarVariedad: 'Archive variety',
+  eliminasEstaVariedad: 'Delete this variety?',
+  archivasEstaVariedad: 'Archive this variety?',
+  noTieneVentasNi: `It has no sales or entries. It is deleted for good, with its prices. ${COMMON_TEXT.cannotUndo}`,
+  siEliminala: COMMON_TEXT.yesDelete,
+  siArchivala: 'Yes, archive it',
+  stockYEntradas: 'Stock and entries',
+  elGramo: ' per gram',
+  editarAviso: 'Edit warning',
+  avisarCuandoQuedePoco: 'Warn when running low',
+  pantallaVariedades: 'Varieties screen',
+  paginaDeLaVariedad: 'Variety page',
+  verTodosLosPrecios: 'See all prices',
+  pantallaArchivadas: 'Archived screen',
+  variedadGuardada: 'Variety saved',
+  sinPrecioNoSe: 'No price: cannot be sold',
+  yaExisteUnaVariedad: 'A variety with that name already exists',
+  poneleUnNombreA: 'Give the variety a name, without extra spaces',
+  n01Dias: (grams: string | number, days_left: string | number) => `${grams} · ${days_left} days`,
+  precioEliminado: 'Price deleted',
+  dejanDeVerseEn: `they stop showing on ${COMMON_TEXT.home} and in the lists, but the stock is kept.`,
+  siLaArchivas0: (tail: string | number) => `If you archive it, ${tail}`,
+  tieneUnFaltanteDe: (grams: string | number, tail: string | number) => `It has a shortfall of ${grams}. If you archive it, ${tail}`,
+  teQuedan0Si: (grams: string | number, tail: string | number) => `You have ${grams} left. If you archive it, ${tail}`,
+  variedadEliminada: 'Variety deleted',
+  variedadArchivada: 'Variety archived',
+  poneExactamenteUnEmoji: 'Enter exactly one emoji',
+  elPorcentajeDeIndica: 'The indica percentage goes from 0 to 100',
+  elAromaEsDemasiado: 'The aroma is too long',
+  yaCargasteUnPrecio: 'You already entered a price with that date',
+  revisaLosPreciosCargados: 'Check the prices entered',
+  variedadRestaurada: 'Variety restored',
 } as const

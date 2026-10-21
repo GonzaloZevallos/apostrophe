@@ -22,7 +22,7 @@ describe('deleteNotice', () => {
   })
 
   test('for the only entry, says the variety is left with no price', () => {
-    expect(deleteNotice([E1], 1)).toBe('Sin precio: no se puede vender')
+    expect(deleteNotice([E1], 1)).toBe('No price: cannot be sold')
   })
 
   test('never mentions sales', () => {

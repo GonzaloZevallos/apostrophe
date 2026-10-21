@@ -48,7 +48,7 @@ test('a save posts the name to the owner route and hands the id and name to its 
   const { fetchMock } = renderHost(async () => jsonResponse(201, { id: 7, name: 'Gold 24K' }))
 
   await user.type(screen.getByLabelText(/^Name/), 'Gold 24K')
-  await user.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
+  await user.click(screen.getByRole('button', { name: 'Add the variety' }))
 
   expect(await screen.findByText(/state: saved 7 Gold 24K/)).toBeInTheDocument()
   expect(writes(fetchMock)).toEqual([{ call: 'POST /varieties', body: { name: 'Gold 24K' } }])
@@ -60,7 +60,7 @@ test('a save marks the varieties stale', async () => {
   queryClient.setQueryData(keys.varieties(), [])
 
   await user.type(screen.getByLabelText(/^Name/), 'Gold')
-  await user.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
+  await user.click(screen.getByRole('button', { name: 'Add the variety' }))
   await screen.findByText(/state: saved/)
 
   expect(queryClient.getQueryState(keys.varieties())?.isInvalidated).toBe(true)
@@ -81,11 +81,11 @@ test('a taken name is refused under the name and keeps what was typed', async ()
   renderHost(async () => jsonResponse(409, { code: 'variety.name_taken' }))
 
   await user.type(screen.getByLabelText(/^Name/), 'Gold')
-  await user.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
+  await user.click(screen.getByRole('button', { name: 'Add the variety' }))
 
   const alert = await screen.findByRole('alert')
   expect(alert.closest('label')).toHaveTextContent('Name')
-  expect(alert).toHaveTextContent('Ya existe una variedad con ese nombre')
+  expect(alert).toHaveTextContent('A variety with that name already exists')
   expect(screen.getByLabelText(/^Name/)).toHaveValue('Gold')
   expect(screen.getByText(/state: open/)).toBeInTheDocument()
 })

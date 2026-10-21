@@ -52,8 +52,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expectPath(page, VARIETY)
 
@@ -61,29 +61,29 @@ test('a seller does everything the backend offers today, from the front alone', 
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
   // is, never dated from the browser's own UTC clock (plan, "One clock").
   await page.getByRole('link', { name: 'New price' }).click()
-  await page.getByLabel(/^Precio de lista/).fill('9000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByLabel(/^List price/).fill('9000')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
   await expect(page.getByText(/\$ 9\.000 x g/).first()).toBeVisible()
 
   // Delete the price entry (the only one): the variety is left with no price.
-  await page.getByRole('button', { name: 'Borrar este precio' }).click();
+  await page.getByRole('button', { name: 'Delete this price' }).click();
   await page.getByRole('button', { name: 'Yes, delete it' }).click();
-  await expect(page.getByText('Precio eliminado')).toBeVisible()
-  await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
+  await expect(page.getByText('Price deleted')).toBeVisible()
+  await expect(page.getByText('No price: cannot be sold').first()).toBeVisible()
 
   // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
   // "All entries" (stock.md).
   await page.goto(STOCK)
-  await expect(page.getByText('Sin entradas de stock')).toBeVisible()
+  await expect(page.getByText('No stock entries')).toBeVisible()
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
+  await page.getByRole('link', { name: '+ Stock entry' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Costo total').fill('45000')
-  await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByLabel('Total cost').fill('45000')
+  await expect(page.getByText('It comes to $ 900 per gram')).toBeVisible()
+  await page.getByRole('button', { name: 'Save the entry' }).click()
   await expectAnyPath(page, [VARIETIES, VARIETY])
   await expect(page.getByText('Entry saved')).toBeVisible()
   await page.goto(STOCK)
@@ -95,15 +95,15 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByLabel('Grams')).toHaveValue('50')
   await page.getByLabel('Grams').fill('60')
   await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, guardar' }).click()
+  await expect(page.getByText('Save the changes?')).toBeVisible()
+  await page.getByRole('button', { name: 'Yes, save' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry saved')).toBeVisible()
   await expect(page.getByText('Purchase · 60 g')).toBeVisible()
 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
-  await page.getByRole('button', { name: 'Borrar', exact: true }).click()
-  await expect(page.getByText('Antes de borrar')).toBeVisible()
+  await page.getByRole('button', { name: 'Delete', exact: true }).click()
+  await expect(page.getByText('Before deleting')).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry deleted')).toBeVisible()
@@ -114,12 +114,12 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page.getByText('Warning off')).toBeVisible()
-  await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
-  await page.getByLabel('Avisar con menos de').fill('15')
-  await page.getByRole('button', { name: 'Guardá el aviso' }).click()
-  await expect(page.getByText('Aviso guardado')).toBeVisible()
-  await expect(page.getByText('Avisame abajo de 15 g')).toBeVisible()
-  await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
+  await page.getByRole('switch', { name: 'Warn when running low' }).click()
+  await page.getByLabel('Warn when below').fill('15')
+  await page.getByRole('button', { name: 'Save the warning' }).click()
+  await expect(page.getByText('Warning saved')).toBeVisible()
+  await expect(page.getByText('Warn me below 15 g')).toBeVisible()
+  await page.getByRole('switch', { name: 'Warn when running low' }).click()
   await expect(page.getByText('Warning off')).toBeVisible()
 
   // Record an expense, with a category created inline.

@@ -332,7 +332,7 @@ test('every stock row says its state in a word as well as its mark, in both them
     const words = Array.from(container.querySelectorAll('.fila-stock')).map(
       (row) => row.querySelector('.marca-estado__palabra')?.textContent,
     )
-    expect(words).toEqual(['baja', 'ok', 'agotada', 'sin entradas'])
+    expect(words).toEqual(['low', 'ok', 'sold out', 'no entries'])
     for (const row of container.querySelectorAll('.marca-estado')) {
       expect(row.querySelector('.marca-estado__forma')).toHaveAttribute('aria-hidden', 'true')
     }
@@ -514,8 +514,8 @@ test('Lo que te queda: every status has its word once and days only as the side 
   const rows = Array.from(container.querySelectorAll<HTMLElement>('.fila-stock'))
   expect(rows.map((row) => row.querySelectorAll('.marca-estado__palabra').length)).toEqual([1, 1, 1, 1])
   expect(rows.map((row) => row.querySelector('.fila-stock__insignia')?.textContent ?? null)).toEqual([
-    '5 días',
-    '40 días',
+    '5 days',
+    '40 days',
     null,
     null,
   ])

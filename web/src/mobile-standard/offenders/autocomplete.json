@@ -2,13 +2,13 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "autocomplete",
-    "target": "textbox:% índica",
+    "target": "textbox:% indica",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "autocomplete",
-    "target": "textbox:Aroma/sabor",
+    "target": "textbox:Aroma/flavor",
     "issue": 47
   },
   {
@@ -248,7 +248,7 @@
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -272,13 +272,13 @@
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "combobox:Variety Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -302,13 +302,13 @@
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "combobox:Variety Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -332,13 +332,13 @@
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "combobox:Variety Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -362,13 +362,13 @@
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "combobox:Variety Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
@@ -770,7 +770,7 @@
   {
     "screen": "OnboardingStock",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Opcional · si no lo cargás, el lote cues",
+    "target": "textbox:Total cost Optional · if you leave it out, the lot c",
     "issue": 49
   },
   {
@@ -782,7 +782,7 @@
   {
     "screen": "OnboardingStockTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Opcional · si no lo cargás, el lote cues",
+    "target": "textbox:Total cost Optional · if you leave it out, the lot c",
     "issue": 49
   },
   {
@@ -794,49 +794,49 @@
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Bulk price $ Opcional · menor al precio de lista",
+    "target": "textbox:Bulk price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Mínimo en gramos Desde cuántos gramos aplica",
+    "target": "textbox:Minimum in grams From how many grams it applies",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Precio VIP $ Opcional · menor al precio de lista",
+    "target": "textbox:VIP price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Precio de lista $ Por gramo, en pesos enteros",
+    "target": "textbox:List price $ Per gram, in whole pesos",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Bulk price $ Opcional · menor al precio de lista",
+    "target": "textbox:Bulk price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Mínimo en gramos Desde cuántos gramos aplica",
+    "target": "textbox:Minimum in grams From how many grams it applies",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Precio VIP $ Opcional · menor al precio de lista",
+    "target": "textbox:VIP price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Precio de lista $ Por gramo, en pesos enteros",
+    "target": "textbox:List price $ Per gram, in whole pesos",
     "issue": 47
   },
   {
@@ -848,7 +848,7 @@
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "combobox:Variedad #",
+    "target": "combobox:Variety #",
     "issue": 47
   },
   {
@@ -860,7 +860,7 @@
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "textbox:Gramos #",
+    "target": "textbox:Grams #",
     "issue": 47
   },
   {
@@ -872,13 +872,13 @@
   {
     "screen": "VariedadNueva",
     "rule": "autocomplete",
-    "target": "textbox:Name Hasta # caracteres · no puede repetir el nombre",
+    "target": "textbox:Name Up to # characters · cannot repeat another vari",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Name Hasta # caracteres · no puede repetir el nombre",
+    "target": "textbox:Name Up to # characters · cannot repeat another vari",
     "issue": 47
   },
   {
@@ -890,7 +890,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "autocomplete",
-    "target": "textbox:Avisar con menos de",
+    "target": "textbox:Warn when below",
     "issue": 47
   },
   {

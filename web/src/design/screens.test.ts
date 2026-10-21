@@ -503,7 +503,7 @@ describe('assertScreens checks every step against one closed list of shapes', ()
         withSteps([
           { click: 'Semana' },
           { press: 'Borrar venta' },
-          { wait: 'Stock y entradas' },
+          { wait: 'Stock and entries' },
           { fill: { label: 'Gramos', value: '{email}' } },
           { select: { label: 'Variedad línea 1', index: 0 } },
           { offline: true },
@@ -687,7 +687,7 @@ describe('the archived variety rows of the real screens.json', () => {
       const entry = screens.screens.find((s) => s.screen === key)!
       expect(entry.route, key).toBe(listPath)
       expect(entry.path, key).toBe(`${listPath.replace(/archived$/, '')}{archived}`)
-      expect(entry.steps, key).toEqual([{ click: 'Blue Dream' }, { wait: 'Stock y entradas' }])
+      expect(entry.steps, key).toEqual([{ click: 'Blue Dream' }, { wait: 'Stock and entries' }])
       expect(entry.viewport !== undefined, key).toBe(key.includes('Compu'))
       expect(entry.tema === 'oscuro', key).toBe(key.endsWith('Oscuro'))
     }
@@ -751,7 +751,7 @@ describe('an entry whose path names a record names the same placeholders in its 
   it('refuses a path that names a record when the route names none and no step clicks to it', () => {
     const entry = { screen: 'VariedadArchivada', path: 'varieties/{archived}', route: 'varieties/archived' }
     expect(pathRecordMismatches([entry])).toEqual([{ screen: 'VariedadArchivada', path: ['archived'], route: [] }])
-    expect(pathRecordMismatches([{ ...entry, steps: [{ wait: 'Stock y entradas' }] }])).toEqual([
+    expect(pathRecordMismatches([{ ...entry, steps: [{ wait: 'Stock and entries' }] }])).toEqual([
       { screen: 'VariedadArchivada', path: ['archived'], route: [] },
     ])
     expect(pathRecordMismatches([{ ...entry, steps: [{ click: 'Blue Dream' }] }])).toEqual([])

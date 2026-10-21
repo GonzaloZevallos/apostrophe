@@ -92,18 +92,18 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   await page.goto(`${INSECURE_ORIGIN}${VARIETIES}`)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
+  await page.getByRole('button', { name: 'Add the variety' }).click()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
-  await page.getByLabel(/^Precio de lista/).fill('9000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByLabel(/^List price/).fill('9000')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 
   await page.goto(`${INSECURE_ORIGIN}${STOCK_ENTRY_NEW}`)
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Costo total').fill('45000')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByLabel('Total cost').fill('45000')
+  await page.getByRole('button', { name: 'Save the entry' }).click()
   await expect(page.getByText('Entry saved')).toBeVisible()
 
   await page.goto(`${INSECURE_ORIGIN}${CATALOG}`)
@@ -119,7 +119,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   await expect(page.getByRole('button', { name: 'Share' })).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Copy' }).click()
-  await expect(page.getByText('Catálogo copiado')).toBeVisible()
+  await expect(page.getByText('Catalog copied')).toBeVisible()
 
   const copied = await page.evaluate(
     () => (window as unknown as ExecCommandSpy).__copiedViaExecCommand,

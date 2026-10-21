@@ -21,6 +21,8 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { COMMON_TEXT } from '../copy/common.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { STOCK_TEXT } from '../copy/stock.ts'
+import { VARIETIES_TEXT } from '../copy/varieties.ts'
 import type { WalkState } from './states.ts'
 
 /*
@@ -58,42 +60,42 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'EntradaStockConfirmarCambios',
     route: ENTRY_ROUTE,
-    steps: [{ wait: 'Editar entrada' }, { click: COMMON_TEXT.save }],
-    visible: '¿Guardás los cambios?',
+    steps: [{ wait: STOCK_TEXT.editarEntrada }, { click: COMMON_TEXT.save }],
+    visible: STOCK_TEXT.guardasLosCambios,
   },
   {
     screen: 'EntradaStockConfirmarBorrado',
     route: ENTRY_ROUTE,
-    steps: [{ click: 'Borrar entrada' }],
-    visible: 'Antes de borrar',
+    steps: [{ click: STOCK_TEXT.borrarEntrada }],
+    visible: STOCK_TEXT.antesDeBorrar,
   },
 
   {
     screen: 'PrecioNuevoFormulario',
     route: LOW_VARIETY,
     steps: [{ click: COMMON_TEXT.newPrice }],
-    visible: 'Guardá el precio',
+    visible: VARIETIES_TEXT.guardaElPrecio,
   },
   {
     screen: 'PrecioConfirmarBorrado',
     route: LOW_VARIETY,
-    steps: [{ press: 'Borrar este precio' }],
+    steps: [{ press: VARIETIES_TEXT.borrarEstePrecio }],
     visible: COMMON_TEXT.yesDelete,
   },
-  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: COMMON_TEXT.newVariety }], visible: 'Agregá la variedad' },
+  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: COMMON_TEXT.newVariety }], visible: VARIETIES_TEXT.agregaLaVariedad },
   {
     screen: 'VariedadRenombrar',
     route: LOW_VARIETY,
-    steps: [{ press: 'Editar nombre' }],
+    steps: [{ press: VARIETIES_TEXT.editarNombre }],
     visible: COMMON_TEXT.saveTheName,
   },
-  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: 'Editar aviso' }], visible: 'Guardá el aviso' },
+  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: VARIETIES_TEXT.editarAviso }], visible: VARIETIES_TEXT.guardaElAviso },
 
   {
     screen: 'CatalogoAtributos',
     route: LOW_VARIETY,
-    steps: [{ press: 'Editar catálogo' }],
-    visible: 'Guardá el catálogo',
+    steps: [{ press: VARIETIES_TEXT.editarCatalogo }],
+    visible: VARIETIES_TEXT.guardaElCatalogo,
   },
 
   {

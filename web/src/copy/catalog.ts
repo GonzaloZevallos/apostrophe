@@ -4,13 +4,12 @@
  * bindings `Catalogo` renders.
  */
 
-import type { LimitedCopy } from './limits'
-import { EMPTY_STATES } from './emptyStates'
+import type { LimitedCopy } from './limits.ts'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const EMPTY_STATE_TITLE = EMPTY_STATES.catalogTitle
-export const EMPTY_STATE_DETAIL = EMPTY_STATES.catalogDetail
+export const EMPTY_STATE_TITLE = 'Nothing in the catalog today'
+export const EMPTY_STATE_DETAIL = 'Nothing to copy yet'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },
@@ -20,12 +19,12 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const CATALOG_TEXT = {
-  reasonHidden: 'oculta',
-  reasonNoPrice: 'sin precio',
-  comoSeVeEn: 'Cómo se ve en Telegram',
-  queNoSaleY: 'Qué no sale y por qué',
-  editarEncabezadoYPie: 'Editar encabezado y pie',
-  catalogoCopiado: 'Catálogo copiado',
-  noSePudoCopiar: 'No se pudo copiar.',
-  noSePudoCompartir: 'No se pudo compartir.',
+  reasonHidden: 'hidden',
+  reasonNoPrice: 'no price',
+  comoSeVeEn: 'How it looks in Telegram',
+  queNoSaleY: 'What does not go out and why',
+  editarEncabezadoYPie: 'Edit header and footer',
+  catalogoCopiado: 'Catalog copied',
+  noSePudoCopiar: 'Could not copy.',
+  noSePudoCompartir: 'Could not share.',
 } as const

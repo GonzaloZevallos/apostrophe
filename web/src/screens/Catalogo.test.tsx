@@ -1,7 +1,7 @@
 /**
  * `Catalogo` at the screen seam (plan, "Front"): the preview built only from
  * `telegramPreview(text)`, Compartir and Copiar gated on the open's fetch and handed
- * exactly the API's text, "Qué no sale y por qué" told by one word per variety, the
+ * exactly the API's text, "What does not go out and why" told by one word per variety, the
  * links out. It edits no variety attribute (that is the variety's own page). The API is faked at `fetch`, never
  * mocked deeper (CODING_STANDARDS §10).
  */
@@ -81,7 +81,7 @@ afterEach(() => {
 })
 
 const CATALOG = {
-  text: '🌿 **CATÁLOGO** 🌿\n\n🥇 **24K Gold**\n• 60% índica / 40% sativa\n• Aroma/sabor: cítrico\n• Precio x gramo: $11.000\n• Desde 10 g: $10.000 c/u\n\n📩 Consultas y pedidos por privado.',
+  text: '🌿 **CATÁLOGO** 🌿\n\n🥇 **24K Gold**\n• 60% índica / 40% sativa\n• Aroma/flavor: cítrico\n• Precio x gramo: $11.000\n• From 10 g: $10.000 c/u\n\n📩 Consultas y pedidos por privado.',
   header: '🌿 **CATÁLOGO** 🌿',
   footer: '📩 Consultas y pedidos por privado.',
   varieties: [
@@ -192,7 +192,7 @@ test('shows the empty state and no Copiar when nothing qualifies', async () => {
     ),
   )
 
-  expect(await screen.findByText('No hay nada en el catálogo hoy')).toBeInTheDocument()
+  expect(await screen.findByText('Nothing in the catalog today')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })
@@ -210,11 +210,11 @@ function variety(id: number, name: string, state: string) {
 }
 
 function reasonsSection(): HTMLElement {
-  const heading = screen.getByText('Qué no sale y por qué')
+  const heading = screen.getByText('What does not go out and why')
   return heading.parentElement as HTMLElement
 }
 
-test('"Qué no sale y por qué" lists every variety out of the catalog with its one word, and none that goes out', async () => {
+test('"What does not go out and why" lists every variety out of the catalog with its one word, and none that goes out', async () => {
   renderCatalogo(
     catalogFetch({
       ...CATALOG,
@@ -228,13 +228,13 @@ test('"Qué no sale y por qué" lists every variety out of the catalog with its 
     }),
   )
 
-  await screen.findByText('Qué no sale y por qué')
+  await screen.findByText('What does not go out and why')
   const rows = within(reasonsSection()).getAllByRole('listitem')
   expect(rows.map((row) => row.textContent)).toEqual([
-    'Sir Jackoculta',
-    'Mango Bombsin precio',
-    'Golden Cookiesagotada',
-    'Lemon Hazesin entradas',
+    'Sir Jackhidden',
+    'Mango Bombno price',
+    'Golden Cookiessold out',
+    'Lemon Hazeno entries',
   ])
   expect(within(reasonsSection()).queryByText('24K Gold')).not.toBeInTheDocument()
 })
@@ -243,10 +243,10 @@ test('with nothing out of the catalog the reasons section is not drawn', async (
   renderCatalogo(catalogFetch({ ...CATALOG, varieties: [variety(1, '24K Gold', 'in')] }))
 
   await screen.findByRole('button', { name: 'Copy' })
-  expect(screen.queryByText('Qué no sale y por qué')).not.toBeInTheDocument()
+  expect(screen.queryByText('What does not go out and why')).not.toBeInTheDocument()
 })
 
-test('a variety left out opens its "En el catálogo" section on its page', async () => {
+test('a variety left out opens its "In the catalog" section on its page', async () => {
   renderCatalogo(catalogFetch({ ...CATALOG, varieties: [variety(7, 'Sir Jack', 'hidden')] }))
 
   await userEvent.click(await screen.findByRole('link', { name: 'Sir Jack' }))
@@ -296,7 +296,7 @@ test('Compartir hands the share sheet exactly the API text, byte for byte, and s
   expect(share.shareText).toHaveBeenCalledTimes(1)
   expect(vi.mocked(share.shareText).mock.calls[0]?.[0]).toBe(text)
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-  expect(screen.queryByText('Catálogo copiado')).not.toBeInTheDocument()
+  expect(screen.queryByText('Catalog copied')).not.toBeInTheDocument()
   expect(screen.queryByRole('status')).not.toBeInTheDocument()
 })
 
@@ -308,7 +308,7 @@ test('a cancelled share shows nothing at all', async () => {
 
   await waitFor(() => expect(share.shareText).toHaveBeenCalled())
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-  expect(screen.queryByText('No se pudo compartir.')).not.toBeInTheDocument()
+  expect(screen.queryByText('Could not share.')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled()
 })
 
@@ -319,7 +319,7 @@ test('a failed share shows only the fixed message and leaves Copiar available', 
   await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
 
   const alert = await screen.findByRole('alert')
-  expect(alert).toHaveTextContent(/^No se pudo compartir\.$/)
+  expect(alert).toHaveTextContent(/^Could not share\.$/)
   expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled()
   await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
   expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG.text)
@@ -357,7 +357,7 @@ test('Copiar copies the raw API text through copyText and shows the toast', asyn
   await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
 
   expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG.text)
-  expect(await screen.findByText('Catálogo copiado')).toBeInTheDocument()
+  expect(await screen.findByText('Catalog copied')).toBeInTheDocument()
 })
 
 test('a failed copy shows the fixed message and no toast', async () => {
@@ -366,14 +366,14 @@ test('a failed copy shows the fixed message and no toast', async () => {
 
   await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
 
-  expect(await screen.findByText('No se pudo copiar.')).toBeInTheDocument()
-  expect(screen.queryByText('Catálogo copiado')).not.toBeInTheDocument()
+  expect(await screen.findByText('Could not copy.')).toBeInTheDocument()
+  expect(screen.queryByText('Catalog copied')).not.toBeInTheDocument()
 })
 
 test('the catalog screen offers no header or footer editing, only the link out', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  expect(await screen.findByRole('link', { name: 'Editar encabezado y pie' })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: 'Edit header and footer' })).toBeInTheDocument()
   expect(screen.queryByLabelText('Encabezado')).not.toBeInTheDocument()
   expect(screen.queryByLabelText('Pie')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
@@ -392,16 +392,16 @@ test('the catalog screen still shows the preview, Copiar, the pin status and Pub
     ),
   )
 
-  expect(await screen.findByText('Cómo se ve en Telegram')).toBeInTheDocument()
+  expect(await screen.findByText('How it looks in Telegram')).toBeInTheDocument()
   expect(await screen.findByRole('button', { name: 'Copy' })).toBeInTheDocument()
   expect(await screen.findByRole('button', { name: 'Publicar' })).toBeInTheDocument()
   expect(await screen.findByText('Al día')).toBeInTheDocument()
 })
 
-test('"Editar encabezado y pie" opens Configuración → Mensaje del catálogo', async () => {
+test('"Edit header and footer" opens Settings → Catalog message', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await userEvent.click(await screen.findByRole('link', { name: 'Editar encabezado y pie' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Edit header and footer' }))
 
   expect(await screen.findByText('Aterrizaste en el mensaje del catálogo')).toBeInTheDocument()
 })
@@ -418,7 +418,7 @@ test('the catalog screen offers no bot settings: they live in Integraciones', as
 test('the catalog screen edits no variety attribute: no Editar button and no field', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await screen.findByRole('link', { name: 'Editar encabezado y pie' })
+  await screen.findByRole('link', { name: 'Edit header and footer' })
   expect(screen.queryByRole('button', { name: /^Editar / })).not.toBeInTheDocument()
   expect(screen.queryByText('Atributos en el catálogo')).not.toBeInTheDocument()
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
@@ -434,10 +434,10 @@ test('Publicar is icon + text: the icon is hidden, so the name stays the word', 
   expect(icon).toHaveAttribute('aria-hidden', 'true')
 })
 
-test('"Editar encabezado y pie" is a text link with no icon', async () => {
+test('"Edit header and footer" is a text link with no icon', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  const link = await screen.findByRole('link', { name: 'Editar encabezado y pie' })
+  const link = await screen.findByRole('link', { name: 'Edit header and footer' })
   expect(link.querySelector('svg')).toBeNull()
 })
 
@@ -454,7 +454,7 @@ test('the empty state shows the registered title and line, each within its limit
   expect(Array.from(EMPTY_STATE_DETAIL).length).toBeLessThanOrEqual(80)
 })
 
-test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Editar encabezado y pie" stays a text link', async () => {
+test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Edit header and footer" stays a text link', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
   const share = await screen.findByRole('button', { name: 'Share' })
@@ -466,10 +466,10 @@ test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Edi
   }
   expect(share).toHaveTextContent('Share')
   expect(copy).toHaveTextContent('Copy')
-  const edit = screen.getByRole('link', { name: 'Editar encabezado y pie' })
+  const edit = screen.getByRole('link', { name: 'Edit header and footer' })
   expect(edit.querySelector('svg')).toBeNull()
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()
-  // The variety name links of "Qué no sale y por qué" are plain row links, not controls of the rule.
+  // The variety name links of "What does not go out and why" are plain row links, not controls of the rule.
   const problems = iconAndTextProblems(document.body).filter((problem) => !problem.includes('catalogo__fila-nombre'))
   expect(problems).toEqual([])
 })

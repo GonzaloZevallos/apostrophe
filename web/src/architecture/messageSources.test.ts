@@ -1,6 +1,6 @@
 /**
  * One source per shared message (varieties.md, criterion 18): "Revisá los gramos cargados"
- * lives in `copy/stock.ts` and "Precio guardado" in
+ * lives in `copy/stock.ts` and "Price saved" in
  * `copy/varieties.ts`; every other module imports the constant. The scan
  * is fed a list of sources, so the fixture below can seed a second copy and must fail.
  */
@@ -8,8 +8,8 @@
 import { expect, test } from 'vitest'
 import { blankComments, findMessageCopies, type SourceFile } from './messageSources'
 
-const GRAMS = 'Revisá los gramos cargados'
-const SAVED = 'Precio guardado'
+const GRAMS = 'Check the grams entered'
+const SAVED = 'Price saved'
 const GRAMS_OWNER = 'src/copy/stock.ts'
 const SAVED_OWNER = 'src/copy/varieties.ts'
 

@@ -37,13 +37,13 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
-  await page.getByLabel(/^Precio de lista/).fill('900')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByLabel(/^List price/).fill('900')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 
   // A stock entry (origin defaults to "Purchase"), backdated into last month so the
   // business's first record — and so "Previous month" — is not this same month.
@@ -52,8 +52,8 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await page.getByLabel('Date').fill(firstOfMonth(todayIso, 1))
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Costo total').fill('20000')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByLabel('Total cost').fill('20000')
+  await page.getByRole('button', { name: 'Save the entry' }).click()
   await expect(page.getByText('Entry saved')).toBeVisible()
 
   // A cash sale, today.
@@ -162,8 +162,8 @@ async function recordEntry(
   await page.getByLabel('Grams').fill(entry.grams)
   await page.getByLabel('Variety').selectOption({ label: entry.variety })
   await page.getByRole('button', { name: entry.origin, exact: true }).click()
-  if (entry.cost !== undefined) await page.getByLabel('Costo total').fill(entry.cost)
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  if (entry.cost !== undefined) await page.getByLabel('Total cost').fill(entry.cost)
+  await page.getByRole('button', { name: 'Save the entry' }).click()
   await expect(page.getByText('Entry saved')).toBeVisible()
 }
 
@@ -173,11 +173,11 @@ async function recordWithdrawal(
 ): Promise<void> {
   await page.goto(WITHDRAWAL_NEW)
   await page.getByLabel('Date').fill(withdrawal.date)
-  await page.getByLabel('Variedad 1', { exact: true }).selectOption({ label: withdrawal.variety })
-  await page.getByLabel('Gramos 1', { exact: true }).fill(withdrawal.grams)
+  await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: withdrawal.variety })
+  await page.getByLabel('Grams 1', { exact: true }).fill(withdrawal.grams)
   await page.getByRole('button', { name: withdrawal.reason, exact: true }).click()
-  await page.getByRole('button', { name: 'Guardá el retiro' }).click()
-  await expect(page.getByText('Retiro guardado')).toBeVisible()
+  await page.getByRole('button', { name: 'Save the withdrawal' }).click()
+  await expect(page.getByText('Withdrawal saved')).toBeVisible()
 }
 
 test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Consumo propio, fully and partly pending', async ({
@@ -194,8 +194,8 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New variety' }).click()
     await page.getByLabel('Name').fill(name)
-    await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-    await expect(page.getByText('Variedad guardada')).toBeVisible()
+    await page.getByRole('button', { name: 'Add the variety' }).click()
+    await expect(page.getByText('Variety saved')).toBeVisible()
   }
   await page.goto(STOCK_ENTRY_NEW)
   const today = await page.getByLabel('Date').inputValue()
@@ -204,9 +204,9 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   await page.getByRole('link', { name: 'New price' }).click()
   // The sale below is two weeks old, so the price has to be in force by then.
   await setPriceDate(page, firstOfMonth(today, 2))
-  await page.getByLabel(/^Precio de lista/).fill('900')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByLabel(/^List price/).fill('900')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 
   const lastMonth = firstOfMonth(today, 1)
   const twoWeeksAgo = daysFrom(today, -14)

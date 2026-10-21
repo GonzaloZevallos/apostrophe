@@ -183,7 +183,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Varieties')
       await settled(page, computer)
-      await tap(counter, page.getByRole('link', { name: 'Mandar catálogo' }))
+      await tap(counter, page.getByRole('link', { name: 'Send catalog' }))
       await expectPath(page, CATALOG)
       measure(`catalog ${root}`, device, counter.taps)
 
@@ -191,7 +191,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Varieties')
       await settled(page, computer)
-      await tap(counter, page.getByRole('link', { name: '+ Entrada de stock' }))
+      await tap(counter, page.getByRole('link', { name: '+ Stock entry' }))
       await expectPath(page, STOCK_ENTRY_NEW)
       measure(`stock entry ${root}`, device, counter.taps)
     }

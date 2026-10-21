@@ -438,7 +438,7 @@ test('stock rows: name, grams, status and days left, in the API\'s own order, wi
 
   expect(await screen.findByText('Criolla')).toBeInTheDocument()
   expect(screen.getByText('18 g')).toBeInTheDocument()
-  expect(screen.getByText('6 días')).toBeInTheDocument()
+  expect(screen.getByText('6 days')).toBeInTheDocument()
   expect(screen.queryByText(/en total/)).not.toBeInTheDocument()
 })
 
