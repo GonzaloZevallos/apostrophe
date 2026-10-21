@@ -98,7 +98,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await expect(page.getByText('Category saved')).toBeVisible()
   const delivery = page.locator('.fila', { hasText: 'Delivery en bici' })
   await delivery.getByRole('button', { name: 'Rename' }).click()
-  await page.getByLabel('Nombre de Delivery en bici').fill('Mensajería')
+  await page.getByLabel('Name of Delivery en bici').fill('Mensajería')
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.locator('.fila', { hasText: 'Mensajería' })).toBeVisible()
   await page.locator('.fila', { hasText: 'Flete' }).getByRole('button', { name: 'Delete' }).click()

@@ -532,7 +532,7 @@ describe("screens.json against the English routes", () => {
     ]);
   });
 
-  test("no more rows end the Onboarding with \"Saltar el resto\" than the sample has businesses in Onboarding", () => {
+  test("no more rows end the Onboarding with \"Skip the rest\" than the sample has businesses in Onboarding", () => {
     expect(listoRowsOverBound(screensJson.screens, sampleOnboardingBusinesses())).toEqual([]);
   });
 
@@ -545,7 +545,7 @@ describe("screens.json against the English routes", () => {
     ];
     expect(listoRowsOverBound(rows, 2)).toEqual([]);
     expect(listoRowsOverBound(rows, 1)).toEqual([
-      expect.stringContaining("2 rows click \"Saltar el resto\" but the sample has 1 business in Onboarding"),
+      expect.stringContaining("2 rows click \"Skip the rest\" but the sample has 1 business in Onboarding"),
     ]);
     expect(listoRowsOverBound(rows, 1)[0]).toContain("ADR-0036");
     expect(sampleOnboardingBusinesses()).toBeGreaterThanOrEqual(2);

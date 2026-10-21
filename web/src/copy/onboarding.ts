@@ -21,6 +21,8 @@ export const LONG_REFUSALS: readonly string[] = []
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const ONBOARDING_TEXT = {
   continue: 'Continue',
+  varietyWithPriceLower: 'variety with price',
+  initialStockLower: 'initial stock',
   leaveAsIs: 'Leave as is',
   stepsCount: (done: string | number, total: string | number) => `${done} of ${total} steps`,
   thisIsWhatGotSetUp: 'This is what got set up in your business.',

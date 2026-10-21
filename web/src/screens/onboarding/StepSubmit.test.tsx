@@ -9,7 +9,7 @@ import { expect, test, vi } from 'vitest'
 import StepSubmit from './StepSubmit'
 
 test('the button is a submit inside a form, named by its word', () => {
-  render(<StepSubmit onSubmit={() => {}}>Seguir</StepSubmit>)
+  render(<StepSubmit onSubmit={() => {}}>Continue</StepSubmit>)
   const button = screen.getByRole('button', { name: 'Continue' })
   expect(button).toHaveAttribute('type', 'submit')
   expect(button.closest('form')).not.toBeNull()
@@ -17,7 +17,7 @@ test('the button is a submit inside a form, named by its word', () => {
 
 test('one click calls onSubmit exactly once', async () => {
   const onSubmit = vi.fn()
-  render(<StepSubmit onSubmit={onSubmit}>Seguir</StepSubmit>)
+  render(<StepSubmit onSubmit={onSubmit}>Continue</StepSubmit>)
   await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expect(onSubmit).toHaveBeenCalledTimes(1)
 })
@@ -26,7 +26,7 @@ test('disabled blocks the call', async () => {
   const onSubmit = vi.fn()
   render(
     <StepSubmit onSubmit={onSubmit} disabled>
-      Seguir
+      Continue
     </StepSubmit>,
   )
   const button = screen.getByRole('button', { name: 'Continue' })
@@ -37,14 +37,14 @@ test('disabled blocks the call', async () => {
 
 test('focusing the button and pressing Enter submits', async () => {
   const onSubmit = vi.fn()
-  render(<StepSubmit onSubmit={onSubmit}>Dejar así</StepSubmit>)
+  render(<StepSubmit onSubmit={onSubmit}>Leave as is</StepSubmit>)
   screen.getByRole('button', { name: 'Leave as is' }).focus()
   await userEvent.keyboard('{Enter}')
   expect(onSubmit).toHaveBeenCalledTimes(1)
 })
 
 test('submitting does not navigate: the default of the form is prevented', () => {
-  render(<StepSubmit onSubmit={() => {}}>Seguir</StepSubmit>)
+  render(<StepSubmit onSubmit={() => {}}>Continue</StepSubmit>)
   const form = screen.getByRole('button', { name: 'Continue' }).closest('form')
   const event = new Event('submit', { bubbles: true, cancelable: true })
   form?.dispatchEvent(event)
@@ -54,7 +54,7 @@ test('submitting does not navigate: the default of the form is prevented', () =>
 test('the secondary variant is still a named submit', () => {
   render(
     <StepSubmit onSubmit={() => {}} variant="secondary">
-      Dejar así
+      Leave as is
     </StepSubmit>,
   )
   expect(screen.getByRole('button', { name: 'Leave as is' })).toHaveAttribute('type', 'submit')

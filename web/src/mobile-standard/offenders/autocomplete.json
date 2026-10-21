@@ -92,7 +92,7 @@
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Nueva categoría",
+    "target": "textbox:New category",
     "issue": 60
   },
   {
@@ -104,13 +104,13 @@
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "autocomplete",
-    "target": "textbox:Nueva categoría",
+    "target": "textbox:New category",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "autocomplete",
-    "target": "textbox:Nueva categoría",
+    "target": "textbox:New category",
     "issue": 60
   },
   {
@@ -128,31 +128,31 @@
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "autocomplete",
-    "target": "textbox:Chat del canal",
+    "target": "textbox:Channel chat",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "autocomplete",
-    "target": "textbox:Token del bot",
+    "target": "textbox:Bot token",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "autocomplete",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 60
   },
   {
     "screen": "ConfiguracionMensaje",
     "rule": "autocomplete",
-    "target": "textbox:Encabezado",
+    "target": "textbox:Header",
     "issue": 60
   },
   {
     "screen": "ConfiguracionMensaje",
     "rule": "autocomplete",
-    "target": "textbox:Pie",
+    "target": "textbox:Footer",
     "issue": 60
   },
   {
@@ -434,7 +434,7 @@
   {
     "screen": "GastoDesdeGastos",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Details",
     "issue": 48
   },
   {
@@ -458,7 +458,7 @@
   {
     "screen": "GastoDesdeMas",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Details",
     "issue": 48
   },
   {
@@ -482,7 +482,7 @@
   {
     "screen": "GastoEditar",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Details",
     "issue": 48
   },
   {
@@ -506,7 +506,7 @@
   {
     "screen": "GastoNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Details",
     "issue": 48
   },
   {
@@ -710,61 +710,61 @@
   {
     "screen": "OnboardingBot",
     "rule": "autocomplete",
-    "target": "textbox:Chat del canal",
+    "target": "textbox:Channel chat",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "autocomplete",
-    "target": "textbox:Token del bot",
+    "target": "textbox:Bot token",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "autocomplete",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Chat del canal",
+    "target": "textbox:Channel chat",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Token del bot",
+    "target": "textbox:Bot token",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "autocomplete",
-    "target": "textbox:Encabezado",
+    "target": "textbox:Header",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "autocomplete",
-    "target": "textbox:Pie",
+    "target": "textbox:Footer",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Encabezado",
+    "target": "textbox:Header",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Pie",
+    "target": "textbox:Footer",
     "issue": 49
   },
   {

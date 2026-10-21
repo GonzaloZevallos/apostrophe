@@ -20,6 +20,7 @@ import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
 import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
+import { CHECKLIST_DONE } from '../../copy/inicio'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
@@ -340,7 +341,7 @@ test('arriving with only a priced variety shows "Hecho" with its name and price;
 
   expect(await screen.findByText('Mango Bomb')).toBeInTheDocument()
   expect(await screen.findByText('$ 11.000 x g')).toBeInTheDocument()
-  expect(screen.getByText('Done')).toBeInTheDocument()
+  expect(screen.getByText(CHECKLIST_DONE)).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   expect(screen.queryByLabelText(/^Precio de lista/)).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Continue' }))
@@ -392,7 +393,7 @@ test('the add-another flag opens the empty form, a reload keeps it, and the vari
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
   // The step-1 entry the add-another opened is now stateless: history back shows "Hecho".
   await act(() => router.navigate(-1))
-  expect(await screen.findByText('Done')).toBeInTheDocument()
+  expect(await screen.findByText(CHECKLIST_DONE)).toBeInTheDocument()
   expect(router.state.location.state).toBeNull()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
 })
@@ -408,7 +409,7 @@ test('a reload with the add-another flag and nothing written draws the name fiel
   renderStep(entry)
 
   expect(await screen.findByLabelText(/^Name/)).toBeInTheDocument()
-  expect(screen.queryByText('Done')).not.toBeInTheDocument()
+  expect(screen.queryByText(CHECKLIST_DONE)).not.toBeInTheDocument()
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
 })
 

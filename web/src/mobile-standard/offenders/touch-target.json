@@ -347,25 +347,25 @@
   {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-target",
-    "target": "radio:Claro",
+    "target": "radio:Light",
     "issue": 60
   },
   {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-target",
-    "target": "radio:Oscuro",
+    "target": "radio:Dark",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-target",
-    "target": "link:Ir al catálogo",
+    "target": "link:Go to the catalog",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-target",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 60,
     "sizes": [
       "246x437"
@@ -554,7 +554,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Categorías",
+    "target": "link:Categories",
     "issue": 48
   },
   {
@@ -605,7 +605,7 @@
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "link:Categorías",
+    "target": "link:Categories",
     "issue": 48
   },
   {
@@ -656,7 +656,7 @@
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "link:Categorías",
+    "target": "link:Categories",
     "issue": 48
   },
   {
@@ -865,19 +865,19 @@
   {
     "screen": "OnboardingBot",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-target",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -886,19 +886,19 @@
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-target",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -907,61 +907,61 @@
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {

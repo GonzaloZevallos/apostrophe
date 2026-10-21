@@ -564,9 +564,9 @@ test('an Onboarding business sees the notice at the top with its count and what 
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
   renderInicio()
 
-  const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
-  expect(within(notice).getByText('1 de 6 pasos')).toBeInTheDocument()
-  expect(within(notice).getByText('Falta: stock inicial')).toBeInTheDocument()
+  const notice = await screen.findByRole('link', { name: /Go on to the setup/ })
+  expect(within(notice).getByText('1 of 6 steps')).toBeInTheDocument()
+  expect(within(notice).getByText('Missing: initial stock')).toBeInTheDocument()
   expect(notice).toHaveAttribute('href', ONBOARDING_STOCK)
   await screen.findByText('Vendiste hoy')
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
@@ -605,13 +605,13 @@ test('a business never offered the Onboarding keeps Arrancá and sees no notice'
   expect(screen.queryByText('Go on to the setup')).not.toBeInTheDocument()
 })
 
-test('the finish notice reads 6 de 6 with no Falta line and sends advance only on a tap', async () => {
+test('the finish notice reads 6 of 6 with no Missing line and sends advance only on a tap', async () => {
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
   renderInicio()
 
-  const notice = await screen.findByRole('button', { name: /Seguí con la configuración/ })
-  expect(within(notice).getByText('6 de 6 pasos')).toBeInTheDocument()
-  expect(screen.queryByText(/Falta:/)).not.toBeInTheDocument()
+  const notice = await screen.findByRole('button', { name: /Go on to the setup/ })
+  expect(within(notice).getByText('6 of 6 steps')).toBeInTheDocument()
+  expect(screen.queryByText(/Missing:/)).not.toBeInTheDocument()
   await screen.findByText('Vendiste hoy')
   expect(calls).toEqual(['GET /onboarding-progress'])
 })
@@ -629,7 +629,7 @@ test('tapping the finish notice sends advance, and "Done" opens only from an ans
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
   renderInicio()
 
-  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Go on to the setup/ }))
 
   expect(await screen.findByText('Listo listo=true')).toBeInTheDocument()
   expect(calls).toEqual(['GET /onboarding-progress', 'POST /onboarding-progress/advance'])
@@ -640,7 +640,7 @@ test('tapping the finish notice when advance answers over: false does not draw "
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
   renderInicio()
 
-  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Go on to the setup/ }))
 
   expect(await screen.findByText('paso stock')).toBeInTheDocument()
   expect(screen.queryByText(/Listo listo/)).not.toBeInTheDocument()
@@ -650,13 +650,13 @@ test('the resume notice keeps its words and its card: boton-aviso, never a row, 
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
   renderInicio()
 
-  const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
+  const notice = await screen.findByRole('link', { name: /Go on to the setup/ })
   expect(notice).toHaveClass('boton-aviso')
   expect(notice).not.toHaveClass('boton--fila')
   expect(notice).not.toHaveAttribute('aria-label')
   expect(notice.textContent).toContain('Go on to the setup')
-  expect(notice.textContent).toContain('1 de 6 pasos')
-  expect(notice.textContent).toContain('Falta: stock inicial')
+  expect(notice.textContent).toContain('1 of 6 steps')
+  expect(notice.textContent).toContain('Missing: initial stock')
   // Only the title's decorative chevron: no attention icon, and it is hidden from the name.
   expect(notice.querySelectorAll('svg')).toHaveLength(1)
   expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
@@ -667,7 +667,7 @@ test('the finish notice is the same card as a button, named by its visible text'
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
   renderInicio()
 
-  const notice = await screen.findByRole('button', { name: /Seguí con la configuración/ })
+  const notice = await screen.findByRole('button', { name: /Go on to the setup/ })
   expect(notice).toHaveClass('boton-aviso')
   expect(notice).not.toHaveClass('boton--fila')
   expect(notice).not.toHaveAttribute('aria-label')

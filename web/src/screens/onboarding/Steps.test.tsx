@@ -19,6 +19,7 @@ import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
 import { ONBOARDING_BOT, ONBOARDING_CATALOG_MESSAGE, ONBOARDING_CATEGORIES, ONBOARDING_PARTNER, ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
+import { CHECKLIST_DONE } from '../../copy/inicio'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -390,7 +391,7 @@ test('step 4 shows the publish line at once on a step already done, a bot saved 
   renderAt(ONBOARDING_BOT)
 
   expect(await screen.findByText(PUBLISH_LINE)).toBeInTheDocument()
-  expect(screen.getByText('Done')).toBeInTheDocument()
+  expect(screen.getByText(CHECKLIST_DONE)).toBeInTheDocument()
 })
 
 test('step 5 offers Seguir only once a link is created, and passes done', async () => {

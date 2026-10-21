@@ -71,7 +71,7 @@ test('leaving after step 1 keeps it, and Inicio\'s notice resumes at step 2', as
   await expect(page.getByText(NOTICE)).toBeVisible()
   await page.getByText(NOTICE).click()
   await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
-  await expect(page.getByText('Paso 2 de 6')).toBeVisible()
+  await expect(page.getByText('Step 2 of 6')).toBeVisible()
   await expectOnlyTheThemeStored(page)
 })
 

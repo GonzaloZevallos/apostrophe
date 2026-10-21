@@ -82,11 +82,11 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await page.getByRole('button', { name: 'Find my chat' }).click()
   await expect(page.getByLabel('Your chat')).toHaveValue(STARTED_CHAT)
   await expect(page.getByRole('alert')).toHaveCount(0)
-  await expect(page.getByText('Guardado el')).toHaveCount(0)
+  await expect(page.getByText('Saved on')).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Test it' }).click()
   await expect(page.getByText('Test sent')).toBeVisible()
-  await expect(page.getByText('Guardado el')).toBeVisible()
+  await expect(page.getByText('Saved on')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Publish' })).toHaveCount(0)
 
   // Now the channel chat, tested again.

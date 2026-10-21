@@ -36,6 +36,7 @@ import {
 } from '../../routes'
 import { useBackOr } from '../../components/useBackOr'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
+import { CHECKLIST_DONE } from '../../copy/inicio'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -194,12 +195,11 @@ test('"Done" entered with the flag has one line per step and never an amount', a
   renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } })
 
   expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
-  expect(screen.getByText('6 de 6 pasos')).toBeInTheDocument()
-  expect(screen.getByText('Done · 2 varieties')).toBeInTheDocument()
-  expect(screen.getByText('Done · 2 entries')).toBeInTheDocument()
-  expect(screen.getByText('Para después — en Configuración → Integraciones')).toBeInTheDocument()
-  expect(screen.getByText('Para después — en Configuración → Usuarios')).toBeInTheDocument()
-  expect(screen.getAllByText('Done')).toHaveLength(2)
+  expect(screen.getByText('6 of 6 steps')).toBeInTheDocument()
+  expect(screen.getAllByText(/^Done · 2 /)).toHaveLength(2)
+  expect(screen.getByText('For later — in Settings → Integrations')).toBeInTheDocument()
+  expect(screen.getByText('For later — in Settings → Users')).toBeInTheDocument()
+  expect(screen.getAllByText(CHECKLIST_DONE)).toHaveLength(2)
 })
 
 test('"Skip the rest" is hidden until both required steps are done', async () => {
