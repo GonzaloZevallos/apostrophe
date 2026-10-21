@@ -110,7 +110,7 @@ test('a text-only submit has no icon and is a submit button', () => {
 
 test.each([
   ['undo', 'Deshacer'],
-  ['back', '‹ Ventas'],
+  ['back', '‹ Sales'],
   ['link', 'Ver todas'],
 ] as const)('the %s kind is text only, drawn as the underlined link', (variant, word) => {
   render(<Boton variant={variant}>{word}</Boton>)

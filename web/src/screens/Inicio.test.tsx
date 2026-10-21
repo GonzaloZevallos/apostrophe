@@ -166,7 +166,7 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   stubFetch(PANEL)
   renderInicio()
 
-  const avatar = await screen.findByRole('link', { name: 'Configuración de La Huerta' })
+  const avatar = await screen.findByRole('link', { name: 'Settings for La Huerta' })
   expect(avatar).toHaveAttribute('href', SETTINGS)
   expect(avatar).toHaveTextContent('LH')
   // The name stays above the title, as the design draws it.
@@ -382,12 +382,12 @@ test('Te deben: total, count, oldest date, and the teaser opens a customer card'
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
 })
 
-test('the teaser\'s "Cobrar a X" opens Registrar cobro for that customer, from inside the app', async () => {
+test('the teaser\'s "Collect from X" opens Registrar cobro for that customer, from inside the app', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
-  screen.getByRole('link', { name: 'Cobrar a Ana Pérez' }).click()
+  screen.getByRole('link', { name: 'Collect from Ana Pérez' }).click()
 
   expect(await screen.findByText('cobro de 1')).toBeInTheDocument()
   expect(screen.getByText('desde la app')).toBeInTheDocument()
@@ -398,7 +398,7 @@ test('"Collect" carries the cobro icon, hidden from assistive technology, and ke
   renderInicio()
   await screen.findByText('$ 37.000')
 
-  const link = screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  const link = screen.getByRole('link', { name: 'Collect from Ana Pérez' })
   expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(link).toHaveTextContent('Collect')
 })

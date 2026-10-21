@@ -311,7 +311,7 @@ describe('a dropped network or a failure', () => {
 
     await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
 
-    expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
+    expect(await screen.findByText(/offline/i)).toBeInTheDocument()
     expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Blue Dream' })).toBeInTheDocument()
   })

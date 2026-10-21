@@ -187,7 +187,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
 
     // Registrar cobro, opened from Clientes' "Cobrar a": a form screen, a modal on a computer.
     await page.goto(CUSTOMERS)
-    await page.getByRole('link', { name: 'Cobrar a Lucía Borde' }).first().click()
+    await page.getByRole('link', { name: 'Collect from Lucía Borde' }).first().click()
     await setInsets(page, true)
     await page.getByRole('button', { name: 'Save' }).evaluate((button) => {
       for (let el: Element | null = button; el; el = el.parentElement) el.scrollTop = el.scrollHeight

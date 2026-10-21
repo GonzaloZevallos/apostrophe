@@ -55,7 +55,7 @@ test('a seller goes through every Configuración group from the phone, with no c
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
   }
   await page.goto(HOME)
-  await page.getByRole('link', { name: /^Configuración de / }).click()
+  await page.getByRole('link', { name: /^Settings for / }).click()
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
 
   // Negocio.

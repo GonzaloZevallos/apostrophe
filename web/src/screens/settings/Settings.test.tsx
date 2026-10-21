@@ -111,23 +111,23 @@ test('every group route exists and closes with "Close"', async () => {
   }
 })
 
-test('reached directly on the phone, back says "‹ Más" and goes to Más', async () => {
+test('reached directly on the phone, back says "‹ More" and goes to Más', async () => {
   stubComputer(false)
   const user = userEvent.setup()
   const { router } = renderApp(['/otro', SETTINGS], 1)
 
-  await user.click(await screen.findByRole('button', { name: '‹ Más' }))
+  await user.click(await screen.findByRole('button', { name: '‹ More' }))
 
   expect(router.state.location.pathname).toBe(MORE)
-  expect(screen.queryByRole('button', { name: '‹ Inicio' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '‹ Home' })).not.toBeInTheDocument()
 })
 
-test('reached directly on a computer, back says "‹ Inicio" and goes to Inicio', async () => {
+test('reached directly on a computer, back says "‹ Home" and goes to Inicio', async () => {
   stubComputer(true)
   const user = userEvent.setup()
   const { router } = renderApp(['/otro', SETTINGS], 1)
 
-  await user.click(await screen.findByRole('button', { name: '‹ Inicio' }))
+  await user.click(await screen.findByRole('button', { name: '‹ Home' }))
 
   expect(router.state.location.pathname).toBe(HOME)
 })
@@ -138,7 +138,7 @@ test('reached by an in-app link, back goes back in history', async () => {
   const { router } = renderApp([SALES])
   await act(() => router.navigate(SETTINGS, { state: inAppState({ pathname: SALES }) }))
 
-  await user.click(await screen.findByRole('button', { name: '‹ Más' }))
+  await user.click(await screen.findByRole('button', { name: '‹ More' }))
 
   expect(router.state.location.pathname).toBe(SALES)
 })

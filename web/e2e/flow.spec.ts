@@ -87,7 +87,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expectAnyPath(page, [VARIETIES, VARIETY])
   await expect(page.getByText('Entry saved')).toBeVisible()
   await page.goto(STOCK)
-  await expect(page.getByText('Compra · 50 g')).toBeVisible()
+  await expect(page.getByText('Purchase · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
   await page.getByRole('link', { name: 'Edit' }).click()
@@ -99,7 +99,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry saved')).toBeVisible()
-  await expect(page.getByText('Compra · 60 g')).toBeVisible()
+  await expect(page.getByText('Purchase · 60 g')).toBeVisible()
 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
   await page.getByRole('button', { name: 'Borrar', exact: true }).click()
@@ -107,7 +107,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry deleted')).toBeVisible()
-  await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
+  await expect(page.getByText('Purchase · 60 g')).toHaveCount(0)
 
   // Rosa's page: set the low-stock warning through its form (turning it on only opens the
   // form), then turn it off (saved at once).

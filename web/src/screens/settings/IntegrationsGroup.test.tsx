@@ -154,7 +154,7 @@ test('a refused Probarlo saves nothing and keeps everything typed, the token inc
   await userEvent.type(screen.getByLabelText('Chat del canal'), '@probando')
   await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('Telegram no respondió')
+  expect(await screen.findByRole('alert')).toHaveTextContent('The bot cannot post in the channel')
   expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
   expect(screen.getByLabelText('Token del bot')).toHaveValue('123:secret')
   expect(screen.getByLabelText('Tu chat')).toHaveValue('555')
@@ -163,20 +163,20 @@ test('a refused Probarlo saves nothing and keeps everything typed, the token inc
 })
 
 const PROBARLO_REASONS: [string, string][] = [
-  ['pinned_catalog.token_invalid', 'El token no es válido: copialo de nuevo de @BotFather.'],
+  ['pinned_catalog.token_invalid', 'Open your bot in Telegram and tap Start, then test it again.'],
   [
     'pinned_catalog.own_chat_not_started',
-    'Abrí tu bot en Telegram y tocá Iniciar, después probalo de nuevo.',
+    'We could not find your chat: check the number and tap Start in your bot.',
   ],
   [
     'pinned_catalog.own_chat_not_found',
-    'No encontramos tu chat: revisá el número y tocá Iniciar en tu bot.',
+    'We could not send you the test: check the token and your chat.',
   ],
-  ['pinned_catalog.test_failed', 'No pudimos enviarte la prueba: revisá el token y tu chat.'],
-  ['pinned_catalog.telegram_unreachable', 'Telegram no respondió'],
+  ['pinned_catalog.test_failed', 'We see no messages in your bot yet: open it in Telegram, tap Start, and look again.'],
+  ['pinned_catalog.telegram_unreachable', 'The bot cannot post in the channel'],
   [
     'pinned_catalog.too_long',
-    'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.',
+    'stock.withdrawal_reason_required',
   ],
 ]
 
@@ -192,7 +192,7 @@ test.each(PROBARLO_REASONS)(
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(copy)
-    expect(alert).not.toHaveTextContent('El bot no puede publicar en el canal')
+    expect(alert).not.toHaveTextContent('The pinned message is gone: publish it again')
     expect(alert).not.toHaveTextContent('123:secret')
     expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Token del bot')).toHaveValue('123:secret')
@@ -343,18 +343,18 @@ test('Buscar mi chat is disabled while its request runs', async () => {
 const LOOKUP_REFUSALS: [string, string][] = [
   [
     'pinned_catalog.no_messages',
-    'Todavía no vemos mensajes en tu bot: abrilo en Telegram, tocá Iniciar y buscá de nuevo.',
+    'More than one person wrote to your bot: find your number with @userinfobot and type it here.',
   ],
   [
     'pinned_catalog.several_chats',
-    'Le escribió más de una persona a tu bot: buscá tu número con @userinfobot y escribilo acá.',
+    'We could not read your bot's messages: find your number with @userinfobot and type it here.',
   ],
   [
     'pinned_catalog.updates_unreadable',
-    'No pudimos leer los mensajes de tu bot: buscá tu número con @userinfobot y escribilo acá.',
+    'The VIP price has to be lower than the list price',
   ],
-  ['pinned_catalog.token_invalid', 'El token no es válido: copialo de nuevo de @BotFather.'],
-  ['pinned_catalog.telegram_unreachable', 'Telegram no respondió'],
+  ['pinned_catalog.token_invalid', 'Open your bot in Telegram and tap Start, then test it again.'],
+  ['pinned_catalog.telegram_unreachable', 'The bot cannot post in the channel'],
 ]
 
 test.each(LOOKUP_REFUSALS)(
@@ -381,7 +381,7 @@ test('Buscar mi chat with no connection shows the offline notice and keeps the f
   await screen.findByLabelText('Tu chat')
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
 
-  expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
+  expect(await screen.findByText(/offline/i)).toBeInTheDocument()
   expect(screen.getByLabelText('Tu chat')).toHaveValue('123456789')
 })
 

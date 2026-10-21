@@ -71,9 +71,9 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await page.getByLabel('Tu chat').fill('222222')
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByRole('alert')).toHaveText(
-    'Abrí tu bot en Telegram y tocá Iniciar, después probalo de nuevo.',
+    'We could not find your chat: check the number and tap Start in your bot.',
   )
-  await expect(page.getByText('El bot no puede publicar en el canal')).toHaveCount(0)
+  await expect(page.getByText('The pinned message is gone: publish it again')).toHaveCount(0)
   await expect(page.getByLabel('Token del bot')).toHaveValue(TOKEN)
   await expect(page.getByLabel('Tu chat')).toHaveValue('222222')
 

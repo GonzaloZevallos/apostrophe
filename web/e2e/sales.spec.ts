@@ -219,7 +219,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(previewLirio.getByText('$ 6.000', { exact: true })).toBeVisible()
 
   await expect(page.locator('.cifra-xl')).toHaveText('$ 12.000') // 5.000 + 6.000 + 1.000 shipping.
-  await expect(page.getByText('30 g vendidos')).toBeVisible()
+  await expect(page.getByText('30 g sold')).toBeVisible()
 
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
@@ -378,7 +378,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   await otherPage.goto(saleBUrl)
   await expect(otherPage.getByText('That is gone.')).toBeVisible()
-  await otherPage.getByRole('link', { name: 'Volver a Ventas' }).click()
+  await otherPage.getByRole('link', { name: 'Back to Ventas' }).click()
   await expectPath(otherPage, SALES)
   await otherContext.close()
 

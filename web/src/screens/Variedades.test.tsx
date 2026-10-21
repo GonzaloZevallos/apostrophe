@@ -523,7 +523,7 @@ describe('New variety', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
 
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('Ese nombre es de una variedad archivada. Buscala en Archivadas.')
+    expect(alert).toHaveTextContent('That name belongs to an archived variety. Look for it in Archived.')
     expect(alert.closest('label')).toHaveTextContent('Name')
     expect(screen.getByPlaceholderText('Nombre de la variedad')).toHaveValue('Sir Jack')
   })

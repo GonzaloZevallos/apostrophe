@@ -67,9 +67,9 @@ test("heads with the total owed and lists debtors in the API's own order", async
     'Ana Pérez$ 15.000te debe desde 14/09',
     'Beto$ 22.000te debe desde 20/09',
   ])
-  expect(screen.getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label'))).toEqual([
-    'Cobrar a Ana Pérez',
-    'Cobrar a Beto',
+  expect(screen.getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label'))).toEqual([
+    'Collect from Ana Pérez',
+    'Collect from Beto',
   ])
 })
 

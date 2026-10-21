@@ -146,7 +146,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   renderDetalle()
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', SALES)
+  expect(screen.getByRole('link', { name: 'Back to Ventas' })).toHaveAttribute('href', SALES)
 })
 
 test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {

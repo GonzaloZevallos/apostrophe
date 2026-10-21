@@ -256,8 +256,8 @@ test("Te deben shows the API's order and total as answered, never a client sort 
   expect(within(section).getByText('$ 99.000')).toBeInTheDocument()
   expect(within(section).getByText('1 venta debiendo')).toBeInTheDocument()
   expect(
-    within(section).getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label')),
-  ).toEqual(['Cobrar a Zoe', 'Cobrar a Abel'])
+    within(section).getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label')),
+  ).toEqual(['Collect from Zoe', 'Collect from Abel'])
 })
 
 test('a customer in credit is only in A–Z, never in Te deben', async () => {
@@ -296,7 +296,7 @@ test('searching collapses both sections into one flat list that keeps Cobrar, an
 
   await waitFor(() => expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument())
   expect(screen.queryByRole('region', { name: 'Todos · A–Z' })).not.toBeInTheDocument()
-  expect(await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })).toHaveLength(1)
+  expect(await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })).toHaveLength(1)
   expect(screen.getByText('te debe desde 14/09')).toBeInTheDocument()
 
   await userEvent.clear(input)
@@ -305,7 +305,7 @@ test('searching collapses both sections into one flat list that keeps Cobrar, an
   expect(screen.getByRole('region', { name: 'Todos · A–Z' })).toBeInTheDocument()
 })
 
-test('"Cobrar a X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
+test('"Collect from X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -319,12 +319,12 @@ test('"Cobrar a X" is on every row that owes, in the section and in the list, an
   renderClientes()
 
   await screen.findByRole('region', { name: 'Owed to you' })
-  const links = await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })
+  const links = await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })
   expect(links).toHaveLength(2)
   for (const link of links) {
     expect(link).toHaveAttribute('href', pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id }))
   }
-  expect(screen.queryByRole('link', { name: 'Cobrar a Lu' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Collect from Lu' })).not.toBeInTheDocument()
 })
 
 test('with nobody owing, a fixed "Nadie te debe" with nothing to tap sits above the full A–Z list', async () => {
@@ -423,11 +423,11 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
   return router
 }
 
-test('"Cobrar a X" opens Registrar cobro for that customer as an in-app entry, and one Back returns to Clientes', async () => {
+test('"Collect from X" opens Registrar cobro for that customer as an in-app entry, and one Back returns to Clientes', async () => {
   vi.mocked(fetch).mockImplementation(fetchApp)
   const router = renderApp()
 
-  await userEvent.click((await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` }))[0]!)
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
 
   expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
   expect(screen.getByText(new RegExp(`^${customerFixture.name}`))).toBeInTheDocument()
@@ -554,7 +554,7 @@ test('every action on the list and in Te deben is icon + text, and Cobrar keeps 
   )
   renderClientes()
 
-  const links = await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })
+  const links = await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })
   for (const link of links) {
     expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     expect(link).toHaveTextContent('Collect')

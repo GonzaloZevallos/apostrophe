@@ -133,7 +133,7 @@ test('a date change keeps what was typed and shows compact bars where prices wer
   noFigure(screen.getByRole('progressbar'))
   expect(screen.getByRole('button', { name: 'Guardá la venta' })).toBeDisabled()
   // Grams stay: they are what was typed, not a price.
-  expect(within(footer).getByText('2 g vendidos')).toBeInTheDocument()
+  expect(within(footer).getByText('2 g sold')).toBeInTheDocument()
 
   answer(`${pathTo(VARIETIES)}?on=2026-10-01`, [ROSA_YESTERDAY])
 

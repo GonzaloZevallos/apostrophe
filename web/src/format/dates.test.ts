@@ -30,7 +30,7 @@ describe('formatDate', () => {
 
 describe('chipDate', () => {
   test('reads "Hoy dd/mm" for today', () => {
-    expect(chipDate('2026-10-15', '2026-10-15')).toBe('Hoy 15/10')
+    expect(chipDate('2026-10-15', '2026-10-15')).toBe('Today 15/10')
   })
 
   test('reads "dd/mm" for another day, without "Today" and without the year', () => {

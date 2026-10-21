@@ -143,7 +143,7 @@ describe('on a phone', () => {
 describe.each<Viewport>(['phone', 'computer'])('opened from a list, on a %s', (viewport) => {
   test('from Clientes: a save lands on Clientes with the toast, and one back afterwards leaves', async () => {
     const router = renderApp([{ pathname: HOME }, { pathname: CUSTOMERS }], viewport)
-    await userEvent.click((await screen.findAllByRole('link', { name: 'Cobrar a Ana Pérez' }))[0]!)
+    await userEvent.click((await screen.findAllByRole('link', { name: 'Collect from Ana Pérez' }))[0]!)
     await userEvent.click(await screen.findByLabelText('Cash'))
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
@@ -186,5 +186,5 @@ test('a customer that is gone shows "That is gone." with a way back to Clientes'
   })
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Clientes' })).toBeInTheDocument()
 })

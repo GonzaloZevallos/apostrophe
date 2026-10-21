@@ -28,7 +28,7 @@ test('what the rule allows passes: every kind, the answers, an icon-only control
       </Boton>
       <Boton variant="link">Ver todas</Boton>
       <Boton variant="undo">Deshacer</Boton>
-      <Boton variant="back">‹ Ventas</Boton>
+      <Boton variant="back">‹ Sales</Boton>
       <Boton variant="notice">
         Seguí con la configuración
         <Icono nombre="atras" />

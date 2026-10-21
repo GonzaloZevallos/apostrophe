@@ -1,6 +1,6 @@
 /**
  * Collecting from Hoy, phone and computer, against the real backend through the built front
- * (results.md, "Te deben block"): a seller taps "Cobrar a <name>" on the debtor's row, saves a
+ * (results.md, "Te deben block"): a seller taps "Collect from <name>" on the debtor's row, saves a
  * payment in Registrar cobro, and is back on Inicio in one move, with the block refreshed from
  * the API and the toast not naming the customer. "Close" returns in one move too.
  *
@@ -23,7 +23,7 @@ const VIEWPORTS = [
 ]
 
 for (const viewport of VIEWPORTS) {
-  test(`from Hoy, "Cobrar a <name>" saves a payment and returns to Inicio in one move (${viewport.name})`, async ({
+  test(`from Hoy, "Collect from <name>" saves a payment and returns to Inicio in one move (${viewport.name})`, async ({
     page,
   }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
@@ -63,14 +63,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
 
     // "Close" returns to Inicio in one move.
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await expect(page.locator('.panel__titulo', { hasText: 'Record payment' })).toBeVisible()
     await page.getByRole('button', { name: 'Close' }).click()
     await expectPath(page, HOME)
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
 
     // A partial payment: back on Inicio, the row keeps its new balance.
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByLabel('Amount').fill('2000')
     await page.getByRole('radio', { name: 'Cash' }).check()
     await page.getByRole('button', { name: 'Save' }).click()
@@ -81,14 +81,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 3.000')
 
     // The rest, with "Todo": the row leaves and the block reads "Nadie te debe".
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'Todo: $ 3.000' }).click()
     await page.getByRole('radio', { name: 'Transfer' }).check()
     await page.getByRole('button', { name: 'Save' }).click()
     await expectPath(page, HOME)
     await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
     await expect(page.getByText('Nadie te debe')).toBeVisible()
-    await expect(page.getByRole('link', { name: /^Cobrar a / })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: /^Collect from / })).toHaveCount(0)
 
     // One move: Back from Inicio does not land on Registrar cobro again.
     await page.goBack()

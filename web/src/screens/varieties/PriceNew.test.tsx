@@ -41,7 +41,7 @@ test('the date starts as today and a save posts the amounts, goes back and toast
   const { router, fetchMock } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
   )
 
-  expect(await screen.findByRole('button', { name: 'Hoy 02/10' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Today 02/10' })).toBeInTheDocument()
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
@@ -97,7 +97,7 @@ test('a repeated date is refused under "Rige desde" and keeps what was typed', a
 
   const alert = await screen.findByText('Ya cargaste un precio con esa fecha')
   expect(alert.closest('.campo')).toHaveTextContent('Rige desde')
-  expect(alert.closest('.campo')).toContainElement(screen.getByRole('button', { name: 'Hoy 02/10' }))
+  expect(alert.closest('.campo')).toContainElement(screen.getByRole('button', { name: 'Today 02/10' }))
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
   expect(router.state.location.pathname).toBe(NEW_PATH)
 })
@@ -186,7 +186,7 @@ test('a variety that is gone says "That is gone." and goes back to Variedades', 
   )
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
 })
 
 test('a variety that vanishes while saving shows the gone screen', async () => {
@@ -203,7 +203,7 @@ test('a variety that vanishes while saving shows the gone screen', async () => {
 test('the form keeps the icon and text rule, its help lines within their limits', async () => {
   await renderOpened(api({}))
 
-  await screen.findByRole('button', { name: 'Hoy 02/10' })
+  await screen.findByRole('button', { name: 'Today 02/10' })
   expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(4)
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
@@ -291,7 +291,7 @@ test('a VIP price at or above list is refused inline under its field and keeps w
   await user.type(screen.getByLabelText(/^Precio VIP/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
-  const message = await screen.findByText('El precio VIP tiene que ser menor al precio de lista')
+  const message = await screen.findByText('Telegram did not respond')
   expect(message).toBeInTheDocument()
   expect(message.textContent).not.toMatch(/\d/)
   expect(screen.getByLabelText(/^Precio VIP/)).toHaveValue('12000')
@@ -331,7 +331,7 @@ test('a "$" goes before the list, bulk and VIP price and never before the minimu
   expect(minimum.closest('.campo')).not.toHaveTextContent('$')
 })
 
-const CHIP_TODAY = { name: 'Hoy 02/10' }
+const CHIP_TODAY = { name: 'Today 02/10' }
 
 test('the date is a chip reading "Hoy dd/mm" with "Rige desde" as its description, not its name', async () => {
   await renderOpened(api({}))

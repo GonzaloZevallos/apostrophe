@@ -60,7 +60,7 @@ test('not_tested disables Publicar, says why and links to Integraciones', async 
   renderPin({ can_publish: false, publish_blocked_by: 'not_tested', status: null })
 
   expect(await screen.findByRole('button', { name: 'Publicar' })).toBeDisabled()
-  expect(screen.getByText(/Probalo primero para ver cómo queda/)).toBeInTheDocument()
+  expect(screen.getByText(/The token is not valid: copy it again from @BotFather./)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Integraciones' })).toHaveAttribute(
     'href',
     SETTINGS_INTEGRATIONS,
@@ -89,11 +89,11 @@ test('null enables Publicar and shows neither reason nor link', async () => {
 })
 
 test.each([
-  ['telegram_unreachable', 'Telegram no respondió'],
-  ['bot_cannot_post', 'El bot no puede publicar en el canal'],
-  ['message_gone', 'El mensaje fijado ya no está: publicalo de nuevo'],
-  ['missing_publish', 'Falta publicarlo con el bot o el canal nuevo'],
-  ['too_long', 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.'],
+  ['telegram_unreachable', 'The bot cannot post in the channel'],
+  ['bot_cannot_post', 'The pinned message is gone: publish it again'],
+  ['message_gone', 'It still has to be published with the new bot or channel'],
+  ['missing_publish', 'It is too long for Telegram: shorten aromas or hide varieties.'],
+  ['too_long', 'stock.withdrawal_reason_required'],
 ] as const)(
   'Desactualizado for %s reads its reason, shows no link and keeps Publicar enabled',
   async (reason, text) => {
@@ -146,7 +146,7 @@ test('a failed Publicar shows its fixed reason', async () => {
 
   await userEvent.click(await screen.findByRole('button', { name: 'Publicar' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('El bot no puede publicar en el canal')
+  expect(await screen.findByRole('alert')).toHaveTextContent('The pinned message is gone: publish it again')
 })
 
 test('the blocked lines and the out-of-date reasons are the registered, measured bindings', async () => {

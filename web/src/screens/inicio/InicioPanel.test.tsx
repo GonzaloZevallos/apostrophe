@@ -1,7 +1,7 @@
 /**
  * The panel's body through the `Inicio` screen (Testing Library, `fetch` faked): what Hoy
  * draws and what it leaves for Semana and Mes, Lo que te queda's link on a low variety,
- * and "Cobrar a <name>" through the real Registrar cobro and back, in both themes
+ * and "Collect from <name>" through the real Registrar cobro and back, in both themes
  * (`data-tema`, set the way the Configuración switch does).
  */
 
@@ -256,7 +256,7 @@ test('Semana and Mes keep every result figure, Promoción and Consumo propio rig
   }
   // The same Te deben block and Lo que te queda sit under every tab.
   expect(screen.getByText('Lo que te queda')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Collect from Ana Pérez' })).toBeInTheDocument()
 })
 
 test('the sold headline and the result figures share one group, and the two blocks another, in the phone order', async () => {
@@ -353,7 +353,7 @@ test('a debtor row names its Cobrar by the customer and keeps the rest of the ro
   const { router } = renderInicio()
   await screen.findByText('$ 37.000')
 
-  const cobrar = screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  const cobrar = screen.getByRole('link', { name: 'Collect from Ana Pérez' })
   expect(cobrar).toHaveAttribute('href', pathTo(CUSTOMER_PAYMENT, { id: 1 }))
   expect(cobrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(screen.getByText('Ana Pérez').closest('a')).toHaveAttribute('href', pathTo(CUSTOMER, { id: 1 }))
@@ -365,7 +365,7 @@ test('a debtor row names its Cobrar by the customer and keeps the rest of the ro
 })
 
 async function payFromInicio(amount: string): Promise<void> {
-  await userEvent.click(await screen.findByRole('link', { name: 'Cobrar a Ana Pérez' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Collect from Ana Pérez' }))
   const sheet = (await screen.findByRole('button', { name: 'Save' })).closest('form')
   const inside = within(sheet as HTMLElement)
   await userEvent.clear(inside.getByLabelText('Amount'))
@@ -434,8 +434,8 @@ test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guard
   expect(await screen.findByText('Cobro guardado')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(HOME)
   await waitFor(() => expect(screen.queryByText('Ana Pérez')).not.toBeInTheDocument())
-  expect(screen.getAllByRole('link', { name: /^Cobrar a / })).toHaveLength(3)
-  expect(screen.getByRole('link', { name: 'Cobrar a Dani Ruiz' })).toBeInTheDocument()
+  expect(screen.getAllByRole('link', { name: /^Collect from / })).toHaveLength(3)
+  expect(screen.getByRole('link', { name: 'Collect from Dani Ruiz' })).toBeInTheDocument()
   expect(screen.getByText('3 ventas debiendo')).toBeInTheDocument()
 })
 
@@ -456,7 +456,7 @@ test('Registrar cobro opened from Inicio: with nobody left owing the block reads
 test('"Close" on Registrar cobro opened from Inicio returns to Inicio in one move', async () => {
   const { router } = renderInicio()
   await screen.findByText('$ 37.000')
-  await userEvent.click(screen.getByRole('link', { name: 'Cobrar a Ana Pérez' }))
+  await userEvent.click(screen.getByRole('link', { name: 'Collect from Ana Pérez' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Vendiste hoy')).toBeInTheDocument()
@@ -476,7 +476,7 @@ test('the period switch is text tabs (Pestanas) with the range last in the same 
   expect(within(group).getByRole('button', { name: 'Week' })).toHaveAttribute('aria-pressed', 'false')
   expect(container.querySelector('.periodos, .periodos__boton')).toBeNull()
   expect(row.lastElementChild).toHaveClass('pie')
-  expect(row.lastElementChild?.textContent).toMatch(/^Hoy \d\d\/\d\d$/)
+  expect(row.lastElementChild?.textContent).toMatch(/^Today \d\d\/\d\d$/)
 })
 
 test('a Te deben row reads the name, then the amount in amber with its date, Cobrar beside it', async () => {
@@ -493,7 +493,7 @@ test('a Te deben row reads the name, then the amount in amber with its date, Cob
   expect(data.firstElementChild).toHaveTextContent('Ana Pérez')
   expect(data.querySelector('.monto-deuda')).toHaveTextContent(/^\$ [\d.]+$/)
   expect(data.lastElementChild).toHaveTextContent(/^\$ [\d.]+ · desde \d\d\/\d\d$/)
-  const cobrar = within(row).getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  const cobrar = within(row).getByRole('link', { name: 'Collect from Ana Pérez' })
   expect(cobrar).toHaveTextContent('Collect')
   expect(data.contains(cobrar)).toBe(false)
 })

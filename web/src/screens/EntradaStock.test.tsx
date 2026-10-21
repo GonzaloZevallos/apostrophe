@@ -548,14 +548,14 @@ test('a save goes back by history too, and says "Entry saved" there', async () =
   expect(await screen.findByText('Entry saved')).toBeInTheDocument()
 })
 
-test('a missing or foreign entry shows "That is gone." with "Volver a Variedades"', async () => {
+test('a missing or foreign entry shows "That is gone." with "Back to Variedades"', async () => {
   fakeFor(stockOf([]), {
     'GET /stock/entries/99': () => jsonResponse(404, { code: 'stock.entry_not_found', detail: 'x' }),
   })
   renderForm(pathTo(STOCK_ENTRY, { id: 99 }))
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('a save marks the catalog stale, since stock changes what it says', async () => {

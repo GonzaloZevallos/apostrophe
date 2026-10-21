@@ -1,6 +1,6 @@
 /**
  * `ClienteFicha` at the screen seam: a `gone` answer shows `GoneScreen` with
- * "Volver a Clientes", never a 403 or a hint of what the id actually is
+ * "Back to Clientes", never a 403 or a hint of what the id actually is
  * (ADR-0004). "Nueva venta a <name>" (customers.md, "On screen (Clientes)")
  * opens the sale form with this customer chosen through `newSaleFor`, the state's
  * only writer (plan, invariants) — never the customer's name, which rides only in
@@ -134,7 +134,7 @@ test('a customer that is gone shows the gone screen, with a way back to the list
   renderFicha('999')
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toHaveAttribute(
+  expect(screen.getByRole('link', { name: 'Back to Clientes' })).toHaveAttribute(
     'href',
     CUSTOMERS,
   )

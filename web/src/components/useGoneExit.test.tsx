@@ -16,7 +16,7 @@ function Page({ name }: { name: string }) {
   return (
     <main>
       <h1>{name}</h1>
-      {useGoneNotice() && <p role="status">Eso ya no está. La lista ya está al día.</p>}
+      {useGoneNotice() && <p role="status">That is gone. The list is up to date.</p>}
     </main>
   )
 }

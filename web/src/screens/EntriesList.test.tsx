@@ -162,11 +162,11 @@ test('"All entries" lists every entry newest first with its variety, origin, gra
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(3)
   expect(within(rows[0]!).getByText('05/10 · 24K Gold')).toBeInTheDocument()
-  expect(within(rows[0]!).getByText('Compra · 30 g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('Purchase · 30 g')).toBeInTheDocument()
   expect(within(rows[0]!).getByText('$ 150.000')).toBeInTheDocument()
   expect(within(rows[0]!).getByText('$ 5.000 x g')).toBeInTheDocument()
   expect(within(rows[1]!).getByText('26/08 · Sir Jack')).toBeInTheDocument()
-  expect(within(rows[1]!).getByText('Cosecha · 10 g')).toBeInTheDocument()
+  expect(within(rows[1]!).getByText('Harvest · 10 g')).toBeInTheDocument()
   expect(within(rows[1]!).getByText('Sin costo')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'All entries' })).toBeInTheDocument()
 })
@@ -226,7 +226,7 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
   expect(within(rows[0]!).getByText('Promoción · −5,5 g')).toBeInTheDocument()
   expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 9 }))
   expect(within(rows[0]!).queryByRole('button', { name: 'Borrar' })).not.toBeInTheDocument()
-  expect(within(rows[1]!).getByText('Compra · 30 g')).toBeInTheDocument()
+  expect(within(rows[1]!).getByText('Purchase · 30 g')).toBeInTheDocument()
 })
 
 /**
@@ -248,7 +248,7 @@ test('"All entries" shows the entry and no withdrawal, and never asks for moveme
 
   const rows = await screen.findAllByRole('listitem')
   expect(within(rows[0]!).getByText('05/10 · 24K Gold')).toBeInTheDocument()
-  expect(within(rows[0]!).getByText('Compra · 30 g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('Purchase · 30 g')).toBeInTheDocument()
   expect(rows).toHaveLength(1)
 
   const asked = vi.mocked(fetch).mock.calls.map(([url]) => String(url))
@@ -327,7 +327,7 @@ test('a variety that is gone, or an id that is not a number, shows "That is gone
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
 })
 
 test('a delete marks the catalog stale and the stock list refetches', async () => {

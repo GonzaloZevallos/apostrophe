@@ -51,7 +51,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
 
   // A dirty Registrar cobro, reached from Clientes' "Cobrar a".
   await page.goto(CUSTOMERS)
-  await page.getByRole('link', { name: 'Cobrar a Carla Volver' }).first().click()
+  await page.getByRole('link', { name: 'Collect from Carla Volver' }).first().click()
   await page.getByRole('radio', { name: 'Cash' }).check()
   await page.goBack()
   await expect(page.getByText('¿Descartás el cobro?')).toBeVisible()

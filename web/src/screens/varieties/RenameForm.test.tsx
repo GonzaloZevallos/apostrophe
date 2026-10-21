@@ -106,7 +106,7 @@ test('a name held by an archived variety is refused under the name with its own 
 
   const alert = await screen.findByRole('alert')
   expect(alert.closest('label')).toHaveTextContent('Name')
-  expect(alert).toHaveTextContent('Ese nombre es de una variedad archivada. Buscala en Archivadas.')
+  expect(alert).toHaveTextContent('That name belongs to an archived variety. Look for it in Archived.')
   expect(screen.getByLabelText(/^Name/)).toHaveValue('24K Gold 2')
 })
 
