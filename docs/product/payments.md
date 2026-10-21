@@ -87,13 +87,19 @@ Success criteria:
 
 ### On screen: the customer's card (`ClienteFicha`)
 
-- It shows "Owes you $ X since dd/mm". For a credit it shows "Credit $ X" with no "since". With a balance of $0 it shows neither.
+- It shows "Owes you $ X since dd/mm" as a small label over a large figure. For a credit it shows "Credit $ X", the same way, with no "since". With a balance of $0 it shows neither.
 - "Record payment" shows only when the balance is above $0. Otherwise it is hidden.
-- The account lists sales and payments in date order, with the running balance:
-  - a sale paid on the spot: "Paid in cash" or "Paid by transfer", with no payment row of its own;
-  - a sale left owing: "Left owing";
-  - a later payment: one row per sale it reaches, "Payment · <method> · On account of the sale of dd/mm", with the amount applied to that sale;
-  - any part beyond every debt: "Credit".
+- **The account** opens with the label "Account · running balance" and lists sales and payments in date order, with the running balance.
+  - Each row shows its date, a title with a sub-line under it, and on the right its amount over "balance $ X". An amount never wraps between "$" and its figure.
+  - **A sale**: the title "Sale". Its sub-line is one of:
+    - "Paid in cash" or "Paid by transfer" for a sale paid on the spot, which has no payment row of its own;
+    - "Left owing" for a sale left owing;
+    - "Nothing to pay" for a sale whose total is $0, settled with no method and nothing owed (sales.md).
+
+    The row names no variety and no grams: the sale's detail holds those (sales.md).
+  - **A later payment**: one row per sale it reaches, each titled "Payment · <method>" with the sub-line "On account of the sale of dd/mm" and the amount applied to that sale.
+  - **Any part of a payment beyond every debt**: titled "Payment · <method>" with the sub-line "Credit".
+  - What is owed reads in amber. A running "Credit $ X" reads in the neutral/blue treatment, never amber or green.
 - **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "Credit $ X".
   - It is the running figure only, not a credit, and counts in no figure.
   - The card's own balance reads "Credit" only when the balance today is below zero.
@@ -151,7 +157,7 @@ Success criteria:
 - **Balance identity (criterion 3)**: balance = bought and unpaid − payments, to the peso, after every create and delete of sales and payments.
 - **Credit**: after a settled sale is deleted, the credit is shown as "Credit", kept out of the Owed to you section, the total owed and the count, and applied to the next sale left owing.
 - **Who-owes totals (criterion 4)**: the total owed, the count of sales still owing, the Customers' "Owed to you" section, Home's block and the Sales mark equal a direct computation over sales and payments. 0 differences. The count line reads "1 sale owing" for one sale and "N sales owing" for two or more, both covered by the front tests.
-- **Account (criterion 5)**: the rows and running balance match the settlement for every case of the matrix.
+- **Account (criterion 5)**: the rows and running balance match the settlement for every case of the matrix. Front tests show the "Account · running balance" label, each row's title and sub-line ("Sale" over "Paid in cash", "Paid by transfer", "Left owing" or, for a $0 sale, "Nothing to pay"; "Payment · <method>" over "On account of the sale of dd/mm" or "Credit"), the amount over "balance $ X" with no wrap inside an amount, and no variety or grams on a sale row.
 - **Dates kept (criterion 6)**: after any recompute, every payment's date, amount and method are unchanged.
 - **Preview = stored (criteria 2, 8)**: Record payment's preview matches the settlement after saving. 0 differences.
 - **Isolation (criterion 7)**: every payment route is in the sweep and answers 404 or empty from another business.
@@ -172,3 +178,4 @@ Success criteria:
 - A separate Owed to you screen.
 - Cash and profit: the results capability (#7).
 - Live updates between partners.
+- A sale's varieties or grams in the customer's account: the sale's detail shows them.
