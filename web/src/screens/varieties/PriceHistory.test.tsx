@@ -69,7 +69,7 @@ test('a variety that is gone shows no back, only its own way out', async () => {
     api({ 'GET /varieties/1': gone, 'GET /varieties/1/prices': gone }),
   )
 
-  expect(await screen.findByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
   expect(screen.queryByText(/‹/)).not.toBeInTheDocument()
 })
 
@@ -93,7 +93,7 @@ test('deleting says what takes the entry\'s place, then toasts "Precio eliminado
   const buttons = await screen.findAllByRole('button', { name: 'Borrar este precio' })
   await user.click(buttons[0]!)
   const dialog = await screen.findByRole('alertdialog')
-  expect(within(dialog).getByText('¿Borrás el precio from 25/09?')).toBeInTheDocument()
+  expect(within(dialog).getByText('¿Borrás el precio desde el 25/09?')).toBeInTheDocument()
   expect(within(dialog).getByText('Back to $ 10.500 x g from 01/09')).toBeInTheDocument()
   await user.click(within(dialog).getByRole('button', { name: 'Yes, delete it' }))
 
@@ -127,7 +127,7 @@ test('a variety that is gone says "That is gone." and goes back to Variedades', 
   )
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
 })
 
 test('an id that is not a number is gone too, and asks the API nothing', async () => {

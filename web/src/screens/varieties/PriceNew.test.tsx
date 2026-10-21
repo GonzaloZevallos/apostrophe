@@ -186,7 +186,7 @@ test('a variety that is gone says "That is gone." and goes back to Variedades', 
   )
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
 })
 
 test('a variety that vanishes while saving shows the gone screen', async () => {
@@ -291,7 +291,7 @@ test('a VIP price at or above list is refused inline under its field and keeps w
   await user.type(screen.getByLabelText(/^Precio VIP/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
-  const message = await screen.findByText('Telegram did not respond')
+  const message = await screen.findByText('The VIP price has to be lower than the list price')
   expect(message).toBeInTheDocument()
   expect(message.textContent).not.toMatch(/\d/)
   expect(screen.getByLabelText(/^Precio VIP/)).toHaveValue('12000')

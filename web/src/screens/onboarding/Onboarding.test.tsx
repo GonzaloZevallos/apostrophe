@@ -314,7 +314,7 @@ test('a body that saved hands its answer to the frame, which follows it', async 
   STEP_BODIES.header_footer = SavingBody
   try {
     renderAt(ONBOARDING_CATALOG_MESSAGE)
-    await userEvent.click(await screen.findByRole('button', { name: 'Save' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Guardar' }))
     expect(await screen.findByText('Paso 4 de 6')).toBeInTheDocument()
   } finally {
     STEP_BODIES.header_footer = original

@@ -302,7 +302,7 @@ test('sale.payment_required shows its own message on "How it was paid", not the 
 
   const message = await screen.findByText('Elegí cómo se pagó, o dejá la venta debiendo')
   expect(message.closest('.nueva-venta__pago')).not.toBeNull()
-  expect(screen.queryByText('Test it first to see how it looks')).not.toBeInTheDocument()
+  expect(screen.queryByText('Check the details and try again.')).not.toBeInTheDocument()
 })
 
 test('sale.no_price_that_day refetches prices, and the line then shows its own message', async () => {
@@ -392,12 +392,12 @@ test('sale.customer_not_found and sale.variety_not_found keep the form open with
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
-  expect(await screen.findByText('Test it first to see how it looks')).toBeInTheDocument()
+  expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByText('New sale')).toBeInTheDocument()
   expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
 
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
-  expect(await screen.findByText('Test it first to see how it looks')).toBeInTheDocument()
+  expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByText('New sale')).toBeInTheDocument()
   expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
 })
@@ -566,7 +566,7 @@ test('a forced sale.grams_invalid answer keeps everything typed, the message at 
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
 
-  expect(await screen.findByText('Test it first to see how it looks')).toBeInTheDocument()
+  expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByLabelText('Variedad línea 1')).toHaveValue('1')
   expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
 })

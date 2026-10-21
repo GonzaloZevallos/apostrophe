@@ -131,7 +131,7 @@ test.describe.serial('navigation', () => {
     await page.goto(pathTo(old?.[0] ?? '', { id: GONE_ID }))
     expect(new URL(page.url()).pathname).toBe(pathTo(old?.[1] ?? '', { id: GONE_ID }))
     await expect(page.getByText('That is gone.')).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Back to Ventas' }).or(page.getByRole('button', { name: 'Back to Ventas' }))).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Back to Sales' }).or(page.getByRole('button', { name: 'Back to Sales' }))).toBeVisible()
   })
 
   test("an old link to another business's sale lands on the English route and says \"That is gone.\"", async ({
@@ -147,7 +147,7 @@ test.describe.serial('navigation', () => {
     expect(new URL(other.url()).pathname).toBe(pathTo(old?.[1] ?? '', { id: records.sale }))
     await expect(other.getByText('That is gone.')).toBeVisible()
     await expect(
-      other.getByRole('link', { name: 'Back to Ventas' }).or(other.getByRole('button', { name: 'Back to Ventas' })),
+      other.getByRole('link', { name: 'Back to Sales' }).or(other.getByRole('button', { name: 'Back to Sales' })),
     ).toBeVisible()
     await context.close()
   })

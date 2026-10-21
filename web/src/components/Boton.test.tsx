@@ -49,7 +49,7 @@ test('the link variant renders the design\'s underline class, not the filled .bo
       Agregar otra variedad
     </Boton>,
   )
-  const button = screen.getByRole('button', { name: 'Add another variety' })
+  const button = screen.getByRole('button', { name: 'Agregar otra variedad' })
   expect(button.className).toBe('boton--enlace')
 })
 
@@ -59,7 +59,7 @@ test('the destructive variant carries both the base and the destructive class', 
       Sí, borrala
     </Boton>,
   )
-  const button = screen.getByRole('button', { name: 'Yes, delete it' })
+  const button = screen.getByRole('button', { name: 'Sí, borrala' })
   expect(button.className).toBe('boton boton--destructivo')
 })
 

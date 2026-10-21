@@ -514,9 +514,9 @@ describe("screens.json against the English routes", () => {
   test("the route check reports a null route, a route that is not the path, and a step-reached screen with no steps", () => {
     expect(
       routeProblems([
-        { screen: "Home", route: "/", path: "/" },
+        { screen: "Inicio", route: "/", path: "/" },
         { screen: "InicioPrimeraVez", route: null, path: "/" },
-        { screen: "Sales", route: "/sales", path: "/sales/new" },
+        { screen: "Ventas", route: "/sales", path: "/sales/new" },
         { screen: "OnboardingListo", route: "/onboarding/categories", path: "/onboarding/done" },
         {
           screen: "OnboardingVariedad",

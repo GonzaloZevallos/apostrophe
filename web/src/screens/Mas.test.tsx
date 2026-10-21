@@ -41,9 +41,9 @@ test('lists "+ Cargar gasto", "Take from stock", Gastos and Análisis first, in 
   expect(entries[4]).toHaveAttribute('href', SETTINGS)
 })
 
-test('"Add expense" shows the agregar icon and the word alone, and keeps its "+ Cargar gasto" name', () => {
+test('"Add expense" shows the agregar icon and the word alone, and keeps its "+ Add expense" name', () => {
   const nav = renderMas()
-  const entry = within(nav).getByRole('link', { name: /^\+ Cargar gasto Categoría, monto y detalle$/ })
+  const entry = within(nav).getByRole('link', { name: /^\+ Add expense Categoría, monto y detalle$/ })
 
   expect(entry).toHaveAttribute('href', EXPENSE_NEW)
   expect(entry.textContent).not.toContain('+')

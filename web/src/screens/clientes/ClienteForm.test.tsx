@@ -376,7 +376,7 @@ test('after editing from the card, the save goes back by history: no second card
   )
   const router = renderForm(CUSTOMERS)
   await act(() => router.navigate(pathTo(CUSTOMER, { id: 7 })))
-  await userEvent.click(screen.getByRole('link', { name: 'Edit' }))
+  await userEvent.click(screen.getByRole('link', { name: 'Editar' }))
   await userEvent.type(await screen.findByLabelText('Name'), ' Aguirre')
 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))

@@ -19,7 +19,7 @@ test('an icon + text link is an anchor named by its word, with its icon hidden',
       Nueva venta
     </BotonLink>,
   )
-  const link = screen.getByRole('link', { name: 'New sale' })
+  const link = screen.getByRole('link', { name: 'Nueva venta' })
   expect(link).toHaveAttribute('href', SALE_NEW)
   expect(link.className).toBe('boton boton--suave')
   expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')

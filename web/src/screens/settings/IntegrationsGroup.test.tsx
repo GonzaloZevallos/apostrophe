@@ -154,7 +154,7 @@ test('a refused Probarlo saves nothing and keeps everything typed, the token inc
   await userEvent.type(screen.getByLabelText('Chat del canal'), '@probando')
   await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('The bot cannot post in the channel')
+  expect(await screen.findByRole('alert')).toHaveTextContent('Telegram did not respond')
   expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
   expect(screen.getByLabelText('Token del bot')).toHaveValue('123:secret')
   expect(screen.getByLabelText('Tu chat')).toHaveValue('555')
@@ -163,20 +163,20 @@ test('a refused Probarlo saves nothing and keeps everything typed, the token inc
 })
 
 const PROBARLO_REASONS: [string, string][] = [
-  ['pinned_catalog.token_invalid', 'Open your bot in Telegram and tap Start, then test it again.'],
+  ['pinned_catalog.token_invalid', 'The token is not valid: copy it again from @BotFather.'],
   [
     'pinned_catalog.own_chat_not_started',
-    'We could not find your chat: check the number and tap Start in your bot.',
+    'Open your bot in Telegram and tap Start, then test it again.',
   ],
   [
     'pinned_catalog.own_chat_not_found',
-    'We could not send you the test: check the token and your chat.',
+    'We could not find your chat: check the number and tap Start in your bot.',
   ],
-  ['pinned_catalog.test_failed', 'We see no messages in your bot yet: open it in Telegram, tap Start, and look again.'],
-  ['pinned_catalog.telegram_unreachable', 'The bot cannot post in the channel'],
+  ['pinned_catalog.test_failed', 'We could not send you the test: check the token and your chat.'],
+  ['pinned_catalog.telegram_unreachable', 'Telegram did not respond'],
   [
     'pinned_catalog.too_long',
-    'stock.withdrawal_reason_required',
+    'It is too long for Telegram: shorten aromas or hide varieties.',
   ],
 ]
 
@@ -192,7 +192,7 @@ test.each(PROBARLO_REASONS)(
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(copy)
-    expect(alert).not.toHaveTextContent('The pinned message is gone: publish it again')
+    expect(alert).not.toHaveTextContent('The bot cannot post in the channel')
     expect(alert).not.toHaveTextContent('123:secret')
     expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Token del bot')).toHaveValue('123:secret')
@@ -343,18 +343,18 @@ test('Buscar mi chat is disabled while its request runs', async () => {
 const LOOKUP_REFUSALS: [string, string][] = [
   [
     'pinned_catalog.no_messages',
-    'More than one person wrote to your bot: find your number with @userinfobot and type it here.',
+    'We see no messages in your bot yet: open it in Telegram, tap Start, and look again.',
   ],
   [
     'pinned_catalog.several_chats',
-    'We could not read your bot's messages: find your number with @userinfobot and type it here.',
+    'More than one person wrote to your bot: find your number with @userinfobot and type it here.',
   ],
   [
     'pinned_catalog.updates_unreadable',
-    'The VIP price has to be lower than the list price',
+    "We could not read your bot's messages: find your number with @userinfobot and type it here.",
   ],
-  ['pinned_catalog.token_invalid', 'Open your bot in Telegram and tap Start, then test it again.'],
-  ['pinned_catalog.telegram_unreachable', 'The bot cannot post in the channel'],
+  ['pinned_catalog.token_invalid', 'The token is not valid: copy it again from @BotFather.'],
+  ['pinned_catalog.telegram_unreachable', 'Telegram did not respond'],
 ]
 
 test.each(LOOKUP_REFUSALS)(
@@ -393,15 +393,15 @@ test('a lookup reason clears when Probarlo runs, and a Probarlo reason clears wh
 
   await screen.findByLabelText('Tu chat')
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('Todavía no vemos mensajes')
+  expect(await screen.findByRole('alert')).toHaveTextContent('We see no messages in your bot yet')
   await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
   await waitFor(() =>
-    expect(screen.getByRole('alert')).toHaveTextContent('No pudimos enviarte la prueba'),
+    expect(screen.getByRole('alert')).toHaveTextContent('We could not send you the test'),
   )
   expect(screen.getAllByRole('alert')).toHaveLength(1)
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
   await waitFor(() =>
-    expect(screen.getByRole('alert')).toHaveTextContent('Todavía no vemos mensajes'),
+    expect(screen.getByRole('alert')).toHaveTextContent('We see no messages in your bot yet'),
   )
   expect(screen.getAllByRole('alert')).toHaveLength(1)
 })

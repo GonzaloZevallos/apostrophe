@@ -39,7 +39,7 @@ const GELATO: Listed = { id: 2, name: 'Gelato', archived: false, current_price: 
 const GORILLA: Listed = { id: 3, name: 'Gorilla', archived: false, current_price: null }
 
 const GONE = 'That is gone.'
-const GENERIC = 'Test it first to see how it looks'
+const GENERIC = 'Check the details and try again.'
 
 interface Gate {
   promise: Promise<void>

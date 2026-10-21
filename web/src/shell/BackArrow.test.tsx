@@ -87,7 +87,7 @@ function RecordStub({ screen: id }: { screen: RecordLabelledScreen }) {
     }
   }, [param])
   const shown = loaded?.param === param ? loaded : undefined
-  if (shown === undefined) return <p>Cargando</p>
+  if (shown === undefined) return <p>Loading</p>
   return shown.detail === null ? <p>That is gone.</p> : <Declare screen={id} detail={shown.detail} />
 }
 
@@ -221,7 +221,7 @@ test("a declaration for another record or another screen is ignored, even if it 
             element: <Shell />,
             children: [
               { path: VARIETY, handle: { screen: 'variety' }, element: <LeftBehind screen="variety" /> },
-              { path: VARIETY_PRICES, handle: { screen: 'variety-prices' }, element: <p>Precios</p> },
+              { path: VARIETY_PRICES, handle: { screen: 'variety-prices' }, element: <p>Prices</p> },
             ],
           },
         ],

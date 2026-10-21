@@ -524,7 +524,7 @@ describe('gone and foreign varieties', () => {
     })
 
     expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Back to Variedades' })).toHaveAttribute('href', VARIETIES)
+    expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES)
   })
 
   test('VarietyRoute: an id that is not a whole number is gone, and the API is never asked', async () => {

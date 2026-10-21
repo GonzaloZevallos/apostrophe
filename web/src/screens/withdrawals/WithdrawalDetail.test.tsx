@@ -141,11 +141,11 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
   ])
 })
 
-test('opening a withdrawal that is gone shows "That is gone." and "Back to Variedades"', async () => {
+test('opening a withdrawal that is gone shows "That is gone." and "Back to Varieties"', async () => {
   renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('deleting a withdrawal that is gone goes to Variedades with "That is gone. The list is up to date."', async () => {

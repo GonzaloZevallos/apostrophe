@@ -147,7 +147,7 @@ test('a refusal shows inline by its code and keeps everything typed', async () =
 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el retiro' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('stock.withdrawal_note_too_long')
+  expect(await screen.findByRole('alert')).toHaveTextContent('Grams allow up to two decimals')
   expect(screen.getByRole('button', { name: 'Consumo propio' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByLabelText('Variedad 1')).toHaveValue('2')
   expect(screen.getByLabelText('Gramos 1')).toHaveValue('2,5')
@@ -155,13 +155,13 @@ test('a refusal shows inline by its code and keeps everything typed', async () =
 })
 
 const WITHDRAWAL_REFUSALS = [
-  ['stock.withdrawal_reason_required', 422, 'stock.withdrawal_date_in_future'],
+  ['stock.withdrawal_reason_required', 422, 'Pick the reason: Promotion or Own use'],
   ['stock.withdrawal_date_in_future', 422, 'The date cannot be in the future'],
-  ['stock.withdrawal_no_lines', 422, 'stock.withdrawal_grams_not_positive'],
-  ['stock.withdrawal_grams_not_positive', 422, 'stock.withdrawal_grams_too_precise'],
-  ['stock.withdrawal_grams_too_precise', 422, 'stock.withdrawal_note_too_long'],
-  ['stock.withdrawal_note_too_long', 422, 'stock.withdrawal_variety_not_found'],
-  ['stock.withdrawal_variety_not_found', 404, 'Alguna variedad ya no está: elegí otra'],
+  ['stock.withdrawal_no_lines', 422, 'Add at least one variety with its grams'],
+  ['stock.withdrawal_grams_not_positive', 422, 'Grams have to be more than zero'],
+  ['stock.withdrawal_grams_too_precise', 422, 'Grams allow up to two decimals'],
+  ['stock.withdrawal_note_too_long', 422, 'The note allows up to 200 characters'],
+  ['stock.withdrawal_variety_not_found', 404, 'A variety is gone: pick another'],
 ] as const
 
 test('every withdrawal refusal the contract lists is covered here, but its gone form', () => {
