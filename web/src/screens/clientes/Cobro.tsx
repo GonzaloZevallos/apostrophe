@@ -1,6 +1,6 @@
 /**
  * "Registrar cobro" (`Cobro`, `payments.md`): the form, drawn inside `CobroFrame` by its host
- * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "Todo: $ X"
+ * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "All: $ X"
  * fills the amount with the customer's own `balance` (never typed in by the seller for that
  * case); the date defaults to today; Efectivo · Transferencia is required. The host owns how it
  * is left (the leave guard, Escape, the backdrop, where "Cerrar" goes): this form only says
@@ -73,11 +73,11 @@ const GONE_CODES: ReadonlySet<PaymentRefusalCode> = new Set([
 ])
 
 const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
-  'payment.above_balance': PAYMENTS_TEXT.elMontoSuperaLo,
-  'payment.future_date': PAYMENTS_TEXT.laFechaNoPuede,
-  'payment.amount_invalid': PAYMENTS_TEXT.ingresaUnMontoValido,
+  'payment.above_balance': PAYMENTS_TEXT.amountOverBalance,
+  'payment.future_date': PAYMENTS_TEXT.dateInFuture,
+  'payment.amount_invalid': PAYMENTS_TEXT.enterValidAmount,
 }
-const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.elegiEfectivoOTransferencia
+const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.chooseCashOrTransfer
 
 /** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
@@ -154,7 +154,7 @@ export default function Cobro({
     setMethodError(null)
     setOffline(false)
     if (!parsedAmount.ok) {
-      setAmountError(PAYMENTS_TEXT.ingresaUnMontoValido)
+      setAmountError(PAYMENTS_TEXT.enterValidAmount)
       return
     }
     if (method === null) {
@@ -166,8 +166,8 @@ export default function Cobro({
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
-          ? PAYMENTS_TEXT.cobroGuardadoQuedaDebiendo(formatMoney(recorded.after.balance))
-          : PAYMENTS_TEXT.cobroGuardado,
+          ? PAYMENTS_TEXT.savedStillOwing(formatMoney(recorded.after.balance))
+          : PAYMENTS_TEXT.saved,
       )
       onDone()
     } catch (caught) {
@@ -195,7 +195,7 @@ export default function Cobro({
       <span className="cobro__cliente">
         {customer.name}
         {customer.standing === 'owes' && customer.owing_since !== null
-          ? PAYMENTS_TEXT.teDebe0Desde(formatMoney(customer.balance), formatDateShort(customer.owing_since))
+          ? PAYMENTS_TEXT.owesYouSince(formatMoney(customer.balance), formatDateShort(customer.owing_since))
           : ''}
       </span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
@@ -212,7 +212,7 @@ export default function Cobro({
           </label>
           <div className="cobro__todo">
             <Boton variant="link" onClick={() => setAmount(String(balance))}>
-              {PAYMENTS_TEXT.todo}{formatMoney(balance)}
+              {PAYMENTS_TEXT.all}{formatMoney(balance)}
             </Boton>
           </div>
           {amountError !== null && (
@@ -234,7 +234,7 @@ export default function Cobro({
           </label>
 
           <fieldset className="campo cobro__metodo">
-            <legend className="campo__rotulo">{PAYMENTS_TEXT.metodo}</legend>
+            <legend className="campo__rotulo">{PAYMENTS_TEXT.method}</legend>
             <label>
               <input
                 type="radio"
@@ -262,14 +262,14 @@ export default function Cobro({
 
           {parsedAmount.ok && preview.data !== undefined && (
             <div className="campo cobro__resumen">
-              <span className="campo__rotulo">{PAYMENTS_TEXT.seDescuentaDeLa}</span>
+              <span className="campo__rotulo">{PAYMENTS_TEXT.takenFromOldestDebt}</span>
               {preview.data.applied_to.map((split) => (
                 <span key={split.sale_id}>
-                  {formatMoney(split.amount)}{PAYMENTS_TEXT.aLaVentaDel}{formatDateShort(split.sale_date)}
+                  {formatMoney(split.amount)}{PAYMENTS_TEXT.toTheSaleOf}{formatDateShort(split.sale_date)}
                 </span>
               ))}
               {preview.data.after.standing === 'owes' && (
-                <span>{PAYMENTS_TEXT.leQuedaDebiendo}{formatMoney(preview.data.after.balance)}</span>
+                <span>{PAYMENTS_TEXT.stillOwes}{formatMoney(preview.data.after.balance)}</span>
               )}
             </div>
           )}

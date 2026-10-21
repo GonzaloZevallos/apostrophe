@@ -2,7 +2,7 @@
  * Clientes as redesigned, phone and computer, against the real backend through the built front
  * (customers.md, "On screen (Clientes)"; payments.md, "Owed to you"): the screen opens on "Owed to you"
  * (count line, total, debtors oldest owing-since first with ties by name) above everyone A–Z;
- * "Collect from <name>" on a row opens Registrar cobro with that customer chosen, "Todo" fills the
+ * "Collect from <name>" on a row opens Registrar cobro with that customer chosen, "All" fills the
  * whole balance in one tap, a payment is saved, and one move back returns to Clientes; the
  * customer's card offers "Nueva venta a <name>" with that customer already chosen.
  *
@@ -34,7 +34,7 @@ function aYearBefore(iso: string): string {
 async function registerCustomer(page: Page, name: string): Promise<void> {
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill(name)
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 }
@@ -42,7 +42,7 @@ async function registerCustomer(page: Page, name: string): Promise<void> {
 /** Sells `grams` g of Rosa ($1.000 a gram) to the customer on credit, from the customer's card,
  * optionally dated `owingSince` instead of today. */
 async function sellOnCredit(page: Page, name: string, grams: string, older = false): Promise<void> {
-  await page.getByRole('link', { name: `Nueva venta a ${name}` }).click()
+  await page.getByRole('link', { name: `New sale to ${name}` }).click()
   await expectPath(page, SALE_NEW)
   if (older) {
     const date = page.getByLabel('Date')
@@ -113,15 +113,15 @@ for (const viewport of VIEWPORTS) {
     await expectPath(page, CUSTOMER_PAYMENT)
     await expect(page.locator('.panel__titulo', { hasText: 'Record payment' })).toBeVisible()
     await expect(page.locator('.cobro__cliente')).toContainText('Carla Deudora')
-    await expect(page.locator('.cobro__cliente')).toContainText('te debe $ 5.000')
+    await expect(page.locator('.cobro__cliente')).toContainText('owes you $ 5.000')
 
-    // "Todo" fills the whole balance in one tap, and the payment is saved.
-    await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
+    // "All" fills the whole balance in one tap, and the payment is saved.
+    await page.getByRole('button', { name: 'All: $ 5.000' }).click()
     await expect(page.getByLabel('Amount')).toHaveValue('5000')
     await page.getByRole('radio', { name: 'Cash' }).check()
     await page.getByRole('button', { name: 'Save' }).click()
     await expectPath(page, CUSTOMERS)
-    await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
+    await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
 
     // The section is the API's new answer: she left, the total and the count follow.
     await expect(owing.locator('.cifra-xl')).toHaveText('$ 5.000')
@@ -149,7 +149,7 @@ for (const viewport of VIEWPORTS) {
     // The rest of a row opens the card, and "Nueva venta a <name>" opens the sale with her chosen.
     await owing.getByRole('link', { name: /^Beto Deudor/ }).click()
     await expectPath(page, CUSTOMER)
-    await page.getByRole('link', { name: 'Nueva venta a Beto Deudor' }).click()
+    await page.getByRole('link', { name: 'New sale to Beto Deudor' }).click()
     await expectPath(page, SALE_NEW)
     await expect(page.getByRole('button', { name: /Beto Deudor/ })).toBeVisible()
     await fillSaleLine(page, 1, { variety: 'Rosa', grams: '1' })

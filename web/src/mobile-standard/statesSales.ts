@@ -2,6 +2,7 @@
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import { COMMON_TEXT } from '../copy/common.ts'
+import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import type { WalkState } from './states.ts'
 
 export const SALES_STATES: readonly WalkState[] = [
@@ -64,7 +65,7 @@ export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'CobroBorrar',
     route: CUSTOMER.replace(':id', '{debtor}'),
-    steps: [{ click: 'Borrar cobro' }],
+    steps: [{ click: CUSTOMERS_TEXT.deletePayment }],
     visible: COMMON_TEXT.yesDelete,
   },
   {

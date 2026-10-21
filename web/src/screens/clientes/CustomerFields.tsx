@@ -40,7 +40,7 @@ export default function CustomerFields({
     <>
       <div className="campo">
         <label className="campo">
-          <span className="campo__rotulo">{CUSTOMERS_TEXT.telefono}</span>
+          <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
           <input
             className="campo__input"
             type="tel"

@@ -100,7 +100,7 @@ export function clearSaleJustSaved(): null {
 }
 
 /** Written only by the "Nueva venta a <name>" link (plan, invariants: "The
- * 'Nueva venta a <name>' state is written only through `newSaleFor`"). Takes
+ * 'New sale to <name>' state is written only through `newSaleFor`"). Takes
  * the id alone — never the name — so the customer's name can never ride in a
  * URL, history state, the console or storage. */
 export function newSaleFor(customerId: string): { customerId: string } {

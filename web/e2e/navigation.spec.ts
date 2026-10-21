@@ -193,7 +193,7 @@ test.describe.serial('navigation', () => {
     for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 920 }]) {
       await page.setViewportSize(size)
       await page.goto(pathTo(CUSTOMER, { id: records.customer }))
-      await expectAction(page.getByRole('link', { name: `Nueva venta a ${records.customerName}` }))
+      await expectAction(page.getByRole('link', { name: `New sale to ${records.customerName}` }))
     }
 
     // InicioPrimeraVez: Inicio of a business with nothing in it yet.

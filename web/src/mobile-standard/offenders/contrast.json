@@ -2,7 +2,7 @@
   {
     "screen": "Clientes",
     "rule": "contrast",
-    "target": "textbox:Buscar cliente::placeholder",
+    "target": "textbox:Search customer::placeholder",
     "issue": 46
   },
   {

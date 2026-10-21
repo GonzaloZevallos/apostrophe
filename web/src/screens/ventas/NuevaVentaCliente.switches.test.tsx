@@ -73,13 +73,13 @@ test('the new-customer form of Elegir cliente has Nombre required, a clearable o
   await user.click(await screen.findByRole('button', { name: 'New customer' }))
 
   expect(await screen.findByLabelText('Name')).toBeRequired()
-  expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
+  expect(screen.getByLabelText('Phone')).not.toBeRequired()
   const sheet = screen.getByLabelText('Name').closest('form')
   expect(sheet).not.toBeNull()
   expect(within(sheet as HTMLElement).queryByRole('radio')).not.toBeInTheDocument()
   expect(screen.queryByText(/canal|whatsapp|telegram/i)).not.toBeInTheDocument()
 
-  await user.type(screen.getByLabelText('Teléfono'), '+5491100000009')
-  await user.clear(screen.getByLabelText('Teléfono'))
-  expect(screen.getByLabelText('Teléfono')).toHaveValue('')
+  await user.type(screen.getByLabelText('Phone'), '+5491100000009')
+  await user.clear(screen.getByLabelText('Phone'))
+  expect(screen.getByLabelText('Phone')).toHaveValue('')
 })

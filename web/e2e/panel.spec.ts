@@ -121,7 +121,7 @@ function detailFor(
     case 'sold_out':
       return variety.sold_out_since === null
         ? 'Sin gramos'
-        : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
+        : `Sin gramos since ${formatDate(variety.sold_out_since, today)}`
     case 'low':
       return variety.threshold === null
         ? 'Avisás por debajo del umbral'
@@ -205,14 +205,14 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A customer, for the sale left owing.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Teléfono').fill('+5491155550077')
+  await page.getByLabel('Phone').fill('+5491155550077')
   await page.getByLabel('Name').fill('Carla Pérez')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
   // A sale left owing, to Carla.
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   const todayIso = await page.getByLabel('Date').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
@@ -392,9 +392,9 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // On a computer the list sits beside the card and has its own title: read the card's (the pane
   // without the search box).
   await expect(
-    page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') }).locator('.encabezado__titulo'),
+    page.locator('main').filter({ hasNot: page.getByLabel('Search customer') }).locator('.encabezado__titulo'),
   ).toHaveText(teaserRow.name)
-  await expect(page.getByText(`Te debe ${pesos(teaserRow.balance)}`)).toBeVisible()
+  await expect(page.getByText(`Owes you ${pesos(teaserRow.balance)}`)).toBeVisible()
 
   // Nothing personal or technical reaches the console or the browser's own storage
   // (CODING_STANDARDS.md section 9) — a customer's name and several amounts moved

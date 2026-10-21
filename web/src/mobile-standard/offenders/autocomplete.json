@@ -26,7 +26,7 @@
   {
     "screen": "ClienteEditar",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 46
   },
   {
@@ -38,19 +38,19 @@
   {
     "screen": "ClienteNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 46
   },
   {
     "screen": "Clientes",
     "rule": "autocomplete",
-    "target": "textbox:Buscar cliente",
+    "target": "textbox:Search customer",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "autocomplete",
-    "target": "textbox:Buscar cliente",
+    "target": "textbox:Search customer",
     "issue": 46
   },
   {
@@ -704,7 +704,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 78
   },
   {

@@ -193,7 +193,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // A brand-new customer, created from inside the sheet, without leaving the sale.
   await page.getByRole('button', { name: 'Elegir cliente' }).click()
   await page.getByRole('button', { name: 'New customer' }).click()
-  await page.getByLabel('Teléfono').fill('+5491155550010')
+  await page.getByLabel('Phone').fill('+5491155550010')
   await page.getByLabel('Name').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Crear cliente' }).click()
   await expect(page.getByText('Elegir cliente')).toHaveCount(0)
@@ -251,7 +251,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // --- Sale B: "Nueva venta a <name>", a gift line, no payment needed for $0. ---
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   // Already chosen, no picking needed: fetched by id (keys.saleFormCustomer), not
   // carried along in history state (plan, invariants).

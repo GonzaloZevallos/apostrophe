@@ -5,12 +5,13 @@
 
 import type { LimitedCopy } from './limits'
 import { EMPTY_STATES } from './emptyStates'
+import { NOBODY_OWES } from './customers.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 
 export const EMPTY_TITLE = EMPTY_STATES.homeVarietiesTitle
 export const EMPTY_DETAIL = EMPTY_STATES.homeVarietiesDetail
-export const NOBODY_OWES = EMPTY_STATES.homeNobodyOwes
+export { NOBODY_OWES }
 export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
 
 export const CHECKLIST_TITLE = 'Para arrancar'
