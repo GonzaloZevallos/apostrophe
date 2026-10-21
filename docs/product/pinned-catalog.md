@@ -30,14 +30,14 @@ Success criteria:
 1. **No step of my own**: once a change that affects the catalog is saved, the pin already shows it the next time anyone looks at Telegram. This includes a price entry whose date arrives with nobody saving anything.
 2. **One message, always the same one**: publishing or syncing edits the pinned message in place. The chat never fills with old catalogs. Switching the bot or the channel leaves the previous chat's pin untouched, and the seller is told so.
 3. **What customers read is the catalog**: the same text as the in-app preview and as Probarlo's test send, with real bold from the same left-to-right `**` pairing (ADR-0022).
-4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, withdrawal, catalog edit, archive or restore, pricing settings) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
+4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, withdrawal, catalog edit, archive or restore, pricing settings) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Out of date", with a one-line reason, on the catalog screen and on Inicio.
 5. **Businesses never mix and the token stays secret**: one bot, token, channel chat and own chat per business. The token is never shown again once saved. Nothing about the settings or a sync leaks across businesses (ADR-0004, ADR-0005).
 6. **Done from the phone**: setup, Buscar mi chat and Probarlo in Integraciones, Publicar and seeing whether the pin is out of date on the catalog screen all work from the phone, with no API call by hand. From Integraciones a plain link leads on to the catalog screen to publish.
 7. **Each cause of a failed Probarlo has its own fixed reason**, with a concrete action.
    - An invalid token and an own chat not started each show their own reason.
    - Telegram's "chat not found" can't tell a wrong number from a chat not started. Its one reason names both fixes, so it never points at the wrong one.
    - No reason repeats what was typed, and everything typed stays in the form.
-8. **Probarlo never blames the channel**: no Probarlo failure says "El bot no puede publicar en el canal", because Probarlo does not touch the channel. That reason stays unchanged for Publicar and upkeep, with their states and Inicio's notice.
+8. **Probarlo never blames the channel**: no Probarlo failure says "The bot cannot post in the channel", because Probarlo does not touch the channel. That reason stays unchanged for Publicar and upkeep, with their states and Inicio's notice.
 9. **The help line tells the truth**: before testing, the own-chat help says to tap Iniciar on the bot and where to get the number, and the screen does what it promises.
 10. **The seller gets to a successful test alone**: with a valid token, the seller goes from a failed Probarlo to a successful one from the phone, following only the screen's reasons and help.
 11. **A restyle of Integraciones changes only what it meant to**:
@@ -52,7 +52,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 ### Bot settings, per business (Configuración → Integraciones)
 
 - One token, one channel chat and one own chat per business.
-- **Where**: the Integraciones group of Configuración, a form (navigation.md): "Cerrar", and a confirmation when leaving with something typed and not saved. It is the only place they are seen or changed; the catalog screen no longer holds them, and old paths to them redirect here.
+- **Where**: the Integraciones group of Configuración, a form (navigation.md): "Close", and a confirmation when leaving with something typed and not saved. It is the only place they are seen or changed; the catalog screen no longer holds them, and old paths to them redirect here.
 - **Token**:
   - stored encrypted, keyed from `APOSTROPHE_SECRET_KEY`;
   - once saved, no route returns it and it is never logged;
@@ -62,7 +62,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   - shown in plain text and editable in place;
   - never sent to logs, the console or browser storage;
   - each field has a short fixed help line.
-- **The own chat's help line**: "Tocá Iniciar en tu bot; tu número lo ves con @userinfobot." (80 characters at most, GH-97; it dropped "Abrí tu bot en Telegram" and "o tocá Buscar mi chat", which the button beside the field already says.) It replaced "Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.", which promised something the screen did not do. The channel chat's help line is unchanged. The longer how (open the bot, tap Iniciar, then Buscar mi chat fills the number, or look it up with @userinfobot) is behind More info ("Más info") on that line, closed at every open.
+- **The own chat's help line**: "Tap Start in your bot; find your number with @userinfobot." (80 characters at most, GH-97; it dropped "Abrí tu bot en Telegram" and "o tocá Buscar mi chat", which the button beside the field already says.) It replaced "Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.", which promised something the screen did not do. The channel chat's help line is unchanged. The longer how (open the bot, tap Iniciar, then Buscar mi chat fills the number, or look it up with @userinfobot) is behind More info ("More info") on that line, closed at every open.
 - **Nothing saved yet**: empty fields and no "Guardado" line.
 - **Saved only through Probarlo**: settings are saved only when a test of the typed values succeeds, so the saved settings have always been tested.
 - **Changing any of the three** re-arms the test gate. The successful Probarlo that saves the change satisfies it again.
@@ -72,11 +72,11 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 ### Buscar mi chat (in Integraciones)
 
-- **Where**: a button next to the "Tu chat" field.
+- **Where**: a button next to the "Your chat" field.
 - **Token used**: the token Probarlo would use.
   - It is the typed token, if the seller tapped Cambiar and typed one.
   - Otherwise it is the saved one, which never leaves the server and is never shown, logged or returned.
-- **No token of either kind**: the button is disabled and says "Cargá el token primero" in words, never by color alone.
+- **No token of either kind**: the button is disabled and says "Enter the token first" in words, never by color alone.
 - **What it reads**: only the private chats that wrote to the bot.
   - One private chat counts as one person, whatever the number of messages.
   - Groups and channels never count.
@@ -90,11 +90,11 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 | Outcome | Reason |
 |---|---|
-| Nobody has written to the bot | "Todavía no vemos mensajes en tu bot: abrilo en Telegram, tocá Iniciar y buscá de nuevo." |
-| More than one person wrote privately | "Le escribió más de una persona a tu bot: buscá tu número con @userinfobot y escribilo acá." |
-| Messages can't be read (for example a bot with a webhook), or any other failure | "No pudimos leer los mensajes de tu bot: buscá tu número con @userinfobot y escribilo acá." |
-| Invalid token | "El token no es válido: copialo de nuevo de @BotFather." |
-| Telegram down, 429 or no connection | "Telegram no respondió" |
+| Nobody has written to the bot | "No messages in your bot yet: open it in Telegram, tap Start and look again." |
+| More than one person wrote privately | "Several people wrote to your bot: find your number with @userinfobot, type it." |
+| Messages can't be read (for example a bot with a webhook), or any other failure | "We cannot read your bot's messages: find your number with @userinfobot, type it." |
+| Invalid token | "The token is not valid: copy it again from @BotFather." |
+| Telegram down, 429 or no connection | "Telegram did not respond" |
 
 - **The app never changes the bot's setup.** It neither asks the seller to change it in Telegram nor changes it itself. An unreadable bot is rare, since the app never sets a webhook, and the manual path through @userinfobot is enough.
 
@@ -102,33 +102,33 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 - It tests the values typed on the screen, not the saved ones.
 - It needs the token and the own chat. The channel chat may be blank, and Probarlo never checks or touches it.
-- **On success**: the typed values are saved, the test counts for the gate, and the toast "Prueba enviada" shows.
+- **On success**: the typed values are saved, the test counts for the gate, and the toast "Test sent" shows.
 - **On failure**: nothing is saved. A fixed inline reason shows that never repeats what was typed, and everything typed stays.
 
 | Cause | Reason |
 |---|---|
-| Invalid token (401) | "El token no es válido: copialo de nuevo de @BotFather." |
-| Own chat not started, or the seller blocked the bot (403) | "Abrí tu bot en Telegram y tocá Iniciar, después probalo de nuevo." |
-| Own chat not found (400 "chat not found"): a wrong number, or a right number whose chat was never started, which Telegram does not tell apart | "No encontramos tu chat: revisá el número y tocá Iniciar en tu bot." |
-| Telegram down, 429 or no connection | "Telegram no respondió" |
-| Text over Telegram's limit | "Es demasiado largo para Telegram: acortá aromas u ocultá variedades." |
-| Any other failure | "No pudimos enviarte la prueba: revisá el token y tu chat." |
+| Invalid token (401) | "The token is not valid: copy it again from @BotFather." |
+| Own chat not started, or the seller blocked the bot (403) | "Open your bot in Telegram and tap Start, then test it again." |
+| Own chat not found (400 "chat not found"): a wrong number, or a right number whose chat was never started, which Telegram does not tell apart | "We could not find your chat: check the number and tap Start in your bot." |
+| Telegram down, 429 or no connection | "Telegram did not respond" |
+| Text over Telegram's limit | "It is too long for Telegram: shorten aromas or hide varieties." |
+| Any other failure | "We could not send you the test: check the token and your chat." |
 
 - **None of Probarlo's reasons mentions the channel.** Reasons depend on the action, not only on Telegram's answer.
 - It sends exactly what would be published, the empty-catalog case included.
 
 ### Publicar (publish and pin, on the catalog screen)
 
-- **What it needs**: a saved channel chat, and a successful Probarlo since the token or either chat last changed. Until then it shows as disabled with its reason in words ("Probalo primero para ver cómo queda", or that the channel is missing) and a link to Configuración → Integraciones.
+- **What it needs**: a saved channel chat, and a successful Probarlo since the token or either chat last changed. Until then it shows as disabled with its reason in words ("Test it first to see how it looks", or that the channel is missing) and a link to Configuración → Integraciones.
 - **Posting and editing**:
   - The first Publicar to a channel chat posts the message and pins it.
   - A later Publicar edits that same message and pins it again, so a message unpinned by hand is pinned back.
   - If that message no longer exists (deleted by hand), Publicar posts and pins a new one in the same chat. Upkeep then edits the new one.
   - It always sends, whether or not the text changed.
-  - On success it shows the toast "Catálogo publicado".
+  - On success it shows the toast "Catalog published".
 - **Failure**:
-  - A wrong channel, or a bot that can't post or pin there, fails inline with a fixed reason that never repeats what was typed. A 401, 403 or 400 against the channel reads "El bot no puede publicar en el canal", as before; Publicar has no token reason of its own.
-  - A text over Telegram's limit fails inline with "Es demasiado largo para Telegram: acortá aromas u ocultá variedades." Nothing is sent.
+  - A wrong channel, or a bot that can't post or pin there, fails inline with a fixed reason that never repeats what was typed. A 401, 403 or 400 against the channel reads "The bot cannot post in the channel", as before; Publicar has no token reason of its own.
+  - A text over Telegram's limit fails inline with "It is too long for Telegram: shorten aromas or hide varieties." Nothing is sent.
 
 ### Upkeep (automatic sync)
 
@@ -156,13 +156,13 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 ### Status
 
 - **Two states only**:
-  - "Al día";
-  - "Desactualizado", with one fixed reason that carries no data:
-    - "Telegram no respondió": retrying will do;
-    - "El bot no puede publicar en el canal": the bot was removed or isn't an admin, and the seller must fix it in Telegram;
-    - "El mensaje fijado ya no está: publicalo de nuevo": the message was deleted by hand;
-    - "Falta publicarlo con el bot o el canal nuevo": a token or channel change was tested and saved, but not yet published;
-    - "Es demasiado largo para Telegram: acortá aromas u ocultá variedades.": the text exceeds Telegram's limit.
+  - "Up to date";
+  - "Out of date", with one fixed reason that carries no data:
+    - "Telegram did not respond": retrying will do;
+    - "The bot cannot post in the channel": the bot was removed or isn't an admin, and the seller must fix it in Telegram;
+    - "The pinned message is gone: publish it again": the message was deleted by hand;
+    - "It still has to be published with the new bot or channel": a token or channel change was tested and saved, but not yet published;
+    - "It is too long for Telegram: shorten aromas or hide varieties.": the text exceeds Telegram's limit.
 - **"El último fue el dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publicar there.
 - **What it reflects**: the result of the last attempt, or the unpublished token or channel change. There is no pending state: while a sync runs, the previous state stays.
 - **Not affected by Probarlo or Buscar mi chat**: their failures never change the status.
@@ -170,13 +170,13 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 - **Retrying**: a failed sync is retried automatically on the next trigger, or by Publicar. There is no "Reintentar".
 - **Where it shows**:
   - on the catalog screen, next to Publicar (catalog.md);
-  - on Inicio: while the status is "Desactualizado", the fixed line "Tu catálogo en Telegram está desactualizado", which opens the catalog screen. It is a notice, not a figure (results.md);
+  - on Inicio: while the status is "Out of date", the fixed line "Your Telegram catalog is out of date", which opens the catalog screen. It is a notice, not a figure (results.md);
   - never in Integraciones.
 
 ### Nothing qualifies
 
 - The pin, Probarlo and Publicar use: the header, then "Por ahora no tenemos nada para ofrecer.", then the footer. A blank header or footer is left out.
-- This counts as "Al día".
+- This counts as "Up to date".
 - The catalog screen's own empty state and Copiar are unchanged: there is nothing to copy (catalog.md).
 - When a variety qualifies again, upkeep restores the full catalog.
 
@@ -185,7 +185,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 - The app never edits, unpins or deletes the old pinned message again.
 - After the successful test that saves the change, the status reads "Desactualizado · Falta publicarlo con el bot o el canal nuevo".
 - The next Publicar posts and pins a new message, and "El último fue" restarts from it.
-- Changing either one shows, in Integraciones: "El mensaje fijado anterior queda como está; desfijalo vos en Telegram."
+- Changing either one shows, in Integraciones: "The previous pinned message stays as it is; unpin it yourself in Telegram."
 
 ### The text
 
@@ -227,7 +227,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 - **One message per chat (criterion 2)**:
   - one post per channel chat, then edits only: 0 new posts while that message exists;
   - a channel or token change gives exactly one new post, and 0 later calls against the old message;
-  - with the message deleted in the fake adapter, upkeep posts nothing and reports "El mensaje fijado ya no está: publicalo de nuevo"; the next Publicar posts and pins exactly one new message;
+  - with the message deleted in the fake adapter, upkeep posts nothing and reports "The pinned message is gone: publish it again"; the next Publicar posts and pins exactly one new message;
   - every Publicar pins the message it edits.
 - **Text fidelity (criterion 3)**: across catalog.md's reference set plus the empty case, 0 differences:
   - the source text given to the port equals `GET /catalog`'s text, or the empty-catalog message;
@@ -236,29 +236,29 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 - **Too long (criteria 3, 4)**: a text over Telegram's limit is never split or cut, and nothing is sent. Probarlo and Publicar refuse it inline. Upkeep leaves the pin as it was and reports the length reason. The triggering save succeeds. 100% passing.
 - **Resilience (criterion 4)**: with the fake adapter failing:
   - every triggering save, a withdrawal included, succeeds and answers normally;
-  - the status reads "Desactualizado" with the right reason on the catalog screen, and Inicio shows its line, which opens the catalog screen;
+  - the status reads "Out of date" with the right reason on the catalog screen, and Inicio shows its line, which opens the catalog screen;
   - the next successful trigger or Publicar clears it.
 
   100% passing.
 - **Settings changes (criteria 2, 4)**:
   - changing only the own chat keeps upkeep running and the status unchanged;
-  - a tested token or channel change reads "Falta publicarlo con el bot o el canal nuevo", with no "El último fue", until Publicar.
+  - a tested token or channel change reads "It still has to be published with the new bot or channel", with no "El último fue", until Publicar.
 - **Unavailable Publicar**: with no saved channel or no successful Probarlo since the last change, the catalog screen shows Publicar disabled with its reason in words and a link that opens Integraciones.
 - **Integraciones**: a front test shows:
   - the link to the catalog screen, no pin status and no Publicar;
   - empty fields and no "Guardado" line with nothing saved;
   - the "desfijalo vos en Telegram" line after a token or channel change.
 - **Probarlo's reasons (criterion 7)**: 100% passing.
-  - There is one test per cause: 401; 403 (both "can't initiate conversation" and "blocked by the user"); 400 chat not found, which shows "No encontramos tu chat: revisá el número y tocá Iniciar en tu bot."; Telegram down, 429 or no connection; too long; and any other failure.
+  - There is one test per cause: 401; 403 (both "can't initiate conversation" and "blocked by the user"); 400 chat not found, which shows "We could not find your chat: check the number and tap Start in your bot."; Telegram down, 429 or no connection; too long; and any other failure.
   - Each shows its fixed text, repeats nothing typed, keeps the form and saves nothing.
-- **Probarlo never blames the channel (criterion 8)**: across every Probarlo failure, "El bot no puede publicar en el canal" never appears. Publicar and upkeep against the channel still produce it, and their states and Inicio's notice are unchanged. 100% passing.
+- **Probarlo never blames the channel (criterion 8)**: across every Probarlo failure, "The bot cannot post in the channel" never appears. Publicar and upkeep against the channel still produce it, and their states and Inicio's notice are unchanged. 100% passing.
 - **Help line (criterion 9)**: a front test shows the new own-chat help line and the unchanged channel help line.
 - **Buscar mi chat**: 100% passing.
   - Exactly one private chat (with several messages) fills the field and replaces an existing number.
   - Each of these shows its own reason and leaves the field as it was: no messages, more than one private chat, unreadable messages, another failure, a bad token and Telegram down.
   - Groups and channels are never counted.
   - The typed token is used over the saved one.
-  - With no token, the button is disabled with "Cargá el token primero".
+  - With no token, the button is disabled with "Enter the token first".
   - The search saves nothing.
   - A filled field triggers the unsaved-changes confirmation.
   - The answer holds only the number or a refusal code.
@@ -272,7 +272,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   - fills the own chat with Buscar mi chat and enters the channel chat;
   - runs Probarlo successfully;
   - follows Integraciones' link to the catalog screen, sees Publicar enabled and runs it;
-  - sees "Al día" on the catalog screen and no line on Inicio.
+  - sees "Up to date" on the catalog screen and no line on Inicio.
 - **Integraciones looks as designed (criterion 11)**, read from the PR, with no telemetry:
   - before and after captures are attached, with the undo diff that defines "before" when the restyle had already merged; the PR records the script, the single install, the date and the fontsource version;
   - four sides (phone and computer, light and dark), each with a result in `index.json` and in `ae.mjs`'s output: 0 missing;

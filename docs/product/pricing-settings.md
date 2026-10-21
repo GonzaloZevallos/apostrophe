@@ -64,12 +64,12 @@ Success criteria:
 - **Place**: a group of Configuración (navigation.md), after Usuarios and before Integraciones.
 - **Route**: `/settings/prices`, fixed in `scripts/design/screens.json`. There is no other entry point: it is not reached from a variety's page or the price form.
 - **A form**:
-  - "Cerrar", and a confirmation when leaving with unsaved changes; an untouched group closes at once;
-  - two switches, "Precio por cantidad" and "Clientes VIP", each marked on or off by word or shape and `aria-checked`, never by color alone;
-  - the button "Guardá los precios";
-  - on success, the toast "Precios guardados", which carries no data.
+  - "Close", and a confirmation when leaving with unsaved changes; an untouched group closes at once;
+  - two switches, "Bulk price" and "VIP customers", each marked on or off by word or shape and `aria-checked`, never by color alone;
+  - the button "Save the prices";
+  - on success, the toast "Prices saved", which carries no data.
 - **A fixed line** says that past sales keep the price they were recorded with, and that switching a rule off deletes nothing.
-- **A fixed help line under the VIP switch**, shown whether it is on or off: "Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera." There is no count, no list and no warning anywhere else.
+- **A fixed help line under the VIP switch**, shown whether it is on or off: "Each variety needs its VIP price: without it, a VIP customer pays like anyone else." There is no count, no list and no warning anywhere else.
 - **Upkeep**: a save that changes either switch triggers it (pinned-catalog.md), because the catalog's bulk line depends on Precio por cantidad.
 - **Feedback**: a group that is gone, no network and server errors follow accounts.md.
 
@@ -94,7 +94,7 @@ The business export (accounts.md) holds the two switches as stored.
 - **Stored price immutability (criterion 3)**: after any switch change, existing lines' price, rule and total are unchanged.
 - **Screens follow the switches (criterion 1)**: front tests show, for each switch off, no trace of it in the price form, the variety page, the customer form, card and list, the Ventas badge, Nueva venta or the catalog. The recorded badges in a sale's detail remain.
 - **Precios group (criterion 6)**:
-  - front tests cover "Cerrar", the unsaved-changes confirmation, an untouched close, "Guardá los precios", "Precios guardados", both fixed lines, its place and route, and the absence of any other entry point;
+  - front tests cover "Close", the unsaved-changes confirmation, an untouched close, "Save the prices", "Prices saved", both fixed lines, its place and route, and the absence of any other entry point;
   - Precios opens in at most 2 taps from any tab root;
   - the end-to-end Configuración run switches each rule from a phone viewport.
 - **Upkeep**: a save changing either switch triggers upkeep; a save changing neither sends nothing.

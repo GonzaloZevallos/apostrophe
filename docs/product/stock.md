@@ -35,7 +35,7 @@ phone, **so I can** stop keeping it in the spreadsheet's stock tab.
 **When** I run my business from my phone between orders or mid-chat with a customer,
 several times a day, **I want** the app laid out around what I actually do and how often,
 **so I can** get back to the customer instead of hunting through menus. (The navigation
-job, navigation.md: served here by "+ Entrada de stock" and "Sacar del stock" on
+job, navigation.md: served here by "+ Stock entry" and "Take from stock" on
 Variedades, at most 2 taps from any tab root, and a variety's stock on its own page.)
 
 **When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my
@@ -148,7 +148,7 @@ Success criteria:
   count, sales total, average sale, Ventas or customer's history.
 - **Edit**: every field (date, reason, lines, note) with the same validation as when
   recording. Saving is confirmed first. The lots after it are worked out again.
-- **Delete**: a hard delete, confirmed with "Antes de borrar", naming the reason, date
+- **Delete**: a hard delete, confirmed with "Before deleting", naming the reason, date
   and total grams: "¿Borrás la promoción del 03/10? Vuelven 5 g al stock." or
   "¿Borrás el consumo propio del 03/10? Vuelven 5 g al stock.", with "No, dejalo / Sí,
   borralo". Its grams return to stock and land back on lots by date.
@@ -202,7 +202,7 @@ Success criteria:
   3. **Low**: stock > 0 and under the variety's low-stock threshold.
   4. **Ok**: otherwise.
 - **Low-stock threshold**: optional, per variety, above zero, up to two decimals. It is
-  set or turned off on the variety's page, in "Aviso de stock bajo". With none, a variety
+  set or turned off on the variety's page, in "Low stock warning". With none, a variety
   is never low, but it can still be sold out.
 - **Days left**: stock ÷ (grams sold, gifted or withdrawn in the last 30 days, today
   included, ÷ 30), rounded down to whole days. Nothing shows when stock ≤ 0 or when no
@@ -221,36 +221,36 @@ Success criteria:
   - square = agotada, as the inverted chip, not red;
   - filled circle = baja;
   - empty circle = ok.
-- **"Stock y entradas"** on a variety's page: its last 3 movements (entries and
-  withdrawals) and "Ver todas" for all of that variety's movements, newest date first,
+- **"Stock and entries"** on a variety's page: its last 3 movements (entries and
+  withdrawals) and "See all" for all of that variety's movements, newest date first,
   then most recently recorded first.
-  - A withdrawal row shows its date, "Promoción" or "Consumo propio", and that variety's
+  - A withdrawal row shows its date, "Promotion" or "Own use", and that variety's
     grams in it with a minus sign (e.g. "−5 g"): going out is told by word and sign,
     never by color. A withdrawal touching several varieties shows on each one's page.
-- **"Todas las entradas"**, at the foot of Variedades: a detail ("‹ Variedades") with
+- **"All entries"**, at the foot of Variedades: a detail ("‹ Variedades") with
   every entry of the business, with date, variety, origin, grams, total cost and cost per
   gram, newest date first, then most recently recorded first. Each can be edited or
   deleted. It lists entries only, never withdrawals; there is no business-wide list of
   withdrawals.
   - Its empty state: "Sin entradas de stock · Cargá tu stock inicial o una compra".
-- **Nueva entrada** (`EntradaStock`), a form (navigation.md): "Cerrar", and a
+- **Nueva entrada** (`EntradaStock`), a form (navigation.md): "Close", and a
   confirmation when leaving with something typed.
-  - Opened from "+ Entrada de stock" on Variedades (the seller chooses the variety) or
-    from "+ Entrada" on a variety's page (that variety already chosen, and "Stock
+  - Opened from "+ Stock entry" on Variedades (the seller chooses the variety) or
+    from "+ Entry" on a variety's page (that variety already chosen, and "Stock
     inicial" preselected as the origin when the variety has no entries yet).
   - date (filled with today), grams, and variety with "Hoy tiene N g";
   - origin: Compra · Cosecha · Stock inicial · Ajuste;
-  - total cost, with "Obligatorio cuando es una compra";
+  - total cost, with "Required for a purchase";
   - note;
   - the cost per gram before saving ("Te queda en $ 8.500 el gramo") whenever there is a
     cost.
-- **Sacar del stock**, the withdrawal form, a form (navigation.md): "Cerrar", no bar, no
-  "+ Nueva venta", and a confirmation when leaving with something typed. It follows the
+- **Sacar del stock**, the withdrawal form, a form (navigation.md): "Close", no bar, no
+  "+ New sale", and a confirmation when leaving with something typed. It follows the
   phone standard for inputs and targets (#80).
   - Opened from Más (second, after "+ Cargar gasto"), from the secondary "Sacar del
     stock" on Variedades (next to "+ Entrada de stock", phone and computer), with no
-    variety chosen, and from "Sacar del stock" on a variety's page, with that variety
-    already chosen. An archived variety's page offers no "Sacar del stock".
+    variety chosen, and from "Take from stock" on a variety's page, with that variety
+    already chosen. An archived variety's page offers no "Take from stock".
   - reason (Promoción · Consumo propio, required, no default), date (filled with today),
     one or more lines of variety and grams, and note.
   - The variety picker offers unarchived varieties only. Opened with a variety
@@ -264,30 +264,30 @@ Success criteria:
     to it. The seller may keep it (saving succeeds), choose an unarchived variety
     instead, or remove the line.
   - **A variety archived while the form is open** (a partner archived it): saving is
-    refused with `variety.archived`, following accounts.md's "Eso ya no está" rule:
+    refused with `variety.archived`, following accounts.md's "That is gone" rule:
     - the form stays open and nothing typed is cleared, each guilty line's variety
       included, still shown by its name;
-    - "Eso ya no está." shows under each guilty line, and the variety list refreshes;
+    - "That is gone." shows under each guilty line, and the variety list refreshes;
     - the form cannot be saved again while a guilty line still names the archived
       variety: the seller chooses another variety for it or removes the line, which
       clears its message.
 - **A withdrawal's detail**, opened from its row: a detail (navigation.md), with the bar
   or sidebar and a "‹" back to the variety's page it came from (Variedades when there is
-  no history), and no "+ Nueva venta". It shows the date, the reason, every line and the
-  note, with "Editar" and "Borrar", also when a line's variety is archived.
+  no history), and no "+ New sale". It shows the date, the reason, every line and the
+  note, with "Edit" and "Delete", also when a line's variety is archived.
 - **Editing an entry**: saving is confirmed first.
-- **Deleting an entry**: confirmed with "Antes de borrar", naming the date, variety and
+- **Deleting an entry**: confirmed with "Before deleting", naming the date, variety and
   grams.
 - **Pending cost**, wherever a line's cost shows:
   - "Costo pendiente" when none of the line is costed;
   - the costed part plus "y N g sin costo" for a split line;
-  - a gift reads "Regalo".
-- **Toasts**: "Entrada guardada", "Entrada eliminada", "Aviso guardado", "Retiro
+  - a gift reads "Gift".
+- **Toasts**: "Entry saved", "Entry deleted", "Warning saved", "Retiro
   guardado" and "Retiro eliminado". None carries grams or amounts.
 - **Refusals** show inline and keep what was typed.
-- **An entry or withdrawal that is gone** follows accounts.md's "Eso ya no está." rule:
+- **An entry or withdrawal that is gone** follows accounts.md's "That is gone." rule:
   opening it offers "Volver a Variedades"; saving, deleting or confirming on it shows
-  "Eso ya no está. La lista ya está al día."
+  "That is gone. The list is up to date."
 - **Pinned catalog**: recording, editing or deleting an entry or a withdrawal is an
   upkeep trigger (pinned-catalog.md).
 
@@ -322,11 +322,11 @@ Success criteria:
 - **Oversell (criterion 3)**: a sale or a withdrawal beyond stock is recorded. Stock reads
   negative and the status reads sold out.
 - **Status (criterion 4)**: the matrix of nothing moved (no entries), sales without
-  entries (sold out), a withdrawal only (not "sin entradas"), entries netting to 0 (sold
+  entries (sold out), a withdrawal only (not "no entries"), entries netting to 0 (sold
   out), low, ok and no threshold, plus days left counting withdrawn grams and "Sin gramos
   desde" following a withdrawal's date: 100%. No status is told by color alone.
 - **Entry from a variety**: an entry started from a variety's page comes with that
-  variety chosen, and with "Stock inicial" preselected only when it has no entries.
+  variety chosen, and with "Initial stock" preselected only when it has no entries.
 - **Not a sale, not a loss (criterion 9)**: after recording a withdrawal, 0 differences in
   sales total and count, average sale, Ventas, every customer's balance and account,
   Caja, stock shortfall, and every variety's margin and grams sold or gifted.
@@ -348,7 +348,7 @@ Success criteria:
   - editing a withdrawal with a line on a variety archived since shows that variety's
     name as a fixed label and saves while keeping it;
   - a save refused with `variety.archived` keeps the form open with every field, the
-    guilty line's variety and its name included, shows "Eso ya no está." under that
+    guilty line's variety and its name included, shows "That is gone." under that
     line, and keeps save disabled until another variety is chosen or the line is
     removed. No test asserts the guilty line's variety field is emptied.
 - **Isolation (criterion 10)**: every stock and withdrawal route sits in the sweep and
@@ -361,11 +361,11 @@ Success criteria:
   on phone and computer viewports, never more on the computer. Reading stock and costs
   answers in under 300 ms with a few dozen varieties.
 - **Withdrawal screens**: front tests show the form's chrome and its discard
-  confirmation, the detail's chrome, the edit and delete confirmations, "Retiro guardado"
-  and "Retiro eliminado", both "Eso ya no está." forms, history rows told apart by word
-  and sign, and "Todas las entradas" holding no withdrawal.
+  confirmation, the detail's chrome, the edit and delete confirmations, "Withdrawal saved"
+  and "Withdrawal deleted", both "That is gone." forms, history rows told apart by word
+  and sign, and "All entries" holding no withdrawal.
 - **No curl (criteria 6, 7)**: the end-to-end front run records an entry from Variedades
-  and one from a variety's page, edits and deletes one from "Todas las entradas", sets
+  and one from a variety's page, edits and deletes one from "All entries", sets
   and turns off a threshold on a variety's page, records a withdrawal from Más and one
   from a variety's page, and edits and deletes a withdrawal.
 - **Looks as designed**: before and after comparisons from `scripts/design/compare.sh`

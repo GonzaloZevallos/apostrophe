@@ -50,7 +50,7 @@ Success criteria:
   - Cost of goods sold is what the grams of the period's sale lines (gifts included) cost, from their lots as they stand today. It never includes a negative adjustment or a withdrawal.
   - Cash is payments (on-the-spot and later) on their own dates − expenses − purchases on their dates.
 - **Stock shortfall**: the cost of the grams negative adjustments take out in the period, on the adjustment's date, from their lots as they stand today, oldest first, through the same allocation as sale lines. A part beyond every lot is pending, and the figure carries its own "y N g sin costo". It never includes a withdrawal and never enters cost of goods sold.
-- **Promotion cost ("Promoción") and own-use cost ("Consumo propio")**: the cost of the grams the period's withdrawals of that reason take out, on the withdrawal's date, from their lots as they stand today, oldest first, through the same allocation. A part beyond every lot is pending, and each figure carries its own "y N g sin costo", counting only its own reason's pending grams.
+- **Promotion cost ("Promotion") and own-use cost ("Own use")**: the cost of the grams the period's withdrawals of that reason take out, on the withdrawal's date, from their lots as they stand today, oldest first, through the same allocation. A part beyond every lot is pending, and each figure carries its own "y N g sin costo", counting only its own reason's pending grams.
 - **Sales of costed grams**: per sale line, line total × costed grams ÷ line grams, rounded half up to the peso. A fully costed line counts its whole total, a fully pending line $0, a gift $0.
 - **Profit**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
   - When any of its cost is pending, profit is worked out over the costed part, leaving out the sales of pending grams: sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses.
@@ -81,7 +81,7 @@ Success criteria:
   - sales (shipping included), grams sold or gifted, and the average margin;
   - the average margin is the month's total margin over its sales of costed grams. It is marked when any variety carries pending grams (counting sold and gifted grams only), and has no percentage when those sales are $0;
   - "Faltante de stock $ X" when the month has any stock shortfall, with its own pending mark, or only its pending grams when it is fully pending. It is the same figure, read the same way, as the month row's and Inicio's Mes;
-  - "Promoción $ X" and "Consumo propio $ X" when the month has a withdrawal of that reason, each with its own pending mark (or only its pending grams when fully pending), apart from Faltante de stock;
+  - "Promotion $ X" and "Consumo propio $ X" when the month has a withdrawal of that reason, each with its own pending mark (or only its pending grams when fully pending), apart from Faltante de stock;
   - the screen states that the variety table adds up to the month's sales minus shipping;
   - the header carries no Costo de lo vendido total.
 - **A month with no sales or gifts**: totals at $0, no variety rows, and a fixed line saying nothing was sold that month. Its Faltante de stock, Promoción and Consumo propio still show when it has them.
@@ -127,19 +127,19 @@ Success criteria:
 
 ### Since the first record
 
-- Sales, expenses, profit and cash, with the same definitions as the week and month rows. "Faltante de stock $ X", "Promoción $ X" and "Consumo propio $ X" are added when there is any, each with its own pending mark, or only its pending grams when fully pending. No Costo de lo vendido total.
+- Sales, expenses, profit and cash, with the same definitions as the week and month rows. "Faltante de stock $ X", "Promotion $ X" and "Consumo propio $ X" are added when there is any, each with its own pending mark, or only its pending grams when fully pending. No Costo de lo vendido total.
 - Labelled as money moved since the first record, never as money on hand: the app has no opening cash balance.
 
 ### Expenses by category: the chosen month, and since the first record
 
 - Two breakdowns, each listing only the categories with expenses in its window, sorted by name as in Gastos, each with its total.
-- Flower purchases are always their own line in both, $0 included, with "Van aparte, se cargan en Stock". They are never counted inside expenses.
+- Flower purchases are always their own line in both, $0 included, with "Kept apart, added in Stock". They are never counted inside expenses.
 - Withdrawals are never expenses and never appear here.
 - How the two sit together is design's call.
 
 ### On screen (`Analisis`, `AnalisisCompu`)
 
-- **Where**: a tab root (navigation.md). On the phone, the Más entry "Análisis · Variedades, semanas, meses y días"; on a computer, "Análisis" in the sidebar, under the divider.
+- **Where**: a tab root (navigation.md). On the phone, the Más entry "Análisis · Variedades, semanas, meses y días"; on a computer, "Analysis" in the sidebar, under the divider.
 - **Computer**: the `AnalisisCompu` layout.
 - **Week and month rows**: how Costo de lo vendido and Faltante de stock sit on a row (lines or sub-rows), on the phone and on a computer, is design's call. Each figure is in words, and pending and negative are told by word or sign, never by color alone, in both themes.
 - **Charts**: the accent and the tokens only; every bar carries its figure. Best marks, pending marks and negatives are told by word or shape, never by color alone.

@@ -78,7 +78,7 @@ Success criteria:
 5. It feels like a phone app.
    - It sits on the home screen with its own name and icon. On iOS it installs over the home network. On Android it is a home-screen shortcut there, and a full install on the published installation with TLS.
    - It opens in the light theme whatever the phone's setting; dark only when chosen on that device.
-   - It says "Sin conexión" when the network drops.
+   - It says "No connection" when the network drops.
    - No state is told by color alone (blue ↔ amber, never green ↔ red).
    - Installed, it fills the screen and responds like a phone app (criteria 33–36).
    - Every screen at phone widths (below the 900 px computer breakpoint) meets the phone standard, written in CODING_STANDARDS §10 "Phone" and the design README's "En el celular", and checked by `web/e2e/mobile.spec.ts` (criteria 37–41).
@@ -108,7 +108,7 @@ Success criteria:
 Success criteria, the theme:
 
 23. **Light unless chosen on the device**: a device with no stored choice opens in the light theme on every screen, whether the system is set to light or dark. With the system in dark, the page background is `--papel` (#fcfbf8).
-24. **Dark only on request, and it stays**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Only the choice "Oscuro" in Configuración → Apariencia sets it (navigation.md). The device remembers it across closing the app, reloads and logging out, and shows it on every screen of that device, Entrar, the invitation and the reset screens included. Choosing "Claro" returns to light and is remembered the same way.
+24. **Dark only on request, and it stays**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Only the choice "Dark" in Configuración → Apariencia sets it (navigation.md). The device remembers it across closing the app, reloads and logging out, and shows it on every screen of that device, Entrar, the invitation and the reset screens included. Choosing "Light" returns to light and is remembered the same way.
 25. **The themes themselves don't change**: both keep the same tokens and values; only what picks the theme changed. Every rule about state (no state told by color alone, blue ↔ amber) holds in both.
 26. **One rule, written the same everywhere**: the comment at the top of `web/src/styles/tokens.css`, `docs/product/design-system/tokens.css`, the design-system README and this file all state the same rule.
 
@@ -137,12 +137,12 @@ Success criteria, changing and resetting a password:
 Success criteria, the getting-in screens and shared states as redesigned (GH-49):
 
 27. **Getting in is fast.** From the phone, a seller opens an invitation link, or a reset link, and lands on Inicio signed in in under a minute, and logs in from Entrar in a few seconds. No step appears that the design does not draw.
-28. **Every state is told by word and shape, never by color alone**: the brake message, "Esta invitación ya no sirve", "Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.", "Sin conexión", empty, loading, the generic server-error retry and "Eso ya no está.". All copy in Rioplatense Spanish with vos.
+28. **Every state is told by word and shape, never by color alone**: the brake message, "This invitation no longer works", "This link no longer works. Ask whoever sent it for a new one.", "No connection", empty, loading, the generic server-error retry and "That is gone.". All copy in Rioplatense Spanish with vos.
 29. **Phone and computer match the design.** Entrar, NegocioNuevo, Invitacion, the reset screen and Estados match `docs/product/design-system/pantallas/` on both, checked by eye; `scripts/design/compare.sh` runs before and after.
 30. **The look reveals nothing new.**
     - No screen or state says whether an email has a user, which brake fired or how many attempts are left.
     - A dead link never says why.
-    - "Eso ya no está." carries no id, name or date.
+    - "That is gone." carries no id, name or date.
     - No personal data or money reaches the console or browser storage.
 31. **Both themes.** These screens follow the theme rule (criteria 23–25), with no token change.
 32. **No behaviour regresses.** Every accounts, navigation and feedback test passes unchanged.
@@ -150,7 +150,7 @@ Success criteria, the getting-in screens and shared states as redesigned (GH-49)
 Success criteria, the installed shell:
 
 33. **Nothing under the system areas.**
-    - On an installed phone with a notch and a home bar, in portrait, every screen's content is fully visible and tappable: the tab bar, the header, "+ Nueva venta", sheets and toasts included.
+    - On an installed phone with a notch and a home bar, in portrait, every screen's content is fully visible and tappable: the tab bar, the header, "+ New sale", sheets and toasts included.
     - A screen's height follows the visible screen, so nothing jumps or is cut off when the browser's own bars appear or go away.
     - With the keyboard open, the focused field stays in view.
 34. **The status bar is the app's colour.**
@@ -369,7 +369,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - Android gets a home-screen shortcut, since browsers allow a service worker and the install prompt only on a secure origin;
   - the app shows no banner or explanation of the difference.
 - **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
-- **No network**: when a request fails because the network dropped, the open app shows "Sin conexión" on any origin. This does not rely on the service worker.
+- **No network**: when a request fails because the network dropped, the open app shows "No connection" on any origin. This does not rely on the service worker.
 - **Theme**: the app opens in the light theme whatever the phone or computer is set to, unless Oscuro is stored on that device. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Configuración → Apariencia, Claro or Oscuro (navigation.md).
   - The rule is one: no attribute on `<html>` means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session, and the system's light or dark setting picks nothing. `oscuro` is the only recognised value.
   - **The theme choice is remembered per device**:
@@ -384,22 +384,22 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - The manifest's colours and the splash are static and light. The status bar follows the app's chosen theme (`data-tema`), never the system's; on iOS it stays light, because iOS fixes its style at launch.
   - The font is self-hosted.
 - **Language and formats**: every word on screen in English (product-language.md, which supersedes the earlier Spanish rule). Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
-- **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`, the reset screen):
+- **Getting in** (`Go to sign in`, `NegocioNuevo`, `Invitacion`, the reset screen):
   - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). Where the design's wording differs from this file, this file wins and the difference is a defect in the design.
   - **One centred, phone-width layout** on every viewport, the computer's included; there is no computer-only layout for these screens.
   - **Entrar**:
-    - the labels "Email" and "Contraseña" and the button "Entrá";
+    - the labels "Email address" and "Password" and the button "Sign in";
     - a fixed hint under the button that five failed attempts lock the email for 15 minutes, and no count of attempts left;
     - a wrong password and an unknown email show the same refusal; refusals show inline and keep what was typed.
   - Either lock shows the brake message. No copy names the address brake, and both locks look and read the same.
   - A request answered 401 goes to login.
-  - An unknown, used or expired invitation shows "Esta invitación ya no sirve".
+  - An unknown, used or expired invitation shows "This invitation no longer works".
   - Opening `/invitation/{token}` or `/reset/{token}` while signed in logs out first, through the backend, then shows the invitation or the reset screen as if signed out. That includes the user's own business's join link, and a reset link for the same user.
   - **The reset screen** (`/reset/{token}`) reuses `Invitacion`'s layout; it has no design file of its own and is registered in `scripts/design/screens.json` as a signed-out phone screen:
-    - "Elegí tu contraseña nueva", one field "Contraseña nueva" (hidden by default, with a reveal) and the button "Guardar y entrar";
+    - "Choose your new password", one field "New password" (hidden by default, with a reveal) and the button "Save and sign in";
     - a password under 10 characters shows the same refusal as accepting an invitation and keeps what was typed;
     - on success it goes to Inicio, with no toast.
-  - **A dead reset link**: an unknown, used, expired or retired link shows "Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó."
+  - **A dead reset link**: an unknown, used, expired or retired link shows "This link no longer works. Ask whoever sent it for a new one."
     - It shows both when the link is opened and when a submit answers 404.
     - It keeps nothing typed and never says why the link is dead.
     - Its only button goes to Entrar.
@@ -421,7 +421,7 @@ How the app fills a phone's screen and responds to touch once installed (criteri
   - there is no pair of metas with `prefers-color-scheme`: the system setting picks nothing;
   - only Android follows it live; iOS keeps the light `default` strip in both themes.
 - **Insets**: four tokens, `--inset-arriba`, `--inset-abajo`, `--inset-izquierda` and `--inset-derecha`, built from `env(safe-area-inset-*)`.
-  - Top and bottom are used by the bar, the header, the fixed "+ Nueva venta", sheets and toasts.
+  - Top and bottom are used by the bar, the header, the fixed "+ New sale", sheets and toasts.
   - Left and right keep content, the bar, sheets and toasts clear of a side cut-out, so landscape is safe but not designed.
 - **Height**: every height tied to the screen uses `dvh`, `.pantalla`, `.disposicion` and the sheets included.
 - **Gestures and press**:
@@ -429,9 +429,9 @@ How the app fills a phone's screen and responds to touch once installed (criteri
   - `-webkit-tap-highlight-color` transparent; `touch-action: manipulation`;
   - `user-select: none` on buttons, tabs and the bar; text inside lists and fields stays selectable;
   - `.boton*`, rows and bar items get an `:active` state built from tokens, in both themes.
-- **Keyboard**: on iOS and Android, when the keyboard opens, the page and every sheet keep the focused field in view and can scroll, so "Guardar" or "Registrar" is reachable by scrolling.
+- **Keyboard**: on iOS and Android, when the keyboard opens, the page and every sheet keep the focused field in view and can scroll, so "Save" or "Registrar" is reachable by scrolling.
   - A save action pinned above the keyboard is not promised; that is each screen's own decision.
-  - The tab bar and "+ Nueva venta" need not stay above the keyboard, since forms and sheets don't show them (navigation.md).
+  - The tab bar and "+ New sale" need not stay above the keyboard, since forms and sheets don't show them (navigation.md).
 - **Manifest**:
   - `id` `"/"` (never changed once shipped), `scope` `"/"`, `lang` `"en"`, `display` `"standalone"`;
   - `theme_color` and `background_color` light `--papel`, and no `orientation`;
@@ -464,7 +464,7 @@ This file only says where it applies and how it is kept true. It does not restat
   - **Coverage**:
     - every route in `scripts/design/screens.json`;
     - every form and sheet;
-    - the shared `Estados` states: the brake message, both dead-link texts, "Sin conexión", the generic retry, both "Eso ya no está." forms and loading.
+    - the shared `Estados` states: the brake message, both dead-link texts, "No connection", the generic retry, both "That is gone." forms and loading.
 
     A front route missing from `screens.json` fails it.
   - **Fixture**: a 60-character name, and nine-digit figures ("$ 999.999.999", and "−$ 999.999.999" on Ganancia and Caja).
@@ -479,21 +479,21 @@ This file only says where it applies and how it is kept true. It does not restat
 
 ### In Configuración: Negocio, Usuarios, Apariencia, Tu cuenta
 
-These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Cerrar", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Precios, between Usuarios and Integraciones, is pricing-settings.md.)
+These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Close", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Precios, between Usuarios and Integraciones, is pricing-settings.md.)
 
-- **Negocio**: rename the business. Toast "Negocio renombrado"; refusals inline, keeping what was typed.
+- **Negocio**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
 - **Usuarios**:
   - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
-  - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet.
-- **Apariencia**: Claro and Oscuro, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Cerrar" always closes at once.
+  - "Invite a partner": each tap creates one fresh join link, to copy or share with the phone's share sheet.
+- **Apariencia**: Claro and Oscuro, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Close" always closes at once.
 - **Tu cuenta**:
-  - "Cambiar contraseña", above "Cerrar sesión", opens a sheet:
-    - the fields are "Contraseña actual" and "Contraseña nueva";
-    - "Contraseña nueva" is asked once, hidden by default with a reveal, here and on the reset screen;
-    - on success, the toast "Contraseña cambiada · cerramos tus otras sesiones";
-    - a wrong current password reads "La contraseña actual no es esa.". "Contraseña actual" is cleared and "Contraseña nueva" keeps what was typed;
+  - "Change password", above "Sign out", opens a sheet:
+    - the fields are "Current password" and "New password";
+    - "New password" is asked once, hidden by default with a reveal, here and on the reset screen;
+    - on success, the toast "Password changed · we signed out your other sessions";
+    - a wrong current password reads "That is not the current password.". "Current password" is cleared and "New password" keeps what was typed;
     - a password under 10 characters shows the same refusal as accepting an invitation, and a lock shows the login brake message, keeping what was typed;
-  - log out ("Cerrar sesión"), which goes to login.
+  - log out ("Sign out"), which goes to login.
 
 ### The published installation (ADR-0016)
 
@@ -538,25 +538,25 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 
 - **Success toasts** are short, fixed and carry no data, with one deliberate exception.
   - This capability's toasts:
-    - "Negocio renombrado";
-    - "Invitación lista", unless the link is shown on the screen;
-    - "Contraseña cambiada · cerramos tus otras sesiones".
+    - "Business renamed";
+    - "Invitation ready", unless the link is shown on the screen;
+    - "Password changed · we signed out your other sessions".
   - Choosing a theme shows no toast.
-  - The exception is "Cobro guardado · queda debiendo $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Cobro guardado".
-- **No "Deshacer" on success toasts, with one deliberate exception**: "Venta guardada" (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
+  - The exception is "Cobro guardado · queda debiendo $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Payment saved".
+- **No "Undo" on success toasts, with one deliberate exception**: "Sale saved" (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
 - **Loading**: while a screen waits for the server, it shows a loading state whose wording and shape follow the design. It shows no figure, no placeholder amount and no text that could be read as data (criterion 7). At phone widths it also meets the phone standard's loading rule: shaped like the content, `aria-busy`, no false empty state.
 - **Empty states** keep each capability's own fixed wording.
-- **Leaving a form or sheet** with unsaved changes asks before discarding, and an untouched one closes at once (navigation.md). Nueva venta's question is "¿Descartás la venta?" (sales.md).
-- **Refusals** show inline and keep what was typed. The one exception: a wrong current password clears "Contraseña actual".
-- **No network** shows "Sin conexión"; a server error shows a generic retry.
+- **Leaving a form or sheet** with unsaved changes asks before discarding, and an untouched one closes at once (navigation.md). Nueva venta's question is "Discard the sale?" (sales.md).
+- **Refusals** show inline and keep what was typed. The one exception: a wrong current password clears "Current password".
+- **No network** shows "No connection"; a server error shows a generic retry.
 - **A record that is gone** answers 404 whether it was deleted, never existed or belongs to another business (ADR-0004). The app never says who deleted it or that it once existed.
   - **Saving an edit, confirming a delete or undoing** on a record that is gone:
     - the form or dialog closes and what was typed is discarded;
     - the list it came from refreshes;
-    - a fixed notice shows: "Eso ya no está. La lista ya está al día."
-  - The notice is not a success toast. It has no data, no "Deshacer" and no "Reintentar", and it is announced like a toast.
+    - a fixed notice shows: "That is gone. The list is up to date."
+  - The notice is not a success toast. It has no data, no "Undo" and no "Reintentar", and it is announced like a toast.
   - Confirming the delete of a record already gone gives the same notice, not the delete's success toast.
-  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "Eso ya no está." with one button back to its list:
+  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "That is gone." with one button back to its list:
     - "Volver a Variedades" (a variety or a stock entry);
     - "Volver a Clientes";
     - "Volver a Gastos" (the current month);
@@ -573,12 +573,12 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - serving tests prove no path reaches outside `web/dist`;
   - after a full run, browser storage holds only the theme choice, and the console and browser storage hold nothing personal or money;
   - no front URL carries a business id;
-  - a record of another business, opened by id, shows the same "Eso ya no está." as a deleted one.
+  - a record of another business, opened by id, shows the same "That is gone." as a deleted one.
 - **Phone app (criterion 5)**:
   - the manifest passes the browser's installability check, run on `localhost`;
   - installing on a phone is not checked automatically;
   - both themes render from the tokens;
-  - an offline check shows "Sin conexión";
+  - an offline check shows "No connection";
   - no state is told by color alone.
 - **Theme (criteria 23–26)**:
   - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`), nothing stored and no attribute reads the page background as `--papel` (#fcfbf8), Entrar included;
@@ -595,7 +595,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - manifest, fast test: `id: "/"`, `scope: "/"`, `lang: "en"`, `display: "standalone"`, `theme_color` and `background_color` equal to `--papel`, no `orientation`; 192 and 512 icons `any` and a 512 `maskable` present;
   - installability: the manifest still passes the browser's installability check on `localhost` with its new fields;
   - status bar, front test driving `data-tema` directly: `theme-color` is light `--papel` with no attribute, the dark paper token with `oscuro`, light again once the attribute is removed, and stays light with the system emulated dark and no attribute;
-  - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ Nueva venta", sheets and toasts use them; no existing token value changed;
+  - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ New sale", sheets and toasts use them; no existing token value changed;
   - regression: the accounts, navigation and feedback suites pass unchanged; the bar fits at 320 px with text at 130 %; the pressed state uses tokens only, in both themes;
   - by eye, in portrait, on a real iPhone installed over the home network and a real Android phone on the published installation:
     - criterion 33, with Nueva venta, Registrar cobro and the expense form open with the keyboard;
@@ -614,7 +614,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Nothing invented (criterion 7)**:
   - the bar, the sidebar, Más and Configuración show exactly the entries navigation.md lists;
   - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
-  - Inicio shows no notices other than the first-run checklist, "Arrancá por las variedades", the pinned catalog's and the after-import notice.
+  - Inicio shows no notices other than the first-run checklist, "Start with your varieties", the pinned catalog's and the after-import notice.
 - **Password change (criterion 18)**:
   - after a Change, every earlier token of the user answers 401;
   - the acting device's fresh token works, and a partner's token in the same business still works;
@@ -643,13 +643,13 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - sees the dead-link state for a used link.
 - **Getting in, redesigned (criteria 27–32)**:
   - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at Entrar, each landing on Inicio signed in (`web/e2e/passwords.spec.ts`); the duration of the links is not measured by any test;
-  - states: front tests show each fixed text (brake message, both dead-link texts, "Sin conexión", the retry, both "Eso ya no está." forms, loading); shape and color checked by eye in both themes;
+  - states: front tests show each fixed text (brake message, both dead-link texts, "No connection", the retry, both "That is gone." forms, loading); shape and color checked by eye in both themes;
   - loading is not data: a front test shows the loading state holds no digit, currency symbol or placeholder figure;
   - design:
     - `scripts/design/compare.sh` runs before and after for Entrar, NegocioNuevo, Invitacion, `/reset/{token}` and Estados, with the comparisons attached to the PR;
     - a by-eye pass at phone and computer viewports covers the getting-in screens and Estados inside the computer layouts;
     - every design-vs-docs wording difference is listed in the PR;
-  - nothing revealed: the same refusal for a wrong password and an unknown email, no attempt count, no brake detail; dead-link and "Eso ya no está." carry no id, name, date or reason;
+  - nothing revealed: the same refusal for a wrong password and an unknown email, no attempt count, no brake detail; dead-link and "That is gone." carry no id, name, date or reason;
   - registry: `scripts/design/screens.json` holds `/reset/{token}` and `compare.sh` measures it;
   - no regression: the existing suite passes with no test edited to fit the new look.
 - **Nothing survives (criterion 11)**:
