@@ -1,6 +1,6 @@
 /**
  * Step 6, "Categorías de gastos": the owner's list, add, rename and remove. Each of those
- * saves at once and never passes the step; only "Seguir" does (`done`). "Saltar" belongs to
+ * saves at once and never passes the step; only "Continue" does (`done`). "Skip" belongs to
  * the frame and keeps the defaults.
  */
 
@@ -17,7 +17,7 @@ export default function CategoriesStep({ onDirtyChange, onProgress }: StepBodyPr
     <>
       <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} addCollapsed />
       <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass('categories', 'done'))}>
-        {ONBOARDING_TEXT.seguir}
+        {ONBOARDING_TEXT.continue}
       </StepSubmit>
       {notice}
     </>

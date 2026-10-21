@@ -1,7 +1,7 @@
 /**
  * The "Usuarios" group of Configuración (`ConfiguracionUsuarios.dc.html`; `accounts.md`):
  * the business's users by email (sorted the way the backend already answers them), the
- * signed-in one marked "vos", and "Invitá a un socio".
+ * signed-in one marked "you", and "Invitá a un socio".
  *
  * "Invitá a un socio" is `InvitePartner` (shared with the Onboarding's partner step). The group
  * is never dirty: a link is issued by the server the moment it is asked for, so there is
@@ -26,7 +26,7 @@ interface Business {
 }
 
 const LEAVE = {
-  question: SETTINGS_TEXT.descartasLaInvitacion,
+  question: SETTINGS_TEXT.discardTheInvitation,
   detail: COMMON_TEXT.losesWhatYouEntered,
   keepLabel: COMMON_TEXT.noKeepEditing,
   discardLabel: COMMON_TEXT.yesDiscard,
@@ -48,7 +48,7 @@ export default function UsersGroup() {
           {data.users.map((user) => (
             <li key={user.email} className="usuarios__usuario">
               <span>{user.email}</span>
-              {user.email === me.email && <span className="usuarios__vos">{SETTINGS_TEXT.vos}</span>}
+              {user.email === me.email && <span className="usuarios__vos">{SETTINGS_TEXT.you}</span>}
             </li>
           ))}
         </ul>

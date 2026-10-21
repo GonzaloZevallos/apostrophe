@@ -15,7 +15,7 @@ import { COMMON_TEXT } from '../../copy/common'
 export { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
 
 const LEAVE = {
-  question: SETTINGS_TEXT.descartasLaCategoria,
+  question: SETTINGS_TEXT.discardTheCategory,
   detail: COMMON_TEXT.losesWhatYouEntered,
   keepLabel: COMMON_TEXT.noKeepEditing,
   discardLabel: COMMON_TEXT.yesDiscard,

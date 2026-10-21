@@ -158,17 +158,17 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
 
   const email = await signUp(page)
   await page.goto(SETTINGS_APPEARANCE)
-  await expect(page.getByRole('radio', { name: 'Claro' })).toHaveAttribute('aria-checked', 'true')
+  await expect(page.getByRole('radio', { name: 'Light' })).toHaveAttribute('aria-checked', 'true')
 
-  await page.getByRole('radio', { name: 'Oscuro' }).click()
+  await page.getByRole('radio', { name: 'Dark' }).click()
   expect(await themeAttribute(page)).toBe('oscuro')
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
   expect(await page.evaluate(() => localStorage.getItem('tema'))).toBe('oscuro')
-  await expect(page.getByRole('radio', { name: 'Oscuro' })).toHaveAttribute('aria-checked', 'true')
+  await expect(page.getByRole('radio', { name: 'Dark' })).toHaveAttribute('aria-checked', 'true')
 
   await page.reload()
   expect(await themeAttribute(page)).toBe('oscuro')
-  await expect(page.getByRole('radio', { name: 'Oscuro' })).toHaveAttribute('aria-checked', 'true')
+  await expect(page.getByRole('radio', { name: 'Dark' })).toHaveAttribute('aria-checked', 'true')
 
   await logOut(page)
   await page.goto(LOGIN)
@@ -183,7 +183,7 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
   await page.goto(SETTINGS_APPEARANCE)
-  await page.getByRole('radio', { name: 'Claro' }).click()
+  await page.getByRole('radio', { name: 'Light' }).click()
   expect(await themeAttribute(page)).toBeNull()
   expect(await page.evaluate(() => localStorage.getItem('tema'))).toBeNull()
   expect(await htmlBackground(page)).toBe(PAPEL)

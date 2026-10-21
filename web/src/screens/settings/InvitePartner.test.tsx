@@ -86,10 +86,10 @@ test('with its own action the button says that word and still creates the link t
     Promise.resolve(jsonResponse(201, { url: LINK_URL, expires_at: '2026-10-09T00:00:00Z' })),
   )
   vi.stubGlobal('fetch', fetchMock)
-  render(<InvitePartner onLinkCreated={() => undefined} action={{ label: 'Crear el link', variant: 'primary' }} />)
+  render(<InvitePartner onLinkCreated={() => undefined} action={{ label: 'Create the link', variant: 'primary' }} />)
 
   expect(screen.queryByRole('button', { name: 'Invitá a un socio' })).not.toBeInTheDocument()
-  const button = screen.getByRole('button', { name: 'Crear el link' })
+  const button = screen.getByRole('button', { name: 'Create the link' })
   expect(button).toHaveClass('boton')
   expect(button).not.toHaveClass('boton--suave')
   await userEvent.click(button)

@@ -484,13 +484,13 @@ function listoRowsOverBound(
   const ending = rows.filter((row) =>
     (row.steps ?? []).some(
       (step) =>
-        typeof step === "object" && step !== null && "click" in step && step.click === "Saltar el resto",
+        typeof step === "object" && step !== null && "click" in step && step.click === "Skip the rest",
     ),
   );
   return ending.length <= businesses
     ? []
     : [
-        `${ending.length} rows click "Saltar el resto" but the sample has ${businesses} ${businesses === 1 ? "business" : "businesses"} in Onboarding: "Done" ends a business's Onboarding for good, so it is reached once per business (ADR-0036 §7). Rows: ${ending.map((row) => row.screen).join(", ")}`,
+        `${ending.length} rows click "Skip the rest" but the sample has ${businesses} ${businesses === 1 ? "business" : "businesses"} in Onboarding: "Done" ends a business's Onboarding for good, so it is reached once per business (ADR-0036 §7). Rows: ${ending.map((row) => row.screen).join(", ")}`,
       ];
 }
 
@@ -537,7 +537,7 @@ describe("screens.json against the English routes", () => {
   });
 
   test("the Listo bound refuses a row that ends the Onboarding of a business that is already finished, and counts La Huerta plus the sample's extra businesses", () => {
-    const skip = [{ click: "Saltar el resto" }];
+    const skip = [{ click: "Skip the rest" }];
     const rows = [
       { screen: "A", steps: skip },
       { screen: "B", steps: skip },

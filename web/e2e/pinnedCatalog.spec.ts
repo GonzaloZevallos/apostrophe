@@ -52,61 +52,61 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
 
   // The catalog screen has no bot settings; with no bot yet, Publicar is disabled and
   // says where to go. No pin yet, so it shows no status either.
-  await expect(page.getByLabel('Token del bot')).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Publicar' })).toBeDisabled()
-  await expect(page.getByText('Al día')).toHaveCount(0)
-  await expect(page.getByText('Desactualizado')).toHaveCount(0)
-  await page.getByRole('link', { name: 'Integraciones' }).click()
+  await expect(page.getByLabel('Bot token')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Publish' })).toBeDisabled()
+  await expect(page.getByText('Up to date')).toHaveCount(0)
+  await expect(page.getByText('Out of date')).toHaveCount(0)
+  await page.getByRole('link', { name: 'Integrations' }).click()
   await expectPath(page, SETTINGS_INTEGRATIONS)
 
   // Enter the token and the seller's own chat; the channel is still blank, which
-  // Probarlo allows (PRD, "Probarlo": "The channel chat may be blank").
-  await expect(page.getByRole('button', { name: 'Buscar mi chat' })).toBeDisabled()
-  await expect(page.getByText('Cargá el token primero')).toBeVisible()
-  await page.getByLabel('Token del bot').fill(TOKEN)
-  await expect(page.getByRole('button', { name: 'Buscar mi chat' })).toBeEnabled()
+  // Probarlo allows (PRD, "Test it": "The channel chat may be blank").
+  await expect(page.getByRole('button', { name: 'Find my chat' })).toBeDisabled()
+  await expect(page.getByText('Enter the token first')).toBeVisible()
+  await page.getByLabel('Bot token').fill(TOKEN)
+  await expect(page.getByRole('button', { name: 'Find my chat' })).toBeEnabled()
 
   // A chat that never pressed Iniciar: Probarlo says so, in the seller's words, and keeps
   // everything typed.
-  await page.getByLabel('Tu chat').fill('222222')
-  await page.getByRole('button', { name: 'Probarlo' }).click()
+  await page.getByLabel('Your chat').fill('222222')
+  await page.getByRole('button', { name: 'Test it' }).click()
   await expect(page.getByRole('alert')).toHaveText(
     'Open your bot in Telegram and tap Start, then test it again.',
   )
   await expect(page.getByText('The bot cannot post in the channel')).toHaveCount(0)
-  await expect(page.getByLabel('Token del bot')).toHaveValue(TOKEN)
-  await expect(page.getByLabel('Tu chat')).toHaveValue('222222')
+  await expect(page.getByLabel('Bot token')).toHaveValue(TOKEN)
+  await expect(page.getByLabel('Your chat')).toHaveValue('222222')
 
   // Buscar mi chat finds the one person who wrote to the bot and fills the number in,
   // replacing the wrong one; nothing is saved yet.
-  await page.getByRole('button', { name: 'Buscar mi chat' }).click()
-  await expect(page.getByLabel('Tu chat')).toHaveValue(STARTED_CHAT)
+  await page.getByRole('button', { name: 'Find my chat' }).click()
+  await expect(page.getByLabel('Your chat')).toHaveValue(STARTED_CHAT)
   await expect(page.getByRole('alert')).toHaveCount(0)
   await expect(page.getByText('Guardado el')).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Probarlo' }).click()
-  await expect(page.getByText('Prueba enviada')).toBeVisible()
+  await page.getByRole('button', { name: 'Test it' }).click()
+  await expect(page.getByText('Test sent')).toBeVisible()
   await expect(page.getByText('Guardado el')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Publicar' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Publish' })).toHaveCount(0)
 
   // Now the channel chat, tested again.
   // The first toast may still be on screen, so wait for this attempt's own answer.
-  await page.getByLabel('Chat del canal').fill('@la_huerta_canal')
+  await page.getByLabel('Channel chat').fill('@la_huerta_canal')
   const tested = page.waitForResponse(
     (response) => response.url().endsWith('/pinned-catalog/test') && response.ok(),
   )
-  await page.getByRole('button', { name: 'Probarlo' }).click()
+  await page.getByRole('button', { name: 'Test it' }).click()
   await tested
-  await expect(page.getByText('Prueba enviada')).toBeVisible()
+  await expect(page.getByText('Test sent')).toBeVisible()
 
   // Everything is saved, so leaving asks nothing: the link leads to the catalog screen.
-  await page.getByRole('link', { name: 'Ir al catálogo' }).click()
+  await page.getByRole('link', { name: 'Go to the catalog' }).click()
   await expectPath(page, CATALOG)
-  await expect(page.getByRole('button', { name: 'Publicar' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Publish' })).toBeEnabled()
 
-  await page.getByRole('button', { name: 'Publicar' }).click()
-  await expect(page.getByText('Catálogo publicado')).toBeVisible()
-  await expect(page.getByText('Al día')).toBeVisible()
+  await page.getByRole('button', { name: 'Publish' }).click()
+  await expect(page.getByText('Catalog published')).toBeVisible()
+  await expect(page.getByText('Up to date')).toBeVisible()
 
   await page.goto(HOME)
   await expect(page.getByText('Tu catálogo en Telegram está desactualizado')).toHaveCount(0)

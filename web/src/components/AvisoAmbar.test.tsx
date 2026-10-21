@@ -12,10 +12,10 @@ test('with attention the icon sits beside the sentence, hidden, and the sentence
   )
   const notice = screen.getByRole('status')
   expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(notice).toHaveTextContent('Desactualizado')
+  expect(notice).toHaveTextContent('Out of date')
 })
 
-test('without attention there is no icon: "Al día" and the like stay informational', () => {
+test('without attention there is no icon: "Up to date" and the like stay informational', () => {
   render(
     <AvisoAmbar role="status">
       <span>Al día</span>

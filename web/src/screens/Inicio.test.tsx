@@ -593,7 +593,7 @@ test('with /first-run answering last, slot 1 stays empty: Arrancá never flashes
 
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
   release(jsonResponse(200, ONBOARDING_ANSWER))
-  expect(await screen.findByText('Seguí con la configuración')).toBeInTheDocument()
+  expect(await screen.findByText('Go on to the setup')).toBeInTheDocument()
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
 })
 
@@ -602,7 +602,7 @@ test('a business never offered the Onboarding keeps Arrancá and sees no notice'
   renderInicio()
 
   expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
-  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+  expect(screen.queryByText('Go on to the setup')).not.toBeInTheDocument()
 })
 
 test('the finish notice reads 6 de 6 with no Falta line and sends advance only on a tap', async () => {
@@ -621,7 +621,7 @@ test('the Onboarding notice goes once the Onboarding is over', async () => {
   renderInicio()
   await screen.findByText('Vendiste hoy')
 
-  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+  expect(screen.queryByText('Go on to the setup')).not.toBeInTheDocument()
 })
 
 test('tapping the finish notice sends advance, and "Done" opens only from an answer with over: true', async () => {
@@ -654,7 +654,7 @@ test('the resume notice keeps its words and its card: boton-aviso, never a row, 
   expect(notice).toHaveClass('boton-aviso')
   expect(notice).not.toHaveClass('boton--fila')
   expect(notice).not.toHaveAttribute('aria-label')
-  expect(notice.textContent).toContain('Seguí con la configuración')
+  expect(notice.textContent).toContain('Go on to the setup')
   expect(notice.textContent).toContain('1 de 6 pasos')
   expect(notice.textContent).toContain('Falta: stock inicial')
   // Only the title's decorative chevron: no attention icon, and it is hidden from the name.

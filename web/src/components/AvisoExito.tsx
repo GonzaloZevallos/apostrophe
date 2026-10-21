@@ -9,6 +9,15 @@
  */
 
 import type { COMMON_TEXT } from '../copy/common'
+import type { EXPENSES_TEXT } from '../copy/expenses'
+import type { PINNED_CATALOG_TEXT } from '../copy/pinnedCatalog'
+import type {
+  CATALOG_SAVED,
+  PASSWORD_CHANGED_SUCCESS,
+  PRICES_SAVED,
+  RENAME_SUCCESS,
+  SETTINGS_TEXT,
+} from '../copy/settings'
 import type { PRICE_SAVED } from '../copy/varieties'
 
 export type SuccessToast =
@@ -21,23 +30,23 @@ export type SuccessToast =
   | 'Variedad restaurada'
   | typeof PRICE_SAVED
   | 'Precio eliminado'
-  | 'Gasto guardado'
-  | 'Gasto eliminado'
-  | 'Categoría guardada'
-  | 'Categoría eliminada'
-  | 'Negocio renombrado'
-  | 'Contraseña cambiada · cerramos tus otras sesiones'
-  | 'Invitación lista'
+  | (typeof EXPENSES_TEXT)['expenseSaved']
+  | (typeof EXPENSES_TEXT)['expenseDeleted']
+  | (typeof SETTINGS_TEXT)['categorySaved']
+  | (typeof SETTINGS_TEXT)['categoryDeleted']
+  | typeof RENAME_SUCCESS
+  | typeof PASSWORD_CHANGED_SUCCESS
+  | (typeof SETTINGS_TEXT)['invitationReady']
   | 'Cliente asignado'
   | 'Aviso guardado'
-  | 'Catálogo guardado'
-  | 'Precios guardados'
+  | typeof CATALOG_SAVED
+  | typeof PRICES_SAVED
   | 'Catálogo copiado'
   | 'Cobro eliminado'
   | 'Cobro guardado'
   | `Cobro guardado · queda debiendo ${string}`
-  | 'Prueba enviada'
-  | 'Catálogo publicado'
+  | (typeof SETTINGS_TEXT)['testSent']
+  | (typeof PINNED_CATALOG_TEXT)['catalogPublished']
   | 'Retiro guardado'
   | 'Retiro eliminado'
 

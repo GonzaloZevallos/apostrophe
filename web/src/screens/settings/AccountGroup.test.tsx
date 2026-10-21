@@ -1,6 +1,6 @@
 /**
  * `AccountGroup` at the screen seam (plan, "Your account"; `accounts.md`): "Change password"
- * and "Cerrar sesión". The API is faked at `fetch`, never mocked deeper (CODING_STANDARDS §10).
+ * and "Sign out". The API is faked at `fetch`, never mocked deeper (CODING_STANDARDS §10).
  */
 
 import { LOGIN, SETTINGS, SETTINGS_ACCOUNT } from '../../routes'
@@ -80,10 +80,10 @@ test('logging out posts to /auth/logout, clears the query cache and navigates to
     return Promise.resolve(jsonResponse(200, BUSINESS))
   })
   const queryClient = renderAccount(fetchMock)
-  await screen.findByRole('button', { name: 'Cerrar sesión' })
+  await screen.findByRole('button', { name: 'Sign out' })
   queryClient.setQueryData(['something-else'], { stale: true })
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
 
   expect(await screen.findByText('Pantalla de entrada')).toBeInTheDocument()
   expect(calls).toContain('POST /auth/logout')
@@ -190,7 +190,7 @@ test('a dropped network while logging out shows "Sin conexión" and re-enables t
   })
   renderAccount(fetchMock)
 
-  const button = await screen.findByRole('button', { name: 'Cerrar sesión' })
+  const button = await screen.findByRole('button', { name: 'Sign out' })
   await userEvent.click(button)
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
@@ -210,7 +210,7 @@ test('an untouched group closes at once, with no confirmation, and "Close" never
 test('Cambiar contraseña and Cerrar sesión are icon + text, "Close" the icon-only close', async () => {
   renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 
-  for (const name of ['Change password', 'Cerrar sesión']) {
+  for (const name of ['Change password', 'Sign out']) {
     const button = await screen.findByRole('button', { name })
     expect(button).toHaveTextContent(name)
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')

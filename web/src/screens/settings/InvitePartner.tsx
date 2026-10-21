@@ -28,7 +28,7 @@ interface Invite {
 }
 
 /** The button that creates a link: its word and weight. The Onboarding's step 5 passes its own
- * ("Crear el link", primary); with none, Configuración → Usuarios keeps today's. */
+ * ("Create the link", primary); with none, Configuración → Usuarios keeps today's. */
 export interface InviteAction {
   label: string
   variant: 'primary' | 'secondary'

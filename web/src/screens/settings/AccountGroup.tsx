@@ -1,6 +1,6 @@
 /**
  * The "Tu cuenta" group of Configuración (`ConfiguracionCuenta.dc.html`; `accounts.md`):
- * "Cambiar contraseña" (the unchanged `CambiarContrasena` sheet) above "Cerrar sesión".
+ * "Cambiar contraseña" (the unchanged `CambiarContrasena` sheet) above "Sign out".
  *
  * Logging out reuses `session.logOut`, the one place every session boundary clears the query
  * cache before navigating, and calls `disarm()` right before that navigation. It does not
@@ -21,7 +21,7 @@ import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
 
 const LEAVE = {
-  question: SETTINGS_TEXT.descartasLaContrasenaNueva,
+  question: SETTINGS_TEXT.discardTheNewPassword,
   detail: COMMON_TEXT.losesWhatYouEntered,
   keepLabel: COMMON_TEXT.noKeepEditing,
   discardLabel: COMMON_TEXT.yesDiscard,
@@ -66,7 +66,7 @@ export default function AccountGroup() {
             {COMMON_TEXT.changePassword}
           </Boton>
           <Boton variant="secondary" icon="salirSesion" onClick={() => void onLogOut(disarm)} disabled={loggingOut}>
-            {SETTINGS_TEXT.cerrarSesion}
+            {SETTINGS_TEXT.signOut}
           </Boton>
           {logoutOffline && <SinConexion />}
           {changingPassword && (

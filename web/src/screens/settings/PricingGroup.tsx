@@ -2,7 +2,7 @@
  * "Precios" (`ConfiguracionPrecios.dc.html`, `ConfiguracionPreciosCompu.dc.html`;
  * `pricing-settings.md`): the business's two pricing switches, Precio por cantidad and
  * Clientes VIP. A form like the other business-wide groups: "Cerrar", the unsaved-changes
- * question, "Guardá los precios" and the toast "Precios guardados" (no data in it).
+ * question, "Save the prices" and the toast "Prices saved" (no data in it).
  *
  * Two fixed lines: one says that past sales keep their price and that switching off deletes
  * nothing, the other sits under the VIP switch, on or off, and says each variety needs its
@@ -37,12 +37,12 @@ import { COMMON_TEXT } from '../../copy/common'
 const TITLE = COMMON_TEXT.prices
 
 export const PAST_SALES_LINE =
-  SETTINGS_TEXT.lasVentasYaHechas
+  SETTINGS_TEXT.pastSalesKeepTheirPrice
 export const VIP_HELP_LINE =
-  SETTINGS_TEXT.cadaVariedadNecesitaSu
+  SETTINGS_TEXT.eachVarietyNeedsItsVipPrice
 
 const LEAVE = {
-  question: SETTINGS_TEXT.descartasLosPrecios,
+  question: SETTINGS_TEXT.discardThePrices,
   detail: COMMON_TEXT.losesWhatYouEntered,
   keepLabel: COMMON_TEXT.noKeepEditing,
   discardLabel: COMMON_TEXT.yesDiscard,
@@ -124,7 +124,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
           }}
         />
         <OpcionInterruptor
-          label={SETTINGS_TEXT.clientesVip}
+          label={SETTINGS_TEXT.vipCustomers}
           checked={vip}
           onChange={(next) => {
             setVip(next)
@@ -140,7 +140,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          {SETTINGS_TEXT.guardaLosPrecios}
+          {SETTINGS_TEXT.saveThePrices}
         </Boton>
       </form>
     </SettingsGroup>

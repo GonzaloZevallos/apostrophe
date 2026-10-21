@@ -6,9 +6,9 @@
  * - "Cerrar" and a save leave through `useBackOr(EXPENSES)`: by history to whichever screen
  *   opened it when that entry is known to be in-app, else to Gastos on the current month,
  *   replacing the form's entry.
- * - A save refreshes the expenses, arms "Gasto guardado" to show on the screen it returns
+ * - A save refreshes the expenses, arms "Expense saved" to show on the screen it returns
  *   to (`useFlash().armAfterLeaving`), calls `disarm()`, then leaves.
- * - Leaving with something typed asks first ("¿Descartás el gasto?"), through the one
+ * - Leaving with something typed asks first ("Discard the expense?"), through the one
  *   leave guard, so "Cerrar", the browser's Back and the swipe all ask the same question.
  */
 
@@ -47,7 +47,7 @@ export default function ExpenseNewRoute() {
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question={EXPENSES_TEXT.descartasElGasto}
+          question={EXPENSES_TEXT.discardTheExpense}
           detail={COMMON_TEXT.losesWhatYouEntered}
           keepLabel={COMMON_TEXT.noKeepEntering}
           discardLabel={COMMON_TEXT.yesDiscard}

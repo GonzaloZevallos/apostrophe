@@ -1,5 +1,5 @@
 /**
- * Inicio's "Seguí con la configuración" (`Inicio.dc.html`, results.md): the count in words
+ * Inicio's "Go on to the setup" (`Inicio.dc.html`, results.md): the count in words
  * ("2 de 6 pasos"), its shape, and "Falta: <step>" naming the resume step. It cannot be
  * dismissed. A tap opens the resume step; with every step done or passed (`finish`) there
  * is no "Falta" line and a tap sends `advance`, then follows its answer ("Listo" only after
@@ -23,7 +23,7 @@ import { STEP_COUNT, stepInfo } from './steps'
 import { HOME } from '../../routes'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
-export const NOTICE_TITLE = ONBOARDING_TEXT.seguiConLaConfiguracion
+export const NOTICE_TITLE = ONBOARDING_TEXT.goOnToTheSetup
 
 export default function OnboardingNotice({ progress }: { progress: OnboardingProgress }) {
   const navigate = useNavigate()
@@ -38,10 +38,10 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
         <span className="aviso-onboarding__texto">{NOTICE_TITLE}</span>
         <Icono nombre="chevron" />
       </span>
-      <span className="aviso-onboarding__conteo">{ONBOARDING_TEXT.n0De1Pasos(progress.count, STEP_COUNT)}</span>
+      <span className="aviso-onboarding__conteo">{ONBOARDING_TEXT.stepsCount(progress.count, STEP_COUNT)}</span>
       <StepIndicator steps={progress.steps} current={current} />
       {current !== null && (
-        <span className="aviso-onboarding__falta">{ONBOARDING_TEXT.falta0(stepInfo(current).shortName)}</span>
+        <span className="aviso-onboarding__falta">{ONBOARDING_TEXT.missing(stepInfo(current).shortName)}</span>
       )}
     </>
   )

@@ -10,7 +10,7 @@ import StepSubmit from './StepSubmit'
 
 test('the button is a submit inside a form, named by its word', () => {
   render(<StepSubmit onSubmit={() => {}}>Seguir</StepSubmit>)
-  const button = screen.getByRole('button', { name: 'Seguir' })
+  const button = screen.getByRole('button', { name: 'Continue' })
   expect(button).toHaveAttribute('type', 'submit')
   expect(button.closest('form')).not.toBeNull()
 })
@@ -18,7 +18,7 @@ test('the button is a submit inside a form, named by its word', () => {
 test('one click calls onSubmit exactly once', async () => {
   const onSubmit = vi.fn()
   render(<StepSubmit onSubmit={onSubmit}>Seguir</StepSubmit>)
-  await userEvent.click(screen.getByRole('button', { name: 'Seguir' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expect(onSubmit).toHaveBeenCalledTimes(1)
 })
 
@@ -29,7 +29,7 @@ test('disabled blocks the call', async () => {
       Seguir
     </StepSubmit>,
   )
-  const button = screen.getByRole('button', { name: 'Seguir' })
+  const button = screen.getByRole('button', { name: 'Continue' })
   expect(button).toBeDisabled()
   await userEvent.click(button)
   expect(onSubmit).not.toHaveBeenCalled()
@@ -38,14 +38,14 @@ test('disabled blocks the call', async () => {
 test('focusing the button and pressing Enter submits', async () => {
   const onSubmit = vi.fn()
   render(<StepSubmit onSubmit={onSubmit}>Dejar así</StepSubmit>)
-  screen.getByRole('button', { name: 'Dejar así' }).focus()
+  screen.getByRole('button', { name: 'Leave as is' }).focus()
   await userEvent.keyboard('{Enter}')
   expect(onSubmit).toHaveBeenCalledTimes(1)
 })
 
 test('submitting does not navigate: the default of the form is prevented', () => {
   render(<StepSubmit onSubmit={() => {}}>Seguir</StepSubmit>)
-  const form = screen.getByRole('button', { name: 'Seguir' }).closest('form')
+  const form = screen.getByRole('button', { name: 'Continue' }).closest('form')
   const event = new Event('submit', { bubbles: true, cancelable: true })
   form?.dispatchEvent(event)
   expect(event.defaultPrevented).toBe(true)
@@ -57,5 +57,5 @@ test('the secondary variant is still a named submit', () => {
       Dejar así
     </StepSubmit>,
   )
-  expect(screen.getByRole('button', { name: 'Dejar así' })).toHaveAttribute('type', 'submit')
+  expect(screen.getByRole('button', { name: 'Leave as is' })).toHaveAttribute('type', 'submit')
 })

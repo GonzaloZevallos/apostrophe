@@ -56,12 +56,12 @@ afterEach(() => {
 test('a successful Probarlo calls onSaved', async () => {
   const { onSaved } = renderForm()
 
-  await userEvent.type(screen.getByLabelText('Token del bot'), '123:secret')
-  await userEvent.type(screen.getByLabelText('Tu chat'), '555')
-  await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await userEvent.type(screen.getByLabelText('Bot token'), '123:secret')
+  await userEvent.type(screen.getByLabelText('Your chat'), '555')
+  await userEvent.click(screen.getByRole('button', { name: 'Test it' }))
 
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
-  expect(await screen.findByText('Prueba enviada')).toBeInTheDocument()
+  expect(await screen.findByText('Test sent')).toBeInTheDocument()
 })
 
 test('a failed Probarlo shows its reason and does not call onSaved', async () => {
@@ -69,9 +69,9 @@ test('a failed Probarlo shows its reason and does not call onSaved', async () =>
     jsonResponse(422, { detail: 'refused', code: 'pinned_catalog.telegram_unreachable' }),
   )
 
-  await userEvent.type(screen.getByLabelText('Token del bot'), '123:secret')
-  await userEvent.type(screen.getByLabelText('Tu chat'), '555')
-  await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await userEvent.type(screen.getByLabelText('Bot token'), '123:secret')
+  await userEvent.type(screen.getByLabelText('Your chat'), '555')
+  await userEvent.click(screen.getByRole('button', { name: 'Test it' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Telegram did not respond')
   expect(onSaved).not.toHaveBeenCalled()
@@ -80,17 +80,17 @@ test('a failed Probarlo shows its reason and does not call onSaved', async () =>
 test('Buscar mi chat marks the form dirty', async () => {
   // A saved token enables the lookup with nothing typed: the looked-up chat is the only change.
   const { onDirtyChange } = renderForm(undefined, { ...EMPTY, token_saved_on: '2026-08-12' })
-  expect(screen.getByLabelText('Tu chat')).toHaveValue('')
+  expect(screen.getByLabelText('Your chat')).toHaveValue('')
   expect(onDirtyChange).toHaveBeenLastCalledWith(false)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Find my chat' }))
 
-  await waitFor(() => expect(screen.getByLabelText('Tu chat')).toHaveValue('777'))
+  await waitFor(() => expect(screen.getByLabelText('Your chat')).toHaveValue('777'))
   expect(onDirtyChange).toHaveBeenLastCalledWith(true)
 })
 
 test('the catalog link is the host\'s to show', () => {
   renderForm()
 
-  expect(screen.queryByRole('link', { name: 'Ir al catálogo' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Go to the catalog' })).not.toBeInTheDocument()
 })

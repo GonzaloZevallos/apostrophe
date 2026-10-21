@@ -19,7 +19,7 @@ const GROUPS = [
   ['Business', SETTINGS_BUSINESS],
   ['Users', SETTINGS_USERS],
   ['Prices', SETTINGS_PRICES],
-  ['Integraciones', SETTINGS_INTEGRATIONS],
+  ['Integrations', SETTINGS_INTEGRATIONS],
   ['Catalog message', SETTINGS_CATALOG_MESSAGE],
   ['Expense categories', EXPENSE_CATEGORIES],
   ['Appearance', SETTINGS_APPEARANCE],

@@ -67,7 +67,7 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
   await sheet.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
   await sheet.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
+  await expect(page.getByText('Password changed · we signed out your other sessions')).toBeVisible()
 
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
   // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather

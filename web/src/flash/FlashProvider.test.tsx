@@ -26,14 +26,14 @@ function Origin() {
       <h1>Origen</h1>
       <button
         onClick={() => {
-          flash.armAfterLeaving('Gasto guardado')
+          flash.armAfterLeaving('Expense saved')
           void navigate(-1)
         }}
       >
         guardar y volver
       </button>
-      <button onClick={() => flash.armAfterLeaving('Gasto guardado')}>armar y quedarse</button>
-      <button onClick={() => flash.showNow('Gasto eliminado')}>mostrar ya</button>
+      <button onClick={() => flash.armAfterLeaving('Expense saved')}>armar y quedarse</button>
+      <button onClick={() => flash.showNow('Expense deleted')}>mostrar ya</button>
     </main>
   )
 }
@@ -84,7 +84,7 @@ test('a toast armed before navigate(-1) shows on the destination only, and not a
 
   expect(screen.getByRole('heading', { name: 'Destino' })).toBeInTheDocument()
   expect(screen.getAllByRole('status')).toHaveLength(1)
-  expect(screen.getByRole('status')).toHaveTextContent('Gasto guardado')
+  expect(screen.getByRole('status')).toHaveTextContent('Expense saved')
 
   await user.click(screen.getByRole('link', { name: 'ir a otra' }))
   expect(screen.queryByRole('status')).not.toBeInTheDocument()
@@ -109,7 +109,7 @@ test('showNow shows in place and the one timer dismisses it', async () => {
   await user.click(screen.getByRole('link', { name: 'ir al origen' }))
 
   await user.click(screen.getByRole('button', { name: 'mostrar ya' }))
-  expect(screen.getByRole('status')).toHaveTextContent('Gasto eliminado')
+  expect(screen.getByRole('status')).toHaveTextContent('Expense deleted')
 
   act(() => {
     vi.advanceTimersByTime(2500)
