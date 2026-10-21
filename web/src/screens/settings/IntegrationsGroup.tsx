@@ -41,10 +41,10 @@ const TEST_SENT_TOAST: SuccessToast = SETTINGS_TEXT.pruebaEnviada
 const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 
 const LEAVE: LeaveWording = {
-  question: COMMON_TEXT.descartasElCambio,
-  detail: COMMON_TEXT.sePierdeLoQue,
-  keepLabel: COMMON_TEXT.noSeguiEditando,
-  discardLabel: COMMON_TEXT.siDescartalo,
+  question: COMMON_TEXT.discardTheChange,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export interface PinnedCatalog {
@@ -225,7 +225,7 @@ export function IntegrationsForm({
               </span>
             </span>
             <Boton variant="link" onClick={() => setTokenChanging(true)}>
-              {COMMON_TEXT.cambiar}
+              {COMMON_TEXT.change}
             </Boton>
           </div>
         )}

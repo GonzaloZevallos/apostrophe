@@ -23,7 +23,7 @@ export default function VarietyPricesSection({
   return (
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
-        <h2 className="seccion-variedad__titulo">{COMMON_TEXT.precios}</h2>
+        <h2 className="seccion-variedad__titulo">{COMMON_TEXT.prices}</h2>
         <BotonLink variant="link" to={pathTo(VARIETY_PRICES, { id: varietyId })}>{VARIETIES_TEXT.verTodas}</BotonLink>
       </div>
       <PriceRows varietyId={varietyId} history={history} currentPriceId={currentPriceId} limit={3} readOnly={readOnly} />

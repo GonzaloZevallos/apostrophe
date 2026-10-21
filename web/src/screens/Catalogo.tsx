@@ -116,7 +116,7 @@ export default function Catalogo() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">{COMMON_TEXT.catalogo}</h1>
+        <h1 className="encabezado__titulo">{COMMON_TEXT.catalog}</h1>
 
         {toast !== null && <AvisoExito texto={toast} />}
 
@@ -153,7 +153,7 @@ export default function Catalogo() {
                   disabled={!settled || sharing}
                   onClick={() => void onShare(catalog.text as string)}
                 >
-                  {COMMON_TEXT.compartir}
+                  {COMMON_TEXT.share}
                 </Boton>
               )}
               <Boton
@@ -162,7 +162,7 @@ export default function Catalogo() {
                 disabled={!settled || copying}
                 onClick={() => void onCopy(catalog.text as string)}
               >
-                {COMMON_TEXT.copiar}
+                {COMMON_TEXT.copy}
               </Boton>
             </div>
             {shareFailed && (

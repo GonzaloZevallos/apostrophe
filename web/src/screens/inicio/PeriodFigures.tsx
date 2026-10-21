@@ -72,8 +72,8 @@ function listFigures(period: PanelPeriod): ListFigure[] {
       pending: period.pending_cost,
     },
     ...costLines,
-    { key: 'expenses', label: COMMON_TEXT.gastos, value: formatMoney(period.expenses), pending: false },
-    { key: 'purchases', label: COMMON_TEXT.comprasDeFlores, value: formatMoney(period.purchases), pending: false },
+    { key: 'expenses', label: COMMON_TEXT.expenses, value: formatMoney(period.expenses), pending: false },
+    { key: 'purchases', label: COMMON_TEXT.flowerPurchases, value: formatMoney(period.purchases), pending: false },
   ]
 }
 
@@ -128,12 +128,12 @@ export function PeriodFigures({
 
         <div className="panel-resultados">
           <ResultCell
-            label={COMMON_TEXT.ganancia}
+            label={COMMON_TEXT.profit}
             value={formatSignedMoney(period.profit)}
             accent
             pending={period.profit_pending}
           />
-          <ResultCell label={COMMON_TEXT.caja} value={formatSignedMoney(period.cash)} accent={false} pending={false} />
+          <ResultCell label={COMMON_TEXT.cash} value={formatSignedMoney(period.cash)} accent={false} pending={false} />
         </div>
       </div>
     </div>

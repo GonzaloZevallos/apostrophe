@@ -5,7 +5,7 @@ import Loading, { LoadingAnuncio } from './Loading'
 test('is a progressbar named Cargando, busy, with no value', () => {
   render(<Loading />)
 
-  const bar = screen.getByRole('progressbar', { name: 'Cargando' })
+  const bar = screen.getByRole('progressbar', { name: 'Loading' })
   expect(bar).toHaveAttribute('aria-busy', 'true')
   expect(bar).not.toHaveAttribute('aria-valuenow')
 })
@@ -48,7 +48,7 @@ test('LoadingAnuncio is exactly one progressbar named Cargando, with no visible 
   const { container } = render(<LoadingAnuncio />)
 
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
-  expect(screen.getByRole('progressbar', { name: 'Cargando' })).toHaveAttribute('aria-busy', 'true')
+  expect(screen.getByRole('progressbar', { name: 'Loading' })).toHaveAttribute('aria-busy', 'true')
   expect(container.textContent).toBe('')
   expect(container.querySelector('.cargando__barra')).toBeNull()
 })

@@ -189,7 +189,7 @@ function MonthNav({
       <button
         type="button"
         className="gastos__mes-boton"
-        aria-label={COMMON_TEXT.mesAnterior}
+        aria-label={COMMON_TEXT.previousMonth}
         disabled={month.previous === null}
         onClick={() => {
           if (month.previous !== null) onMonth(month.previous)
@@ -201,7 +201,7 @@ function MonthNav({
       <button
         type="button"
         className="gastos__mes-boton"
-        aria-label={COMMON_TEXT.mesSiguiente}
+        aria-label={COMMON_TEXT.nextMonth}
         disabled={month.next === null}
         onClick={() => {
           if (month.next !== null) onMonth(month.next)
@@ -231,7 +231,7 @@ function ExpenseBreakdownView({
       ))}
       <div className="gastos__categoria-cabecera">
         <span className="gastos__categoria-nombre">
-          {COMMON_TEXT.comprasDeFlores}
+          {COMMON_TEXT.flowerPurchases}
           <span className="pie"> {PURCHASES_NOTE}</span>
         </span>
         <span className="gastos__categoria-subtotal">{formatMoney(breakdown.purchases)}</span>
@@ -303,7 +303,7 @@ function AnalisisContenido({
                       {variety.share_percent !== null && (
                         <span>{variety.share_percent}{ANALYSIS_TEXT.delMes}</span>
                       )}
-                      <span>{formatGrams(variety.grams_sold)}{COMMON_TEXT.vendidos}</span>
+                      <span>{formatGrams(variety.grams_sold)}{COMMON_TEXT.soldSuffix}</span>
                       <span>{formatGrams(variety.grams_gifted)}{ANALYSIS_TEXT.regalados}</span>
                       <span>
                         {ANALYSIS_TEXT.costo}{formatMoney(variety.cost.costed)}
@@ -328,10 +328,10 @@ function AnalisisContenido({
                 <table className="analisis__tabla">
                   <thead>
                     <tr>
-                      <th>{COMMON_TEXT.variedad}</th>
-                      <th className="analisis__num">{COMMON_TEXT.ventas}</th>
+                      <th>{COMMON_TEXT.variety}</th>
+                      <th className="analisis__num">{COMMON_TEXT.sales}</th>
                       <th className="analisis__num">{ANALYSIS_TEXT.parte}</th>
-                      <th className="analisis__num">{COMMON_TEXT.gramos}</th>
+                      <th className="analisis__num">{COMMON_TEXT.grams}</th>
                       <th className="analisis__num">{ANALYSIS_TEXT.gramosRegalo}</th>
                       <th className="analisis__num">{ANALYSIS_TEXT.costLabel}</th>
                       <th className="analisis__num">{ANALYSIS_TEXT.margen2}</th>
@@ -396,12 +396,12 @@ function AnalisisContenido({
             <table className="analisis__tabla">
               <thead>
                 <tr>
-                  <th>{COMMON_TEXT.semana}</th>
-                  <th className="analisis__num">{COMMON_TEXT.ventas}</th>
-                  <th className="analisis__num">{COMMON_TEXT.gramos}</th>
-                  <th className="analisis__num">{COMMON_TEXT.gastos}</th>
-                  <th className="analisis__num">{COMMON_TEXT.ganancia}</th>
-                  <th className="analisis__num">{COMMON_TEXT.caja}</th>
+                  <th>{COMMON_TEXT.week}</th>
+                  <th className="analisis__num">{COMMON_TEXT.sales}</th>
+                  <th className="analisis__num">{COMMON_TEXT.grams}</th>
+                  <th className="analisis__num">{COMMON_TEXT.expenses}</th>
+                  <th className="analisis__num">{COMMON_TEXT.profit}</th>
+                  <th className="analisis__num">{COMMON_TEXT.cash}</th>
                 </tr>
               </thead>
               <tbody>
@@ -459,12 +459,12 @@ function AnalisisContenido({
             <table className="analisis__tabla">
               <thead>
                 <tr>
-                  <th>{COMMON_TEXT.mes}</th>
-                  <th className="analisis__num">{COMMON_TEXT.ventas}</th>
-                  <th className="analisis__num">{COMMON_TEXT.gramos}</th>
-                  <th className="analisis__num">{COMMON_TEXT.gastos}</th>
-                  <th className="analisis__num">{COMMON_TEXT.ganancia}</th>
-                  <th className="analisis__num">{COMMON_TEXT.caja}</th>
+                  <th>{COMMON_TEXT.month}</th>
+                  <th className="analisis__num">{COMMON_TEXT.sales}</th>
+                  <th className="analisis__num">{COMMON_TEXT.grams}</th>
+                  <th className="analisis__num">{COMMON_TEXT.expenses}</th>
+                  <th className="analisis__num">{COMMON_TEXT.profit}</th>
+                  <th className="analisis__num">{COMMON_TEXT.cash}</th>
                 </tr>
               </thead>
               <tbody>
@@ -549,7 +549,7 @@ export default function Analisis() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">{COMMON_TEXT.analisis}</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
         </div>
 
         {query.isError && query.error instanceof NetworkError && <SinConexion />}

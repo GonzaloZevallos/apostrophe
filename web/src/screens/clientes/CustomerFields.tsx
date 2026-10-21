@@ -56,7 +56,7 @@ export default function CustomerFields({
       </div>
       <div className="campo">
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.nombre}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             className="campo__input"
             type="text"

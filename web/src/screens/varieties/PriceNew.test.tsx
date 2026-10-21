@@ -1,7 +1,7 @@
 /**
  * `PriceNew` (`PrecioNuevo`) at the screen seam: the price form on its own route, through
  * the real data router with `fetch` faked. A refusal shows under the field it is about and
- * keeps what was typed; "Cerrar" and a save go back by history, else to the variety's page;
+ * keeps what was typed; "Close" and a save go back by history, else to the variety's page;
  * leaving with something typed asks first.
  */
 
@@ -17,10 +17,10 @@ import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 const VARIETY_PATH = pathTo(VARIETY, { id: 1 })
 const NEW_PATH = pathTo(VARIETY_PRICE_NEW, { id: 1 })
 
-/** Opens the form the way the seller does: from the variety's page, by "Nuevo precio". */
+/** Opens the form the way the seller does: from the variety's page, by "New price". */
 async function renderOpened(fetchImpl: FetchImpl) {
   const rendered = renderVarieties([VARIETY_PATH], fetchImpl)
-  await userEvent.click(await screen.findByRole('link', { name: 'Nuevo precio' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'New price' }))
   return rendered
 }
 
@@ -41,7 +41,7 @@ test('the date starts as today and a save posts the amounts, goes back and toast
   const { router, fetchMock } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
   )
 
-  expect(await screen.findByRole('button', { name: 'Hoy 02/10' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Today 02/10' })).toBeInTheDocument()
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
@@ -59,7 +59,7 @@ test('a save sends the bulk tier when one is typed', async () => {
   )
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-  await user.type(screen.getByLabelText(/^Precio por cantidad/), '11000')
+  await user.type(screen.getByLabelText(/^Bulk price/), '11000')
   await user.type(screen.getByLabelText(/^Mínimo en gramos/), '10')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
@@ -97,7 +97,7 @@ test('a repeated date is refused under "Rige desde" and keeps what was typed', a
 
   const alert = await screen.findByText('Ya cargaste un precio con esa fecha')
   expect(alert.closest('.campo')).toHaveTextContent('Rige desde')
-  expect(alert.closest('.campo')).toContainElement(screen.getByRole('button', { name: 'Hoy 02/10' }))
+  expect(alert.closest('.campo')).toContainElement(screen.getByRole('button', { name: 'Today 02/10' }))
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
   expect(router.state.location.pathname).toBe(NEW_PATH)
 })
@@ -143,17 +143,17 @@ test('an untouched form closes at once, back to the page that opened it', async 
   const user = userEvent.setup()
   const { router } = await renderOpened(api())
 
-  await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await user.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETY_PATH)
 })
 
-test('with no history, "Cerrar" goes to the variety\'s page', async () => {
+test('with no history, "Close" goes to the variety\'s page', async () => {
   const user = userEvent.setup()
   const { router } = renderVarieties([NEW_PATH], api())
 
-  await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await user.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETY_PATH)
@@ -164,29 +164,29 @@ test('closing with something typed asks first; staying keeps it, discarding save
   const { router, fetchMock } = await renderOpened(api())
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
   expect(await screen.findByText('¿Descartás el precio?')).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  await user.click(screen.getByRole('button', { name: 'No, keep entering' }))
 
   expect(screen.queryByText('¿Descartás el precio?')).not.toBeInTheDocument()
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
   expect(router.state.location.pathname).toBe(NEW_PATH)
 
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
-  await user.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
+  await user.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
   expect(writes(fetchMock)).toEqual([])
 })
 
-test('a variety that is gone says "Eso ya no está." and goes back to Variedades', async () => {
+test('a variety that is gone says "That is gone." and goes back to Variedades', async () => {
   renderVarieties(
     [NEW_PATH],
     api({ 'GET /varieties/1': () => jsonResponse(404, { code: 'variety.not_found' }) }),
   )
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
+  expect(await screen.findByText('That is gone.')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
 })
 
 test('a variety that vanishes while saving shows the gone screen', async () => {
@@ -197,13 +197,13 @@ test('a variety that vanishes while saving shows the gone screen', async () => {
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone.')).toBeInTheDocument()
 })
 
 test('the form keeps the icon and text rule, its help lines within their limits', async () => {
   await renderOpened(api({}))
 
-  await screen.findByRole('button', { name: 'Hoy 02/10' })
+  await screen.findByRole('button', { name: 'Today 02/10' })
   expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(4)
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
@@ -243,7 +243,7 @@ test('with Clientes VIP off the form has no "Precio VIP" and says nothing about 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
   expect(screen.queryByLabelText(/Precio VIP/)).not.toBeInTheDocument()
   expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
-  expect(screen.getByLabelText(/^Precio por cantidad/)).toBeInTheDocument()
+  expect(screen.getByLabelText(/^Bulk price/)).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
   await screen.findByText('Precio guardado')
@@ -258,7 +258,7 @@ test('with Precio por cantidad off the form has no bulk price or minimum and say
   )
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-  expect(screen.queryByLabelText(/Precio por cantidad/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Bulk price/)).not.toBeInTheDocument()
   expect(screen.queryByLabelText(/Mínimo en gramos/)).not.toBeInTheDocument()
   expect(screen.queryByText(/cantidad/i)).not.toBeInTheDocument()
   expect(screen.getByLabelText(/^Precio VIP/)).toBeInTheDocument()
@@ -274,7 +274,7 @@ test('with both rules off only the list price is asked for', async () => {
   await screen.findByLabelText(/^Precio de lista/)
 
   expect(screen.queryByLabelText(/Precio VIP/)).not.toBeInTheDocument()
-  expect(screen.queryByLabelText(/Precio por cantidad/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Bulk price/)).not.toBeInTheDocument()
   expect(screen.queryByLabelText(/Mínimo en gramos/)).not.toBeInTheDocument()
 })
 
@@ -291,7 +291,7 @@ test('a VIP price at or above list is refused inline under its field and keeps w
   await user.type(screen.getByLabelText(/^Precio VIP/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
-  const message = await screen.findByText('El precio VIP tiene que ser menor al precio de lista')
+  const message = await screen.findByText('The VIP price has to be lower than the list price')
   expect(message).toBeInTheDocument()
   expect(message.textContent).not.toMatch(/\d/)
   expect(screen.getByLabelText(/^Precio VIP/)).toHaveValue('12000')
@@ -314,7 +314,7 @@ test('a "$" goes before the list, bulk and VIP price and never before the minimu
   const user = userEvent.setup()
   await renderOpened(api({}))
 
-  const amounts = [/^Precio de lista/, /^Precio por cantidad/, /^Precio VIP/]
+  const amounts = [/^Precio de lista/, /^Bulk price/, /^Precio VIP/]
   for (const label of amounts) {
     const input = await screen.findByLabelText(label)
     const prefix = input.previousElementSibling
@@ -331,7 +331,7 @@ test('a "$" goes before the list, bulk and VIP price and never before the minimu
   expect(minimum.closest('.campo')).not.toHaveTextContent('$')
 })
 
-const CHIP_TODAY = { name: 'Hoy 02/10' }
+const CHIP_TODAY = { name: 'Today 02/10' }
 
 test('the date is a chip reading "Hoy dd/mm" with "Rige desde" as its description, not its name', async () => {
   await renderOpened(api({}))
@@ -343,7 +343,7 @@ test('the date is a chip reading "Hoy dd/mm" with "Rige desde" as its descriptio
   expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
 })
 
-test('picking another day reads "dd/mm" on the chip, and "Hoy" from the chip goes back to today', async () => {
+test('picking another day reads "dd/mm" on the chip, and "Today" from the chip goes back to today', async () => {
   const user = userEvent.setup()
   await renderOpened(api({}))
 
@@ -359,7 +359,7 @@ test('picking another day reads "dd/mm" on the chip, and "Hoy" from the chip goe
   expect(document.querySelector('input[type=date]')).toBeNull()
 
   await user.click(chip)
-  await user.click(screen.getByRole('button', { name: 'Hoy' }))
+  await user.click(screen.getByRole('button', { name: 'Today' }))
   expect(await screen.findByRole('button', CHIP_TODAY)).toBeInTheDocument()
   expect(document.querySelector('input[type=date]')).toBeNull()
 })
@@ -406,7 +406,7 @@ test('another day counts as typed: leaving asks first', async () => {
 
   await user.click(await screen.findByRole('button', CHIP_TODAY))
   fireEvent.change(screen.getByLabelText('Rige desde', { exact: true }), { target: { value: '2026-10-09' } })
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('¿Descartás el precio?')).toBeInTheDocument()
 })

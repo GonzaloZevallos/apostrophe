@@ -51,12 +51,12 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `duena-telefono-${uniqueTag()}@example.com` })
 
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Jazmín')
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
   await setPriceDate(page, '2000-01-01')
   await page.getByLabel(/^Precio de lista/).fill('500')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
@@ -86,7 +86,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
   for (const phone of PHONES) {
     await page.setViewportSize({ width: phone.width, height: phone.height })
     await page.goto(SALES)
-    const tabs = page.getByRole('group', { name: 'Período' })
+    const tabs = page.getByRole('group', { name: 'Period' })
     await expect(tabs.getByRole('button')).toHaveCount(4)
 
     const columns = await tabs
@@ -114,7 +114,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
     }
     await expectNoSidewaysOverflow(page)
 
-    await tabs.getByRole('button', { name: 'Hoy' }).click()
+    await tabs.getByRole('button', { name: 'Today' }).click()
     await page.locator('.fila-venta').first().click()
     await expect(page.getByRole('button', { name: 'Borrar venta' })).toBeVisible()
     await expectNoSidewaysOverflow(page)
@@ -122,16 +122,16 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
     expect(borrar.height, `${phone.name}: Borrar venta`).toBeGreaterThanOrEqual(TOUCH_TARGET)
 
     await page.getByRole('button', { name: 'Borrar venta' }).click()
-    for (const name of ['Sí, borrala', 'No, dejala']) {
+    for (const name of ['Yes, delete it', 'No, keep it']) {
       const found = await box(page.getByRole('button', { name }))
       expect(found.height, `${phone.name}: ${name}`).toBeGreaterThanOrEqual(TOUCH_TARGET)
     }
-    await page.getByRole('button', { name: 'No, dejala' }).click()
+    await page.getByRole('button', { name: 'No, keep it' }).click()
   }
 
   // The computer keeps the plain tab list, never the phone's grid.
   await page.setViewportSize({ width: 1280, height: 900 })
   await page.goto(SALES)
-  await expect(page.getByRole('group', { name: 'Período' }).getByRole('button')).toHaveCount(4)
+  await expect(page.getByRole('group', { name: 'Period' }).getByRole('button')).toHaveCount(4)
   await expect(page.locator('.pestanas__celdas')).toHaveCount(0)
 })

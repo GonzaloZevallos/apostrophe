@@ -62,11 +62,11 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   await expect(otherPage.locator('.encabezado__negocio')).toHaveText(businessName)
 
   await page.goto(SETTINGS_ACCOUNT)
-  await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
+  await page.getByRole('button', { name: 'Change password' }).click()
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
   await sheet.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
-  await sheet.getByRole('button', { name: 'Guardar' }).click()
+  await sheet.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
 
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio

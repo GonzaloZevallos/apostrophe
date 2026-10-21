@@ -58,8 +58,8 @@ export default function ClienteFila({ id, name, phone = null, vip = false, balan
         {standing === 'credit' && <span className="monto-credito">{CUSTOMERS_TEXT.aFavor}{formatMoneyMagnitude(balance)}</span>}
       </PaneRowLink>
       {standing === 'owes' && (
-        <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id })} icon="cobro" ariaLabel={COMMON_TEXT.cobrarA0(name)}>
-          {COMMON_TEXT.cobrar}
+        <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id })} icon="cobro" ariaLabel={COMMON_TEXT.collectFrom(name)}>
+          {COMMON_TEXT.collect}
         </BotonLink>
       )}
     </div>

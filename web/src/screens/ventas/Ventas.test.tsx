@@ -26,7 +26,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 
 function Context() {
   return <Outlet context={ME} />
@@ -75,7 +75,7 @@ test('Semana asks for the Monday-to-Sunday week containing today', async () => {
   renderVentas()
   await waitFor(() => expect(api).toHaveBeenCalledTimes(1))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Semana' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Week' }))
 
   await waitFor(() =>
     expect(api).toHaveBeenCalledWith(
@@ -90,7 +90,7 @@ test('Mes asks for the current calendar month', async () => {
   renderVentas()
   await waitFor(() => expect(api).toHaveBeenCalledTimes(1))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Mes' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Month' }))
 
   await waitFor(() =>
     expect(api).toHaveBeenCalledWith(
@@ -163,10 +163,10 @@ test('the header shows the range next to the total, dd/mm, collapsed to one date
 
   expect(await screen.findByText('03/10 · 0 ventas')).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Semana' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Week' }))
   expect(await screen.findByText('28/09 – 04/10 · 0 ventas')).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Mes' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Month' }))
   expect(await screen.findByText('01/10 – 31/10 · 0 ventas')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Fechas' }))
@@ -244,12 +244,12 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
   ).not.toBeInTheDocument()
 })
 
-test('arriving back from Borrar venta or Deshacer shows "Venta eliminada · los gramos vuelven al stock"', async () => {
+test('arriving back from Borrar venta or Deshacer shows "Sale deleted · the grams go back to stock"', async () => {
   api.mockResolvedValue(jsonResponse(200, []))
-  renderVentas({ toast: 'Venta eliminada · los gramos vuelven al stock' })
+  renderVentas({ toast: 'Sale deleted · the grams go back to stock' })
 
   expect(
-    await screen.findByText('Venta eliminada · los gramos vuelven al stock'),
+    await screen.findByText('Sale deleted · the grams go back to stock'),
   ).toBeInTheDocument()
 })
 

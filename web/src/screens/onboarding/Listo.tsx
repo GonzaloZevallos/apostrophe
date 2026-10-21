@@ -55,7 +55,7 @@ export default function Listo() {
           <Boton
             variant="icon"
             action="close"
-            ariaLabel={COMMON_TEXT.cerrar}
+            ariaLabel={COMMON_TEXT.close}
             onClick={() => void navigate(HOME, { replace: true })}
           />
         </div>
@@ -64,7 +64,7 @@ export default function Listo() {
           <StepIndicator steps={progress.steps} current={null} />
         </div>
         <div className="onboarding__titulos">
-          <h1 className="onboarding__titulo onboarding__titulo--grande">{COMMON_TEXT.listo}</h1>
+          <h1 className="onboarding__titulo onboarding__titulo--grande">{COMMON_TEXT.done}</h1>
           <p className="onboarding__porque">{ONBOARDING_TEXT.estoQuedoArmadoEn}</p>
         </div>
         <ul className="listo__lista">

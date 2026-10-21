@@ -114,7 +114,7 @@ describe('invalidateResource', () => {
     expect(isInvalidated(queryClient, keys.sales('2026-10-01', '2026-10-31'))).toBe(true)
   })
 
-  test('a sale also refreshes its customer\'s balance and "Te deben"', () => {
+  test('a sale also refreshes its customer\'s balance and "Owed to you"', () => {
     const queryClient = clientWithData()
     queryClient.setQueryData(keys.debtors(), { total_owed: 0 })
 
@@ -124,7 +124,7 @@ describe('invalidateResource', () => {
     expect(isInvalidated(queryClient, keys.debtors())).toBe(true)
   })
 
-  test('a customer rename also refreshes "Te deben", where it shows', () => {
+  test('a customer rename also refreshes "Owed to you", where it shows', () => {
     const queryClient = clientWithData()
     queryClient.setQueryData(keys.debtors(), { total_owed: 0 })
 

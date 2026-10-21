@@ -31,7 +31,7 @@ export default function CatalogMessageStep({ onDirtyChange, onProgress }: StepBo
   return (
     <>
       <CatalogMessageForm
-        submitLabel={COMMON_TEXT.guardar}
+        submitLabel={COMMON_TEXT.save}
         onDirtyChange={onDirty}
         onSaved={() => void run(() => sendPass('header_footer', 'done'))}
       />

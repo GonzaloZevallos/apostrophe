@@ -32,7 +32,7 @@ import TeDeben from './TeDeben'
 import { COMMON_TEXT } from '../../copy/common'
 
 export const SEARCH_LABEL = CUSTOMERS_TEXT.buscarCliente
-export const SEARCH_PLACEHOLDER = COMMON_TEXT.telefonoONombre
+export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
 export const SEARCHING = CUSTOMERS_TEXT.buscando
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
@@ -68,7 +68,7 @@ export default function Clientes() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <span className="encabezado__titulo">{COMMON_TEXT.clientes}</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
         </div>
         <div className="campo__rotulo">
           <span>{CUSTOMERS_TEXT.n0Clientes(total.data?.length ?? 0)}</span>
@@ -86,7 +86,7 @@ export default function Clientes() {
         </label>
         <div className="clientes__accion">
           <BotonLink to={CUSTOMER_NEW} icon="personaMas">
-            {COMMON_TEXT.nuevoCliente}
+            {COMMON_TEXT.newCustomer}
           </BotonLink>
         </div>
         {query === '' && <TeDeben />}

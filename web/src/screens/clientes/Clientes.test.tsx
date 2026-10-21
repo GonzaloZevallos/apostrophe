@@ -4,7 +4,7 @@
  * (plan, invariants); a stale answer is only ever shown marked pending, never as
  * the answer to the query currently typed (`customers.md`, "List and search").
  *
- * The "Te deben" section and each row's amber/blue mark come from
+ * The "Owed to you" section and each row's amber/blue mark come from
  * `GET /payments/debtors` and the customer's own `balance`/`owing_since`/
  * `standing` (payments.md, "On screen") — `fetchStub` below dispatches on the
  * request's own path and query, never on call order, since the header's two
@@ -198,7 +198,7 @@ test('a server error on the list shows the generic retry, never the empty-list t
   vi.mocked(fetch).mockResolvedValue(new Response('boom', { status: 500 }))
   renderClientes()
 
-  expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()
+  expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
@@ -220,7 +220,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
 
   expect(await screen.findByText('2 clientes')).toBeInTheDocument()
   expect(screen.queryByText(/ te deben \$/)).not.toBeInTheDocument()
-  const section = await screen.findByRole('region', { name: 'Te deben' })
+  const section = await screen.findByRole('region', { name: 'Owed to you' })
   const everyone = await screen.findByRole('region', { name: 'Todos · A–Z' })
   expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(
@@ -228,7 +228,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   ).toBeInTheDocument()
   expect(within(section).getAllByRole('link').map((link) => link.textContent)).toEqual([
     'Ana Pérez$ 15.000te debe desde 14/09',
-    'Cobrar',
+    'Collect',
   ])
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
 })
@@ -252,12 +252,12 @@ test("Te deben shows the API's order and total as answered, never a client sort 
   )
   renderClientes()
 
-  const section = await screen.findByRole('region', { name: 'Te deben' })
+  const section = await screen.findByRole('region', { name: 'Owed to you' })
   expect(within(section).getByText('$ 99.000')).toBeInTheDocument()
   expect(within(section).getByText('1 venta debiendo')).toBeInTheDocument()
   expect(
-    within(section).getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label')),
-  ).toEqual(['Cobrar a Zoe', 'Cobrar a Abel'])
+    within(section).getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label')),
+  ).toEqual(['Collect from Zoe', 'Collect from Abel'])
 })
 
 test('a customer in credit is only in A–Z, never in Te deben', async () => {
@@ -274,7 +274,7 @@ test('a customer in credit is only in A–Z, never in Te deben', async () => {
 
   const everyone = screen.getByRole('region', { name: 'Todos · A–Z' })
   expect(await within(everyone).findByText('A favor $ 2.000')).toBeInTheDocument()
-  expect(within(screen.getByRole('region', { name: 'Te deben' })).queryByText(/A favor/)).not.toBeInTheDocument()
+  expect(within(screen.getByRole('region', { name: 'Owed to you' })).queryByText(/A favor/)).not.toBeInTheDocument()
 })
 
 test('searching collapses both sections into one flat list that keeps Cobrar, and clearing brings them back', async () => {
@@ -289,23 +289,23 @@ test('searching collapses both sections into one flat list that keeps Cobrar, an
     ),
   )
   renderClientes()
-  await screen.findByRole('region', { name: 'Te deben' })
+  await screen.findByRole('region', { name: 'Owed to you' })
 
   const input = screen.getByLabelText('Buscar cliente')
   await userEvent.type(input, 'ana')
 
-  await waitFor(() => expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument())
   expect(screen.queryByRole('region', { name: 'Todos · A–Z' })).not.toBeInTheDocument()
-  expect(await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })).toHaveLength(1)
+  expect(await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })).toHaveLength(1)
   expect(screen.getByText('te debe desde 14/09')).toBeInTheDocument()
 
   await userEvent.clear(input)
 
-  expect(await screen.findByRole('region', { name: 'Te deben' })).toBeInTheDocument()
+  expect(await screen.findByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
   expect(screen.getByRole('region', { name: 'Todos · A–Z' })).toBeInTheDocument()
 })
 
-test('"Cobrar a X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
+test('"Collect from X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -318,13 +318,13 @@ test('"Cobrar a X" is on every row that owes, in the section and in the list, an
   )
   renderClientes()
 
-  await screen.findByRole('region', { name: 'Te deben' })
-  const links = await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })
+  await screen.findByRole('region', { name: 'Owed to you' })
+  const links = await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })
   expect(links).toHaveLength(2)
   for (const link of links) {
     expect(link).toHaveAttribute('href', pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id }))
   }
-  expect(screen.queryByRole('link', { name: 'Cobrar a Lu' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Collect from Lu' })).not.toBeInTheDocument()
 })
 
 test('with nobody owing, a fixed "Nadie te debe" with nothing to tap sits above the full A–Z list', async () => {
@@ -333,7 +333,7 @@ test('with nobody owing, a fixed "Nadie te debe" with nothing to tap sits above 
 
   const nobody = await screen.findByText('Nadie te debe')
   expect(nobody.closest('a, button')).toBeNull()
-  const section = screen.getByRole('region', { name: 'Te deben' })
+  const section = screen.getByRole('region', { name: 'Owed to you' })
   expect(within(section).queryByRole('link')).not.toBeInTheDocument()
   expect(within(section).queryByText(/debiendo/)).not.toBeInTheDocument()
   const everyone = await screen.findByRole('region', { name: 'Todos · A–Z' })
@@ -423,13 +423,13 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
   return router
 }
 
-test('"Cobrar a X" opens Registrar cobro for that customer as an in-app entry, and one Back returns to Clientes', async () => {
+test('"Collect from X" opens Registrar cobro for that customer as an in-app entry, and one Back returns to Clientes', async () => {
   vi.mocked(fetch).mockImplementation(fetchApp)
   const router = renderApp()
 
-  await userEvent.click((await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` }))[0]!)
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
 
-  expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
   expect(screen.getByText(new RegExp(`^${customerFixture.name}`))).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(ANA_PAYMENT)
   expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
@@ -441,7 +441,7 @@ test('Cerrar on Registrar cobro with nothing behind it goes to Clientes', async 
   vi.mocked(fetch).mockImplementation(fetchApp)
   const router = renderApp([ANA_PAYMENT])
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
@@ -554,12 +554,12 @@ test('every action on the list and in Te deben is icon + text, and Cobrar keeps 
   )
   renderClientes()
 
-  const links = await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })
+  const links = await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })
   for (const link of links) {
     expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-    expect(link).toHaveTextContent('Cobrar')
+    expect(link).toHaveTextContent('Collect')
   }
-  const nuevo = screen.getByRole('link', { name: 'Nuevo cliente' })
+  const nuevo = screen.getByRole('link', { name: 'New customer' })
   expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expectIconAndTextRule(document.body, RULE)
 })
@@ -582,7 +582,7 @@ test('on a computer the list stays on the left beside a customer\'s card, and /c
   const alone = renderTwoPanes([CUSTOMERS])
   await screen.findAllByRole('link', { name: /Ana Pérez/ })
   expect(screen.getAllByRole('region', { name: 'Todos · A–Z' })).toHaveLength(1)
-  expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Record payment' })).not.toBeInTheDocument()
   expect(alone.state.location.pathname).toBe(CUSTOMERS)
 })
 
@@ -592,7 +592,7 @@ test('on a computer, a customer\'s card has the list beside it, once', async () 
   renderTwoPanes([ANA])
 
   expect(await screen.findByRole('region', { name: 'Todos · A–Z' })).toBeInTheDocument()
-  expect(await screen.findByText('Registrar cobro')).toBeInTheDocument()
+  expect(await screen.findByText('Record payment')).toBeInTheDocument()
   expect(screen.getAllByRole('region', { name: 'Todos · A–Z' })).toHaveLength(1)
 })
 
@@ -601,6 +601,6 @@ test('on a phone, a customer\'s card is alone, with no list behind it', async ()
   vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
   renderTwoPanes([ANA])
 
-  expect(await screen.findByText('Registrar cobro')).toBeInTheDocument()
+  expect(await screen.findByText('Record payment')).toBeInTheDocument()
   expect(screen.queryByRole('region', { name: 'Todos · A–Z' })).not.toBeInTheDocument()
 })

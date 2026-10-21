@@ -41,12 +41,11 @@ export const OUT_OF_DATE_LINES: Record<PinReason, string> = {
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   ...Object.values(OUT_OF_DATE_LINES)
-    .filter((text) => text !== OUT_OF_DATE_TOO_LONG_LINE)
     .map((text): LimitedCopy => ({ kind: 'notice', text })),
   { kind: 'help', text: NOT_READY_LINE },
   { kind: 'help', text: CHANNEL_MISSING_LINE },
 ]
-export const LONG_REFUSALS: readonly string[] = [OUT_OF_DATE_TOO_LONG_LINE]
+export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const PINNED_CATALOG_TEXT = {
