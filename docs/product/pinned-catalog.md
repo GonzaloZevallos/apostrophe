@@ -56,13 +56,13 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 - **Token**:
   - stored encrypted, keyed from `APOSTROPHE_SECRET_KEY`;
   - once saved, no route returns it and it is never logged;
-  - on screen: "Guardado el dd/mm · no se muestra más" with **Cambiar**.
+  - on screen: "Saved on dd/mm · not shown any more" with **Cambiar**.
 - **Channel chat and own chat**:
   - free text, checked only for "not blank";
   - shown in plain text and editable in place;
   - never sent to logs, the console or browser storage;
   - each field has a short fixed help line.
-- **The own chat's help line**: "Tap Start in your bot; find your number with @userinfobot." (80 characters at most, GH-97; it dropped "Abrí tu bot en Telegram" and "o tocá Buscar mi chat", which the button beside the field already says.) It replaced "Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.", which promised something the screen did not do. The channel chat's help line is unchanged. The longer how (open the bot, tap Iniciar, then Buscar mi chat fills the number, or look it up with @userinfobot) is behind More info ("More info") on that line, closed at every open.
+- **The own chat's help line**: "Tap Start in your bot; find your number with @userinfobot." (80 characters at most, GH-97; it dropped "Open your bot in Telegram" and "or tap Find my chat", which the button beside the field already says.) It replaced "Open your chat with the bot and write anything to see it here.", which promised something the screen did not do. The channel chat's help line is unchanged. The longer how (open the bot, tap Iniciar, then Buscar mi chat fills the number, or look it up with @userinfobot) is behind More info ("More info") on that line, closed at every open.
 - **Nothing saved yet**: empty fields and no "Guardado" line.
 - **Saved only through Probarlo**: settings are saved only when a test of the typed values succeeds, so the saved settings have always been tested.
 - **Changing any of the three** re-arms the test gate. The successful Probarlo that saves the change satisfies it again.
@@ -163,7 +163,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
     - "The pinned message is gone: publish it again": the message was deleted by hand;
     - "It still has to be published with the new bot or channel": a token or channel change was tested and saved, but not yet published;
     - "It is too long for Telegram: shorten aromas or hide varieties.": the text exceeds Telegram's limit.
-- **"El último fue el dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publicar there.
+- **"The last one was on dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publicar there.
 - **What it reflects**: the result of the last attempt, or the unpublished token or channel change. There is no pending state: while a sync runs, the previous state stays.
 - **Not affected by Probarlo or Buscar mi chat**: their failures never change the status.
 - **Before the first Publicar ever**: no status shows.
@@ -184,7 +184,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 - The app never edits, unpins or deletes the old pinned message again.
 - After the successful test that saves the change, the status reads "Desactualizado · Falta publicarlo con el bot o el canal nuevo".
-- The next Publicar posts and pins a new message, and "El último fue" restarts from it.
+- The next Publicar posts and pins a new message, and "The last one was" restarts from it.
 - Changing either one shows, in Integraciones: "The previous pinned message stays as it is; unpin it yourself in Telegram."
 
 ### The text
@@ -242,7 +242,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   100% passing.
 - **Settings changes (criteria 2, 4)**:
   - changing only the own chat keeps upkeep running and the status unchanged;
-  - a tested token or channel change reads "It still has to be published with the new bot or channel", with no "El último fue", until Publicar.
+  - a tested token or channel change reads "It still has to be published with the new bot or channel", with no "The last one was", until Publicar.
 - **Unavailable Publicar**: with no saved channel or no successful Probarlo since the last change, the catalog screen shows Publicar disabled with its reason in words and a link that opens Integraciones.
 - **Integraciones**: a front test shows:
   - the link to the catalog screen, no pin status and no Publicar;

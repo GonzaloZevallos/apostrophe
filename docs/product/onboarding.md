@@ -46,7 +46,7 @@ Success criteria:
 - For a brand-new business the Onboarding fully replaces the checklist; the two never both apply.
 - While it is not over, neither the checklist nor "Start with your varieties" shows. "Start with your varieties" takes over once it is over.
 - **No side rules of its own**: "+ New sale" and "Send catalog" behave while the Onboarding runs as they do for any business. What is missing is told by the Inicio notice ("Falta: …"), by Nueva venta's own "<variety> no tiene precio para esa fecha" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist.
-- **The Onboarding itself builds neither the checklist nor the after-import notice**: Inicio's "To get started" checklist and the "Conectá el bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
+- **The Onboarding itself builds neither the checklist nor the after-import notice**: Inicio's "To get started" checklist and the "Connect the bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
 
 ### Entry and the Inicio notice
 
@@ -137,7 +137,7 @@ Success criteria:
 - From then on it is over for good: leaving "Done" by any means, or closing the app on it, never brings the Onboarding back, and the Inicio notice goes. No tap on "Done" itself is needed.
 - **One line per step**:
   - "Done" for a step whose data exists or that was saved;
-  - "Para después — en Configuración → <grupo>" or "en Variedades" for a skipped step;
+  - "For later — in Settings → <group>" or "in Varieties" for a skipped step;
   - the required steps' lines count the records made, e.g. "Done · 2 varieties": a count, never a figure or an amount.
 - **Actions**: the primary "Add my first sale", which opens Nueva venta, and the secondary "Go to Home". No celebration and no extra content.
 - **Nueva venta opened from "Done"** goes back to Inicio, whether closed with "Close" or saved. It never goes back to "Done" or the Onboarding.

@@ -29,7 +29,7 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 
 **When** I review a change to how Análisis looks, **I want** current before and after captures of Análisis, a comparison over every other screen in the registry, and a plan that names every file the change edits, **so I can** approve or reject from the PR's evidence alone, without retaking captures, hand-checking screens or carrying an open finding into the next task.
 
-- Its protagonist is the maintainer, or the reviewer acting for them (in the end Zeta). The seller is affected only indirectly: a change nobody can approve holds up the Costo de lo vendido and Faltante de stock rows they are waiting for.
+- Its protagonist is the maintainer, or the reviewer acting for them (in the end Zeta). The seller is affected only indirectly: a change nobody can approve holds up the Costo de lo vendido and Stock shortfall rows they are waiting for.
 - It refines analysis.md's design metric and the job above; it is not a new product job and adds no product behaviour.
 - Before it (GH-141's follow-up): the muestra guard was edited outside the plan's declared seam, and the design evidence was missing or stale. The same spec-scope finding was raised three times on one head.
 
@@ -115,7 +115,7 @@ Success criteria, captures at rest (numbered on their own; Metrics cites them as
 ### Every row reaches its screen
 
 - Every row of the registry, not only Inicio* and the Onboarding, reaches its screen the way a seller does and captures its named section whole. A whole-registry `--strict` run exits non-zero only when a row truly fails.
-- **`EstadosConfirmar`** reaches Antes de borrar on a sale's detail as a seller does: it opens a sale that exists in the sample and taps "Delete sale". Its capture shows the confirmation whole: the question naming the sale's date, amount and grams that return, and "No, dejala / Sí, borrala" (sales.md).
+- **`EstadosConfirmar`** reaches Antes de borrar on a sale's detail as a seller does: it opens a sale that exists in the sample and taps "Delete sale". Its capture shows the confirmation whole: the question naming the sale's date, amount and grams that return, and "No, keep it / Yes, delete it" (sales.md).
 - **`EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro`** show "No connection" in the computer layout, light and dark. The page's own fonts are in place before the network drops, so going offline never leaves a page font in error. The capture's fonts stay pinned and local (ADR-0042).
 - The applied-check is unchanged and covers every row, offline rows included: a font in error stays a failure, never a pass.
 - A row is made to reach its screen by its steps, the sample data or the capture tooling alone. Never by changing the screen, its copy, the app's own `font-display`, or the applied-check, and never by dropping or excusing the row.

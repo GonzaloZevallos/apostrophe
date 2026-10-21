@@ -145,7 +145,7 @@ Success criteria:
   - the field shows "That category is gone. Pick another."
 - **Deleting an expense**, from the expense reached in the monthly view:
   - it is confirmed with "Before deleting", naming the date, category and amount, e.g.
-    "¿Borrás el gasto de $ 4.500 en Packaging del 28/09?";
+    "Delete the $ 4.500 expense in Packaging from 28/09?";
   - there is no undo;
   - the total and the subtotal update at once, and a category left with no expenses that
     month disappears.

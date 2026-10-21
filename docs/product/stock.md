@@ -149,8 +149,8 @@ Success criteria:
 - **Edit**: every field (date, reason, lines, note) with the same validation as when
   recording. Saving is confirmed first. The lots after it are worked out again.
 - **Delete**: a hard delete, confirmed with "Before deleting", naming the reason, date
-  and total grams: "¿Borrás la promoción del 03/10? Vuelven 5 g al stock." or
-  "¿Borrás el consumo propio del 03/10? Vuelven 5 g al stock.", with "No, dejalo / Sí,
+  and total grams: "Delete the promotion from 03/10? 5 g go back to stock." or
+  "Delete the own use from 03/10? 5 g go back to stock.", with "No, keep it / Yes,
   borralo". Its grams return to stock and land back on lots by date.
 - Neither an edit nor a delete is refused because the withdrawal's grams were already
   drawn from lots (ADR-0009).
@@ -197,7 +197,7 @@ Success criteria:
   2. **Sold out**: stock ≤ 0. This includes a variety with sales, gifts or withdrawals but
      no stock entry, and one whose entries net to 0 (ADR-0009: overselling shows sold out
      at once). It shows the date of the movement (a withdrawal included) after which
-     stock has stayed at or below 0 ("Sin gramos desde el 30/09"), and for a variety with
+     stock has stayed at or below 0 ("No grams since 30/09"), and for a variety with
      no entries that is the day of its first sale, gift or withdrawal.
   3. **Low**: stock > 0 and under the variety's low-stock threshold.
   4. **Ok**: otherwise.
@@ -214,7 +214,7 @@ Success criteria:
 - **No Stock tab.** Stock lives in Variedades (varieties.md, navigation.md); the old
   Stock path redirects there.
 - **Per variety**, on Variedades' list and at the top of its page: its grams, its status
-  mark and its detail ("Sin gramos desde el 30/09", "Avisás abajo de 20 g", "Al ritmo de
+  mark and its detail ("No grams since 30/09", "You are warned below 20 g", "Al ritmo de
   los últimos 30 días", "Cargale la primera entrada" only for no entries), plus days
   left.
 - **Status marks** (`MarcaEstado`): told by shape and word, never by color alone.
@@ -232,7 +232,7 @@ Success criteria:
   gram, newest date first, then most recently recorded first. Each can be edited or
   deleted. It lists entries only, never withdrawals; there is no business-wide list of
   withdrawals.
-  - Its empty state: "Sin entradas de stock · Cargá tu stock inicial o una compra".
+  - Its empty state: "No stock entries · Enter your initial stock or a purchase".
 - **Nueva entrada** (`EntradaStock`), a form (navigation.md): "Close", and a
   confirmation when leaving with something typed.
   - Opened from "+ Stock entry" on Variedades (the seller chooses the variety) or

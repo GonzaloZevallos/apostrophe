@@ -49,7 +49,7 @@ Success criteria:
 ### Catalog attributes, per variety
 
 - **Emoji**: optional, exactly one emoji. Plain text or more than one emoji is refused. With none, the name line has no stand-in emoji.
-- **Indica share**: optional whole number from 0 to 100; sativa is the rest. It reads "• N% índica / (100−N)% sativa", including the 0 and 100 edges. With none, the line is left out.
+- **Indica share**: optional whole number from 0 to 100; sativa is the rest. It reads "• N% indica / (100−N)% sativa", including the 0 and 100 edges. With none, the line is left out.
 - **Aroma**: optional.
   - It is trimmed, and every run of whitespace, line breaks included, collapses to one space.
   - It holds up to 200 characters.
@@ -79,7 +79,7 @@ Success criteria:
 - **Who qualifies**: a variety that is unarchived, shown, has a current price today in Argentina time and has stock above zero. Low stock qualifies. An archived variety never qualifies, whatever its flag, price or stock.
 - **A variety block**:
   - `<emoji> **<name>**`, or `**<name>**` with no emoji;
-  - `• N% índica / M% sativa`, only with a share;
+  - `• N% indica / M% sativa`, only with a share;
   - `• Aroma/sabor: <aroma>`, only with an aroma;
   - `• Precio x gramo: $X`, the list price;
   - `• Desde N g: $Y c/u`: the bulk minimum and the bulk price. It shows only when the current price has a bulk price and Precio por cantidad is on. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).

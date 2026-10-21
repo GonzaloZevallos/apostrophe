@@ -252,8 +252,8 @@ Success criteria:
 - **Every unarchived variety**, hidden ones included, sorted by name, in a stable order.
 - **Each row**:
   - the name;
-  - its stock status mark (`MarcaEstado`: square = agotada as the inverted chip, filled
-    circle = baja, empty circle = ok) and its word, with "Sin entradas" when it has none
+  - its stock status mark (`MarcaEstado`: square = sold out as the inverted chip, filled
+    circle = low, empty circle = ok) and its word, with "no entries" when it has none
     and its detail line (`stock.md`);
   - "Hidden" beside the status when the variety is hidden from the catalog. It never
     replaces the stock status: a hidden variety can still be sold, gifted, withdrawn and
@@ -298,7 +298,7 @@ Success criteria:
 - **A detail** (navigation.md): the bar or sidebar and "‹ Variedades", without
   "+ New sale".
 - **The summary line** at the top: grams, status, days left and today's list price (e.g.
-  "64 g · ok · 21 días · $ 11.000 x g"), with "Hidden" when hidden.
+  "64 g · ok · 21 days · $ 11.000 x g"), with "Hidden" when hidden.
 - **Three actions**: "+ Entry" (the stock entry form with this variety chosen, and
   "Initial stock" preselected only when it has no entries, `stock.md`), "New price"
   (the price entry form) and "Take from stock" (the stock withdrawal form with this
@@ -322,8 +322,8 @@ Success criteria:
     - turning the switch on opens that same form (an off warning keeps no amount); closing it without saving leaves the warning off;
     - turning the switch off saves at once;
     - every save, the switch-off included, shows the toast "Warning saved";
-  - **En el catálogo**: the variety's catalog attributes, read-only (shown or hidden, emoji, % índica, aroma/sabor), with an "Edit" link, and nothing else (no "See all"). It is the only place they are edited (`catalog.md`):
-    - "Edit" opens one form with "Show in the catalog", Emoji, % índica and Aroma/sabor, ending in "Save the catalog";
+  - **En el catálogo**: the variety's catalog attributes, read-only (shown or hidden, emoji, % indica, aroma/sabor), with an "Edit" link, and nothing else (no "See all"). It is the only place they are edited (`catalog.md`):
+    - "Edit" opens one form with "Show in the catalog", Emoji, % indica and Aroma/sabor, ending in "Save the catalog";
     - each refusal (for example an aroma over 200 characters) shows under its own field and keeps everything typed;
     - leaving with something typed and not saved asks before discarding;
     - a save shows the toast "Catalog saved".
@@ -365,7 +365,7 @@ Success criteria:
     - **Aviso de stock bajo**: the stored setting only, "Avisame abajo de N g" or "Aviso
       apagado"; never the live "Avisando: quedan N g"; no switch and no "Editar";
     - **En el catálogo**: the four stored attributes (shown or hidden in words, emoji,
-      % índica, aroma/sabor), an attribute never set left out; no "Edit" and no note
+      % indica, aroma/sabor), an attribute never set left out; no "Edit" and no note
       about the public catalog.
   - **"See all" from it** opens read-only lists: the prices list has no price delete;
     in the movements list, entry rows have no edit or delete and open nothing, while
@@ -390,8 +390,8 @@ Success criteria:
 - **Forms** opened from here (Nuevo precio, + Entrada, Sacar del stock, rename, the low-stock warning, the
   catalog attributes) have "Close" and a confirmation when leaving with something typed;
   an untouched one closes at once.
-- **Deleting a price entry**: confirmed with "Before deleting" ("¿Borrás…? / No, dejala /
-  Sí, borrala"), and the copy says what takes the entry's place:
+- **Deleting a price entry**: confirmed with "Before deleting" ("Delete…? / No, keep it /
+  Yes, delete it"), and the copy says what takes the entry's place:
   - with an earlier entry, the price that applies again and its date, e.g. "Vuelve a regir
     $ 9.000 x g desde el 12/09";
   - for the first entry, that there is no price before the next entry's date;
@@ -452,7 +452,7 @@ Success criteria:
 - **Sample app** (`scripts/design/sample_app.py`): it seeds exactly one archived variety,
   hidden, whose only history is one opening-stock entry recorded with no cost, dated on or
   after the sample business's first record (no sale, no withdrawal), with a low-stock
-  threshold, catalog attributes (emoji, % índica, aroma) and a current price entry. Every
+  threshold, catalog attributes (emoji, % indica, aroma) and a current price entry. Every
   period figure on Inicio, Ventas and Análisis stays as `muestra.md` has it; `muestra.md`
   gains only that variety's own rows, recaptured by the script (ADR-0035).
 - **Muestra guard**: it checks the archived variety's own grams, "Archived" and "Hidden"
@@ -482,11 +482,11 @@ Success criteria:
 - **Switched-off rules store nothing (criterion 15)**: a price entry sent with bulk or VIP values while that rule is off stores none of them; earlier entries' values are unchanged.
 - **Switches on screen (criterion 15)**: front tests show the price form, the Precios section and the full history with no bulk fields while Precio por cantidad is off and no VIP price while Clientes VIP is off, and every stored value back once switched on.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
-  page (with a VIP price when Clientes VIP is on), renames the variety, deletes a price
+  page (with a VIP price when VIP customers is on), renames the variety, deletes a price
   entry, sets a low-stock threshold through "Edit", turns it off and on again through the
-  switch, and edits the variety's catalog attributes through "Edit" and "Guardá el
-  catálogo", all from its page, and records a withdrawal from its page. It also deletes a
-  fresh variety, archives one with a sale, finds it in Archivadas, opens its read-only page
+  switch, and edits the variety's catalog attributes through "Edit" and "Save the
+  catalog", all from its page, and records a withdrawal from its page. It also deletes a
+  fresh variety, archives one with a sale, finds it in Archived, opens its read-only page
   and restores it.
 - **Status shown (criterion 5)**: the list and the page show the status mark and word for
   each status, "Hidden" beside (never instead of) the status of a hidden variety, and the

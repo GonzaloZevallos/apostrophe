@@ -1,6 +1,6 @@
 # Payments
 
-Money a customer hands over, and what each customer owes because of it: their balance, owing since and the account of their sales and payments. Seen only by its business (ADR-0004). Reads sales and their on-the-spot payments from sales (ADR-0007) and customers from customers. Cash (#7) counts payments on their own dates. Which sale a payment settles is worked out live and never stored, like cost of goods (ADR-0009, ADR-0010), while sale prices stay frozen (ADR-0003). Who owes is shown as the Te deben section at the top of Clientes and as Inicio's Te deben block; there is no separate Te deben screen.
+Money a customer hands over, and what each customer owes because of it: their balance, owing since and the account of their sales and payments. Seen only by its business (ADR-0004). Reads sales and their on-the-spot payments from sales (ADR-0007) and customers from customers. Cash (#7) counts payments on their own dates. Which sale a payment settles is worked out live and never stored, like cost of goods (ADR-0009, ADR-0010), while sale prices stay frozen (ADR-0003). Who owes is shown as the Owed to you section at the top of Clientes and as Home's "Owed to you" block; there is no separate Owed to you screen.
 
 ## Jobs
 
@@ -72,11 +72,11 @@ Success criteria:
 - **Sales still owing**: every sale of the business not fully paid once settlement is applied, partially paid ones included, each counted once. A sale covered by a credit is paid.
 - **Total owed**: the sum of the balances above $0. Credits never subtract from it.
 
-### On screen: Clientes' Te deben section
+### On screen: the Customers' "Owed to you" section
 
-- **Where**: the top section of Clientes (customers.md), above everyone A–Z. It replaces the former Te deben screen, which no longer exists; its old path redirects to Clientes (navigation.md). Inicio's Te deben heading opens Clientes on this section (results.md).
+- **Where**: the top section of Clientes (customers.md), above everyone A–Z. It replaces the former Owed to you screen, which no longer exists; its old path redirects to Clientes (navigation.md). Inicio's Owed to you heading opens Clientes on this section (results.md).
 - **Its head**: the total owed and the count of sales still owing.
-  - The count reads "1 venta debiendo" for one sale still owing, and "N ventas debiendo" for two or more (e.g. "4 ventas debiendo"). This is the same singular and plural rule Inicio's Te deben block uses for the same count (results.md).
+  - The count reads "1 sale owing" for one sale still owing, and "N sales owing" for two or more (e.g. "4 sales owing"). This is the same singular and plural rule Home's "Owed to you" block uses for the same count (results.md).
 - **Its rows**: only customers whose balance is above $0, by owing since (oldest first), ties by name.
   - Each row shows the balance in amber and "desde dd/mm", never as a chip.
   - Each row carries **"Collect"** (accessible name "Collect from <name>"), which opens Registrar cobro with that customer already chosen. Tapping the rest of the row opens the customer's card.
@@ -92,19 +92,19 @@ Success criteria:
 - The account lists sales and payments in date order, with the running balance:
   - a sale paid on the spot: "Paid in cash" or "Paid by transfer", with no payment row of its own;
   - a sale left owing: "Left owing";
-  - a later payment: one row per sale it reaches, "Cobro · <método> · A cuenta de la venta del dd/mm", with the amount applied to that sale;
+  - a later payment: one row per sale it reaches, "Payment · <method> · On account of the sale of dd/mm", with the amount applied to that sale;
   - any part beyond every debt: "Credit".
 - **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "A favor $ X".
   - It is the running figure only, not a credit, and counts in no figure.
   - The card's own balance reads "Credit" only when the balance today is below zero.
 - **"Delete payment"** exists only on later payments.
-  - It is confirmed with "¿Borrás el cobro de $ 15.000 (transferencia) del 20/09?", "No, dejalo / Sí, borralo". The confirmation names the payment, never the sales it covered.
+  - It is confirmed with "Delete the $ 15.000 payment (transfer) from 20/09?", "No, keep it / Yes, delete it". The confirmation names the payment, never the sales it covered.
   - Then the toast "Payment deleted", with no data, and the account and balance refresh from the API.
   - A payment that is gone follows accounts.md's "That is gone." rule.
 
 ### On screen: Registrar cobro (`Cobro`)
 
-- **Opened from**: "Collect" on a debtor row of Clientes (either section, or search results) or of Inicio's Te deben block, and "Record payment" on the customer's card. Each opens it with that customer already chosen.
+- **Opened from**: "Collect" on a debtor row of Clientes (either section, or search results) or of Home's "Owed to you" block, and "Record payment" on the customer's card. Each opens it with that customer already chosen.
 - **A sheet** (navigation.md): no bar and no "+ New sale"; "Close", and a confirmation when leaving with something typed.
 - **The sheet**:
   - "Todo: $ X" fills the amount with the whole balance in one tap;
@@ -149,8 +149,8 @@ Success criteria:
   - independence from recording order;
   - working out again after a late record or a delete of a sale or a payment.
 - **Balance identity (criterion 3)**: balance = bought and unpaid − payments, to the peso, after every create and delete of sales and payments.
-- **Credit**: after a settled sale is deleted, the credit is shown as "Credit", kept out of the Te deben section, the total owed and the count, and applied to the next sale left owing.
-- **Who-owes totals (criterion 4)**: the total owed, the count of sales still owing, Clientes' Te deben section, Inicio's block and the Ventas mark equal a direct computation over sales and payments. 0 differences. The count line reads "1 venta debiendo" for one sale and "N ventas debiendo" for two or more, both covered by the front tests.
+- **Credit**: after a settled sale is deleted, the credit is shown as "Credit", kept out of the Owed to you section, the total owed and the count, and applied to the next sale left owing.
+- **Who-owes totals (criterion 4)**: the total owed, the count of sales still owing, the Customers' "Owed to you" section, Inicio's block and the Ventas mark equal a direct computation over sales and payments. 0 differences. The count line reads "1 sale owing" for one sale and "N sales owing" for two or more, both covered by the front tests.
 - **Account (criterion 5)**: the rows and running balance match the settlement for every case of the matrix.
 - **Dates kept (criterion 6)**: after any recompute, every payment's date, amount and method are unchanged.
 - **Preview = stored (criteria 2, 8)**: Registrar cobro's preview matches the settlement after saving. 0 differences.
@@ -161,7 +161,7 @@ Success criteria:
   - settles everything with "Todo";
   - records a partial payment;
   - deletes a payment;
-  - reads Clientes' Te deben section and its count line.
+  - reads the Customers' "Owed to you" section and its count line.
 
 ## Out of scope
 
@@ -169,6 +169,6 @@ Success criteria:
 - A note on a payment.
 - Assigning a payment to a sale by hand.
 - Deleting an on-the-spot payment on its own; editing a payment.
-- A separate Te deben screen.
+- A separate Owed to you screen.
 - Cash and profit: the results capability (#7).
 - Live updates between partners.

@@ -52,7 +52,7 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - More info's "i" is the one icon-only control outside this list, defined by its own term below.
 - **Text only**:
   - links (`enlace`), such as "Edit header and footer" and "See all";
-  - the answer pair inside a confirmation, with its exact current words ("No, dejala / Sí, borrala", "No, seguí cargando / Sí, descartala" and the rest);
+  - the answer pair inside a confirmation, with its exact current words ("No, keep it / Yes, delete it", "No, keep entering / Yes, discard it" and the rest);
   - the submit of a form or sheet ("Save sale", "Save the warning", "Save the catalog", "Registrar", "Save and sign in", "Sign in" and the rest);
   - choices among options, which are not actions: the period tabs (Hoy · Semana · Mes · Fechas), Efectivo · Transferencia · Debiendo, Promoción · Consumo propio, an entry's origin, Claro · Oscuro, "Todo: $ X";
   - Deshacer inside "Sale saved".
@@ -108,7 +108,7 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - Inicio's "Your Telegram catalog is out of date";
   - "Out of date" with its reason;
   - "Start with your varieties";
-  - the after-import "Conectá el bot…";
+  - the after-import "Connect the bot…";
   - "No connection";
   - the generic server-error retry.
 - The sentence carries the state; the icon never replaces it or appears without it. Colour and wording do not change.

@@ -28,7 +28,7 @@ Success criteria:
    - A stock entry or withdrawal corrected later shows in every affected past week and month the next time the screen is opened. No period is ever closed.
 4. **Nothing read from color alone, nothing invented**: every bar and row carries its own figure. A period with no activity shows $0 or is left out by a stated rule, never with a placeholder figure.
 5. **Businesses never mix** (ADR-0004): every figure covers only the session's business.
-6. **Every row explains its profit**: all 8 week rows and all 12 month rows show Costo de lo vendido, and Faltante de stock when the period has one, next to Promoción, Consumo propio, expenses, profit and cash.
+6. **Every row explains its profit**: all 8 week rows and all 12 month rows show Costo de lo vendido, and Stock shortfall when the period has one, next to Promotion, Own use, expenses, profit and cash.
 
 ## Behaviour
 
@@ -55,11 +55,11 @@ Success criteria:
 - **Profit**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
   - When any of its cost is pending, profit is worked out over the costed part, leaving out the sales of pending grams: sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses.
   - It carries "y N g sin costo", where N adds every pending gram behind it: grams sold or gifted, grams taken out by negative adjustments and grams withdrawn, each counted in the period of its own date.
-  - Example: a week that sold 4 g with no cost yet, whose count took out 2 g with no cost yet, and that withdrew 1 g for promotion with no cost yet reads profit "y 7 g sin costo", its Faltante de stock "2 g sin costo" and its Promoción "1 g sin costo".
+  - Example: a week that sold 4 g with no cost yet, whose count took out 2 g with no cost yet, and that withdrew 1 g for promotion with no cost yet reads profit "and 7 g without cost", its Stock shortfall "2 g sin costo" and its Promoción "1 g sin costo".
   - The sales figure shown next to it stays the full sales.
 - **Pending grams** are never costed $0 anywhere. Every figure they touch carries "y N g sin costo", with N counting only the grams behind that figure.
 - **A fully pending cost figure**:
-  - When every gram behind Costo de lo vendido, Faltante de stock, Promoción or Consumo propio is pending, the figure shows only its pending grams in words (e.g. "2 g sin costo"), never "$ 0" and never "$ 0 y N g sin costo". The exact wording is design's.
+  - When every gram behind Costo de lo vendido, Stock shortfall, Promoción or Consumo propio is pending, the figure shows only its pending grams in words (e.g. "2 g sin costo"), never "$ 0" and never "$ 0 y N g sin costo". The exact wording is design's.
   - This holds wherever the figure appears in Análisis: the week and month rows, the month header, and the since-the-first-record lines.
   - A partly pending figure shows its costed amount plus "y N g sin costo".
   - The line is never hidden because its cost is pending.
@@ -80,11 +80,11 @@ Success criteria:
 - **Month header**:
   - sales (shipping included), grams sold or gifted, and the average margin;
   - the average margin is the month's total margin over its sales of costed grams. It is marked when any variety carries pending grams (counting sold and gifted grams only), and has no percentage when those sales are $0;
-  - "Faltante de stock $ X" when the month has any stock shortfall, with its own pending mark, or only its pending grams when it is fully pending. It is the same figure, read the same way, as the month row's and Inicio's Mes;
-  - "Promotion $ X" and "Consumo propio $ X" when the month has a withdrawal of that reason, each with its own pending mark (or only its pending grams when fully pending), apart from Faltante de stock;
+  - "Stock shortfall $ X" when the month has any stock shortfall, with its own pending mark, or only its pending grams when it is fully pending. It is the same figure, read the same way, as the month row's and Inicio's Mes;
+  - "Promotion $ X" and "Consumo propio $ X" when the month has a withdrawal of that reason, each with its own pending mark (or only its pending grams when fully pending), apart from Stock shortfall;
   - the screen states that the variety table adds up to the month's sales minus shipping;
   - the header carries no Costo de lo vendido total.
-- **A month with no sales or gifts**: totals at $0, no variety rows, and a fixed line saying nothing was sold that month. Its Faltante de stock, Promoción and Consumo propio still show when it has them.
+- **A month with no sales or gifts**: totals at $0, no variety rows, and a fixed line saying nothing was sold that month. Its Stock shortfall, Promoción and Consumo propio still show when it has them.
 
 ### Week by week (last 8) and month by month (last 12)
 
@@ -92,7 +92,7 @@ Success criteria:
   1. sales;
   2. grams sold or gifted, as one combined figure;
   3. Costo de lo vendido, on every row;
-  4. Faltante de stock, only when the period has a negative adjustment;
+  4. Stock shortfall, only when the period has a negative adjustment;
   5. Promoción, only when the period has a withdrawal of that reason;
   6. Consumo propio, likewise;
   7. expenses;
@@ -101,20 +101,20 @@ Success criteria:
 
   Withdrawn and adjusted grams are never in the grams figure.
 - **Costo de lo vendido** on a row is the period's cost of goods sold, past periods included. A period with no sales shows a real $0. It never includes a shortfall or a withdrawal.
-- **Faltante de stock** on a row is the period's stock shortfall, a separate figure that never enters Costo de lo vendido. A period with no negative adjustment has no Faltante de stock line.
+- **Stock shortfall** on a row is the period's stock shortfall, a separate figure that never enters Costo de lo vendido. A period with no negative adjustment has no Stock shortfall line.
 - **Pending grams on a row**:
-  - Costo de lo vendido, Faltante de stock, Promoción and Consumo propio each show their costed amount plus their own "y N g sin costo", or only their pending grams when fully pending (see Shared definitions).
+  - Costo de lo vendido, Stock shortfall, Promoción and Consumo propio each show their costed amount plus their own "y N g sin costo", or only their pending grams when fully pending (see Shared definitions).
   - N counts only the grams behind that figure, each in the period of its own date:
     - Costo de lo vendido: sold and gifted grams;
-    - Faltante de stock: grams taken out by negative adjustments;
+    - Stock shortfall: grams taken out by negative adjustments;
     - Promoción and Consumo propio: grams withdrawn for that reason.
   - Profit keeps its own rule and its total N.
   - Example: a week with 4 g sold, 2 g adjusted out and 1 g withdrawn for promotion, all with no cost yet, reads:
     - Costo de lo vendido "4 g sin costo";
-    - Faltante de stock "2 g sin costo";
+    - Stock shortfall "2 g sin costo";
     - Promoción "1 g sin costo";
-    - profit "y 7 g sin costo".
-- **Agreement with Inicio**: for the current week and the current month, the row's Costo de lo vendido and Faltante de stock equal Inicio's Semana and Mes. Any difference is a defect.
+    - profit "and 7 g without cost".
+- **Agreement with Inicio**: for the current week and the current month, the row's Costo de lo vendido and Stock shortfall equal Inicio's Semana and Mes. Any difference is a defect.
 - **Profit** includes stock shortfall, promotion and own-use cost, and carries the pending mark when it applies.
 - **Best week**: the highest sales; on a tie, the most recent week. When all 8 weeks are $0, none is marked. Withdrawals never affect it.
 - **Months**: no "best" mark.
@@ -127,7 +127,7 @@ Success criteria:
 
 ### Since the first record
 
-- Sales, expenses, profit and cash, with the same definitions as the week and month rows. "Faltante de stock $ X", "Promotion $ X" and "Consumo propio $ X" are added when there is any, each with its own pending mark, or only its pending grams when fully pending. No Costo de lo vendido total.
+- Sales, expenses, profit and cash, with the same definitions as the week and month rows. "Stock shortfall $ X", "Promotion $ X" and "Consumo propio $ X" are added when there is any, each with its own pending mark, or only its pending grams when fully pending. No Costo de lo vendido total.
 - Labelled as money moved since the first record, never as money on hand: the app has no opening cash balance.
 
 ### Expenses by category: the chosen month, and since the first record
@@ -139,9 +139,9 @@ Success criteria:
 
 ### On screen (`Analisis`, `AnalisisCompu`)
 
-- **Where**: a tab root (navigation.md). On the phone, the Más entry "Análisis · Variedades, semanas, meses y días"; on a computer, "Analysis" in the sidebar, under the divider.
+- **Where**: a tab root (navigation.md). On the phone, the More entry "Analysis · Varieties, weeks, months and days"; on a computer, "Analysis" in the sidebar, under the divider.
 - **Computer**: the `AnalisisCompu` layout.
-- **Week and month rows**: how Costo de lo vendido and Faltante de stock sit on a row (lines or sub-rows), on the phone and on a computer, is design's call. Each figure is in words, and pending and negative are told by word or sign, never by color alone, in both themes.
+- **Week and month rows**: how Costo de lo vendido and Stock shortfall sit on a row (lines or sub-rows), on the phone and on a computer, is design's call. Each figure is in words, and pending and negative are told by word or sign, never by color alone, in both themes.
 - **Charts**: the accent and the tokens only; every bar carries its figure. Best marks, pending marks and negatives are told by word or shape, never by color alone.
 - **Language and formats**: Rioplatense Spanish with vos. Money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
 - **Read only**: no forms and no toasts. Figures come from the API on every open; the browser computes nothing, including whether a figure is fully pending.
@@ -166,7 +166,7 @@ Success criteria:
 - **Honest cost (criterion 3)**: 100% passing.
   - A backdated or edited stock entry or withdrawal moves the cost and margin of the affected past weeks, months and varieties on the next read, and nothing else.
   - Pending grams always show their grams and are never costed $0.
-  - A negative adjustment lowers profit on its date by its lots' cost, shows on its period's Faltante de stock, and moves no variety's margin or Costo de lo vendido.
+  - A negative adjustment lowers profit on its date by its lots' cost, shows on its period's Stock shortfall, and moves no variety's margin or Costo de lo vendido.
   - A withdrawal of each reason lowers profit on its date by its lots' cost and shows on its own line. It moves none of these:
     - a variety's row, grams, margin or share;
     - the average margin;
@@ -174,12 +174,12 @@ Success criteria:
     - cost of goods sold or stock shortfall.
   - The 4 g / 2 g / 1 g example week reads:
     - Costo de lo vendido "4 g sin costo";
-    - Faltante de stock "2 g sin costo";
+    - Stock shortfall "2 g sin costo";
     - Promoción "1 g sin costo";
-    - profit "y 7 g sin costo".
+    - profit "and 7 g without cost".
   - Each row figure's N counts only its own grams. Profit's N is unchanged.
-  - A fully pending figure shows grams, never "$ 0": on a row, in the month header (Faltante de stock, Promoción, Consumo propio) and on the since-the-first-record lines. A current month whose only shortfall is 2 g with no cost reads "2 g sin costo" in the header and on the row alike.
-- **Rows explain profit (criterion 6)**: a front test over a seeded history reads Costo de lo vendido on all 8 week rows and all 12 month rows, in the stated order, and Faltante de stock only on periods with a negative adjustment.
+  - A fully pending figure shows grams, never "$ 0": on a row, in the month header (Stock shortfall, Promotion, Own use) and on the since-the-first-record lines. A current month whose only shortfall is 2 g with no cost reads "2 g sin costo" in the header and on the row alike.
+- **Rows explain profit (criterion 6)**: a front test over a seeded history reads Costo de lo vendido on all 8 week rows and all 12 month rows, in the stated order, and Stock shortfall only on periods with a negative adjustment.
 - **Margin matrix**: 100% passing. It covers:
   - a variety only gifted (negative margin, no percentage);
   - a mix of sold and gifted;
@@ -197,25 +197,25 @@ Success criteria:
   - no week or month before the first record;
   - $0 rows inside the history, Costo de lo vendido included;
   - an empty month shows its fixed line and no variety rows;
-  - a period with no negative adjustment shows no Faltante de stock line;
+  - a period with no negative adjustment shows no Stock shortfall line;
   - a period with no withdrawal of a reason shows no line for it;
   - a business with no records shows its fixed line;
   - every bar carries its figure, and no state is told by color alone.
-- **Unchanged figures**: over the same seeded history, these keep their values before and after the rows gained Costo de lo vendido and Faltante de stock:
+- **Unchanged figures**: over the same seeded history, these keep their values before and after the rows gained Costo de lo vendido and Stock shortfall:
   - profit and cash;
   - the month header;
   - the since-the-first-record figures;
   - the by-variety table;
   - best week.
 
-  The only display change outside the rows is a fully pending Faltante de stock, Promoción or Consumo propio in the header or since the first record, which now shows only its grams instead of "$ 0 y N g sin costo".
+  The only display change outside the rows is a fully pending Stock shortfall, Promoción or Consumo propio in the header or since the first record, which now shows only its grams instead of "$ 0 y N g sin costo".
 - **Isolation (criterion 5)**: every analysis route is in the sweep and answers only its own business's figures, never the seeded other business's data.
 - **No echo**: after a full front run, the console and browser storage hold no amounts or names.
 - **Speed**: the screen answers in under 300 ms with a year of a few hundred sales and a few dozen varieties (ADR-0010's revisit trigger).
 - **No curl**: the end-to-end front run:
   - opens Más → Análisis on the phone, and the sidebar entry on a computer;
   - moves back a month;
-  - reads each section, including Costo de lo vendido, Faltante de stock, Promoción and Consumo propio on the rows.
+  - reads each section, including Costo de lo vendido, Stock shortfall, Promoción and Consumo propio on the rows.
 - **Design**: `scripts/design/compare.sh` runs before and after for Análisis, phone and computer, both themes, with the captures attached to the PR.
 
 ## Out of scope

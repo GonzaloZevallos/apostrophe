@@ -273,7 +273,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - If someone assigned one first, "This sale already has a customer." and the detail refreshes.
 - **Borrar venta**:
   - On the phone it, and its confirmation's buttons, are at least 44 px tall.
-  - It is confirmed with `Before deleting`, naming the date, the amount and the total grams of its lines that return to stock, gifts included. For example: "¿Borrás la venta de $ 11.000 del 02/10? Vuelven 4 g al stock." The buttons are "No, dejala / Sí, borrala".
+  - It is confirmed with `Before deleting`, naming the date, the amount and the total grams of its lines that return to stock, gifts included. For example: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." The buttons are "No, keep it / Yes, delete it".
   - Then the toast "Sale deleted" and back to Ventas.
   - The copy never mentions debt or credit; the customer's account shows the effect afterwards (`payments.md`).
 - **A sale that is gone** follows accounts.md:
