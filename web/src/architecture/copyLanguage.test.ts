@@ -18,6 +18,7 @@ import { describe, expect, test } from 'vitest'
 import denylistFile from '../../../tests/fixtures/spanish_copy.json'
 import snapshot from '../copy/es.snapshot.json'
 import sharedWordsFile from '../copy/shared_words.json'
+import { textsOf } from '../design/copyTexts'
 
 type CopyFile = Record<string, unknown>
 
@@ -53,27 +54,6 @@ function spanishShape(text: string, denylist: ReadonlySet<string> = DENYLIST): s
   return undefined
 }
 
-/** Every text a copy file holds, by its key `file.EXPORT.path`: a string, the text of an
- * object's string or function (filled with a probe), not the registries. */
-function textsOf(file: string, mod: CopyFile): Map<string, string> {
-  const found = new Map<string, string>()
-  const walk = (key: string, value: unknown): void => {
-    if (typeof value === 'string') found.set(key, value)
-    else if (typeof value === 'function') {
-      const probe = Array.from({ length: value.length }, () => 'x')
-      const text: unknown = value(...probe)
-      if (typeof text === 'string') found.set(key, text)
-    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      for (const [name, inner] of Object.entries(value)) walk(`${key}.${name}`, inner)
-    }
-  }
-  for (const [name, value] of Object.entries(mod)) {
-    if (name === 'LANGUAGE' || name === 'LIMITED_COPY' || name === 'LONG_REFUSALS') continue
-    walk(`${file}.${name}`, value)
-  }
-  return found
-}
-
 const fileOf = (path: string): string => path.replace('/src/copy/', '').replace(/\.ts$/, '')
 
 /** What is wrong with the files marked 'en'. `shared` is `{key: reason}`. */
@@ -87,7 +67,7 @@ function translationProblems(
   const english = Object.entries(modules).filter(([, mod]) => mod.LANGUAGE === 'en')
   const held = new Map<string, string>()
   for (const [path, mod] of english) {
-    for (const [key, text] of textsOf(fileOf(path), mod)) {
+    for (const [key, text] of textsOf(fileOf(path), mod, 'x')) {
       held.set(key, text)
       const original = spanish[key]
       if (original !== undefined && text === original && !(key in shared)) {
