@@ -9,7 +9,7 @@ function Harness({ error }: { error?: string | null }) {
   return <PasswordField label="New password" value={value} onChange={setValue} error={error} />
 }
 
-test('hides the password until Mostrar is pressed, and Ocultar hides it again', async () => {
+test('hides the password until Show is pressed, and Hide hides it again', async () => {
   const user = userEvent.setup()
   render(<Harness />)
 

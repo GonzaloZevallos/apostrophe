@@ -96,7 +96,7 @@ test('the dead link offers a router link to Entrar, not a page reload', async ()
   )
 
   await screen.findByText(DEAD_LINK_MESSAGE)
-  // "Entrar" is a link kind drawn by BotonLink, never a raw action-styled link.
+  // "Go to sign in" is a link kind drawn by BotonLink, never a raw action-styled link.
   expect(screen.getByRole('link', { name: 'Go to sign in' })).toHaveClass('boton--enlace')
   expectIconAndTextRule(document.body)
   const user = userEvent.setup()
