@@ -49,7 +49,7 @@ const DELETED = { returned: [{ variety_id: 2, grams: 3.5 }] }
 
 function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  // A data router, with its handle given to the sheet stack: Asignar cliente's sheet is a
+  // A data router, with its handle given to the sheet stack: Assign customer's sheet is a
   // history entry (ADR-0027) and its depth is read from the router's own state.
   const router = createMemoryRouter(
     [
@@ -84,16 +84,16 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   )
   renderDetalle()
 
-  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
   expect(screen.getAllByText('$ 11.000')).toHaveLength(2) // the big total and the final Total row.
   expect(screen.getByText('Flor A')).toBeInTheDocument()
-  expect(screen.getByText('lista')).toBeInTheDocument()
+  expect(screen.getByText('list')).toBeInTheDocument()
   expect(screen.getByText('3,5 g')).toBeInTheDocument()
-  expect(screen.getByText('$ 3.000 por gramo')).toBeInTheDocument()
+  expect(screen.getByText('$ 3.000 per gram')).toBeInTheDocument()
   expect(screen.getByText('$ 10.500')).toBeInTheDocument()
   expect(screen.getByText('$ 500')).toBeInTheDocument()
   expect(screen.getByText('Entregar a la tarde')).toBeInTheDocument()
-  expect(screen.getByText('3,5 g · Ana Pérez · pagada en efectivo')).toBeInTheDocument()
+  expect(screen.getByText('3,5 g · Ana Pérez · paid in cash')).toBeInTheDocument()
 })
 
 test('shows the skeleton while the sale is pending, then the sale in its place', async () => {
@@ -109,31 +109,31 @@ test('shows the skeleton while the sale is pending, then the sale in its place',
   renderDetalle()
 
   expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
-  expect(screen.queryByText('Venta del 14/09')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Borrar venta' })).not.toBeInTheDocument()
+  expect(screen.queryByText('Sale of 14/09')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Delete sale' })).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
   expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'GET' }))
 
   resolveSale(jsonResponse(200, SALE))
 
-  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
   expect(screen.getAllByText('$ 11.000').length).toBeGreaterThan(0)
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 })
 
-test('a sale with no customer and no payment shows "Sin cliente" and drops the payment part', async () => {
+test('a sale with no customer and no payment shows "No customer" and drops the payment part', async () => {
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
   )
   renderDetalle()
 
-  expect(await screen.findByText('3,5 g · Sin cliente')).toBeInTheDocument()
+  expect(await screen.findByText('3,5 g · No customer')).toBeInTheDocument()
 })
 
 test.each([
-  ['cash', 'pagada en efectivo'],
-  ['transfer', 'pagada por transferencia'],
-  ['owing', 'quedó debiendo'],
+  ['cash', 'paid in cash'],
+  ['transfer', 'paid by transfer'],
+  ['owing', 'left owing'],
 ] as const)('the summary line reads "%s" as "%s"', async (payment, words) => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, payment }))
   renderDetalle()
@@ -149,15 +149,15 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   expect(screen.getByRole('link', { name: 'Back to Sales' })).toHaveAttribute('href', SALES)
 })
 
-test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {
+test('Delete sale asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle()
-  await screen.findByText('Venta del 14/09')
+  await screen.findByText('Sale of 14/09')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   expect(
-    screen.getByText('¿Borrás la venta de $ 11.000 del 14/09? Vuelven 3,5 g al stock.'),
+    screen.getByText('Delete the sale of $ 11.000 from 14/09? 3,5 g go back to stock.'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -172,13 +172,13 @@ test('Borrar venta asks "Antes de borrar" naming the date, the amount and the gr
 test('cancelling the delete confirmation keeps the sale', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Venta del 14/09')
+  await screen.findByText('Sale of 14/09')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   await userEvent.click(screen.getByRole('button', { name: 'No, keep it' }))
 
   expect(
-    screen.queryByText('¿Borrás la venta de $ 11.000 del 14/09? Vuelven 3,5 g al stock.'),
+    screen.queryByText('Delete the sale of $ 11.000 from 14/09? 3,5 g go back to stock.'),
   ).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
 })
@@ -187,11 +187,11 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle(saleJustSaved())
-  await screen.findByText('Venta del 14/09')
+  await screen.findByText('Sale of 14/09')
 
   expect(screen.getByText('Sale saved')).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Undo' }))
 
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'DELETE' })),
@@ -205,30 +205,30 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
 test('opening the detail without the just-saved marker never shows Deshacer', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Venta del 14/09')
+  await screen.findByText('Sale of 14/09')
 
   expect(screen.queryByText('Sale saved')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Deshacer' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Undo' })).not.toBeInTheDocument()
 })
 
 test('a sale already gone when deleted shows the gone notice and returns to Ventas', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(404, { code: 'sale.not_found' }))
   renderDetalle()
-  await screen.findByText('Venta del 14/09')
+  await screen.findByText('Sale of 14/09')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
 })
 
-test('a sale with a customer already never shows Asignar cliente', async () => {
+test('a sale with a customer already never shows Assign customer', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Venta del 14/09')
+  await screen.findByText('Sale of 14/09')
 
-  expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
 })
 
 const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', vip: true }
@@ -250,7 +250,7 @@ function dispatchFetch(
   }
 }
 
-test('Asignar cliente opens the "Elegir cliente" sheet without "Sin cliente"; choosing a customer assigns it and shows the toast', async () => {
+test('Assign customer opens the "Pick a customer" sheet without "No customer"; choosing a customer assigns it and shows the toast', async () => {
   let assigned = false
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
@@ -264,11 +264,11 @@ test('Asignar cliente opens the "Elegir cliente" sheet without "Sin cliente"; ch
     }),
   )
   renderDetalle()
-  await screen.findByText('3,5 g · Sin cliente')
+  await screen.findByText('3,5 g · No customer')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
-  expect(screen.getByText('Elegir cliente')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Sin cliente' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
+  expect(screen.getByText('Pick a customer')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'No customer' })).not.toBeInTheDocument()
 
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
@@ -279,8 +279,8 @@ test('Asignar cliente opens the "Elegir cliente" sheet without "Sin cliente"; ch
       expect.objectContaining({ method: 'PUT' }),
     ),
   )
-  expect(await screen.findByText('Cliente asignado')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Customer assigned')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
 })
 
 test('assigning a customer to a sale someone already assigned shows the fixed message and refreshes the detail', async () => {
@@ -297,14 +297,14 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
     }),
   )
   renderDetalle()
-  await screen.findByText('3,5 g · Sin cliente')
+  await screen.findByText('3,5 g · No customer')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
-  expect(await screen.findByText('Esta venta ya tiene cliente.')).toBeInTheDocument()
-  await waitFor(() => expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument())
+  expect(await screen.findByText('This sale already has a customer.')).toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument())
 })
 
 test('assigning to a sale a partner deleted meanwhile shows the gone notice on Ventas', async () => {
@@ -316,9 +316,9 @@ test('assigning to a sale a partner deleted meanwhile shows the gone notice on V
     }),
   )
   renderDetalle()
-  await screen.findByText('3,5 g · Sin cliente')
+  await screen.findByText('3,5 g · No customer')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
@@ -334,16 +334,16 @@ test('assigning a customer a partner deleted meanwhile shows the gone notice on 
     }),
   )
   renderDetalle()
-  await screen.findByText('3,5 g · Sin cliente')
+  await screen.findByText('3,5 g · No customer')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
   expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
 })
 
-test('a sale keeps its recorded "VIP" and "por cantidad" badges while both pricing switches are off', async () => {
+test('a sale keeps its recorded "VIP" and "bulk" badges while both pricing switches are off', async () => {
   const line = SALE.lines[0]
   const recorded = {
     ...SALE,
@@ -362,7 +362,7 @@ test('a sale keeps its recorded "VIP" and "por cantidad" badges while both prici
   )
   renderDetalle()
 
-  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
-  expect(screen.getByText('por cantidad')).toBeInTheDocument()
+  expect(screen.getByText('bulk')).toBeInTheDocument()
 })

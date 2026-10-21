@@ -57,7 +57,7 @@ async function openForm(handlers: Record<string, () => Response>): Promise<Retur
   // The varieties arrive after the form mounts; a test that picks one straight away
   // races the fetch on a loaded machine, so wait until the first line can offer them.
   if (Object.keys(handlers).some((key) => key.startsWith('GET /varieties'))) {
-    const picker = await screen.findByLabelText('Variedad línea 1')
+    const picker = await screen.findByLabelText('Line 1 variety')
     await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(1))
   }
   return fetchMock
@@ -76,10 +76,10 @@ test('the live preview prices a list line as the sale types, with no save call',
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
 
-  expect(await screen.findByText('lista')).toBeInTheDocument()
+  expect(await screen.findByText('list')).toBeInTheDocument()
   expect(screen.getByText('$ 1.000 x g')).toBeInTheDocument()
   // Grams × price per gram, rounded half up (sales.md): 2 g × $1.000 = $2.000, both
   // the line total and (shipping still $0) the sale's own total.
@@ -96,20 +96,20 @@ test('a variety with no price that day shows its message and blocks saving', asy
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '2')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '1')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '2')
+  await user.type(screen.getByLabelText('Line 1 grams'), '1')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
-  expect(await screen.findByText('Tulipán no tiene precio para esa fecha')).toBeInTheDocument()
+  expect(await screen.findByText('Tulipán has no price for that date')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   expect(fetchMock.mock.calls.some(([path, init]) => path === '/sales' && (init as RequestInit)?.method === 'POST')).toBe(
     false,
   )
 })
 
-test('Debiendo is disabled with no customer, enables once one is chosen, and resets on "Sin cliente"', async () => {
+test('Debiendo is disabled with no customer, enables once one is chosen, and resets on "No customer"', async () => {
   const user = userEvent.setup()
   const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
   await openForm({
@@ -119,9 +119,9 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
   })
 
   expect(screen.getByRole('radio', { name: 'Owing' })).toBeDisabled()
-  expect(screen.getByText('Para dejar debiendo elegí un cliente')).toBeInTheDocument()
+  expect(screen.getByText('To leave it owing, pick a customer')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
   await user.click(await screen.findByRole('button', { name: /Ana/ }))
 
   expect(await screen.findByText('Ana')).toBeInTheDocument()
@@ -133,13 +133,13 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
   // not a dead name next to a separate link — its accessible name is the row's
   // full text, "Change" only a part of it.
   await user.click(screen.getByRole('button', { name: /Change/ }))
-  await user.click(await screen.findByRole('button', { name: 'Sin cliente' }))
+  await user.click(await screen.findByRole('button', { name: 'No customer' }))
 
   expect(screen.getByRole('radio', { name: 'Owing' })).toBeDisabled()
   expect(screen.getByRole('radio', { name: 'Owing' })).not.toBeChecked()
 })
 
-test('a customer with no phone shows no phone element in Elegir cliente nor the chosen chip', async () => {
+test('a customer with no phone shows no phone element in Pick a customer nor the chosen chip', async () => {
   const user = userEvent.setup()
   const SOL = { id: 6, name: 'Sol', phone: null, vip: false }
   await openForm({
@@ -148,7 +148,7 @@ test('a customer with no phone shows no phone element in Elegir cliente nor the 
     'GET /customers': () => jsonResponse(200, [SOL]),
   })
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
   const resultRow = await screen.findByRole('button', { name: /Sol/ })
   expect(resultRow.querySelector('.lista-clientes__telefono')).toBeNull()
 
@@ -174,10 +174,10 @@ test('a successful save opens the sale the API answered with, replacing history'
     'GET /sales/42': () => jsonResponse(200, savedSale),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
   expect(await screen.findByText('Sale saved')).toBeInTheDocument()
@@ -232,7 +232,7 @@ test('opened from inside the app, "Close" goes back through history', async () =
   expect(router.state.location.state).toBeNull()
 })
 
-test('an untouched form closes at once; a touched one asks "¿Descartás la venta?" first', async () => {
+test('an untouched form closes at once; a touched one asks "Discard the sale?" first', async () => {
   const user = userEvent.setup()
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
@@ -249,11 +249,11 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
 
   await act(() => router.navigate(SALE_NEW))
   await screen.findByText('New sale')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('button', { name: 'Close' }))
 
   const dialog = await screen.findByRole('alertdialog')
-  expect(within(dialog).getByText('¿Descartás la venta?')).toBeInTheDocument()
+  expect(within(dialog).getByText('Discard the sale?')).toBeInTheDocument()
   await user.click(within(dialog).getByRole('button', { name: 'No, keep entering' }))
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(screen.getByText('New sale')).toBeInTheDocument()
@@ -274,15 +274,15 @@ test('a refused save keeps everything typed, the message on its field', async ()
     'POST /sales': () => jsonResponse(422, { detail: 'too long', code: 'sale.note_too_long' }),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
   await user.type(screen.getByLabelText('Note'), 'una nota bien larga')
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
-  expect(await screen.findByText('La nota es demasiado larga')).toBeInTheDocument()
-  expect(screen.getByLabelText('Variedad línea 1')).toHaveValue('1')
-  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+  expect(await screen.findByText('The note is too long')).toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 variety')).toHaveValue('1')
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
   expect(screen.getByLabelText('Note')).toHaveValue('una nota bien larga')
   expect(screen.getByRole('radio', { name: 'Cash' })).toBeChecked()
   expect(screen.getByText('New sale')).toBeInTheDocument()
@@ -296,11 +296,11 @@ test('sale.payment_required shows its own message on "How it was paid", not the 
     'POST /sales': () => jsonResponse(422, { detail: 'needs a method', code: 'sale.payment_required' }),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
-  const message = await screen.findByText('Elegí cómo se pagó, o dejá la venta debiendo')
+  const message = await screen.findByText('Pick how it was paid, or leave the sale owing')
   expect(message.closest('.nueva-venta__pago')).not.toBeNull()
   expect(screen.queryByText('Check the details and try again.')).not.toBeInTheDocument()
 })
@@ -321,14 +321,14 @@ test('sale.no_price_that_day refetches prices, and the line then shows its own m
     'POST /sales': () => jsonResponse(422, { detail: 'no price', code: 'sale.no_price_that_day' }),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
-  expect(await screen.findByText('lista')).toBeInTheDocument()
+  expect(await screen.findByText('list')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
-  expect(await screen.findByText('Rosa no tiene precio para esa fecha')).toBeInTheDocument()
+  expect(await screen.findByText('Rosa has no price for that date')).toBeInTheDocument()
   expect(varietiesCalls).toBe(2)
 })
 
@@ -353,23 +353,23 @@ test('sale.no_price_that_day opens the flagged line even when it was closed', as
     'POST /sales': () => jsonResponse(422, { detail: 'no price', code: 'sale.no_price_that_day' }),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('button', { name: 'Add another variety' }))
-  await user.selectOptions(screen.getByLabelText('Variedad línea 2'), '3')
-  await user.type(screen.getByLabelText('Gramos línea 2'), '1')
+  await user.selectOptions(screen.getByLabelText('Line 2 variety'), '3')
+  await user.type(screen.getByLabelText('Line 2 grams'), '1')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
   // Line 1 (Rosa) is closed now; line 2 (Clavel) is the open one.
-  expect(screen.queryByLabelText('Variedad línea 1')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Line 1 variety')).not.toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   // The refusal names Rosa — line 1 must open back up, its own fields on
   // screen again, not just its message floating somewhere on the page.
-  expect(await screen.findByText('Rosa no tiene precio para esa fecha')).toBeInTheDocument()
-  expect(screen.getByLabelText('Variedad línea 1')).toBeInTheDocument()
-  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+  expect(await screen.findByText('Rosa has no price for that date')).toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 variety')).toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
   expect(varietiesCalls).toBe(2)
 })
 
@@ -387,19 +387,19 @@ test('sale.customer_not_found and sale.variety_not_found keep the form open with
     },
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByText('New sale')).toBeInTheDocument()
-  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
 
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByText('New sale')).toBeInTheDocument()
-  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
 })
 
 test('nothing an earlier mount cached ever renders: a remount with a different price fetches fresh', async () => {
@@ -412,8 +412,8 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   expect(await screen.findByText('$ 1.000 x g')).toBeInTheDocument()
 
   // Leave (unmounting NuevaVenta — `gcTime: 0` evicts its frozen query right away)
@@ -431,8 +431,8 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
   queryClient.clear()
   await act(() => router.navigate(SALE_NEW))
   await screen.findByText('New sale')
-  await user.selectOptions(await screen.findByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(await screen.findByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
 
   expect(await screen.findByText('$ 5.000 x g')).toBeInTheDocument()
   expect(screen.queryByText('$ 1.000 x g')).not.toBeInTheDocument()
@@ -445,30 +445,30 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  expect(await screen.findByText('lista')).toBeInTheDocument()
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
+  expect(await screen.findByText('list')).toBeInTheDocument()
 
-  await user.type(screen.getByLabelText('Precio especial línea 1'), '0')
-  expect(await screen.findByText('El precio especial tiene que ser mayor a $0')).toBeInTheDocument()
-  expect(screen.queryByText('lista')).not.toBeInTheDocument()
-  expect(screen.queryByText('especial')).not.toBeInTheDocument()
-  expect(screen.getByLabelText(`Regalo línea 1`)).toBeDisabled()
+  await user.type(screen.getByLabelText('Line 1 special price'), '0')
+  expect(await screen.findByText('The special price must be more than $0')).toBeInTheDocument()
+  expect(screen.queryByText('list')).not.toBeInTheDocument()
+  expect(screen.queryByText('special')).not.toBeInTheDocument()
+  expect(screen.getByLabelText(`Line 1 gift`)).toBeDisabled()
 
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
   expect(fetchMock.mock.calls.some(([path, init]) => path === '/sales' && (init as RequestInit)?.method === 'POST')).toBe(
     false,
   )
 
-  await user.clear(screen.getByLabelText('Precio especial línea 1'))
-  expect(screen.queryByText('El precio especial tiene que ser mayor a $0')).not.toBeInTheDocument()
-  expect(await screen.findByText('lista')).toBeInTheDocument()
-  expect(screen.getByLabelText('Regalo línea 1')).toBeEnabled()
+  await user.clear(screen.getByLabelText('Line 1 special price'))
+  expect(screen.queryByText('The special price must be more than $0')).not.toBeInTheDocument()
+  expect(await screen.findByText('list')).toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 gift')).toBeEnabled()
 
-  await user.type(screen.getByLabelText('Precio especial línea 1'), '500')
-  expect(await screen.findByText('especial')).toBeInTheDocument()
-  expect(screen.getByLabelText('Regalo línea 1')).toBeDisabled()
+  await user.type(screen.getByLabelText('Line 1 special price'), '500')
+  expect(await screen.findByText('special')).toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 gift')).toBeDisabled()
 })
 
 test('"Nueva venta a <name>" prices a VIP customer at the VIP price below the bulk minimum', async () => {
@@ -492,8 +492,8 @@ test('"Nueva venta a <name>" prices a VIP customer at the VIP price below the bu
   expect(await screen.findByText('Ana VIP')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '3')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '1')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '3')
+  await user.type(screen.getByLabelText('Line 1 grams'), '1')
 
   // Below the bulk minimum (10 g), the VIP price is still the lowest rule that applies (sales.md).
   // Two "VIP"s now: the customer's own badge, and the line's rule badge.
@@ -508,20 +508,20 @@ test('an untouched second line is removed once it closes', async () => {
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('button', { name: 'Add another variety' }))
 
   // Line 2 opened empty, closed line 1 (now its own row), and — without typing
   // anything into line 2 — "Add another variety" again must not leave two
   // closed rows plus a third open line: the untouched line 2 is removed rather
   // than kept (plan, "Line editor"), so there is still exactly one closed row.
-  expect(screen.getByLabelText('Variedad línea 2')).toBeInTheDocument()
-  expect(screen.getAllByRole('button', { name: /^Línea \d/ })).toHaveLength(1)
+  expect(screen.getByLabelText('Line 2 variety')).toBeInTheDocument()
+  expect(screen.getAllByRole('button', { name: /^Line \d/ })).toHaveLength(1)
   await user.click(screen.getByRole('button', { name: 'Add another variety' }))
 
-  expect(screen.getAllByRole('button', { name: /^Línea \d/ })).toHaveLength(1)
-  expect(screen.getAllByLabelText(/^Variedad línea/)).toHaveLength(1)
+  expect(screen.getAllByRole('button', { name: /^Line \d/ })).toHaveLength(1)
+  expect(screen.getAllByLabelText(/^Line \d+ variety/)).toHaveLength(1)
 })
 
 test('a closed line with bad grams shows its own message and opens on save, with no request sent', async () => {
@@ -531,22 +531,22 @@ test('a closed line with bad grams shows its own message and opens on save, with
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), 'abc')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), 'abc')
   await user.click(screen.getByRole('button', { name: 'Add another variety' }))
-  await user.selectOptions(screen.getByLabelText('Variedad línea 2'), '2')
-  await user.type(screen.getByLabelText('Gramos línea 2'), '1')
+  await user.selectOptions(screen.getByLabelText('Line 2 variety'), '2')
+  await user.type(screen.getByLabelText('Line 2 grams'), '1')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
   // Line 1, now closed, shows its message under the row rather than figures.
-  expect(await screen.findByText('Cargá los gramos: coma, hasta dos decimales')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Variedad línea 1')).not.toBeInTheDocument()
+  expect(await screen.findByText('Enter the grams: comma, up to two decimals')).toBeInTheDocument()
+  expect(screen.queryByLabelText('Line 1 variety')).not.toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   // Saving opens line 1 back up and focuses its Gramos field — the API is never
   // asked to refuse what the front already caught.
-  const gramos1 = await screen.findByLabelText('Gramos línea 1')
+  const gramos1 = await screen.findByLabelText('Line 1 grams')
   expect(gramos1).toHaveFocus()
   expect(fetchMock.mock.calls.some(([path, init]) => path === '/sales' && (init as RequestInit)?.method === 'POST')).toBe(
     false,
@@ -561,12 +561,12 @@ test('a forced sale.grams_invalid answer keeps everything typed, the message at 
     'POST /sales': () => jsonResponse(422, { detail: 'bad grams', code: 'sale.grams_invalid' }),
   })
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
-  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
-  expect(screen.getByLabelText('Variedad línea 1')).toHaveValue('1')
-  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+  expect(screen.getByLabelText('Line 1 variety')).toHaveValue('1')
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
 })

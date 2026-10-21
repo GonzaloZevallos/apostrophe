@@ -164,7 +164,7 @@
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
@@ -176,13 +176,13 @@
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
@@ -194,19 +194,19 @@
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
@@ -218,13 +218,13 @@
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
@@ -236,7 +236,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
@@ -542,7 +542,7 @@
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
@@ -554,13 +554,13 @@
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
@@ -572,19 +572,19 @@
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
@@ -596,13 +596,13 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
@@ -614,13 +614,13 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
@@ -632,13 +632,13 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
@@ -650,19 +650,19 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
@@ -674,13 +674,13 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
@@ -698,7 +698,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
@@ -896,7 +896,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -907,13 +907,13 @@
   {
     "screen": "VentasFechas",
     "rule": "autocomplete",
-    "target": "textbox:Desde",
+    "target": "textbox:From",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "autocomplete",
-    "target": "textbox:Hasta",
+    "target": "textbox:To",
     "issue": 78
   }
 ]

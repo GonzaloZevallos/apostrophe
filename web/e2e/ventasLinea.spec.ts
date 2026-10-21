@@ -18,7 +18,7 @@ const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
 
 async function signUpWithAVariety(page: Page): Promise<void> {
-  await signUpNewBusiness(page, { businessName: `Vivero Línea ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Vivero Line ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Jazmín con un nombre bastante largo')
@@ -52,12 +52,12 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
 
     const line = page.locator('.nueva-venta__linea--abierta')
     const controls = [
-      page.getByLabel('Variedad línea 1'),
-      page.getByLabel('Gramos línea 1'),
-      page.getByLabel('Precio especial línea 1'),
+      page.getByLabel('Line 1 variety'),
+      page.getByLabel('Line 1 grams'),
+      page.getByLabel('Line 1 special price'),
       line.locator('.opcion-interruptor'),
       page.getByRole('button', { name: 'Add another variety' }),
-      page.getByLabel('Envío'),
+      page.getByLabel('Shipping'),
     ]
     for (const control of controls) {
       const rect = await box(control)
@@ -66,10 +66,10 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
       expect(rect.height, `height at ${width}`).toBeGreaterThanOrEqual(TOUCH_TARGET)
     }
     for (const input of [
-      page.getByLabel('Variedad línea 1'),
-      page.getByLabel('Gramos línea 1'),
-      page.getByLabel('Precio especial línea 1'),
-      page.getByLabel('Envío'),
+      page.getByLabel('Line 1 variety'),
+      page.getByLabel('Line 1 grams'),
+      page.getByLabel('Line 1 special price'),
+      page.getByLabel('Shipping'),
     ]) {
       const size = await input.evaluate((element) => parseFloat(getComputedStyle(element).fontSize))
       expect(size, `font size at ${width}`).toBeGreaterThanOrEqual(MIN_INPUT_FONT)

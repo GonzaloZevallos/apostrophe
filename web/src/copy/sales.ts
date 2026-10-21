@@ -1,4 +1,4 @@
-/** The fixed Spanish of the sale screens that is always on screen: the empty list of
+/** The fixed English of the sale screens that is always on screen: the empty list of
  * Ventas, the hint under the disabled Debiendo and the line that has no price for its
  * date. Each binding is the one its screen renders (`pricing.ts` builds the message
  * from `noPriceMessage`), registered here and measured with `SAMPLES` by
@@ -7,15 +7,15 @@
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { EMPTY_STATES } from './emptyStates.ts'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const EMPTY_LIST = EMPTY_STATES.salesList
-export const GRAMS_HELP = 'Coma, hasta dos decimales'
-export const OWING_HINT = 'Para dejar debiendo elegí un cliente'
+export const GRAMS_HELP = 'Comma, up to two decimals'
+export const OWING_HINT = 'To leave it owing, pick a customer'
 
 /** The line of a variety with no price on the sale's date. */
 export function noPriceMessage(varietyName: string): string {
-  return `${varietyName} no tiene precio para esa fecha`
+  return `${varietyName} has no price for that date`
 }
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
@@ -30,49 +30,52 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const SALES_TEXT = {
-  ruleList: 'lista',
-  ruleBulk: 'por cantidad',
-  ruleGift: 'regalo',
-  ruleSpecial: 'especial',
-  elegirCliente: 'Elegir cliente',
-  envioCobrado: 'Envío cobrado',
-  envio: 'Envío',
-  total: 'Total',
-  n0DeRegalo: (arg1: string | number) => ` · ${arg1} de regalo`,
-  guardaLaVenta: 'Guardá la venta',
-  descartasLaVenta: '¿Descartás la venta?',
-  noVasAPoder: 'No vas a poder recuperar lo que cargaste.',
-  buscar: 'Buscar',
-  sinCliente: 'Sin cliente',
-  crearCliente: 'Crear cliente',
-  linea01: (n: string | number, displayName: string | number) => `Línea ${n}: ${displayName}`,
-  g: ' g',
-  variedadLinea0: (n: string | number) => `Variedad línea ${n}`,
-  gramosLinea0: (n: string | number) => `Gramos línea ${n}`,
-  regaloLinea0: (n: string | number) => `Regalo línea ${n}`,
-  regalo: 'Regalo',
-  precioEspecialLinea0: (n: string | number) => `Precio especial línea ${n}`,
-  precioEspecial: 'Precio especial',
-  quitarLinea0: (n: string | number) => `Quitar línea ${n}`,
-  ventaDel0: (date: string | number) => `Venta del ${date}`,
-  deshacer: 'Deshacer',
-  lineas: 'Líneas',
-  porGramo: ' por gramo',
-  clienteAsignado: 'Cliente asignado',
-  asignarCliente: 'Asignar cliente',
-  borrarVenta: 'Borrar venta',
-  desde: 'Desde',
-  hasta: 'Hasta',
-  teDebe: 'te debe',
-  cargaAlMenosUna: 'Cargá al menos una variedad.',
-  elegiComoSePago: 'Elegí cómo se pagó, o dejá la venta debiendo',
-  elPrecioEspecialTiene: 'El precio especial tiene que ser mayor a $0',
-  cargaLosGramosComa: 'Cargá los gramos: coma, hasta dos decimales',
-  elEnvioNoPuede: 'El envío no puede ser negativo',
-  laNotaEsDemasiado: 'La nota es demasiado larga',
-  sinVariedad: 'Sin variedad',
-  estaVentaYaTiene: 'Esta venta ya tiene cliente.',
-  quedoDebiendo: 'quedó debiendo',
-  borrasLaVentaDe: (money: string | number, day: string | number, grams: string | number) => `¿Borrás la venta de ${money} del ${day}? Vuelven ${grams} al stock.`,
-  fechas: 'Fechas',
+  ruleList: 'list',
+  ruleBulk: 'bulk',
+  ruleGift: 'gift',
+  ruleSpecial: 'special',
+  pickCustomer: 'Pick a customer',
+  shippingCharged: 'Shipping charged',
+  shipping: 'Shipping',
+  total: 'Sale total',
+  giftGrams: (grams: string | number) => ` · ${grams} gift`,
+  saveSale: 'Save sale',
+  discardSale: 'Discard the sale?',
+  cannotRecover: "You won't be able to get back what you entered.",
+  search: 'Search',
+  noCustomer: 'No customer',
+  createCustomer: 'Create customer',
+  lineLabel: (n: string | number, displayName: string | number) => `Line ${n}: ${displayName}`,
+  withUnit: (grams: string | number) => `${grams} g`,
+  lineVariety: (n: string | number) => `Line ${n} variety`,
+  lineGrams: (n: string | number) => `Line ${n} grams`,
+  lineGift: (n: string | number) => `Line ${n} gift`,
+  gift: 'Gift',
+  lineSpecialPrice: (n: string | number) => `Line ${n} special price`,
+  specialPrice: 'Special price',
+  removeLine: (n: string | number) => `Remove line ${n}`,
+  saleOf: (date: string | number) => `Sale of ${date}`,
+  undo: 'Undo',
+  lines: 'Lines',
+  perGram: ' per gram',
+  customerAssigned: 'Customer assigned',
+  assignCustomer: 'Assign customer',
+  deleteSale: 'Delete sale',
+  from: 'From',
+  to: 'To',
+  owesYou: 'owes you',
+  addAtLeastOne: 'Add at least one variety.',
+  pickHowPaid: 'Pick how it was paid, or leave the sale owing',
+  specialPriceAboveZero: 'The special price must be more than $0',
+  enterGrams: 'Enter the grams: comma, up to two decimals',
+  shippingNotNegative: 'Shipping cannot be negative',
+  noteTooLong: 'The note is too long',
+  noVariety: 'No variety',
+  saleHasCustomer: 'This sale already has a customer.',
+  leftOwing: 'left owing',
+  paidInCash: 'paid in cash',
+  paidByTransfer: 'paid by transfer',
+  deleteSaleConfirm: (money: string | number, day: string | number, grams: string | number) =>
+    `Delete the sale of ${money} from ${day}? ${grams} go back to stock.`,
+  dates: 'Dates',
 } as const

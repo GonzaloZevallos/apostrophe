@@ -54,7 +54,7 @@ const PERIOD_LABEL: Record<Period, string> = {
   hoy: COMMON_TEXT.today,
   semana: COMMON_TEXT.week,
   mes: COMMON_TEXT.month,
-  fechas: SALES_TEXT.fechas,
+  fechas: SALES_TEXT.dates,
 }
 
 const PERIODS: Period[] = ['hoy', 'semana', 'mes', 'fechas']
@@ -138,11 +138,11 @@ export default function Ventas() {
         {period === 'fechas' && (
           <div className="periodos__fechas">
             <label className="campo">
-              <span className="campo__rotulo">{SALES_TEXT.desde}</span>
+              <span className="campo__rotulo">{SALES_TEXT.from}</span>
               <input
                 className="campo__input"
                 type="date"
-                aria-label={SALES_TEXT.desde}
+                aria-label={SALES_TEXT.from}
                 value={custom.start}
                 max={custom.end}
                 onChange={(event) =>
@@ -151,11 +151,11 @@ export default function Ventas() {
               />
             </label>
             <label className="campo">
-              <span className="campo__rotulo">{SALES_TEXT.hasta}</span>
+              <span className="campo__rotulo">{SALES_TEXT.to}</span>
               <input
                 className="campo__input"
                 type="date"
-                aria-label={SALES_TEXT.hasta}
+                aria-label={SALES_TEXT.to}
                 value={custom.end}
                 min={custom.start}
                 onChange={(event) =>
@@ -187,7 +187,7 @@ export default function Ventas() {
                     <span className="fila-venta__cuerpo">
                       <span className="fila-venta__nombre">
                         {sale.customer === null ? (
-                          <span className="fila-venta__sin-cliente">{SALES_TEXT.sinCliente}</span>
+                          <span className="fila-venta__sin-cliente">{SALES_TEXT.noCustomer}</span>
                         ) : (
                           <>
                             {sale.customer.name}
@@ -208,7 +208,7 @@ export default function Ventas() {
                       <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda' : 'fila-venta__cifra'}>
                         {formatMoney(sale.total)}
                       </span>
-                      {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">{SALES_TEXT.teDebe}</span>}
+                      {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">{SALES_TEXT.owesYou}</span>}
                     </span>
                     <Icono nombre="chevron" />
                   </InAppLink>

@@ -9,6 +9,7 @@
 import { CUSTOMERS, LOGIN, SALE_NEW } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { COMMON_TEXT } from '../copy/common.ts'
+import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkStep } from './states.ts'
 
 export interface PendingTap {
@@ -28,10 +29,10 @@ export const PENDING_TAPS: readonly PendingTap[] = [
     screen: 'NuevaVentaConLinea',
     route: SALE_NEW,
     steps: [
-      { fill: { label: 'Variedad línea 1', value: 'Golden Cookies' } },
-      { fill: { label: 'Gramos línea 1', value: '10' } },
+      { fill: { label: SALES_TEXT.lineVariety(1), value: 'Golden Cookies' } },
+      { fill: { label: SALES_TEXT.lineGrams(1), value: '10' } },
     ],
-    button: 'Guardá la venta',
+    button: SALES_TEXT.saveSale,
     write: { method: 'POST', path: /^\/sales$/ },
   },
   {

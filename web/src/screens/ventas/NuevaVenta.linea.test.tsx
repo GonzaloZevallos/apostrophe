@@ -1,6 +1,6 @@
 /**
  * `NuevaVenta`'s open line on the phone, at the screen seam with `fetch` faked: Regalo is
- * a whole-row switch (not a 13 px native checkbox) that still excludes "Precio especial"
+ * a whole-row switch (not a 13 px native checkbox) that still excludes "Special price"
  * both ways, grams open a decimal keypad and pesos a numeric one, and the line's fields
  * carry the `enterkeyhint` that moves the keyboard through them.
  */
@@ -49,40 +49,40 @@ test('Regalo is a switch whose whole row toggles it, and it excludes Precio espe
   const user = userEvent.setup()
   await openForm()
 
-  const gift = screen.getByRole('switch', { name: 'Regalo línea 1' })
+  const gift = screen.getByRole('switch', { name: 'Line 1 gift' })
   expect(gift).not.toBeChecked()
-  await user.click(screen.getByText('Regalo'))
+  await user.click(screen.getByText('Gift'))
   expect(gift).toBeChecked()
-  expect(screen.getByLabelText('Precio especial línea 1')).toBeDisabled()
+  expect(screen.getByLabelText('Line 1 special price')).toBeDisabled()
 
-  await user.click(screen.getByText('Regalo'))
+  await user.click(screen.getByText('Gift'))
   expect(gift).not.toBeChecked()
-  await user.type(screen.getByLabelText('Precio especial línea 1'), '500')
+  await user.type(screen.getByLabelText('Line 1 special price'), '500')
   expect(gift).toBeDisabled()
 })
 
 test('grams open a decimal keypad, pesos a numeric one, and the keyboard key moves through the line', async () => {
   await openForm()
 
-  const grams = screen.getByLabelText('Gramos línea 1')
-  const special = screen.getByLabelText('Precio especial línea 1')
+  const grams = screen.getByLabelText('Line 1 grams')
+  const special = screen.getByLabelText('Line 1 special price')
   expect(grams).toHaveAttribute('inputmode', 'decimal')
   expect(grams).toHaveAttribute('enterkeyhint', 'next')
   expect(special).toHaveAttribute('inputmode', 'numeric')
   expect(special).toHaveAttribute('enterkeyhint', 'done')
-  expect(screen.getByLabelText('Envío')).toHaveAttribute('inputmode', 'numeric')
+  expect(screen.getByLabelText('Shipping')).toHaveAttribute('inputmode', 'numeric')
 })
 
 test('the keyboard key moves from grams to Precio especial, then closes the keyboard, and never saves', async () => {
   const user = userEvent.setup()
   const fetchMock = await openForm()
 
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2{Enter}')
-  expect(screen.getByLabelText('Precio especial línea 1')).toBe(document.activeElement)
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2{Enter}')
+  expect(screen.getByLabelText('Line 1 special price')).toBe(document.activeElement)
 
-  await user.type(screen.getByLabelText('Precio especial línea 1'), '500{Enter}')
-  expect(screen.getByLabelText('Precio especial línea 1')).not.toBe(document.activeElement)
+  await user.type(screen.getByLabelText('Line 1 special price'), '500{Enter}')
+  expect(screen.getByLabelText('Line 1 special price')).not.toBe(document.activeElement)
   expect(fetchMock.mock.calls.map(([path]) => path)).not.toContain(pathTo(SALES))
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
@@ -101,17 +101,17 @@ test('on a computer Regalo is the plain checkbox the design always had, not the 
   await openForm()
 
   expect(screen.queryByRole('switch')).not.toBeInTheDocument()
-  const gift = screen.getByRole('checkbox', { name: 'Regalo línea 1' })
+  const gift = screen.getByRole('checkbox', { name: 'Line 1 gift' })
   await user.click(gift)
   expect(gift).toBeChecked()
-  expect(screen.getByLabelText('Precio especial línea 1')).toBeDisabled()
+  expect(screen.getByLabelText('Line 1 special price')).toBeDisabled()
 })
 
 test('with Regalo on, the keyboard key on grams closes the keyboard instead of stalling on a disabled field', async () => {
   const user = userEvent.setup()
   await openForm()
 
-  await user.click(screen.getByText('Regalo'))
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2{Enter}')
-  expect(screen.getByLabelText('Gramos línea 1')).not.toBe(document.activeElement)
+  await user.click(screen.getByText('Gift'))
+  await user.type(screen.getByLabelText('Line 1 grams'), '2{Enter}')
+  expect(screen.getByLabelText('Line 1 grams')).not.toBe(document.activeElement)
 })

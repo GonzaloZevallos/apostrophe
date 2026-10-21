@@ -96,12 +96,12 @@ export default function NuevaVentaLinea({
   // changes are for.
   const isComputer = useViewport() === 'computer'
   if (!isOpen) {
-    const displayName = variety?.name ?? SALES_TEXT.sinVariedad
+    const displayName = variety?.name ?? SALES_TEXT.noVariety
     const messageId = `linea-mensaje-${line.key}`
     return (
       <Boton
         variant="row"
-        ariaLabel={SALES_TEXT.linea01(n, displayName)}
+        ariaLabel={SALES_TEXT.lineLabel(n, displayName)}
         ariaDescribedBy={error !== null ? messageId : undefined}
         onClick={onOpen}
       >
@@ -109,7 +109,7 @@ export default function NuevaVentaLinea({
           <span className="nueva-venta__linea-nombre">{displayName}</span>
           {preview !== null && (
             <span className="nueva-venta__linea-gramos">
-              {formatGrams(fromHundredths(preview.gramsHundredths))}{SALES_TEXT.g}
+              {SALES_TEXT.withUnit(formatGrams(fromHundredths(preview.gramsHundredths)))}
             </span>
           )}
         </div>
@@ -143,7 +143,7 @@ export default function NuevaVentaLinea({
         <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
         <select
           className="campo__input"
-          aria-label={SALES_TEXT.variedadLinea0(n)}
+          aria-label={SALES_TEXT.lineVariety(n)}
           value={line.varietyId}
           ref={varietyRef}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
@@ -161,7 +161,7 @@ export default function NuevaVentaLinea({
         <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
         <input
           className="campo__input"
-          aria-label={SALES_TEXT.gramosLinea0(n)}
+          aria-label={SALES_TEXT.lineGrams(n)}
           type="text"
           inputMode="decimal"
           enterKeyHint="next"
@@ -184,18 +184,18 @@ export default function NuevaVentaLinea({
           <label>
             <input
               type="checkbox"
-              aria-label={SALES_TEXT.regaloLinea0(n)}
+              aria-label={SALES_TEXT.lineGift(n)}
               checked={line.gift}
               disabled={line.specialPrice.trim() !== ''}
               onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
               onChange={(event) => onChange({ gift: event.target.checked })}
             />
-            {SALES_TEXT.regalo}
+            {SALES_TEXT.gift}
           </label>
         ) : (
           <OpcionInterruptor
-            label={SALES_TEXT.regalo}
-            ariaLabel={SALES_TEXT.regaloLinea0(n)}
+            label={SALES_TEXT.gift}
+            ariaLabel={SALES_TEXT.lineGift(n)}
             checked={line.gift}
             disabled={line.specialPrice.trim() !== ''}
             onChange={(gift) => onChange({ gift })}
@@ -203,11 +203,11 @@ export default function NuevaVentaLinea({
         )}
         <input
           className="campo__input"
-          aria-label={SALES_TEXT.precioEspecialLinea0(n)}
+          aria-label={SALES_TEXT.lineSpecialPrice(n)}
           type="text"
           inputMode="numeric"
           enterKeyHint="done"
-          placeholder={SALES_TEXT.precioEspecial}
+          placeholder={SALES_TEXT.specialPrice}
           value={line.specialPrice}
           disabled={line.gift}
           ref={specialPriceRef}
@@ -236,7 +236,7 @@ export default function NuevaVentaLinea({
         </div>
       )}
       {canRemove && (
-        <Boton variant="icon" action="delete" ariaLabel={SALES_TEXT.quitarLinea0(n)} onClick={onRemove} />
+        <Boton variant="icon" action="delete" ariaLabel={SALES_TEXT.removeLine(n)} onClick={onRemove} />
       )}
     </div>
   )

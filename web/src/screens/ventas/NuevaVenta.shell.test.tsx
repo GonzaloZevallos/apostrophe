@@ -1,7 +1,7 @@
 /**
  * `NuevaVenta`'s phone shell at the screen seam (Testing Library, `fetch` faked): the form
  * is one element pinned to the visual viewport (ADR-0028), and the sale's total and
- * "Guardá la venta" stay in its footer zone. jsdom loads no stylesheet, so what the
+ * "Save sale" stay in its footer zone. jsdom loads no stylesheet, so what the
  * keyboard hides is checked in the Playwright phone spec; here, that the form is the
  * element the pin and the keyboard flag land on, and that total and button are there both
  * with and without the keyboard.
@@ -68,19 +68,19 @@ function theForm(): HTMLElement {
 
 test('the form is pinned to the visual viewport and its footer holds the total and the save button', async () => {
   renderForm()
-  await screen.findByRole('button', { name: 'Guardá la venta' })
+  await screen.findByRole('button', { name: 'Save sale' })
 
   expect(theForm().style.getPropertyValue('--vv-alto')).toBe('800px')
   expect(document.documentElement).toHaveClass('html--formulario-fijo')
 
-  const footer = screen.getByRole('button', { name: 'Guardá la venta' }).parentElement as HTMLElement
-  expect(within(footer).getByText('Total')).toBeInTheDocument()
+  const footer = screen.getByRole('button', { name: 'Save sale' }).parentElement as HTMLElement
+  expect(within(footer).getByText('Sale total')).toBeInTheDocument()
   expect(within(footer).getByText('$ 0')).toBeInTheDocument()
 })
 
 test('with the keyboard open the form says so and the footer keeps the total and the button', async () => {
   renderForm()
-  await screen.findByRole('button', { name: 'Guardá la venta' })
+  await screen.findByRole('button', { name: 'Save sale' })
 
   act(() => {
     viewport.height = 420
@@ -88,15 +88,15 @@ test('with the keyboard open the form says so and the footer keeps the total and
   })
 
   expect(theForm()).toHaveAttribute('data-teclado', 'abierto')
-  const footer = screen.getByRole('button', { name: 'Guardá la venta' }).parentElement as HTMLElement
-  expect(within(footer).getByText('Total')).toBeInTheDocument()
+  const footer = screen.getByRole('button', { name: 'Save sale' }).parentElement as HTMLElement
+  expect(within(footer).getByText('Sale total')).toBeInTheDocument()
   expect(within(footer).getByText('$ 0')).toBeInTheDocument()
   expect(within(footer).getByText('0 g sold')).toBeInTheDocument()
 })
 
 test('pinch zoom never counts as a keyboard', async () => {
   renderForm()
-  await screen.findByRole('button', { name: 'Guardá la venta' })
+  await screen.findByRole('button', { name: 'Save sale' })
 
   act(() => {
     viewport.height = 420

@@ -1,5 +1,5 @@
 /**
- * `NuevaVentaCliente` (Elegir cliente and its Nuevo cliente sheet) follows Clientes VIP
+ * `NuevaVentaCliente` (Pick a customer and its Nuevo cliente sheet) follows Clientes VIP
  * (`pricing-settings.md`): the VIP mark on a result and the VIP field of the new-customer form
  * show only while it is on. Through Nueva venta, Testing Library, `fetch` faked.
  */
@@ -37,7 +37,7 @@ async function openChooser(vip: boolean): Promise<ReturnType<typeof userEvent.se
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
   const user = userEvent.setup()
-  await user.click(await screen.findByRole('button', { name: 'Elegir cliente' }))
+  await user.click(await screen.findByRole('button', { name: 'Pick a customer' }))
   return user
 }
 
@@ -47,7 +47,7 @@ afterEach(async () => {
   await act(() => router.navigate(HOME))
 })
 
-test('Elegir cliente shows a VIP customer\'s mark and the new-customer form its VIP field while Clientes VIP is on', async () => {
+test('Pick a customer shows a VIP customer\'s mark and the new-customer form its VIP field while Clientes VIP is on', async () => {
   const user = await openChooser(true)
   expect(await screen.findByText('VIP')).toBeInTheDocument()
 
@@ -56,7 +56,7 @@ test('Elegir cliente shows a VIP customer\'s mark and the new-customer form its 
   expect(await screen.findByLabelText('VIP')).toBeInTheDocument()
 })
 
-test('Elegir cliente shows no VIP mark and the new-customer form no VIP field while Clientes VIP is off', async () => {
+test('Pick a customer shows no VIP mark and the new-customer form no VIP field while Clientes VIP is off', async () => {
   const user = await openChooser(false)
   expect(await screen.findByText('Ana VIP')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
@@ -68,7 +68,7 @@ test('Elegir cliente shows no VIP mark and the new-customer form no VIP field wh
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
-test('the new-customer form of Elegir cliente has Nombre required, a clearable optional phone and no Canal field', async () => {
+test('the new-customer form of Pick a customer has Nombre required, a clearable optional phone and no Canal field', async () => {
   const user = await openChooser(false)
   await user.click(await screen.findByRole('button', { name: 'New customer' }))
 

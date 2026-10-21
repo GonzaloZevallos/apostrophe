@@ -127,11 +127,11 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
       <div className="cliente-sheet__contenido">
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
-          <span className="panel__titulo">{SALES_TEXT.elegirCliente}</span>
+          <span className="panel__titulo">{SALES_TEXT.pickCustomer}</span>
           <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={chooser.close} />
         </div>
         <label className="campo campo--buscar">
-          <span className="campo__rotulo visualmente-oculto">{SALES_TEXT.buscar}</span>
+          <span className="campo__rotulo visualmente-oculto">{SALES_TEXT.search}</span>
           <span className="campo--buscar__icono">
             <Icono nombre="buscar" />
           </span>
@@ -175,7 +175,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               chooser.closeAll()
             }}
           >
-            {SALES_TEXT.sinCliente}
+            {SALES_TEXT.noCustomer}
           </Boton>
         )}
         {!creator.isOpen ? (
@@ -198,7 +198,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
             )}
             {offline && <SinConexion />}
             <Boton textOnly="submit" type="submit" disabled={create.isPending}>
-              {SALES_TEXT.crearCliente}
+              {SALES_TEXT.createCustomer}
             </Boton>
           </form>
         )}

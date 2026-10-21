@@ -217,7 +217,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const todayIso = await page.getByLabel('Date').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // A sale paid on the spot, no customer.
@@ -225,7 +225,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('link', { name: 'New sale' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.getByRole('radio', { name: 'Cash' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // Two more sales, dated at the start of this week and the start of this month —

@@ -1,9 +1,9 @@
 /**
  * `NuevaVenta`'s sheets at the screen seam, through a real data router
- * (`createMemoryRouter` + `RouterProvider`) with `fetch` faked: Elegir cliente and Nuevo
+ * (`createMemoryRouter` + `RouterProvider`) with `fetch` faked: Pick a customer and Nuevo
  * cliente are history entries (ADR-0027), so the system back gesture closes only the sheet
- * and "Close" is the same move. The sale's own leave guard keeps asking "¿Descartás la
- * venta?" under Cerrar's condition, and a Nuevo cliente save that resolves after the user
+ * and "Close" is the same move. The sale's own leave guard keeps asking "Discard the sale?"
+ * under Close's condition, and a Nuevo cliente save that resolves after the user
  * already left the sheets still sets the customer and navigates nowhere.
  */
 
@@ -78,55 +78,55 @@ function renderForm() {
 }
 
 const back = (router: ReturnType<typeof renderForm>) => act(() => router.navigate(-1))
-const askedToDiscard = () => screen.queryByRole('alertdialog', { name: '¿Descartás la venta?' })
+const askedToDiscard = () => screen.queryByRole('alertdialog', { name: 'Discard the sale?' })
 
 async function typeNote(user: ReturnType<typeof userEvent.setup>) {
   await user.type(await screen.findByLabelText('Note'), 'para Ana')
 }
 
-test('back with Elegir cliente open closes only the sheet, form intact, nothing asked', async () => {
+test('back with Pick a customer open closes only the sheet, form intact, nothing asked', async () => {
   const user = userEvent.setup()
   const router = renderForm()
   await typeNote(user)
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
-  expect(await screen.findByText('Buscar')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
+  expect(await screen.findByText('Search')).toBeInTheDocument()
   await back(router)
 
-  expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
+  expect(screen.queryByText('Search')).not.toBeInTheDocument()
   expect(askedToDiscard()).not.toBeInTheDocument()
   expect(router.state.location.pathname).toBe(SALE_NEW)
   expect(screen.getByLabelText('Note')).toHaveValue('para Ana')
 })
 
-test('with Nuevo cliente over Elegir cliente, each back closes one level and never asks the sale question', async () => {
+test('with Nuevo cliente over Pick a customer, each back closes one level and never asks the sale question', async () => {
   const user = userEvent.setup()
   const router = renderForm()
   await typeNote(user)
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
   await user.click(await screen.findByRole('button', { name: 'New customer' }))
-  expect(screen.getByRole('button', { name: 'Crear cliente' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Create customer' })).toBeInTheDocument()
 
   await back(router)
-  expect(screen.queryByRole('button', { name: 'Crear cliente' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Create customer' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'New customer' })).toBeInTheDocument()
 
   await back(router)
-  expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
+  expect(screen.queryByText('Search')).not.toBeInTheDocument()
   expect(askedToDiscard()).not.toBeInTheDocument()
   expect(screen.getByLabelText('Note')).toHaveValue('para Ana')
 })
 
-test('"Close" on Elegir cliente is the same move as back', async () => {
+test('"Close" on Pick a customer is the same move as back', async () => {
   const user = userEvent.setup()
   const router = renderForm()
   await typeNote(user)
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
   await user.click((await screen.findAllByRole('button', { name: 'Close' })).at(-1)!)
 
-  expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
+  expect(screen.queryByText('Search')).not.toBeInTheDocument()
   expect(askedToDiscard()).not.toBeInTheDocument()
   expect(sheetDepth(router.state.location.state)).toBe(0)
 })
@@ -135,10 +135,10 @@ test('choosing a customer closes the sheet and leaves exactly the form entry', a
   const user = userEvent.setup()
   const router = renderForm()
 
-  await user.click(await screen.findByRole('button', { name: 'Elegir cliente' }))
+  await user.click(await screen.findByRole('button', { name: 'Pick a customer' }))
   await user.click(await screen.findByRole('button', { name: /Ana/ }))
 
-  await waitFor(() => expect(screen.queryByText('Buscar')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText('Search')).not.toBeInTheDocument())
   expect(sheetDepth(router.state.location.state)).toBe(0)
   // A customer chosen makes the form dirty: the very next back is the form's own question.
   await back(router)
@@ -166,10 +166,10 @@ test.each([
   const router = renderForm()
   await typeNote(user)
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
   await user.click(await screen.findByRole('button', { name: 'New customer' }))
   await user.type(screen.getByLabelText('Name'), 'Luz')
-  await user.click(screen.getByRole('button', { name: 'Crear cliente' }))
+  await user.click(screen.getByRole('button', { name: 'Create customer' }))
   await waitFor(() => expect(releaseCreate).not.toBeNull())
 
   await leave(router)
@@ -178,7 +178,7 @@ test.each([
   })
 
   await waitFor(() => expect(screen.getByRole('button', { name: /Luz/ })).toBeInTheDocument())
-  expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
+  expect(screen.queryByText('Search')).not.toBeInTheDocument()
   expect(screen.getByLabelText('Note')).toHaveValue('para Ana')
   expect(router.state.location.pathname).toBe(SALE_NEW)
   expect(sheetDepth(router.state.location.state)).toBe(0)

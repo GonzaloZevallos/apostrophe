@@ -51,7 +51,7 @@ async function sellOnCredit(page: Page, name: string, grams: string, older = fal
   // An older date has no list price, so the older sale carries its own, $1.000 a gram too: the line's total.
   await fillSaleLine(page, 1, { variety: 'Rosa', grams, specialPrice: older ? String(Number(grams) * 1000) : undefined })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 }
@@ -154,7 +154,7 @@ for (const viewport of VIEWPORTS) {
     await expect(page.getByRole('button', { name: /Beto Deudor/ })).toBeVisible()
     await fillSaleLine(page, 1, { variety: 'Rosa', grams: '1' })
     await page.getByRole('radio', { name: 'Owing' }).check()
-    await page.getByRole('button', { name: 'Guardá la venta' }).click()
+    await page.getByRole('button', { name: 'Save sale' }).click()
     await expectPath(page, SALE)
     await expect(page.getByText('Sale saved')).toBeVisible()
 

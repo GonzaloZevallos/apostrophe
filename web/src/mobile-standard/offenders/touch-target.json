@@ -843,7 +843,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-target",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -853,7 +853,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-target",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78
   },
   {

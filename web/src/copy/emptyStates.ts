@@ -11,7 +11,7 @@ import { EMPTY_CUSTOMERS, NOBODY_OWES } from './customers.ts'
 export const LANGUAGE: 'es' | 'en' = 'es'
 
 export const EMPTY_STATES = {
-  salesList: 'Todavía no registraste ninguna venta en este período.',
+  salesList: "You haven't recorded any sales in this period yet.",
   customersList: EMPTY_CUSTOMERS,
   homeNobodyOwes: NOBODY_OWES,
   homeVarietiesTitle: 'Arrancá por las variedades',

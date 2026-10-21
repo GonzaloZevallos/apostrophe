@@ -2,7 +2,7 @@
  * Nueva venta's phone shell, in a real phone browser (GH-78, `nv-shell`): the fixed header, the
  * scrolling body and the footer pinned to the visual viewport. jsdom loads no stylesheet, so the
  * layout is proven here: at 320, 375 and 430 px and at 130 % text (a 246 px-wide viewport, the
- * width the mobile audit measured) the footer's total and "Guardá la venta" are on screen on
+ * width the mobile audit measured) the footer's total and "Save sale" are on screen on
  * load, the header stays put while the body scrolls, how it was paid and the Debiendo hint
  * scroll fully above the footer with the screen's side margin, a shortened viewport (the
  * keyboard's stand-in: headless Chromium has no on-screen keyboard) leaves the footer in view,
@@ -72,7 +72,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: HEIGHT })
     await page.goto(SALE_NEW)
-    const save = page.getByRole('button', { name: 'Guardá la venta' })
+    const save = page.getByRole('button', { name: 'Save sale' })
     await expect(save).toBeVisible()
 
     // The footer's total and button are on screen on load, no scrolling.
@@ -107,7 +107,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
 
     // Scrolled to the end: how it was paid and the Debiendo hint sit fully above the footer,
     // with the screen's own side margin, never at x = 0.
-    const hint = page.getByText('Para dejar debiendo elegí un cliente')
+    const hint = page.getByText('To leave it owing, pick a customer')
     const hintBox = await box(hint)
     expect(hintBox.x).toBeGreaterThan(0)
     expect(hintBox.y + hintBox.height).toBeLessThanOrEqual((await box(footer)).y)
@@ -123,7 +123,7 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
 }) => {
   await signInWithAPricedVariety(page)
   await page.goto(SALE_NEW)
-  const save = page.getByRole('button', { name: 'Guardá la venta' })
+  const save = page.getByRole('button', { name: 'Save sale' })
   await expect(save).toBeVisible()
   const grams = page.getByText('sold')
   await expect(grams).toBeVisible()
