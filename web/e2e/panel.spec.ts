@@ -91,12 +91,12 @@ function grams(value: number): string {
 }
 
 function countLabel(count: number): string {
-  return `${count} ${count === 1 ? 'venta' : 'ventas'}`
+  return `${count} ${count === 1 ? 'sale' : 'sales'}`
 }
 
 /** `salesOwingCount`: the Te deben head's count line. */
 function owingLabel(count: number): string {
-  return `${countLabel(count)} debiendo`
+  return `${countLabel(count)} owing`
 }
 
 // A local mirror of `web/src/components/MarcaEstado.tsx`'s own word table and
@@ -297,26 +297,26 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
         page.getByRole('group', { name: 'Cash', exact: true }).locator('.panel-resultados__valor'),
       ).toHaveText(signedPesos(period.cash))
       await expect(
-        page.getByRole('group', { name: 'Costo de lo vendido', exact: true }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Cost of goods sold', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.cost_of_goods))
       await expect(
         page.getByRole('group', { name: 'Expenses', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.expenses))
       await expect(
-        page.getByRole('group', { name: 'Regalaste', exact: true }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'You gave away', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(grams(period.grams_gifted))
       await expect(
         page.getByRole('group', { name: 'Flower purchases', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
-      // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
+      // "includes pending cost", under both Cost of goods sold and Ganancia only,
       // never under Caja (plan, PRD: "Caja never carries it").
-      await expect(page.getByText('incluye costo pendiente')).toHaveCount(period.pending_cost ? 2 : 0)
+      await expect(page.getByText('includes pending cost')).toHaveCount(period.pending_cost ? 2 : 0)
     } else {
       // Hoy is only what can be acted on (results.md): no result figure at all.
-      for (const label of ['Profit', 'Cash', 'Costo de lo vendido', 'Expenses', 'Regalaste', 'Flower purchases']) {
+      for (const label of ['Profit', 'Cash', 'Cost of goods sold', 'Expenses', 'You gave away', 'Flower purchases']) {
         await expect(page.locator('main').getByText(label, { exact: true })).toHaveCount(0)
       }
-      await expect(page.getByText('incluye costo pendiente')).toHaveCount(0)
+      await expect(page.getByText('includes pending cost')).toHaveCount(0)
     }
 
     // "Vendiste ..."'s own subtitle: count, average (absent with no sales) and
@@ -369,14 +369,14 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // oldest date. Each teaser row carries its own "desde dd/mm", inside its own link.
   await expect(page.locator('.bloque-deben__cuenta')).toHaveText(owingLabel(panel.debts.sales_owing_count))
   if (panel.debts.oldest !== null) {
-    await expect(page.locator('.bloque-deben__desde')).toHaveText(`desde ${shortDate(panel.debts.oldest)}`)
+    await expect(page.locator('.bloque-deben__desde')).toHaveText(`since ${shortDate(panel.debts.oldest)}`)
   }
 
   const [teaserRow] = panel.debts.teaser
   if (teaserRow === undefined) throw new Error('empty teaser in GET /panel')
   const teaserLink = page.locator('.bloque-deben__fila').filter({ hasText: teaserRow.name })
   await expect(teaserLink).toContainText(pesos(teaserRow.balance))
-  await expect(teaserLink).toContainText(`desde ${shortDate(teaserRow.owing_since)}`)
+  await expect(teaserLink).toContainText(`since ${shortDate(teaserRow.owing_since)}`)
 
   // Opens Te deben from the block's own heading, then goes back to Inicio.
   await page.getByRole('link', { name: 'Owed to you' }).click()

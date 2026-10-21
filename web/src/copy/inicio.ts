@@ -3,7 +3,7 @@
  * `copy/copyLimits.test.ts`. `Inicio.tsx` renders these same bindings.
  */
 
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'

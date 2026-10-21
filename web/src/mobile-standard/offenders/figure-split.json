@@ -71,7 +71,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Consumo propio $ #.# y # g sin costo",
+    "target": "span:Own use $ #.# and # g without cost",
     "issue": 48,
     "sizes": [
       "430x932",
@@ -81,7 +81,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#",
+    "target": "span:Stock shortfall $ #.#",
     "issue": 48,
     "sizes": [
       "430x932",
@@ -91,7 +91,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#[1]",
+    "target": "span:Stock shortfall $ #.#[1]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -101,7 +101,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#[2]",
+    "target": "span:Stock shortfall $ #.#[2]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -111,7 +111,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Promoción $ #.#",
+    "target": "span:Promotion $ #.#",
     "issue": 48,
     "sizes": [
       "430x932"
@@ -120,7 +120,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Promoción $ #.#[1]",
+    "target": "span:Promotion $ #.#[1]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -130,7 +130,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Promoción $ #.#[2]",
+    "target": "span:Promotion $ #.#[2]",
     "issue": 48,
     "sizes": [
       "320x568",
@@ -140,7 +140,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:gastos $ #.#.#.#",
+    "target": "span:expenses $ #.#.#.#",
     "issue": 48
   },
   {
