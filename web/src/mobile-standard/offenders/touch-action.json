@@ -628,37 +628,37 @@
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[6]",
+    "target": "button:Delete[6]",
     "issue": 60
   },
   {
@@ -670,37 +670,37 @@
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[6]",
+    "target": "button:Rename[6]",
     "issue": 60
   },
   {
@@ -724,61 +724,61 @@
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 60
   },
   {
@@ -802,73 +802,73 @@
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[6]",
+    "target": "button:Delete[6]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[6]",
+    "target": "button:Rename[6]",
     "issue": 60
   },
   {
@@ -2626,73 +2626,73 @@
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[6]",
+    "target": "button:Delete[6]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[6]",
+    "target": "button:Rename[6]",
     "issue": 49
   },
   {
@@ -2728,73 +2728,73 @@
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[6]",
+    "target": "button:Delete[6]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[6]",
+    "target": "button:Rename[6]",
     "issue": 49
   },
   {

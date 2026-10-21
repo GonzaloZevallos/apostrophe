@@ -98,7 +98,7 @@
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "autocomplete",
-    "target": "textbox:Nombre de Categoría LarguísimoLarguísimoLarguísimoLa",
+    "target": "textbox:Name of Categoría LarguísimoLarguísimoLarguísimoLarg",
     "issue": 60
   },
   {
