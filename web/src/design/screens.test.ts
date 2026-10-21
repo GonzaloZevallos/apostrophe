@@ -371,6 +371,18 @@ describe('the Inicio rows of the real screens.json', () => {
     })
   })
 
+  it('crops the computer Hoy rows to one frame of InicioCompu.dc.html, never to two', () => {
+    const drawing = readFileSync(
+      resolve(process.cwd(), '..', 'docs/product/design-system/pantallas/InicioCompu.dc.html'),
+      'utf-8',
+    )
+    for (const key of ['InicioHoyCompu', 'InicioHoyCompuOscuro']) {
+      const section = row(key).section ?? ''
+      expect(sectionOccurrences(drawing, section), key).toBe(1)
+      expect(sectionOccurrences(drawing + drawing, section), `${key} drawn twice`).toBe(2)
+    }
+  })
+
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
     expect(clicks(row('InicioOscuro'))).toEqual([])
     expect(row('InicioOscuro').tema).toBe('oscuro')
