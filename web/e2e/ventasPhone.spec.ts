@@ -4,7 +4,7 @@
  * 130 % text (the same widths divided by 1.3, which is what the browser's text zoom does to the
  * CSS viewport), the period tabs sit in two or four equal columns (never three), are at least
  * 44 px tall and are not clipped; Fechas' date inputs are at least 16 px, 44 px tall and inside
- * the screen; the detail's "Borrar venta" and its dialog's buttons are at least 44 px tall; and
+ * the screen; the detail's "Delete sale" and its dialog's buttons are at least 44 px tall; and
  * nothing overflows the page sideways. On a computer the tabs keep the plain list.
  */
 
@@ -103,7 +103,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
     }
     await expectNoSidewaysOverflow(page)
 
-    await tabs.getByRole('button', { name: 'Fechas' }).click()
+    await tabs.getByRole('button', { name: 'Dates' }).click()
     for (const label of ['Desde', 'Hasta']) {
       const input = page.getByLabel(label, { exact: true })
       const found = await box(input)
@@ -116,12 +116,12 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 
     await tabs.getByRole('button', { name: 'Today' }).click()
     await page.locator('.fila-venta').first().click()
-    await expect(page.getByRole('button', { name: 'Borrar venta' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Delete sale' })).toBeVisible()
     await expectNoSidewaysOverflow(page)
-    const borrar = await box(page.getByRole('button', { name: 'Borrar venta' }))
-    expect(borrar.height, `${phone.name}: Borrar venta`).toBeGreaterThanOrEqual(TOUCH_TARGET)
+    const borrar = await box(page.getByRole('button', { name: 'Delete sale' }))
+    expect(borrar.height, `${phone.name}: Delete sale`).toBeGreaterThanOrEqual(TOUCH_TARGET)
 
-    await page.getByRole('button', { name: 'Borrar venta' }).click()
+    await page.getByRole('button', { name: 'Delete sale' }).click()
     for (const name of ['Yes, delete it', 'No, keep it']) {
       const found = await box(page.getByRole('button', { name }))
       expect(found.height, `${phone.name}: ${name}`).toBeGreaterThanOrEqual(TOUCH_TARGET)

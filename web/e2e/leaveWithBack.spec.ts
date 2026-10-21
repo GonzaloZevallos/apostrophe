@@ -46,7 +46,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await page.getByRole('link', { name: 'Nueva venta a Carla Volver' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // A dirty Registrar cobro, reached from Clientes' "Cobrar a".
@@ -71,5 +71,5 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await expect(page.getByText('¿Descartás la venta?')).toBeVisible()
   await page.getByRole('button', { name: 'No, keep entering' }).click()
   await expectPath(page, SALE_NEW)
-  await expect(page.getByLabel('Gramos línea 1')).toHaveValue('3')
+  await expect(page.getByLabel('Line 1 grams')).toHaveValue('3')
 })

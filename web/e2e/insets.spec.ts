@@ -131,7 +131,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   await page.getByRole('link', { name: 'Nueva venta a Lucía Borde' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   const saleUrl = new URL(page.url()).pathname
 
@@ -177,10 +177,10 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     expect(form.top, where('nueva venta top')).toBe(TOP)
     if (!viewport.wide) expect(form.left, where('nueva venta left')).toBe(SIDE)
     await scrollToEnd(page)
-    const save = await box(page, 'button:has-text("Guardá la venta")')
-    expect(save.bottom, where('Guardá la venta')).toBeLessThanOrEqual(viewport.height - BOTTOM)
+    const save = await box(page, 'button:has-text("Save sale")')
+    expect(save.bottom, where('Save sale')).toBeLessThanOrEqual(viewport.height - BOTTOM)
 
-    await page.getByRole('button', { name: 'Elegir cliente' }).click()
+    await page.getByRole('button', { name: 'Pick a customer' }).click()
     const sheetButton = page.locator('.cliente-sheet__contenido button').last()
     await sheetButton.scrollIntoViewIfNeeded()
     expectInside(where('customer sheet button'), await box(page, '.cliente-sheet__contenido button', 'last'), viewport)

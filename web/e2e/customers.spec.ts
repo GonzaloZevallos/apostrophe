@@ -11,7 +11,7 @@
  *
  * Covers the PRD's own lifecycle for a customer with no number: registered, edited,
  * found by name, chosen for a sale left owing, paid through Registrar cobro, and
- * shown in Te deben — plus a new no-number customer created from Elegir cliente
+ * shown in Te deben — plus a new no-number customer created from Pick a customer
  * and sold to (its duration is not measured, docs/adr/0038), and that nothing personal reaches the console or the
  * browser's own storage.
  */
@@ -89,7 +89,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -121,17 +121,17 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // A second customer, also without a phone number, created straight from Elegir
   // cliente inside a new sale, chosen and sold to in one run.
   await page.goto(SALE_NEW)
-  await page.getByRole('button', { name: 'Elegir cliente' }).click()
+  await page.getByRole('button', { name: 'Pick a customer' }).click()
   await page.getByRole('button', { name: 'New customer' }).click()
   await page.getByLabel('Name').fill('Sol Sinnumero')
-  await page.getByRole('button', { name: 'Crear cliente' }).click()
+  await page.getByRole('button', { name: 'Create customer' }).click()
   await expect(page.getByRole('button', { name: /Sol Sinnumero/ })).toBeVisible()
   // The chosen chip carries no phone element either.
   const chip = page.getByRole('button', { name: /Sol Sinnumero/ })
   await expect(chip.locator('.nueva-venta__cliente-telefono')).toHaveCount(0)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 

@@ -61,7 +61,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Precio guardado')).toBeVisible()
       await page.goto(SALE_NEW)
       await fillSaleLine(page, 1, { variety: 'Rosa', grams: '4', gift: true })
-      await page.getByRole('button', { name: 'Guardá la venta' }).click()
+      await page.getByRole('button', { name: 'Save sale' }).click()
       await expect(page.getByText('Sale saved')).toBeVisible()
       await page.goto(VARIETIES)
       await page.getByRole('link', { name: /Rosa/ }).click()

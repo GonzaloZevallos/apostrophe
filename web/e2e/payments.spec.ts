@@ -83,7 +83,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   const today = shortDate(todayIso)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -118,7 +118,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '8' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -164,7 +164,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   const saleTwoRow = page.locator('.fila-venta').filter({ hasText: '$ 8.000' })
   await expect(saleTwoRow.getByText('te debe')).toBeVisible()
   await saleTwoRow.click()
-  await page.getByRole('button', { name: 'Borrar venta' }).click()
+  await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(
     page.getByRole('alertdialog', {
       name: `¿Borrás la venta de $ 8.000 del ${today}? Vuelven 8 g al stock.`,
@@ -189,7 +189,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
   const creditSaleUrl = page.url()
@@ -203,7 +203,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
 
   await page.goto(creditSaleUrl)
-  await page.getByRole('button', { name: 'Borrar venta' }).click()
+  await page.getByRole('button', { name: 'Delete sale' }).click()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, SALES)
   await expect(page.getByText('Sale deleted')).toBeVisible()
@@ -240,7 +240,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -250,7 +250,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.getByRole('radio', { name: 'Owing' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
