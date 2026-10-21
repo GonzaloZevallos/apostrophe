@@ -223,7 +223,7 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
-  expect(within(rows[0]!).getByText('Promoción · −5,5 g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('Promotion · −5,5 g')).toBeInTheDocument()
   expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 9 }))
   expect(within(rows[0]!).queryByRole('button', { name: 'Borrar' })).not.toBeInTheDocument()
   expect(within(rows[1]!).getByText('Purchase · 30 g')).toBeInTheDocument()
@@ -255,7 +255,7 @@ test('"All entries" shows the entry and no withdrawal, and never asks for moveme
   expect(asked.filter((url) => url.includes('/movements'))).toEqual([])
 
   const list = screen.getByRole('list')
-  expect(within(list).queryByText(/Promoción|Consumo propio/)).toBeNull()
+  expect(within(list).queryByText(/Promotion|Own use/)).toBeNull()
   expect(within(list).queryByText(/−/)).toBeNull()
 })
 

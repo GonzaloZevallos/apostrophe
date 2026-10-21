@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest'
+import { EMPTY_MONTH_LINE, NO_HISTORY_LINE } from '../copy/analysis'
 import { EMPTY_STATE_WORDINGS, EMPTY_STATES } from '../copy/emptyStates'
+import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/inicio'
 
 const sources = import.meta.glob(['/src/screens/**/*.tsx', '/src/screens/**/*.ts'], {
   query: '?raw',
@@ -30,7 +32,13 @@ export function literalCopies(
 describe('the empty-state wordings', () => {
   test('are all listed, non-empty and distinct', () => {
     // The list also carries the wordings that moved to English with their own screen's copy file.
-    expect(EMPTY_STATE_WORDINGS).toEqual(expect.arrayContaining(Object.values(EMPTY_STATES)))
+    expect(EMPTY_STATE_WORDINGS).toEqual([
+      ...Object.values(EMPTY_STATES),
+      EMPTY_TITLE,
+      EMPTY_DETAIL,
+      NO_HISTORY_LINE,
+      EMPTY_MONTH_LINE,
+    ])
     expect(new Set(EMPTY_STATE_WORDINGS).size).toBe(EMPTY_STATE_WORDINGS.length)
     for (const wording of EMPTY_STATE_WORDINGS) expect(wording).not.toBe('')
   })

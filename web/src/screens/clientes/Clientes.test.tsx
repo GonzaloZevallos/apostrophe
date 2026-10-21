@@ -254,7 +254,7 @@ test("Te deben shows the API's order and total as answered, never a client sort 
 
   const section = await screen.findByRole('region', { name: 'Owed to you' })
   expect(within(section).getByText('$ 99.000')).toBeInTheDocument()
-  expect(within(section).getByText('1 venta debiendo')).toBeInTheDocument()
+  expect(within(section).getByText('1 sale owing')).toBeInTheDocument()
   expect(
     within(section).getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label')),
   ).toEqual(['Collect from Zoe', 'Collect from Abel'])

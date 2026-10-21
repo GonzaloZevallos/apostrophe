@@ -150,7 +150,7 @@ test("the period's total and count are the sum and the number of sales shown", a
   renderVentas()
 
   expect(await screen.findByText('$ 10.000')).toBeInTheDocument()
-  expect(screen.getByText('03/10 · 2 ventas')).toBeInTheDocument()
+  expect(screen.getByText('03/10 · 2 sales')).toBeInTheDocument()
   expect(screen.getByText('Nico')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
   expect(screen.getByText('Sin cliente')).toBeInTheDocument()
@@ -161,18 +161,18 @@ test('the header shows the range next to the total, dd/mm, collapsed to one date
   api.mockImplementation(() => Promise.resolve(jsonResponse(200, [])))
   renderVentas()
 
-  expect(await screen.findByText('03/10 · 0 ventas')).toBeInTheDocument()
+  expect(await screen.findByText('03/10 · 0 sales')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Week' }))
-  expect(await screen.findByText('28/09 – 04/10 · 0 ventas')).toBeInTheDocument()
+  expect(await screen.findByText('28/09 – 04/10 · 0 sales')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Month' }))
-  expect(await screen.findByText('01/10 – 31/10 · 0 ventas')).toBeInTheDocument()
+  expect(await screen.findByText('01/10 – 31/10 · 0 sales')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Fechas' }))
   // Fechas opens on the current month's own range too (`custom` starts as
   // `monthRange(me.today)`), so it reads exactly like Mes here.
-  expect(await screen.findByText('01/10 – 31/10 · 0 ventas')).toBeInTheDocument()
+  expect(await screen.findByText('01/10 – 31/10 · 0 sales')).toBeInTheDocument()
 })
 
 test('each row carries the chevron icon', async () => {

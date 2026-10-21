@@ -110,7 +110,7 @@ const SUBMIT_NEW = 'Guardá el retiro'
 
 /** A new withdrawal with the given varieties on its lines, ready to save. */
 async function fillNew(names: string[]) {
-  await userEvent.click(await screen.findByRole('button', { name: 'Promoción' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Promotion' }))
   for (const [index, name] of names.entries()) {
     if (index > 0) await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
     await userEvent.selectOptions(await screen.findByLabelText(`Variedad ${index + 1}`), name)

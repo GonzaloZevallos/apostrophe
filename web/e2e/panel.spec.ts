@@ -326,7 +326,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     const subtitle =
       period.average_sale === null
         ? `${count} · ${gramsSoldText}`
-        : `${count} · promedio ${pesos(period.average_sale)} · ${gramsSoldText}`
+        : `${count} · average ${pesos(period.average_sale)} · ${gramsSoldText}`
     await expect(page.locator('.panel-ventas .pie')).toHaveText(subtitle)
   }
 
