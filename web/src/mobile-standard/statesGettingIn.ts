@@ -8,6 +8,7 @@
  */
 
 import { COMMON_TEXT, ERROR_GENERICO_MENSAJE } from '../copy/common.ts'
+import { SALES_TEXT } from '../copy/sales.ts'
 import { REFUSAL_TEXT } from '../copy/refusals.ts'
 import { INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
 import type { WalkState } from './states.ts'
@@ -46,7 +47,7 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
   {
     screen: 'EstadosGoneAviso',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: 'Delete sale' }, { click: COMMON_TEXT.yesDelete }],
+    steps: [{ click: SALES_TEXT.deleteSale }, { click: COMMON_TEXT.yesDelete }],
     visible: GONE_NOTICE,
     writes: [{ method: 'DELETE', path: /^\/sales\/\d+$/, status: 404, body: { code: 'sale.not_found' } }],
   },

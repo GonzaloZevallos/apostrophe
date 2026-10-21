@@ -78,9 +78,9 @@ export const UNDO_WINDOW_MS = 5000
 function paymentSummary(payment: Sale['payment']): string {
   switch (payment) {
     case 'cash':
-      return 'pagada en efectivo'
+      return SALES_TEXT.paidInCash
     case 'transfer':
-      return 'pagada por transferencia'
+      return SALES_TEXT.paidByTransfer
     case 'owing':
       return SALES_TEXT.leftOwing
     case 'none':

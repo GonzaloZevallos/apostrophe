@@ -73,6 +73,8 @@ export const SALES_TEXT = {
   noVariety: 'No variety',
   saleHasCustomer: 'This sale already has a customer.',
   leftOwing: 'left owing',
+  paidInCash: 'paid in cash',
+  paidByTransfer: 'paid by transfer',
   deleteSaleConfirm: (money: string | number, day: string | number, grams: string | number) =>
     `Delete the sale of ${money} from ${day}? ${grams} go back to stock.`,
   dates: 'Dates',
