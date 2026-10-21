@@ -280,7 +280,7 @@ const CREDIT_CUSTOMER = {
   standing: 'credit',
 }
 
-test('a customer in credit shows "A favor", never "Te debe", and no Registrar cobro', async () => {
+test('a customer in credit shows "Credit", never "Te debe", and no Registrar cobro', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/2': () => jsonResponse(200, CREDIT_CUSTOMER),
@@ -333,12 +333,12 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
     throw new Error('expected four account rows')
   }
   expect(saleFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 11.000')
-  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('saldo $ 11.000')
+  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('balance $ 11.000')
   // The first payment's own amount ($ 5.000, what it applied to the 14/09 sale)
   // differs from what it then left owing ($ 6.000) — exactly the figure the
   // review found missing.
   expect(firstPaymentFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 5.000')
-  expect(firstPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('saldo $ 6.000')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('balance $ 6.000')
   // The second payment (id 6, $ 8.000 in all) finishes off the 14/09 sale's
   // remaining $ 6.000 — its own split row, before its leftover becomes the
   // credit row below (plan, "Account": "a credit row ... right after that
@@ -346,9 +346,9 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   // fixture, leaving the credit jump from $ 6.000 straight to -$ 2.000 with no
   // row accounting for the $ 6.000 in between).
   expect(secondPaymentFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 6.000')
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('saldo $ 0')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('balance $ 0')
   // The credit row's own leftover ($ 2.000) and the running balance it leaves
-  // (also "A favor $ 2.000" here) both drop their sign, picked only by `kind`/
+  // (also "Credit $ 2.000" here) both drop their sign, picked only by `kind`/
   // `standing`, never a comparison on the number itself.
   expect(creditFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 2.000')
   expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('Credit $ 2.000')
@@ -392,7 +392,7 @@ test('Delete payment asks before deleting, then shows "Payment deleted" and refr
   await userEvent.click(borrar)
 
   expect(
-    screen.getByText('¿Borrás el cobro de $ 5.000 (efectivo) del 20/09?'),
+    screen.getByText('Delete the payment of $ 5.000 (cash) from 20/09?'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -427,7 +427,7 @@ const CREDIT_ONLY_ACCOUNT = {
   ],
 }
 
-test('a payment that shows only as "A favor" offers Delete payment, and deleting it brings the balance back to nothing', async () => {
+test('a payment that shows only as "Credit" offers Delete payment, and deleting it brings the balance back to nothing', async () => {
   let deleted = false
   api.mockImplementation(
     dispatchFetch({
@@ -446,7 +446,7 @@ test('a payment that shows only as "A favor" offers Delete payment, and deleting
   await userEvent.click(borrar)
 
   expect(
-    screen.getByText('¿Borrás el cobro de $ 44.000 (efectivo) del 06/10?'),
+    screen.getByText('Delete the payment of $ 44.000 (cash) from 06/10?'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -471,7 +471,7 @@ test('Delete payment on a credit-only payment already gone closes the dialog and
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
-  expect(screen.queryByText('¿Borrás el cobro de $ 44.000 (efectivo) del 06/10?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Delete the payment of $ 44.000 (cash) from 06/10?')).not.toBeInTheDocument()
   expect(screen.queryByText('Payment deleted')).not.toBeInTheDocument()
 })
 
@@ -577,7 +577,7 @@ test('registering a payment shows "Payment saved · still owing $ X" when someth
   expect(await screen.findByText('Payment saved · still owing $ 6.000')).toBeInTheDocument()
 })
 
-test('"Todo" fills the amount with the balance, and the debounced preview shows the splits and what is left', async () => {
+test('"All" fills the amount with the balance, and the debounced preview shows the splits and what is left', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
@@ -600,7 +600,7 @@ test('"Todo" fills the amount with the balance, and the debounced preview shows 
   expect(within_.getByLabelText('Amount')).toHaveValue('11000')
 
   expect(await within_.findByText('Taken from the oldest debt')).toBeInTheDocument()
-  expect(await within_.findByText('$ 11.000 a la venta del 14/09')).toBeInTheDocument()
+  expect(await within_.findByText('$ 11.000 to the sale of 14/09')).toBeInTheDocument()
   expect(within_.queryByText(/They still owe/)).not.toBeInTheDocument()
 })
 
@@ -624,7 +624,7 @@ test('a partial amount\'s preview shows "They still owe $ X", from the preview\'
   await userEvent.clear(within_.getByLabelText('Amount'))
   await userEvent.type(within_.getByLabelText('Amount'), '5000')
 
-  expect(await within_.findByText('$ 5.000 a la venta del 14/09')).toBeInTheDocument()
+  expect(await within_.findByText('$ 5.000 to the sale of 14/09')).toBeInTheDocument()
   expect(await within_.findByText('They still owe $ 6.000')).toBeInTheDocument()
 })
 

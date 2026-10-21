@@ -6,16 +6,15 @@
  */
 
 import type { LimitedCopy } from './limits'
-import { EMPTY_STATES } from './emptyStates'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
 /** Clientes' empty list. */
-export const EMPTY_CUSTOMERS = EMPTY_STATES.customersList
+export const EMPTY_CUSTOMERS = 'You have not added any customers yet.'
 /** Heads everyone A–Z, under "Owed to you" (`Clientes.dc.html`). */
 export const EVERYONE = 'Everyone · A–Z'
 /** "Owed to you" with nobody owing. */
-export const NOBODY_OWES = EMPTY_STATES.homeNobodyOwes
+export const NOBODY_OWES = 'Nobody owes you'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_CUSTOMERS },
@@ -51,4 +50,7 @@ export const CUSTOMERS_TEXT = {
   phoneTaken: 'That phone number already belongs to another customer',
   searchCustomer: 'Search customer',
   searching: 'Searching…',
+  methodCash: 'cash',
+  methodTransfer: 'transfer',
+  balanceAmount: (running_balance: string | number) => `balance ${running_balance}`,
 } as const

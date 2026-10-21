@@ -27,7 +27,7 @@ import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
 
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
- * its "Te debe" and "A favor" are what these specs read. */
+ * its "Te debe" and "Credit" are what these specs read. */
 function cardOf(page: Page) {
   return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
 }

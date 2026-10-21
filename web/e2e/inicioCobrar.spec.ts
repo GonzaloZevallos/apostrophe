@@ -80,7 +80,7 @@ for (const viewport of VIEWPORTS) {
     await expect(toast).not.toContainText('Carla')
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 3.000')
 
-    // The rest, with "Todo": the row leaves and the block reads "Nobody owes you".
+    // The rest, with "All": the row leaves and the block reads "Nobody owes you".
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'All: $ 3.000' }).click()
     await page.getByRole('radio', { name: 'Transfer' }).check()

@@ -2,7 +2,7 @@
  * Clientes as redesigned, phone and computer, against the real backend through the built front
  * (customers.md, "On screen (Clientes)"; payments.md, "Owed to you"): the screen opens on "Owed to you"
  * (count line, total, debtors oldest owing-since first with ties by name) above everyone A–Z;
- * "Collect from <name>" on a row opens Registrar cobro with that customer chosen, "Todo" fills the
+ * "Collect from <name>" on a row opens Registrar cobro with that customer chosen, "All" fills the
  * whole balance in one tap, a payment is saved, and one move back returns to Clientes; the
  * customer's card offers "Nueva venta a <name>" with that customer already chosen.
  *
@@ -115,7 +115,7 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('.cobro__cliente')).toContainText('Carla Deudora')
     await expect(page.locator('.cobro__cliente')).toContainText('te debe $ 5.000')
 
-    // "Todo" fills the whole balance in one tap, and the payment is saved.
+    // "All" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'All: $ 5.000' }).click()
     await expect(page.getByLabel('Amount')).toHaveValue('5000')
     await page.getByRole('radio', { name: 'Cash' }).check()

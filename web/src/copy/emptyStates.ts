@@ -6,12 +6,14 @@
  * screen fails `emptyStates.test.ts`.
  */
 
+import { EMPTY_CUSTOMERS, NOBODY_OWES } from './customers'
+
 export const LANGUAGE: 'es' | 'en' = 'es'
 
 export const EMPTY_STATES = {
   salesList: 'Todavía no registraste ninguna venta en este período.',
-  customersList: 'You have not added any customers yet.',
-  homeNobodyOwes: 'Nobody owes you',
+  customersList: EMPTY_CUSTOMERS,
+  homeNobodyOwes: NOBODY_OWES,
   homeVarietiesTitle: 'Arrancá por las variedades',
   homeVarietiesDetail:
     'Cargá tu primera variedad con su precio. Sin precio no se puede vender.',

@@ -218,8 +218,8 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   )
   renderClientes()
 
-  expect(await screen.findByText('2 clientes')).toBeInTheDocument()
-  expect(screen.queryByText(/ te deben \$/)).not.toBeInTheDocument()
+  expect(await screen.findByText('2 customers')).toBeInTheDocument()
+  expect(screen.queryByText(/ owe you \$/)).not.toBeInTheDocument()
   const section = await screen.findByRole('region', { name: 'Owed to you' })
   const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
   expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -351,7 +351,7 @@ test('a customer with no phone shows no phone element, no dash, no empty label',
   expect(row).not.toHaveTextContent('Sin teléfono')
 })
 
-test('a customer who owes shows the amber mark; one in credit shows the blue "A favor"', async () => {
+test('a customer who owes shows the amber mark; one in credit shows the blue "Credit"', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(() =>
       jsonResponse(200, [

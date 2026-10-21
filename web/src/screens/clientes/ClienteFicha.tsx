@@ -58,8 +58,8 @@ const HOW_PAID_LABEL: Record<Exclude<HowPaid, 'none'>, string> = {
 }
 
 const METHOD_LABEL: Record<PaymentMethod, string> = {
-  cash: 'efectivo',
-  transfer: 'transferencia',
+  cash: CUSTOMERS_TEXT.methodCash,
+  transfer: CUSTOMERS_TEXT.methodTransfer,
 }
 
 function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
@@ -82,7 +82,7 @@ function rowLabel(row: AccountRow): string {
 function rowAmount(row: AccountRow): string {
   return row.standing === 'credit'
     ? CUSTOMERS_TEXT.creditAmount(formatMoneyMagnitude(row.running_balance))
-    : `saldo ${formatMoney(row.running_balance)}`
+    : CUSTOMERS_TEXT.balanceAmount(formatMoney(row.running_balance))
 }
 
 /** The row's own figure (design, `ClienteFicha.dc.html`: each row shows its own

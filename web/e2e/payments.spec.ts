@@ -7,7 +7,7 @@
  * `flow.spec.ts` and `sales.spec.ts` cover everything offered before this task;
  * this file proves the PRD's own flow in sequence, one customer with two sales:
  * - record a later payment through Registrar cobro, settling the whole balance
- *   with "Todo" ("Payment saved", no figure left to show);
+ *   with "All" ("Payment saved", no figure left to show);
  * - record a second, partial payment ("Payment saved · still owing $ X"),
  *   after checking its preview names the sale it reaches and what is left;
  * - delete that payment through "Delete payment", confirmed first, and see the
@@ -38,7 +38,7 @@ function shortDate(iso: string): string {
 }
 
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
- * its "Te debe" and "A favor" are what these specs read. */
+ * its "Te debe" and "Credit" are what these specs read. */
 function cardOf(page: Page) {
   return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
 }
@@ -94,12 +94,12 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText(`desde el ${today}`)).toBeVisible()
   // Clientes' own header already counts her (checked again, with the figure, below).
 
-  // --- Registrar cobro: "Todo" fills and settles the whole balance. ---
+  // --- Registrar cobro: "All" fills and settles the whole balance. ---
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 5.000' }).click()
   await page.getByRole('radio', { name: 'Cash' }).check()
   await expect(page.getByText('Taken from the oldest debt')).toBeVisible()
-  await expect(page.getByText(`$ 5.000 a la venta del ${today}`)).toBeVisible()
+  await expect(page.getByText(`$ 5.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText(/They still owe/)).toHaveCount(0) // nothing left.
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
@@ -110,7 +110,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Record payment' })).toHaveCount(0)
   await expect(
-    page.getByText(`Cobro · efectivo · A cuenta de la venta del ${today}`),
+    page.getByText(`Cobro · cash · A cuenta de la venta del ${today}`),
   ).toBeVisible()
 
   // Sale 2: 8 g of Rosa, also left owing — $8.000.
@@ -131,7 +131,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByLabel('Amount').fill('3000')
   await page.getByRole('radio', { name: 'Transfer' }).check()
-  await expect(page.getByText(`$ 3.000 a la venta del ${today}`)).toBeVisible()
+  await expect(page.getByText(`$ 3.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText('They still owe $ 5.000')).toBeVisible()
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Payment saved · still owing $ 5.000')).toBeVisible()
@@ -142,7 +142,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(transferRow).toContainText('$ 3.000')
   await transferRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
-    page.getByText(`¿Borrás el cobro de $ 3.000 (transferencia) del ${today}?`),
+    page.getByText(`Delete the payment of $ 3.000 (transfer) from ${today}?`),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Payment deleted')).toBeVisible()
@@ -181,7 +181,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(cardOf(page).getByText('Credit', { exact: false })).toHaveCount(0)
 
-  // --- A payment that is only "A favor" can still be deleted: sell on credit,
+  // --- A payment that is only "Credit" can still be deleted: sell on credit,
   // collect it later, delete the sale (the cobro becomes a credit), then delete
   // that cobro (payments.md: a credit that should not exist is fixed by deleting
   // the mistaken payment). The card still holds the first sale and its cobro. ---
@@ -219,7 +219,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(creditRow.getByRole('button', { name: 'Delete payment' })).toHaveCount(1)
   await creditRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
-    page.getByText(`¿Borrás el cobro de $ 5.000 (efectivo) del ${today}?`),
+    page.getByText(`Delete the payment of $ 5.000 (cash) from ${today}?`),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Payment deleted')).toBeVisible()
