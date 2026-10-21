@@ -92,7 +92,7 @@ Success criteria:
 
 ### On screen (Customers)
 
-- **Clientes** is a tab root (navigation.md). On a computer it is two panes: the list on the left, the selected customer's card on the right. Customers selects nothing on its own.
+- **Customers** is a tab root (navigation.md). On a computer it is two panes: the list on the left, the selected customer's card on the right. Customers selects nothing on its own.
 - **The screen opens with two sections**, with no tappable debt figure in its header:
   1. **"Owed to you"**, on top: the total owed, the count line ("1 sale owing" or "N sales owing"), and every customer whose balance is above $0, oldest owing-since first, ties by name, each row with "Collect" (`payments.md`). With nobody owing it reads a fixed "Nobody owes you", with nothing to tap, above the full A–Z list.
   2. **Everyone, A–Z**, below, sorted by name.
@@ -108,7 +108,7 @@ Success criteria:
   - "Owes you $ X since dd/mm" or "Credit $ X" (neither for a $0 balance), the account, "Record payment" only when the balance is above $0, and "Delete payment" on later payments (`payments.md`);
   - **"New sale to <name>"**, which opens New sale with that customer already chosen (sales.md). The card shows no "+ New sale".
   - Adding a number later is the card's ordinary edit; there is no prompt to fill it in.
-- **Registrar cobro** (`Payment`) follows payments.md unchanged and its design, `Cobro.dc.html`, opened with the customer chosen from a debtor row or from the card.
+- **Record payment** (`Payment`) follows payments.md unchanged and its design, `Cobro.dc.html`, opened with the customer chosen from a debtor row or from the card.
 - **Add and edit**: the one "New customer" form of `NuevaVentaCliente`, the same from Customers and from "Pick a customer" in New sale.
   - Its fields are "Name" (the only one marked required), the phone (optional, and it can be cleared when editing) and VIP. VIP shows only while Customers VIP is on. There is no channel field.
   - The same form registers a customer from inside a sale, through the "Pick a customer" sheet, and that customer is used for the sale.

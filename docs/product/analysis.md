@@ -114,7 +114,7 @@ Success criteria:
     - Stock shortfall "2 g without cost";
     - Promotion "1 g without cost";
     - profit "and 7 g without cost".
-- **Agreement with Inicio**: for the current week and the current month, the row's Cost of goods sold and Stock shortfall equal Home's Week and Month. Any difference is a defect.
+- **Agreement with Home**: for the current week and the current month, the row's Cost of goods sold and Stock shortfall equal Home's Week and Month. Any difference is a defect.
 - **Profit** includes stock shortfall, promotion and own-use cost, and carries the pending mark when it applies.
 - **Best week**: the highest sales; on a tie, the most recent week. When all 8 weeks are $0, none is marked. Withdrawals never affect it.
 - **Months**: no "best" mark.
@@ -226,7 +226,7 @@ Success criteria:
 - Stock shortfall per variety; promotion or own-use cost per variety.
 - A Cost of goods sold total in the month header or since the first record.
 - Charts, variations or comparisons between periods.
-- Changing Home's fixed "incluye costo pendiente" note.
+- Changing Home's fixed "includes pending cost" note.
 - Importing the spreadsheet's history: #11.
 - Exporting, printing or sharing the analysis.
 - Live updates between partners while the screen is open.

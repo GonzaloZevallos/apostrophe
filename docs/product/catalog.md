@@ -66,7 +66,7 @@ Success criteria:
 
 - **Shape**: free multi-line text, up to 500 characters each. Inner line breaks are kept; leading and trailing blank lines are trimmed.
 - **Blank**: allowed. A blank header or footer is left out of the text.
-- **Defaults**: header "🌿 **CATÁLOGO** 🌿" and footer "📩 Consultas y pedidos por privado.".
+- **Defaults**: header "🌿 **CATALOG** 🌿" and footer "📩 Questions and orders by private message.".
   - A new business receives them when it opens.
   - A business that existed when the catalog shipped received them once, on upgrade.
   - There is no "restore default".
@@ -86,7 +86,7 @@ Success criteria:
 - **VIP price**: never in the text, whatever the switches (pricing-settings.md).
 - **Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`.
 - **Stock in the text**: none. It never mentions grams, stock or low stock.
-- **Freshness**: the text is computed on every open from the data and the pricing settings as they stand. Nothing is stored, and the screen does not update itself while open. A save of Precios that changes either switch triggers the pinned catalog's upkeep (pinned-catalog.md).
+- **Freshness**: the text is computed on every open from the data and the pricing settings as they stand. Nothing is stored, and the screen does not update itself while open. A save of Prices that changes either switch triggers the pinned catalog's upkeep (pinned-catalog.md).
 - **Nothing qualifies**: there is no text, and the screen says nothing is in the catalog today. The pinned catalog sends its own empty message instead (pinned-catalog.md).
 
 ### Bold markers
@@ -107,7 +107,7 @@ Success criteria:
   - Bold follows the pairing rule above.
   - Every other line, break, emoji and price is identical to the copied text.
   - It shows the empty state when nothing qualifies.
-- **Compartir**, the main action:
+- **Share**, the main action:
   - it opens the device's native share sheet with exactly the text Copiar copies, `**` markers included;
   - where the browser offers no share sheet, it is not shown, and Copiar remains;
   - success, or closing the share sheet without sending, shows nothing and changes nothing: the share sheet is its own feedback, and there is no toast;
@@ -118,7 +118,7 @@ Success criteria:
   - On success it shows the toast "Catalog copied".
   - It works from the phone over the home network's plain http.
   - A failure shows a fixed "Could not copy." and no toast.
-- **The pinned catalog's status and Publicar** (pinned-catalog.md): "Up to date" or "Out of date" with its fixed reason, and Publish. When Publish is unavailable, it says why in words and links to where the bot settings are: Settings → Integrations, or the temporary place until that exists.
+- **The pinned catalog's status and Publish** (pinned-catalog.md): "Up to date" or "Out of date" with its fixed reason, and Publish. When Publish is unavailable, it says why in words and links to where the bot settings are: Settings → Integrations, or the temporary place until that exists.
 - **What does not go out, and why**: every unarchived variety out of today's catalog, by name, each with one reason, the first that applies:
   1. hidden by the seller ("hidden");
   2. no price today ("no price");

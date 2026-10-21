@@ -45,15 +45,15 @@ Success criteria:
 
 - For a brand-new business the Onboarding fully replaces the checklist; the two never both apply.
 - While it is not over, neither the checklist nor "Start with your varieties" shows. "Start with your varieties" takes over once it is over.
-- **No side rules of its own**: "+ New sale" and "Send catalog" behave while the Onboarding runs as they do for any business. What is missing is told by the Home notice ("Falta: …"), by New sale's own "<variety> no tiene precio para esa fecha" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist.
+- **No side rules of its own**: "+ New sale" and "Send catalog" behave while the Onboarding runs as they do for any business. What is missing is told by the Home notice ("Missing: …"), by New sale's own "<variety> has no price for that date" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist.
 - **The Onboarding itself builds neither the checklist nor the after-import notice**: Home's "To get started" checklist and the "Connect the bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
 
 ### Entry and the Home notice
 
 - **Entry**: accepting a new-business invitation lands in the Onboarding, not on an empty Home. A join invitation still lands on Home. This is the only time the Onboarding opens by itself.
 - **The notice**: while the Onboarding is not over, Home shows "Go on to the setup" at the top, in position 1 of results.md's order, on the phone and on `InicioCompu`.
-  - It shows progress in words ("2 de 6 pasos"), counting steps done or passed, and the resume step by its short name (e.g. "Falta: stock inicial").
-  - When every step is done or passed but "Done" has not been reached yet (say, the only price was deleted while the optional steps were passed, and later added again from the variety's page), it reads "6 de 6 pasos" with no "Falta" line, and opens "Done".
+  - It shows progress in words ("2 of 6 steps"), counting steps done or passed, and the resume step by its short name (e.g. "Missing: initial stock").
+  - When every step is done or passed but "Done" has not been reached yet (say, the only price was deleted while the optional steps were passed, and later added again from the variety's page), it reads "6 of 6 steps" with no "Missing" line, and opens "Done".
   - Adding more varieties never moves the count past steps 1–2.
   - Otherwise it opens the Onboarding at the resume step.
   - It cannot be dismissed. It goes for good when the Onboarding is over.
@@ -66,7 +66,7 @@ Success criteria:
 - **Every step shows**:
   - one short title and one sentence on why it matters;
   - its fields and one primary action;
-  - progress in words as well as shape ("Paso 2 de 6"), never by colour alone;
+  - progress in words as well as shape ("Step 2 of 6"), never by colour alone;
   - "Back", to the step before, on every step but step 1. Step 1 has no step before it: it shows no "Back", and "Close" is its way out;
   - "Skip", on optional steps only;
   - "Skip the rest", on optional steps only, only once both required steps are done, and never on the last step (step 6), where it would pass nothing "Skip" does not;
@@ -195,7 +195,7 @@ There is no telemetry.
     - optional passes remembered;
     - "Done" for data that already exists;
     - no end before both required steps are met, and none from a change made outside the Onboarding;
-    - every step done or passed outside it: the notice reads "6 de 6 pasos" with no "Falta" line, opens "Done", and reaching "Done" ends it;
+    - every step done or passed outside it: the notice reads "6 of 6 steps" with no "Missing" line, opens "Done", and reaching "Done" ends it;
     - the end on reaching "Done".
 - **One fact, one place (criterion 4)**: a value saved in each step reads the same in Settings or on the variety's page, and the reverse.
 - **Only the sale is required (criterion 2)**: front tests show:
@@ -245,7 +245,7 @@ There is no telemetry.
 - An Appearance step.
 - A step for #85's pricing switches: that issue decides it once they exist.
 - Running it again, or any entry pointing back to it once it is over.
-- "Terminar por ahora" as a second exit.
+- "Finish for now" as a second exit.
 - Offering it to imported, joined or pre-existing businesses.
 - Building the first-run checklist, its side rules ("+ New sale" saying what is missing, "Send catalog" disabled) or the after-import notice: their own task (navigation.md).
 - Ending the Onboarding from outside it, without reaching "Done".

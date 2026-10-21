@@ -53,10 +53,10 @@ The two lists are closed. Adding to either changes this file and the README, nev
 - **Text only**:
   - links (`enlace`), such as "Edit header and footer" and "See all";
   - the answer pair inside a confirmation, with its exact current words ("No, keep it / Yes, delete it", "No, keep entering / Yes, discard it" and the rest);
-  - the submit of a form or sheet ("Save sale", "Save the warning", "Save the catalog", "Registrar", "Save and sign in", "Sign in" and the rest);
+  - the submit of a form or sheet ("Save sale", "Save the warning", "Save the catalog", "Record payment", "Save and sign in", "Sign in" and the rest);
   - choices among options, which are not actions: the period tabs (Today · Week · Month · Dates), Cash · Transfer · Owing, Promotion · Own use, an entry's origin, Light · Dark, "All: $ X";
   - Deshacer inside "Sale saved".
-- **Icon + text**: everything else, e.g. "+ New sale", "+ Stock entry", "Take from stock", "Send catalog", Collect (accessible name still "Collect from <name>"), Publish, Test it, Find my chat, Archivar, Restaurar, "Invite a partner", Cambiar contraseña, Cerrar sesión, Copiar and the main Share. A new action that fits neither list is icon + text. The icon next to a word is decorative and hidden from assistive technology, so the accessible name stays the word.
+- **Icon + text**: everything else, e.g. "+ New sale", "+ Stock entry", "Take from stock", "Send catalog", Collect (accessible name still "Collect from <name>"), Publish, Test it, Find my chat, Archive, Restore, "Invite a partner", Cambiar contraseña, Close sesión, Copiar and the main Share. A new action that fits neither list is icon + text. The icon next to a word is decorative and hidden from assistive technology, so the accessible name stays the word.
   - **The "+" in the docs is the icon**: in "+ New sale", "+ Add expense", "+ Stock entry", "+ Entry" and any other label written with a leading "+", the "+" stands for the `agregar` icon. On screen the icon draws it and the visible text is the word alone, never a literal "+" beside the icon. The accessible name is unchanged.
 - **An action never looks like a link**: only a link (`enlace`) is drawn as one (underlined, in the link style). An action, in any form, including one that opens another screen such as "New sale" or "New sale to <name>", is drawn as the action it is.
 - **Tappable notice**: a notice the seller taps to open what it points to, such as Home's "Go on to the setup". It is neither an action row nor a control of either closed list, and it does not change them.
@@ -117,7 +117,7 @@ The two lists are closed. Adding to either changes this file and the README, nev
 
 ### Actions that swap their word by state
 
-- None exists today. Archivar and Restaurar are two actions on two screens, each with its own icon. The low-stock warning's on/off switch is a switch, not a button, and gets no icon.
+- None exists today. Archive and Restore are two actions on two screens, each with its own icon. The low-stock warning's on/off switch is a switch, not a button, and gets no icon.
 - For a future one: the word carries the state; a second icon is allowed only where a screen uses it.
 
 ### Where it is written

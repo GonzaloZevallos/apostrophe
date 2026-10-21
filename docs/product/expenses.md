@@ -57,8 +57,8 @@ Success criteria:
   - trimmed, inner spaces collapsed, up to 60 characters;
   - unique within a business whatever the case or spacing;
   - two businesses may each have a category with the same name.
-- **Default categories**: "Insumos de cultivo", "Packaging", "Shipping and transport" and
-  "Otros".
+- **Default categories**: "Growing supplies", "Packaging", "Shipping and transport" and
+  "Other".
   - A new business opens with them.
   - A business opened before expenses existed receives them once, when the app is
     upgraded.
@@ -109,7 +109,7 @@ Success criteria:
 
 ### On screen
 
-- **Gastos** (`Expenses`, route `/expenses`; the old `/gastos` redirects there permanently)
+- **Expenses** (`Expenses`, route `/expenses`; the old `/gastos` redirects there permanently)
   is a tab root (navigation.md). It shows the bar on the phone or the sidebar on a
   computer, with Expenses active, and "+ New sale". It is reached from More on the phone
   and from the sidebar on a computer, under the divider. It holds:
@@ -180,7 +180,7 @@ Read from the data and from tests; there is no telemetry.
 - **M2, totals hold (criterion 2)**: totals that differ from the sum of the expenses shown
   must be 0. This is checked by tests after create, edit and delete, in the API and on
   screen. A month with no expenses shows $0 and no categories.
-- **M3, "on what" (criterion 2)**: the share of each month's spend filed under "Otros".
+- **M3, "on what" (criterion 2)**: the share of each month's spend filed under "Other".
   If it stays high, the categories are not helping the user see where the money goes.
 - **M4, use**: businesses with at least one expense in a month, out of active businesses.
 - **M5, flower kept out (criterion 3)**: purchases that appear in the expense lists must be

@@ -141,7 +141,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
   - stock entries recorded, edited or deleted;
   - stock withdrawals recorded, edited or deleted;
   - sales recorded or deleted, Deshacer included;
-  - a save of Settings → Precios that changes either pricing switch (pricing-settings.md), since the bulk line depends on Precio por cantidad;
+  - a save of Settings → Prices that changes either pricing switch (pricing-settings.md), since the bulk line depends on Precio por cantidad;
   - the start of a new day in Argentina time, for price entries that come into force that day.
 - **Rule**: the text is rebuilt on a trigger. The pinned message is edited only if the new text differs from the last text published. Topping up a variety already in the catalog, or withdrawing grams that leave it with stock above zero, sends nothing.
 - **It only ever edits.** Upkeep never posts a new message, even when the old one was deleted by hand.
@@ -175,7 +175,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 ### Nothing qualifies
 
-- The pin, Test it and Publish use: the header, then "Por ahora no tenemos nada para ofrecer.", then the footer. A blank header or footer is left out.
+- The pin, Test it and Publish use: the header, then "Nothing to offer for now.", then the footer. A blank header or footer is left out.
 - This counts as "Up to date".
 - The catalog screen's own empty state and Copiar are unchanged: there is nothing to copy (catalog.md).
 - When a variety qualifies again, upkeep restores the full catalog.
@@ -183,7 +183,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 ### Changing the channel or the token
 
 - The app never edits, unpins or deletes the old pinned message again.
-- After the successful test that saves the change, the status reads "Desactualizado · Falta publicarlo con el bot o el canal nuevo".
+- After the successful test that saves the change, the status reads "Out of date · It still has to be published with the new bot or channel".
 - The next Publish posts and pins a new message, and "The last one was" restarts from it.
 - Changing either one shows, in Integrations: "The previous pinned message stays as it is; unpin it yourself in Telegram."
 
@@ -208,7 +208,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 - **Measure**: the raw captures are compared by exact AE with `scripts/design/ae.mjs`, never the composed sheet.
 - **Every non-zero difference** is listed in the PR, with its screen and side, as intended by the restyle's brief or fixed. A design-side difference is listed with its reason. A difference the brief and the docs cannot settle goes to Zeta in the PR.
 - **A fix** is CSS only, within the existing tokens; no token value changes. After it, both sides are retaken from the fixed head and compared again.
-- **Nothing the seller reads or does changes**: the token, the chats, Find my chat, Test it, its reasons and help lines, the "desfijalo vos en Telegram" line, the link to the catalog screen, the absence of pin status and Publish, and no state told by color alone.
+- **Nothing the seller reads or does changes**: the token, the chats, Find my chat, Test it, its reasons and help lines, the "unpin it yourself in Telegram" line, the link to the catalog screen, the absence of pin status and Publish, and no state told by color alone.
 
 ### Constraints
 
@@ -223,7 +223,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 ## Metrics
 
-- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Precios save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Precio por cantidad on a business with a bulk price in force edits the pin; switching only Customers VIP sends nothing, since the text does not change. 100% passing.
+- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Prices save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Precio por cantidad on a business with a bulk price in force edits the pin; switching only Customers VIP sends nothing, since the text does not change. 100% passing.
 - **One message per chat (criterion 2)**:
   - one post per channel chat, then edits only: 0 new posts while that message exists;
   - a channel or token change gives exactly one new post, and 0 later calls against the old message;
@@ -243,11 +243,11 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 - **Settings changes (criteria 2, 4)**:
   - changing only the own chat keeps upkeep running and the status unchanged;
   - a tested token or channel change reads "It still has to be published with the new bot or channel", with no "The last one was", until Publish.
-- **Unavailable Publicar**: with no saved channel or no successful Test it since the last change, the catalog screen shows Publish disabled with its reason in words and a link that opens Integrations.
+- **Unavailable Publish**: with no saved channel or no successful Test it since the last change, the catalog screen shows Publish disabled with its reason in words and a link that opens Integrations.
 - **Integraciones**: a front test shows:
   - the link to the catalog screen, no pin status and no Publish;
   - empty fields and no "Saved" line with nothing saved;
-  - the "desfijalo vos en Telegram" line after a token or channel change.
+  - the "unpin it yourself in Telegram" line after a token or channel change.
 - **Test it's reasons (criterion 7)**: 100% passing.
   - There is one test per cause: 401; 403 (both "can't initiate conversation" and "blocked by the user"); 400 chat not found, which shows "We could not find your chat: check the number and tap Start in your bot."; Telegram down, 429 or no connection; too long; and any other failure.
   - Each shows its fixed text, repeats nothing typed, keeps the form and saves nothing.

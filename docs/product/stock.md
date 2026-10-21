@@ -117,7 +117,7 @@ Success criteria:
   grams were already used (ADR-0009). Grams it no longer covers come out of the next lot,
   or become pending cost and negative stock.
 
-### Stock withdrawal (Retiro)
+### Stock withdrawal (withdrawal)
 
 - **Fields**: one reason, a date, one or more lines of variety and grams, and an optional
   note.
@@ -214,8 +214,8 @@ Success criteria:
 - **No Stock tab.** Stock lives in Varieties (varieties.md, navigation.md); the old
   Stock path redirects there.
 - **Per variety**, on Varieties' list and at the top of its page: its grams, its status
-  mark and its detail ("No grams since 30/09", "You are warned below 20 g", "Al ritmo de
-  los últimos 30 días", "Add its first entry" only for no entries), plus days
+  mark and its detail ("No grams since 30/09", "You are warned below 20 g", "At the pace of
+  the last 30 days", "Add its first entry" only for no entries), plus days
   left.
 - **Status marks** (`MarcaEstado`): told by shape and word, never by color alone.
   - square = sold out, as the inverted chip, not red;
@@ -233,7 +233,7 @@ Success criteria:
   deleted. It lists entries only, never withdrawals; there is no business-wide list of
   withdrawals.
   - Its empty state: "No stock entries · Enter your initial stock or a purchase".
-- **Nueva entrada** (`EntradaStock`), a form (navigation.md): "Close", and a
+- **New entry** (`EntradaStock`), a form (navigation.md): "Close", and a
   confirmation when leaving with something typed.
   - Opened from "+ Stock entry" on Varieties (the seller chooses the variety) or
     from "+ Entry" on a variety's page (that variety already chosen, and "Stock
@@ -244,11 +244,11 @@ Success criteria:
   - note;
   - the cost per gram before saving ("It comes to $ 8.500 per gram") whenever there is a
     cost.
-- **Sacar del stock**, the withdrawal form, a form (navigation.md): "Close", no bar, no
+- **Take from stock**, the withdrawal form, a form (navigation.md): "Close", no bar, no
   "+ New sale", and a confirmation when leaving with something typed. It follows the
   phone standard for inputs and targets (#80).
-  - Opened from More (second, after "+ Add expense"), from the secondary "Sacar del
-    stock" on Varieties (next to "+ Entrada de stock", phone and computer), with no
+  - Opened from More (second, after "+ Add expense"), from the secondary "Take from
+    stock" on Varieties (next to "+ Stock entry", phone and computer), with no
     variety chosen, and from "Take from stock" on a variety's page, with that variety
     already chosen. An archived variety's page offers no "Take from stock".
   - reason (Promotion · Own use, required, no default), date (filled with today),
@@ -282,8 +282,8 @@ Success criteria:
   - "Pending cost" when none of the line is costed;
   - the costed part plus "and N g without cost" for a split line;
   - a gift reads "Gift".
-- **Toasts**: "Entry saved", "Entry deleted", "Warning saved", "Retiro
-  guardado" and "Retiro eliminado". None carries grams or amounts.
+- **Toasts**: "Entry saved", "Entry deleted", "Warning saved", "Withdrawal
+  saved" and "Withdrawal deleted". None carries grams or amounts.
 - **Refusals** show inline and keep what was typed.
 - **An entry or withdrawal that is gone** follows accounts.md's "That is gone." rule:
   opening it offers "Back to Varieties"; saving, deleting or confirming on it shows

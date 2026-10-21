@@ -56,7 +56,7 @@ Success criteria:
    - a period with no activity shows real zeros;
    - average sale shows nothing when the period has no sales.
 7. **A withdrawal is not a sale**: recording one leaves sales, number of sales, average sale, grams sold, You gave away, cost of goods sold, stock shortfall and Cash exactly as they were.
-8. **Collect in one tap from Hoy**: "Collect" on each debtor row of the "Owed to you" block opens Record payment with that customer chosen, accessible name "Collect from <name>"; back or "Close" leaves it in one move.
+8. **Collect in one tap from Today**: "Collect" on each debtor row of the "Owed to you" block opens Record payment with that customer chosen, accessible name "Collect from <name>"; back or "Close" leaves it in one move.
 9. **Today is only what can be acted on**: sold today, then Owed to you, then What you have left; a low variety links to its page; no result figure (Profit, Cash, costs, Expenses, You gave away, Purchases) shows on Today.
 10. **First run follows today's definition**: a brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the four-step checklist; an imported business sees the dismissable after-import notice; at most one first-run element shows at a time (navigation.md).
 11. **Every notice leads to its fix**: "Your Telegram catalog is out of date" opens the catalog screen; the business avatar opens Settings.
@@ -96,13 +96,13 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ### What each tab shows
 
-- **Hoy** shows what can be acted on today, top to bottom: what was sold today (sales, number of sales, average sale and grams sold), then the "Owed to you" block, then What you have left.
+- **Today** shows what can be acted on today, top to bottom: what was sold today (sales, number of sales, average sale and grams sold), then the "Owed to you" block, then What you have left.
 - **Week and Mes** show sales, number of sales, average sale, grams sold, You gave away, Cost of goods sold, Stock shortfall (when the period has one), Promotion and Own use (each when the period has one), Expenses, Purchases de flores, Profit and Cash, then the "Owed to you" block and What you have left. Promotion and Own use sit right after Stock shortfall and before Expenses.
 - Profit, Cash, Cost of goods sold, Stock shortfall, Promotion, Own use, Expenses, You gave away and Purchases never show on Today.
 
 ### Pending cost
 
-- A fixed "incluye costo pendiente" note, with no grams or amounts:
+- A fixed "includes pending cost" note, with no grams or amounts:
   - under Cost of goods sold, when any of the period's sale lines has pending grams as the lots stand now;
   - under Stock shortfall, when any of the period's negative adjustments has pending grams;
   - under Promotion, when any of the period's promotion withdrawals has pending grams; under Own use, likewise for own use;
@@ -153,7 +153,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - **At its top**: the business's avatar, which opens Settings.
 - **Top to bottom, above the figures**:
   1. the first-run element of the business, at most one of:
-     - "Go on to the setup", while the Onboarding is not over (onboarding.md): "N de 6 pasos" and what is next, not dismissible;
+     - "Go on to the setup", while the Onboarding is not over (onboarding.md): "N of 6 steps" and what is next, not dismissible;
      - the first-run checklist while it shows (navigation.md), for a business that existed before the Onboarding.
 
      Once neither applies, "Start with your varieties" takes this place whenever no unarchived variety has a current price today. It never shows together with the Onboarding notice or the checklist;
@@ -199,7 +199,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, You gave away, cost of goods sold, stock shortfall and Cash.
 - **Tabs (criterion 9)**: front tests, phone and computer, show Today with sold today, Owed to you and What you have left only, in that order, and Profit, Cash, Cost of goods sold, Stock shortfall, Promotion, Own use, Expenses, You gave away and Purchases only on Week and Month, Promotion and Own use right after Stock shortfall.
 - **One-tap collect (criterion 8)**: the end-to-end front run, phone and computer viewports, taps "Collect from <name>" on Today, Record payment opens with that customer chosen, a payment is saved, and one back move returns to Home.
-- **Refresh after Cobrar**: front tests show a partial payment leaving the debtor with the new balance, a full payment removing the row and the teaser refilling to 3 by its order, "Nobody owes you" when nobody is left owing, and both toasts reading as specified with no customer name.
+- **Refresh after Collect**: front tests show a partial payment leaving the debtor with the new balance, a full payment removing the row and the teaser refilling to 3 by its order, "Nobody owes you" when nobody is left owing, and both toasts reading as specified with no customer name.
 - **Home's order (criteria 10, 11)**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Start with your varieties" (never two), then the out-of-date notice, then the after-import notice, then the figures; the out-of-date notice opens the catalog screen and the avatar opens Settings.
 - **First run (criterion 10)**: the first-run matrices of navigation.md, 100% passing.
 - **Period edges**: a week that crosses a month and a year, Monday as the first day, and a day boundary in Argentina time. 100% passing.

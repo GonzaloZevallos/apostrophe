@@ -32,7 +32,7 @@ This refines the navigation job and criterion 5; it is not a new job. Its protag
 
 **When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Settings, Varieties and the catalog screen. (Served here by the Onboarding as a brand-new business's one first-run element, opened on accepting the invitation and from Home's notice; defined in onboarding.md.)
 
-Choosing which pricing rules the business uses (pricing-settings.md) belongs in Settings too, as the Precios group.
+Choosing which pricing rules the business uses (pricing-settings.md) belongs in Settings too, as the Prices group.
 
 Before this structure: the bar was Home · Sales · Customers · Stock · More; one variety was split across Stock, Varieties and Catalog; collecting a debt took four taps from Customers; settings were split across Business, Catalog and Expenses → Categorías, and the bot was configured inside Catalog. Nothing of it is kept but the redirects from its paths, and, until Settings's Integrations and Catalog message exist, the temporary place for the bot and the header and footer reached from the catalog screen (catalog.md).
 
@@ -54,9 +54,9 @@ Success criteria:
 6. **Readable and accessible.** Tab labels are always visible. The active tab and every state are marked by shape or word, never color alone. The bar fits at 320 px with text at 130 %, measured in a real browser.
 7. **One structure, said once.** The product docs, CONTEXT.md, the design (`docs/product/design-system/pantallas/`, phone and computer) and `scripts/design/screens.json` state the same structure and routes.
 8. **Settings, group by group.** Each group is its own subscreen with "Close"; leaving with unsaved changes asks first, an untouched group closes at once. Renaming, "Invite a partner", the pricing switches, the bot (token, chats, Test it), the header and footer, categories (add, rename, remove, the refused removal included), Appearance, changing the password and logging out all work from the phone, and the end-to-end front run goes through every group.
-9. **Chrome by kind, everywhere.** Every screen, the Varieties screens included (the two-pane list, a variety's page, its "See all" lists of prices and entries, Nuevo precio, Nueva variedad, "All entries" and the stock entry form), is exactly one kind with a parent. The stock entry form reads "Close", never "Back".
+9. **Chrome by kind, everywhere.** Every screen, the Varieties screens included (the two-pane list, a variety's page, its "See all" lists of prices and entries, New price, New variety, "All entries" and the stock entry form), is exactly one kind with a parent. The stock entry form reads "Close", never "Back".
 10. **One move back.** Back or "Close" leaves a screen in one tap and never lands on the same screen twice in history, the "That is gone." exits and Record payment included. With no history, back goes to the screen the form, sheet or card belongs to.
-11. **Every address opens its screen.** A reload on any Variedades route, parameterised ones included, opens the screen and never the API's answer. Every old Spanish path, `/variedades/{id}` and `/mi-stock/entradas/{id}` included, answers a permanent redirect to its new route with the id carried across.
+11. **Every address opens its screen.** A reload on any Varieties route, parameterised ones included, opens the screen and never the API's answer. Every old Spanish path, `/variedades/{id}` and `/mi-stock/entradas/{id}` included, answers a permanent redirect to its new route with the id carried across.
 12. **First run, one element at a time.** A brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the first-run checklist; an imported business sees the dismissable after-import notice; never two first-run elements at once, and each leads to its fix.
 
 ## Behaviour
@@ -87,8 +87,8 @@ Success criteria:
 
 - **One screen holding every business-wide setting, in groups, and nothing else.** The groups, in this order (each group's behaviour belongs to its owner):
   - **Negocio**: the business's name (accounts.md). Toast "Business renamed".
-  - **Usuarios**: the partners by email, sorted by email, the signed-in one marked "you", and "Invite a partner", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
-  - **Precios** (pricing-settings.md), at `/settings/prices`:
+  - **Users**: the partners by email, sorted by email, the signed-in one marked "you", and "Invite a partner", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
+  - **Prices** (pricing-settings.md), at `/settings/prices`:
     - the two switches, Precio por cantidad and Customers VIP;
     - "Save the prices", and the toast "Prices saved";
     - the fixed line that past sales keep their price and switching off deletes nothing, and the fixed help line under the VIP switch.
@@ -106,7 +106,7 @@ Success criteria:
 - **Reached from**: the business avatar at the top of Home; More on the phone; the sidebar's business row on a computer. `/settings` marks More as the active tab on the phone.
 - **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ New sale". Back follows history; with none, it goes to "‹ More" on the phone and "‹ Home" on a computer.
 - **Each group** is its own subscreen, a form: "Close", no bar, no "+ New sale"; unsaved changes ask before discarding, an untouched group closes at once. Appearance never has unsaved changes, so it always closes at once.
-- **Empty business**: every group works. Users lists at least the signed-in user; Precios shows both switches as they stand (off for a new business); Expense categories with none shows an empty list and the add action; Integrations with nothing saved shows empty fields and no "Saved" line.
+- **Empty business**: every group works. Users lists at least the signed-in user; Prices shows both switches as they stand (off for a new business); Expense categories with none shows an empty list and the add action; Integrations with nothing saved shows empty fields and no "Saved" line.
 - **Never here**: a variety's own settings (catalog attributes, low-stock threshold, its prices, its VIP price included) or its archiving, which live only on its page and in Archived (varieties.md); anything for the operator (ADR-0002); a group or placeholder for anything not built; an entry to run the Onboarding again.
 - **Nowhere else**: the old Business screen is gone; the catalog screen edits no header or footer (its "Edit header and footer" opens Catalog message); Expenses has no categories entry, apart from creating one inside the expense form (expenses.md); the pricing switches are reached from no variety page, price form or customer form. The Onboarding's steps save the same settings through their owners, never a copy (onboarding.md).
 - **Temporary exception, until Integrations and Catalog message exist**: the bot settings and the header and footer stay editable, exactly as before, in one temporary place reached only from the catalog screen ("Edit header and footer" and Publish's "unavailable" link). It is a form ("Close" back by history, else to the catalog screen; confirmation on unsaved leave), with no tab, More entry, Settings group or "coming soon" mark, and no pin status or Publish. The catalog screen itself still edits nothing; it links out. Settings's own issue retargets both links and removes the temporary place.
@@ -128,8 +128,8 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 
 | Screen | Back with no history goes to |
 |---|---|
-| Nueva variedad | Varieties |
-| Nuevo precio | that variety's page |
+| New variety | Varieties |
+| New price | that variety's page |
 | Stock entry form, new | Varieties |
 | Stock entry form, editing | "All entries" |
 | Customer form, new | Customers |
@@ -150,13 +150,13 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 ### Routes
 
 - Every screen's route is in English: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/settings/prices`, `/more`, and the same for every other screen. The stock withdrawal form is `/withdrawals/new` (and `/withdrawals/{id}/edit`), a withdrawal's detail `/withdrawals/{id}`. Every screen is registered once, with its kind and its parent, in `scripts/design/screens.json`, which fixes its exact path; each Settings group, each Onboarding step and "Done" are included, as are `/customers/new`, `/customers/{id}/edit` and `/varieties/entries/{id}`.
-- **Variedades** and its screens: `/varieties`, `/varieties/{id}`, `/varieties/catalog` (the catalog screen), `/varieties/entries` ("All entries"), `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry), `/varieties/{id}/entries` (a variety's entries, the same list filtered to it, with the withdrawals that touch it, "‹ <variety>"), `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/new` and `/varieties/archived` (the Archived card). A variety's page is read-only when the variety is archived. `{id}` is the variety's or entry's own id. A reload on any of them opens the screen, never the API's answer, and the front's own API calls still reach the API.
+- **Varieties** and its screens: `/varieties`, `/varieties/{id}`, `/varieties/catalog` (the catalog screen), `/varieties/entries` ("All entries"), `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry), `/varieties/{id}/entries` (a variety's entries, the same list filtered to it, with the withdrawals that touch it, "‹ <variety>"), `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/new` and `/varieties/archived` (the Archived card). A variety's page is read-only when the variety is archived. `{id}` is the variety's or entry's own id. A reload on any of them opens the screen, never the API's answer, and the front's own API calls still reach the API.
 - Every old Spanish path redirects permanently to its new route, each tested one by one, with a record's id carried across:
-  - `/ventas`, `/clientes`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/mi-stock/entradas/{id}` (to `/varieties/entries/{id}`), `/variedades`, `/variedades/{id}` (to `/varieties/{id}`), `/catalogo`, `/gastos`, `/mas`, and every other one, including the old Owed to you screen's path, which goes to Clientes;
+  - `/ventas`, `/clientes`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/mi-stock/entradas/{id}` (to `/varieties/entries/{id}`), `/variedades`, `/variedades/{id}` (to `/varieties/{id}`), `/catalogo`, `/gastos`, `/mas`, and every other one, including the old Owed to you screen's path, which goes to Customers;
   - `/negocio` goes to Settings;
   - the old Expenses → Categorías path (`/gastos/categorias`) goes to Settings → Expense categories.
 - Every redirect target is a registered screen. The server answers every old path through one redirect mechanism; the front has no redirects of its own.
-- The old Catalog had no separate paths for the bot or the header and footer, so nothing redirects to Integrations or Catalog message. Precios is new, so nothing redirects to it.
+- The old Catalog had no separate paths for the bot or the header and footer, so nothing redirects to Integrations or Catalog message. Prices is new, so nothing redirects to it.
 - An unknown or mistyped address goes to Home (`/`), as it always has. An Onboarding path opened for a business whose Onboarding is over, or that never had one, goes to Home too. A later task that removes a path with no counterpart decides where that path goes.
 - No route carries a business (ADR-0004); a record's own id in a path is allowed. `/invitation/{token}` and `/reset/{token}` stay as they are (accounts.md).
 - Screen text stays in Rioplatense Spanish; only the routes change.
@@ -189,7 +189,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 ### The Onboarding (first run of a brand-new business)
 
 - **Entry**: accepting a new-business invitation lands in the Onboarding instead of Home. That is the only time it opens by itself.
-- **The Home notice**: while it is not over, "Go on to the setup" sits at the top of Home, on the phone and on `InicioCompu`, in the checklist's place (results.md gives Home's order). It shows "N de 6 pasos" and what is next, opens the Onboarding at its resume step, and cannot be dismissed.
+- **The Home notice**: while it is not over, "Go on to the setup" sits at the top of Home, on the phone and on `InicioCompu`, in the checklist's place (results.md gives Home's order). It shows "N of 6 steps" and what is next, opens the Onboarding at its resume step, and cannot be dismissed.
 - **While it is not over**, the checklist and "Start with your varieties" do not show.
 - **It adds no side rule**: "+ New sale" and "Send catalog" behave as for any business. What is missing is told by the notice, by New sale's own no-price line before saving and by the catalog screen's empty state.
 - **Once it is over** ("Done" reached, or the import loaded the business), it never shows again; ongoing gaps are told by the standing notices.
@@ -233,7 +233,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 ## Metrics
 
 - **Tap budget (criterion 1)**: through the front, from each tab root, phone and computer viewports, the end-to-end run counts the taps to open: the sale form (1), Record payment with the customer chosen from Customers and from Home (≤2), the catalog screen (≤2), the stock entry form (≤2), the stock withdrawal form (≤2) and the expense form (≤2). 100% within budget.
-- **Settings in one place (criterion 2)**: every business-wide setting named in the product docs sits in exactly one Settings group and on no other screen, the pricing switches included; the catalog screen edits no header or footer, Expenses has no categories entry, and the old Business screen does not exist; every per-variety setting sits only on the variety's page. Settings and Precios open in ≤2 taps from every tab root, phone and computer. While the temporary place stands in for Integrations and Catalog message, it is reached only from the catalog screen and from no tab, More or Settings entry. The Onboarding's steps write through the owners' routes, and a value saved there reads the same in Settings.
+- **Settings in one place (criterion 2)**: every business-wide setting named in the product docs sits in exactly one Settings group and on no other screen, the pricing switches included; the catalog screen edits no header or footer, Expenses has no categories entry, and the old Business screen does not exist; every per-variety setting sits only on the variety's page. Settings and Prices open in ≤2 taps from every tab root, phone and computer. While the temporary place stands in for Integrations and Catalog message, it is reached only from the catalog screen and from no tab, More or Settings entry. The Onboarding's steps write through the owners' routes, and a value saved there reads the same in Settings.
 - **One fact, one place (criterion 3)**: no price, stock entry, withdrawal, threshold or catalog attribute is editable from two screens, checked against the docs and the design. A stock entry is edited through its one form, `/varieties/entries/{id}`, whichever list it was opened from.
 - **Nothing lost, nothing invented (criterion 4)**: every action a seller had before the redesign, and everything reachable on master or on #59, maps to a place in the new structure, except the customer channel; the bar, the sidebar, More and Settings show exactly the entries listed above, with no placeholder group and no Onboarding entry; no link points at a missing screen. #47's end-to-end specs and #118's test waits pass without being edited to fit.
 - **Chrome (criteria 5, 9)**: every screen in the docs and in `scripts/design/screens.json` is classified as exactly one kind with a parent, the Onboarding's steps and "Done" included, and front tests check its chrome: tab roots with the bar and "+ New sale", cards with "‹ <parent>" and no "+ New sale", forms and sheets with neither, "Close" and a confirmation on unsaved leave. The stock entry form reads "Close", never "Back"; the customer form shows "Close".
@@ -248,11 +248,11 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
     - every group has "Close" and no bar;
     - unsaved changes ask, and an untouched group closes at once;
     - Appearance shows no save, toast or warning;
-  - Precios sits after Users and before Integrations, at `/settings/prices`;
-  - Integrations shows the link to the catalog screen, no pin status and no Publish, and the "desfijalo vos en Telegram" line after a token or channel change;
+  - Prices sits after Users and before Integrations, at `/settings/prices`;
+  - Integrations shows the link to the catalog screen, no pin status and no Publish, and the "unpin it yourself in Telegram" line after a token or channel change;
   - one end-to-end front run from a phone viewport:
     - renames the business and creates a join link;
-    - switches and saves Precios;
+    - switches and saves Prices;
     - runs Test it and follows the link to the catalog screen;
     - edits the header and footer;
     - adds, renames and removes a category, a refused removal included;
@@ -273,7 +273,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - **First-run state isolated**: its routes are in the sweep and the gated-route test; business removal leaves 0 rows of it and exported count = deleted count.
 - **Redirects (criterion 11)**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada`, and `/variedades/{id}` and `/mi-stock/entradas/{id}` with the id carried across. A test shows every redirect target is a `screens.json` path, with no exemption. There is one redirect mechanism, on the server, and none in the front.
 - **Reloads under `/varieties` (criterion 11)**: a browser navigation to each Varieties route, parameterised ones included (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`) and `/varieties/archived`, opens the screen, never the API's answer; the front's own API calls still reach the API.
-- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail, the Archived card, the archived variety's page, Precios, the Onboarding's screens and Home's first-run states included; Zeta approves the pull request that states them.
+- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail, the Archived card, the archived variety's page, Prices, the Onboarding's screens and Home's first-run states included; Zeta approves the pull request that states them.
 - **Design**: `scripts/design/compare.sh` runs before and after for the stock entry form, the customer form, New sale and Home (phone and computer, both themes), attached to the PR and judged by eye; `NuevaVentaCompu` comes out unchanged; any difference from the design is listed in the PR.
 
 ## Out of scope
@@ -296,7 +296,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - A back arrow that ignores history.
 - Changing the copy of any existing unsaved-changes question.
 - Live updates between partners.
-- A way into Precios from a variety's page, the price form or the customer form.
+- A way into Prices from a variety's page, the price form or the customer form.
 - Redirects in the front; a second redirect mechanism.
 - Auto-selecting a customer on Customers' two panes.
 - Any token, wording or layout change to a screen beyond what the chrome rule gives it.

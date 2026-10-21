@@ -55,7 +55,7 @@ Success criteria, on screen:
 
 6. **What I see is what I get**: if prices and the pricing settings don't change between preview and save, every line's price per gram, rule and total, and the sale's total, match what the API stores, with 0 differences. After saving, the screen shows what the API answered, not the preview.
 7. **No surprises at save time**:
-   - Owing is disabled with "To leave it owing, pick a customer", and a line with no price that day shows "<variety> no tiene precio para esa fecha", both before saving.
+   - Owing is disabled with "To leave it owing, pick a customer", and a line with no price that day shows "<variety> has no price for that date", both before saving.
    - Any other refusal comes back with its code, shows in Spanish on its field, and everything typed stays.
    - A refused sale never loses the order.
 8. **One order is one sale on screen**: one form, one total and shipping charged once.
@@ -187,7 +187,7 @@ Success criteria, on the phone:
   - Choosing one clears and disables the other, and turning it off frees the other.
   - Precio especial doesn't accept $0.
   - The domain's gift-plus-special refusal stays as an unreachable backstop.
-- **No price that day**: a line whose variety has no current price on the sale's date shows "<variety> no tiene precio para esa fecha". The name comes from the screen's own line.
+- **No price that day**: a line whose variety has no current price on the sale's date shows "<variety> has no price for that date". The name comes from the screen's own line.
 - **Customer and payment stay in step**, whichever changes last:
   - Owing is available exactly when a customer is chosen. Otherwise it is disabled and shows "To leave it owing, pick a customer".
   - Removing the customer or choosing "No customer" while Owing is selected resets how it was paid to unselected. It never falls back to Cash on its own.
@@ -327,7 +327,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - a forced API refusal keeps every field typed;
   - every sales refusal has a code in `contract.json`, checked by `tests/test_refusal_codes.py`.
 - **Undo leaves nothing**: after Deshacer, 0 rows remain for that sale in sales, lines and payments, and it is in no list. (Criterion 9)
-- **Ventas**: (Criteria 10, 11)
+- **Sales**: (Criteria 10, 11)
   - each period's total and count equal the sum and number of the sales shown;
   - the week runs Monday to Sunday;
   - the "owes you" mark matches the API's settlement;
@@ -338,7 +338,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - **Targets and inputs (criterion 13)**: every interactive element of the three screens, dialog buttons included, is at least 44 px tall; every input has a computed font size of at least 16 px; grams carry `inputmode="decimal"`, pesos `"numeric"`, and a line's fields `enterkeyhint`.
 - **Never blank (criterion 14)**: front tests show the shared loading state on the detail, Sales' list, New sale's price wait (opening and date change) and Pick a customer's results, holding no digit, currency symbol or placeholder figure.
 - **Date change**: a front test shows everything typed is kept, the lines show loading, then every line is repriced.
-- **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "Discard the sale?" under the Cerrar condition; "No, keep entering" keeps the form and the next back asks again; an untouched form closes at once; with Pick a customer, New customer or Asignar cliente open, back closes only the top sheet as its own "Close" does, the sale or detail underneath stays intact, and "Discard the sale?" never appears.
+- **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "Discard the sale?" under the Close condition; "No, keep entering" keeps the form and the next back asks again; an untouched form closes at once; with Pick a customer, New customer or Asignar cliente open, back closes only the top sheet as its own "Close" does, the sale or detail underneath stays intact, and "Discard the sale?" never appears.
 - **No regression (criterion 16)**: the existing sales and navigation tests pass without being edited; the pricing matrix and "preview = stored" stay at 0 differences; `NuevaVentaCompu` and `VentasCompu` are unchanged.
 
 ## Out of scope

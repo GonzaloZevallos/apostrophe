@@ -13,7 +13,7 @@ Every other capability reads one thing from here, the business of the user askin
 - the feedback rules every screen follows, and the shared states (`Estados`) that draw them;
 - the Business, Users, Appearance and Your account groups of Settings.
 
-Where every screen sits (tabs, sidebar, More, Settings, the chrome and back rule, routes, first run) is navigation.md. Home, where the app opens, is the panel defined in results.md. The Precios group is pricing-settings.md.
+Where every screen sits (tabs, sidebar, More, Settings, the chrome and back rule, routes, first run) is navigation.md. Home, where the app opens, is the panel defined in results.md. The Prices group is pricing-settings.md.
 
 ## Jobs
 
@@ -429,7 +429,7 @@ How the app fills a phone's screen and responds to touch once installed (criteri
   - `-webkit-tap-highlight-color` transparent; `touch-action: manipulation`;
   - `user-select: none` on buttons, tabs and the bar; text inside lists and fields stays selectable;
   - `.boton*`, rows and bar items get an `:active` state built from tokens, in both themes.
-- **Keyboard**: on iOS and Android, when the keyboard opens, the page and every sheet keep the focused field in view and can scroll, so "Save" or "Registrar" is reachable by scrolling.
+- **Keyboard**: on iOS and Android, when the keyboard opens, the page and every sheet keep the focused field in view and can scroll, so "Save" or "Record payment" is reachable by scrolling.
   - A save action pinned above the keyboard is not promised; that is each screen's own decision.
   - The tab bar and "+ New sale" need not stay above the keyboard, since forms and sheets don't show them (navigation.md).
 - **Manifest**:
@@ -479,10 +479,10 @@ This file only says where it applies and how it is kept true. It does not restat
 
 ### In Settings: Business, Users, Appearance, Your account
 
-These groups of Settings (navigation.md) replace the former Business screen, which no longer exists; `/negocio` redirects to Settings. Each is its own subscreen, a form: "Close", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Precios, between Users and Integrations, is pricing-settings.md.)
+These groups of Settings (navigation.md) replace the former Business screen, which no longer exists; `/negocio` redirects to Settings. Each is its own subscreen, a form: "Close", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Prices, between Users and Integrations, is pricing-settings.md.)
 
 - **Negocio**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
-- **Usuarios**:
+- **Users**:
   - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
   - "Invite a partner": each tap creates one fresh join link, to copy or share with the phone's share sheet.
 - **Apariencia**: Light and Dark, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Close" always closes at once.
