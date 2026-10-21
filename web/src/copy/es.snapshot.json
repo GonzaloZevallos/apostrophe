@@ -222,7 +222,6 @@
   "emptyStates.EMPTY_STATES.homeNobodyOwes": "Nadie te debe",
   "emptyStates.EMPTY_STATES.homeVarietiesDetail": "Cargá tu primera variedad con su precio. Sin precio no se puede vender.",
   "emptyStates.EMPTY_STATES.homeVarietiesTitle": "Arrancá por las variedades",
-  "emptyStates.EMPTY_STATES.salesList": "Todavía no registraste ninguna venta en este período.",
   "emptyStates.EMPTY_STATES.stockDetail": "Cargá tu stock inicial o una compra",
   "emptyStates.EMPTY_STATES.stockTitle": "Sin entradas de stock",
   "expenses.EXPENSES_TEXT.borrarGasto": "Borrar gasto",
