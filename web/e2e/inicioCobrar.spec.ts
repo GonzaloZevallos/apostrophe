@@ -87,7 +87,7 @@ for (const viewport of VIEWPORTS) {
     await page.getByRole('button', { name: 'Save' }).click()
     await expectPath(page, HOME)
     await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
-    await expect(page.getByText('Nadie te debe')).toBeVisible()
+    await expect(page.getByText('Nobody owes you')).toBeVisible()
     await expect(page.getByRole('link', { name: /^Collect from / })).toHaveCount(0)
 
     // One move: Back from Inicio does not land on Registrar cobro again.

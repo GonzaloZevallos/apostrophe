@@ -97,12 +97,12 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
 
   // Inicio: Hoy shows neither line; Semana and Mes show both, at lot cost.
   await page.goto(HOME)
-  await expect(page.getByText('Vendiste hoy')).toBeVisible()
+  await expect(page.getByText('You sold today')).toBeVisible()
   await expect(page.getByText('Promotion')).toHaveCount(0)
   await expect(page.getByText('Own use')).toHaveCount(0)
   for (const [tab, heading] of [
-    ['Week', 'Vendiste esta semana'],
-    ['Month', 'Vendiste este mes'],
+    ['Week', 'You sold this week'],
+    ['Month', 'You sold this month'],
   ] as const) {
     await page.getByRole('button', { name: tab, exact: true }).click()
     await expect(page.getByText(heading)).toBeVisible()
@@ -110,12 +110,12 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
     await expect(promotion).toContainText('$ 1.600')
     const ownUse = page.getByRole('group', { name: 'Own use', exact: true })
     await expect(ownUse).toContainText('$ 800')
-    await expect(page.getByRole('group', { name: 'Costo de lo vendido', exact: true })).toContainText(
+    await expect(page.getByRole('group', { name: 'Cost of goods sold', exact: true })).toContainText(
       '$ 0',
     )
   }
 
-  // Análisis: the same two figures, apart from Faltante de stock.
+  // Análisis: the same two figures, apart from Stock shortfall.
   await openMas(page)
   await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Analysis/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === ANALYSIS)

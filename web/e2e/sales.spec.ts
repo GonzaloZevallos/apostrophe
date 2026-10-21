@@ -103,7 +103,7 @@ function pesos(amount: number): string {
 }
 
 function countLabel(count: number): string {
-  return `${count} ${count === 1 ? 'venta' : 'ventas'}`
+  return `${count} ${count === 1 ? 'sale' : 'sales'}`
 }
 
 test('a seller records, undoes, fixes and isolates sales, from the front alone', async ({
