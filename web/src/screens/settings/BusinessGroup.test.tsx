@@ -148,7 +148,7 @@ test('"Close" right after a save closes at once, with the refetch still pending:
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
-  expect(screen.queryByText('¿Descartás el nombre?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard the name?')).not.toBeInTheDocument()
 })
 
 test('a real change after a save asks before closing, and keeping it leaves what was typed', async () => {
@@ -168,7 +168,7 @@ test('a real change after a save asks before closing, and keeping it leaves what
   await userEvent.type(input, ' 2')
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
-  expect(await screen.findByText('¿Descartás el nombre?')).toBeInTheDocument()
+  expect(await screen.findByText('Discard the name?')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
   expect(screen.getByLabelText('Business name')).toHaveValue('La Huerta Nueva 2')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()

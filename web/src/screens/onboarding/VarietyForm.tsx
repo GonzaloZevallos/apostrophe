@@ -70,7 +70,7 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
           <FieldError message={nameError ?? undefined} />
         </label>
       ) : (
-        <p className="pie">{ONBOARDING_TEXT.variedad0(saved.name)}</p>
+        <p className="pie">{ONBOARDING_TEXT.varietyNamed(saved.name)}</p>
       )}
       <PriceFields
         settings={settings}
@@ -81,7 +81,7 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
       <FieldError message={priceErrors.form} />
       {offline && <SinConexion />}
       <Boton textOnly="submit" type="submit" disabled={sending}>
-        {ONBOARDING_TEXT.guardaLaVariedad}
+        {ONBOARDING_TEXT.saveTheVariety}
       </Boton>
     </form>
   )

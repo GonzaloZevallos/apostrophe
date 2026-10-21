@@ -37,9 +37,9 @@ export const STEPS: readonly StepInfo[] = [
     slug: 'variety',
     path: ONBOARDING_VARIETY,
     required: true,
-    title: ONBOARDING_TEXT.cargaTuPrimeraVariedad,
-    why: ONBOARDING_TEXT.paraVenderCadaVariedad,
-    shortName: 'variedad con precio',
+    title: ONBOARDING_TEXT.addYourFirstVariety,
+    why: ONBOARDING_TEXT.toSellEachVarietyNeeds,
+    shortName: ONBOARDING_TEXT.varietyWithPriceLower,
     name: COMMON_TEXT.varietyWithPrice,
     later: COMMON_TEXT.varieties,
   },
@@ -48,8 +48,8 @@ export const STEPS: readonly StepInfo[] = [
     path: ONBOARDING_STOCK,
     required: true,
     title: STEP_STOCK_ENTRY,
-    why: ONBOARDING_TEXT.sinStockNoSe,
-    shortName: 'stock inicial',
+    why: ONBOARDING_TEXT.withoutStockItCannotBeSold,
+    shortName: ONBOARDING_TEXT.initialStockLower,
     name: COMMON_TEXT.initialStock,
     later: COMMON_TEXT.varieties,
   },
@@ -57,41 +57,41 @@ export const STEPS: readonly StepInfo[] = [
     slug: 'header_footer',
     path: ONBOARDING_CATALOG_MESSAGE,
     required: false,
-    title: ONBOARDING_TEXT.comoSaleTuCatalogo,
-    why: ONBOARDING_TEXT.elEncabezadoYEl,
-    shortName: ONBOARDING_TEXT.mensajeDelCatalogo,
+    title: ONBOARDING_TEXT.howYourCatalogLooks,
+    why: ONBOARDING_TEXT.headerAndFooterGoOnEveryCatalog,
+    shortName: ONBOARDING_TEXT.catalogMessageLower,
     name: COMMON_TEXT.catalogMessage,
-    later: ONBOARDING_TEXT.configuracionMensajeDelCatalogo,
+    later: ONBOARDING_TEXT.settingsCatalogMessage,
   },
   {
     slug: 'bot',
     path: ONBOARDING_BOT,
     required: false,
-    title: ONBOARDING_TEXT.conectaTuBotDe,
-    why: ONBOARDING_TEXT.conElBotTu,
-    shortName: ONBOARDING_TEXT.botDeTelegram,
+    title: ONBOARDING_TEXT.connectYourTelegramBot,
+    why: ONBOARDING_TEXT.withTheBot,
+    shortName: COMMON_TEXT.telegramBot,
     name: COMMON_TEXT.telegramBot,
-    later: ONBOARDING_TEXT.configuracionIntegraciones,
+    later: ONBOARDING_TEXT.settingsIntegrations,
   },
   {
     slug: 'partner',
     path: ONBOARDING_PARTNER,
     required: false,
-    title: ONBOARDING_TEXT.envialeElLinkA,
-    why: ONBOARDING_TEXT.conElLinkTu,
-    shortName: 'socio',
+    title: ONBOARDING_TEXT.sendTheLinkToYourPartner,
+    why: ONBOARDING_TEXT.withTheLinkYourPartner,
+    shortName: ONBOARDING_TEXT.partnerLower,
     name: COMMON_TEXT.partner,
-    later: ONBOARDING_TEXT.configuracionUsuarios,
+    later: ONBOARDING_TEXT.settingsUsers,
   },
   {
     slug: 'categories',
     path: ONBOARDING_CATEGORIES,
     required: false,
     title: COMMON_TEXT.expenseCategories,
-    why: ONBOARDING_TEXT.ordenanLoQueGastas,
-    shortName: ONBOARDING_TEXT.categoriasDeGastos,
+    why: ONBOARDING_TEXT.theyOrganiseWhatYouSpend,
+    shortName: ONBOARDING_TEXT.expenseCategoriesLower,
     name: COMMON_TEXT.expenseCategories,
-    later: ONBOARDING_TEXT.configuracionCategoriasDeGastos,
+    later: ONBOARDING_TEXT.settingsExpenseCategories,
   },
 ]
 
@@ -111,12 +111,12 @@ export function isOptional(slug: StepSlug): slug is OptionalStepSlug {
   return !stepInfo(slug).required
 }
 
-/** The first step has no step before it: no "Atrás". */
+/** The first step has no step before it: no "Back". */
 export function isFirst(slug: StepSlug): boolean {
   return stepNumber(slug) === 1
 }
 
-/** The last step has no step after it: no "Saltar el resto". */
+/** The last step has no step after it: no "Skip the rest". */
 export function isLast(slug: StepSlug): boolean {
   return stepNumber(slug) === STEP_COUNT
 }
@@ -128,5 +128,5 @@ export function previousPath(slug: StepSlug): string | undefined {
 
 /** The sentence under a skippable step's buttons, saying where it can be done later. */
 export function laterHint(info: StepInfo): string {
-  return ONBOARDING_TEXT.siLoSalteasLo(info.later)
+  return ONBOARDING_TEXT.ifYouSkipIt(info.later)
 }

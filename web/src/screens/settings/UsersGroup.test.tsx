@@ -1,6 +1,6 @@
 /**
  * `UsersGroup` at the screen seam (plan, "Users"; `accounts.md`): the business's users
- * (the signed-in one marked "vos") and "Invitá a un socio". The API is faked at `fetch`,
+ * (the signed-in one marked "you") and "Invitá a un socio". The API is faked at `fetch`,
  * never mocked deeper (CODING_STANDARDS §10).
  */
 
@@ -71,13 +71,13 @@ function renderUsers(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   return queryClient
 }
 
-test('marks the signed-in user "vos", nobody else, with the users sorted as answered', async () => {
+test('marks the signed-in user "you", nobody else, with the users sorted as answered', async () => {
   renderUsers(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 
   const vosRow = (await screen.findByText('vos@lahuerta.com')).closest('li')
   const juliRow = screen.getByText('juli@lahuerta.com').closest('li')
-  expect(vosRow).toHaveTextContent('vos')
-  expect(juliRow).not.toHaveTextContent('vos')
+  expect(vosRow).toHaveTextContent('you')
+  expect(juliRow).not.toHaveTextContent('you')
 })
 
 test('"Invitá a un socio" shows the fresh link on screen instead of a toast', async () => {
@@ -97,7 +97,7 @@ test('"Invitá a un socio" shows the fresh link on screen instead of a toast', a
   await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
 
   expect(await screen.findByText('https://apostrophe.app/invitation/abc123')).toBeInTheDocument()
-  expect(await screen.findByText('Un link de un solo uso, vence el 09/10')).toBeInTheDocument()
+  expect(await screen.findByText('A one-time link, it expires on 09/10')).toBeInTheDocument()
   expect(screen.queryByText('Invitación lista')).not.toBeInTheDocument()
 })
 

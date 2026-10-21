@@ -125,44 +125,44 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Record an expense, with a category created inline.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
-  await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
-  await page.getByRole('button', { name: 'Crear categoría' }).click()
+  await page.getByRole('button', { name: 'Create a new category' }).click()
+  await page.getByLabel('New category name').fill('Flete')
+  await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount').fill('4500')
-  await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByLabel('Details').fill('Flete al mercado')
+  await page.getByRole('button', { name: 'Save the expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
   await expect(page.getByText('Flete al mercado')).toBeVisible()
 
   // Edit it.
   await page.getByText('Flete al mercado').click()
-  await page.getByLabel('Detalle').fill('Flete al mercado central')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByLabel('Details').fill('Flete al mercado central')
+  await page.getByRole('button', { name: 'Save the expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toBeVisible()
 
   // Delete it.
   await page.getByText('Flete al mercado central').click()
-  await page.getByRole('button', { name: 'Borrar gasto' }).click()
+  await page.getByRole('button', { name: 'Delete expense' }).click()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
-  await expect(page.getByText('Gasto eliminado')).toBeVisible()
+  await expect(page.getByText('Expense deleted')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
   // Move between months: the month lives in the URL, one step back and one forward.
   await page.getByRole('button', { name: 'Previous month' }).click()
   await expectPath(page, EXPENSES, /\?month=\d{4}-\d{2}/)
   await page.getByRole('button', { name: 'Next month' }).click()
-  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
+  await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
   // app shows the English screen (the one old Gastos path and one old Más path of
   // the run; every other step reaches a screen through the nav or its real path).
   await page.goto(`${legacyFor(EXPENSES)}?month=2026-01`)
   await expectPath(page, EXPENSES, '?month=2026-01')
-  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
+  await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
   await page.reload()
   await expectPath(page, EXPENSES, '?month=2026-01')
-  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
+  await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
   await page.goto(legacyFor(MORE))
   await expectPath(page, MORE)
   await expect(
@@ -179,13 +179,13 @@ test('a seller does everything the backend offers today, from the front alone', 
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
   await page.goto(EXPENSE_CATEGORIES)
-  await page.getByLabel('Nueva categoría').fill('Delivery en bici')
-  await page.getByRole('button', { name: '+ Categoría' }).click()
-  await expect(page.getByText('Categoría guardada')).toBeVisible()
+  await page.getByLabel('New category').fill('Delivery en bici')
+  await page.getByRole('button', { name: '+ Category' }).click()
+  await expect(page.getByText('Category saved')).toBeVisible()
   const newRow = page.locator('.fila', { hasText: 'Delivery en bici' })
-  await newRow.getByRole('button', { name: 'Eliminar' }).click()
+  await newRow.getByRole('button', { name: 'Delete' }).click()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
-  await expect(page.getByText('Categoría eliminada')).toBeVisible()
+  await expect(page.getByText('Category deleted')).toBeVisible()
   await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
@@ -193,7 +193,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Business name').fill(renamedTo)
   await page.getByRole('button', { name: 'Save the name' }).click()
-  await expect(page.getByText('Negocio renombrado')).toBeVisible()
+  await expect(page.getByText('Business renamed')).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).

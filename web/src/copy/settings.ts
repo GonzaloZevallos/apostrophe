@@ -6,26 +6,24 @@
 
 import { SAMPLES, type LimitedCopy } from './limits'
 import { REFUSAL_TEXT } from './refusals'
-import type { SuccessToast } from '../components/AvisoExito'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
-
-export const RENAME_SUCCESS: SuccessToast = 'Negocio renombrado'
-export const PASSWORD_CHANGED_SUCCESS: SuccessToast = 'Contraseña cambiada · cerramos tus otras sesiones'
-export const BUSINESS_NAME_INVALID_MESSAGE = 'Ponele un nombre al negocio, sin espacios de más'
+export const RENAME_SUCCESS = 'Business renamed'
+export const PASSWORD_CHANGED_SUCCESS = 'Password changed · we signed out your other sessions'
+export const BUSINESS_NAME_INVALID_MESSAGE = 'Give the business a name, without extra spaces'
 export const GENERIC_REFUSAL_MESSAGE = REFUSAL_TEXT.pinnedGeneric
-export const CATALOG_SAVED: SuccessToast = 'Catálogo guardado'
-export const PRICES_SAVED: SuccessToast = 'Precios guardados'
-export const HEADER_TOO_LONG_MESSAGE = 'El encabezado es demasiado largo'
-export const FOOTER_TOO_LONG_MESSAGE = 'El pie es demasiado largo'
+export const CATALOG_SAVED = 'Catalog saved'
+export const PRICES_SAVED = 'Prices saved'
+export const HEADER_TOO_LONG_MESSAGE = 'The header is too long'
+export const FOOTER_TOO_LONG_MESSAGE = 'The footer is too long'
 
 /** The line under a fresh invitation link: one sentence, a help line (<= 80). `date` is `dd/mm`. */
-export const inviteExpiry = (date: string): string => `Un link de un solo uso, vence el ${date}`
+export const inviteExpiry = (date: string): string => `A one-time link, it expires on ${date}`
 
-/** The line under the Onboarding's collapsed "Categoría" action (a help line, <= 80): true because
+/** The line under the Onboarding's collapsed "Category" action (a help line, <= 80): true because
  * adding, renaming and removing each save at once, through the owner's own routes. */
-export const CATEGORIES_SAVE_AT_ONCE = 'Agregar, renombrar o sacar una categoría se guarda al toque.'
+export const CATEGORIES_SAVE_AT_ONCE = 'Adding, renaming or removing a category saves right away.'
 
 /** Every always-visible help line of these groups, measured with `SAMPLES`; the screens
  * render `inviteExpiry` itself. Checked by `copy/copyLimits.test.ts`. */
@@ -42,16 +40,16 @@ const LIMITED_COPY_0: readonly LimitedCopy[] = [
  */
 
 
-export const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
-export const OWN_CHAT_HELP = 'Tocá Iniciar en tu bot; tu número lo ves con @userinfobot.'
+export const CHANNEL_CHAT_HELP = 'The @username or link of the channel where the catalog is published.'
+export const OWN_CHAT_HELP = 'Tap Start in your bot; find your number with @userinfobot.'
 /** Behind More info: the longer how, which the always-visible line above says in short. */
 export const OWN_CHAT_INFO = {
   line: OWN_CHAT_HELP,
-  more: 'Abrí tu bot en Telegram y tocá Iniciar. Después tocá Buscar mi chat y tu número aparece solo; o buscalo vos con @userinfobot y escribilo acá.',
+  more: 'Open your bot in Telegram and tap Start. Then tap Find my chat and your number shows up on its own; or look it up with @userinfobot and type it here.',
 } as const
-export const LOAD_THE_TOKEN_FIRST = 'Cargá el token primero'
+export const LOAD_THE_TOKEN_FIRST = 'Enter the token first'
 export const PREVIOUS_PIN_NOTICE =
-  'El mensaje fijado anterior queda como está; desfijalo vos en Telegram.'
+  'The previous pinned message stays as it is; unpin it yourself in Telegram.'
 
 const LIMITED_COPY_1: readonly LimitedCopy[] = [
   { kind: 'help', text: CHANNEL_CHAT_HELP },
@@ -65,48 +63,49 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const SETTINGS_TEXT = {
-  cerrarSesion: 'Cerrar sesión',
-  tema: 'Tema',
-  encabezado: 'Encabezado',
-  pie: 'Pie',
-  nuevaCategoria: 'Nueva categoría',
-  categoria: '+ Categoría',
-  nombreDe0: (name: string | number) => `Nombre de ${name}`,
-  renombrar: 'Renombrar',
-  eliminar: 'Eliminar',
-  borrasLaCategoria: '¿Borrás la categoría?',
-  seBorra: 'Se borra “',
-  estoNoSePuede: '”. Esto no se puede deshacer.',
-  tokenDelBot: 'Token del bot',
-  guardadoEl: 'Guardado el ',
-  noSeMuestraMas: ' · no se muestra más',
-  chatDelCanal: 'Chat del canal',
-  tuChat: 'Tu chat',
-  buscarMiChat: 'Buscar mi chat',
-  probarlo: 'Probarlo',
-  irAlCatalogo: 'Ir al catálogo',
-  clientesVip: 'Clientes VIP',
-  guardaLosPrecios: 'Guardá los precios',
-  vos: 'vos',
-  categoriaMontoYDetalle: 'Categoría, monto y detalle',
-  promocionOConsumoPropio: 'Promoción o consumo propio',
-  porMesYPor: 'Por mes y por categoría',
-  variedadesSemanasMesesY: 'Variedades, semanas, meses y días',
-  negocioUsuariosBotCatalogo: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
-  descartasLaContrasenaNueva: '¿Descartás la contraseña nueva?',
-  claro: 'Claro',
-  oscuro: 'Oscuro',
-  descartasElTema: '¿Descartás el tema?',
-  descartasElNombre: '¿Descartás el nombre?',
-  guardaElMensaje: 'Guardá el mensaje',
-  descartasElMensaje: '¿Descartás el mensaje?',
-  noSePuedeBorrar: 'No se puede borrar: todavía tiene gastos. Podés renombrarla.',
-  categoriaGuardada: 'Categoría guardada',
-  categoriaEliminada: 'Categoría eliminada',
-  descartasLaCategoria: '¿Descartás la categoría?',
-  pruebaEnviada: 'Prueba enviada',
-  lasVentasYaHechas: 'Las ventas ya hechas conservan el precio con el que se registraron. Apagar una opción no borra nada.',
-  cadaVariedadNecesitaSu: 'Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera.',
-  descartasLosPrecios: '¿Descartás los precios?',
-  descartasLaInvitacion: '¿Descartás la invitación?',
+  signOut: 'Sign out',
+  theme: 'Theme',
+  header: 'Header',
+  footer: 'Footer',
+  newCategory: 'New category',
+  addCategory: '+ Category',
+  nameOf: (name: string | number) => `Name of ${name}`,
+  rename: 'Rename',
+  delete: 'Delete',
+  deleteTheCategory: 'Delete the category?',
+  thisDeletes: 'This deletes “',
+  closingQuoteCannotUndo: '”. This can\'t be undone.',
+  botToken: 'Bot token',
+  savedOn: 'Saved on ',
+  notShownAgain: ' · not shown again',
+  channelChat: 'Channel chat',
+  yourChat: 'Your chat',
+  findMyChat: 'Find my chat',
+  testIt: 'Test it',
+  goToCatalog: 'Go to the catalog',
+  vipCustomers: 'VIP customers',
+  saveThePrices: 'Save the prices',
+  you: 'you',
+  categoryAmountAndDetails: 'Category, amount and details',
+  promotionOrOwnUse: 'Promotion or own use',
+  byMonthAndByCategory: 'By month and by category',
+  varietiesWeeksMonthsAndDays: 'Varieties, weeks, months and days',
+  businessUsersBotCatalogAndMore: 'Business, users, bot, catalog, categories, appearance and your account',
+  discardTheNewPassword: 'Discard the new password?',
+  light: 'Light',
+  dark: 'Dark',
+  discardTheTheme: 'Discard the theme?',
+  discardTheName: 'Discard the name?',
+  saveTheMessage: 'Save the message',
+  discardTheMessage: 'Discard the message?',
+  cannotDeleteStillHasExpenses: 'It can\'t be deleted: it still has expenses. You can rename it.',
+  categorySaved: 'Category saved',
+  categoryDeleted: 'Category deleted',
+  discardTheCategory: 'Discard the category?',
+  testSent: 'Test sent',
+  invitationReady: 'Invitation ready',
+  pastSalesKeepTheirPrice: 'Sales already made keep the price they were recorded with. Turning an option off deletes nothing.',
+  eachVarietyNeedsItsVipPrice: 'Each variety needs its VIP price: without it, a VIP customer pays like anyone else.',
+  discardThePrices: 'Discard the prices?',
+  discardTheInvitation: 'Discard the invitation?',
 } as const

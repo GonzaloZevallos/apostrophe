@@ -13,7 +13,7 @@ import { expect, test } from 'vitest'
 import SettingsGroup from './SettingsGroup'
 
 const LEAVE = {
-  question: '¿Descartás el nombre?',
+  question: 'Discard the name?',
   detail: 'What you entered is lost: nothing has been saved yet.',
   keepLabel: 'No, keep editing',
   discardLabel: 'Yes, discard it',
@@ -105,7 +105,7 @@ test('a dirty group asks before "Close" with its own wording; keeping stays, dis
   await user.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(router.state.location.pathname).toBe(SETTINGS_BUSINESS)
-  expect(screen.getByRole('alertdialog', { name: '¿Descartás el nombre?' })).toBeInTheDocument()
+  expect(screen.getByRole('alertdialog', { name: 'Discard the name?' })).toBeInTheDocument()
   expect(screen.getByText(LEAVE.detail)).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'No, keep editing' }))
@@ -132,7 +132,7 @@ test('a dirty group also asks before the browser Back', async () => {
   await act(() => router.navigate(-1))
 
   expect(router.state.location.pathname).toBe(SETTINGS_BUSINESS)
-  expect(screen.getByRole('alertdialog', { name: '¿Descartás el nombre?' })).toBeInTheDocument()
+  expect(screen.getByRole('alertdialog', { name: 'Discard the name?' })).toBeInTheDocument()
 })
 
 test('a save that disarms the guard leaves without asking even while dirty', async () => {

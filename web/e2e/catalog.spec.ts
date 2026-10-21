@@ -67,7 +67,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByLabel('% indica').fill('30')
   await page.getByLabel('Aroma/flavor').fill('floral, dulce')
   await page.getByRole('button', { name: 'Save the catalog' }).click()
-  await expect(page.getByText('Catálogo guardado')).toBeVisible()
+  await expect(page.getByText('Catalog saved')).toBeVisible()
   await expect(page.getByText('floral, dulce')).toBeVisible()
   await page.goto(CATALOG)
 
@@ -75,13 +75,13 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   // to the catalog screen, which only links out to it and shows neither value.
   await page.getByRole('link', { name: 'Edit header and footer' }).click()
   await expectPath(page, SETTINGS_CATALOG_MESSAGE)
-  await page.getByLabel('Encabezado').fill('🌸 Catálogo de Flores del Catálogo 🌸')
-  await page.getByLabel('Pie').fill('Pedidos por privado.')
-  await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
-  await expect(page.getByText('Catálogo guardado')).toBeVisible()
+  await page.getByLabel('Header').fill('🌸 Catálogo de Flores del Catálogo 🌸')
+  await page.getByLabel('Footer').fill('Pedidos por privado.')
+  await page.getByRole('button', { name: 'Save the message' }).click()
+  await expect(page.getByText('Catalog saved')).toBeVisible()
   await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, CATALOG)
-  await expect(page.getByLabel('Pie')).toHaveCount(0)
+  await expect(page.getByLabel('Footer')).toHaveCount(0)
 
   // The API's own text is what both the preview and the clipboard must match.
   const apiText = await page.evaluate(() =>

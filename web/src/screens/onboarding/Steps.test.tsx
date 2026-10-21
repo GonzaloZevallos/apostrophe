@@ -19,6 +19,7 @@ import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
 import { ONBOARDING_BOT, ONBOARDING_CATALOG_MESSAGE, ONBOARDING_CATEGORIES, ONBOARDING_PARTNER, ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
+import { CHECKLIST_DONE } from '../../copy/inicio'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -151,7 +152,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   const user = userEvent.setup()
   renderAt(ONBOARDING_VARIETY)
 
-  expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
+  expect(await screen.findByText('Variety: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   // The price is effective today: there is no date to change.
   expect(screen.queryByLabelText('Effective from')).not.toBeInTheDocument()
@@ -161,7 +162,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   // One "Close", the frame's own: the price form draws no title row here.
   expect(screen.getAllByRole('button', { name: 'Close' })).toHaveLength(1)
   await user.type(screen.getByLabelText(/^List price/), '12000')
-  await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
+  await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
   expect(await screen.findByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
   expect(calls).not.toContain('POST /varieties')
@@ -201,13 +202,13 @@ test('step 1 with no target saves the variety and its price with one action; a r
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
   await user.type(screen.getByLabelText(/^List price/), '12000')
-  await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
+  await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Check the prices entered')
   expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
 
   refuse = false
-  await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
+  await user.click(screen.getByRole('button', { name: 'Save the variety' }))
   await waitFor(() => expect(calls.filter((call) => call === 'POST /varieties/7/prices')).toHaveLength(2))
   expect(calls.filter((call) => call === 'POST /varieties')).toHaveLength(1)
 })
@@ -247,8 +248,8 @@ test('step 2 saves the opening stock of the stock target through the owner, then
   // Saving the stock is not an Onboarding write: nothing was sent to it yet.
   expect(calls.filter((call) => call.startsWith('POST /onboarding-progress'))).toEqual([])
 
-  await user.click(screen.getByRole('button', { name: 'Seguir' }))
-  expect(await screen.findByRole('heading', { name: 'Cómo sale tu catálogo' })).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Continue' }))
+  expect(await screen.findByRole('heading', { name: 'How your catalog looks' })).toBeInTheDocument()
   expect(calls).toContain('POST /onboarding-progress/advance')
 })
 
@@ -273,7 +274,7 @@ test('"Add another variety" goes back to step 1 with the progress still on steps
   const router = renderAt(ONBOARDING_STOCK)
 
   await user.click(await screen.findByRole('button', { name: 'Add another variety' }))
-  expect(await screen.findByRole('heading', { name: 'Cargá tu primera variedad' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Add your first variety' })).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(ONBOARDING_VARIETY)
   expect(screen.getByLabelText(/^Name/)).toBeInTheDocument()
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
@@ -292,10 +293,10 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
   const user = userEvent.setup()
   renderAt(ONBOARDING_CATALOG_MESSAGE)
 
-  const header = await screen.findByLabelText('Encabezado')
+  const header = await screen.findByLabelText('Header')
   await user.type(header, '!')
-  expect(screen.queryByRole('button', { name: 'Dejar así' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Leave as is' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save the message' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Save' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(header).toHaveValue('H!')
@@ -303,13 +304,13 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
 
   refuse = false
   await user.click(screen.getByRole('button', { name: 'Save' }))
-  expect(await screen.findByRole('heading', { name: 'Conectá tu bot de Telegram' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Connect your Telegram bot' })).toBeInTheDocument()
   expect(calls.indexOf('PUT /catalog/header-footer')).toBeLessThan(
     calls.indexOf('POST /onboarding-progress/passes'),
   )
 })
 
-test('step 3 "Dejar así" passes it done with the defaults kept, and sends no catalog write', async () => {
+test('step 3 "Leave as is" passes it done with the defaults kept, and sends no catalog write', async () => {
   const bodies: unknown[] = []
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
     'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', varieties: [] }),
@@ -321,8 +322,8 @@ test('step 3 "Dejar así" passes it done with the defaults kept, and sends no ca
   const user = userEvent.setup()
   renderAt(ONBOARDING_CATALOG_MESSAGE)
 
-  await user.click(await screen.findByRole('button', { name: 'Dejar así' }))
-  expect(await screen.findByRole('heading', { name: 'Conectá tu bot de Telegram' })).toBeInTheDocument()
+  await user.click(await screen.findByRole('button', { name: 'Leave as is' }))
+  expect(await screen.findByRole('heading', { name: 'Connect your Telegram bot' })).toBeInTheDocument()
   expect(bodies).toEqual([{ step: 'header_footer', as: 'done' }])
   expect(calls.filter((call) => call.startsWith('PUT'))).toEqual([])
 })
@@ -344,17 +345,17 @@ test('step 4 passes done after a successful Probarlo and shows no catalog link; 
   const user = userEvent.setup()
   renderAt(ONBOARDING_BOT)
 
-  await user.type(await screen.findByLabelText('Token del bot'), '123:abc')
-  expect(screen.queryByText('Ir al catálogo')).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText('Tu chat'), '555')
-  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await user.type(await screen.findByLabelText('Bot token'), '123:abc')
+  expect(screen.queryByText('Go to the catalog')).not.toBeInTheDocument()
+  await user.type(screen.getByLabelText('Your chat'), '555')
+  await user.click(screen.getByRole('button', { name: 'Test it' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(bodies).toEqual([])
-  expect(screen.getByLabelText('Tu chat')).toHaveValue('555')
+  expect(screen.getByLabelText('Your chat')).toHaveValue('555')
 
   refuse = false
-  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
-  expect(await screen.findByRole('heading', { name: 'Enviale el link a tu socio' })).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Test it' }))
+  expect(await screen.findByRole('heading', { name: 'Send the link to your partner' })).toBeInTheDocument()
   expect(bodies).toEqual([{ step: 'bot', as: 'done' }])
 })
 
@@ -371,15 +372,15 @@ test('step 4 says where to publish only after a successful Probarlo, not before 
   const user = userEvent.setup()
   renderAt(ONBOARDING_BOT)
 
-  await user.type(await screen.findByLabelText('Token del bot'), '123:abc')
+  await user.type(await screen.findByLabelText('Bot token'), '123:abc')
   expect(screen.queryByText(PUBLISH_LINE)).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText('Tu chat'), '555')
-  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await user.type(screen.getByLabelText('Your chat'), '555')
+  await user.click(screen.getByRole('button', { name: 'Test it' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(screen.queryByText(PUBLISH_LINE)).not.toBeInTheDocument()
 
   refuse = false
-  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await user.click(screen.getByRole('button', { name: 'Test it' }))
   expect(await screen.findByText(PUBLISH_LINE)).toBeInTheDocument()
 })
 
@@ -390,7 +391,7 @@ test('step 4 shows the publish line at once on a step already done, a bot saved 
   renderAt(ONBOARDING_BOT)
 
   expect(await screen.findByText(PUBLISH_LINE)).toBeInTheDocument()
-  expect(screen.getByText('Hecho')).toBeInTheDocument()
+  expect(screen.getByText(CHECKLIST_DONE)).toBeInTheDocument()
 })
 
 test('step 5 offers Seguir only once a link is created, and passes done', async () => {
@@ -405,11 +406,11 @@ test('step 5 offers Seguir only once a link is created, and passes done', async 
   const user = userEvent.setup()
   renderAt(ONBOARDING_PARTNER)
 
-  expect(await screen.findByRole('heading', { name: 'Enviale el link a tu socio' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Seguir' })).not.toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Send the link to your partner' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Invitá a un socio' })).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Crear el link' }))
-  await user.click(await screen.findByRole('button', { name: 'Seguir' }))
+  await user.click(screen.getByRole('button', { name: 'Create the link' }))
+  await user.click(await screen.findByRole('button', { name: 'Continue' }))
 
   expect(await screen.findByRole('heading', { name: 'Expense categories' })).toBeInTheDocument()
   expect(bodies).toEqual([{ step: 'partner', as: 'done' }])
@@ -435,14 +436,14 @@ test('step 6 adding a category saves at once and passes nothing; only Seguir pas
   renderAt(ONBOARDING_CATEGORIES)
 
   expect(await screen.findByText('Insumos')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Nueva categoría')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('New category')).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Category' }))
-  await user.type(screen.getByLabelText('Nueva categoría'), 'Luz')
-  await user.click(screen.getByRole('button', { name: '+ Categoría' }))
+  await user.type(screen.getByLabelText('New category'), 'Luz')
+  await user.click(screen.getByRole('button', { name: '+ Category' }))
   await waitFor(() => expect(calls).toContain('POST /expense-categories'))
   expect(bodies).toEqual([])
 
-  await user.click(screen.getByRole('button', { name: 'Seguir' }))
+  await user.click(screen.getByRole('button', { name: 'Continue' }))
   expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
   expect(bodies).toEqual([{ step: 'categories', as: 'done' }])
 })
@@ -457,12 +458,12 @@ test('a failed Onboarding write after a saved step shows the retry and the same 
   const user = userEvent.setup()
   renderAt(ONBOARDING_CATEGORIES)
 
-  await user.click(await screen.findByRole('button', { name: 'Seguir' }))
+  await user.click(await screen.findByRole('button', { name: 'Continue' }))
   expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
   expect(screen.getByText('Insumos')).toBeInTheDocument()
 
   fail = false
-  await user.click(screen.getByRole('button', { name: 'Seguir' }))
+  await user.click(screen.getByRole('button', { name: 'Continue' }))
   expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
 })
 
@@ -477,26 +478,26 @@ function expectNoNestedForm(): void {
   }
 }
 
-test('step 3 draws "Dejar así" as a form submit that is not inside another form, under the icon and text rule', async () => {
+test('step 3 draws "Leave as is" as a form submit that is not inside another form, under the icon and text rule', async () => {
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
     'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', varieties: [] }),
   })
   renderAt(ONBOARDING_CATALOG_MESSAGE)
 
-  const button = await screen.findByRole('button', { name: 'Dejar así' })
+  const button = await screen.findByRole('button', { name: 'Leave as is' })
   expect(button).toHaveAttribute('type', 'submit')
   expect(button.closest('form')).not.toBeNull()
   expectNoNestedForm()
   expectIconAndTextRule(document.body)
 })
 
-test('step 4 draws "Seguir" as a form submit that is not inside another form, under the icon and text rule', async () => {
+test('step 4 draws "Continue" as a form submit that is not inside another form, under the icon and text rule', async () => {
   stubFetch(answer(['done', 'done', 'done', 'done', 'pending', 'pending'], { stock_entries_count: 1 }), {
     'GET /pinned-catalog': () => json({ token_saved_on: '2026-10-03', own_chat: '555', channel_chat: null }),
   })
   renderAt(ONBOARDING_BOT)
 
-  const button = await screen.findByRole('button', { name: 'Seguir' })
+  const button = await screen.findByRole('button', { name: 'Continue' })
   expect(button).toHaveAttribute('type', 'submit')
   expectNoNestedForm()
   // Más info is a shared component the integrations form owns (IntegrationsGroup.test.tsx
@@ -504,33 +505,33 @@ test('step 4 draws "Seguir" as a form submit that is not inside another form, un
   expect(iconAndTextProblems(document.body).filter((problem) => !problem.includes('mas-info__boton'))).toEqual([])
 })
 
-test('step 5 draws "Seguir" as a form submit that is not inside another form, under the icon and text rule', async () => {
+test('step 5 draws "Continue" as a form submit that is not inside another form, under the icon and text rule', async () => {
   stubFetch(answer(['done', 'done', 'done', 'done', 'done', 'pending'], { stock_entries_count: 1 }), {})
   renderAt(ONBOARDING_PARTNER)
 
-  const button = await screen.findByRole('button', { name: 'Seguir' })
+  const button = await screen.findByRole('button', { name: 'Continue' })
   expect(button).toHaveAttribute('type', 'submit')
   expectNoNestedForm()
   expectIconAndTextRule(document.body)
 })
 
-test('step 6 draws "Seguir" as a form submit that is not inside another form, under the icon and text rule', async () => {
+test('step 6 draws "Continue" as a form submit that is not inside another form, under the icon and text rule', async () => {
   stubFetch(answer(['done', 'done', 'done', 'done', 'done', 'pending'], { stock_entries_count: 1 }), {
     'GET /expense-categories': () => json([{ id: 1, name: 'Insumos' }]),
   })
   renderAt(ONBOARDING_CATEGORIES)
 
-  const button = await screen.findByRole('button', { name: 'Seguir' })
+  const button = await screen.findByRole('button', { name: 'Continue' })
   expect(button).toHaveAttribute('type', 'submit')
   expectNoNestedForm()
   expectIconAndTextRule(document.body)
 })
 
-test('step 2 once saved draws "Seguir" as a submit and "Add another variety" with its icon, under the rule', async () => {
+test('step 2 once saved draws "Continue" as a submit and "Add another variety" with its icon, under the rule', async () => {
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {})
   renderAt(ONBOARDING_STOCK)
 
-  const next = await screen.findByRole('button', { name: 'Seguir' })
+  const next = await screen.findByRole('button', { name: 'Continue' })
   expect(next).toHaveAttribute('type', 'submit')
   const other = screen.getByRole('button', { name: 'Add another variety' })
   expect(other.querySelector('svg')).not.toBeNull()
@@ -538,11 +539,11 @@ test('step 2 once saved draws "Seguir" as a submit and "Add another variety" wit
   expectIconAndTextRule(document.body)
 })
 
-test('step 2 with no variety yet draws "Cargar una variedad" with its icon, under the rule', async () => {
+test('step 2 with no variety yet draws "Add a variety" with its icon, under the rule', async () => {
   stubFetch(answer(['pending', 'pending', 'pending', 'pending', 'pending', 'pending']), {})
   renderAt(ONBOARDING_STOCK)
 
-  const button = await screen.findByRole('button', { name: 'Cargar una variedad' })
+  const button = await screen.findByRole('button', { name: 'Add a variety' })
   expect(button.querySelector('svg')).not.toBeNull()
   expectIconAndTextRule(document.body)
 })

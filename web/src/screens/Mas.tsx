@@ -24,26 +24,26 @@ const ITEMS: Item[] = [
     to: EXPENSE_NEW,
     label: COMMON_TEXT.addExpense,
     icon: 'agregar',
-    detail: SETTINGS_TEXT.categoriaMontoYDetalle,
+    detail: SETTINGS_TEXT.categoryAmountAndDetails,
   },
   {
     to: WITHDRAWAL_NEW,
     label: COMMON_TEXT.takeFromStock,
     icon: 'salidaStock',
-    detail: SETTINGS_TEXT.promocionOConsumoPropio,
+    detail: SETTINGS_TEXT.promotionOrOwnUse,
   },
-  { to: EXPENSES, label: COMMON_TEXT.expenses, icon: 'gastos', detail: SETTINGS_TEXT.porMesYPor },
+  { to: EXPENSES, label: COMMON_TEXT.expenses, icon: 'gastos', detail: SETTINGS_TEXT.byMonthAndByCategory },
   {
     to: ANALYSIS,
     label: COMMON_TEXT.analysis,
     icon: 'analisis',
-    detail: SETTINGS_TEXT.variedadesSemanasMesesY,
+    detail: SETTINGS_TEXT.varietiesWeeksMonthsAndDays,
   },
   {
     to: SETTINGS,
     label: COMMON_TEXT.settings,
     icon: 'configuracion',
-    detail: SETTINGS_TEXT.negocioUsuariosBotCatalogo,
+    detail: SETTINGS_TEXT.businessUsersBotCatalogAndMore,
   },
 ]
 

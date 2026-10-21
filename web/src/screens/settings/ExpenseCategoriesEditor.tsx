@@ -14,7 +14,7 @@
  * on screen is `accepted`, not whatever a refetch brings. The parent hears `dirty` through
  * `onDirtyChange`, and keeps its own chrome and its own leave question.
  *
- * `addCollapsed` (the Onboarding's step 6, `OnboardingCategorias.dc.html`): the "Nueva categoría"
+ * `addCollapsed` (the Onboarding's step 6, `OnboardingCategorias.dc.html`): the "New category"
  * field starts closed behind an add action, and a saved add closes it again; the submit and the
  * owner's POST are the same. With it off (Configuración) the field is always there, as drawn.
  */
@@ -41,7 +41,7 @@ import Loading from '../../components/Loading'
 import { CATEGORIES_SAVE_AT_ONCE, GENERIC_REFUSAL_MESSAGE, SETTINGS_TEXT } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
 
-export const CANNOT_REMOVE = SETTINGS_TEXT.noSePuedeBorrar
+export const CANNOT_REMOVE = SETTINGS_TEXT.cannotDeleteStillHasExpenses
 
 const REMOVE_OVERRIDES: Partial<Record<RefusalCode, 'in-use'>> = {
   'expense_category.in_use': 'in-use',
@@ -171,7 +171,7 @@ function Categories({
         focusAddAction.current = true
         setAdding(false)
       }
-      flash(SETTINGS_TEXT.categoriaGuardada)
+      flash(SETTINGS_TEXT.categorySaved)
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
       else if (isRefusal(caught)) setError(GENERIC_REFUSAL_MESSAGE)
@@ -193,11 +193,11 @@ function Categories({
             onRenamed={(renamed) => {
               setDraft(category.id, undefined)
               accept(accepted.map((each) => (each.id === renamed.id ? renamed : each)))
-              flash(SETTINGS_TEXT.categoriaGuardada)
+              flash(SETTINGS_TEXT.categorySaved)
             }}
             onRemoved={() => {
               drop(category.id)
-              flash(SETTINGS_TEXT.categoriaEliminada)
+              flash(SETTINGS_TEXT.categoryDeleted)
             }}
             onGone={() => {
               drop(category.id)
@@ -210,7 +210,7 @@ function Categories({
       {adding ? (
         <form className="formulario" onSubmit={onAdd}>
           <label className="campo">
-            <span className="campo__rotulo">{SETTINGS_TEXT.nuevaCategoria}</span>
+            <span className="campo__rotulo">{SETTINGS_TEXT.newCategory}</span>
             <input
               ref={inputRef}
               className="campo__input"
@@ -225,7 +225,7 @@ function Categories({
           )}
           {offline && <SinConexion />}
           <Boton variant="secondary" textOnly="submit" type="submit" disabled={sending || newName.trim() === ''}>
-            {SETTINGS_TEXT.categoria}
+            {SETTINGS_TEXT.addCategory}
           </Boton>
         </form>
       ) : (
@@ -323,7 +323,7 @@ function CategoryRow({
           className="campo__input"
           value={draft}
           onChange={(event) => onDraft(event.target.value)}
-          aria-label={SETTINGS_TEXT.nombreDe0(category.name)}
+          aria-label={SETTINGS_TEXT.nameOf(category.name)}
         />
         <Boton textOnly="submit" type="submit" disabled={sending}>
           {COMMON_TEXT.save}
@@ -342,9 +342,9 @@ function CategoryRow({
     <div className="fila">
       <span className="categoria-fila__nombre">{category.name}</span>
       <span className="categoria-fila__accion">
-        <Boton variant="icon" action="edit" ariaLabel={SETTINGS_TEXT.renombrar} onClick={() => onDraft(category.name)} />
+        <Boton variant="icon" action="edit" ariaLabel={SETTINGS_TEXT.rename} onClick={() => onDraft(category.name)} />
       </span>
-      <Boton variant="icon" action="delete" ariaLabel={SETTINGS_TEXT.eliminar} onClick={() => setConfirming(true)} />
+      <Boton variant="icon" action="delete" ariaLabel={SETTINGS_TEXT.delete} onClick={() => setConfirming(true)} />
       {error !== null && (
         <span className="campo__error" role="alert">
           {error}
@@ -354,9 +354,9 @@ function CategoryRow({
       {confirming && (
         <div className="capa" role="presentation">
           <div className="capa__contenido panel">
-            <span className="panel__titulo">{SETTINGS_TEXT.borrasLaCategoria}</span>
+            <span className="panel__titulo">{SETTINGS_TEXT.deleteTheCategory}</span>
             <span className="panel__detalle">
-              {SETTINGS_TEXT.seBorra}{category.name}{SETTINGS_TEXT.estoNoSePuede}
+              {SETTINGS_TEXT.thisDeletes}{category.name}{SETTINGS_TEXT.closingQuoteCannotUndo}
             </span>
             <div className="panel__botones">
               <AnswerButton kind="keep" onClick={() => setConfirming(false)}>

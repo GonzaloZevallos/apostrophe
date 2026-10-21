@@ -273,9 +273,9 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByLabel('Category').selectOption({ label: 'Other' })
   await page.getByLabel('Amount').fill('1500')
-  await page.getByLabel('Detalle').fill('Bolsas de regalo')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByLabel('Details').fill('Bolsas de regalo')
+  await page.getByRole('button', { name: 'Save the expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
   // figure for figure, never recomputed here (plan invariant).

@@ -27,7 +27,7 @@ import type { WalkState } from './states.ts'
 
 /*
  * Configuración's other inner states are not walked, each for a reason: Usuarios' invite
- * panel and the Integraciones token field exist only after a write the walk aborts (the
+ * panel and the Integrations token field exist only after a write the walk aborts (the
  * invitation is a POST), or never in this fixture (no bot token is saved, so the field is
  * already open and "Cambiar" is absent). The new-category field is always on its group's
  * route, which the registry walks.
@@ -102,38 +102,38 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'GastoDesdeMas',
     route: MORE,
     steps: [{ click: COMMON_TEXT.addExpense }],
-    visible: 'Guardá el gasto',
+    visible: 'Save the expense',
   },
   {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
     steps: [{ activate: COMMON_TEXT.addExpense }],
-    visible: 'Guardá el gasto',
+    visible: 'Save the expense',
   },
   {
     screen: 'GastoEditar',
     route: EXPENSES,
     steps: [{ activate: 'Bolsitas zip' }],
-    visible: 'Editar gasto',
+    visible: 'Edit expense',
   },
   {
     screen: 'GastoConfirmarBorrado',
     route: EXPENSES,
-    steps: [{ activate: 'Bolsitas zip' }, { activate: 'Borrar gasto' }],
-    visible: '¿Borrás el gasto?',
+    steps: [{ activate: 'Bolsitas zip' }, { activate: 'Delete expense' }],
+    visible: 'Delete the expense?',
   },
 
   {
     screen: 'ConfiguracionCategoriaRenombrar',
     route: EXPENSE_CATEGORIES,
-    steps: [{ click: 'Renombrar' }],
+    steps: [{ click: 'Rename' }],
     visible: COMMON_TEXT.save,
   },
   {
     screen: 'ConfiguracionCategoriaConfirmarBorrado',
     route: EXPENSE_CATEGORIES,
-    steps: [{ click: 'Eliminar' }],
-    visible: '¿Borrás la categoría?',
+    steps: [{ click: 'Delete' }],
+    visible: 'Delete the category?',
   },
   {
     screen: 'ConfiguracionContrasena',

@@ -5,41 +5,41 @@
 
 import type { LimitedCopy } from './limits'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
+export const FLOWER_NOTICE = "Flower purchases don't go here: enter them in Stock."
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [{ kind: 'help', text: FLOWER_NOTICE }]
 export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const EXPENSES_TEXT = {
-  expenseOne: '1 gasto',
-  expenseMany: (expenses: number) => `${expenses} gastos`,
-  expenseCountIn: (spent: string, inCategories: string) => `${spent} en ${inCategories}`,
-  borrasElGasto: '¿Borrás el gasto?',
-  estoNoSePuede: ' Esto no se puede deshacer.',
-  gastasteEnElMes: 'Gastaste en el mes',
-  porCategoria: 'Por categoría',
-  ultimos: 'Últimos',
-  categorias: 'Categorías',
-  sePierdeLoQue: 'Se pierde lo que cambiaste: el gasto sigue como estaba.',
-  siDescartalos: 'Sí, descartalos',
-  editarGasto: 'Editar gasto',
-  elegiUnaCategoria: 'Elegí una categoría',
-  nombreDeLaCategoria: 'Nombre de la categoría nueva',
-  crearCategoria: 'Crear categoría',
-  crearUnaCategoriaNueva: 'Crear una categoría nueva',
-  detalle: 'Detalle',
-  guardaElGasto: 'Guardá el gasto',
-  borrarGasto: 'Borrar gasto',
-  descartasElGasto: '¿Descartás el gasto?',
-  pantallaMas: 'Pantalla Más',
-  cargarGastoDesdeMas: 'Cargar gasto desde Más',
-  borrasElGastoDe: (amount: string | number, categoryName: string | number, today: string | number) => `¿Borrás el gasto de ${amount} en ${categoryName} del ${today}?`,
-  n1Categoria: '1 categoría',
-  n0Categorias: (categories: string | number) => `${categories} categorías`,
-  gastoEliminado: 'Gasto eliminado',
-  esaCategoriaYaNo: 'Esa categoría ya no está. Elegí otra.',
-  gastoGuardado: 'Gasto guardado',
+  expenseOne: '1 expense',
+  expenseMany: (expenses: number) => `${expenses} expenses`,
+  expenseCountIn: (spent: string, inCategories: string) => `${spent} in ${inCategories}`,
+  deleteTheExpense: 'Delete the expense?',
+  thisCannotBeUndone: " This can't be undone.",
+  youSpentThisMonth: 'You spent this month',
+  byCategory: 'By category',
+  latest: 'Latest',
+  categories: 'Categories',
+  whatYouChangedIsLost: 'What you changed is lost: the expense stays as it was.',
+  yesDiscardThem: 'Yes, discard them',
+  editExpense: 'Edit expense',
+  pickACategory: 'Pick a category',
+  newCategoryName: 'New category name',
+  createCategory: 'Create category',
+  createANewCategory: 'Create a new category',
+  details: 'Details',
+  saveTheExpense: 'Save the expense',
+  deleteExpense: 'Delete expense',
+  discardTheExpense: 'Discard the expense?',
+  moreScreen: 'More screen',
+  addExpenseFromMore: 'Add expense from More',
+  deleteTheExpenseOf: (amount: string | number, categoryName: string | number, date: string | number) => `Delete the expense of ${amount} in ${categoryName} on ${date}?`,
+  oneCategory: '1 category',
+  categoriesCount: (categories: string | number) => `${categories} categories`,
+  expenseDeleted: 'Expense deleted',
+  categoryGone: 'That category is gone. Pick another.',
+  expenseSaved: 'Expense saved',
 } as const

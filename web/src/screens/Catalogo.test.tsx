@@ -131,7 +131,7 @@ test('neither Compartir nor Copiar is rendered while the first fetch is pending'
     ),
   )
 
-  await screen.findByRole('button', { name: 'Publicar' })
+  await screen.findByRole('button', { name: 'Publish' })
   expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })
@@ -374,9 +374,9 @@ test('the catalog screen offers no header or footer editing, only the link out',
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
   expect(await screen.findByRole('link', { name: 'Edit header and footer' })).toBeInTheDocument()
-  expect(screen.queryByLabelText('Encabezado')).not.toBeInTheDocument()
-  expect(screen.queryByLabelText('Pie')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Header')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Footer')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save the message' })).not.toBeInTheDocument()
 })
 
 test('the catalog screen still shows the preview, Copiar, the pin status and Publicar', async () => {
@@ -394,8 +394,8 @@ test('the catalog screen still shows the preview, Copiar, the pin status and Pub
 
   expect(await screen.findByText('How it looks in Telegram')).toBeInTheDocument()
   expect(await screen.findByRole('button', { name: 'Copy' })).toBeInTheDocument()
-  expect(await screen.findByRole('button', { name: 'Publicar' })).toBeInTheDocument()
-  expect(await screen.findByText('Al día')).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Publish' })).toBeInTheDocument()
+  expect(await screen.findByText('Up to date')).toBeInTheDocument()
 })
 
 test('"Edit header and footer" opens Settings → Catalog message', async () => {
@@ -409,10 +409,10 @@ test('"Edit header and footer" opens Settings → Catalog message', async () => 
 test('the catalog screen offers no bot settings: they live in Integraciones', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await screen.findByRole('button', { name: 'Publicar' })
-  expect(screen.queryByLabelText('Token del bot')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Probarlo' })).not.toBeInTheDocument()
-  expect(screen.queryByLabelText('Tu chat', { exact: false })).not.toBeInTheDocument()
+  await screen.findByRole('button', { name: 'Publish' })
+  expect(screen.queryByLabelText('Bot token')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Test it' })).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Your chat', { exact: false })).not.toBeInTheDocument()
 })
 
 test('the catalog screen edits no variety attribute: no Editar button and no field', async () => {
@@ -428,7 +428,7 @@ test('the catalog screen edits no variety attribute: no Editar button and no fie
 test('Publicar is icon + text: the icon is hidden, so the name stays the word', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  const publish = await screen.findByRole('button', { name: 'Publicar' })
+  const publish = await screen.findByRole('button', { name: 'Publish' })
   const icon = publish.querySelector('svg')
   expect(icon).not.toBeNull()
   expect(icon).toHaveAttribute('aria-hidden', 'true')

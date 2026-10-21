@@ -3,7 +3,7 @@
  * renaming the business.
  *
  * The business comes only from the session: `GET`/`PATCH /business` never take an id
- * (CODING_STANDARDS §9). Renaming shows the fixed toast "Negocio renombrado" (a constant,
+ * (CODING_STANDARDS §9). Renaming shows the fixed toast "Business renamed" (a constant,
  * never built from the response). A rejected name (`account.business_name_invalid`) shows
  * inline and keeps what was typed, dispatched through `refusals.ts`. A dropped network shows
  * "Sin conexión", never the generic retry, which would wrongly blame the server.
@@ -32,7 +32,7 @@ interface Business {
 }
 
 const LEAVE = {
-  question: SETTINGS_TEXT.descartasElNombre,
+  question: SETTINGS_TEXT.discardTheName,
   detail: COMMON_TEXT.losesWhatYouEntered,
   keepLabel: COMMON_TEXT.noKeepEditing,
   discardLabel: COMMON_TEXT.yesDiscard,

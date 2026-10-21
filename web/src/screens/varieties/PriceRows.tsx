@@ -22,7 +22,7 @@ import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { deleteNotice } from '../priceDeleteNotice'
 import { VARIETIES_TEXT } from '../../copy/varieties'
-import { OUT_OF_DATE_SEPARATOR } from '../../copy/pinnedCatalog'
+import { OUT_OF_DATE_JOINER } from '../../copy/pinnedCatalog'
 import { COMMON_TEXT } from '../../copy/common'
 
 export interface PriceRow {
@@ -97,7 +97,7 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
               <span className="historial-fila__precio">{formatMoney(entry.list_price)}</span>
               {showBulk && entry.bulk_price !== null && entry.bulk_minimum !== null && (
                 <span className="historial-fila__detalle">
-                  {VARIETIES_TEXT.desde}{formatGrams(entry.bulk_minimum)}{OUT_OF_DATE_SEPARATOR}{formatMoney(entry.bulk_price)}
+                  {VARIETIES_TEXT.desde}{formatGrams(entry.bulk_minimum)}{OUT_OF_DATE_JOINER}{formatMoney(entry.bulk_price)}
                 </span>
               )}
               {showVip && entry.vip_price !== null && (

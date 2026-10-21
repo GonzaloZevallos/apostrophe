@@ -915,7 +915,7 @@ describe('In the catalog: the form', () => {
     await user.clear(screen.getByLabelText('Emoji'))
     await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 
-    expect(await screen.findByText('Catálogo guardado')).toBeInTheDocument()
+    expect(await screen.findByText('Catalog saved')).toBeInTheDocument()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
     expect(putOf(fetchMock)).toEqual({
       url: '/catalog/varieties/1',

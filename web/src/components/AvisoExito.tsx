@@ -10,8 +10,17 @@
 
 import type { COMMON_TEXT } from '../copy/common'
 import type { CUSTOMERS_TEXT } from '../copy/customers'
+import type { EXPENSES_TEXT } from '../copy/expenses'
 import type { PAYMENTS_TEXT } from '../copy/payments'
+import type { PINNED_CATALOG_TEXT } from '../copy/pinnedCatalog'
 import type { SALES_TEXT } from '../copy/sales'
+import type {
+  CATALOG_SAVED,
+  PASSWORD_CHANGED_SUCCESS,
+  PRICES_SAVED,
+  RENAME_SUCCESS,
+  SETTINGS_TEXT,
+} from '../copy/settings'
 import type { PRICE_SAVED, THRESHOLD_SAVED, VARIETIES_TEXT } from '../copy/varieties'
 import type { STOCK_TEXT } from '../copy/stock'
 import type { CATALOG_TEXT } from '../copy/catalog'
@@ -26,23 +35,23 @@ export type SuccessToast =
   | (typeof VARIETIES_TEXT)['variedadRestaurada']
   | typeof PRICE_SAVED
   | (typeof VARIETIES_TEXT)['precioEliminado']
-  | 'Gasto guardado'
-  | 'Gasto eliminado'
-  | 'Categoría guardada'
-  | 'Categoría eliminada'
-  | 'Negocio renombrado'
-  | 'Contraseña cambiada · cerramos tus otras sesiones'
-  | 'Invitación lista'
+  | (typeof EXPENSES_TEXT)['expenseSaved']
+  | (typeof EXPENSES_TEXT)['expenseDeleted']
+  | (typeof SETTINGS_TEXT)['categorySaved']
+  | (typeof SETTINGS_TEXT)['categoryDeleted']
+  | typeof RENAME_SUCCESS
+  | typeof PASSWORD_CHANGED_SUCCESS
+  | (typeof SETTINGS_TEXT)['invitationReady']
   | (typeof SALES_TEXT)['customerAssigned']
   | typeof THRESHOLD_SAVED
-  | 'Catálogo guardado'
-  | 'Precios guardados'
+  | typeof CATALOG_SAVED
+  | typeof PRICES_SAVED
   | (typeof CATALOG_TEXT)['catalogoCopiado']
   | (typeof CUSTOMERS_TEXT)['paymentDeleted']
   | (typeof PAYMENTS_TEXT)['saved']
   | ReturnType<(typeof PAYMENTS_TEXT)['savedStillOwing']>
-  | 'Prueba enviada'
-  | 'Catálogo publicado'
+  | (typeof SETTINGS_TEXT)['testSent']
+  | (typeof PINNED_CATALOG_TEXT)['catalogPublished']
   | (typeof STOCK_TEXT)['retiroGuardado']
   | (typeof STOCK_TEXT)['retiroEliminado']
 

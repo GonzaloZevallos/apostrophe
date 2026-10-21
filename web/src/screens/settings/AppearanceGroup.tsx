@@ -13,8 +13,8 @@ import { SETTINGS_TEXT } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
 
 const CHOICES = [
-  { value: 'claro', label: SETTINGS_TEXT.claro },
-  { value: 'oscuro', label: SETTINGS_TEXT.oscuro },
+  { value: 'claro', label: SETTINGS_TEXT.light },
+  { value: 'oscuro', label: SETTINGS_TEXT.dark },
 ] as const
 
 export default function AppearanceGroup() {
@@ -30,14 +30,14 @@ export default function AppearanceGroup() {
       title={COMMON_TEXT.appearance}
       dirty={false}
       leave={{
-        question: SETTINGS_TEXT.descartasElTema,
+        question: SETTINGS_TEXT.discardTheTheme,
         detail: COMMON_TEXT.losesWhatYouEntered,
         keepLabel: COMMON_TEXT.noKeepEditing,
         discardLabel: COMMON_TEXT.yesDiscard,
       }}
     >
       <span className="rotulo ajustes-tema__rotulo" id="ajustes-tema-rotulo">
-        {SETTINGS_TEXT.tema}
+        {SETTINGS_TEXT.theme}
       </span>
       <div className="ajustes-tema" role="radiogroup" aria-labelledby="ajustes-tema-rotulo">
         {CHOICES.map((choice) => {

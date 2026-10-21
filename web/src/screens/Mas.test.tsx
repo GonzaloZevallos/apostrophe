@@ -31,19 +31,19 @@ test('lists "+ Cargar gasto", "Take from stock", Gastos and Análisis first, in 
     'Analysis',
     'Settings',
   ])
-  expect(entries[0]).toHaveTextContent('Categoría, monto y detalle')
+  expect(entries[0]).toHaveTextContent('Category, amount and details')
   expect(entries[1]).toHaveAttribute('href', WITHDRAWAL_NEW)
-  expect(entries[2]).toHaveTextContent('Por mes y por categoría')
-  expect(entries[3]).toHaveTextContent('Variedades, semanas, meses y días')
+  expect(entries[2]).toHaveTextContent('By month and by category')
+  expect(entries[3]).toHaveTextContent('Varieties, weeks, months and days')
   expect(entries[4]).toHaveTextContent(
-    'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
+    'Business, users, bot, catalog, categories, appearance and your account',
   )
   expect(entries[4]).toHaveAttribute('href', SETTINGS)
 })
 
 test('"Add expense" shows the agregar icon and the word alone, and keeps its "+ Add expense" name', () => {
   const nav = renderMas()
-  const entry = within(nav).getByRole('link', { name: /^\+ Add expense Categoría, monto y detalle$/ })
+  const entry = within(nav).getByRole('link', { name: /^\+ Add expense Category, amount and details$/ })
 
   expect(entry).toHaveAttribute('href', EXPENSE_NEW)
   expect(entry.textContent).not.toContain('+')

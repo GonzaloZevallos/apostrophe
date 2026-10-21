@@ -124,7 +124,7 @@ test('Gastos renders Gastos, with its month, under the gated shell', async () =>
   render(<App />)
 
   expect(
-    await within(await screen.findByRole('main')).findByText(/Las compras de flores no van acá/),
+    await within(await screen.findByRole('main')).findByText(/Flower purchases don't go here/),
   ).toBeInTheDocument()
 })
 

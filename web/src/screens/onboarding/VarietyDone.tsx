@@ -64,7 +64,7 @@ export default function VarietyDone({ target, onStale }: VarietyDoneProps) {
         <span className="onboarding__tarjeta-detalle">{CHECKLIST_DONE}</span>
       </div>
       <Boton textOnly="submit" type="submit">
-        {ONBOARDING_TEXT.seguir}
+        {ONBOARDING_TEXT.continue}
       </Boton>
     </form>
   )

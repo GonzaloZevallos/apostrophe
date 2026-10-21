@@ -1,9 +1,9 @@
 /**
- * Step 3, "Cómo sale tu catálogo": the owner's header and footer form, shown with their
- * defaults. Saving through the owner's route and then "Dejar así" (the defaults kept) both
- * pass the step as `done`; the pass is sent only after the save answered. "Dejar así" is
+ * Step 3, "How your catalog looks": the owner's header and footer form, shown with their
+ * defaults. Saving through the owner's route and then "Leave as is" (the defaults kept) both
+ * pass the step as `done`; the pass is sent only after the save answered. "Leave as is" is
  * offered only while nothing typed is unsaved, so it never passes over an edit that was not
- * saved. "Saltar" belongs to the frame.
+ * saved. "Skip" belongs to the frame.
  */
 
 import { useCallback, useState } from 'react'
@@ -41,7 +41,7 @@ export default function CatalogMessageStep({ onDirtyChange, onProgress }: StepBo
           disabled={sending}
           onSubmit={() => void run(() => sendPass('header_footer', 'done'))}
         >
-          {ONBOARDING_TEXT.dejarAsi}
+          {ONBOARDING_TEXT.leaveAsIs}
         </StepSubmit>
       )}
       {notice}

@@ -2,7 +2,7 @@
  * Step 2, "Cargá lo que tenés hoy": the owner's stock form, locked to the variety the API
  * names as `stock_target` and to the origin Stock inicial, dated today. With no cost the lot
  * costs $0, and the form says so next to the cost field. Once saved (or when the step is already done and no variety
- * is waiting for stock) the step offers "Seguir" (which sends `advance`) and "Agregar otra
+ * is waiting for stock) the step offers "Continue" (which sends `advance`) and "Agregar otra
  * variedad" (back to step 1); the progress stays on steps 1 and 2 while varieties are added.
  */
 
@@ -39,7 +39,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     try {
       keepProgress(queryClient, await getOnboardingProgress())
     } catch {
-      // The saved stock stays saved; "Seguir" sends `advance` and answers afresh.
+      // The saved stock stays saved; "Continue" sends `advance` and answers afresh.
     }
   }
 
@@ -47,17 +47,17 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     return (
       <>
         <p className="onboarding__porque">
-          {ONBOARDING_TEXT.tenesOtraParaCargar}
+          {ONBOARDING_TEXT.anotherToAddNow}
         </p>
         {savedName !== null && (
           <div className="onboarding__tarjeta">
             <span className="onboarding__tarjeta-nombre">{savedName}</span>
-            <span className="onboarding__tarjeta-detalle">{ONBOARDING_TEXT.conPrecioDeHoy}</span>
+            <span className="onboarding__tarjeta-detalle">{ONBOARDING_TEXT.withTodaysPriceAndStock}</span>
           </div>
         )}
         <div className="onboarding__acciones">
           <StepSubmit disabled={sending} onSubmit={() => void run(sendAdvance)}>
-            {ONBOARDING_TEXT.seguir}
+            {ONBOARDING_TEXT.continue}
           </StepSubmit>
           <Boton
             variant="secondary"
@@ -75,9 +75,9 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
   if (target === null) {
     return (
       <>
-        <p className="onboarding__porque">{ONBOARDING_TEXT.primeroCargaUnaVariedad}</p>
+        <p className="onboarding__porque">{ONBOARDING_TEXT.firstAddAVariety}</p>
         <Boton icon="agregar" onClick={() => void navigate(ONBOARDING_VARIETY)}>
-          {ONBOARDING_TEXT.cargarUnaVariedad}
+          {ONBOARDING_TEXT.addAVariety}
         </Boton>
       </>
     )

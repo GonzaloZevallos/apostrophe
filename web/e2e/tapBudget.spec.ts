@@ -100,10 +100,10 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await page.getByRole('link', { name: /^\+ Add expense/ }).click()
   await page.getByRole('combobox', { name: 'Category' }).selectOption({ label: 'Packaging' })
   await page.getByLabel('Amount').fill('3200')
-  await page.getByLabel('Detalle').fill('Cajas de cartón')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
+  await page.getByLabel('Details').fill('Cajas de cartón')
+  await page.getByRole('button', { name: 'Save the expense' }).click()
   await expectPath(page, MORE)
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }).click()
   await expect(page.getByText('Cajas de cartón')).toBeVisible()

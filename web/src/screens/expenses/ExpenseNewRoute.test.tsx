@@ -1,7 +1,7 @@
 /**
  * `ExpenseNewRoute` at the screen seam (plan, subtask `expense-form`): through the
  * real data router with `fetch` faked. The route owns how the form is left: back by
- * history to whichever screen opened it, "Gasto guardado" there, the discard
+ * history to whichever screen opened it, "Expense saved" there, the discard
  * confirmation, and the fallback when there is no history.
  */
 
@@ -49,34 +49,34 @@ async function fillForm(): Promise<void> {
     "Packaging",
   );
   await userEvent.type(screen.getByLabelText("Amount"), "1000");
-  await userEvent.type(screen.getByLabelText("Detalle"), "Cinta");
+  await userEvent.type(screen.getByLabelText("Details"), "Cinta");
 }
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-test('a save opened from Más goes back to Más and toasts "Gasto guardado" there, once', async () => {
+test('a save opened from Más goes back to Más and toasts "Expense saved" there, once', async () => {
   const router = renderExpenses([MORE], api());
 
   await userEvent.click(
-    await screen.findByRole("link", { name: "Cargar gasto desde Más" }),
+    await screen.findByRole("link", { name: "Add expense from More" }),
   );
   await fillForm();
   await userEvent.click(
-    screen.getByRole("button", { name: "Guardá el gasto" }),
+    screen.getByRole("button", { name: "Save the expense" }),
   );
 
-  expect(await screen.findByText("Pantalla Más")).toBeInTheDocument();
+  expect(await screen.findByText("More screen")).toBeInTheDocument();
   expect(router.state.location.pathname).toBe(MORE);
-  expect(await screen.findAllByText("Gasto guardado")).toHaveLength(1);
+  expect(await screen.findAllByText("Expense saved")).toHaveLength(1);
 });
 
 async function openFromMore(
   router: ReturnType<typeof renderExpenses>,
 ): Promise<void> {
   await userEvent.click(
-    await screen.findByRole("link", { name: "Cargar gasto desde Más" }),
+    await screen.findByRole("link", { name: "Add expense from More" }),
   );
   expect(router.state.location.pathname).toBe(EXPENSE_NEW);
 }
@@ -93,9 +93,9 @@ test("an untouched form closes at once, back to the screen that opened it", asyn
 
   await userEvent.click(await screen.findByRole("button", { name: "Close" }));
 
-  expect(await screen.findByText("Pantalla Más")).toBeInTheDocument();
+  expect(await screen.findByText("More screen")).toBeInTheDocument();
   expect(router.state.location.pathname).toBe(MORE);
-  expect(screen.queryByText("Gasto guardado")).not.toBeInTheDocument();
+  expect(screen.queryByText("Expense saved")).not.toBeInTheDocument();
 });
 
 test('"Close" is there and works while the categories are still loading', async () => {
@@ -113,7 +113,7 @@ test('"Close" is there and works while the categories are still loading', async 
 
   await userEvent.click(await screen.findByRole("button", { name: "Close" }));
 
-  expect(await screen.findByText("Pantalla Más")).toBeInTheDocument();
+  expect(await screen.findByText("More screen")).toBeInTheDocument();
   expect(router.state.location.pathname).toBe(MORE);
 });
 
@@ -121,16 +121,16 @@ test("closing with something typed asks before discarding; staying keeps the for
   const router = renderExpenses([MORE], api());
   await openFromMore(router);
 
-  await userEvent.type(await screen.findByLabelText("Detalle"), "Cinta");
+  await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
 
-  expect(await screen.findByText("¿Descartás el gasto?")).toBeInTheDocument();
+  expect(await screen.findByText("Discard the expense?")).toBeInTheDocument();
   await userEvent.click(
     screen.getByRole("button", { name: "No, keep entering" }),
   );
 
-  expect(screen.queryByText("¿Descartás el gasto?")).not.toBeInTheDocument();
-  expect(screen.getByLabelText("Detalle")).toHaveValue("Cinta");
+  expect(screen.queryByText("Discard the expense?")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Details")).toHaveValue("Cinta");
   expect(router.state.location.pathname).toBe(EXPENSE_NEW);
 });
 
@@ -138,13 +138,13 @@ test("confirming the discard leaves the form and saves nothing", async () => {
   const router = renderExpenses([MORE], api());
   await openFromMore(router);
 
-  await userEvent.type(await screen.findByLabelText("Detalle"), "Cinta");
+  await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
   await userEvent.click(
     await screen.findByRole("button", { name: "Yes, discard it" }),
   );
 
-  expect(await screen.findByText("Pantalla Más")).toBeInTheDocument();
+  expect(await screen.findByText("More screen")).toBeInTheDocument();
   expect(router.state.location.pathname).toBe(MORE);
   expect(fetch).not.toHaveBeenCalledWith(
     EXPENSES,
@@ -158,7 +158,7 @@ test("with no history, closing goes to Gastos on the current month", async () =>
   await userEvent.click(await screen.findByRole("button", { name: "Close" }));
 
   expect(
-    await screen.findByText("Gastaste en el mes", {}, { timeout: 4000 }),
+    await screen.findByText("You spent this month", {}, { timeout: 4000 }),
   ).toBeInTheDocument();
   expect(router.state.location.pathname).toBe(EXPENSES);
   expect(router.state.location.search).toBe("");
@@ -169,26 +169,26 @@ test("with no history, a save goes to Gastos and toasts there", async () => {
 
   await fillForm();
   await userEvent.click(
-    screen.getByRole("button", { name: "Guardá el gasto" }),
+    screen.getByRole("button", { name: "Save the expense" }),
   );
 
   expect(
-    await screen.findByText("Gastaste en el mes", {}, { timeout: 4000 }),
+    await screen.findByText("You spent this month", {}, { timeout: 4000 }),
   ).toBeInTheDocument();
   expect(router.state.location.pathname).toBe(EXPENSES);
-  expect(await screen.findAllByText("Gasto guardado")).toHaveLength(1);
+  expect(await screen.findAllByText("Expense saved")).toHaveLength(1);
 });
 
 test('the form route has no bar and no "New sale"; Gastos has both', async () => {
   renderExpenses([EXPENSES], api());
-  await screen.findByText("Gastaste en el mes");
+  await screen.findByText("You spent this month");
   const navsOnGastos = screen.getAllByRole("navigation").length;
   expect(
     screen.getAllByRole("link", { name: "New sale" }).length,
   ).toBeGreaterThan(0);
 
   await userEvent.click(screen.getByRole("link", { name: "Add expense" }));
-  await screen.findByLabelText("Detalle");
+  await screen.findByLabelText("Details");
 
   expect(
     screen.queryByRole("link", { name: "New sale" }),
@@ -199,7 +199,7 @@ test('the form route has no bar and no "New sale"; Gastos has both', async () =>
 test("closing, or going back by history, with something typed asks the same question", async () => {
   const router = renderExpenses([MORE], api());
   await openFromMore(router);
-  await userEvent.type(await screen.findByLabelText("Detalle"), "Cinta");
+  await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
 
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
   const viaCerrar = (await screen.findByRole("alertdialog")).textContent;
@@ -211,12 +211,12 @@ test("closing, or going back by history, with something typed asks the same ques
   const viaBack = (await screen.findByRole("alertdialog")).textContent;
 
   expect(viaBack).toBe(viaCerrar);
-  expect(viaBack).toContain("¿Descartás el gasto?");
+  expect(viaBack).toContain("Discard the expense?");
   expect(router.state.location.pathname).toBe(EXPENSE_NEW);
-  expect(screen.getByLabelText("Detalle")).toHaveValue("Cinta");
+  expect(screen.getByLabelText("Details")).toHaveValue("Cinta");
 
   await userEvent.click(screen.getByRole("button", { name: "Yes, discard it" }));
-  expect(await screen.findByText("Pantalla Más")).toBeInTheDocument();
+  expect(await screen.findByText("More screen")).toBeInTheDocument();
 });
 
 test("with no in-app history, closing replaces the form with Gastos", async () => {
@@ -225,7 +225,7 @@ test("with no in-app history, closing replaces the form with Gastos", async () =
   await userEvent.click(await screen.findByRole("button", { name: "Close" }));
 
   expect(
-    await screen.findByText("Gastaste en el mes", {}, { timeout: 4000 }),
+    await screen.findByText("You spent this month", {}, { timeout: 4000 }),
   ).toBeInTheDocument();
   expect(router.state.location.pathname).toBe(EXPENSES);
   expect(router.state.historyAction).toBe("REPLACE");
@@ -237,10 +237,10 @@ test("after a save the form is no longer in history: leaving by history is a pop
 
   await fillForm();
   await userEvent.click(
-    screen.getByRole("button", { name: "Guardá el gasto" }),
+    screen.getByRole("button", { name: "Save the expense" }),
   );
 
-  expect(await screen.findByText("Pantalla Más")).toBeInTheDocument();
+  expect(await screen.findByText("More screen")).toBeInTheDocument();
   expect(router.state.historyAction).toBe("POP");
   expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
 });

@@ -49,9 +49,9 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
                 handle: { screen: 'more' },
                 element: (
                   <main>
-                    <span>{EXPENSES_TEXT.pantallaMas}</span>
+                    <span>{EXPENSES_TEXT.moreScreen}</span>
                     <InAppLink to={EXPENSE_NEW}>
-                      {EXPENSES_TEXT.cargarGastoDesdeMas}
+                      {EXPENSES_TEXT.addExpenseFromMore}
                     </InAppLink>
                   </main>
                 ),

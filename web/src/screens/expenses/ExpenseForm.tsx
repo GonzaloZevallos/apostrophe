@@ -37,7 +37,7 @@ import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const CATEGORY_GONE = EXPENSES_TEXT.esaCategoriaYaNo
+export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 // `expense_category.not_found` is the one code the expense form handles on its
@@ -171,7 +171,7 @@ export default function ExpenseForm({
       } else {
         await editExpense(target.id, body)
       }
-      onDone(EXPENSES_TEXT.gastoGuardado)
+      onDone(EXPENSES_TEXT.expenseSaved)
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)
@@ -196,7 +196,7 @@ export default function ExpenseForm({
   // always leave.
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">{target === 'nuevo' ? COMMON_TEXT.addExpense : EXPENSES_TEXT.editarGasto}</span>
+      <span className="gasto-form__titulo">{target === 'nuevo' ? COMMON_TEXT.addExpense : EXPENSES_TEXT.editExpense}</span>
       <span className="gasto-form__cerrar">
         <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
       </span>
@@ -239,7 +239,7 @@ export default function ExpenseForm({
             }}
             required
           >
-            <option value="">{EXPENSES_TEXT.elegiUnaCategoria}</option>
+            <option value="">{EXPENSES_TEXT.pickACategory}</option>
             {allCategories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -255,7 +255,7 @@ export default function ExpenseForm({
         {creatingCategory ? (
           <div className="campo">
             <label className="campo">
-              <span className="campo__rotulo">{EXPENSES_TEXT.nombreDeLaCategoria}</span>
+              <span className="campo__rotulo">{EXPENSES_TEXT.newCategoryName}</span>
               <input
                 className="campo__input"
                 value={newCategoryName}
@@ -272,12 +272,12 @@ export default function ExpenseForm({
               disabled={newCategorySending || newCategoryName.trim() === ''}
               onClick={onCreateCategory}
             >
-              {EXPENSES_TEXT.crearCategoria}
+              {EXPENSES_TEXT.createCategory}
             </Boton>
           </div>
         ) : (
           <Boton variant="link" onClick={() => setCreatingCategory(true)}>
-            {EXPENSES_TEXT.crearUnaCategoriaNueva}
+            {EXPENSES_TEXT.createANewCategory}
           </Boton>
         )}
         <label className="campo">
@@ -291,7 +291,7 @@ export default function ExpenseForm({
           />
         </label>
         <label className="campo">
-          <span className="campo__rotulo">{EXPENSES_TEXT.detalle}</span>
+          <span className="campo__rotulo">{EXPENSES_TEXT.details}</span>
           <input
             className="campo__input"
             value={form.detail}
@@ -307,13 +307,13 @@ export default function ExpenseForm({
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          {EXPENSES_TEXT.guardaElGasto}
+          {EXPENSES_TEXT.saveTheExpense}
         </Boton>
         {target !== 'nuevo' && onRequestDelete !== undefined && (
           <Boton
             variant="icon"
             action="delete"
-            ariaLabel={EXPENSES_TEXT.borrarGasto}
+            ariaLabel={EXPENSES_TEXT.deleteExpense}
             onClick={() => onRequestDelete(target)}
           />
         )}

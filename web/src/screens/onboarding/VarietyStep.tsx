@@ -1,5 +1,5 @@
 /**
- * Step 1, "Cargá tu primera variedad": one form with one primary action (`VarietyForm`) that
+ * Step 1, "Add your first variety": one form with one primary action (`VarietyForm`) that
  * saves the variety and then its price effective today, or, on a return to a done step 1,
  * the saved variety marked "Hecho" (`VarietyDone`). Which body opens is decided once, on
  * arrival, from the API's answer and the `anotherVariety` flag, the first that fits:

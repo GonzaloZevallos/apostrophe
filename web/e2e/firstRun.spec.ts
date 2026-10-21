@@ -23,7 +23,7 @@ const VIEWPORTS = [
   { name: 'computer', width: 1280, height: 800 },
 ]
 
-const ONBOARDING_NOTICE = 'Seguí con la configuración'
+const ONBOARDING_NOTICE = 'Go on to the setup'
 const NOT_THERE = [
   'Para arrancar',
   'Arrancá por las variedades',
