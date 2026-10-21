@@ -60,6 +60,17 @@
     "issue": 59
   },
   {
+    "screen": "CobroBorrar",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
     "screen": "Configuracion",
     "rule": "chrome-at-load",
     "target": "navigation:Navegación",

@@ -907,30 +907,8 @@
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-target",
-    "target": "button:Eliminar",
-    "issue": 49,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "OnboardingCategorias",
-    "rule": "touch-target",
     "target": "button:Saltar",
     "issue": 49
-  },
-  {
-    "screen": "OnboardingCategoriasTexto130",
-    "rule": "touch-target",
-    "target": "button:Eliminar",
-    "issue": 49,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
   },
   {
     "screen": "OnboardingCategoriasTexto130",

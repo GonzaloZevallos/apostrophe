@@ -408,6 +408,116 @@
     "issue": 46
   },
   {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "button:Borrar cobro",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "button:No, keep it",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "button:Yes, delete it",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "button:‹ Customers",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "touch-action",
+    "target": "navigation:Navegación",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
     "screen": "CobroDesdeClientes",
     "rule": "touch-action",
     "target": "button:Close",

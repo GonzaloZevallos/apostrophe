@@ -210,6 +210,61 @@
     "issue": 46
   },
   {
+    "screen": "CobroBorrar",
+    "rule": "text-size",
+    "target": "span:Customers",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "text-size",
+    "target": "span:Home",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "text-size",
+    "target": "span:More",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "text-size",
+    "target": "span:Sales",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "text-size",
+    "target": "span:Varieties",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
     "screen": "Configuracion",
     "rule": "text-size",
     "target": "span:Customers",
