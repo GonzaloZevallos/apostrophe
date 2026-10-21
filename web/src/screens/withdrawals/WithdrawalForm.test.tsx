@@ -1,7 +1,7 @@
 /**
  * The withdrawal form screen (route `/withdrawals/new`) through Testing Library, `fetch`
  * faked at the network: its chrome and leave guard, the reason with no default, what a save
- * sends and toasts, and a refusal that keeps what was typed (`stock.md`, "Sacar del stock").
+ * sends and toasts, and a refusal that keeps what was typed (`stock.md`, "Take from stock").
  */
 
 import { screen, waitFor, within } from '@testing-library/react'
@@ -20,7 +20,7 @@ afterEach(() => {
 
 async function openFromVariedades() {
   const view = renderWithdrawals([VARIETIES_PATH], async () => jsonResponse(404, {}))
-  await userEvent.click(await screen.findByRole('link', { name: 'Sacar del stock' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
   await screen.findByLabelText('Variedad 1')
   return view
 }
@@ -28,8 +28,8 @@ async function openFromVariedades() {
 test('is a form: Cerrar, no bar and no "+ Nueva venta"', async () => {
   await openFromVariedades()
 
-  expect(screen.getByText('Sacar del stock')).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.getByText('Take from stock')).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
   // the side rail is CSS-hidden on a phone; the bottom bar is what a form drops
   expect(document.querySelector('.bar-inferior')).toBeNull()
 })
@@ -37,7 +37,7 @@ test('is a form: Cerrar, no bar and no "+ Nueva venta"', async () => {
 test('closing it untouched leaves without asking', async () => {
   const { router } = await openFromVariedades()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
@@ -45,18 +45,18 @@ test('closing it untouched leaves without asking', async () => {
 
 test('closing it with something typed asks first, and discarding leaves', async () => {
   const { router } = await openFromVariedades()
-  await userEvent.type(screen.getByLabelText('Nota'), 'Para la fiesta')
+  await userEvent.type(screen.getByLabelText('Note'), 'Para la fiesta')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   const dialog = await screen.findByRole('alertdialog', { name: '¿Descartás el retiro?' })
-  await userEvent.click(within(dialog).getByRole('button', { name: 'No, seguí cargando' }))
+  await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep entering' }))
   expect(router.state.location.pathname).toBe(WITHDRAWAL_NEW)
-  expect(screen.getByLabelText('Nota')).toHaveValue('Para la fiesta')
+  expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await userEvent.click(
-    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, descartalo' }),
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, discard it' }),
   )
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -81,8 +81,8 @@ test('grams ask for the decimal keypad and the date never goes past today', asyn
   await openFromVariedades()
 
   expect(screen.getByLabelText('Gramos 1')).toHaveAttribute('inputmode', 'decimal')
-  expect(screen.getByLabelText('Fecha')).toHaveValue('2026-10-06')
-  expect(screen.getByLabelText('Fecha')).toHaveAttribute('max', '2026-10-06')
+  expect(screen.getByLabelText('Date')).toHaveValue('2026-10-06')
+  expect(screen.getByLabelText('Date')).toHaveAttribute('max', '2026-10-06')
 })
 
 test('?variety= chooses the first line\'s variety', async () => {
@@ -102,14 +102,14 @@ test('saves with every line, a trimmed note, then shows "Retiro guardado" where 
     }
     return jsonResponse(404, {})
   })
-  await userEvent.click(await screen.findByRole('link', { name: 'Sacar del stock' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Promoción' }))
   await userEvent.selectOptions(screen.getByLabelText('Variedad 1'), 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Gramos 1'), '5,5')
-  await userEvent.click(screen.getByRole('button', { name: 'Agregar otra variedad' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
   await userEvent.selectOptions(screen.getByLabelText('Variedad 2'), 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Gramos 2'), '1')
-  await userEvent.type(screen.getByLabelText('Nota'), '  Para la fiesta ')
+  await userEvent.type(screen.getByLabelText('Note'), '  Para la fiesta ')
 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el retiro' }))
 
@@ -139,11 +139,11 @@ test('a refusal shows inline by its code and keeps everything typed', async () =
     }
     return jsonResponse(404, {})
   })
-  await userEvent.click(await screen.findByRole('link', { name: 'Sacar del stock' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Consumo propio' }))
   await userEvent.selectOptions(screen.getByLabelText('Variedad 1'), 'Gelato')
   await userEvent.type(screen.getByLabelText('Gramos 1'), '2,5')
-  await userEvent.type(screen.getByLabelText('Nota'), 'mía')
+  await userEvent.type(screen.getByLabelText('Note'), 'mía')
 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el retiro' }))
 
@@ -151,12 +151,12 @@ test('a refusal shows inline by its code and keeps everything typed', async () =
   expect(screen.getByRole('button', { name: 'Consumo propio' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByLabelText('Variedad 1')).toHaveValue('2')
   expect(screen.getByLabelText('Gramos 1')).toHaveValue('2,5')
-  expect(screen.getByLabelText('Nota')).toHaveValue('mía')
+  expect(screen.getByLabelText('Note')).toHaveValue('mía')
 })
 
 const WITHDRAWAL_REFUSALS = [
   ['stock.withdrawal_reason_required', 422, 'Elegí el motivo: Promoción o Consumo propio'],
-  ['stock.withdrawal_date_in_future', 422, 'La fecha no puede ser futura'],
+  ['stock.withdrawal_date_in_future', 422, 'The date cannot be in the future'],
   ['stock.withdrawal_no_lines', 422, 'Agregá al menos una variedad con sus gramos'],
   ['stock.withdrawal_grams_not_positive', 422, 'Los gramos tienen que ser más que cero'],
   ['stock.withdrawal_grams_too_precise', 422, 'Los gramos admiten hasta dos decimales'],
@@ -180,7 +180,7 @@ test.each(WITHDRAWAL_REFUSALS)('%s shows its fixed text inline, naming nothing t
   await userEvent.click(await screen.findByRole('button', { name: 'Promoción' }))
   await userEvent.selectOptions(screen.getByLabelText('Variedad 1'), 'Gelato')
   await userEvent.type(screen.getByLabelText('Gramos 1'), '2,5')
-  await userEvent.type(screen.getByLabelText('Nota'), 'secreta')
+  await userEvent.type(screen.getByLabelText('Note'), 'secreta')
 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el retiro' }))
 
@@ -215,19 +215,19 @@ test('a send that finds the withdrawal gone goes to Variedades with the fixed no
     if (url === '/stock/withdrawals/1') return jsonResponse(200, WITHDRAWAL)
     return jsonResponse(404, {})
   })
-  await userEvent.type(await screen.findByLabelText('Nota'), '!')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.type(await screen.findByLabelText('Note'), '!')
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await userEvent.click(
     within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, guardar' }),
   )
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
 })
 
 test('with two lines the form keeps the icon and text rule: Quitar is icon-only, Agregar carries its icon and word', async () => {
   await openFromVariedades()
-  await userEvent.click(screen.getByRole('button', { name: 'Agregar otra variedad' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
   await screen.findByLabelText('Variedad 2')
 
   const quitar = screen.getByRole('button', { name: 'Quitar variedad 1' })
@@ -236,7 +236,7 @@ test('with two lines the form keeps the icon and text rule: Quitar is icon-only,
   expect(quitar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(screen.getByRole('button', { name: 'Quitar variedad 2' })).toHaveClass('boton-icono')
 
-  const agregar = screen.getByRole('button', { name: 'Agregar otra variedad' })
+  const agregar = screen.getByRole('button', { name: 'Add another variety' })
   expect(agregar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, optionClasses: ['pildora'] })
 

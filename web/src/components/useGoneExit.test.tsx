@@ -42,13 +42,13 @@ function SettingsForm() {
 function setup(entries: (string | { pathname: string; state: unknown })[], index: number) {
   const router = createMemoryRouter(
     [
-      { path: VARIETIES, element: <Page name="Variedades" /> },
+      { path: VARIETIES, element: <Page name="Varieties" /> },
       { path: STOCK, element: <Page name="Todas" /> },
       { path: STOCK_ENTRY, element: <Form /> },
-      { path: CUSTOMERS, element: <Page name="Clientes" /> },
+      { path: CUSTOMERS, element: <Page name="Customers" /> },
       { path: SETTINGS, element: <SettingsForm /> },
-      { path: MORE, element: <Page name="Más" /> },
-      { path: HOME, element: <Page name="Inicio" /> },
+      { path: MORE, element: <Page name="More" /> },
+      { path: HOME, element: <Page name="Home" /> },
     ],
     { initialEntries: entries, initialIndex: index },
   )

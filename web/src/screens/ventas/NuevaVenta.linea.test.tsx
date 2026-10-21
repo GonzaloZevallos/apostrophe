@@ -34,7 +34,7 @@ async function openForm(): Promise<ReturnType<typeof vi.fn>> {
   await act(() => router.navigate(SALES))
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
-  await screen.findByText('Nueva venta')
+  await screen.findByText('New sale')
   await screen.findByRole('option', { name: 'Rosa' })
   return fetchMock
 }

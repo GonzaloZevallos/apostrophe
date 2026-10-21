@@ -113,14 +113,14 @@ const CARDS: [string, string, string][] = [
   ['a customer', pathTo(CUSTOMER, { id: 1 }), '‹ Clientes'],
   ['a live variety', pathTo(VARIETY, { id: 1 }), '‹ Variedades'],
   ['an archived variety', pathTo(VARIETY, { id: 2 }), '‹ Archivadas'],
-  ['Archivadas', ARCHIVED_VARIETIES, '‹ Variedades'],
-  ['Catálogo', CATALOG, '‹ Variedades'],
-  ['Todas las entradas', STOCK, '‹ Variedades'],
+  ['Archived', ARCHIVED_VARIETIES, '‹ Variedades'],
+  ['Catalog', CATALOG, '‹ Variedades'],
+  ['All entries', STOCK, '‹ Variedades'],
   ["a variety's prices", pathTo(VARIETY_PRICES, { id: 1 }), '‹ 24K Gold'],
   ["a variety's entries", pathTo(VARIETY_ENTRIES, { id: 1 }), '‹ 24K Gold'],
   ["a withdrawal's detail", pathTo(WITHDRAWAL, { id: 1 }), '‹ Variedades'],
   ['a sale', pathTo(SALE, { id: 1 }), '‹ Ventas'],
-  ['Configuración', SETTINGS, '‹ Más'],
+  ['Settings', SETTINGS, '‹ Más'],
 ]
 
 describe.each(['phone', 'computer'] as const)('on a %s', (size) => {

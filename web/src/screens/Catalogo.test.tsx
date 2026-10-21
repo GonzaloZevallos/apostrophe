@@ -132,8 +132,8 @@ test('neither Compartir nor Copiar is rendered while the first fetch is pending'
   )
 
   await screen.findByRole('button', { name: 'Publicar' })
-  expect(screen.queryByRole('button', { name: 'Copiar' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Compartir' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })
 
 test("with the cache already holding a catalog, both buttons stay disabled until this mount's own fetch resolves", async () => {
@@ -150,22 +150,22 @@ test("with the cache already holding a catalog, both buttons stay disabled until
     queryClient,
   )
 
-  expect(await screen.findByRole('button', { name: 'Copiar' })).toBeDisabled()
-  expect(screen.getByRole('button', { name: 'Compartir' })).toBeDisabled()
+  expect(await screen.findByRole('button', { name: 'Copy' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Share' })).toBeDisabled()
 
   resolveFetch(jsonResponse(200, CATALOG))
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Copiar' })).toBeEnabled())
-  expect(screen.getByRole('button', { name: 'Compartir' })).toBeEnabled()
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled())
+  expect(screen.getByRole('button', { name: 'Share' })).toBeEnabled()
 })
 
 test('opening the screen again after another reader unmounted asks the server again', async () => {
   const fetchMock = vi.fn((url: string) => Promise.resolve(defaultResponse(url)))
   const first = renderCatalogo(fetchMock)
-  await screen.findByRole('button', { name: 'Copiar' })
+  await screen.findByRole('button', { name: 'Copy' })
   first.unmount()
 
   renderCatalogo(fetchMock, first)
-  await screen.findByRole('button', { name: 'Copiar' })
+  await screen.findByRole('button', { name: 'Copy' })
 
   const catalogCalls = fetchMock.mock.calls.filter(([url]) => url === '/catalog')
   expect(catalogCalls).toHaveLength(2)
@@ -174,7 +174,7 @@ test('opening the screen again after another reader unmounted asks the server ag
 test('the preview reads bold where ** pairs sit, with the markers hidden', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await screen.findByRole('button', { name: 'Copiar' })
+  await screen.findByRole('button', { name: 'Copy' })
   const preview = document.querySelector('.catalogo__vista-previa') as HTMLElement
   const bold = within(preview).getByText('24K Gold')
   expect(bold.tagName).toBe('STRONG')
@@ -193,8 +193,8 @@ test('shows the empty state and no Copiar when nothing qualifies', async () => {
   )
 
   expect(await screen.findByText('No hay nada en el catálogo hoy')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Copiar' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Compartir' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })
 
 function catalogFetch(catalog: unknown): ReturnType<typeof vi.fn> {
@@ -242,7 +242,7 @@ test('"Qué no sale y por qué" lists every variety out of the catalog with its 
 test('with nothing out of the catalog the reasons section is not drawn', async () => {
   renderCatalogo(catalogFetch({ ...CATALOG, varieties: [variety(1, '24K Gold', 'in')] }))
 
-  await screen.findByRole('button', { name: 'Copiar' })
+  await screen.findByRole('button', { name: 'Copy' })
   expect(screen.queryByText('Qué no sale y por qué')).not.toBeInTheDocument()
 })
 
@@ -291,7 +291,7 @@ test('Compartir hands the share sheet exactly the API text, byte for byte, and s
   const text = '🌿 **CATÁLOGO** 🌿\n\n  🥇 **24K Gold**  \n• Precio x gramo: $11.000\n\n'
   renderCatalogo(catalogFetch({ ...CATALOG, text }))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Compartir' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
 
   expect(share.shareText).toHaveBeenCalledTimes(1)
   expect(vi.mocked(share.shareText).mock.calls[0]?.[0]).toBe(text)
@@ -304,24 +304,24 @@ test('a cancelled share shows nothing at all', async () => {
   vi.mocked(share.shareText).mockResolvedValueOnce('cancelled')
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Compartir' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
 
   await waitFor(() => expect(share.shareText).toHaveBeenCalled())
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(screen.queryByText('No se pudo compartir.')).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Copiar' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled()
 })
 
 test('a failed share shows only the fixed message and leaves Copiar available', async () => {
   vi.mocked(share.shareText).mockResolvedValueOnce('failed')
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Compartir' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
 
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent(/^No se pudo compartir\.$/)
-  expect(screen.getByRole('button', { name: 'Copiar' })).toBeEnabled()
-  await userEvent.click(screen.getByRole('button', { name: 'Copiar' }))
+  expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled()
+  await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
   expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG.text)
 })
 
@@ -329,8 +329,8 @@ test('where the browser cannot share, Compartir is not shown and Copiar remains'
   vi.mocked(share.canShare).mockReturnValue(false)
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  expect(await screen.findByRole('button', { name: 'Copiar' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Compartir' })).not.toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Copy' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })
 
 test('sharing and copying write nothing to the console or to browser storage', async () => {
@@ -341,8 +341,8 @@ test('sharing and copying write nothing to the console or to browser storage', a
   )
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Compartir' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Copiar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
   await screen.findAllByRole('alert')
 
   for (const spy of spies) expect(spy).not.toHaveBeenCalled()
@@ -354,7 +354,7 @@ test('sharing and copying write nothing to the console or to browser storage', a
 test('Copiar copies the raw API text through copyText and shows the toast', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Copiar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
 
   expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG.text)
   expect(await screen.findByText('Catálogo copiado')).toBeInTheDocument()
@@ -364,7 +364,7 @@ test('a failed copy shows the fixed message and no toast', async () => {
   vi.mocked(clipboard.copyText).mockResolvedValueOnce(false)
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Copiar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
 
   expect(await screen.findByText('No se pudo copiar.')).toBeInTheDocument()
   expect(screen.queryByText('Catálogo copiado')).not.toBeInTheDocument()
@@ -393,7 +393,7 @@ test('the catalog screen still shows the preview, Copiar, the pin status and Pub
   )
 
   expect(await screen.findByText('Cómo se ve en Telegram')).toBeInTheDocument()
-  expect(await screen.findByRole('button', { name: 'Copiar' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Copy' })).toBeInTheDocument()
   expect(await screen.findByRole('button', { name: 'Publicar' })).toBeInTheDocument()
   expect(await screen.findByText('Al día')).toBeInTheDocument()
 })
@@ -422,7 +422,7 @@ test('the catalog screen edits no variety attribute: no Editar button and no fie
   expect(screen.queryByRole('button', { name: /^Editar / })).not.toBeInTheDocument()
   expect(screen.queryByText('Atributos en el catálogo')).not.toBeInTheDocument()
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
 })
 
 test('Publicar is icon + text: the icon is hidden, so the name stays the word', async () => {
@@ -457,15 +457,15 @@ test('the empty state shows the registered title and line, each within its limit
 test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Editar encabezado y pie" stays a text link', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  const share = await screen.findByRole('button', { name: 'Compartir' })
-  const copy = screen.getByRole('button', { name: 'Copiar' })
+  const share = await screen.findByRole('button', { name: 'Share' })
+  const copy = screen.getByRole('button', { name: 'Copy' })
 
   for (const button of [share, copy]) {
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     expect(button).not.toHaveClass('boton-icono')
   }
-  expect(share).toHaveTextContent('Compartir')
-  expect(copy).toHaveTextContent('Copiar')
+  expect(share).toHaveTextContent('Share')
+  expect(copy).toHaveTextContent('Copy')
   const edit = screen.getByRole('link', { name: 'Editar encabezado y pie' })
   expect(edit.querySelector('svg')).toBeNull()
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()

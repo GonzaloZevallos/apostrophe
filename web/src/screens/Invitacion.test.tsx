@@ -73,7 +73,7 @@ test('logs out before looking the invitation up, and asks only email and passwor
     ),
   ).toBeInTheDocument()
   expect(calls).toEqual(['/auth/logout', '/invitations/tok123'])
-  expect(screen.queryByLabelText('Nombre del negocio')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Business name')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Sumate a La Esquina' })).toBeInTheDocument()
   expect(screen.getByText('Esta invitación vence el 09/10 y se usa una sola vez.')).toBeInTheDocument()
 })
@@ -96,7 +96,7 @@ test('a new-business invitation also asks for the business name, in the design\'
   expect(
     screen.getByText('Ponele un nombre y creá tu usuario. Después podés invitar a un socio.'),
   ).toBeInTheDocument()
-  expect(screen.getByLabelText('Nombre del negocio')).toBeInTheDocument()
+  expect(screen.getByLabelText('Business name')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Creá el negocio' })).toBeInTheDocument()
   expect(screen.getByText('La invitación se usa una sola vez y vence el 09/10.')).toBeInTheDocument()
 })
@@ -231,7 +231,7 @@ test('shows the Cargando progressbar, and no text of its own, while the lookup i
   vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => undefined)))
   renderInvitacion()
 
-  expect(screen.getByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(screen.getByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
 })
 
@@ -263,7 +263,7 @@ async function acceptAs(kind: 'new_business' | 'join_business'): Promise<void> {
   )
   await userEvent.type(await screen.findByLabelText('Email'), 'ana@x.com')
   await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
-  if (kind === 'new_business') await userEvent.type(screen.getByLabelText('Nombre del negocio'), 'La Huerta')
+  if (kind === 'new_business') await userEvent.type(screen.getByLabelText('Business name'), 'La Huerta')
   await userEvent.click(screen.getByRole('button', { name: /Creá el negocio|Sumate a/ }))
 }
 

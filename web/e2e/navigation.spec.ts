@@ -2,7 +2,7 @@
  * Navigation against the real backend serving `web/dist` (PRD criteria 3 and 6): every path of
  * `screens.json` that is built opens the app on a browser navigation, never JSON or a 401;
  * signed out it lands on Entrar; every old Spanish path answers a permanent redirect to its
- * English route, keeping the id and the query; a gone sale shows "Eso ya no está."; an unknown
+ * English route, keeping the id and the query; a gone sale shows "That is gone."; an unknown
  * address goes to Inicio. Paths come from `routes.ts` and `screens.json`, never written here.
  */
 
@@ -125,12 +125,12 @@ test.describe.serial('navigation', () => {
     })
   }
 
-  test('an old link to a gone sale lands on the English route and says "Eso ya no está."', async () => {
+  test('an old link to a gone sale lands on the English route and says "That is gone."', async () => {
     const old = LEGACY_REDIRECTS.find(([, now]) => now === SALE)
     expect(old).toBeDefined()
     await page.goto(pathTo(old?.[0] ?? '', { id: GONE_ID }))
     expect(new URL(page.url()).pathname).toBe(pathTo(old?.[1] ?? '', { id: GONE_ID }))
-    await expect(page.getByText('Eso ya no está.')).toBeVisible()
+    await expect(page.getByText('That is gone.')).toBeVisible()
     await expect(page.getByRole('link', { name: 'Volver a Ventas' }).or(page.getByRole('button', { name: 'Volver a Ventas' }))).toBeVisible()
   })
 
@@ -145,7 +145,7 @@ test.describe.serial('navigation', () => {
     await signUp(other, 'Ajena')
     await other.goto(pathTo(old?.[0] ?? '', { id: records.sale }))
     expect(new URL(other.url()).pathname).toBe(pathTo(old?.[1] ?? '', { id: records.sale }))
-    await expect(other.getByText('Eso ya no está.')).toBeVisible()
+    await expect(other.getByText('That is gone.')).toBeVisible()
     await expect(
       other.getByRole('link', { name: 'Volver a Ventas' }).or(other.getByRole('button', { name: 'Volver a Ventas' })),
     ).toBeVisible()
@@ -155,13 +155,13 @@ test.describe.serial('navigation', () => {
   test('an unknown address goes to Inicio', async () => {
     await page.goto('/no-such-screen')
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))
-    await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
+    await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
     // An old Spanish path with nothing behind it is no redirect row: the front's `*` takes it.
     await page.goto(`${LEGACY_REDIRECTS[0]?.[0] ?? ''}/basura`)
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))
   })
 
-  test('"Nueva venta", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
+  test('"New sale", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
     // The real stylesheet in a real browser (computed style is meaningless in jsdom). It reads
     // the built `web/dist`: after a CSS edit, `vite build` first, or the run sees the old rule.
     const expectAction = async (control: Locator): Promise<void> => {

@@ -89,7 +89,7 @@ test('shows the saved token masked with Cambiar and the saved chats', async () =
   expect(await screen.findByText('Guardado el 12/08 · no se muestra más')).toBeInTheDocument()
   expect(screen.getByLabelText('Tu chat')).toHaveValue('123456789')
   expect(screen.getByLabelText('Chat del canal')).toHaveValue('@mi_canal')
-  await userEvent.click(screen.getByRole('button', { name: 'Cambiar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Change' }))
   expect(screen.getByLabelText('Token del bot')).toHaveValue('')
 })
 
@@ -206,11 +206,11 @@ test('an untouched group closes at once; a typed change asks first', async () =>
 
   await screen.findByLabelText('Tu chat')
   await userEvent.type(screen.getByLabelText('Chat del canal'), 'x')
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
-  expect(await screen.findByText('¿Descartás el cambio?')).toBeInTheDocument()
+  expect(await screen.findByText('Discard the change?')).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'Lista' })).not.toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalo' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, discard it' }))
   expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()
 })
 
@@ -218,10 +218,10 @@ test('an untouched group closes with no confirmation', async () => {
   renderGroup(SAVED)
 
   await screen.findByLabelText('Tu chat')
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()
-  expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard the change?')).not.toBeInTheDocument()
 })
 
 test('after saving, Cerrar closes at once even while the refetch is pending', async () => {
@@ -231,10 +231,10 @@ test('after saving, Cerrar closes at once even while the refetch is pending', as
   await userEvent.type(screen.getByLabelText('Tu chat'), '123456789')
   await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
   await screen.findByText('Prueba enviada')
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()
-  expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard the change?')).not.toBeInTheDocument()
 })
 
 const OWN_CHAT_HELP_LINE = 'Tocá Iniciar en tu bot; tu número lo ves con @userinfobot.'
@@ -268,8 +268,8 @@ test('Buscar mi chat puts the one chat found in the field over a number already 
   expect(saveCalls(fetchMock)).toHaveLength(0)
   expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
-  expect(await screen.findByText('¿Descartás el cambio?')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  expect(await screen.findByText('Discard the change?')).toBeInTheDocument()
 })
 
 test('with the saved token and nothing typed, Buscar mi chat sends token null', async () => {
@@ -286,7 +286,7 @@ test('a token typed over the saved one is the one Buscar mi chat sends', async (
   const fetchMock = renderGroup(SAVED)
 
   await screen.findByLabelText('Tu chat')
-  await userEvent.click(screen.getByRole('button', { name: 'Cambiar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Change' }))
   await userEvent.type(screen.getByLabelText('Token del bot'), '123:typed')
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
   await waitFor(() => expect(lookupCalls(fetchMock)).toHaveLength(1))
@@ -298,7 +298,7 @@ test('a token field opened with Cambiar but left empty sends null', async () => 
   const fetchMock = renderGroup(SAVED)
 
   await screen.findByLabelText('Tu chat')
-  await userEvent.click(screen.getByRole('button', { name: 'Cambiar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Change' }))
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
   await waitFor(() => expect(lookupCalls(fetchMock)).toHaveLength(1))
 
@@ -420,7 +420,7 @@ test('Buscar mi chat is icon + text: the icon is hidden, so the name stays the w
 test('Cambiar stays a text link named Cambiar, with no icon', async () => {
   renderGroup(SAVED)
 
-  const change = await screen.findByRole('button', { name: 'Cambiar' })
+  const change = await screen.findByRole('button', { name: 'Change' })
   expect(change.querySelector('svg')).toBeNull()
 })
 
@@ -437,11 +437,11 @@ test('the help lines, the token hint and the consequence line each fit their lim
   expect(Array.from(notice.textContent ?? '').length).toBeLessThanOrEqual(80)
 })
 
-test('the own-chat help is a MasInfo: closed at mount, "Más info" opens the longer how and a second tap closes it', async () => {
+test('the own-chat help is a MasInfo: closed at mount, "More info" opens the longer how and a second tap closes it', async () => {
   renderGroup(SAVED)
   await screen.findByLabelText('Tu chat')
 
-  const more = screen.getByRole('button', { name: 'Más info' })
+  const more = screen.getByRole('button', { name: 'More info' })
   expect(more).toHaveAttribute('aria-expanded', 'false')
   expect(screen.getByText(OWN_CHAT_HELP)).toBeVisible()
   expect(screen.getByText(OWN_CHAT_INFO.more)).not.toBeVisible()
@@ -459,11 +459,11 @@ test('opening More info is not an unsaved change: Cerrar leaves without asking',
   renderGroup(SAVED)
   await screen.findByLabelText('Tu chat')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Más info' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'More info' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()
-  expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard the change?')).not.toBeInTheDocument()
 })
 
 test('the own-chat line and the consequence line are registered and within their limits; the long how is behind More info only', () => {
@@ -478,7 +478,7 @@ test('the group follows the icon and text rule: Cerrar icon-only, Probarlo and B
   renderGroup(SAVED)
   await screen.findByLabelText('Tu chat')
 
-  const close = screen.getByRole('button', { name: 'Cerrar' })
+  const close = screen.getByRole('button', { name: 'Close' })
   expect(close).toHaveClass('boton-icono')
   expect(close).toHaveTextContent('')
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()

@@ -110,8 +110,8 @@ function failing(match: (url: string, method: string) => boolean, make: () => Re
 }
 
 async function fillAndSave(detail: string, amount: string): Promise<void> {
-  await userEvent.selectOptions(await screen.findByLabelText('Categoría'), 'Packaging')
-  await userEvent.type(screen.getByLabelText('Monto'), amount)
+  await userEvent.selectOptions(await screen.findByLabelText('Category'), 'Packaging')
+  await userEvent.type(screen.getByLabelText('Amount'), amount)
   await userEvent.type(screen.getByLabelText('Detalle'), detail)
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el gasto' }))
 }
@@ -171,7 +171,7 @@ test('an empty month shows $ 0, no categories, the flower line and the record ac
   expect(screen.queryByText('Por categoría')).not.toBeInTheDocument()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
   expect(screen.getByText(FLOWER_NOTICE)).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Cargar gasto' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Add expense' })).toBeInTheDocument()
 })
 
 test('opens on the month in ?month= and moving between months writes it without piling history', async () => {
@@ -180,12 +180,12 @@ test('opens on the month in ?month= and moving between months writes it without 
   expect(await screen.findByText('Septiembre 2026')).toBeInTheDocument()
   expect(await screen.findByText('Cinta vieja')).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Mes siguiente' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Next month' }))
   expect(await screen.findByText('Octubre 2026')).toBeInTheDocument()
   expect(router.state.location.search).toBe('?month=2026-10')
   expect(await screen.findByText('Bolsas')).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Mes anterior' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Previous month' }))
   expect(await screen.findByText('Septiembre 2026')).toBeInTheDocument()
   expect(router.state.location.search).toBe('?month=2026-09')
 })
@@ -201,10 +201,10 @@ test('records from Gastos on a past month: back to that month with the expense s
   const router = renderExpenses([EXPENSES + '?month=2026-09'], store(rows))
   await screen.findByText('Cinta vieja')
 
-  await userEvent.click(screen.getByRole('link', { name: 'Cargar gasto' }))
+  await userEvent.click(screen.getByRole('link', { name: 'Add expense' }))
   // The form's date is today (October), so the new expense lands in October;
   // move it into September to show the month the screen came from.
-  const date = await screen.findByLabelText('Fecha')
+  const date = await screen.findByLabelText('Date')
   await userEvent.clear(date)
   await userEvent.type(date, '2026-09-30')
   await fillAndSave('Cinta nueva', '1000')
@@ -221,16 +221,16 @@ test('records from Gastos on a past month: back to that month with the expense s
 test('the record action opens the form with today\'s date', async () => {
   renderExpenses([EXPENSES], store([...SEED]))
 
-  await userEvent.click(await screen.findByRole('link', { name: 'Cargar gasto' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
 
-  expect(await screen.findByLabelText('Fecha')).toHaveValue(ME.today)
+  expect(await screen.findByLabelText('Date')).toHaveValue(ME.today)
 })
 
 test('editing an expense sends a PUT, toasts in place and the totals follow', async () => {
   renderExpenses([EXPENSES], store([...SEED]))
 
   await userEvent.click(await screen.findByText('Bolsas'))
-  const amount = await screen.findByLabelText('Monto')
+  const amount = await screen.findByLabelText('Amount')
   await userEvent.clear(amount)
   await userEvent.type(amount, '5000')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el gasto' }))
@@ -239,23 +239,23 @@ test('editing an expense sends a PUT, toasts in place and the totals follow', as
   expect(fetch).toHaveBeenCalledWith('/expenses/9', expect.objectContaining({ method: 'PUT' }))
   expect(await screen.findByText('$ 5.000', { selector: '.cifra-xl' })).toBeInTheDocument()
   expect(totalShown()).toBe('$ 5.000')
-  expect(screen.queryByLabelText('Monto')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
 })
 
 test('closing the edit with changes asks before discarding; an untouched close is immediate', async () => {
   renderExpenses([EXPENSES], store([...SEED]))
 
   await userEvent.click(await screen.findByText('Bolsas'))
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
-  expect(screen.queryByLabelText('Monto')).not.toBeInTheDocument()
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
+  expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
 
   await userEvent.click(screen.getByText('Bolsas'))
   await userEvent.type(await screen.findByLabelText('Detalle'), ' x')
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
-  expect(await screen.findByText('¿Descartás los cambios?')).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí editando' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  expect(await screen.findByText('Discard the changes?')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
   expect(screen.getByLabelText('Detalle')).toHaveValue('Bolsas x')
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
   expect(screen.queryByLabelText('Detalle')).not.toBeInTheDocument()
   expect(fetch).not.toHaveBeenCalledWith('/expenses/9', expect.objectContaining({ method: 'PUT' }))
@@ -285,7 +285,7 @@ test('deleting names its date, category and amount, toasts in place, and the emp
   expect(dialog).not.toBeNull()
   expect(within(dialog as HTMLElement).getByText(/\$ 4\.500 en Packaging del 01\/10/)).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findAllByText('Gasto eliminado')).toHaveLength(1)
   expect(await screen.findByText('$ 0', { selector: '.cifra-xl' })).toBeInTheDocument()
@@ -308,7 +308,7 @@ test('editing an expense that is already gone shows the gone notice and closes t
   await userEvent.click(await screen.findByRole('button', { name: 'Guardá el gasto' }))
 
   const notice = await screen.findByText(GONE_NOTICE)
-  expect(screen.queryByLabelText('Monto')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
   // The floating slot the success toasts use.
   expect(notice.closest('.aviso-flotante')).not.toBeNull()
 })
@@ -327,7 +327,7 @@ test('deleting an expense that is already gone shows the gone notice', async () 
 
   await userEvent.click(await screen.findByText('Bolsas'))
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar gasto' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
   expect(screen.queryByText('Gasto eliminado')).not.toBeInTheDocument()
@@ -347,12 +347,12 @@ test('a dropped network on delete shows "Sin conexión", never the gone notice',
 
   await userEvent.click(await screen.findByText('Bolsas'))
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar gasto' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
   // The confirmation stays open so the user can retry once back online.
-  expect(screen.getByRole('button', { name: 'Sí, borrala' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Yes, delete it' })).toBeInTheDocument()
 })
 
 test('a category removed mid-form keeps what was typed and empties Categoría', async () => {
@@ -367,11 +367,11 @@ test('a category removed mid-form keeps what was typed and empties Categoría', 
     ),
   )
 
-  await userEvent.click(await screen.findByRole('link', { name: 'Cargar gasto' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
   await fillAndSave('Cinta para embalar', '1000')
 
   expect(await screen.findByText(CATEGORY_GONE)).toBeInTheDocument()
-  expect(screen.getByLabelText('Categoría')).toHaveValue('')
+  expect(screen.getByLabelText('Category')).toHaveValue('')
   expect(screen.getByLabelText('Detalle')).toHaveValue('Cinta para embalar')
 })
 
@@ -387,7 +387,7 @@ test('a server error on the expense form shows the generic retry, never the refu
     ),
   )
 
-  await userEvent.click(await screen.findByRole('link', { name: 'Cargar gasto' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
   await fillAndSave('Cinta', '1000')
 
   expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
@@ -396,14 +396,14 @@ test('a server error on the expense form shows the generic retry, never the refu
 test('creating a category inside the expense form keeps what was typed and selects it', async () => {
   renderExpenses([EXPENSES], store([...SEED]))
 
-  await userEvent.click(await screen.findByRole('link', { name: 'Cargar gasto' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
   await userEvent.type(await screen.findByLabelText('Detalle'), 'Sustrato nuevo')
   await userEvent.click(screen.getByRole('button', { name: 'Crear una categoría nueva' }))
   await userEvent.type(screen.getByLabelText('Nombre de la categoría nueva'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: 'Crear categoría' }))
 
   await vi.waitFor(() => {
-    expect(screen.getByLabelText('Categoría')).toHaveValue('3')
+    expect(screen.getByLabelText('Category')).toHaveValue('3')
   })
   expect(screen.getByLabelText('Detalle')).toHaveValue('Sustrato nuevo')
 })
@@ -426,7 +426,7 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
   expectTotalIsSumOfSubtotals()
 
   // Create: another Packaging expense.
-  await userEvent.click(screen.getByRole('link', { name: 'Cargar gasto' }))
+  await userEvent.click(screen.getByRole('link', { name: 'Add expense' }))
   await fillAndSave('Etiquetas', '300')
   await screen.findByText('Etiquetas')
   await vi.waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.300'))
@@ -436,7 +436,7 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
 
   // Edit: Bolsas goes from 4.500 to 5.000.
   await userEvent.click(screen.getByText('Bolsas'))
-  const amount = await screen.findByLabelText('Monto')
+  const amount = await screen.findByLabelText('Amount')
   await userEvent.clear(amount)
   await userEvent.type(amount, '5000')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el gasto' }))
@@ -448,7 +448,7 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
   // Delete: the Otros expense, so its category disappears and Packaging is unchanged.
   await userEvent.click(screen.getByText('Varios'))
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar gasto' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
   await vi.waitFor(() => expect(screen.queryByText('Varios')).not.toBeInTheDocument())
   expect(screen.queryByText('Otros', { selector: '.gastos__categoria-nombre' })).not.toBeInTheDocument()
   expect(subtotalOf('Packaging')).toBe('$ 6.800')
@@ -468,7 +468,7 @@ test('a duplicate category name inside the form is refused, keeping what was typ
     ),
   )
 
-  await userEvent.click(await screen.findByRole('link', { name: 'Cargar gasto' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
   await userEvent.type(await screen.findByLabelText('Detalle'), 'Sustrato nuevo')
   await userEvent.click(screen.getByRole('button', { name: 'Crear una categoría nueva' }))
   await userEvent.type(screen.getByLabelText('Nombre de la categoría nueva'), 'Packaging')
@@ -477,10 +477,10 @@ test('a duplicate category name inside the form is refused, keeping what was typ
   expect(await screen.findByText('Revisá los datos e intentá de nuevo.')).toBeInTheDocument()
   expect(screen.getByLabelText('Nombre de la categoría nueva')).toHaveValue('Packaging')
   expect(screen.getByLabelText('Detalle')).toHaveValue('Sustrato nuevo')
-  expect(screen.getByLabelText('Categoría')).toHaveValue('')
+  expect(screen.getByLabelText('Category')).toHaveValue('')
 })
 
-test('if the categories cannot load, the edit overlay still has "Cerrar"', async () => {
+test('if the categories cannot load, the edit overlay still has "Close"', async () => {
   renderExpenses(
     [EXPENSES],
     store(
@@ -493,7 +493,7 @@ test('if the categories cannot load, the edit overlay still has "Cerrar"', async
   )
 
   await userEvent.click(await screen.findByText('Bolsas'))
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
-  expect(screen.queryByRole('button', { name: 'Cerrar' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument()
 })

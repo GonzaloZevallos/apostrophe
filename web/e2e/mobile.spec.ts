@@ -121,7 +121,7 @@ test.describe('the walk rejects what it cannot reach', () => {
   test('a reachable screen is not reported', async ({ browser }) => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
-    const screen = { ...PROBE, steps: [{ click: 'Semana' }] }
+    const screen = { ...PROBE, steps: [{ click: 'Week' }] }
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()
   })
@@ -146,7 +146,7 @@ test.describe('the states the walk adds', () => {
     const screen = asScreen({
       screen: 'Probe',
       route: SALE_NEW,
-      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { press: 'Cerrar' }],
+      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { press: 'Close' }],
       visible: '¿Descartás la venta?',
     })
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
@@ -160,7 +160,7 @@ const BROKEN = `
   <div style="width:2000px;height:20px"></div>
   <nav class="bar-inferior" style="position:absolute;top:5000px"><a href="#" style="display:block;height:48px">Inicio</a></nav>
   <button style="width:20px;height:20px">x</button>
-  <input aria-label="Gramos" style="font-size:10px;width:200px;height:48px">
+  <input aria-label="Grams" style="font-size:10px;width:200px;height:48px">
   <input aria-label="Email" style="width:200px;height:48px">
   <p style="font-size:9px">tiny</p>
   <span style="display:inline-block;width:30px;word-break:break-all">$ 999.999.999</span>

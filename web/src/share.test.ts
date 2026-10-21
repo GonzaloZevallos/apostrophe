@@ -1,5 +1,5 @@
 /**
- * `canShare` and `shareText` at their own seam (plan, "Compartir"): the only functions
+ * `canShare` and `shareText` at their own seam (plan, "Share"): the only functions
  * allowed to name `navigator.share`. A share function in a secure context is the only
  * way sharing is offered; a seller's cancel (`AbortError`) is not a failure; and no
  * outcome carries the error object or the text out of the module.

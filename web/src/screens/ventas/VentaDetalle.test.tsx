@@ -108,7 +108,7 @@ test('shows the skeleton while the sale is pending, then the sale in its place',
   vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, SALE)))
   renderDetalle()
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   expect(screen.queryByText('Venta del 14/09')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Borrar venta' })).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
@@ -145,7 +145,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   vi.mocked(fetch).mockResolvedValue(jsonResponse(404, { code: 'sale.not_found' }))
   renderDetalle()
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', SALES)
 })
 
@@ -160,13 +160,13 @@ test('Borrar venta asks "Antes de borrar" naming the date, the amount and the gr
     screen.getByText('¿Borrás la venta de $ 11.000 del 14/09? Vuelven 3,5 g al stock.'),
   ).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'DELETE' })),
   )
   expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
-  expect(await screen.findByText('Venta eliminada')).toBeInTheDocument()
+  expect(await screen.findByText('Sale deleted')).toBeInTheDocument()
 })
 
 test('cancelling the delete confirmation keeps the sale', async () => {
@@ -175,7 +175,7 @@ test('cancelling the delete confirmation keeps the sale', async () => {
   await screen.findByText('Venta del 14/09')
 
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
-  await userEvent.click(screen.getByRole('button', { name: 'No, dejala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep it' }))
 
   expect(
     screen.queryByText('¿Borrás la venta de $ 11.000 del 14/09? Vuelven 3,5 g al stock.'),
@@ -189,7 +189,7 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
   renderDetalle(saleJustSaved())
   await screen.findByText('Venta del 14/09')
 
-  expect(screen.getByText('Venta guardada')).toBeInTheDocument()
+  expect(screen.getByText('Sale saved')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }))
 
@@ -198,7 +198,7 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
   )
   expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
   expect(
-    screen.getByText('Venta eliminada · los gramos vuelven al stock'),
+    screen.getByText('Sale deleted · the grams go back to stock'),
   ).toBeInTheDocument()
 })
 
@@ -207,7 +207,7 @@ test('opening the detail without the just-saved marker never shows Deshacer', as
   renderDetalle()
   await screen.findByText('Venta del 14/09')
 
-  expect(screen.queryByText('Venta guardada')).not.toBeInTheDocument()
+  expect(screen.queryByText('Sale saved')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Deshacer' })).not.toBeInTheDocument()
 })
 
@@ -218,9 +218,9 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
   await screen.findByText('Venta del 14/09')
 
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
 })
 
 test('a sale with a customer already never shows Asignar cliente', async () => {
@@ -270,7 +270,7 @@ test('Asignar cliente opens the "Elegir cliente" sheet without "Sin cliente"; ch
   expect(screen.getByText('Elegir cliente')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Sin cliente' })).not.toBeInTheDocument()
 
-  fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
+  fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
   await waitFor(() =>
@@ -300,7 +300,7 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
   await screen.findByText('3,5 g · Sin cliente')
 
   await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
-  fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
+  fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
   expect(await screen.findByText('Esta venta ya tiene cliente.')).toBeInTheDocument()
@@ -319,10 +319,10 @@ test('assigning to a sale a partner deleted meanwhile shows the gone notice on V
   await screen.findByText('3,5 g · Sin cliente')
 
   await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
-  fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
+  fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
 })
 
 test('assigning a customer a partner deleted meanwhile shows the gone notice on Ventas', async () => {
@@ -337,10 +337,10 @@ test('assigning a customer a partner deleted meanwhile shows the gone notice on 
   await screen.findByText('3,5 g · Sin cliente')
 
   await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
-  fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
+  fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
 })
 
 test('a sale keeps its recorded "VIP" and "por cantidad" badges while both pricing switches are off', async () => {

@@ -1,5 +1,5 @@
 /**
- * `UsersGroup` at the screen seam (plan, "Usuarios"; `accounts.md`): the business's users
+ * `UsersGroup` at the screen seam (plan, "Users"; `accounts.md`): the business's users
  * (the signed-in one marked "vos") and "Invitá a un socio". The API is faked at `fetch`,
  * never mocked deeper (CODING_STANDARDS §10).
  */
@@ -101,7 +101,7 @@ test('"Invitá a un socio" shows the fresh link on screen instead of a toast', a
   expect(screen.queryByText('Invitación lista')).not.toBeInTheDocument()
 })
 
-test('"Copiar" copies the invite link through copyText, the only clipboard path', async () => {
+test('"Copy" copies the invite link through copyText, the only clipboard path', async () => {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     if (init?.method === 'POST' && url === '/invitations') {
       return Promise.resolve(
@@ -116,7 +116,7 @@ test('"Copiar" copies the invite link through copyText, the only clipboard path'
   renderUsers(fetchMock)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Copiar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
 
   expect(clipboard.copyText).toHaveBeenCalledWith('https://apostrophe.app/invitation/abc123')
 })
@@ -139,7 +139,7 @@ test('a dropped network while inviting shows "Sin conexión", never the generic 
 test('an untouched group closes at once, with no confirmation', async () => {
   renderUsers(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
@@ -184,13 +184,13 @@ test('Copiar is icon + text and Compartir under the fresh link is the icon-only 
   renderUsers(fetchMock)
   await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
 
-  const copy = await screen.findByRole('button', { name: 'Copiar' })
-  const share = screen.getByRole('button', { name: 'Compartir' })
+  const copy = await screen.findByRole('button', { name: 'Copy' })
+  const share = screen.getByRole('button', { name: 'Share' })
 
-  expect(copy).toHaveTextContent('Copiar')
+  expect(copy).toHaveTextContent('Copy')
   expect(copy.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(share).toHaveClass('boton-icono')
   expect(share).toHaveTextContent('')
-  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
+  expect(screen.getByRole('button', { name: 'Close' })).toHaveClass('boton-icono')
   expectIconAndTextRule(document.body)
 })

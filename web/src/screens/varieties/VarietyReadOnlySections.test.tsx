@@ -1,7 +1,7 @@
 /**
  * The threshold and catalog sections in their `readOnly` mode (varieties.md, "An archived
  * variety's page"), through Testing Library: the stored setting and the stored attributes
- * only, with no switch, no "Editar" and nothing from the live computation.
+ * only, with no switch, no "Edit" and nothing from the live computation.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -42,7 +42,7 @@ test('a read-only threshold states the stored setting, never "Avisando", with no
 test('a read-only threshold that is off says Aviso apagado', () => {
   threshold({ ...LOW, threshold: null, status: 'ok' }, true)
 
-  expect(screen.getByText('Aviso apagado')).toBeInTheDocument()
+  expect(screen.getByText('Warning off')).toBeInTheDocument()
 })
 
 test('the same threshold on a live variety keeps "Avisando", its switch and Editar', () => {

@@ -50,8 +50,8 @@ function Screen({ startDirty }: { startDirty: boolean }) {
           blocker={blocker}
           question="¿Descartás la venta?"
           detail="Detalle"
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartala"
+          keepLabel="No, keep entering"
+          discardLabel="Yes, discard it"
         />
       )}
     </main>
@@ -125,7 +125,7 @@ test('a dirty form asks on back, and asks again after keeping it', async () => {
 
   await act(() => router.navigate(-1))
   expect(screen.getByRole('alertdialog', { name: '¿Descartás la venta?' })).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  await user.click(screen.getByRole('button', { name: 'No, keep entering' }))
   expect(router.state.location.pathname).toBe(HOME)
 
   await act(() => router.navigate(-1))

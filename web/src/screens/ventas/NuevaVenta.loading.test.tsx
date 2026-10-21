@@ -91,8 +91,8 @@ test('opening shows the loading state in the body, with the header and its way o
 
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
   noFigure(screen.getByRole('progressbar'))
-  expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
-  expect(screen.getByLabelText('Fecha')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Date')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Guardá la venta' })).not.toBeInTheDocument()
   expect(screen.queryByText('Total')).not.toBeInTheDocument()
   expect(document.body.textContent).not.toContain('$')
@@ -114,7 +114,7 @@ test('a date change keeps what was typed and shows compact bars where prices wer
   await user.type(screen.getByLabelText('Envío'), '00')
   expect(screen.getAllByText('$ 2.000').length).toBeGreaterThanOrEqual(1)
 
-  fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2026-10-01' } })
+  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-10-01' } })
 
   // Everything typed is still there, and the form never went blank.
   expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
@@ -166,7 +166,7 @@ test('Elegir cliente shows the loading state before its first answer', async () 
 test('Elegir cliente opened during a date change still leaves one progressbar on screen', async () => {
   const user = userEvent.setup()
   await openAndPriceToday()
-  fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2026-10-01' } })
+  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-10-01' } })
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))

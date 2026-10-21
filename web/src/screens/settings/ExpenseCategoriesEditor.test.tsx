@@ -69,7 +69,7 @@ test('a category still in use cannot be removed, and the refusal shows', async (
 
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(CANNOT_REMOVE)).toBeInTheDocument()
   expect(screen.getByText('Packaging')).toBeInTheDocument()
@@ -96,7 +96,7 @@ test('with no props the "Nueva categoría" field is always there and no save lin
   await screen.findByText('Packaging')
   expect(screen.getByLabelText('Nueva categoría')).toBeInTheDocument()
   expect(screen.queryByText(CATEGORIES_SAVE_AT_ONCE)).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Categoría' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Category' })).not.toBeInTheDocument()
 })
 
 test('collapsed, only the add action and the save line show; the add action opens the field and focuses it', async () => {
@@ -106,7 +106,7 @@ test('collapsed, only the add action and the save line show; the add action open
   expect(screen.queryByLabelText('Nueva categoría')).not.toBeInTheDocument()
   expect(screen.getByText(CATEGORIES_SAVE_AT_ONCE)).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Categoría' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   expect(screen.getByLabelText('Nueva categoría')).toHaveFocus()
 })
 
@@ -116,7 +116,7 @@ test('collapsed, a submit saves with no other action, collapses the field and gi
     return listOnly(url, init)
   })
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Categoría' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Luz')
   await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
 
@@ -125,7 +125,7 @@ test('collapsed, a submit saves with no other action, collapses the field and gi
   expect(JSON.parse(String(post?.[1]?.body))).toEqual({ name: 'Luz' })
   expect(screen.getByText('Luz')).toBeInTheDocument()
   expect(screen.queryByLabelText('Nueva categoría')).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Categoría' })).toHaveFocus()
+  expect(screen.getByRole('button', { name: 'Category' })).toHaveFocus()
 })
 
 test('collapsed, a refusal keeps the field open with what was typed', async () => {
@@ -136,7 +136,7 @@ test('collapsed, a refusal keeps the field open with what was typed', async () =
     return listOnly(url, init)
   })
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Categoría' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Luz')
   await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
 
@@ -153,7 +153,7 @@ test('collapsed, text typed and not saved counts as unsaved', async () => {
     </QueryClientProvider>,
   )
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Categoría' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Luz')
   expect(onDirtyChange).toHaveBeenLastCalledWith(true)
 })
@@ -168,7 +168,7 @@ test('collapsed, a rename saves at once through the owner route, with no other w
   const input = screen.getByLabelText('Nombre de Packaging')
   await userEvent.clear(input)
   await userEvent.type(input, 'Embalaje')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Embalaje')).toBeInTheDocument()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
@@ -186,7 +186,7 @@ test('collapsed, a removal saves at once through the owner route, with no other 
   })
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('Categoría eliminada')).toBeInTheDocument()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()

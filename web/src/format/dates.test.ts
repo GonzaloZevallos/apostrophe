@@ -33,7 +33,7 @@ describe('chipDate', () => {
     expect(chipDate('2026-10-15', '2026-10-15')).toBe('Hoy 15/10')
   })
 
-  test('reads "dd/mm" for another day, without "Hoy" and without the year', () => {
+  test('reads "dd/mm" for another day, without "Today" and without the year', () => {
     expect(chipDate('2026-10-02', '2026-10-15')).toBe('02/10')
   })
 
@@ -89,7 +89,7 @@ describe('shiftMonth', () => {
 })
 
 describe('todayRange', () => {
-  test('is today to today, for "Hoy"', () => {
+  test('is today to today, for "Today"', () => {
     expect(todayRange('2026-10-03')).toEqual({ start: '2026-10-03', end: '2026-10-03' })
   })
 })

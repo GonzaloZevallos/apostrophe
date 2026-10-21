@@ -106,7 +106,7 @@ test('two entries of one menu with the same icon are rejected', () => {
       </Boton>
     </nav>,
   )
-  expect(problems).toEqual([expect.stringContaining('shares its icon with "Inicio"')])
+  expect(problems).toEqual([expect.stringContaining('shares its icon with "Home"')])
 })
 
 test('a data-copy text over its limit, measured with the samples, is rejected', () => {

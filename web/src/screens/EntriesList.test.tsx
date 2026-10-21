@@ -1,5 +1,5 @@
 /**
- * `EntriesList` at the screen seam (`stock.md`, "Todas las entradas"): every entry newest
+ * `EntriesList` at the screen seam (`stock.md`, "All entries"): every entry newest
  * first, or only one variety's through `entriesOf`; each can be edited (a link to its
  * form) or deleted after "Antes de borrar". The API is faked at `fetch`.
  */
@@ -155,7 +155,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('"Todas las entradas" lists every entry newest first with its variety, origin, grams and costs', async () => {
+test('"All entries" lists every entry newest first with its variety, origin, grams and costs', async () => {
   fakeApi()
   renderAt(STOCK_PATH)
 
@@ -168,7 +168,7 @@ test('"Todas las entradas" lists every entry newest first with its variety, orig
   expect(within(rows[1]!).getByText('26/08 · Sir Jack')).toBeInTheDocument()
   expect(within(rows[1]!).getByText('Cosecha · 10 g')).toBeInTheDocument()
   expect(within(rows[1]!).getByText('Sin costo')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Todas las entradas' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'All entries' })).toBeInTheDocument()
 })
 
 test("a variety's list shows only its entries", async () => {
@@ -190,7 +190,7 @@ test("an archived variety's list is read-only: entry rows have no edit, no delet
   expect(rows).toHaveLength(2)
   expect(within(rows[0]!).getByText('05/10 · 24K Gold')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Borrar' })).toBeNull()
-  expect(screen.queryByRole('link', { name: 'Editar' })).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Edit' })).toBeNull()
   expect(within(screen.getByRole('list')).queryAllByRole('link')).toHaveLength(0)
 })
 
@@ -230,11 +230,11 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
 })
 
 /**
- * "Todas las entradas" renders what `GET /stock` answers and never reaches for the movements
+ * "All entries" renders what `GET /stock` answers and never reaches for the movements
  * that carry withdrawals; that `GET /stock` itself holds no withdrawal is pinned by
  * `test_the_business_wide_entries_list_holds_no_withdrawal`.
  */
-test('"Todas las entradas" shows the entry and no withdrawal, and never asks for movements', async () => {
+test('"All entries" shows the entry and no withdrawal, and never asks for movements', async () => {
   const recorded = entry(12, '2026-10-05', 3, 30, 150000)
   fakeApi({
     'GET /stock': () => jsonResponse(200, { total: 30, varieties: [], entries: [recorded] }),
@@ -264,7 +264,7 @@ test('Editar links to the entry form', async () => {
   renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
-  await userEvent.click(within(rows[1]!).getByRole('link', { name: 'Editar' }))
+  await userEvent.click(within(rows[1]!).getByRole('link', { name: 'Edit' }))
   expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(STOCK_ENTRY, { id: 11 }))
 })
 
@@ -277,8 +277,8 @@ test('Borrar asks "Antes de borrar" naming date, variety and grams, then deletes
   const dialog = await screen.findByRole('alertdialog', { name: 'Antes de borrar' })
   expect(dialog).toHaveTextContent('¿Borrás la entrada del 05/10 de 24K Gold, 30 g?')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
-  expect(await screen.findByText('Entrada eliminada')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
+  expect(await screen.findByText('Entry deleted')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/12', expect.objectContaining({ method: 'DELETE' }))
 })
 
@@ -288,7 +288,7 @@ test('declining "Antes de borrar" deletes nothing', async () => {
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'No, dejala' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'No, keep it' }))
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(fetch).not.toHaveBeenCalledWith(expect.stringContaining('/stock/entries'), expect.anything())
 })
@@ -302,9 +302,9 @@ test('deleting an entry that is already gone says so and refreshes the list', as
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
-  expect(screen.queryByText('Entrada eliminada')).not.toBeInTheDocument()
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, delete it' }))
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
+  expect(screen.queryByText('Entry deleted')).not.toBeInTheDocument()
 })
 
 test('with no entries the empty state shows, with no rows', async () => {
@@ -323,10 +323,10 @@ test('with no entries the empty state shows, with no rows', async () => {
   expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
 })
 
-test('a variety that is gone, or an id that is not a number, shows "Eso ya no está."', async () => {
+test('a variety that is gone, or an id that is not a number, shows "That is gone."', async () => {
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
 })
 
@@ -338,8 +338,8 @@ test('a delete marks the catalog stale and the stock list refetches', async () =
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
-  await screen.findByText('Entrada eliminada')
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, delete it' }))
+  await screen.findByText('Entry deleted')
   const stockCalls = vi.mocked(fetch).mock.calls.filter(([url]) => url === '/stock')
   expect(stockCalls.length).toBeGreaterThanOrEqual(2)
   expect(client.getQueryState(catalogQueryOptions().queryKey)?.isInvalidated).toBe(true)

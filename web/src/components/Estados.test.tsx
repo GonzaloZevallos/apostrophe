@@ -12,7 +12,7 @@ import { SIN_CONEXION_MENSAJE } from '../copy/common'
 test('the gone screen says one fixed line and offers one way back, with no data', () => {
   const { container } = render(
     <MemoryRouter>
-      <GoneScreen label="Ventas" to={SALES} />
+      <GoneScreen label="Sales" to={SALES} />
     </MemoryRouter>,
   )
 
@@ -45,18 +45,18 @@ test('the server-error retry is an alert with its fixed text and no data', () =>
 })
 
 test('the notice for a gone record is announced like a toast, with no Deshacer and no Reintentar', () => {
-  render(<Notice kind="notice" message="Eso ya no está. La lista ya está al día." />)
+  render(<Notice kind="notice" message="That is gone. The list is up to date." />)
 
-  expect(screen.getByRole('status')).toHaveTextContent('Eso ya no está. La lista ya está al día.')
+  expect(screen.getByRole('status')).toHaveTextContent('That is gone. The list is up to date.')
   expect(screen.queryByText(/Deshacer|Reintentar/)).toBeNull()
   expect(screen.queryAllByRole('button')).toHaveLength(0)
 })
 
 test('a plain success toast is a status with its fixed text, never an action and never data', () => {
-  const { container } = render(<Notice kind="toast" message="Venta eliminada · los gramos vuelven al stock" />)
+  const { container } = render(<Notice kind="toast" message="Sale deleted · the grams go back to stock" />)
 
   expect(screen.getByRole('status')).toHaveTextContent(
-    'Venta eliminada · los gramos vuelven al stock',
+    'Sale deleted · the grams go back to stock',
   )
   expect(screen.queryAllByRole('button')).toHaveLength(0)
   expect(screen.queryByText(/Deshacer/)).toBeNull()
