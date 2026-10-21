@@ -1,6 +1,7 @@
 /** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here saves. */
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
+import { COMMON_TEXT } from '../copy/common.ts'
 import type { WalkState } from './states.ts'
 
 export const SALES_STATES: readonly WalkState[] = [
@@ -10,7 +11,7 @@ export const SALES_STATES: readonly WalkState[] = [
     steps: [
       { fill: { label: 'Variedad línea 1', value: 'Golden Cookies' } },
       { fill: { label: 'Gramos línea 1', value: '10' } },
-      { click: 'Agregar otra variedad' },
+      { click: COMMON_TEXT.addAnotherVariety },
     ],
     visible: '$ 120.000',
   },
@@ -23,7 +24,7 @@ export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'NuevoClienteEnVenta',
     route: SALE_NEW,
-    steps: [{ click: 'Elegir cliente' }, { click: 'Nuevo cliente' }],
+    steps: [{ click: 'Elegir cliente' }, { click: COMMON_TEXT.newCustomer }],
     visible: 'Crear cliente',
   },
   {
@@ -32,7 +33,7 @@ export const SALES_STATES: readonly WalkState[] = [
     steps: [
       { fill: { label: 'Variedad línea 1', value: 'Sir Jack' } },
       { fill: { label: 'Gramos línea 1', value: '5' } },
-      { press: 'Cerrar' },
+      { press: COMMON_TEXT.close },
     ],
     visible: '¿Descartás la venta?',
   },
@@ -46,19 +47,19 @@ export const SALES_STATES: readonly WalkState[] = [
     screen: 'VentaBorrar',
     route: SALE.replace(':id', '{owing_sale}'),
     steps: [{ click: 'Borrar venta' }],
-    visible: 'Sí, borrala',
+    visible: COMMON_TEXT.yesDelete,
   },
   {
     screen: 'CobroDesdeClientes',
     route: CUSTOMERS,
-    steps: [{ click: 'Nico Parra' }, { click: 'Registrar cobro' }],
-    visible: 'Guardar',
+    steps: [{ click: 'Nico Parra' }, { click: COMMON_TEXT.recordPayment }],
+    visible: COMMON_TEXT.save,
   },
   {
     screen: 'CobroDesdeInicio',
     route: HOME,
-    steps: [{ click: 'Nico Parra' }, { click: 'Registrar cobro' }],
-    visible: 'Guardar',
+    steps: [{ click: 'Nico Parra' }, { click: COMMON_TEXT.recordPayment }],
+    visible: COMMON_TEXT.save,
   },
   {
     screen: 'CobroBorrar',
