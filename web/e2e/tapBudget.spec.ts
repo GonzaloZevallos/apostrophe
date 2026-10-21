@@ -39,13 +39,13 @@ async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
   if (here === EXPENSES) {
     await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   } else if (here === MORE) {
-    await tap(counter, page.getByRole('link', { name: /^\+ Cargar gasto/ }))
+    await tap(counter, page.getByRole('link', { name: /^\+ Add expense/ }))
   } else if (computer) {
     await tap(counter, page.locator('.riel-lateral').getByRole('link', { name: 'Expenses' }))
     await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   } else {
     await tap(counter, page.locator('.bar-inferior').getByRole('link', { name: 'More' }))
-    await tap(counter, page.getByRole('link', { name: /^\+ Cargar gasto/ }))
+    await tap(counter, page.getByRole('link', { name: /^\+ Add expense/ }))
   }
   await expectPath(page, EXPENSE_NEW)
   await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
@@ -93,11 +93,11 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await signUpNewBusiness(page, { businessName: `Flores de Más ${uniqueTag()}`, email: `duena-mas-${uniqueTag()}@example.com` })
 
   await page.goto(MORE)
-  await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
+  await page.getByRole('link', { name: /^\+ Add expense/ }).click()
   await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, MORE)
 
-  await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
+  await page.getByRole('link', { name: /^\+ Add expense/ }).click()
   await page.getByRole('combobox', { name: 'Category' }).selectOption({ label: 'Packaging' })
   await page.getByLabel('Amount').fill('3200')
   await page.getByLabel('Detalle').fill('Cajas de cartón')
