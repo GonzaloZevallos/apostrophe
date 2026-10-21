@@ -90,12 +90,12 @@ test('isFirst and isLast are decided by the position in the steps, one step each
   expect(ORDER.filter(isLast)).toEqual(['categories'])
 })
 
-test('step 1 has no "Atrás": "Cerrar" is its only way out', async () => {
+test('step 1 has no "Atrás": "Close" is its only way out', async () => {
   renderFrame('variety')
 
   expect(await screen.findByText('Paso 1 de 6')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Atrás' })).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
 })
 
 test.each(ORDER.slice(1).map((slug, index) => [slug, index + 1] as const))(
@@ -165,14 +165,14 @@ function PartlySavedBody({ onDirtyChange }: StepBodyProps) {
   return <input aria-label="Algo" onChange={(event) => onDirtyChange(true, event.target.value !== '')} />
 }
 
-test('a plain dirty body asks with the discard detail before "Cerrar" and "Saltar"', async () => {
+test('a plain dirty body asks with the discard detail before "Close" and "Saltar"', async () => {
   renderFrame('bot', { Body: TypingBody })
   await userEvent.type(await screen.findByLabelText('Algo'), 'x')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   let dialog = await screen.findByRole('alertdialog')
   expect(within(dialog).getByText(DISCARD_DETAIL)).toBeInTheDocument()
-  await userEvent.click(within(dialog).getByRole('button', { name: 'No, seguí escribiendo' }))
+  await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep typing' }))
 
   await userEvent.click(screen.getByRole('button', { name: 'Saltar' }))
   dialog = await screen.findByRole('alertdialog')
@@ -184,11 +184,11 @@ test('a body that reports part of its work saved asks with the partly-saved deta
   renderFrame('bot', { Body: PartlySavedBody })
   await userEvent.type(await screen.findByLabelText('Algo'), 'x')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   let dialog = await screen.findByRole('alertdialog')
   expect(within(dialog).getByText(PARTLY_SAVED_DETAIL)).toBeInTheDocument()
   expect(within(dialog).queryByText(DISCARD_DETAIL)).not.toBeInTheDocument()
-  await userEvent.click(within(dialog).getByRole('button', { name: 'No, seguí escribiendo' }))
+  await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep typing' }))
 
   await userEvent.click(screen.getByRole('button', { name: 'Saltar' }))
   dialog = await screen.findByRole('alertdialog')

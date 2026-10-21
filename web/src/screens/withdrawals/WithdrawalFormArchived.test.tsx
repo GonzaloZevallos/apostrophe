@@ -1,5 +1,5 @@
 /**
- * The withdrawal form and a variety that is archived (`stock.md`, "Sacar del stock"): a
+ * The withdrawal form and a variety that is archived (`stock.md`, "Take from stock"): a
  * preselected archived variety, a stored line on a variety archived since, and a variety a
  * partner archives while the form is open. `fetch` is faked at the network with one mutable
  * world per test; the list of varieties changes over time inside it.
@@ -38,8 +38,8 @@ const ZKITTLEZ: Listed = { id: 1, name: 'Zkittlez', archived: false, current_pri
 const GELATO: Listed = { id: 2, name: 'Gelato', archived: false, current_price: null }
 const GORILLA: Listed = { id: 3, name: 'Gorilla', archived: false, current_price: null }
 
-const GONE = 'Eso ya no está.'
-const GENERIC = 'Revisá los datos e intentá de nuevo.'
+const GONE = 'That is gone.'
+const GENERIC = 'Check the details and try again.'
 
 interface Gate {
   promise: Promise<void>
@@ -112,7 +112,7 @@ const SUBMIT_NEW = 'Guardá el retiro'
 async function fillNew(names: string[]) {
   await userEvent.click(await screen.findByRole('button', { name: 'Promoción' }))
   for (const [index, name] of names.entries()) {
-    if (index > 0) await userEvent.click(screen.getByRole('button', { name: 'Agregar otra variedad' }))
+    if (index > 0) await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
     await userEvent.selectOptions(await screen.findByLabelText(`Variedad ${index + 1}`), name)
     await userEvent.type(screen.getByLabelText(`Gramos ${index + 1}`), '2')
   }
@@ -136,7 +136,7 @@ test.each([
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 
   // nothing dirty: closing asks nothing
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(state.writes).toEqual([])
@@ -150,18 +150,18 @@ test('editing a line on a variety archived since keeps its id and name, also whi
   const select = await screen.findByLabelText('Variedad 1')
   expect(select).toHaveValue('1')
   expect(select).toHaveDisplayValue('Zkittlez')
-  expect(screen.getByRole('button', { name: 'Guardar' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
 
   await act(async () => {
     state.listGate?.release()
   })
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar' })).toBeEnabled())
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled())
   expect(variety(1)).toHaveValue('1')
   expect(variety(1)).toHaveDisplayValue('Zkittlez')
   // the picker beside it still offers the unarchived ones
   expect(within(variety(1)).getByRole('option', { name: 'Gelato' })).toBeEnabled()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await userEvent.click(
     within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, guardar' }),
   )
@@ -194,7 +194,7 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   expect(screen.getByLabelText('Gramos 1')).toHaveValue('2')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
   expect(router.state.location.pathname).toBe(WITHDRAWAL_NEW)
-  expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
+  expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
   // the list was fetched again to learn who is gone
   expect(fetchMock.mock.calls.filter(([url]) => url === '/varieties').length).toBeGreaterThanOrEqual(2)
   expect(state.writes).toHaveLength(1)
@@ -254,19 +254,19 @@ test('the list changing twice before the save still leaves the guilty line named
 async function editWithTwoAddedLines(state: World) {
   render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
   await screen.findByLabelText('Variedad 1')
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar' })).toBeEnabled())
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled())
   for (const [position, name] of [
     [2, 'Gelato'],
     [3, 'Gorilla'],
   ] as const) {
-    await userEvent.click(screen.getByRole('button', { name: 'Agregar otra variedad' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
     await userEvent.selectOptions(await screen.findByLabelText(`Variedad ${position}`), name)
     await userEvent.type(screen.getByLabelText(`Gramos ${position}`), '1')
   }
 }
 
 async function tapSave() {
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 }
 
 async function confirmSave() {
@@ -292,9 +292,9 @@ test('a failed refetch marks only the non-stored lines and a tap re-checks the l
   expect(state.writes).toHaveLength(1)
 
   // the list still fails: the tap sends nothing and the marks stay
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar' })).toBeEnabled())
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled())
   await tapSave()
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar' })).toBeEnabled())
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled())
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(state.writes).toHaveLength(1)
   expect(within(lineOf(2)).getByText(GONE)).toBeInTheDocument()
@@ -306,7 +306,7 @@ test('a failed refetch marks only the non-stored lines and a tap re-checks the l
   expect(within(lineOf(3)).getByText(GONE)).toBeInTheDocument()
   expect(variety(3)).toHaveValue('3')
   expect(variety(3)).toHaveDisplayValue('Gorilla')
-  expect(screen.getByRole('button', { name: 'Guardar' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
   expect(state.writes).toHaveLength(1)
 })
 
@@ -325,7 +325,7 @@ test('a focus refetch that succeeds after a failed one frees the healthy line an
   await waitFor(() => expect(within(lineOf(2)).queryByText(GONE)).not.toBeInTheDocument())
   expect(within(lineOf(3)).getByText(GONE)).toBeInTheDocument()
   expect(within(lineOf(1)).queryByText(GONE)).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Guardar' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
   expect(state.writes).toHaveLength(1)
 })
 

@@ -59,15 +59,15 @@ test('with no submitLabel the button reads "Guardá el mensaje", as Configuraci�
   renderForm()
 
   expect(await screen.findByRole('button', { name: 'Guardá el mensaje' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
 })
 
 test('a submitLabel renames the button and it still saves through the owner route', async () => {
-  const { puts, onSaved } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }), 'Guardar')
+  const { puts, onSaved } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }), 'Save')
 
   await userEvent.type(await screen.findByLabelText('Pie'), '!')
   expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
   expect(puts).toEqual([{ header: CATALOG.header, footer: `${CATALOG.footer}!` }])

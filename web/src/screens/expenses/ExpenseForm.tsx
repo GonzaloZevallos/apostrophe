@@ -196,9 +196,9 @@ export default function ExpenseForm({
   // always leave.
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">{target === 'nuevo' ? COMMON_TEXT.cargarGasto : EXPENSES_TEXT.editarGasto}</span>
+      <span className="gasto-form__titulo">{target === 'nuevo' ? COMMON_TEXT.addExpense : EXPENSES_TEXT.editarGasto}</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
       </span>
     </div>
   )
@@ -218,7 +218,7 @@ export default function ExpenseForm({
       {header}
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.fecha}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.date}</span>
           <input
             className="campo__input"
             type="date"
@@ -229,7 +229,7 @@ export default function ExpenseForm({
           />
         </label>
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.categoria}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.category}</span>
           <select
             className="campo__input"
             value={form.category_id}
@@ -281,7 +281,7 @@ export default function ExpenseForm({
           </Boton>
         )}
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.monto}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
           <input
             className="campo__input campo__input--monto"
             inputMode="numeric"

@@ -19,7 +19,7 @@ import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
-const GONE_TEXT = 'Eso ya no está. La lista ya está al día.'
+const GONE_TEXT = 'That is gone. The list is up to date.'
 const ARCHIVE_DETAIL =
   'Te quedan 12 g. Si la archivás, dejan de verse en Inicio y en las listas, pero el stock queda guardado.'
 
@@ -209,12 +209,12 @@ describe('archiving', () => {
     expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Te quedan')
   })
 
-  test('"No, dejala" closes the dialog and sends nothing', async () => {
+  test('"No, keep it" closes the dialog and sends nothing', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage()
     await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
 
-    await user.click(screen.getByRole('button', { name: 'No, dejala' }))
+    await user.click(screen.getByRole('button', { name: 'No, keep it' }))
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
     expect(writes(fetchMock)).toEqual([])
@@ -311,7 +311,7 @@ describe('a dropped network or a failure', () => {
 
     await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
 
-    expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
+    expect(await screen.findByText(/offline/i)).toBeInTheDocument()
     expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Blue Dream' })).toBeInTheDocument()
   })

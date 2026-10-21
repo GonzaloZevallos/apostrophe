@@ -18,18 +18,18 @@ function renderMas() {
       <Mas />
     </MemoryRouter>,
   )
-  return screen.getByRole('navigation', { name: 'Más' })
+  return screen.getByRole('navigation', { name: 'More' })
 }
 
-test('lists "+ Cargar gasto", "Sacar del stock", Gastos and Análisis first, in that order, Configuración last, nothing else', () => {
+test('lists "+ Cargar gasto", "Take from stock", Gastos and Análisis first, in that order, Configuración last, nothing else', () => {
   const entries = within(renderMas()).getAllByRole('link')
 
   expect(entries.map((entry) => entry.querySelector('.mas__item-rotulo')?.textContent)).toEqual([
-    'Cargar gasto',
-    'Sacar del stock',
-    'Gastos',
-    'Análisis',
-    'Configuración',
+    'Add expense',
+    'Take from stock',
+    'Expenses',
+    'Analysis',
+    'Settings',
   ])
   expect(entries[0]).toHaveTextContent('Categoría, monto y detalle')
   expect(entries[1]).toHaveAttribute('href', WITHDRAWAL_NEW)
@@ -41,9 +41,9 @@ test('lists "+ Cargar gasto", "Sacar del stock", Gastos and Análisis first, in 
   expect(entries[4]).toHaveAttribute('href', SETTINGS)
 })
 
-test('"Cargar gasto" shows the agregar icon and the word alone, and keeps its "+ Cargar gasto" name', () => {
+test('"Add expense" shows the agregar icon and the word alone, and keeps its "+ Add expense" name', () => {
   const nav = renderMas()
-  const entry = within(nav).getByRole('link', { name: /^\+ Cargar gasto Categoría, monto y detalle$/ })
+  const entry = within(nav).getByRole('link', { name: /^\+ Add expense Categoría, monto y detalle$/ })
 
   expect(entry).toHaveAttribute('href', EXPENSE_NEW)
   expect(entry.textContent).not.toContain('+')
@@ -64,5 +64,5 @@ test('every entry opens a route the table mounts: no placeholder, nothing not bu
     expect(leaf?.route.path, `${target} reaches the catch-all`).not.toBe('*')
     expect(leaf).toBeDefined()
   }
-  expect(within(nav).queryByRole('link', { name: /^Negocio$/ })).not.toBeInTheDocument()
+  expect(within(nav).queryByRole('link', { name: /^Business$/ })).not.toBeInTheDocument()
 })

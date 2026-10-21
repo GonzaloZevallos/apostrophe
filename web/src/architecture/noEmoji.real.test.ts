@@ -58,7 +58,7 @@ test('an emoji in a source file is found, a plain symbol is not', () => {
   const files = [
     { path: 'a.tsx', content: 'const icono = "🗑️"' },
     { path: 'b.tsx', content: '// ✅ hecho' },
-    { path: 'c.tsx', content: 'const volver = "‹ Ventas" // flecha ✓ y …' },
+    { path: 'c.tsx', content: 'const volver = "‹ Sales" // flecha ✓ y …' },
     { path: 'd.tsx', content: '// blue ↔ amber' },
     { path: 'e.tsx', content: 'const a = "\u2764\uFE0F"' },
     { path: 'f.tsx', content: 'const aviso = "\u26A0"' },

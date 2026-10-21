@@ -91,7 +91,7 @@ test('with the keyboard open the form says so and the footer keeps the total and
   const footer = screen.getByRole('button', { name: 'Guardá la venta' }).parentElement as HTMLElement
   expect(within(footer).getByText('Total')).toBeInTheDocument()
   expect(within(footer).getByText('$ 0')).toBeInTheDocument()
-  expect(within(footer).getByText('0 g vendidos')).toBeInTheDocument()
+  expect(within(footer).getByText('0 g sold')).toBeInTheDocument()
 })
 
 test('pinch zoom never counts as a keyboard', async () => {

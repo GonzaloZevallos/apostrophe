@@ -30,7 +30,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   useBackParent('variety-prices', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
   const failure = varietyQuery.error ?? pricesQuery.error
   if (failure !== null) {
-    if (failure instanceof ApiError && isGone(failure.code)) return <GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />
+    if (failure instanceof ApiError && isGone(failure.code)) return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
     return (
       <main className="pantalla">
         <div className="cuerpo">{failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</div>
@@ -52,7 +52,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">{COMMON_TEXT.precios}</span>
+        <span className="encabezado__titulo">{COMMON_TEXT.prices}</span>
         <PriceRows
           varietyId={varietyId}
           history={history}

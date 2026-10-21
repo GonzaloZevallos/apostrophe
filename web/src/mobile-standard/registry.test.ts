@@ -17,8 +17,8 @@ const entry = (extra: Record<string, unknown>) => ({ screen: 'X', route: '/x', p
 
 describe('walkableScreens', () => {
   test('keeps a phone screen with a route', () => {
-    const parsed = parseRegistry({ screens: [entry({ screen: 'Ventas' })] })
-    expect(walkableScreens(parsed).map((s) => s.screen)).toEqual(['Ventas'])
+    const parsed = parseRegistry({ screens: [entry({ screen: 'Sales' })] })
+    expect(walkableScreens(parsed).map((s) => s.screen)).toEqual(['Sales'])
   })
 
   test('skips a screen not built yet (route null), with its named reason', () => {
@@ -44,9 +44,9 @@ describe('walkableScreens', () => {
 
   test('skips a dark twin: every cell already runs both themes, so the twin repeats a walk', () => {
     const parsed = parseRegistry({
-      screens: [entry({ screen: 'Ventas' }), entry({ screen: 'VentasOscuro', tema: 'oscuro' })],
+      screens: [entry({ screen: 'Sales' }), entry({ screen: 'VentasOscuro', tema: 'oscuro' })],
     })
-    expect(walkableScreens(parsed).map((s) => s.screen)).toEqual(['Ventas'])
+    expect(walkableScreens(parsed).map((s) => s.screen)).toEqual(['Sales'])
     expect(skippedScreens(parsed)).toEqual([{ screen: 'VentasOscuro', reason: SKIP_THEME_TWIN }])
   })
 
@@ -90,7 +90,7 @@ describe('steps', () => {
           steps: [
             { fill: { label: 'Email', value: '{email}' } },
             { click: 'Entrá' },
-            { wait: 'Listo' },
+            { wait: 'Done' },
             { offline: true },
           ],
         }),
@@ -99,13 +99,13 @@ describe('steps', () => {
     expect(screen?.steps).toEqual([
       { fill: { label: 'Email', value: '{email}' } },
       { click: 'Entrá' },
-      { wait: 'Listo' },
+      { wait: 'Done' },
       { offline: true },
     ])
   })
 
   test('accepts a press and a select', () => {
-    const steps = [{ press: 'Cerrar' }, { select: { label: 'Variedad', index: 1 } }]
+    const steps = [{ press: 'Close' }, { select: { label: 'Variety', index: 1 } }]
     expect(parseRegistry({ screens: [entry({ steps })] })[0]?.steps).toEqual(steps)
   })
 
@@ -119,8 +119,8 @@ describe('steps', () => {
     ['a fill without its value', { fill: { label: 'Email' } }],
     ['an offline that is not true', { offline: false }],
     ['a press that is not text', { press: 3 }],
-    ['a select without its index', { select: { label: 'Variedad' } }],
-    ['a select with a negative index', { select: { label: 'Variedad', index: -1 } }],
+    ['a select without its index', { select: { label: 'Variety' } }],
+    ['a select with a negative index', { select: { label: 'Variety', index: -1 } }],
     ['a step that is not an object', 'click'],
   ])('refuses %s', (_name, step) => {
     expect(() => parseRegistry({ screens: [entry({ steps: [step] })] })).toThrow(/step/)

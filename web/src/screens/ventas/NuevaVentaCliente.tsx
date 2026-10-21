@@ -55,7 +55,7 @@ type Field = 'name' | 'phone' | 'form'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
-  'customer.name_too_long': { field: 'name', message: COMMON_TEXT.elNombreEsDemasiado },
+  'customer.name_too_long': { field: 'name', message: COMMON_TEXT.nameTooLong },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
@@ -128,7 +128,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
           <span className="panel__titulo">{SALES_TEXT.elegirCliente}</span>
-          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={chooser.close} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={chooser.close} />
         </div>
         <label className="campo campo--buscar">
           <span className="campo__rotulo visualmente-oculto">{SALES_TEXT.buscar}</span>
@@ -138,7 +138,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
           <input
             className="campo__input campo--buscar__input"
             type="text"
-            placeholder={COMMON_TEXT.telefonoONombre}
+            placeholder={COMMON_TEXT.phoneOrName}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -180,7 +180,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         )}
         {!creator.isOpen ? (
           <Boton variant="secondary" icon="personaMas" onClick={creator.open}>
-            {COMMON_TEXT.nuevoCliente}
+            {COMMON_TEXT.newCustomer}
           </Boton>
         ) : (
           <form className="formulario" onSubmit={onCreate}>

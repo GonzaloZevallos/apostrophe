@@ -71,7 +71,7 @@ test('while the lookup is pending it shows the Cargando progressbar and no form'
 
   renderReset()
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Guardar y entrar' })).not.toBeInTheDocument()
 })
 
@@ -199,6 +199,6 @@ test('the reveal control toggles the field between hidden and shown', async () =
   const field = await screen.findByLabelText('Contraseña nueva')
   expect(field).toHaveAttribute('type', 'password')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Mostrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Show' }))
   expect(field).toHaveAttribute('type', 'text')
 })

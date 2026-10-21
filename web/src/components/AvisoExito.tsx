@@ -8,12 +8,13 @@
  * typo or an invented message fails `tsc` instead of rendering silently.
  */
 
+import type { COMMON_TEXT } from '../copy/common'
 import type { PRICE_SAVED } from '../copy/varieties'
 
 export type SuccessToast =
-  | 'Cliente guardado'
-  | 'Entrada guardada'
-  | 'Entrada eliminada'
+  | (typeof COMMON_TEXT)['customerSaved']
+  | (typeof COMMON_TEXT)['entrySaved']
+  | (typeof COMMON_TEXT)['entryDeleted']
   | 'Variedad guardada'
   | 'Variedad eliminada'
   | 'Variedad archivada'
@@ -37,8 +38,6 @@ export type SuccessToast =
   | `Cobro guardado · queda debiendo ${string}`
   | 'Prueba enviada'
   | 'Catálogo publicado'
-  | 'Entrada guardada'
-  | 'Entrada eliminada'
   | 'Retiro guardado'
   | 'Retiro eliminado'
 

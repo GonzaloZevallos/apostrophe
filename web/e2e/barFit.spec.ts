@@ -33,8 +33,8 @@ const COMPUTER = { width: 1280, height: 920 }
 
 test.use(PHONE_CONTEXT)
 
-const BAR_LABELS = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Más']
-const RAIL_LABELS = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Gastos', 'Análisis']
+const BAR_LABELS = ['Home', 'Sales', 'Customers', 'Varieties', 'More']
+const RAIL_LABELS = ['Home', 'Sales', 'Customers', 'Varieties', 'Expenses', 'Analysis']
 
 interface Item {
   text: string
@@ -186,7 +186,7 @@ test.describe.serial('bar and rail fit', () => {
     const { problems, items } = await bottomBarProblems(page, TEXT_SCALE)
 
     expect(problems).toEqual([])
-    expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
+    expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Home'])
   })
 
   test('the measurement rejects a bar that does not fit: at three times the text the labels overflow', async () => {
@@ -219,7 +219,7 @@ test.describe.serial('bar and rail fit', () => {
       ...(rail.overflows ? ['the rail scrolls sideways'] : []),
     ]).toEqual([])
     expect(business).toHaveLength(1)
-    expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
+    expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Home'])
     expect(consoleMessages).toEqual([])
   })
 

@@ -55,3 +55,19 @@ The guards are a ratchet, not a proof (GH-53, landing 1).
   `layout.py` and `cells.py`, one reason each. `PENDING_SPANISH` is shrink-only: a listed
   file with no hit, a file with a hit that is not listed, or a count above the one written
   fails.
+
+## Amendment (GH-53, landing 2, T0): the translation base
+
+- `common.ts` is the first file marked `'en'`, with English key names; `es.snapshot.json` was
+  re-keyed to match (its Spanish values untouched). Keys whose text now derives from a translated
+  file were dropped from the snapshot; their group re-adds the words.
+- A file marked `'en'` is judged by `architecture/copyLanguage.test.ts`: a snapshot key must differ
+  from its Spanish value unless it is in `copy/shared_words.json` (shrink-only, one reason each; a
+  stale entry fails), and every text, snapshot key or not, has no Spanish shape (letters, the back's
+  denylist, a vos imperative with its pronoun).
+- `design/screens.test.ts` holds the registry step rule: every `click`, `press`, `wait` and
+  `fill.label` of `screens.json` is a copy value or a sample name. `section` is not judged by it: it
+  crops a block of the Spanish drawing in `pantallas/`, which stays as drawn, so `assertScreens`
+  judges it against that file.
+- `copy/refusals` has one key per code of `api/contract.json` (`REFUSAL_BY_CODE`), checked from
+  `tests/test_refusal_codes.py`.

@@ -1,6 +1,6 @@
 /**
  * The pure rules behind the withdrawal form's archived-variety handling (`stock.md`,
- * "Sacar del stock"): who is guilty after a fresh list, what a line's picker offers, and
+ * "Take from stock"): who is guilty after a fresh list, what a line's picker offers, and
  * whether a preselected variety survives. No cache, no network.
  */
 

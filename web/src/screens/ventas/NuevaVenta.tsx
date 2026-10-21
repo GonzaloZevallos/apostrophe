@@ -79,7 +79,7 @@ export { OWING_HINT }
 export const PAYMENT_REQUIRED_MESSAGE = SALES_TEXT.elegiComoSePago
 export const SPECIAL_PRICE_INVALID_MESSAGE = SALES_TEXT.elPrecioEspecialTiene
 export const LINE_GRAMS_INVALID = SALES_TEXT.cargaLosGramosComa
-export const LINE_VARIETY_MISSING = COMMON_TEXT.elegiUnaVariedad
+export const LINE_VARIETY_MISSING = COMMON_TEXT.pickAVariety
 
 function emptyLine(): LineState {
   return {
@@ -147,7 +147,7 @@ const SUBMIT_OVERRIDES: Partial<
   'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
   'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.elEnvioNoPuede },
   'sale.note_too_long': { field: 'note', message: SALES_TEXT.laNotaEsDemasiado },
-  'sale.date_in_future': { field: 'date', message: COMMON_TEXT.laFechaNoPuede },
+  'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
   'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
   'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
@@ -544,12 +544,12 @@ function NuevaVentaForm() {
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
-            <span className="encabezado__titulo">{COMMON_TEXT.nuevaVenta}</span>
+            <span className="encabezado__titulo">{COMMON_TEXT.newSale}</span>
             <span className="fecha-pildora">
               <input
                 className="fecha-pildora__input"
                 type="date"
-                aria-label={COMMON_TEXT.fecha}
+                aria-label={COMMON_TEXT.date}
                 value={date}
                 max={maxSaleDate(me.today)}
                 onChange={(event) => setDate(event.target.value)}
@@ -561,7 +561,7 @@ function NuevaVentaForm() {
               </span>
             </span>
             <span className="nueva-venta__cerrar">
-              <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={close} />
+              <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
             </span>
           </div>
           {dateError !== null && (
@@ -591,7 +591,7 @@ function NuevaVentaForm() {
                         <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
                       )}
                     </div>
-                    <span className="nueva-venta__cliente-cambiar">{COMMON_TEXT.cambiar}</span>
+                    <span className="nueva-venta__cliente-cambiar">{COMMON_TEXT.change}</span>
                   </div>
                 </Boton>
               )}
@@ -619,7 +619,7 @@ function NuevaVentaForm() {
                 ))}
               </div>
               <Boton variant="secondary" icon="agregar" onClick={addLine}>
-                {COMMON_TEXT.agregarOtraVariedad}
+                {COMMON_TEXT.addAnotherVariety}
               </Boton>
 
               <div className="nueva-venta__fila-dato">
@@ -640,10 +640,10 @@ function NuevaVentaForm() {
               )}
 
               <div className="nueva-venta__fila-dato">
-                <span>{COMMON_TEXT.nota}</span>
+                <span>{COMMON_TEXT.note}</span>
                 <textarea
                   className="campo__input"
-                  aria-label={COMMON_TEXT.nota}
+                  aria-label={COMMON_TEXT.note}
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
                 />
@@ -686,7 +686,7 @@ function NuevaVentaForm() {
                 {repricing ? <Loading compacto /> : formatMoney(totals.total)}
               </span>
               <span className="rotulo nueva-venta__gramos">
-                {formatGrams(fromHundredths(totals.gramsSoldHundredths))}{COMMON_TEXT.vendidos}
+                {formatGrams(fromHundredths(totals.gramsSoldHundredths))}{COMMON_TEXT.soldSuffix}
                 {totals.gramsGiftedHundredths > 0 &&
                   SALES_TEXT.n0DeRegalo(formatGrams(fromHundredths(totals.gramsGiftedHundredths)))}
               </span>
@@ -707,8 +707,8 @@ function NuevaVentaForm() {
             blocker={blocker}
             question={SALES_TEXT.descartasLaVenta}
             detail={SALES_TEXT.noVasAPoder}
-            keepLabel={COMMON_TEXT.noSeguiCargando}
-            discardLabel={COMMON_TEXT.siDescartala}
+            keepLabel={COMMON_TEXT.noKeepEntering}
+            discardLabel={COMMON_TEXT.yesDiscard}
           />
         </div>
       )}

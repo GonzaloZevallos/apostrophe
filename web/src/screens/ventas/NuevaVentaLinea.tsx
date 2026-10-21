@@ -121,7 +121,7 @@ export default function NuevaVentaLinea({
           preview !== null && (
             <div className="nueva-venta__linea-detalle">
               {preview.rule !== 'gift' && (
-                <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.xG}</span>
+                <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
               )}
               <ReglaInsignia rule={preview.rule} />
               <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
@@ -140,7 +140,7 @@ export default function NuevaVentaLinea({
   return (
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
       <label className="campo">
-        <span className="campo__rotulo">{COMMON_TEXT.variedad}</span>
+        <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
         <select
           className="campo__input"
           aria-label={SALES_TEXT.variedadLinea0(n)}
@@ -149,7 +149,7 @@ export default function NuevaVentaLinea({
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ varietyId: event.target.value })}
         >
-          <option value="">{COMMON_TEXT.elegiUnaVariedad}</option>
+          <option value="">{COMMON_TEXT.pickAVariety}</option>
           {varieties.map((item) => (
             <option key={item.id} value={item.id}>
               {item.name}
@@ -158,7 +158,7 @@ export default function NuevaVentaLinea({
         </select>
       </label>
       <label className="campo">
-        <span className="campo__rotulo">{COMMON_TEXT.gramos}</span>
+        <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
         <input
           className="campo__input"
           aria-label={SALES_TEXT.gramosLinea0(n)}
@@ -229,7 +229,7 @@ export default function NuevaVentaLinea({
       {error === null && !figuresLoading && preview !== null && (
         <div className="nueva-venta__linea-detalle">
           {preview.rule !== 'gift' && (
-            <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.xG}</span>
+            <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
           )}
           <ReglaInsignia rule={preview.rule} />
           <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>

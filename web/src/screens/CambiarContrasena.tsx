@@ -94,7 +94,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
   return (
     <div className="capa" role="presentation">
       <div className="capa__contenido">
-        <span className="panel__titulo">{COMMON_TEXT.cambiarContrasena}</span>
+        <span className="panel__titulo">{COMMON_TEXT.changePassword}</span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
             <span className="campo__rotulo">{AUTH_TEXT.contrasenaActual}</span>
@@ -128,7 +128,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
           </label>
           <span className="campo__mostrar">
             <Boton variant="link" onClick={() => setReveal((shown) => !shown)}>
-              {reveal ? COMMON_TEXT.ocultar : COMMON_TEXT.mostrar}
+              {reveal ? COMMON_TEXT.hide : COMMON_TEXT.show}
             </Boton>
           </span>
           {formError !== null && (
@@ -138,10 +138,10 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
           )}
           {offline && <SinConexion />}
           <Boton textOnly="submit" type="submit" disabled={sending}>
-            {COMMON_TEXT.guardar}
+            {COMMON_TEXT.save}
           </Boton>
           <Boton variant="link" onClick={onClose}>
-            {AUTH_TEXT.cancelar}
+            {COMMON_TEXT.cancel}
           </Boton>
         </form>
       </div>

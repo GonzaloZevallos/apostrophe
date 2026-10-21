@@ -71,7 +71,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
       {settings.is_bulk_pricing && (
         <>
           <label className="campo">
-            <span className="campo__rotulo">{COMMON_TEXT.precioPorCantidad}</span>
+            <span className="campo__rotulo">{COMMON_TEXT.bulkPrice}</span>
             <AmountInput
               className="campo__input"
               value={values.bulkPrice}

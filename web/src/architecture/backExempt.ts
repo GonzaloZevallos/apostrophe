@@ -12,6 +12,10 @@ export const CARDS_EXEMPT: { id: ScreenId; reason: string }[] = []
 /** Files allowed to carry a literal '‹' for something that is not a back. */
 export const CHEVRON_EXEMPT: { path: string; reason: string }[] = [
   {
+    path: '/src/copy/common.ts',
+    reason: "the words of the shell's `‹ parent` arrow live in the copy module (ADR-0049); only BackArrow draws it",
+  },
+  {
     path: '/src/screens/Analisis.tsx',
     reason: "the month stepper's 'Mes anterior' draws a '‹' glyph; it is a stepper, not a back (Gastos draws its own with an icon)",
   },

@@ -51,9 +51,9 @@ export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 export { EMPTY_LIST }
 
 const PERIOD_LABEL: Record<Period, string> = {
-  hoy: COMMON_TEXT.hoy,
-  semana: COMMON_TEXT.semana,
-  mes: COMMON_TEXT.mes,
+  hoy: COMMON_TEXT.today,
+  semana: COMMON_TEXT.week,
+  mes: COMMON_TEXT.month,
   fechas: SALES_TEXT.fechas,
 }
 
@@ -115,13 +115,13 @@ export default function Ventas() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="ventas__cabecera">
-          <span className="encabezado__titulo">{COMMON_TEXT.ventas}</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
 
           <Pestanas
             items={PESTANA_ITEMS}
             value={period}
             onChange={setPeriod}
-            ariaLabel={COMMON_TEXT.periodo}
+            ariaLabel={COMMON_TEXT.period}
             ajuste={computer ? undefined : 'celdas'}
           />
 

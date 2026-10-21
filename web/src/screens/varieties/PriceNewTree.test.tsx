@@ -75,7 +75,7 @@ describe('on a computer', () => {
   test('a direct link opens the form as a dialog over the list and the variety page, both inert and aria-hidden', async () => {
     renderApp([NEW_PATH], 'computer')
 
-    const dialog = await screen.findByRole('dialog', { name: 'Nuevo precio' })
+    const dialog = await screen.findByRole('dialog', { name: 'New price' })
     expect(dialog).toHaveAttribute('aria-modal', 'true')
     const list = document.querySelector('.variedades-paneles__lista')
     const detail = document.querySelector('.variedades-paneles__detalle')
@@ -87,7 +87,7 @@ describe('on a computer', () => {
     }
     // The form kind's chrome: no side rail at all on a computer (invariant 8).
     expect(document.querySelector('nav.riel-lateral')).toBeNull()
-    expect(await within(detail as HTMLElement).findByText('Precios')).toBeInTheDocument()
+    expect(await within(detail as HTMLElement).findByText('Prices')).toBeInTheDocument()
   })
 })
 
@@ -129,7 +129,7 @@ describe('leaving an untouched form', () => {
       await user.keyboard('{Escape}')
     }],
     ['a click on the backdrop', async (user: ReturnType<typeof userEvent.setup>) => user.click(backdrop())],
-    ['Cerrar', async (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByRole('button', { name: 'Cerrar' }))],
+    ['Close', async (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByRole('button', { name: 'Close' }))],
   ])('%s lands on the variety page at once, a direct link included', async (_name, gesture) => {
     const warn = vi.spyOn(console, 'warn')
     const user = userEvent.setup()
@@ -138,7 +138,7 @@ describe('leaving an untouched form', () => {
 
     await gesture(user)
 
-    expect(await screen.findByRole('link', { name: 'Nuevo precio' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'New price' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETY_PATH)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByText(DISCARD_QUESTION)).not.toBeInTheDocument()
@@ -151,9 +151,9 @@ describe('leaving an untouched form', () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
     await screen.findByLabelText(/^Precio de lista/)
-    const dialog = screen.getByRole('dialog', { name: 'Nuevo precio' })
+    const dialog = screen.getByRole('dialog', { name: 'New price' })
 
-    await user.click(within(dialog).getByText('Nuevo precio'))
+    await user.click(within(dialog).getByText('New price'))
 
     expect(router.state.location.pathname).toBe(NEW_PATH)
   })
@@ -163,8 +163,8 @@ describe('leaving a form with something typed', () => {
   test.each([
     ['Escape', async (user: ReturnType<typeof userEvent.setup>) => user.keyboard('{Escape}')],
     ['a click on the backdrop', async (user: ReturnType<typeof userEvent.setup>) => user.click(backdrop())],
-    ['Cerrar', async (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByRole('button', { name: 'Cerrar' }))],
-  ])('%s asks first, and "No, seguí cargando" keeps the form with everything typed', async (_name, gesture) => {
+    ['Close', async (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByRole('button', { name: 'Close' }))],
+  ])('%s asks first, and "No, keep entering" keeps the form with everything typed', async (_name, gesture) => {
     const user = userEvent.setup()
     const { router } = renderApp([VARIETY_PATH, NEW_PATH], 'computer')
     await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
@@ -173,7 +173,7 @@ describe('leaving a form with something typed', () => {
 
     expect(await screen.findByText(DISCARD_QUESTION)).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(NEW_PATH)
-    await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+    await user.click(screen.getByRole('button', { name: 'No, keep entering' }))
     expect(screen.queryByText(DISCARD_QUESTION)).not.toBeInTheDocument()
     expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
   })
@@ -182,7 +182,7 @@ describe('leaving a form with something typed', () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
     await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-    const dialog = screen.getByRole('dialog', { name: 'Nuevo precio' })
+    const dialog = screen.getByRole('dialog', { name: 'New price' })
 
     await user.keyboard('{Escape}')
     const question = await screen.findByRole('alertdialog')
@@ -197,7 +197,7 @@ describe('leaving a form with something typed', () => {
     expect(router.state.location.pathname).toBe(NEW_PATH)
   })
 
-  test('"No, seguí cargando" gives focus back to where it was, or to the title when that is gone', async () => {
+  test('"No, keep entering" gives focus back to where it was, or to the title when that is gone', async () => {
     const user = userEvent.setup()
     renderApp([NEW_PATH], 'computer')
     const field = await screen.findByLabelText(/^Precio de lista/)
@@ -206,25 +206,25 @@ describe('leaving a form with something typed', () => {
 
     await user.keyboard('{Escape}')
     await screen.findByText(DISCARD_QUESTION)
-    await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+    await user.click(screen.getByRole('button', { name: 'No, keep entering' }))
     expect(field).toHaveFocus()
 
     ;(document.activeElement as HTMLElement).blur()
     await user.click(backdrop())
     await screen.findByText(DISCARD_QUESTION)
-    await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
-    expect(screen.getByText('Nuevo precio', { selector: '.gasto-form__titulo' })).toHaveFocus()
+    await user.click(screen.getByRole('button', { name: 'No, keep entering' }))
+    expect(screen.getByText('New price', { selector: '.gasto-form__titulo' })).toHaveFocus()
   })
 
-  test('"Sí, descartalo" lands on the variety page', async () => {
+  test('"Yes, discard it" lands on the variety page', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
     await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
     await user.keyboard('{Escape}')
 
-    await user.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+    await user.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
-    expect(await screen.findByRole('link', { name: 'Nuevo precio' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'New price' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETY_PATH)
   })
 })
@@ -269,13 +269,13 @@ describe('saving', () => {
 
     await user.keyboard('{Escape}')
     await user.click(backdrop())
-    expect(screen.getByRole('button', { name: 'Cerrar' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled()
     expect(router.state.location.pathname).toBe(NEW_PATH)
     expect(screen.queryByText(DISCARD_QUESTION)).not.toBeInTheDocument()
 
     release(CREATED())
 
-    expect(await screen.findByRole('link', { name: 'Nuevo precio' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'New price' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETY_PATH)
     expect(await screen.findAllByText('Precio guardado')).toHaveLength(1)
     expect(await screen.findByText('$ 12.000')).toBeInTheDocument()
@@ -290,7 +290,7 @@ describe('saving', () => {
     await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()
-    expect(screen.getByRole('dialog', { name: 'Nuevo precio' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'New price' })).toBeInTheDocument()
     expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
     expect(router.state.location.pathname).toBe(NEW_PATH)
   })
@@ -301,7 +301,7 @@ describe('across 900 px', () => {
     const user = userEvent.setup()
     renderApp([NEW_PATH], 'computer')
     await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-    await user.click(screen.getByRole('button', { name: /^Hoy 02\/10/ }))
+    await user.click(screen.getByRole('button', { name: /^Today 02\/10/ }))
     fireEvent.change(screen.getByLabelText('Rige desde', { exact: true }), { target: { value: '2026-09-28' } })
     await user.click(screen.getByRole('button', { name: '28/09' }))
     const form = screen.getByRole('button', { name: 'Guardá el precio' }).closest('form')
