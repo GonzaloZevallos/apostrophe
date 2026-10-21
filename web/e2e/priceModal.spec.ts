@@ -16,9 +16,9 @@ test.use({ viewport: { width: 1280, height: 720 } })
 async function addVariety(page: Page, name: string): Promise<void> {
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByPlaceholder('Nombre de la variedad').fill(name)
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByPlaceholder('Variety name').fill(name)
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
 }
 
 /** Signs up, makes two varieties and opens "New price" of Rosa; returns Rosa's id. */

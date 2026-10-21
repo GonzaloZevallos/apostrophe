@@ -105,9 +105,9 @@ function owingLabel(count: number): string {
 // every value fed through it below comes from the one `GET /panel` answer this
 // run fetches, never invented.
 const STATUS_WORD: Record<Status, string> = {
-  no_entries: 'sin entradas',
-  sold_out: 'agotada',
-  low: 'baja',
+  no_entries: 'no entries',
+  sold_out: 'sold out',
+  low: 'low',
   ok: 'ok',
 }
 
@@ -117,17 +117,17 @@ function detailFor(
 ): string {
   switch (variety.status) {
     case 'no_entries':
-      return 'Cargale la primera entrada'
+      return 'Add its first entry'
     case 'sold_out':
       return variety.sold_out_since === null
-        ? 'Sin gramos'
+        ? 'No grams'
         : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
     case 'low':
       return variety.threshold === null
-        ? 'Avisás por debajo del umbral'
+        ? 'You are warned below the threshold'
         : `Avisás abajo de ${grams(variety.threshold)}`
     case 'ok':
-      return 'Al ritmo de los últimos 30 días'
+      return 'At the pace of the last 30 days'
   }
 }
 
@@ -182,25 +182,25 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   // Backdated well before this run's own month (sales.spec.ts does the same for
   // Jazmín): the extra, month-only sale seeded below needs a price that reaches
   // back that far too.
   await setPriceDate(page, '2000-01-01')
-  await page.getByLabel(/^Precio de lista/).fill('1000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByLabel(/^List price/).fill('1000')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 
   // A purchase: the "Origen" pill defaults to "Purchase" (`EntradaStock.tsx`).
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await expect(page.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByLabel('Costo total').fill('45000')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByLabel('Total cost').fill('45000')
+  await page.getByRole('button', { name: 'Save the entry' }).click()
   await expect(page.getByText('Entry saved')).toBeVisible()
 
   // A customer, for the sale left owing.

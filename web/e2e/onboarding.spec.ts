@@ -21,7 +21,7 @@ const NOTICE = 'Seguí con la configuración'
 async function priceAVariety(page: import('@playwright/test').Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Cargá tu primera variedad' })).toBeVisible()
   await page.getByLabel(/^Name/).fill(name)
-  await page.getByLabel(/^Precio de lista/).fill('9000')
+  await page.getByLabel(/^List price/).fill('9000')
   await page.getByRole('button', { name: 'Guardá la variedad' }).click()
 }
 
@@ -38,7 +38,7 @@ test('a new business goes from the invitation to Nueva venta from "Done", with n
   await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
   await expect(page.getByText('Rosa', { exact: true })).toBeVisible()
   await page.getByLabel('Grams').fill('500')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByRole('button', { name: 'Save the entry' }).click()
   await page.getByRole('button', { name: 'Seguir' }).click()
 
   await expect(page.getByRole('heading', { name: 'Cómo sale tu catálogo' })).toBeVisible()
@@ -81,7 +81,7 @@ test('the catalog message saved in step 3 reads the same in Configuración', asy
   await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
   await expect(page.getByText('Jazmín', { exact: true })).toBeVisible()
   await page.getByLabel('Grams').fill('300')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByRole('button', { name: 'Save the entry' }).click()
   await page.getByRole('button', { name: 'Seguir' }).click()
 
   await expect(page.getByRole('heading', { name: 'Cómo sale tu catálogo' })).toBeVisible()

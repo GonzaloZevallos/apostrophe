@@ -282,13 +282,13 @@ test.describe('Deshacer', () => {
       await page.goto(VARIETIES)
       await page.getByRole('link', { name: 'New variety' }).click()
       await page.getByLabel('Name').fill('Rosa')
-      await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-      await expect(page.getByText('Variedad guardada')).toBeVisible()
+      await page.getByRole('button', { name: 'Add the variety' }).click()
+      await expect(page.getByText('Variety saved')).toBeVisible()
       await page.getByRole('link', { name: /Rosa/ }).click()
       await page.getByRole('link', { name: 'New price' }).click()
-      await page.getByLabel(/^Precio de lista/).fill('1000')
-      await page.getByRole('button', { name: 'Guardá el precio' }).click()
-      await expect(page.getByText('Precio guardado')).toBeVisible()
+      await page.getByLabel(/^List price/).fill('1000')
+      await page.getByRole('button', { name: 'Save the price' }).click()
+      await expect(page.getByText('Price saved')).toBeVisible()
 
       await page.goto(SALE_NEW)
       await page.evaluate((value) => {

@@ -3,8 +3,8 @@
  * same bindings, and `LIMITED_COPY` lists them for `copy/copyLimits.test.ts`, which
  * measures each with `SAMPLES` (never fixture or API data). */
 
-import { SAMPLES, type LimitedCopy } from './limits'
-import { COMMON_TEXT } from './common'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
+import { COMMON_TEXT } from './common.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
