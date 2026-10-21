@@ -33,21 +33,23 @@ import Insignia, { type InsigniaTono } from '../components/Insignia'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE, CATALOG_TEXT } from '../copy/catalog'
 import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
+import { COMMON_TEXT } from '../copy/common'
+import { STOCK_TEXT } from '../copy/stock'
 
-export const CATALOG_COPIED = 'Catálogo copiado'
-export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
-export const SHARE_FAILED_MESSAGE = 'No se pudo compartir.'
+export const CATALOG_COPIED = CATALOG_TEXT.catalogoCopiado
+export const COPY_FAILED_MESSAGE = CATALOG_TEXT.noSePudoCopiar
+export const SHARE_FAILED_MESSAGE = CATALOG_TEXT.noSePudoCompartir
 
 // The one table from GET /catalog's `state` to the word that says why a variety does not
 // go out (PRD criterion 4). The front never decides the reason, it only words the server's.
 const REASON_LABEL: Record<Exclude<CatalogVarietyState, 'in'>, { word: string; tono: InsigniaTono }> = {
-  hidden: { word: 'oculta', tono: 'neutro' },
-  no_price: { word: 'sin precio', tono: 'neutro' },
-  sold_out: { word: 'agotada', tono: 'critico' },
-  no_entries: { word: 'sin entradas', tono: 'neutro' },
+  hidden: { word: CATALOG_TEXT.reasonHidden, tono: 'neutro' },
+  no_price: { word: CATALOG_TEXT.reasonNoPrice, tono: 'neutro' },
+  sold_out: { word: STOCK_TEXT.statusSoldOut, tono: 'critico' },
+  no_entries: { word: STOCK_TEXT.statusNoEntries, tono: 'neutro' },
 }
 
 export default function Catalogo() {
@@ -114,13 +116,13 @@ export default function Catalogo() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">Catálogo</h1>
+        <h1 className="encabezado__titulo">{COMMON_TEXT.catalog}</h1>
 
         {toast !== null && <AvisoExito texto={toast} />}
 
         <div className="catalogo__columnas">
         <div className="catalogo__vista">
-        <span className="rotulo">Cómo se ve en Telegram</span>
+        <span className="rotulo">{CATALOG_TEXT.comoSeVeEn}</span>
         {catalog === undefined ? (
           <div className="catalogo__vista-previa" />
         ) : catalog.text === null ? (
@@ -151,7 +153,7 @@ export default function Catalogo() {
                   disabled={!settled || sharing}
                   onClick={() => void onShare(catalog.text as string)}
                 >
-                  Compartir
+                  {COMMON_TEXT.share}
                 </Boton>
               )}
               <Boton
@@ -160,7 +162,7 @@ export default function Catalogo() {
                 disabled={!settled || copying}
                 onClick={() => void onCopy(catalog.text as string)}
               >
-                Copiar
+                {COMMON_TEXT.copy}
               </Boton>
             </div>
             {shareFailed && (
@@ -182,7 +184,7 @@ export default function Catalogo() {
           <>
             {leftOut.length > 0 && (
               <div className="catalogo__no-sale">
-                <span className="rotulo">Qué no sale y por qué</span>
+                <span className="rotulo">{CATALOG_TEXT.queNoSaleY}</span>
                 <ul className="catalogo__lista">
                   {leftOut.map((variety) => {
                     const reason = REASON_LABEL[variety.state as Exclude<CatalogVarietyState, 'in'>]
@@ -205,7 +207,7 @@ export default function Catalogo() {
             )}
 
             <BotonLink to={SETTINGS_CATALOG_MESSAGE} variant="link">
-              Editar encabezado y pie
+              {CATALOG_TEXT.editarEncabezadoYPie}
             </BotonLink>
           </>
         )}

@@ -11,6 +11,53 @@ import {
 import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
 import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
+import { textsOf } from './copyTexts'
+
+type CopyFile = Record<string, unknown>
+
+const copyFiles = import.meta.glob<CopyFile>(['/src/copy/*.ts', '!/src/copy/limits.ts', '!/src/copy/*.test.ts'], {
+  eager: true,
+})
+
+// The sample's own names (scripts/design/sample_app.py), seller data a step may name.
+const SAMPLE_NAMES = ['Blue Dream', 'Gelato']
+const HOLE = '\u0001'
+
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** The texts of the copy a step may name: each value as a pattern, a hole being any text. */
+function copyPatterns(modules: Record<string, CopyFile>): RegExp[] {
+  const patterns: RegExp[] = []
+  for (const [path, mod] of Object.entries(modules)) {
+    for (const text of textsOf(path, mod, HOLE).values()) {
+      patterns.push(new RegExp(`^${text.split(HOLE).map(escapeRegExp).join('.+')}$`))
+    }
+  }
+  return patterns
+}
+
+type StepRow = { screen: string; steps?: Record<string, unknown>[] }
+
+/** Invariant 12: the string a click, press, wait or fill.label of a registry row names
+ * is a copy value or a sample name. (`section` names a block of the Spanish drawing in
+ * pantallas/, which stays as drawn, so it is judged against that file by `assertScreens`.) */
+function stepTextProblems(rows: StepRow[], modules: Record<string, CopyFile>): string[] {
+  const patterns = copyPatterns(modules)
+  const known = (text: string): boolean => SAMPLE_NAMES.includes(text) || patterns.some((p) => p.test(text))
+  const problems: string[] = []
+  for (const row of rows) {
+    for (const step of row.steps ?? []) {
+      const named: [string, unknown][] = []
+      for (const kind of ['click', 'press', 'wait']) if (kind in step) named.push([kind, step[kind]])
+      const fill = step.fill
+      if (typeof fill === 'object' && fill !== null && 'label' in fill) named.push(['fill.label', fill.label])
+      for (const [kind, text] of named) {
+        if (typeof text !== 'string' || !known(text)) problems.push(`${row.screen}: ${kind} "${String(text)}" is no copy value`)
+      }
+    }
+  }
+  return problems
+}
 
 describe('assertScreens', () => {
   it('refuses an entry with color_scheme', () => {
@@ -267,6 +314,31 @@ describe('assertScreens', () => {
   })
 })
 
+describe('the registry step rule', () => {
+  it('accepts the real screens.json: every step names a copy value or a sample name', () => {
+    expect(stepTextProblems(screens.screens as StepRow[], copyFiles)).toEqual([])
+  })
+
+  it('refuses a step whose text is in neither the copy nor the sample, each kind of step', () => {
+    const rows: StepRow[] = [
+      { screen: 'A', steps: [{ click: 'Guardar cambios' }, { press: 'Blue Dream' }, { wait: 'Cerrar el día' }] },
+      { screen: 'B', steps: [{ fill: { label: 'Nombre raro', value: 'x' } }, { click: 'Save' }] },
+    ]
+    expect(stepTextProblems(rows, { '/src/copy/a.ts': { A: { save: 'Save' } } })).toEqual([
+      'A: click "Guardar cambios" is no copy value',
+      'A: wait "Cerrar el día" is no copy value',
+      'B: fill.label "Nombre raro" is no copy value',
+    ])
+  })
+
+  it('reads a function value as a pattern, so a name in a template is accepted', () => {
+    const rows: StepRow[] = [{ screen: 'A', steps: [{ wait: 'Variety: Gelato' }, { wait: 'Variety' }] }]
+    expect(stepTextProblems(rows, { '/src/copy/a.ts': { A: { of: (name: string) => `Variety: ${name}` } } })).toEqual([
+      'A: wait "Variety" is no copy value',
+    ])
+  })
+})
+
 describe('the Onboarding rows of the real screens.json', () => {
   type Row = {
     screen: string
@@ -373,9 +445,9 @@ describe('the Inicio rows of the real screens.json', () => {
   })
 
   it('crops each Semana capture to the block that draws Semana', () => {
-    expect(clicks(row('Inicio'))).toEqual(['Semana'])
+    expect(clicks(row('Inicio'))).toEqual(['Week'])
     expect(row('Inicio').section).toBe(SEMANA_PHONE)
-    expect(clicks(row('InicioCompu'))).toEqual(['Semana'])
+    expect(clicks(row('InicioCompu'))).toEqual(['Week'])
     expect(row('InicioCompu').section).toBe(SEMANA_COMPU)
   })
 
@@ -398,7 +470,7 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(dark.design).toBe('InicioCompu')
     expect(dark.tema).toBe('oscuro')
     expect(dark.section).toBe(SEMANA_COMPU)
-    expect(clicks(dark)).toEqual(['Semana'])
+    expect(clicks(dark)).toEqual(['Week'])
   })
 
   it('refuses a section that Compu draws more than once, the reason InicioHoyCompu has none', () => {
@@ -431,7 +503,7 @@ describe('assertScreens checks every step against one closed list of shapes', ()
         withSteps([
           { click: 'Semana' },
           { press: 'Borrar venta' },
-          { wait: 'Stock y entradas' },
+          { wait: 'Stock and entries' },
           { fill: { label: 'Gramos', value: '{email}' } },
           { select: { label: 'Variedad línea 1', index: 0 } },
           { offline: true },
@@ -615,7 +687,7 @@ describe('the archived variety rows of the real screens.json', () => {
       const entry = screens.screens.find((s) => s.screen === key)!
       expect(entry.route, key).toBe(listPath)
       expect(entry.path, key).toBe(`${listPath.replace(/archived$/, '')}{archived}`)
-      expect(entry.steps, key).toEqual([{ click: 'Blue Dream' }, { wait: 'Stock y entradas' }])
+      expect(entry.steps, key).toEqual([{ click: 'Blue Dream' }, { wait: 'Stock and entries' }])
       expect(entry.viewport !== undefined, key).toBe(key.includes('Compu'))
       expect(entry.tema === 'oscuro', key).toBe(key.endsWith('Oscuro'))
     }
@@ -679,7 +751,7 @@ describe('an entry whose path names a record names the same placeholders in its 
   it('refuses a path that names a record when the route names none and no step clicks to it', () => {
     const entry = { screen: 'VariedadArchivada', path: 'varieties/{archived}', route: 'varieties/archived' }
     expect(pathRecordMismatches([entry])).toEqual([{ screen: 'VariedadArchivada', path: ['archived'], route: [] }])
-    expect(pathRecordMismatches([{ ...entry, steps: [{ wait: 'Stock y entradas' }] }])).toEqual([
+    expect(pathRecordMismatches([{ ...entry, steps: [{ wait: 'Stock and entries' }] }])).toEqual([
       { screen: 'VariedadArchivada', path: ['archived'], route: [] },
     ])
     expect(pathRecordMismatches([{ ...entry, steps: [{ click: 'Blue Dream' }] }])).toEqual([])

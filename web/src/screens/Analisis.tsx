@@ -43,8 +43,9 @@ import {
   PURCHASES_NOTE,
   SHORTFALL_LABEL,
   SINCE_FIRST_RECORD_LABEL,
-  VARIETY_TOTAL_NOTE,
-} from './analisisMessages'
+  VARIETY_TOTAL_NOTE, ANALYSIS_TEXT,
+} from '../copy/analysis'
+import { COMMON_TEXT } from '../copy/common'
 
 export {
   COST_OF_GOODS_LABEL,
@@ -58,23 +59,23 @@ export {
   SINCE_FIRST_RECORD_LABEL,
   VARIETY_TOTAL_NOTE,
 }
-export const BEST_WEEK_MARK = 'Mejor semana'
-export const BEST_WEEKDAY_MARK = 'Mejor día'
-export const BEST_WEEK_TABLE_MARK = 'mejor'
+export const BEST_WEEK_MARK = ANALYSIS_TEXT.mejorSemana
+export const BEST_WEEKDAY_MARK = ANALYSIS_TEXT.mejorDia
+export const BEST_WEEK_TABLE_MARK = ANALYSIS_TEXT.bestInTable
 
 const WEEKDAY_LABEL: Record<number, string> = {
-  1: 'Lun',
-  2: 'Mar',
-  3: 'Mié',
-  4: 'Jue',
-  5: 'Vie',
-  6: 'Sáb',
-  7: 'Dom',
+  1: ANALYSIS_TEXT.lun,
+  2: ANALYSIS_TEXT.mar,
+  3: ANALYSIS_TEXT.mie,
+  4: ANALYSIS_TEXT.jue,
+  5: ANALYSIS_TEXT.vie,
+  6: ANALYSIS_TEXT.sab,
+  7: ANALYSIS_TEXT.dom,
 }
 
-/** "y N g sin costo" (PM, round 1): never shown for a figure with nothing pending. */
+/** " and N g without cost" (PM, round 1): never shown for a figure with nothing pending. */
 function pendingSuffix(grams: number): string {
-  return grams > 0 ? ` y ${formatGrams(grams)} sin costo` : ''
+  return grams > 0 ? ANALYSIS_TEXT.pendingSuffix(formatGrams(grams)) : ''
 }
 
 /** One cost line, "Faltante de stock $ 3.000 y 1 g sin costo": the label and
@@ -188,7 +189,7 @@ function MonthNav({
       <button
         type="button"
         className="gastos__mes-boton"
-        aria-label="Mes anterior"
+        aria-label={COMMON_TEXT.previousMonth}
         disabled={month.previous === null}
         onClick={() => {
           if (month.previous !== null) onMonth(month.previous)
@@ -200,7 +201,7 @@ function MonthNav({
       <button
         type="button"
         className="gastos__mes-boton"
-        aria-label="Mes siguiente"
+        aria-label={COMMON_TEXT.nextMonth}
         disabled={month.next === null}
         onClick={() => {
           if (month.next !== null) onMonth(month.next)
@@ -230,7 +231,7 @@ function ExpenseBreakdownView({
       ))}
       <div className="gastos__categoria-cabecera">
         <span className="gastos__categoria-nombre">
-          Compras de flores
+          {COMMON_TEXT.flowerPurchases}
           <span className="pie"> {PURCHASES_NOTE}</span>
         </span>
         <span className="gastos__categoria-subtotal">{formatMoney(breakdown.purchases)}</span>
@@ -255,15 +256,15 @@ function AnalisisContenido({
       <MonthNav month={m} onMonth={onMonth} />
 
       <div>
-        <span className="rotulo">Vendiste en el mes</span>
+        <span className="rotulo">{ANALYSIS_TEXT.vendisteEnElMes}</span>
         <span className="cifra-xl">{formatMoney(m.sales)}</span>
         <span className="pie">
-          {formatGrams(m.grams_sold)} vendidos · {formatGrams(m.grams_gifted)} regalados
+          {formatGrams(m.grams_sold)}{ANALYSIS_TEXT.vendidos}{formatGrams(m.grams_gifted)}{ANALYSIS_TEXT.regalados}
           {m.average_margin.percent !== null &&
-            ` · margen promedio ${m.average_margin.percent}%${pendingSuffix(m.average_margin.pending_grams)}`}
+            ANALYSIS_TEXT.margenPromedio01(m.average_margin.percent, pendingSuffix(m.average_margin.pending_grams))}
           {m.average_margin.percent === null &&
             m.average_margin.pending_grams > 0 &&
-            ` · margen promedio${pendingSuffix(m.average_margin.pending_grams)}`}
+            ANALYSIS_TEXT.margenPromedio0(pendingSuffix(m.average_margin.pending_grams))}
         </span>
         <WithdrawalLines
           className="pie"
@@ -282,7 +283,7 @@ function AnalisisContenido({
          same way `Shell`'s own side rail/bottom bar already does. */}
       <div className="analisis__columnas">
         <div className="analisis__principal">
-          <span className="pie">Por variedad</span>
+          <span className="pie">{ANALYSIS_TEXT.porVariedad}</span>
           {m.varieties.length === 0 ? (
             <span className="pie">{EMPTY_MONTH_LINE}</span>
           ) : (
@@ -300,16 +301,16 @@ function AnalisisContenido({
                     </div>
                     <div className="analisis__variedad-detalle">
                       {variety.share_percent !== null && (
-                        <span>{variety.share_percent}% del mes</span>
+                        <span>{variety.share_percent}{ANALYSIS_TEXT.delMes}</span>
                       )}
-                      <span>{formatGrams(variety.grams_sold)} vendidos</span>
-                      <span>{formatGrams(variety.grams_gifted)} regalados</span>
+                      <span>{formatGrams(variety.grams_sold)}{COMMON_TEXT.soldSuffix}</span>
+                      <span>{formatGrams(variety.grams_gifted)}{ANALYSIS_TEXT.regalados}</span>
                       <span>
-                        costo {formatMoney(variety.cost.costed)}
+                        {ANALYSIS_TEXT.costo}{formatMoney(variety.cost.costed)}
                         {pendingSuffix(variety.cost.pending_grams)}
                       </span>
                       <span className="analisis__variedad-margen">
-                        margen {formatMoney(variety.margin.amount)}
+                        {ANALYSIS_TEXT.margen}{formatMoney(variety.margin.amount)}
                         {variety.margin.percent !== null && ` (${variety.margin.percent}%)`}
                         {pendingSuffix(variety.margin.pending_grams)}
                       </span>
@@ -327,13 +328,13 @@ function AnalisisContenido({
                 <table className="analisis__tabla">
                   <thead>
                     <tr>
-                      <th>Variedad</th>
-                      <th className="analisis__num">Ventas</th>
-                      <th className="analisis__num">Parte</th>
-                      <th className="analisis__num">Gramos</th>
-                      <th className="analisis__num">Gramos regalo</th>
-                      <th className="analisis__num">Costo</th>
-                      <th className="analisis__num">Margen</th>
+                      <th>{COMMON_TEXT.variety}</th>
+                      <th className="analisis__num">{COMMON_TEXT.sales}</th>
+                      <th className="analisis__num">{ANALYSIS_TEXT.parte}</th>
+                      <th className="analisis__num">{COMMON_TEXT.grams}</th>
+                      <th className="analisis__num">{ANALYSIS_TEXT.gramosRegalo}</th>
+                      <th className="analisis__num">{ANALYSIS_TEXT.costLabel}</th>
+                      <th className="analisis__num">{ANALYSIS_TEXT.margen2}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -369,7 +370,7 @@ function AnalisisContenido({
             </>
           )}
 
-          <span className="pie">Semana a semana · últimas 8</span>
+          <span className="pie">{ANALYSIS_TEXT.semanaASemanaUltimas}</span>
           <div className="analisis__semanas">
             {data.weeks.map((week) => (
               <div key={week.first_day} className="analisis__semana">
@@ -380,12 +381,12 @@ function AnalisisContenido({
                 <div className="analisis__costos">
                   <RowCostLines period={week} />
                 </div>
-                <span>gastos {formatMoney(week.expenses)}</span>
+                <span>{ANALYSIS_TEXT.gastos}{formatMoney(week.expenses)}</span>
                 <span>
-                  ganancia {formatMoney(week.profit.amount)}
+                  {ANALYSIS_TEXT.ganancia}{formatMoney(week.profit.amount)}
                   {pendingSuffix(week.profit.pending_grams)}
                 </span>
-                <span>caja {formatMoney(week.cash)}</span>
+                <span>{ANALYSIS_TEXT.caja}{formatMoney(week.cash)}</span>
                 {week.best && <span className="analisis__marca-mejor">{BEST_WEEK_MARK}</span>}
               </div>
             ))}
@@ -395,12 +396,12 @@ function AnalisisContenido({
             <table className="analisis__tabla">
               <thead>
                 <tr>
-                  <th>Semana</th>
-                  <th className="analisis__num">Ventas</th>
-                  <th className="analisis__num">Gramos</th>
-                  <th className="analisis__num">Gastos</th>
-                  <th className="analisis__num">Ganancia</th>
-                  <th className="analisis__num">Caja</th>
+                  <th>{COMMON_TEXT.week}</th>
+                  <th className="analisis__num">{COMMON_TEXT.sales}</th>
+                  <th className="analisis__num">{COMMON_TEXT.grams}</th>
+                  <th className="analisis__num">{COMMON_TEXT.expenses}</th>
+                  <th className="analisis__num">{COMMON_TEXT.profit}</th>
+                  <th className="analisis__num">{COMMON_TEXT.cash}</th>
                 </tr>
               </thead>
               <tbody>
@@ -434,7 +435,7 @@ function AnalisisContenido({
             )}
           </div>
 
-          <span className="pie">Mes a mes · últimos 12</span>
+          <span className="pie">{ANALYSIS_TEXT.mesAMesUltimos}</span>
           <div className="analisis__meses">
             {data.months.map((row) => (
               <div key={row.month} className="analisis__mes-fila">
@@ -444,12 +445,12 @@ function AnalisisContenido({
                 <div className="analisis__costos">
                   <RowCostLines period={row} />
                 </div>
-                <span>gastos {formatMoney(row.expenses)}</span>
+                <span>{ANALYSIS_TEXT.gastos}{formatMoney(row.expenses)}</span>
                 <span>
-                  ganancia {formatMoney(row.profit.amount)}
+                  {ANALYSIS_TEXT.ganancia}{formatMoney(row.profit.amount)}
                   {pendingSuffix(row.profit.pending_grams)}
                 </span>
-                <span>caja {formatMoney(row.cash)}</span>
+                <span>{ANALYSIS_TEXT.caja}{formatMoney(row.cash)}</span>
               </div>
             ))}
           </div>
@@ -458,12 +459,12 @@ function AnalisisContenido({
             <table className="analisis__tabla">
               <thead>
                 <tr>
-                  <th>Mes</th>
-                  <th className="analisis__num">Ventas</th>
-                  <th className="analisis__num">Gramos</th>
-                  <th className="analisis__num">Gastos</th>
-                  <th className="analisis__num">Ganancia</th>
-                  <th className="analisis__num">Caja</th>
+                  <th>{COMMON_TEXT.month}</th>
+                  <th className="analisis__num">{COMMON_TEXT.sales}</th>
+                  <th className="analisis__num">{COMMON_TEXT.grams}</th>
+                  <th className="analisis__num">{COMMON_TEXT.expenses}</th>
+                  <th className="analisis__num">{COMMON_TEXT.profit}</th>
+                  <th className="analisis__num">{COMMON_TEXT.cash}</th>
                 </tr>
               </thead>
               <tbody>
@@ -489,14 +490,14 @@ function AnalisisContenido({
         </div>
 
         <aside className="analisis__aside">
-          <span className="pie">Por día de la semana</span>
+          <span className="pie">{ANALYSIS_TEXT.porDiaDeLa}</span>
           <div className="analisis__dias">
             {data.weekdays.map((day) => (
               <div key={day.weekday} className="analisis__dia">
                 <span>{WEEKDAY_LABEL[day.weekday]}</span>
                 <Bar value={day.sales} max={maxWeekdaySales} />
                 <span>{formatMoney(day.sales)}</span>
-                <span>{day.count} ventas</span>
+                <span>{day.count}{ANALYSIS_TEXT.ventas}</span>
                 {day.best && <span className="analisis__marca-mejor">{BEST_WEEKDAY_MARK}</span>}
               </div>
             ))}
@@ -506,12 +507,12 @@ function AnalisisContenido({
             <div className="analisis__historico">
               <span className="pie">{SINCE_FIRST_RECORD_LABEL}</span>
               <span>{formatMoney(data.since_first_record.sales)}</span>
-              <span>gastos {formatMoney(data.since_first_record.expenses)}</span>
+              <span>{ANALYSIS_TEXT.gastos}{formatMoney(data.since_first_record.expenses)}</span>
               <span>
-                ganancia {formatMoney(data.since_first_record.profit.amount)}
+                {ANALYSIS_TEXT.ganancia}{formatMoney(data.since_first_record.profit.amount)}
                 {pendingSuffix(data.since_first_record.profit.pending_grams)}
               </span>
-              <span>caja {formatMoney(data.since_first_record.cash)}</span>
+              <span>{ANALYSIS_TEXT.caja}{formatMoney(data.since_first_record.cash)}</span>
               <WithdrawalLines
                 shortfall={data.since_first_record.shortfall}
                 promotion={data.since_first_record.promotion}
@@ -520,9 +521,9 @@ function AnalisisContenido({
             </div>
           )}
 
-          <ExpenseBreakdownView title="Gastos del mes" breakdown={data.month_expenses} />
+          <ExpenseBreakdownView title={ANALYSIS_TEXT.gastosDelMes} breakdown={data.month_expenses} />
           <ExpenseBreakdownView
-            title="Gastos desde el primer registro"
+            title={ANALYSIS_TEXT.gastosDesdeElPrimer}
             breakdown={data.since_first_record_expenses}
           />
         </aside>
@@ -548,7 +549,7 @@ export default function Analisis() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">Análisis</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
         </div>
 
         {query.isError && query.error instanceof NetworkError && <SinConexion />}

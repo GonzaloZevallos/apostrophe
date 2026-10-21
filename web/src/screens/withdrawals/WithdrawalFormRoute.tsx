@@ -31,6 +31,8 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { VARIETIES, WITHDRAWAL, pathTo } from '../../routes'
 import WithdrawalForm, { type WithdrawalTarget } from './WithdrawalForm'
+import { COMMON_TEXT } from '../../copy/common'
+import { STOCK_TEXT } from '../../copy/stock'
 
 
 function Frame({ children }: { children: ReactNode }) {
@@ -56,7 +58,7 @@ function EditHost() {
   })
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Variedades" to={VARIETIES} />
+      return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
     }
     return (
       <Frame>{existing.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Frame>
@@ -109,14 +111,14 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question={editing ? '¿Descartás los cambios?' : '¿Descartás el retiro?'}
+          question={editing ? COMMON_TEXT.discardTheChanges : STOCK_TEXT.descartasElRetiro}
           detail={
             editing
-              ? 'Se pierde lo que cambiaste: el retiro sigue como estaba.'
-              : 'Se pierde lo que cargaste: todavía no se guardó nada.'
+              ? STOCK_TEXT.sePierdeLoQue
+              : COMMON_TEXT.losesWhatYouEntered
           }
-          keepLabel={editing ? 'No, seguí editando' : 'No, seguí cargando'}
-          discardLabel="Sí, descartalo"
+          keepLabel={editing ? COMMON_TEXT.noKeepEditing : COMMON_TEXT.noKeepEntering}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </Frame>

@@ -32,7 +32,7 @@ const iconOnlyWithAnIconProp: Rejected<{
 const closeWithoutLabel: Rejected<{ variant: 'icon'; action: 'close' }> = true
 const editWithoutLabel: Rejected<{ variant: 'icon'; action: 'edit' }> = true
 const shareWithoutLabel: Rejected<{ variant: 'icon'; action: 'share' }> = true
-const iconOnlyWithAnUnlistedAction: Rejected<{ variant: 'icon'; action: 'copy'; ariaLabel: 'Copiar' }> = true
+const iconOnlyWithAnUnlistedAction: Rejected<{ variant: 'icon'; action: 'copy'; ariaLabel: 'Copy' }> = true
 const primaryBare: Rejected<Children> = true
 const secondaryBare: Rejected<{ variant: 'secondary' } & Children> = true
 const destructiveBare: Rejected<{ variant: 'destructive' } & Children> = true
@@ -63,9 +63,9 @@ const back: Rejected<{ variant: 'back' } & Children> = false
 const row: Rejected<{ variant: 'row' } & Children> = false
 const notice: Rejected<{ variant: 'notice' } & Children> = false
 const linkNotice: RejectedLink<{ to: string; variant: 'notice' } & Children> = false
-const closeIcon: Rejected<{ variant: 'icon'; action: 'close'; ariaLabel: 'Cerrar' }> = false
-const editIcon: Rejected<{ variant: 'icon'; action: 'edit'; ariaLabel: 'Editar' }> = false
-const shareIcon: Rejected<{ variant: 'icon'; action: 'share'; ariaLabel: 'Compartir' }> = false
+const closeIcon: Rejected<{ variant: 'icon'; action: 'close'; ariaLabel: 'Close' }> = false
+const editIcon: Rejected<{ variant: 'icon'; action: 'edit'; ariaLabel: 'Edit' }> = false
+const shareIcon: Rejected<{ variant: 'icon'; action: 'share'; ariaLabel: 'Share' }> = false
 const linkIconText: RejectedLink<{ to: string; icon: 'agregar' } & Children> = false
 const linkIconOnly: RejectedLink<{
   to: string

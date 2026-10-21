@@ -1,8 +1,8 @@
 /**
- * The Onboarding's routes, step frame and "Listo" at the screen seam (Testing Library,
+ * The Onboarding's routes, step frame and "Done" at the screen seam (Testing Library,
  * `fetch` faked): where each path leads, the frame's controls and leave confirmation,
- * "Saltar el resto" only when the API allows it, "Listo" only after `over: true`, and
- * Nueva venta opened from "Listo" going back to Inicio. Nothing is written to the console
+ * "Skip the rest" only when the API allows it, "Done" only after `over: true`, and
+ * Nueva venta opened from "Done" going back to Inicio. Nothing is written to the console
  * or the browser's storage.
  */
 
@@ -36,6 +36,9 @@ import {
 } from '../../routes'
 import { useBackOr } from '../../components/useBackOr'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
+import { CHECKLIST_DONE } from '../../copy/inicio'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
+import { stepInfo } from './steps'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -158,15 +161,15 @@ afterEach(() => {
   expect(window.sessionStorage.length).toBe(0)
 })
 
-test('the Onboarding entry opens the resume step with its title, "Paso N de 6" and its badge, and nothing to skip on a required step', async () => {
+test('the Onboarding entry opens the resume step with its title, "Step N of 6" and its badge, and nothing to skip on a required step', async () => {
   stubProgress(answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending']))
   renderAt(ONBOARDING)
 
-  expect(await screen.findByText('Paso 2 de 6')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
-  expect(screen.getByText('Obligatorio')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Saltar' })).not.toBeInTheDocument()
-  expect(screen.queryByText('Nueva venta')).not.toBeInTheDocument()
+  expect(await screen.findByText('Step 2 of 6')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Add what you have today' })).toBeInTheDocument()
+  expect(screen.getByText('Required')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Skip' })).not.toBeInTheDocument()
+  expect(screen.queryByText('New sale')).not.toBeInTheDocument()
   expect(calls).toEqual(['GET /onboarding-progress'])
 })
 
@@ -180,33 +183,38 @@ test.each([
   expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
 })
 
-test('a deep link to "Listo" without the flag goes to Inicio', async () => {
+test('a deep link to "Done" without the flag goes to Inicio', async () => {
   stubProgress({ ...REQUIRED_DONE, over: true, resume: null })
   renderAt(ONBOARDING_DONE)
 
   expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
 })
 
-test('"Listo" entered with the flag has one line per step and never an amount', async () => {
+test('"Done" entered with the flag has one line per step and never an amount', async () => {
   stubProgress(
     answer(['done', 'done', 'done', 'skipped', 'skipped', 'done'], { over: true, resume: null }),
   )
   renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } })
 
-  expect(await screen.findByRole('heading', { name: 'Listo' })).toBeInTheDocument()
-  expect(screen.getByText('6 de 6 pasos')).toBeInTheDocument()
-  expect(screen.getByText('Hecho · 2 variedades')).toBeInTheDocument()
-  expect(screen.getByText('Hecho · 2 entradas')).toBeInTheDocument()
-  expect(screen.getByText('Para después — en Configuración → Integraciones')).toBeInTheDocument()
-  expect(screen.getByText('Para después — en Configuración → Usuarios')).toBeInTheDocument()
-  expect(screen.getAllByText('Hecho')).toHaveLength(2)
+  expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
+  expect(screen.getByText('6 of 6 steps')).toBeInTheDocument()
+  expect(screen.getAllByText('Done · 2 varieties')).toHaveLength(1)
+  expect(screen.getAllByText('Done · 2 entries')).toHaveLength(1)
+  expect(screen.getByText('For later — in Settings → Integrations')).toBeInTheDocument()
+  expect(screen.getByText('For later — in Settings → Users')).toBeInTheDocument()
+  // The two done lines and the heading, which share the word.
+  expect(screen.getAllByText(CHECKLIST_DONE)).toHaveLength(3)
 })
 
-test('"Saltar el resto" is hidden until both required steps are done', async () => {
+test('the resume notice names the partner step in English', () => {
+  expect(ONBOARDING_TEXT.missing(stepInfo('partner').shortName)).toBe('Missing: partner')
+})
+
+test('"Skip the rest" is hidden until both required steps are done', async () => {
   stubProgress(answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending']))
   const { unmount } = renderHidden(ONBOARDING_BOT)
-  await screen.findByText('Paso 4 de 6')
-  expect(screen.queryByRole('button', { name: 'Saltar el resto' })).not.toBeInTheDocument()
+  await screen.findByText('Step 4 of 6')
+  expect(screen.queryByRole('button', { name: 'Skip the rest' })).not.toBeInTheDocument()
   unmount()
 })
 
@@ -217,7 +225,7 @@ function renderHidden(path: string) {
 
 const renderOptional = () => renderHidden(ONBOARDING_BOT)
 
-test('with both required steps done "Saltar el resto" sends skip-rest and "Listo" opens only after over: true', async () => {
+test('with both required steps done "Skip the rest" sends skip-rest and "Done" opens only after over: true', async () => {
   stubProgress(REQUIRED_DONE)
   writes['POST /onboarding-progress/skip-rest'] = answer(['done', 'done', 'skipped', 'skipped', 'skipped', 'skipped'], {
     over: true,
@@ -225,33 +233,33 @@ test('with both required steps done "Saltar el resto" sends skip-rest and "Listo
   })
   renderAt(ONBOARDING_BOT)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Saltar el resto' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Skip the rest' }))
 
-  expect(await screen.findByRole('heading', { name: 'Listo' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
   expect(calls).toContain('POST /onboarding-progress/skip-rest {}')
 })
 
-test('"Saltar" sends a skipped pass for the step and opens the step the answer resumes at', async () => {
+test('"Skip" sends a skipped pass for the step and opens the step the answer resumes at', async () => {
   stubProgress(REQUIRED_DONE)
   writes['POST /onboarding-progress/passes'] = answer(['done', 'done', 'pending', 'skipped', 'pending', 'pending'])
   renderAt(ONBOARDING_BOT)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Saltar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Skip' }))
 
-  expect(await screen.findByText('Paso 3 de 6')).toBeInTheDocument()
+  expect(await screen.findByText('Step 3 of 6')).toBeInTheDocument()
   expect(calls).toContain('POST /onboarding-progress/passes {"step":"bot","as":"skipped"}')
-  expect(screen.getByText('Si lo salteás, lo hacés después en Configuración → Mensaje del catálogo.')).toBeInTheDocument()
+  expect(screen.getByText('If you skip it, you can do it later in Settings → Catalog message.')).toBeInTheDocument()
 })
 
-test('a skip answered with required steps unmet does not draw "Listo"', async () => {
+test('a skip answered with required steps unmet does not draw "Done"', async () => {
   stubProgress(REQUIRED_DONE)
   writes['POST /onboarding-progress/passes'] = answer(['pending', 'done', 'skipped', 'skipped', 'skipped', 'skipped'])
   renderAt(ONBOARDING_CATEGORIES)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Saltar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Skip' }))
 
-  expect(await screen.findByText('Paso 1 de 6')).toBeInTheDocument()
-  expect(screen.queryByRole('heading', { name: 'Listo' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Step 1 of 6')).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Done' })).not.toBeInTheDocument()
 })
 
 function TypingBody({ onDirtyChange }: StepBodyProps) {
@@ -269,21 +277,21 @@ test('leaving a step with something typed asks first; an untouched step leaves a
   STEP_BODIES.bot = TypingBody
   try {
     renderAt(ONBOARDING_BOT)
-    await screen.findByText('Paso 4 de 6')
+    await screen.findByText('Step 4 of 6')
 
     await userEvent.type(screen.getByLabelText('Algo'), 'x')
-    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
     const dialog = await screen.findByRole('alertdialog')
-    await userEvent.click(within(dialog).getByRole('button', { name: 'No, seguí escribiendo' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep typing' }))
     expect(screen.getByLabelText('Algo')).toHaveValue('x')
 
-    await userEvent.click(screen.getByRole('button', { name: 'Saltar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Skip' }))
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
     expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
 
-    await userEvent.click(screen.getByRole('button', { name: 'No, seguí escribiendo' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
-    await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'No, keep typing' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
     expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
   } finally {
     STEP_BODIES.bot = original
@@ -291,11 +299,11 @@ test('leaving a step with something typed asks first; an untouched step leaves a
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
 })
 
-test('"Cerrar" on an untouched step leaves at once to Inicio and sends nothing', async () => {
+test('"Close" on an untouched step leaves at once to Inicio and sends nothing', async () => {
   stubProgress(REQUIRED_DONE)
   renderAt(ONBOARDING_BOT)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
@@ -315,27 +323,27 @@ test('a body that saved hands its answer to the frame, which follows it', async 
   try {
     renderAt(ONBOARDING_CATALOG_MESSAGE)
     await userEvent.click(await screen.findByRole('button', { name: 'Guardar' }))
-    expect(await screen.findByText('Paso 4 de 6')).toBeInTheDocument()
+    expect(await screen.findByText('Step 4 of 6')).toBeInTheDocument()
   } finally {
     STEP_BODIES.header_footer = original
   }
 })
 
-test('Nueva venta opened from "Listo" goes back to Inicio when closed', async () => {
+test('Nueva venta opened from "Done" goes back to Inicio when closed', async () => {
   stubProgress(answer(['done', 'done', 'done', 'done', 'done', 'done'], { over: true, resume: null }))
   renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } }, 1, [HOME])
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cargar mi primera venta' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Add my first sale' }))
   await userEvent.click(await screen.findByRole('button', { name: 'cerrar nueva venta' }))
 
   await waitFor(() => expect(screen.getByText('pantalla inicio')).toBeInTheDocument())
 })
 
-test('"Ir a Inicio" opens Inicio', async () => {
+test('"Go to Home" opens Inicio', async () => {
   stubProgress(answer(['done', 'done', 'done', 'done', 'done', 'done'], { over: true, resume: null }))
   renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } })
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Ir a Inicio' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Go to Home' }))
 
   expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
 })
@@ -354,23 +362,23 @@ test('the frame is a plain step: rendered alone it sends nothing', async () => {
     </QueryClientProvider>,
   )
 
-  expect(await screen.findByText('Paso 5 de 6')).toBeInTheDocument()
+  expect(await screen.findByText('Step 5 of 6')).toBeInTheDocument()
   expect(calls).toEqual([])
 })
 
-test('"Cerrar" is the icon-only close and "Atrás" keeps its word', async () => {
+test('"Close" is the icon-only close and "Back" keeps its word', async () => {
   stubProgress(REQUIRED_DONE)
   renderAt(ONBOARDING_BOT)
 
-  const close = await screen.findByRole('button', { name: 'Cerrar' })
+  const close = await screen.findByRole('button', { name: 'Close' })
   expect(close).toHaveClass('boton-icono')
   expect(close).toHaveTextContent('')
-  const back = screen.getByRole('button', { name: 'Atrás' })
+  const back = screen.getByRole('button', { name: 'Back' })
   expect(back).not.toHaveClass('boton-icono')
-  expect(back).toHaveTextContent('Atrás')
+  expect(back).toHaveTextContent('Back')
 })
 
-test('"Atrás" asks first when something typed would be lost', async () => {
+test('"Back" asks first when something typed would be lost', async () => {
   stubProgress(REQUIRED_DONE)
   const original = STEP_BODIES.bot
   STEP_BODIES.bot = function TypingBody({ onDirtyChange }: StepBodyProps) {
@@ -378,32 +386,32 @@ test('"Atrás" asks first when something typed would be lost', async () => {
   }
   try {
     renderAt(ONBOARDING_BOT)
-    await screen.findByText('Paso 4 de 6')
+    await screen.findByText('Step 4 of 6')
     await userEvent.type(screen.getByLabelText('Algo'), 'x')
-    await userEvent.click(screen.getByRole('button', { name: 'Atrás' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
   } finally {
     STEP_BODIES.bot = original
   }
 })
 
-test('an optional step and "Listo" obey the icon and text rule', async () => {
+test('an optional step and "Done" obey the icon and text rule', async () => {
   stubProgress(REQUIRED_DONE)
   const { container, unmount } = renderOptional()
-  await screen.findByText('Paso 4 de 6')
-  expect(screen.getByRole('button', { name: 'Saltar' })).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Saltar el resto' })).toBeInTheDocument()
+  await screen.findByText('Step 4 of 6')
+  expect(screen.getByRole('button', { name: 'Skip' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Skip the rest' })).toBeInTheDocument()
   expectIconAndTextRule(container)
   unmount()
 })
 
-test('"Listo" obeys the icon and text rule and closes with the icon-only "Cerrar"', async () => {
+test('"Done" obeys the icon and text rule and closes with the icon-only "Close"', async () => {
   stubProgress(answer(['done', 'done', 'done', 'skipped', 'skipped', 'done'], { over: true, resume: null }))
   renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } })
-  await screen.findByRole('heading', { name: 'Listo' })
+  await screen.findByRole('heading', { name: 'Done' })
 
-  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
-  expect(screen.getByRole('button', { name: 'Cargar mi primera venta' })).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Ir a Inicio' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Close' })).toHaveClass('boton-icono')
+  expect(screen.getByRole('button', { name: 'Add my first sale' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Go to Home' })).toBeInTheDocument()
   expectIconAndTextRule(document.body)
 })

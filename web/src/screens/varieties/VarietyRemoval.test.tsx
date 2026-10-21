@@ -19,9 +19,9 @@ import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
-const GONE_TEXT = 'Eso ya no está. La lista ya está al día.'
+const GONE_TEXT = 'That is gone. The list is up to date.'
 const ARCHIVE_DETAIL =
-  'Te quedan 12 g. Si la archivás, dejan de verse en Inicio y en las listas, pero el stock queda guardado.'
+  'You have 12 g left. If you archive it, they stop showing on Home and in the lists, but the stock is kept.'
 
 function variety(id: number, name: string, removal: 'delete' | 'archive' | null = 'archive') {
   return { id, name, archived: false, removal, current_price: null }
@@ -98,7 +98,7 @@ function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, com
           </QueryClientProvider>
         ),
         children: [
-          { path: relative(VARIETIES), element: <main>Pantalla Variedades</main> },
+          { path: relative(VARIETIES), element: <main>Varieties screen</main> },
           {
             path: relative(VARIETY),
             element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
@@ -132,8 +132,8 @@ afterEach(() => {
 
 describe('the action the page offers', () => {
   test.each([
-    ['delete', 'Eliminar variedad', 'Archivar variedad'],
-    ['archive', 'Archivar variedad', 'Eliminar variedad'],
+    ['delete', 'Delete variety', 'Archive variety'],
+    ['archive', 'Archive variety', 'Delete variety'],
   ] as const)('removal "%s" offers "%s" and never "%s"', async (removal, offered, refused) => {
     renderPage({ removal })
 
@@ -141,12 +141,12 @@ describe('the action the page offers', () => {
     expect(screen.queryByRole('button', { name: refused })).not.toBeInTheDocument()
   })
 
-  test('"Eliminar variedad" is an icon + text critical action, not a filled button; only the dialog fills', async () => {
+  test('"Delete variety" is an icon + text critical action, not a filled button; only the dialog fills', async () => {
     const user = userEvent.setup()
     renderPage({ removal: 'delete' })
 
-    const trigger = await screen.findByRole('button', { name: 'Eliminar variedad' })
-    expect(trigger.textContent).toBe('Eliminar variedad')
+    const trigger = await screen.findByRole('button', { name: 'Delete variety' })
+    expect(trigger.textContent).toBe('Delete variety')
     expect(trigger.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     expect(trigger).toHaveClass('boton--critico')
     expect(trigger).not.toHaveClass('boton--destructivo')
@@ -155,15 +155,15 @@ describe('the action the page offers', () => {
 
     await user.click(trigger)
 
-    const confirm = screen.getByRole('button', { name: 'Sí, eliminala' })
+    const confirm = screen.getByRole('button', { name: 'Yes, delete it' })
     expect(confirm).toHaveClass('boton--destructivo')
     expect(document.querySelectorAll('.boton--destructivo')).toHaveLength(1)
   })
 
-  test('"Archivar variedad" keeps its non-destructive look', async () => {
+  test('"Archive variety" keeps its non-destructive look', async () => {
     renderPage({ removal: 'archive' })
 
-    const trigger = await screen.findByRole('button', { name: 'Archivar variedad' })
+    const trigger = await screen.findByRole('button', { name: 'Archive variety' })
     expect(trigger).toHaveClass('boton--suave')
     expect(trigger).not.toHaveClass('boton--critico')
   })
@@ -181,7 +181,7 @@ describe('archiving', () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage({ overrides: { 'POST /varieties/2/archive': () => json(200, {}) } })
 
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(ARCHIVE_DETAIL)
     expect(writes(fetchMock)).toEqual([])
@@ -191,67 +191,67 @@ describe('archiving', () => {
     const user = userEvent.setup()
     renderPage({ grams: 0 })
 
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'Si la archivás, dejan de verse en Inicio y en las listas, pero el stock queda guardado.',
+      'If you archive it, they stop showing on Home and in the lists, but the stock is kept.',
     )
-    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Te quedan')
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('You have')
   })
 
-  test('with negative stock it says the shortfall, not "Te quedan"', async () => {
+  test('with negative stock it says the shortfall, not "You have"', async () => {
     const user = userEvent.setup()
     renderPage({ grams: -5 })
 
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    expect(screen.getByRole('alertdialog')).toHaveTextContent('Tiene un faltante de 5 g.')
-    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Te quedan')
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('It has a shortfall of 5 g.')
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('You have')
   })
 
-  test('"No, dejala" closes the dialog and sends nothing', async () => {
+  test('"No, keep it" closes the dialog and sends nothing', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage()
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'No, dejala' }))
+    await user.click(screen.getByRole('button', { name: 'No, keep it' }))
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
     expect(writes(fetchMock)).toEqual([])
   })
 
-  test('confirming archives, goes back to Variedades and says "Variedad archivada"', async () => {
+  test('confirming archives, goes back to Variedades and says "Variety archived"', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage({ overrides: { 'POST /varieties/2/archive': () => json(200, {}) } })
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
-    expect(await screen.findByText('Pantalla Variedades')).toBeInTheDocument()
-    expect(await screen.findByText('Variedad archivada')).toBeInTheDocument()
+    expect(await screen.findByText('Varieties screen')).toBeInTheDocument()
+    expect(await screen.findByText('Variety archived')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual(['POST /varieties/2/archive'])
   })
 })
 
 describe('deleting', () => {
-  test('asks first in a destructive dialog, then deletes, goes back and says "Variedad eliminada"', async () => {
+  test('asks first in a destructive dialog, then deletes, goes back and says "Variety deleted"', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage({
       removal: 'delete',
       overrides: { 'DELETE /varieties/2': () => new Response(null, { status: 204 }) },
     })
-    await user.click(await screen.findByRole('button', { name: 'Eliminar variedad' }))
-    expect(screen.getByRole('alertdialog')).toHaveTextContent('Esto no se puede deshacer.')
+    await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
+    expect(screen.getByRole('alertdialog')).toHaveTextContent("This can't be undone.")
     expect(writes(fetchMock)).toEqual([])
 
-    await user.click(screen.getByRole('button', { name: 'Sí, eliminala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-    expect(await screen.findByText('Pantalla Variedades')).toBeInTheDocument()
-    expect(await screen.findByText('Variedad eliminada')).toBeInTheDocument()
+    expect(await screen.findByText('Varieties screen')).toBeInTheDocument()
+    expect(await screen.findByText('Variety deleted')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual(['DELETE /varieties/2'])
   })
 
-  test('history that appeared after the page loaded: no toast, the page is read again and offers "Archivar variedad"', async () => {
+  test('history that appeared after the page loaded: no toast, the page is read again and offers "Archive variety"', async () => {
     const user = userEvent.setup()
     let removal: 'delete' | 'archive' = 'delete'
     const { fetchMock } = renderPage({
@@ -264,11 +264,11 @@ describe('deleting', () => {
         },
       },
     })
-    await user.click(await screen.findByRole('button', { name: 'Eliminar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'Sí, eliminala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-    expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Archive variety' })).toBeInTheDocument()
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
     expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
     expect(reads(fetchMock, 'GET /varieties/2')).toBe(2)
@@ -285,13 +285,13 @@ describe('a variety that is already gone', () => {
         // The page itself stays readable, so the notice is on screen, not the gone screen.
         overrides: { 'DELETE /varieties/2': () => json(404, { code }) },
       })
-      await user.click(await screen.findByRole('button', { name: 'Eliminar variedad' }))
+      await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
 
-      await user.click(screen.getByRole('button', { name: 'Sí, eliminala' }))
+      await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
       expect(await screen.findByText(GONE_TEXT)).toBeInTheDocument()
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-      expect(screen.queryByText('Variedad eliminada')).not.toBeInTheDocument()
+      expect(screen.queryByText('Variety deleted')).not.toBeInTheDocument()
       await waitFor(() => expect(reads(fetchMock, 'GET /varieties/2')).toBeGreaterThan(1))
     },
   )
@@ -307,11 +307,11 @@ describe('a dropped network or a failure', () => {
         },
       },
     })
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
-    expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
+    expect(await screen.findByText(/offline/i)).toBeInTheDocument()
     expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Blue Dream' })).toBeInTheDocument()
   })
@@ -323,9 +323,9 @@ describe('the computer', () => {
   test('removing the selected variety selects the next one by name', async () => {
     const user = userEvent.setup()
     renderPage({ computer: true, list: LIST, overrides: { 'POST /varieties/2/archive': () => json(200, {}) } })
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
     await waitFor(() => expect(screen.getByLabelText('ubicación')).toHaveTextContent(pathTo(VARIETY, { id: 3 })))
   })
@@ -337,9 +337,9 @@ describe('the computer', () => {
       list: [variety(1, 'Amnesia'), variety(2, 'Blue Dream')],
       overrides: { 'POST /varieties/2/archive': () => json(200, {}) },
     })
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
     await waitFor(() => expect(screen.getByLabelText('ubicación')).toHaveTextContent(pathTo(VARIETY, { id: 1 })))
   })
@@ -352,9 +352,9 @@ describe('the computer', () => {
       list: [variety(2, 'Blue Dream', 'delete')],
       overrides: { 'DELETE /varieties/2': () => new Response(null, { status: 204 }) },
     })
-    await user.click(await screen.findByRole('button', { name: 'Eliminar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'Sí, eliminala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
     await waitFor(() => expect(screen.getByLabelText('ubicación')).toHaveTextContent(/^\/varieties$/))
     expect(queryClient.getQueryData(keys.varieties())).toEqual([])
@@ -363,9 +363,9 @@ describe('the computer', () => {
   test('a phone goes back to Variedades, whatever the list holds', async () => {
     const user = userEvent.setup()
     renderPage({ list: LIST, overrides: { 'POST /varieties/2/archive': () => json(200, {}) } })
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
     await waitFor(() => expect(screen.getByLabelText('ubicación')).toHaveTextContent(/^\/varieties$/))
   })
@@ -376,11 +376,11 @@ describe('what is never written down', () => {
     const user = userEvent.setup()
     const spies = (['log', 'info', 'warn', 'error', 'debug'] as const).map((method) => vi.spyOn(console, method))
     renderPage({ overrides: { 'POST /varieties/2/archive': () => json(200, {}) } })
-    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
 
-    await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
-    const toast = (await screen.findByText('Variedad archivada')).closest('.aviso-exito')
+    const toast = (await screen.findByText('Variety archived')).closest('.aviso-exito')
     expect(toast).not.toBeNull()
     expect(toast).not.toHaveTextContent('Blue Dream')
     expect(toast).not.toHaveTextContent('12')

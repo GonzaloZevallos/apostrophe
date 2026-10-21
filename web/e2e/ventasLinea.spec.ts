@@ -1,6 +1,6 @@
 /**
  * Nueva venta's open line on a real phone viewport (320, 375 and 430 px, and 246 px, which
- * is 320 px at 130 % text): no field of the line, nor "Agregar otra variedad" or the
+ * is 320 px at 130 % text): no field of the line, nor "Add another variety" or the
  * shipping field, leaves the screen; every control of them is at least 44 px tall and every
  * input at least 16 px, so iOS never zooms. The header, footer and date belong to the
  * shell's own spec, not to this one.
@@ -18,17 +18,17 @@ const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
 
 async function signUpWithAVariety(page: Page): Promise<void> {
-  await signUpNewBusiness(page, { businessName: `Vivero Línea ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Vivero Line ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Jazmín con un nombre bastante largo')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Jazmín con un nombre bastante largo')
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel(/^Precio de lista/).fill('500')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByRole('link', { name: 'New price' }).click()
+  await page.getByLabel(/^List price/).fill('500')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 }
 
 async function box(target: Locator): Promise<{ x: number; width: number; height: number }> {
@@ -52,12 +52,12 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
 
     const line = page.locator('.nueva-venta__linea--abierta')
     const controls = [
-      page.getByLabel('Variedad línea 1'),
-      page.getByLabel('Gramos línea 1'),
-      page.getByLabel('Precio especial línea 1'),
+      page.getByLabel('Line 1 variety'),
+      page.getByLabel('Line 1 grams'),
+      page.getByLabel('Line 1 special price'),
       line.locator('.opcion-interruptor'),
-      page.getByRole('button', { name: 'Agregar otra variedad' }),
-      page.getByLabel('Envío'),
+      page.getByRole('button', { name: 'Add another variety' }),
+      page.getByLabel('Shipping'),
     ]
     for (const control of controls) {
       const rect = await box(control)
@@ -66,10 +66,10 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
       expect(rect.height, `height at ${width}`).toBeGreaterThanOrEqual(TOUCH_TARGET)
     }
     for (const input of [
-      page.getByLabel('Variedad línea 1'),
-      page.getByLabel('Gramos línea 1'),
-      page.getByLabel('Precio especial línea 1'),
-      page.getByLabel('Envío'),
+      page.getByLabel('Line 1 variety'),
+      page.getByLabel('Line 1 grams'),
+      page.getByLabel('Line 1 special price'),
+      page.getByLabel('Shipping'),
     ]) {
       const size = await input.evaluate((element) => parseFloat(getComputedStyle(element).fontSize))
       expect(size, `font size at ${width}`).toBeGreaterThanOrEqual(MIN_INPUT_FONT)

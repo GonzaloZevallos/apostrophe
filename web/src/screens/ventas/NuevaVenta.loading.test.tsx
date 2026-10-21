@@ -2,7 +2,7 @@
  * `NuevaVenta`'s loading states at the screen seam (Testing Library, `fetch` faked with
  * deferred answers): the shared `Loading` stands where prices are still coming — on opening
  * (the whole body) and after a date change (each line's figures and the footer's total, one
- * visually hidden announcer) — and Elegir cliente's results show it before their first
+ * visually hidden announcer) — and Pick a customer's results show it before their first
  * answer. None of them shows a digit, a currency symbol or a placeholder figure, and the
  * screen never shows more than one progressbar.
  */
@@ -79,7 +79,7 @@ function renderForm() {
 async function openAndPriceToday() {
   renderForm()
   answer(`${pathTo(VARIETIES)}?on=2026-10-02`, [ROSA_TODAY])
-  await screen.findByRole('button', { name: 'Guardá la venta' })
+  await screen.findByRole('button', { name: 'Save sale' })
 }
 
 function noFigure(element: HTMLElement): void {
@@ -91,10 +91,10 @@ test('opening shows the loading state in the body, with the header and its way o
 
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
   noFigure(screen.getByRole('progressbar'))
-  expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
-  expect(screen.getByLabelText('Fecha')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardá la venta' })).not.toBeInTheDocument()
-  expect(screen.queryByText('Total')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Date')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save sale' })).not.toBeInTheDocument()
+  expect(screen.queryByText('Sale total')).not.toBeInTheDocument()
   expect(document.body.textContent).not.toContain('$')
 })
 
@@ -102,24 +102,24 @@ test('once the prices arrive the loading state gives way to the form', async () 
   await openAndPriceToday()
 
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-  expect(screen.getByLabelText('Gramos línea 1')).toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 grams')).toBeInTheDocument()
   expect(screen.getByText('$ 0')).toBeInTheDocument()
 })
 
 test('a date change keeps what was typed and shows compact bars where prices were, then reprices', async () => {
   const user = userEvent.setup()
   await openAndPriceToday()
-  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.type(screen.getByLabelText('Envío'), '00')
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
+  await user.type(screen.getByLabelText('Shipping'), '00')
   expect(screen.getAllByText('$ 2.000').length).toBeGreaterThanOrEqual(1)
 
-  fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2026-10-01' } })
+  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-10-01' } })
 
   // Everything typed is still there, and the form never went blank.
-  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
-  expect(screen.getByLabelText('Variedad línea 1')).toHaveValue('1')
-  expect(screen.getByLabelText('Envío')).toHaveValue('000')
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
+  expect(screen.getByLabelText('Line 1 variety')).toHaveValue('1')
+  expect(screen.getByLabelText('Shipping')).toHaveValue('000')
   // Exactly one progressbar, the visually hidden announcer; the figures wait behind bars.
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
   const form = document.querySelector<HTMLElement>('form.nueva-venta')
@@ -128,34 +128,34 @@ test('a date change keeps what was typed and shows compact bars where prices wer
   expect(screen.queryByText('$ 2.000')).not.toBeInTheDocument()
   expect(screen.queryByText('$ 0')).not.toBeInTheDocument()
   expect(document.querySelectorAll('.cargando--compacto').length).toBeGreaterThanOrEqual(2)
-  const footer = screen.getByRole('button', { name: 'Guardá la venta' }).parentElement as HTMLElement
+  const footer = screen.getByRole('button', { name: 'Save sale' }).parentElement as HTMLElement
   expect(footer.querySelector('.cargando--compacto')).not.toBeNull()
   noFigure(screen.getByRole('progressbar'))
-  expect(screen.getByRole('button', { name: 'Guardá la venta' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Save sale' })).toBeDisabled()
   // Grams stay: they are what was typed, not a price.
-  expect(within(footer).getByText('2 g vendidos')).toBeInTheDocument()
+  expect(within(footer).getByText('2 g sold')).toBeInTheDocument()
 
   answer(`${pathTo(VARIETIES)}?on=2026-10-01`, [ROSA_YESTERDAY])
 
   expect(await screen.findByText('$ 1.500 x g')).toBeInTheDocument()
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
   expect(document.querySelector('.cargando--compacto')).toBeNull()
-  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
-  expect(screen.getByRole('button', { name: 'Guardá la venta' })).toBeEnabled()
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
+  expect(screen.getByRole('button', { name: 'Save sale' })).toBeEnabled()
 })
 
-test('Elegir cliente shows the loading state before its first answer', async () => {
+test('Pick a customer shows the loading state before its first answer', async () => {
   const user = userEvent.setup()
   await openAndPriceToday()
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
 
   const sheet = document.querySelector<HTMLElement>('.cliente-sheet')
   expect(sheet).not.toBeNull()
   expect(within(sheet as HTMLElement).getAllByRole('progressbar')).toHaveLength(1)
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
   noFigure(screen.getByRole('progressbar'))
-  expect(screen.getByRole('button', { name: 'Sin cliente' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'No customer' })).toBeInTheDocument()
 
   answer(pathTo(CUSTOMERS), [ANA])
 
@@ -163,13 +163,13 @@ test('Elegir cliente shows the loading state before its first answer', async () 
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 })
 
-test('Elegir cliente opened during a date change still leaves one progressbar on screen', async () => {
+test('Pick a customer opened during a date change still leaves one progressbar on screen', async () => {
   const user = userEvent.setup()
   await openAndPriceToday()
-  fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2026-10-01' } })
+  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-10-01' } })
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
 
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
 })

@@ -10,7 +10,7 @@ test('it mounts closed, opens on a tap and collapses on a second', async () => {
   const user = userEvent.setup()
   render(<MasInfo line={LINE} more={MORE} />)
 
-  const button = screen.getByRole('button', { name: 'Más info' })
+  const button = screen.getByRole('button', { name: 'More info' })
   expect(button).toHaveAttribute('aria-expanded', 'false')
   expect(screen.getByText(LINE)).toBeVisible()
   expect(screen.getByText(MORE)).not.toBeVisible()
@@ -28,18 +28,18 @@ test('the open state is local: a remount is closed and nothing is stored or push
   const user = userEvent.setup()
   const before = window.history.length
   const { unmount } = render(<MasInfo line={LINE} more={MORE} />)
-  await user.click(screen.getByRole('button', { name: 'Más info' }))
+  await user.click(screen.getByRole('button', { name: 'More info' }))
   unmount()
 
   render(<MasInfo line={LINE} more={MORE} />)
-  expect(screen.getByRole('button', { name: 'Más info' })).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.getByRole('button', { name: 'More info' })).toHaveAttribute('aria-expanded', 'false')
   expect(window.localStorage.length).toBe(0)
   expect(window.sessionStorage.length).toBe(0)
   expect(window.history.length).toBe(before)
 })
 
-test('the "i" icon is hidden from assistive technology and the name stays "Más info"', () => {
+test('the "i" icon is hidden from assistive technology and the name stays "More info"', () => {
   const { container } = render(<MasInfo line={LINE} more={MORE} />)
   expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.getByRole('button')).toHaveAccessibleName('Más info')
+  expect(screen.getByRole('button')).toHaveAccessibleName('More info')
 })

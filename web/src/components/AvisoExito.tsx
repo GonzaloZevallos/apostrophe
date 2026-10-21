@@ -8,39 +8,52 @@
  * typo or an invented message fails `tsc` instead of rendering silently.
  */
 
-import type { PRICE_SAVED } from '../screens/varieties/priceMessages'
+import type { COMMON_TEXT } from '../copy/common'
+import type { CUSTOMERS_TEXT } from '../copy/customers'
+import type { EXPENSES_TEXT } from '../copy/expenses'
+import type { PAYMENTS_TEXT } from '../copy/payments'
+import type { PINNED_CATALOG_TEXT } from '../copy/pinnedCatalog'
+import type { SALES_TEXT } from '../copy/sales'
+import type {
+  CATALOG_SAVED,
+  PASSWORD_CHANGED_SUCCESS,
+  PRICES_SAVED,
+  RENAME_SUCCESS,
+  SETTINGS_TEXT,
+} from '../copy/settings'
+import type { PRICE_SAVED, THRESHOLD_SAVED, VARIETIES_TEXT } from '../copy/varieties'
+import type { STOCK_TEXT } from '../copy/stock'
+import type { CATALOG_TEXT } from '../copy/catalog'
 
 export type SuccessToast =
-  | 'Cliente guardado'
-  | 'Entrada guardada'
-  | 'Entrada eliminada'
-  | 'Variedad guardada'
-  | 'Variedad eliminada'
-  | 'Variedad archivada'
-  | 'Variedad restaurada'
+  | (typeof COMMON_TEXT)['customerSaved']
+  | (typeof COMMON_TEXT)['entrySaved']
+  | (typeof COMMON_TEXT)['entryDeleted']
+  | (typeof VARIETIES_TEXT)['variedadGuardada']
+  | (typeof VARIETIES_TEXT)['variedadEliminada']
+  | (typeof VARIETIES_TEXT)['variedadArchivada']
+  | (typeof VARIETIES_TEXT)['variedadRestaurada']
   | typeof PRICE_SAVED
-  | 'Precio eliminado'
-  | 'Gasto guardado'
-  | 'Gasto eliminado'
-  | 'Categoría guardada'
-  | 'Categoría eliminada'
-  | 'Negocio renombrado'
-  | 'Contraseña cambiada · cerramos tus otras sesiones'
-  | 'Invitación lista'
-  | 'Cliente asignado'
-  | 'Aviso guardado'
-  | 'Catálogo guardado'
-  | 'Precios guardados'
-  | 'Catálogo copiado'
-  | 'Cobro eliminado'
-  | 'Cobro guardado'
-  | `Cobro guardado · queda debiendo ${string}`
-  | 'Prueba enviada'
-  | 'Catálogo publicado'
-  | 'Entrada guardada'
-  | 'Entrada eliminada'
-  | 'Retiro guardado'
-  | 'Retiro eliminado'
+  | (typeof VARIETIES_TEXT)['precioEliminado']
+  | (typeof EXPENSES_TEXT)['expenseSaved']
+  | (typeof EXPENSES_TEXT)['expenseDeleted']
+  | (typeof SETTINGS_TEXT)['categorySaved']
+  | (typeof SETTINGS_TEXT)['categoryDeleted']
+  | typeof RENAME_SUCCESS
+  | typeof PASSWORD_CHANGED_SUCCESS
+  | (typeof SETTINGS_TEXT)['invitationReady']
+  | (typeof SALES_TEXT)['customerAssigned']
+  | typeof THRESHOLD_SAVED
+  | typeof CATALOG_SAVED
+  | typeof PRICES_SAVED
+  | (typeof CATALOG_TEXT)['catalogoCopiado']
+  | (typeof CUSTOMERS_TEXT)['paymentDeleted']
+  | (typeof PAYMENTS_TEXT)['saved']
+  | ReturnType<(typeof PAYMENTS_TEXT)['savedStillOwing']>
+  | (typeof SETTINGS_TEXT)['testSent']
+  | (typeof PINNED_CATALOG_TEXT)['catalogPublished']
+  | (typeof STOCK_TEXT)['retiroGuardado']
+  | (typeof STOCK_TEXT)['retiroEliminado']
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

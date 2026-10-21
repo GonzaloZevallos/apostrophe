@@ -1,7 +1,7 @@
 /**
  * `ExpenseCategoriesGroup` at the screen seam: add, rename and remove a category, the fixed
  * refusal when removal is blocked because the category still has expenses
- * (`docs/product/expenses.md`, "Expense category"), and the form rule: "Cerrar", and the
+ * (`docs/product/expenses.md`, "Expense category"), and the form rule: "Close", and the
  * unsaved-changes ask measured against what the server last accepted, never the query cache.
  * The API is faked at `fetch`.
  */
@@ -14,7 +14,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../../api/refusals'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import ExpenseCategoriesGroup, { CANNOT_REMOVE } from './ExpenseCategoriesGroup'
 
@@ -73,20 +73,20 @@ test('lists categories and adds a new one with a fixed toast', async () => {
 
   expect(await screen.findByText('Packaging')).toBeInTheDocument()
 
-  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Insumos')
-  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
+  await userEvent.type(screen.getByLabelText('New category'), 'Insumos')
+  await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
 
-  expect(await screen.findByText('Categoría guardada')).toBeInTheDocument()
+  expect(await screen.findByText('Category saved')).toBeInTheDocument()
   expect(screen.getByText('Insumos')).toBeInTheDocument()
-  expect(screen.getByLabelText('Nueva categoría')).toHaveValue('')
+  expect(screen.getByLabelText('New category')).toHaveValue('')
 })
 
 test('with no categories it shows an empty list and the add action', async () => {
   renderGroup(async () => jsonResponse(200, []))
 
-  expect(await screen.findByLabelText('Nueva categoría')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: '+ Categoría' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Renombrar' })).not.toBeInTheDocument()
+  expect(await screen.findByLabelText('New category')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '+ Category' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Rename' })).not.toBeInTheDocument()
 })
 
 test('a blocked removal shows the fixed refusal, naming no data', async () => {
@@ -100,14 +100,14 @@ test('a blocked removal shows the fixed refusal, naming no data', async () => {
   )
 
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(CANNOT_REMOVE)).toBeInTheDocument()
   expect(screen.getByText('Packaging')).toBeInTheDocument()
 })
 
-test('removing a category toasts "Categoría eliminada" and drops the row', async () => {
+test('removing a category toasts "Category deleted" and drops the row', async () => {
   renderGroup(
     serving(async (url, init) => {
       if (url === '/expense-categories/1' && init?.method === 'DELETE') {
@@ -118,14 +118,14 @@ test('removing a category toasts "Categoría eliminada" and drops the row', asyn
   )
 
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-  expect(await screen.findByText('Categoría eliminada')).toBeInTheDocument()
+  expect(await screen.findByText('Category deleted')).toBeInTheDocument()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
 })
 
-test('renaming a category toasts "Categoría guardada" and shows what the server answered', async () => {
+test('renaming a category toasts "Category saved" and shows what the server answered', async () => {
   renderGroup(
     serving(async (url, init) => {
       if (url === '/expense-categories/1' && init?.method === 'PATCH') {
@@ -136,13 +136,13 @@ test('renaming a category toasts "Categoría guardada" and shows what the server
   )
 
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
-  const input = screen.getByLabelText('Nombre de Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Rename' }))
+  const input = screen.getByLabelText('Name of Packaging')
   await userEvent.clear(input)
   await userEvent.type(input, '  empaque  ')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-  expect(await screen.findByText('Categoría guardada')).toBeInTheDocument()
+  expect(await screen.findByText('Category saved')).toBeInTheDocument()
   expect(screen.getByText('Empaque')).toBeInTheDocument()
 })
 
@@ -163,19 +163,19 @@ test('after an add or a rename the list keeps the server order, by name without 
   )
 
   await screen.findByText('Bolsas')
-  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'alquiler')
-  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
+  await userEvent.type(screen.getByLabelText('New category'), 'alquiler')
+  await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
   await screen.findByText('alquiler')
   // Rows are in the order of their rename buttons: alquiler, Bolsas, Packaging.
   const rename = async (index: number, current: string): Promise<void> => {
-    await userEvent.click(screen.getAllByRole('button', { name: 'Renombrar' })[index] as HTMLElement)
-    expect(screen.getByLabelText(`Nombre de ${current}`)).toBeInTheDocument()
+    await userEvent.click(screen.getAllByRole('button', { name: 'Rename' })[index] as HTMLElement)
+    expect(screen.getByLabelText(`Name of ${current}`)).toBeInTheDocument()
   }
   await rename(2, 'Packaging')
-  const input = screen.getByLabelText('Nombre de Packaging')
+  const input = screen.getByLabelText('Name of Packaging')
   await userEvent.clear(input)
   await userEvent.type(input, 'Cajas')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await screen.findByText('Cajas')
 
   // Cajas sorts between Bolsas and alquiler's case-folded place: alquiler, Bolsas, Cajas.
@@ -193,11 +193,11 @@ test('renaming a category that is already gone shows the gone notice and drops t
   )
 
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Rename' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   const notice = await screen.findByText(GONE_NOTICE)
-  // Same floating slot the "Categoría guardada"/"Categoría eliminada" toast uses.
+  // Same floating slot the "Category saved"/"Category deleted" toast uses.
   expect(notice.closest('.aviso-flotante')).not.toBeNull()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
 })
@@ -213,8 +213,8 @@ test('removing a category that is already gone shows the gone notice, not the re
   )
 
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
   expect(screen.queryByText(CANNOT_REMOVE)).not.toBeInTheDocument()
@@ -229,19 +229,19 @@ test('a dropped network on add shows the offline notice and keeps what was typed
   )
 
   await screen.findByText('Packaging')
-  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Insumos')
-  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
+  await userEvent.type(screen.getByLabelText('New category'), 'Insumos')
+  await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
-  expect(screen.getByLabelText('Nueva categoría')).toHaveValue('Insumos')
+  expect(screen.getByLabelText('New category')).toHaveValue('Insumos')
 })
 
 test('an untouched group closes at once, and so does one whose rename was opened and left as it was', async () => {
   renderGroup(serving())
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Rename' }))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
@@ -249,29 +249,29 @@ test('an untouched group closes at once, and so does one whose rename was opened
 test('closing with a new name typed asks first, and keeping stays on the group', async () => {
   renderGroup(serving())
   await screen.findByText('Packaging')
-  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Sin guardar')
+  await userEvent.type(screen.getByLabelText('New category'), 'Sin guardar')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
-  expect(await screen.findByText('¿Descartás la categoría?')).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí editando' }))
-  expect(screen.getByLabelText('Nueva categoría')).toHaveValue('Sin guardar')
+  expect(await screen.findByText('Discard the category?')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
+  expect(screen.getByLabelText('New category')).toHaveValue('Sin guardar')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()
 })
 
 test('closing with a rename edited and not saved asks, and discarding leaves the group', async () => {
   renderGroup(serving())
   await screen.findByText('Packaging')
-  await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
-  await userEvent.type(screen.getByLabelText('Nombre de Packaging'), 's')
+  await userEvent.click(screen.getByRole('button', { name: 'Rename' }))
+  await userEvent.type(screen.getByLabelText('Name of Packaging'), 's')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartala' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
 
-test('after a save, "Cerrar" closes at once even while the refetch is pending and would differ', async () => {
+test('after a save, "Close" closes at once even while the refetch is pending and would differ', async () => {
   let reads = 0
   renderGroup(async (url, init) => {
     if (url === '/expense-categories' && init?.method === 'POST') {
@@ -283,14 +283,14 @@ test('after a save, "Cerrar" closes at once even while the refetch is pending an
   })
   await screen.findByText('Packaging')
 
-  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Insumos')
-  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
-  await screen.findByText('Categoría guardada')
+  await userEvent.type(screen.getByLabelText('New category'), 'Insumos')
+  await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
+  await screen.findByText('Category saved')
   expect(reads).toBeGreaterThan(1)
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(screen.getByText('Lista de grupos')).toBeInTheDocument())
-  expect(screen.queryByText('¿Descartás la categoría?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard the category?')).not.toBeInTheDocument()
 })
 
 test('a partner changing the list behind the screen does not make a clean group dirty', async () => {
@@ -304,25 +304,25 @@ test('a partner changing the list behind the screen does not make a clean group 
   })
   await screen.findByText('Packaging')
 
-  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Insumos')
-  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
-  await screen.findByText('Categoría guardada')
+  await userEvent.type(screen.getByLabelText('New category'), 'Insumos')
+  await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
+  await screen.findByText('Category saved')
   await waitFor(() => expect(reads).toBeGreaterThan(1))
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
 
 test('with no categories the group follows the icon and text rule', async () => {
   renderGroup(async () => jsonResponse(200, []))
-  await screen.findByLabelText('Nueva categoría')
+  await screen.findByLabelText('New category')
   expectIconAndTextRule(document.body)
 })
 
-test('"Eliminar" is the icon-only delete: no visible word, a 44 px control named "Eliminar"', async () => {
+test('"Delete" is the icon-only delete: no visible word, a 44 px control named "Delete"', async () => {
   renderGroup(serving())
 
-  const remove = await screen.findByRole('button', { name: 'Eliminar' })
+  const remove = await screen.findByRole('button', { name: 'Delete' })
 
   expect(remove).toHaveClass('boton-icono')
   expect(remove).toHaveTextContent('')
@@ -330,15 +330,15 @@ test('"Eliminar" is the icon-only delete: no visible word, a 44 px control named
   expectIconAndTextRule(document.body)
 })
 
-test('"Renombrar" is the icon-only edit: a 44 px control named "Renombrar" with no visible word', async () => {
+test('"Rename" is the icon-only edit: a 44 px control named "Rename" with no visible word', async () => {
   renderGroup(serving())
 
-  const rename = await screen.findByRole('button', { name: 'Renombrar' })
+  const rename = await screen.findByRole('button', { name: 'Rename' })
 
   expect(rename).toHaveClass('boton-icono')
   expect(rename).toHaveTextContent('')
   expect(rename.querySelector('svg')).not.toBeNull()
-  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
+  expect(screen.getByRole('button', { name: 'Close' })).toHaveClass('boton-icono')
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()
   expectIconAndTextRule(document.body)
 })

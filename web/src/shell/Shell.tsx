@@ -46,11 +46,13 @@ import {
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
-import { NUEVA_VENTA_MISSING } from '../screens/inicioMessages'
+import { NUEVA_VENTA_MISSING } from '../copy/inicio'
 import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useViewport } from './useViewport'
+import { SHELL_TEXT } from '../copy/shell'
+import { COMMON_TEXT } from '../copy/common'
 
 type Placement = 'bar' | 'rail' | 'both'
 
@@ -69,11 +71,11 @@ interface Item {
 }
 
 const ITEMS: Item[] = [
-  { to: HOME, label: 'Inicio', icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
-  { to: SALES, label: 'Ventas', icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
+  { to: HOME, label: COMMON_TEXT.home, icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
+  { to: SALES, label: COMMON_TEXT.sales, icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
   {
     to: CUSTOMERS,
-    label: 'Clientes',
+    label: COMMON_TEXT.customers,
     icono: 'clientes',
     placement: 'both',
     group: 'main',
@@ -81,15 +83,15 @@ const ITEMS: Item[] = [
   },
   {
     to: VARIETIES,
-    label: 'Variedades',
+    label: COMMON_TEXT.varieties,
     icono: 'variedades',
     placement: 'both',
     group: 'main',
     place: 'varieties',
   },
-  { to: EXPENSES, label: 'Gastos', icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
-  { to: ANALYSIS, label: 'Análisis', icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
-  { to: MORE, label: 'Más', icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
+  { to: EXPENSES, label: COMMON_TEXT.expenses, icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
+  { to: ANALYSIS, label: COMMON_TEXT.analysis, icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
+  { to: MORE, label: COMMON_TEXT.more, icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
 ]
 
 const BAR_ITEMS = ITEMS.filter((item) => item.placement !== 'rail')
@@ -169,7 +171,7 @@ export default function Shell() {
     <BackParentContext.Provider value={backParent}>
     <div className="disposicion">
       {chrome.rail && (
-        <nav className="riel-lateral" aria-label="Navegación" data-menu>
+        <nav className="riel-lateral" aria-label={SHELL_TEXT.navigation} data-menu>
           {chrome.railNuevaVenta && (
             <>
               <BotonLink
@@ -178,7 +180,7 @@ export default function Shell() {
                 className={NUEVA_VENTA_ESCRITORIO_CLASS}
                 ariaDescribedBy={railDescribedBy}
               >
-                Nueva venta
+                {COMMON_TEXT.newSale}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta nueva-venta__falta--escritorio" id={RAIL_MISSING_ID}>
@@ -207,7 +209,7 @@ export default function Shell() {
           })}
           <InAppLink
             to={SETTINGS}
-            aria-label={`Configuración de ${me.business_name}`}
+            aria-label={COMMON_TEXT.settingsFor(me.business_name)}
             aria-current={railPlace === 'business' ? 'page' : undefined}
             className={
               railPlace === 'business'
@@ -228,7 +230,7 @@ export default function Shell() {
           {chrome.barNuevaVenta && (
             <>
               <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
-                Nueva venta
+                {COMMON_TEXT.newSale}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta" id={NUEVA_VENTA_MISSING_ID}>
@@ -238,7 +240,7 @@ export default function Shell() {
             </>
           )}
           {chrome.bar && (
-            <nav className="bar-inferior" aria-label="Navegación" data-menu>
+            <nav className="bar-inferior" aria-label={SHELL_TEXT.navigation} data-menu>
               {BAR_ITEMS.map((item) => (
                 <BarItem key={item.to} item={item} active={barPlace === item.place} />
               ))}

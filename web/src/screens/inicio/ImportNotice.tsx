@@ -14,7 +14,7 @@ import { AvisoCuerpo } from '../../components/AvisoAmbar'
 import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
-import { IMPORT_NOTICE, IMPORT_NOTICE_DISMISS } from '../inicioMessages'
+import { IMPORT_NOTICE, IMPORT_NOTICE_DISMISS } from '../../copy/inicio'
 
 export default function ImportNotice() {
   const queryClient = useQueryClient()

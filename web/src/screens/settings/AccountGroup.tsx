@@ -1,6 +1,6 @@
 /**
  * The "Tu cuenta" group of Configuración (`ConfiguracionCuenta.dc.html`; `accounts.md`):
- * "Cambiar contraseña" (the unchanged `CambiarContrasena` sheet) above "Cerrar sesión".
+ * "Cambiar contraseña" (the unchanged `CambiarContrasena` sheet) above "Sign out".
  *
  * Logging out reuses `session.logOut`, the one place every session boundary clears the query
  * cache before navigating, and calls `disarm()` right before that navigation. It does not
@@ -16,14 +16,15 @@ import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import { logOut } from '../../session'
 import CambiarContrasena from '../CambiarContrasena'
-import { PASSWORD_CHANGED_SUCCESS } from './messages'
+import { PASSWORD_CHANGED_SUCCESS, SETTINGS_TEXT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
+import { COMMON_TEXT } from '../../copy/common'
 
 const LEAVE = {
-  question: '¿Descartás la contraseña nueva?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
+  question: SETTINGS_TEXT.discardTheNewPassword,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function AccountGroup() {
@@ -53,7 +54,7 @@ export default function AccountGroup() {
   }
 
   return (
-    <SettingsGroup title="Tu cuenta" dirty={false} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.yourAccount} dirty={false} leave={LEAVE}>
       {({ disarm }) => (
         <>
           {passwordChanged && (
@@ -62,10 +63,10 @@ export default function AccountGroup() {
             </div>
           )}
           <Boton variant="secondary" icon="candado" onClick={() => setChangingPassword(true)}>
-            Cambiar contraseña
+            {COMMON_TEXT.changePassword}
           </Boton>
           <Boton variant="secondary" icon="salirSesion" onClick={() => void onLogOut(disarm)} disabled={loggingOut}>
-            Cerrar sesión
+            {SETTINGS_TEXT.signOut}
           </Boton>
           {logoutOffline && <SinConexion />}
           {changingPassword && (

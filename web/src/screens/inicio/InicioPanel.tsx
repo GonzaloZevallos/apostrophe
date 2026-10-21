@@ -31,17 +31,18 @@ import { salesOwingCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { detailFor, sideNoteFor } from '../../stock/detail'
-import { NOBODY_OWES } from '../inicioMessages'
+import { NOBODY_OWES, INICIO_TEXT } from '../../copy/inicio'
 import PeriodPanel from './PeriodFigures'
+import { COMMON_TEXT } from '../../copy/common'
 
-const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }
+const TAB_LABEL: Record<PanelTab, string> = { today: COMMON_TEXT.today, week: COMMON_TEXT.week, month: COMMON_TEXT.month }
 const TAB_ITEMS = (['today', 'week', 'month'] as const).map((value) => ({
   value,
   label: TAB_LABEL[value],
 }))
 
 function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
-  if (tab === 'today') return `Hoy ${formatDateShort(period.start)}`
+  if (tab === 'today') return COMMON_TEXT.todayWith(formatDateShort(period.start))
   return `${formatDateShort(period.start)} – ${formatDateShort(period.end)}`
 }
 
@@ -62,7 +63,7 @@ export default function InicioPanel({
   return (
     <>
       <div className="inicio__periodos">
-        <Pestanas items={TAB_ITEMS} value={tab} onChange={onTab} ariaLabel="Período" />
+        <Pestanas items={TAB_ITEMS} value={tab} onChange={onTab} ariaLabel={COMMON_TEXT.period} />
         <span className="pie">{rangeLabel(tab, period)}</span>
       </div>
 
@@ -75,7 +76,7 @@ export default function InicioPanel({
         <TeDebenBlock debts={debts} />
 
         <div>
-          <span className="rotulo">Lo que te queda</span>
+          <span className="rotulo">{INICIO_TEXT.loQueTeQueda}</span>
           <div className="lista-stock">
             {stock.map((variety) => (
               <StockRow key={variety.variety_id} variety={variety} today={today} />
@@ -122,7 +123,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
   if (debts.oldest === null) {
     return (
       <div className="bloque-deben">
-        <span className="rotulo">Te deben</span>
+        <span className="rotulo">{COMMON_TEXT.owedToYou}</span>
         <span className="pie">{NOBODY_OWES}</span>
       </div>
     )
@@ -131,26 +132,26 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
   return (
     <div className="bloque-deben">
       <InAppLink to={CUSTOMERS} className="bloque-deben__titulo">
-        Te deben
+        {COMMON_TEXT.owedToYou}
       </InAppLink>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
       <span className="pie bloque-deben__cuenta">{salesOwingCount(debts.sales_owing_count)}</span>
-      <span className="pie bloque-deben__desde">{`desde ${formatDateShort(debts.oldest)}`}</span>
+      <span className="pie bloque-deben__desde">{INICIO_TEXT.desde0(formatDateShort(debts.oldest))}</span>
       {debts.teaser.map((row) => (
         <div key={row.customer_id} className="bloque-deben__fila">
           <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
             <span className="bloque-deben__nombre">{row.name}</span>
             <span className="pie">
               <span className="monto-deuda">{formatMoney(row.balance)}</span>
-              {` · desde ${formatDateShort(row.owing_since)}`}
+              {INICIO_TEXT.sinceDate(formatDateShort(row.owing_since))}
             </span>
           </InAppLink>
           <BotonLink
             icon="cobro"
             to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
-            ariaLabel={`Cobrar a ${row.name}`}
+            ariaLabel={COMMON_TEXT.collectFrom(row.name)}
           >
-            Cobrar
+            {COMMON_TEXT.collect}
           </BotonLink>
         </div>
       ))}

@@ -15,15 +15,18 @@ import { useId } from 'react'
 import type { PanelPeriod, PanelTab } from '../../api/panel'
 import { salesCount } from '../../format/counts'
 import { formatGrams, formatMoney, formatSignedMoney } from '../../format/money'
+import { COMMON_TEXT } from '../../copy/common'
+import { SHORTFALL_LABEL, PROMOTION_LABEL, OWN_USE_LABEL, COST_OF_GOODS_LABEL } from '../../copy/analysis'
+import { INICIO_TEXT } from '../../copy/inicio'
 
-const PENDING_NOTE = 'incluye costo pendiente'
+const PENDING_NOTE = INICIO_TEXT.pendingCostNote
 
 /** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
  * when the period has one (`null` otherwise), right before Gastos. */
 const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
-  { key: 'shortfall', label: 'Faltante de stock' },
-  { key: 'promotion', label: 'Promoción' },
-  { key: 'own_use', label: 'Consumo propio' },
+  { key: 'shortfall', label: SHORTFALL_LABEL },
+  { key: 'promotion', label: PROMOTION_LABEL },
+  { key: 'own_use', label: OWN_USE_LABEL },
 ]
 
 /** Shortest and longest formatted figure the computer's card fits at a scaled size
@@ -40,9 +43,9 @@ function largoOf(formatted: string): string | undefined {
 }
 
 const SALES_HEADING: Record<PanelTab, string> = {
-  today: 'Vendiste hoy',
-  week: 'Vendiste esta semana',
-  month: 'Vendiste este mes',
+  today: INICIO_TEXT.vendisteHoy,
+  week: INICIO_TEXT.vendisteEstaSemana,
+  month: INICIO_TEXT.vendisteEsteMes,
 }
 
 /** One list figure, ready to draw. */
@@ -61,16 +64,16 @@ function listFigures(period: PanelPeriod): ListFigure[] {
     return line === null ? [] : [{ key, label, value: formatMoney(line.amount), pending: line.pending }]
   })
   return [
-    { key: 'gifted', label: 'Regalaste', value: formatGrams(period.grams_gifted), pending: false },
+    { key: 'gifted', label: INICIO_TEXT.regalaste, value: formatGrams(period.grams_gifted), pending: false },
     {
       key: 'cost_of_goods',
-      label: 'Costo de lo vendido',
+      label: COST_OF_GOODS_LABEL,
       value: formatMoney(period.cost_of_goods),
       pending: period.pending_cost,
     },
     ...costLines,
-    { key: 'expenses', label: 'Gastos', value: formatMoney(period.expenses), pending: false },
-    { key: 'purchases', label: 'Compras de flores', value: formatMoney(period.purchases), pending: false },
+    { key: 'expenses', label: COMMON_TEXT.expenses, value: formatMoney(period.expenses), pending: false },
+    { key: 'purchases', label: COMMON_TEXT.flowerPurchases, value: formatMoney(period.purchases), pending: false },
   ]
 }
 
@@ -79,7 +82,7 @@ function salesSubtitle(period: PanelPeriod): string {
   const grams = formatGrams(period.grams_sold)
   return period.average_sale === null
     ? `${count} · ${grams}`
-    : `${count} · promedio ${formatMoney(period.average_sale)} · ${grams}`
+    : INICIO_TEXT.n0Promedio12(count, formatMoney(period.average_sale), grams)
 }
 
 function Headline({ tab, period }: { tab: PanelTab; period: PanelPeriod }) {
@@ -125,12 +128,12 @@ export function PeriodFigures({
 
         <div className="panel-resultados">
           <ResultCell
-            label="Ganancia"
+            label={COMMON_TEXT.profit}
             value={formatSignedMoney(period.profit)}
             accent
             pending={period.profit_pending}
           />
-          <ResultCell label="Caja" value={formatSignedMoney(period.cash)} accent={false} pending={false} />
+          <ResultCell label={COMMON_TEXT.cash} value={formatSignedMoney(period.cash)} accent={false} pending={false} />
         </div>
       </div>
     </div>

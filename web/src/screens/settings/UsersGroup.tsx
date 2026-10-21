@@ -1,7 +1,7 @@
 /**
  * The "Usuarios" group of Configuración (`ConfiguracionUsuarios.dc.html`; `accounts.md`):
  * the business's users by email (sorted the way the backend already answers them), the
- * signed-in one marked "vos", and "Invitá a un socio".
+ * signed-in one marked "you", and "Invitá a un socio".
  *
  * "Invitá a un socio" is `InvitePartner` (shared with the Onboarding's partner step). The group
  * is never dirty: a link is issued by the server the moment it is asked for, so there is
@@ -18,16 +18,18 @@ import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import InvitePartner from './InvitePartner'
 import SettingsGroup from './SettingsGroup'
+import { SETTINGS_TEXT } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
 
 interface Business {
   users: { email: string }[]
 }
 
 const LEAVE = {
-  question: '¿Descartás la invitación?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
+  question: SETTINGS_TEXT.discardTheInvitation,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function UsersGroup() {
@@ -38,7 +40,7 @@ export default function UsersGroup() {
   })
 
   return (
-    <SettingsGroup title="Usuarios" dirty={false} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.users} dirty={false} leave={LEAVE}>
       {isPending && <Loading />}
       {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       {!isPending && !isError && (
@@ -46,7 +48,7 @@ export default function UsersGroup() {
           {data.users.map((user) => (
             <li key={user.email} className="usuarios__usuario">
               <span>{user.email}</span>
-              {user.email === me.email && <span className="usuarios__vos">vos</span>}
+              {user.email === me.email && <span className="usuarios__vos">{SETTINGS_TEXT.you}</span>}
             </li>
           ))}
         </ul>

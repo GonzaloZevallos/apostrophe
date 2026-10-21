@@ -70,7 +70,7 @@ function Declare({ screen: id, detail }: { screen: RecordLabelledScreen; detail:
   return <p>{`Cargada ${detail.name}`}</p>
 }
 
-/** A record screen: it asks the API for its variety and shows "Cargando" while it waits, also
+/** A record screen: it asks the API for its variety and shows "Loading" while it waits, also
  * when the route's `:id` changes under it (a query under a new key is pending again). A 404
  * declares nothing. */
 function RecordStub({ screen: id }: { screen: RecordLabelledScreen }) {
@@ -87,8 +87,8 @@ function RecordStub({ screen: id }: { screen: RecordLabelledScreen }) {
     }
   }, [param])
   const shown = loaded?.param === param ? loaded : undefined
-  if (shown === undefined) return <p>Cargando</p>
-  return shown.detail === null ? <p>Eso ya no está.</p> : <Declare screen={id} detail={shown.detail} />
+  if (shown === undefined) return <p>Loading</p>
+  return shown.detail === null ? <p>That is gone.</p> : <Declare screen={id} detail={shown.detail} />
 }
 
 /** The shell asks `GET /first-run` on a root, so it needs a client; the read fails here and the
@@ -135,10 +135,10 @@ test('a marked leaf shows no back, and no placeholder word, until its screen dec
   fakeApi({ 1: pending })
   renderAt([pathTo(VARIETY_PRICES, { id: 1 })])
 
-  expect(await screen.findByText('Cargando')).toBeInTheDocument()
+  expect(await screen.findByText('Loading')).toBeInTheDocument()
   expect(backs()).toEqual([])
   expect(screen.queryByText('‹')).not.toBeInTheDocument()
-  expect(screen.queryByText(/Variedad$/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Variety$/)).not.toBeInTheDocument()
 
   await act(async () => pending.settle(json({ id: 1, name: '24K Gold', archived: false })))
   expect(await screen.findAllByRole('button', { name: /^‹ / })).toHaveLength(1)
@@ -162,7 +162,7 @@ test("from variety A's prices to variety B's entries, '‹ A' is gone while B lo
   expect(await screen.findByRole('button', { name: '‹ Alpha' })).toBeInTheDocument()
 
   await act(async () => router.navigate(pathTo(VARIETY_ENTRIES, { id: 2 })))
-  expect(await screen.findByText('Cargando')).toBeInTheDocument()
+  expect(await screen.findByText('Loading')).toBeInTheDocument()
   expect(backs()).toEqual([])
 
   await act(async () => b.settle(json({ id: 2, name: 'Beta', archived: false })))
@@ -177,7 +177,7 @@ test("from variety A to variety B on the same screen, '‹ A' is gone while B lo
   expect(await screen.findByRole('button', { name: '‹ Alpha' })).toBeInTheDocument()
 
   await act(async () => router.navigate(pathTo(VARIETY, { id: 2 })))
-  expect(await screen.findByText('Cargando')).toBeInTheDocument()
+  expect(await screen.findByText('Loading')).toBeInTheDocument()
   expect(backs()).toEqual([])
 
   await act(async () => b.settle(json({ id: 2, name: 'Beta', archived: false })))
@@ -185,7 +185,7 @@ test("from variety A to variety B on the same screen, '‹ A' is gone while B lo
   expect(backs()).toEqual(['‹ Beta'])
 })
 
-test("an archived variety shows only '‹ Archivadas', never a flash of '‹ Variedades'", async () => {
+test("an archived variety shows only '‹ Archived', never a flash of '‹ Varieties'", async () => {
   const pending = deferred()
   fakeApi({ 5: pending })
   const seen: string[] = []
@@ -194,14 +194,14 @@ test("an archived variety shows only '‹ Archivadas', never a flash of '‹ Var
   })
   watch.observe(document.body, { childList: true, subtree: true, characterData: true })
   renderAt([pathTo(VARIETY, { id: 5 })])
-  expect(await screen.findByText('Cargando')).toBeInTheDocument()
+  expect(await screen.findByText('Loading')).toBeInTheDocument()
 
   await act(async () => pending.settle(json({ id: 5, name: 'Vieja', archived: true })))
-  expect(await screen.findByRole('button', { name: '‹ Archivadas' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: '‹ Archived' })).toBeInTheDocument()
   watch.disconnect()
 
-  expect(backs()).toEqual(['‹ Archivadas'])
-  expect(seen.filter((word) => word !== '‹ Archivadas')).toEqual([])
+  expect(backs()).toEqual(['‹ Archived'])
+  expect(seen.filter((word) => word !== '‹ Archived')).toEqual([])
 })
 
 /** Writes the slot for variety 1 once and never clears it: a declaration left behind. */
@@ -221,7 +221,7 @@ test("a declaration for another record or another screen is ignored, even if it 
             element: <Shell />,
             children: [
               { path: VARIETY, handle: { screen: 'variety' }, element: <LeftBehind screen="variety" /> },
-              { path: VARIETY_PRICES, handle: { screen: 'variety-prices' }, element: <p>Precios</p> },
+              { path: VARIETY_PRICES, handle: { screen: 'variety-prices' }, element: <p>Prices</p> },
             ],
           },
         ],
@@ -241,7 +241,7 @@ test("a declaration for another record or another screen is ignored, even if it 
   expect(backs()).toEqual([])
 
   await act(async () => router.navigate(pathTo(VARIETY_PRICES, { id: 1 })))
-  expect(await screen.findByText('Precios')).toBeInTheDocument()
+  expect(await screen.findByText('Prices')).toBeInTheDocument()
   expect(backs()).toEqual([])
 })
 
@@ -249,7 +249,7 @@ test('a marked screen whose fetch answers 404 shows no back', async () => {
   fakeApi({})
   renderAt([pathTo(VARIETY_ENTRIES, { id: 9 })])
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone.')).toBeInTheDocument()
   expect(backs()).toEqual([])
 })
 
@@ -270,7 +270,7 @@ test("an archived variety's back with no history goes to Archivadas; an active p
     6: json({ id: 6, name: 'Nueva', archived: false }),
   })
   const first = renderAt([pathTo(VARIETY, { id: 5 })])
-  await user.click(await screen.findByRole('button', { name: '‹ Archivadas' }))
+  await user.click(await screen.findByRole('button', { name: '‹ Archived' }))
   expect(first.router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
   first.unmount()
 
@@ -282,7 +282,7 @@ test("an archived variety's back with no history goes to Archivadas; an active p
 test('an unmarked card still prints its registry parent, a tab root no back', () => {
   fakeApi({})
   const card = renderAt([pathTo(SALE, { id: 7 })])
-  expect(backs()).toEqual(['‹ Ventas'])
+  expect(backs()).toEqual(['‹ Sales'])
   card.unmount()
   renderAt([ANALYSIS])
   expect(backs()).toEqual([])

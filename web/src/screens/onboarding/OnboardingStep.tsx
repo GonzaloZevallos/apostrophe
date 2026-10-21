@@ -1,14 +1,14 @@
 /**
- * The frame every Onboarding step shares (`OnboardingVariedad.dc.html`): "Atrás" and
+ * The frame every Onboarding step shares (`OnboardingVariedad.dc.html`): "Back" and
  * "Cerrar" on top, "Paso N de 6" with its shape, the title and the one-line why, then the
- * step's own body, and, on an optional step, "Saltar" and "Saltar el resto" with where it
+ * step's own body, and, on an optional step, "Skip" and "Skip the rest" with where it
  * can be done later.
  *
- * The frame only sends the writes that are its own: a `skipped` pass ("Saltar") and
- * "Saltar el resto" (shown only when the API says `can_skip_rest`). Every answer, its own
+ * The frame only sends the writes that are its own: a `skipped` pass ("Skip") and
+ * "Skip the rest" (shown only when the API says `can_skip_rest`). Every answer, its own
  * or the body's, goes through `afterProgress`: "Listo" only after `over: true`. A render
  * never writes. One leave guard, fed by the body's `onDirtyChange`, asks before "Cerrar",
- * "Atrás" or "Saltar" discards something typed and not saved; an untouched step leaves at
+ * "Back" or "Skip" discards something typed and not saved; an untouched step leaves at
  * once. Closing keeps everything saved and the resume point: it sends nothing.
  */
 
@@ -33,7 +33,7 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import type { StepBodyProps } from './stepBodies'
-import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from './onboardingMessages'
+import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL, ONBOARDING_TEXT } from '../../copy/onboarding'
 import {
   isFirst,
   isLast,
@@ -45,11 +45,13 @@ import {
   stepNumber,
 } from './steps'
 import { HOME } from '../../routes'
+import { COMMON_TEXT } from '../../copy/common'
+import { CHECKLIST_REQUIRED, CHECKLIST_OPTIONAL } from '../../copy/inicio'
 
 export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
-export const DISCARD_QUESTION = '¿Descartás lo que escribiste?'
-export const KEEP_TYPING = 'No, seguí escribiendo'
-export const DISCARD = 'Sí, descartalo'
+export const DISCARD_QUESTION = ONBOARDING_TEXT.discardWhatYouTyped
+export const KEEP_TYPING = COMMON_TEXT.noKeepTyping
+export const DISCARD = COMMON_TEXT.yesDiscard
 
 type Skip = 'one' | 'rest'
 type Failure = 'offline' | 'error'
@@ -117,16 +119,16 @@ export default function OnboardingStep({
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
             <Boton variant="secondary" icon="atras" onClick={() => void navigate(previous)}>
-              Atrás
+              {ONBOARDING_TEXT.back}
             </Boton>
           )}
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={() => void navigate(HOME)} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={() => void navigate(HOME)} />
         </div>
 
         <div className="onboarding__progreso">
           <div className="onboarding__progreso-fila">
-            <span className="onboarding__paso">{`Paso ${stepNumber(slug)} de ${STEP_COUNT}`}</span>
-            <span className="onboarding__insignia">{info.required ? 'Obligatorio' : 'Opcional'}</span>
+            <span className="onboarding__paso">{ONBOARDING_TEXT.stepOf(stepNumber(slug), STEP_COUNT)}</span>
+            <span className="onboarding__insignia">{info.required ? CHECKLIST_REQUIRED : CHECKLIST_OPTIONAL}</span>
           </div>
           <StepIndicator steps={progress.steps} current={slug} />
         </div>
@@ -147,11 +149,11 @@ export default function OnboardingStep({
           <div className="onboarding__saltar">
             <div className="onboarding__saltar-fila">
               <Boton variant="link" disabled={sending} onClick={() => requestSkip('one')}>
-                Saltar
+                {ONBOARDING_TEXT.skip}
               </Boton>
               {progress.can_skip_rest && !isLast(slug) && (
                 <Boton variant="link" disabled={sending} onClick={() => requestSkip('rest')}>
-                  Saltar el resto
+                  {ONBOARDING_TEXT.skipTheRest}
                 </Boton>
               )}
             </div>

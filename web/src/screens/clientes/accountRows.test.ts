@@ -1,4 +1,4 @@
-/** `deleteRowIndices`: one "Borrar cobro" per later payment, whatever mix of
+/** `deleteRowIndices`: one "Delete payment" per later payment, whatever mix of
  * payment and credit rows it appears as. */
 
 import { expect, test } from 'vitest'

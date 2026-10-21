@@ -1,9 +1,9 @@
 /**
- * Step 3, "Cómo sale tu catálogo": the owner's header and footer form, shown with their
- * defaults. Saving through the owner's route and then "Dejar así" (the defaults kept) both
- * pass the step as `done`; the pass is sent only after the save answered. "Dejar así" is
+ * Step 3, "How your catalog looks": the owner's header and footer form, shown with their
+ * defaults. Saving through the owner's route and then "Leave as is" (the defaults kept) both
+ * pass the step as `done`; the pass is sent only after the save answered. "Leave as is" is
  * offered only while nothing typed is unsaved, so it never passes over an edit that was not
- * saved. "Saltar" belongs to the frame.
+ * saved. "Skip" belongs to the frame.
  */
 
 import { useCallback, useState } from 'react'
@@ -12,6 +12,8 @@ import CatalogMessageForm from '../settings/CatalogMessageForm'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import { COMMON_TEXT } from '../../copy/common'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
 export default function CatalogMessageStep({ onDirtyChange, onProgress }: StepBodyProps) {
   const [dirty, setDirty] = useState(false)
@@ -29,7 +31,7 @@ export default function CatalogMessageStep({ onDirtyChange, onProgress }: StepBo
   return (
     <>
       <CatalogMessageForm
-        submitLabel="Guardar"
+        submitLabel={COMMON_TEXT.save}
         onDirtyChange={onDirty}
         onSaved={() => void run(() => sendPass('header_footer', 'done'))}
       />
@@ -39,7 +41,7 @@ export default function CatalogMessageStep({ onDirtyChange, onProgress }: StepBo
           disabled={sending}
           onSubmit={() => void run(() => sendPass('header_footer', 'done'))}
         >
-          Dejar así
+          {ONBOARDING_TEXT.leaveAsIs}
         </StepSubmit>
       )}
       {notice}

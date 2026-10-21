@@ -1,8 +1,8 @@
 /**
  * The withdrawal detail screen (route `/withdrawals/:id`) through Testing Library, `fetch`
- * faked with the withdrawal fixture: its chrome, what it shows, "Editar" opening the
- * filled form with a confirmed save, "Borrar" with its fixed text and toast, and both
- * "Eso ya no está." forms (`stock.md`, "A withdrawal's detail").
+ * faked with the withdrawal fixture: its chrome, what it shows, "Edit" opening the
+ * filled form with a confirmed save, "Delete" with its fixed text and toast, and both
+ * "That is gone." forms (`stock.md`, "A withdrawal's detail").
  */
 
 import { screen, waitFor, within } from '@testing-library/react'
@@ -31,24 +31,24 @@ function serving(body: unknown, extra?: FetchImpl): FetchImpl {
   }
 }
 
-test('shows the date, the reason by word, every line and the note, with the bar and no "+ Nueva venta"', async () => {
+test('shows the date, the reason by word, every line and the note, with the bar and no "+ New sale"', async () => {
   renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
   expect(await screen.findByText('Zkittlez')).toBeInTheDocument()
-  expect(screen.getByText('Promoción')).toBeInTheDocument()
+  expect(screen.getByText('Promotion')).toBeInTheDocument()
   expect(screen.getByText('02/10')).toBeInTheDocument()
   expect(screen.getByText('5,5 g')).toBeInTheDocument()
   expect(screen.getByText('Para la fiesta')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Editar' })).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Borrar' })).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Edit' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
   expect(document.querySelector('.bar-inferior')).not.toBeNull()
 })
 
 test('the "‹" back goes to the page it was opened from', async () => {
   const { router } = renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Variedades' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -56,12 +56,12 @@ test('the "‹" back goes to the page it was opened from', async () => {
 test('with no history, back goes to Variedades', async () => {
   const { router } = renderWithdrawals([ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Variedades' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
 
-test('Borrar names the promotion, the date and the grams; confirming deletes and toasts "Retiro eliminado"', async () => {
+test('Delete names the promotion, the date and the grams; confirming deletes and toasts "Withdrawal deleted"', async () => {
   const deletes = vi.fn()
   const { router } = renderWithdrawals(
     [VARIETIES_PATH, ONE],
@@ -73,34 +73,34 @@ test('Borrar names the promotion, the date and the grams; confirming deletes and
       return jsonResponse(404, {})
     }),
   )
-  await userEvent.click(await screen.findByRole('button', { name: 'Borrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
-  const dialog = await screen.findByRole('alertdialog', { name: 'Antes de borrar' })
-  expect(dialog).toHaveTextContent('¿Borrás la promoción del 02/10? Vuelven 5,5 g al stock.')
-  await userEvent.click(within(dialog).getByRole('button', { name: 'No, dejalo' }))
+  const dialog = await screen.findByRole('alertdialog', { name: 'Before deleting' })
+  expect(dialog).toHaveTextContent('Delete the promotion from 02/10? 5,5 g go back to stock.')
+  await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep it' }))
   expect(deletes).not.toHaveBeenCalled()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Borrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
   await userEvent.click(
-    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, borralo' }),
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, delete it' }),
   )
 
-  expect(await screen.findByText('Retiro eliminado')).toBeInTheDocument()
+  expect(await screen.findByText('Withdrawal deleted')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   expect(deletes).toHaveBeenCalledTimes(1)
 })
 
-test('Borrar on an own-use withdrawal says "el consumo propio"', async () => {
+test('Delete on an own-use withdrawal says "el consumo propio"', async () => {
   renderWithdrawals([VARIETIES_PATH, ONE], serving(OWN_USE))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Borrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   expect(await screen.findByRole('alertdialog')).toHaveTextContent(
-    '¿Borrás el consumo propio del 02/10? Vuelven 5,5 g al stock.',
+    'Delete the own use from 02/10? 5,5 g go back to stock.',
   )
 })
 
-test('Editar opens the form filled in; saving is confirmed first and toasts "Retiro guardado"', async () => {
+test('Editar opens the form filled in; saving is confirmed first and toasts "Withdrawal saved"', async () => {
   const puts: unknown[] = []
   const { router } = renderWithdrawals(
     [VARIETIES_PATH, ONE],
@@ -112,24 +112,24 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
       return jsonResponse(404, {})
     }),
   )
-  await userEvent.click(await screen.findByRole('link', { name: 'Editar' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Edit' }))
 
-  expect(await screen.findByLabelText('Gramos 1')).toHaveValue('5.5')
-  expect(screen.getByLabelText('Nota')).toHaveValue('Para la fiesta')
-  expect(screen.getByRole('button', { name: 'Promoción' })).toHaveAttribute('aria-pressed', 'true')
-  await userEvent.clear(screen.getByLabelText('Gramos 1'))
-  await userEvent.type(screen.getByLabelText('Gramos 1'), '6')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  expect(await screen.findByLabelText('Grams 1')).toHaveValue('5.5')
+  expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
+  expect(screen.getByRole('button', { name: 'Promotion' })).toHaveAttribute('aria-pressed', 'true')
+  await userEvent.clear(screen.getByLabelText('Grams 1'))
+  await userEvent.type(screen.getByLabelText('Grams 1'), '6')
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   expect(puts).toEqual([])
 
   await userEvent.click(
-    within(await screen.findByRole('alertdialog', { name: '¿Guardás los cambios?' })).getByRole(
+    within(await screen.findByRole('alertdialog', { name: 'Save the changes?' })).getByRole(
       'button',
-      { name: 'Sí, guardar' },
+      { name: 'Yes, save' },
     ),
   )
 
-  expect(await screen.findByText('Retiro guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Withdrawal saved')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(ONE)
   expect(puts).toEqual([
     {
@@ -141,14 +141,14 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
   ])
 })
 
-test('opening a withdrawal that is gone shows "Eso ya no está." and "Volver a Variedades"', async () => {
+test('opening a withdrawal that is gone shows "That is gone." and "Back to Varieties"', async () => {
   renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(await screen.findByText('That is gone.')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
-test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no está. La lista ya está al día."', async () => {
+test('deleting a withdrawal that is gone goes to Variedades with "That is gone. The list is up to date."', async () => {
   const { router } = renderWithdrawals(
     [VARIETIES_PATH, ONE],
     serving(WITHDRAWAL, async (url, init) =>
@@ -157,20 +157,20 @@ test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no est�
         : jsonResponse(404, {}),
     ),
   )
-  await userEvent.click(await screen.findByRole('button', { name: 'Borrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
   await userEvent.click(
-    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, borralo' }),
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, delete it' }),
   )
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
 })
 
-test('the detail keeps the icon and text rule: Borrar carries its icon and word, the back keeps its name', async () => {
+test('the detail keeps the icon and text rule: Delete carries its icon and word, the back keeps its name', async () => {
   renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
-  const borrar = await screen.findByRole('button', { name: 'Borrar' })
+  const borrar = await screen.findByRole('button', { name: 'Delete' })
   expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeInTheDocument()
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

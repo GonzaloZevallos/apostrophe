@@ -6,13 +6,15 @@
  * by calling this, never by their own ternary.
  */
 
+import { DATES_TEXT } from '../copy/dates'
+
 /** `1` → `"1 venta"`; every other count, `0` included, → `"N ventas"`. */
 export function salesCount(n: number): string {
-  return n === 1 ? '1 venta' : `${n} ventas`
+  return n === 1 ? DATES_TEXT.oneSale : DATES_TEXT.salesN(n)
 }
 
 /** The Te deben block's count line (`payments.md`): `1` → `"1 venta debiendo"`, `N` →
  * `"N ventas debiendo"`. `Inicio` and `TeDeben` (Clientes) both say it by calling this. */
 export function salesOwingCount(n: number): string {
-  return `${salesCount(n)} debiendo`
+  return DATES_TEXT.owingSuffix(salesCount(n))
 }

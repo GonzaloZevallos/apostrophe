@@ -13,7 +13,8 @@ import { getDebtors } from '../../api/payments'
 import { salesOwingCount } from '../../format/counts'
 import { formatMoney } from '../../format/money'
 import ClienteFila from './ClienteFila'
-import { NOBODY_OWES } from './messages'
+import { NOBODY_OWES } from '../../copy/customers'
+import { COMMON_TEXT } from '../../copy/common'
 
 export default function TeDeben() {
   const { data } = useQuery({
@@ -26,9 +27,9 @@ export default function TeDeben() {
   if (data === undefined) return null
 
   return (
-    <section aria-label="Te deben">
+    <section aria-label={COMMON_TEXT.owedToYou}>
       <div className="campo__rotulo clientes__seccion-cabecera">
-        <span>Te deben</span>
+        <span>{COMMON_TEXT.owedToYou}</span>
         {data.debtors.length > 0 && <span>{salesOwingCount(data.sales_owing_count)}</span>}
       </div>
 

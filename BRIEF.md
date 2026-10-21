@@ -37,7 +37,7 @@ a computer, one installation keeping every business apart.
   installation except each business's catalog, sent through its own Telegram bot.
 - A customer is identified by their phone number within their business.
 - Whole Argentine pesos; grams to the hundredth; days in Argentina time.
-- Interface in Rioplatense Spanish; code and docs in English.
+- Interface in English; code and docs in English (docs/product/product-language.md).
 - Maintained by an agentic development system: every capability needs fast,
   self-contained tests.
 

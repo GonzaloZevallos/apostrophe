@@ -6,6 +6,8 @@
 import BotonLink from '../../components/BotonLink'
 import { VARIETY_PRICES, pathTo } from '../../routes'
 import PriceRows, { type PriceRow } from './PriceRows'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
 
 export default function VarietyPricesSection({
   varietyId,
@@ -21,8 +23,8 @@ export default function VarietyPricesSection({
   return (
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
-        <h2 className="seccion-variedad__titulo">Precios</h2>
-        <BotonLink variant="link" to={pathTo(VARIETY_PRICES, { id: varietyId })}>Ver todas</BotonLink>
+        <h2 className="seccion-variedad__titulo">{COMMON_TEXT.prices}</h2>
+        <BotonLink variant="link" to={pathTo(VARIETY_PRICES, { id: varietyId })}>{VARIETIES_TEXT.verTodas}</BotonLink>
       </div>
       <PriceRows varietyId={varietyId} history={history} currentPriceId={currentPriceId} limit={3} readOnly={readOnly} />
     </section>

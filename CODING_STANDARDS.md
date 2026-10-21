@@ -94,8 +94,8 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
 (the contract) and its screens in `docs/product/design-system/pantallas/`.
 
 - **Names in code are English**, the `CONTEXT.md` terms, as in the backend. **Every word
-  on screen is Spanish**, rioplatense with vos ("Cargá", "Te debe"), using the glossary's
-  `_In the app_` word.
+  on screen is English**, plain second person ("Save", "Owes you"), using the glossary's
+  `_In the app_` word. Every text lives in `web/src/copy/`, keyed, never in a screen.
 - **The backend decides; the front shows.** A line's price, a sale's total, a balance and
   where a payment goes come from the API. The front may preview a computation before
   saving (the design's `precios.ts`), but what it shows after saving is what the API
@@ -188,7 +188,7 @@ doc may record a deliberate exception; without one, this standard wins over an a
      pending state at once (`pending-state`).
 
    Review: a new fixed empty or no-activity wording goes into
-   `web/src/screens/emptyStates.ts`; screens render from it, and the check forbids every
+   `web/src/copy/emptyStates.ts`; screens render from it, and the check forbids every
    wording in it while data loads. A literal copy in a screen fails its guard.
 8. **Readability** (checked).
    - Every text node is at least 4.5:1 against its effective background, in both themes,

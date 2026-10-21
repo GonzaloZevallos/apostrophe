@@ -1,3 +1,5 @@
+import { CUSTOMERS_TEXT } from '../../copy/customers'
+import { COMMON_TEXT } from '../../copy/common'
 /**
  * The shared "Teléfono / Nombre / VIP" fields (`NuevaVentaCliente.dc.html`,
  * `ClienteForm.tsx`): split out of `ClienteForm` (plan, "Shape") so the "Nuevo
@@ -38,7 +40,7 @@ export default function CustomerFields({
     <>
       <div className="campo">
         <label className="campo">
-          <span className="campo__rotulo">Teléfono</span>
+          <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
           <input
             className="campo__input"
             type="tel"
@@ -54,7 +56,7 @@ export default function CustomerFields({
       </div>
       <div className="campo">
         <label className="campo">
-          <span className="campo__rotulo">Nombre</span>
+          <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             className="campo__input"
             type="text"
@@ -71,7 +73,7 @@ export default function CustomerFields({
       </div>
       {showVip && (
         <label className="campo">
-          <span className="campo__rotulo">VIP</span>
+          <span className="campo__rotulo">{COMMON_TEXT.vip}</span>
           <input
             type="checkbox"
             checked={value.vip}

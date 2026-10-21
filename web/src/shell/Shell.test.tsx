@@ -46,21 +46,21 @@ import Shell from './Shell'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
-const BAR = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Más']
-const RAIL = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Gastos', 'Análisis']
+const BAR = ['Home', 'Sales', 'Customers', 'Varieties', 'More']
+const RAIL = ['Home', 'Sales', 'Customers', 'Varieties', 'Expenses', 'Analysis']
 
 const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
 
 vi.mock('./useViewport', () => ({ useViewport: () => viewport.current }))
 
-/** The tabs only, in the order they render: drops "Nueva venta" and the business row. */
+/** The tabs only, in the order they render: drops "New sale" and the business row. */
 function tabNames(nav: HTMLElement): string[] {
   return within(nav)
     .getAllByRole('link')
     .map((link) => link.textContent)
     .filter(
       (name): name is string =>
-        name !== null && !name.startsWith('Nueva venta') && !name.startsWith('LH'),
+        name !== null && !name.startsWith('New sale') && !name.startsWith('LH'),
     )
 }
 
@@ -72,7 +72,7 @@ function Landed() {
 
 /** A stand-in for Inicio's teaser: an in-app link into a customer's card. */
 function Teaser() {
-  return <InAppLink to={pathTo(CUSTOMER, { id: 3 })}>Cobrar a Ana</InAppLink>
+  return <InAppLink to={pathTo(CUSTOMER, { id: 3 })}>Collect from Ana</InAppLink>
 }
 
 /** Every registered screen as a leaf; Inicio holds the teaser, Más its real list. */
@@ -156,31 +156,31 @@ test('every bar tab draws an icon and a visible label', () => {
   }
 })
 
-test('the rail is "Nueva venta", four tabs, a divider, Gastos and Análisis, then the business row', () => {
+test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then the business row', () => {
   const { container } = renderShell([HOME], { computer: true })
 
   const entries = [...rail(container).children].map((child) =>
     child.getAttribute('role') === 'separator' ? '---' : (child.textContent ?? ''),
   )
   expect(entries).toEqual([
-    'Nueva venta',
-    'Inicio',
-    'Ventas',
-    'Clientes',
-    'Variedades',
+    'New sale',
+    'Home',
+    'Sales',
+    'Customers',
+    'Varieties',
     '---',
-    'Gastos',
-    'Análisis',
+    'Expenses',
+    'Analysis',
     'LHLa Huerta',
   ])
   expect(tabNames(rail(container))).toEqual(RAIL)
-  expect(within(rail(container)).queryByRole('link', { name: 'Más' })).not.toBeInTheDocument()
+  expect(within(rail(container)).queryByRole('link', { name: 'More' })).not.toBeInTheDocument()
 })
 
-test('"Nueva venta" is fixed, apart from the tabs, and goes straight to the sale form', () => {
+test('"New sale" is fixed, apart from the tabs, and goes straight to the sale form', () => {
   renderShell([HOME])
 
-  const links = screen.getAllByRole('link', { name: /Nueva venta/ })
+  const links = screen.getAllByRole('link', { name: /New sale/ })
   expect(links).toHaveLength(2)
   for (const link of links) {
     expect(link).toHaveAttribute('href', SALE_NEW)
@@ -199,7 +199,7 @@ test.each([
   ['a form: a Configuración group', SETTINGS_USERS, false, false, false],
   ['a form: the expense', EXPENSE_NEW, false, false, false],
 ])(
-  '%s: bar %s, "Nueva venta" %s, arrow %s, from the leaf screen\'s kind alone',
+  '%s: bar %s, "New sale" %s, arrow %s, from the leaf screen\'s kind alone',
   (_kind, path, hasBar, hasButton, hasArrow) => {
     const { container } = renderShell([path])
 
@@ -219,41 +219,41 @@ test.each([
   ['a root: Variedades', VARIETIES, true],
   ['a card: Configuración', SETTINGS, false],
   ['a form: the sale', SALE_NEW, false],
-])('%s: the rail shows "Nueva venta" %s, by the screen\'s kind alone', (_kind, path, inRail) => {
+])('%s: the rail shows "New sale" %s, by the screen\'s kind alone', (_kind, path, inRail) => {
   const { container } = renderShell([path], { computer: true })
 
-  expect(within(rail(container)).queryAllByRole('link', { name: /Nueva venta/ }).length > 0).toBe(inRail)
+  expect(within(rail(container)).queryAllByRole('link', { name: /New sale/ }).length > 0).toBe(inRail)
 })
 
 // The chrome rule by what the seller can find: "+ Nueva venta" only on a tab root, a "‹ parent"
 // arrow on a card, neither on a form. Controls are found by role and accessible name.
 test.each([
-  ['Inicio', HOME],
-  ['Variedades', VARIETIES],
+  ['Home', HOME],
+  ['Varieties', VARIETIES],
 ])('a root (%s) shows the "+ Nueva venta" control and no arrow', (_name, path) => {
   renderShell([path])
 
-  expect(screen.getAllByRole('link', { name: /Nueva venta/ }).length).toBeGreaterThan(0)
+  expect(screen.getAllByRole('link', { name: /New sale/ }).length).toBeGreaterThan(0)
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
 })
 
 test.each([
-  ['the catalog on a phone', CATALOG, false, '‹ Variedades'],
-  ['the catalog on a computer', CATALOG, true, '‹ Variedades'],
+  ['the catalog on a phone', CATALOG, false, '‹ Varieties'],
+  ['the catalog on a computer', CATALOG, true, '‹ Varieties'],
 ])('a card (%s) shows its "‹ parent" arrow and never "+ Nueva venta"', (_name, path, computer, arrow) => {
   renderShell([path], { computer })
 
   expect(screen.getByRole('button', { name: arrow })).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
 // A variety's back names the loaded record, so the shell shows no arrow for it until its screen
-// declares one (never a bare '‹' or the registry's 'Variedad'); it still shows no "Nueva venta".
-test('a card that is a variety on a phone shows no arrow before its screen declares one, and no "Nueva venta"', () => {
+// declares one (never a bare '‹' or the registry's 'Variety'); it still shows no "New sale".
+test('a card that is a variety on a phone shows no arrow before its screen declares one, and no "New sale"', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
 test.each([
@@ -264,7 +264,7 @@ test.each([
 
   expect(container.querySelector('.bar-inferior')).toBeNull()
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
 test('the price form on a computer draws no side rail, and on a phone the rail stays in the markup', () => {
@@ -278,20 +278,20 @@ test('the price form on a computer draws no side rail, and on a phone the rail s
   expect(other.container.querySelector('.riel-lateral')).not.toBeNull()
 })
 
-test('on a phone a detail pane has no "Nueva venta" at all', () => {
+test('on a phone a detail pane has no "New sale" at all', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
-  expect(screen.queryAllByRole('link', { name: /Nueva venta/ })).toHaveLength(0)
+  expect(screen.queryAllByRole('link', { name: /New sale/ })).toHaveLength(0)
 })
 
 test.each([
-  [HOME, 'Inicio', 'Inicio'],
-  [SALES, 'Ventas', 'Ventas'],
-  [CUSTOMERS, 'Clientes', 'Clientes'],
-  [VARIETIES, 'Variedades', 'Variedades'],
-  [pathTo(SALE, { id: 7 }), 'Ventas', 'Ventas'],
-  [pathTo(CUSTOMER, { id: 3 }), 'Clientes', 'Clientes'],
-  [pathTo(VARIETY, { id: 2 }), 'Variedades', 'Variedades'],
+  [HOME, 'Home', 'Home'],
+  [SALES, 'Sales', 'Sales'],
+  [CUSTOMERS, 'Customers', 'Customers'],
+  [VARIETIES, 'Varieties', 'Varieties'],
+  [pathTo(SALE, { id: 7 }), 'Sales', 'Sales'],
+  [pathTo(CUSTOMER, { id: 3 }), 'Customers', 'Customers'],
+  [pathTo(VARIETY, { id: 2 }), 'Varieties', 'Varieties'],
 ])('on %s each surface marks %s alone, with aria-current', (path, barEntry, railEntry) => {
   const { container } = renderShell([path])
 
@@ -300,29 +300,29 @@ test.each([
 })
 
 test.each([
-  [EXPENSES, 'Gastos'],
-  [ANALYSIS, 'Análisis'],
+  [EXPENSES, 'Expenses'],
+  [ANALYSIS, 'Analysis'],
 ])('on %s the phone marks Más and a computer marks its own entry, %s', (path, railEntry) => {
   const { container } = renderShell([path])
 
-  expect(current(bar(container))).toEqual(['Más'])
+  expect(current(bar(container))).toEqual(['More'])
   expect(current(rail(container))).toEqual([railEntry])
 })
 
 test('Más marks Más on the bar and nothing on the rail, which has no Más', () => {
   const { container } = renderShell([MORE])
 
-  expect(current(bar(container))).toEqual(['Más'])
+  expect(current(bar(container))).toEqual(['More'])
   expect(current(rail(container))).toEqual([])
 })
 
 test('Configuración marks Más on the phone and the business row on a computer', () => {
   const { container } = renderShell([SETTINGS])
 
-  const more = within(bar(container)).getByRole('link', { name: 'Más' })
+  const more = within(bar(container)).getByRole('link', { name: 'More' })
   expect(more).toHaveAttribute('aria-current', 'page')
-  expect(current(bar(container))).toEqual(['Más'])
-  const row = within(rail(container)).getByRole('link', { name: 'Configuración de La Huerta' })
+  expect(current(bar(container))).toEqual(['More'])
+  const row = within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })
   expect(row).toHaveAttribute('aria-current', 'page')
   expect(row.className).toMatch(/--activo/)
   expect(current(rail(container))).toEqual(['LHLa Huerta'])
@@ -332,30 +332,30 @@ test('a customer card marks Clientes however it was reached: from Inicio, after 
   const user = userEvent.setup()
   const card = pathTo(CUSTOMER, { id: 3 })
   const fromHome = renderShell([HOME])
-  await user.click(screen.getByRole('link', { name: 'Cobrar a Ana' }))
+  await user.click(screen.getByRole('link', { name: 'Collect from Ana' }))
   expect(fromHome.router.state.location.pathname).toBe(card)
-  expect(current(bar(fromHome.container))).toEqual(['Clientes'])
-  expect(current(rail(fromHome.container))).toEqual(['Clientes'])
+  expect(current(bar(fromHome.container))).toEqual(['Customers'])
+  expect(current(rail(fromHome.container))).toEqual(['Customers'])
   fromHome.unmount()
 
   // A reload keeps the entry but loses nothing the mark reads: only the leaf screen.
   const reloaded = renderShell([card])
-  expect(current(bar(reloaded.container))).toEqual(['Clientes'])
+  expect(current(bar(reloaded.container))).toEqual(['Customers'])
   reloaded.unmount()
 
   // A saved link opens with a history that holds something unrelated before it.
   const saved = renderShell([SALES, card], { index: 1 })
-  expect(current(bar(saved.container))).toEqual(['Clientes'])
+  expect(current(bar(saved.container))).toEqual(['Customers'])
 })
 
 test('the active mark is more than color: aria-current, a distinct class and nothing on the rest', () => {
   renderShell([HOME])
 
-  for (const link of screen.getAllByRole('link', { name: 'Inicio' })) {
+  for (const link of screen.getAllByRole('link', { name: 'Home' })) {
     expect(link).toHaveAttribute('aria-current', 'page')
     expect(link.className).toMatch(/--activo/)
   }
-  for (const link of screen.getAllByRole('link', { name: 'Clientes' })) {
+  for (const link of screen.getAllByRole('link', { name: 'Customers' })) {
     expect(link).not.toHaveAttribute('aria-current')
     expect(link.className).not.toMatch(/--activo/)
   }
@@ -363,7 +363,7 @@ test('the active mark is more than color: aria-current, a distinct class and not
 
 test('the business row leads to Configuración, carrying inApp, one tap from Inicio', async () => {
   const { container } = renderShell([HOME], { computer: true })
-  const row = within(rail(container)).getByRole('link', { name: 'Configuración de La Huerta' })
+  const row = within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })
 
   expect(row).toHaveAttribute('href', SETTINGS)
   expect(row).toHaveTextContent('LH')
@@ -377,63 +377,63 @@ test('the business row leads to Configuración, carrying inApp, one tap from Ini
 test('the phone reaches Configuración in two taps: the Más tab, then its Configuración entry', async () => {
   const { container } = renderShell([HOME])
 
-  await userEvent.click(within(bar(container)).getByRole('link', { name: 'Más' }))
+  await userEvent.click(within(bar(container)).getByRole('link', { name: 'More' }))
   await userEvent.click(
-    within(screen.getByRole('navigation', { name: 'Más' })).getByRole('link', { name: /^Configuración/ }),
+    within(screen.getByRole('navigation', { name: 'More' })).getByRole('link', { name: /^Settings/ }),
   )
 
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
 })
 
-test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Clientes" and Back lands on Inicio', async () => {
+test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Customers" and Back lands on Inicio', async () => {
   const user = userEvent.setup()
   const { router } = renderShell([HOME])
 
-  await user.click(screen.getByRole('link', { name: 'Cobrar a Ana' }))
+  await user.click(screen.getByRole('link', { name: 'Collect from Ana' }))
   expect(router.state.location.state).toEqual(inAppState({ pathname: HOME }))
-  await user.click(screen.getByRole('button', { name: '‹ Clientes' }))
+  await user.click(screen.getByRole('button', { name: '‹ Customers' }))
 
   expect(router.state.location.pathname).toBe(HOME)
 })
 
-test('a card opened from Clientes reads "‹ Clientes" and Back lands on Clientes', async () => {
+test('a card opened from Clientes reads "‹ Customers" and Back lands on Clientes', async () => {
   const user = userEvent.setup()
   const { router } = renderShell([CUSTOMERS])
   await act(() => router.navigate(pathTo(CUSTOMER, { id: 3 }), { state: inAppState({ pathname: HOME }) }))
 
-  await user.click(screen.getByRole('button', { name: '‹ Clientes' }))
+  await user.click(screen.getByRole('button', { name: '‹ Customers' }))
 
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
 
-test('a card opened directly reads "‹ Clientes" and Back goes to Clientes, replacing the entry', async () => {
+test('a card opened directly reads "‹ Customers" and Back goes to Clientes, replacing the entry', async () => {
   const user = userEvent.setup()
   const { router } = renderShell([SALES, pathTo(CUSTOMER, { id: 3 })], { index: 1 })
 
-  await user.click(screen.getByRole('button', { name: '‹ Clientes' }))
+  await user.click(screen.getByRole('button', { name: '‹ Customers' }))
 
   expect(router.state.location.pathname).toBe(CUSTOMERS)
   expect(router.state.historyAction).toBe('REPLACE')
 })
 
-test('a sale reads "‹ Ventas"; a variety, whose word is the record\'s, shows no back until declared', () => {
+test('a sale reads "‹ Sales"; a variety, whose word is the record\'s, shows no back until declared', () => {
   const sale = renderShell([pathTo(SALE, { id: 7 })])
-  expect(screen.getByRole('button', { name: '‹ Ventas' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Sales' })).toBeInTheDocument()
   sale.unmount()
 
   renderShell([pathTo(VARIETY, { id: 2 })])
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
 })
 
-test('Configuración\'s list opened directly reads "‹ Más" on the phone and "‹ Inicio" on a computer', async () => {
+test('Configuración\'s list opened directly reads "‹ More" on the phone and "‹ Home" on a computer', async () => {
   const phone = renderShell([SETTINGS])
-  expect(screen.getByRole('button', { name: '‹ Más' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '‹ Inicio' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ More' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '‹ Home' })).not.toBeInTheDocument()
   phone.unmount()
 
   renderShell([SETTINGS], { computer: true })
-  expect(screen.getByRole('button', { name: '‹ Inicio' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '‹ Más' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Home' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '‹ More' })).not.toBeInTheDocument()
 })
 
 test('a root has no arrow', () => {
@@ -455,7 +455,7 @@ test('the rail is a menu too, and no two of its entries share an icon', () => {
   // Every entry draws its icon, Gastos and Análisis included; only the business row draws an
   // avatar, not an icon, so it is the one thing that may be left over.
   expect(iconAndTextProblems(rail(container))).toEqual([
-    expect.stringContaining('"Configuración de La Huerta" is text only'),
+    expect.stringContaining('"Settings for La Huerta" is text only'),
   ])
 })
 
@@ -479,7 +479,7 @@ test('a bar that repeats an icon is rejected by the rule', () => {
   expect(iconAndTextProblems(container)).toEqual([expect.stringContaining('shares its icon with "Uno"')])
 })
 
-const MISSING_LINE = 'Cargale un precio a una variedad para poder vender'
+const MISSING_LINE = 'Add a price to a variety so you can sell'
 
 function checklist(pricedDone: boolean): FirstRunAnswer {
   return {
@@ -498,12 +498,12 @@ function checklist(pricedDone: boolean): FirstRunAnswer {
 test.each([
   ['phone', false, 2],
   ['computer', true, 2],
-])('%s: while the checklist shows with no priced variety, "Nueva venta" stays a link and says what is missing', async (_name, computer, buttons) => {
+])('%s: while the checklist shows with no priced variety, "New sale" stays a link and says what is missing', async (_name, computer, buttons) => {
   renderShell([HOME], { computer, firstRun: checklist(false) })
 
   const lines = await screen.findAllByText(MISSING_LINE)
   expect(lines.length).toBeGreaterThan(0)
-  const links = screen.getAllByRole('link', { name: /Nueva venta/ })
+  const links = screen.getAllByRole('link', { name: /New sale/ })
   expect(links).toHaveLength(buttons)
   for (const link of links) expect(link).toHaveAttribute('href', SALE_NEW)
   for (const link of links) {
@@ -522,7 +522,7 @@ test.each([
   await act(async () => {
     await Promise.resolve()
   })
-  await screen.findAllByRole('link', { name: /Nueva venta/ })
+  await screen.findAllByRole('link', { name: /New sale/ })
   await new Promise((resolve) => setTimeout(resolve, 20))
   expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
 })
@@ -530,17 +530,17 @@ test.each([
 test.each([
   ['pending', 'pending' as const],
   ['failed', undefined],
-])('while /first-run is %s, "Nueva venta" draws normally, with no line', async (_name, firstRun) => {
+])('while /first-run is %s, "New sale" draws normally, with no line', async (_name, firstRun) => {
   renderShell([HOME], { firstRun })
 
-  const links = screen.getAllByRole('link', { name: /Nueva venta/ })
+  const links = screen.getAllByRole('link', { name: /New sale/ })
   expect(links).toHaveLength(2)
   for (const link of links) expect(link).not.toHaveAttribute('aria-describedby')
   await new Promise((resolve) => setTimeout(resolve, 20))
   expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
 })
 
-test('a form shows no "Nueva venta", so it asks nothing of /first-run', async () => {
+test('a form shows no "New sale", so it asks nothing of /first-run', async () => {
   renderShell([SALE_NEW], { firstRun: checklist(false) })
 
   await new Promise((resolve) => setTimeout(resolve, 20))

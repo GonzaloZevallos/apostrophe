@@ -16,14 +16,14 @@ import { queryClient } from '../../queryClient'
 import { router as appRouter } from '../../router'
 
 const GROUPS = [
-  ['Negocio', SETTINGS_BUSINESS],
-  ['Usuarios', SETTINGS_USERS],
-  ['Precios', SETTINGS_PRICES],
-  ['Integraciones', SETTINGS_INTEGRATIONS],
-  ['Mensaje del catálogo', SETTINGS_CATALOG_MESSAGE],
-  ['Categorías de gastos', EXPENSE_CATEGORIES],
-  ['Apariencia', SETTINGS_APPEARANCE],
-  ['Tu cuenta', SETTINGS_ACCOUNT],
+  ['Business', SETTINGS_BUSINESS],
+  ['Users', SETTINGS_USERS],
+  ['Prices', SETTINGS_PRICES],
+  ['Integrations', SETTINGS_INTEGRATIONS],
+  ['Catalog message', SETTINGS_CATALOG_MESSAGE],
+  ['Expense categories', EXPENSE_CATEGORIES],
+  ['Appearance', SETTINGS_APPEARANCE],
+  ['Your account', SETTINGS_ACCOUNT],
 ] as const
 
 const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
@@ -65,7 +65,7 @@ test('lists exactly the eight groups in order, each a link to its own route', as
   stubComputer(false)
   renderApp([SETTINGS])
 
-  const list = await screen.findByRole('navigation', { name: 'Configuración' })
+  const list = await screen.findByRole('navigation', { name: 'Settings' })
   const links = within(list).getAllByRole('link')
   expect(links.map((link) => link.textContent)).toEqual(GROUPS.map(([name]) => name))
   expect(links.map((link) => link.getAttribute('href'))).toEqual(GROUPS.map(([, path]) => path))
@@ -75,20 +75,20 @@ test('shows the bar and no "+ Nueva venta"', async () => {
   stubComputer(false)
   const { container } = renderApp([SETTINGS])
 
-  await screen.findByRole('navigation', { name: 'Configuración' })
+  await screen.findByRole('navigation', { name: 'Settings' })
 
   expect(container.querySelector('.bar-inferior')).not.toBeNull()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
 test('a group route shows no bar and no "+ Nueva venta"', async () => {
   stubComputer(false)
   const { container } = renderApp([SETTINGS_BUSINESS])
 
-  await screen.findByRole('button', { name: 'Cerrar' })
+  await screen.findByRole('button', { name: 'Close' })
 
   expect(container.querySelector('.bar-inferior')).toBeNull()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
 test.each(GROUPS)('"%s" opens its group, marking the entry as in-app', async (name, path) => {
@@ -102,32 +102,32 @@ test.each(GROUPS)('"%s" opens its group, marking the entry as in-app', async (na
   expect(router.state.location.state).toEqual(inAppState({ pathname: SETTINGS }))
 })
 
-test('every group route exists and closes with "Cerrar"', async () => {
+test('every group route exists and closes with "Close"', async () => {
   stubComputer(false)
   for (const [, path] of GROUPS) {
     const { unmount } = renderApp([path])
-    expect(await screen.findByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Close' })).toBeInTheDocument()
     unmount()
   }
 })
 
-test('reached directly on the phone, back says "‹ Más" and goes to Más', async () => {
+test('reached directly on the phone, back says "‹ More" and goes to Más', async () => {
   stubComputer(false)
   const user = userEvent.setup()
   const { router } = renderApp(['/otro', SETTINGS], 1)
 
-  await user.click(await screen.findByRole('button', { name: '‹ Más' }))
+  await user.click(await screen.findByRole('button', { name: '‹ More' }))
 
   expect(router.state.location.pathname).toBe(MORE)
-  expect(screen.queryByRole('button', { name: '‹ Inicio' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '‹ Home' })).not.toBeInTheDocument()
 })
 
-test('reached directly on a computer, back says "‹ Inicio" and goes to Inicio', async () => {
+test('reached directly on a computer, back says "‹ Home" and goes to Inicio', async () => {
   stubComputer(true)
   const user = userEvent.setup()
   const { router } = renderApp(['/otro', SETTINGS], 1)
 
-  await user.click(await screen.findByRole('button', { name: '‹ Inicio' }))
+  await user.click(await screen.findByRole('button', { name: '‹ Home' }))
 
   expect(router.state.location.pathname).toBe(HOME)
 })
@@ -138,7 +138,7 @@ test('reached by an in-app link, back goes back in history', async () => {
   const { router } = renderApp([SALES])
   await act(() => router.navigate(SETTINGS, { state: inAppState({ pathname: SALES }) }))
 
-  await user.click(await screen.findByRole('button', { name: '‹ Más' }))
+  await user.click(await screen.findByRole('button', { name: '‹ More' }))
 
   expect(router.state.location.pathname).toBe(SALES)
 })

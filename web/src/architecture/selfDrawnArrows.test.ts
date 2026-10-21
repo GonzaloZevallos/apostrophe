@@ -1,6 +1,6 @@
 /**
  * `findSelfDrawnBackArrows`: it flags the six in-page arrows it ended, copied as
- * fixtures, and lets a "Volver a …" action pass; then it runs over `screens/` and finds nothing
+ * fixtures, and lets a "Back to …" action pass; then it runs over `screens/` and finds nothing
  * outside a shrink-only allowlist.
  */
 
@@ -37,7 +37,7 @@ test('flags each offence on its own line, and the arrow in a string a screen han
   expect(findSelfDrawnBackArrows(entriesList)).toHaveLength(3)
 })
 
-test('does not flag a "Volver a …" action, nor the arrow named in a comment', () => {
+test('does not flag a "Back to …" action, nor the arrow named in a comment', () => {
   expect(findSelfDrawnBackArrows(goneScreen)).toEqual([])
 })
 

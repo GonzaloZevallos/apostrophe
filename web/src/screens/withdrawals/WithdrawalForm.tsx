@@ -39,9 +39,11 @@ import { guiltyKeys, keptOptions, preselected } from './goneLines'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
 import Boton from '../../components/Boton'
-import { GRAMS_INVALID } from '../stockMessages'
+import { GRAMS_INVALID, STOCK_TEXT } from '../../copy/stock'
+import { COMMON_TEXT } from '../../copy/common'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 const REFUSAL_MESSAGES: Partial<Record<RefusalCode, string>> = WITHDRAWAL_REFUSAL_MESSAGES
 
@@ -340,7 +342,7 @@ export default function WithdrawalForm({
       if (target === 'new') await recordWithdrawal(body)
       else await editWithdrawal(String(target.id), body)
       invalidateResource(queryClient, 'stock')
-      onDone('Retiro guardado')
+      onDone(STOCK_TEXT.retiroGuardado)
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)
@@ -384,9 +386,9 @@ export default function WithdrawalForm({
 
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">Sacar del stock</span>
+      <span className="gasto-form__titulo">{COMMON_TEXT.takeFromStock}</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
       </span>
     </div>
   )
@@ -408,7 +410,7 @@ export default function WithdrawalForm({
       {header}
       <form className="formulario" onSubmit={onSubmit}>
         <fieldset className="campo">
-          <legend className="campo__rotulo">Motivo</legend>
+          <legend className="campo__rotulo">{STOCK_TEXT.motivo}</legend>
           <div className="origen-pildoras">
             {REASON_OPTIONS.map((option) => (
               <button
@@ -424,7 +426,7 @@ export default function WithdrawalForm({
           </div>
         </fieldset>
         <label className="campo">
-          <span className="campo__rotulo">Fecha</span>
+          <span className="campo__rotulo">{COMMON_TEXT.date}</span>
           <input
             className="campo__input"
             type="date"
@@ -437,17 +439,17 @@ export default function WithdrawalForm({
         {form.lines.map((line, index) => (
           <fieldset className="campo" key={line.key}>
             <legend className="campo__rotulo">
-              {form.lines.length === 1 ? 'Variedad y gramos' : `Variedad y gramos ${index + 1}`}
+              {form.lines.length === 1 ? STOCK_TEXT.variedadYGramos : STOCK_TEXT.variedadYGramos0(index + 1)}
             </legend>
             <select
               className="campo__input"
-              aria-label={`Variedad ${index + 1}`}
+              aria-label={STOCK_TEXT.variedad0(index + 1)}
               aria-describedby={marked(line.key) ? `${messageId}-${line.key}` : undefined}
               value={line.varietyId}
               onChange={(event) => setLine(line.key, { varietyId: event.target.value })}
               required
             >
-              <option value="">Elegí una variedad</option>
+              <option value="">{COMMON_TEXT.pickAVariety}</option>
               {keptOptions([line], varieties, names).map((option) => (
                 <option key={option.value} value={option.value} disabled={option.disabled}>
                   {option.label}
@@ -461,7 +463,7 @@ export default function WithdrawalForm({
             )}
             <input
               className="campo__input"
-              aria-label={`Gramos ${index + 1}`}
+              aria-label={STOCK_TEXT.gramos0(index + 1)}
               inputMode="decimal"
               enterKeyHint={index === form.lines.length - 1 ? 'done' : 'next'}
               value={line.grams}
@@ -472,7 +474,7 @@ export default function WithdrawalForm({
               <Boton
                 variant="icon"
                 action="delete"
-                ariaLabel={`Quitar variedad ${index + 1}`}
+                ariaLabel={STOCK_TEXT.quitarVariedad0(index + 1)}
                 onClick={() =>
                   setForm((previous) => ({
                     ...previous,
@@ -497,10 +499,10 @@ export default function WithdrawalForm({
             }))
           }}
         >
-          Agregar otra variedad
+          {COMMON_TEXT.addAnotherVariety}
         </Boton>
         <label className="campo">
-          <span className="campo__rotulo">Nota</span>
+          <span className="campo__rotulo">{COMMON_TEXT.note}</span>
           <input
             className="campo__input"
             value={form.note}
@@ -516,15 +518,15 @@ export default function WithdrawalForm({
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          {target === 'new' ? 'Guardá el retiro' : 'Guardar'}
+          {target === 'new' ? STOCK_TEXT.guardaElRetiro : COMMON_TEXT.save}
         </Boton>
       </form>
       {confirmingSave && (
         <ConfirmDialog
-          title="¿Guardás los cambios?"
-          detail="Esto actualiza el retiro y los lotes que vienen después."
-          confirmText="Sí, guardar"
-          cancelText="No, seguir editando"
+          title={STOCK_TEXT.guardasLosCambios}
+          detail={STOCK_TEXT.estoActualizaElRetiro}
+          confirmText={STOCK_TEXT.siGuardar}
+          cancelText={STOCK_TEXT.noSeguirEditando}
           onConfirm={() => {
             if (!sending) void save()
           }}

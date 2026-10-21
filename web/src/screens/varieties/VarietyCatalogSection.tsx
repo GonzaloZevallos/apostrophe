@@ -12,6 +12,7 @@ import type { CatalogVariety } from '../../api/catalog'
 import Boton from '../../components/Boton'
 import { CATALOG_SECTION_ID } from '../../routes'
 import { useOpenForm } from './varietyForms'
+import { VARIETIES_TEXT } from '../../copy/varieties'
 
 const NONE = '—'
 
@@ -21,19 +22,19 @@ export default function VarietyCatalogSection({ row, readOnly = false }: { row: 
   const openForm = useOpenForm()
   if (readOnly) {
     const stored: [string, string | null][] = [
-      ['Emoji', row.emoji],
-      ['% índica', row.indica_share === null ? null : `${row.indica_share} %`],
-      ['Aroma/sabor', row.aroma],
+      [VARIETIES_TEXT.emoji, row.emoji],
+      [VARIETIES_TEXT.indica, row.indica_share === null ? null : `${row.indica_share} %`],
+      [VARIETIES_TEXT.aromaSabor, row.aroma],
     ]
     return (
       <section id={CATALOG_SECTION_ID} className="seccion-variedad">
         <div className="seccion-variedad__cabecera">
-          <h2 className="seccion-variedad__titulo">En el catálogo</h2>
+          <h2 className="seccion-variedad__titulo">{VARIETIES_TEXT.enElCatalogo}</h2>
         </div>
         <dl className="seccion-variedad__datos">
           <div className="seccion-variedad__dato">
-            <dt>Mostrar en el catálogo</dt>
-            <dd>{row.shown ? 'Se muestra' : 'No se muestra'}</dd>
+            <dt>{VARIETIES_TEXT.mostrarEnElCatalogo}</dt>
+            <dd>{row.shown ? VARIETIES_TEXT.seMuestra : VARIETIES_TEXT.noSeMuestra}</dd>
           </div>
           {stored.map(([label, value]) =>
             value === null ? null : (
@@ -50,24 +51,24 @@ export default function VarietyCatalogSection({ row, readOnly = false }: { row: 
   return (
     <section id={CATALOG_SECTION_ID} className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
-        <h2 className="seccion-variedad__titulo">En el catálogo</h2>
-        <Boton variant="icon" action="edit" ariaLabel="Editar catálogo" onClick={() => openForm('catalog')} />
+        <h2 className="seccion-variedad__titulo">{VARIETIES_TEXT.enElCatalogo}</h2>
+        <Boton variant="icon" action="edit" ariaLabel={VARIETIES_TEXT.editarCatalogo} onClick={() => openForm('catalog')} />
       </div>
       <dl className="seccion-variedad__datos">
         <div className="seccion-variedad__dato">
-          <dt>Mostrar en el catálogo</dt>
-          <dd>{row.shown ? 'Se muestra' : 'No se muestra'}</dd>
+          <dt>{VARIETIES_TEXT.mostrarEnElCatalogo}</dt>
+          <dd>{row.shown ? VARIETIES_TEXT.seMuestra : VARIETIES_TEXT.noSeMuestra}</dd>
         </div>
         <div className="seccion-variedad__dato">
-          <dt>Emoji</dt>
+          <dt>{VARIETIES_TEXT.emoji}</dt>
           <dd>{row.emoji ?? NONE}</dd>
         </div>
         <div className="seccion-variedad__dato">
-          <dt>% índica</dt>
+          <dt>{VARIETIES_TEXT.indica}</dt>
           <dd>{row.indica_share === null ? NONE : `${row.indica_share} %`}</dd>
         </div>
         <div className="seccion-variedad__dato">
-          <dt>Aroma/sabor</dt>
+          <dt>{VARIETIES_TEXT.aromaSabor}</dt>
           <dd>{row.aroma ?? NONE}</dd>
         </div>
       </dl>

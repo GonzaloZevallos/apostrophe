@@ -30,8 +30,8 @@ def _switches_turned_on(plan: ImportPlan) -> str:
     names = [
         name
         for name, on in (
-            ("Precio por cantidad", plan.turns_on.is_bulk_pricing),
-            ("Clientes VIP", plan.turns_on.is_vip_customers),
+            ("Bulk pricing", plan.turns_on.is_bulk_pricing),
+            ("VIP customers", plan.turns_on.is_vip_customers),
         )
         if on
     ]

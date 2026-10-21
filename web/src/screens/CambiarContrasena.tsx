@@ -4,7 +4,7 @@
  * password clears "Contraseña actual" and keeps "Contraseña nueva" — a
  * deliberate exception to "refusals keep what was typed" (PM round 2). A short
  * new password shows the invitation's own too-short text; a lock shows the
- * login brake's own message (`authMessages.ts`'s `BRAKE_MESSAGE`), both keeping
+ * login brake's own message (`copy/auth.ts`'s `BRAKE_MESSAGE`), both keeping
  * everything typed. Neither a 422 nor a 429 ever sends the user to login: they
  * are handled here, inline, never through `handleUnauthorized`.
  *
@@ -28,10 +28,12 @@ import Boton from '../components/Boton'
 import SinConexion from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { changePassword } from '../session'
-import { BRAKE_MESSAGE, WEAK_PASSWORD_MESSAGE } from './authMessages'
+import { BRAKE_MESSAGE, WEAK_PASSWORD_MESSAGE, AUTH_TEXT } from '../copy/auth'
+import { COMMON_TEXT } from '../copy/common'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
-export const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es esa.'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const WRONG_CURRENT_PASSWORD_MESSAGE = AUTH_TEXT.currentPasswordWrong
+export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 const CURRENT_PASSWORD_WRONG_CODE: RefusalCode = 'account.current_password_wrong'
 
 export interface CambiarContrasenaProps {
@@ -92,10 +94,10 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
   return (
     <div className="capa" role="presentation">
       <div className="capa__contenido">
-        <span className="panel__titulo">Cambiar contraseña</span>
+        <span className="panel__titulo">{COMMON_TEXT.changePassword}</span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
-            <span className="campo__rotulo">Contraseña actual</span>
+            <span className="campo__rotulo">{AUTH_TEXT.currentPassword}</span>
             <input
               className="campo__input"
               type="password"
@@ -110,7 +112,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
             )}
           </label>
           <label className="campo">
-            <span className="campo__rotulo">Contraseña nueva</span>
+            <span className="campo__rotulo">{AUTH_TEXT.newPassword}</span>
             <input
               className="campo__input"
               type={reveal ? 'text' : 'password'}
@@ -126,7 +128,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
           </label>
           <span className="campo__mostrar">
             <Boton variant="link" onClick={() => setReveal((shown) => !shown)}>
-              {reveal ? 'Ocultar' : 'Mostrar'}
+              {reveal ? COMMON_TEXT.hide : COMMON_TEXT.show}
             </Boton>
           </span>
           {formError !== null && (
@@ -136,10 +138,10 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
           )}
           {offline && <SinConexion />}
           <Boton textOnly="submit" type="submit" disabled={sending}>
-            Guardar
+            {COMMON_TEXT.save}
           </Boton>
           <Boton variant="link" onClick={onClose}>
-            Cancelar
+            {COMMON_TEXT.cancel}
           </Boton>
         </form>
       </div>

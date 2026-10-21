@@ -14,7 +14,7 @@ import type { PricingSettings } from '../../api/pricingSettings'
 import type { Me } from '../../api/me'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { inAppState } from '../../components/inAppState'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { SETTINGS as SETTINGS_PATH, SETTINGS_PRICES } from '../../routes'
 import PricingGroup, { PAST_SALES_LINE, VIP_HELP_LINE } from './PricingGroup'
 
@@ -74,52 +74,52 @@ function serving(put?: (body: PricingSettings) => Response) {
 test('shows the two switches as the server has them, told by aria-checked', async () => {
   renderGroup(serving())
 
-  const bulk = await screen.findByRole('switch', { name: 'Precio por cantidad' })
+  const bulk = await screen.findByRole('switch', { name: 'Bulk price' })
   expect(bulk).toHaveAttribute('aria-checked', 'true')
-  expect(screen.getByRole('switch', { name: 'Clientes VIP' })).toHaveAttribute('aria-checked', 'false')
+  expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'false')
 })
 
 test('shows both fixed lines, the VIP help whether the switch is on or off', async () => {
   renderGroup(serving())
-  await screen.findByRole('switch', { name: 'Clientes VIP' })
+  await screen.findByRole('switch', { name: 'VIP customers' })
 
   expect(screen.getByText(PAST_SALES_LINE)).toBeInTheDocument()
   expect(screen.getByText(VIP_HELP_LINE)).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
   expect(screen.getByText(VIP_HELP_LINE)).toBeInTheDocument()
   expect(VIP_HELP_LINE).toBe(
-    'Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera.',
+    'Each variety needs its VIP price: without it, a VIP customer pays like anyone else.',
   )
 })
 
-test('saving sends both switches and shows the fixed toast "Precios guardados"', async () => {
+test('saving sends both switches and shows the fixed toast "Prices saved"', async () => {
   const fetchMock = serving((body) => jsonResponse(200, body))
   renderGroup(fetchMock)
-  await screen.findByRole('switch', { name: 'Clientes VIP' })
+  await screen.findByRole('switch', { name: 'VIP customers' })
 
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
-  await userEvent.click(screen.getByRole('switch', { name: 'Precio por cantidad' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá los precios' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Bulk price' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
 
-  expect(await screen.findByText('Precios guardados')).toBeInTheDocument()
+  expect(await screen.findByText('Prices saved')).toBeInTheDocument()
   const put = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')
   expect(JSON.parse(String(put?.[1]?.body))).toEqual({
     is_bulk_pricing: false,
     is_vip_customers: true,
   })
-  expect(screen.getByRole('switch', { name: 'Clientes VIP' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'true')
 })
 
 test('touching a switch again clears the toast', async () => {
   renderGroup(serving((body) => jsonResponse(200, body)))
-  await screen.findByRole('switch', { name: 'Clientes VIP' })
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá los precios' }))
-  await screen.findByText('Precios guardados')
+  await screen.findByRole('switch', { name: 'VIP customers' })
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
+  await screen.findByText('Prices saved')
 
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
 
-  expect(screen.queryByText('Precios guardados')).not.toBeInTheDocument()
+  expect(screen.queryByText('Prices saved')).not.toBeInTheDocument()
 })
 
 test('a dropped network shows "Sin conexión" and keeps the switches as set', async () => {
@@ -129,72 +129,72 @@ test('a dropped network shows "Sin conexión" and keeps the switches as set', as
       : Promise.resolve(jsonResponse(200, SETTINGS)),
   )
   renderGroup(fetchMock)
-  await screen.findByRole('switch', { name: 'Clientes VIP' })
+  await screen.findByRole('switch', { name: 'VIP customers' })
 
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá los precios' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
-  expect(screen.getByRole('switch', { name: 'Clientes VIP' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'true')
 })
 
 test('an untouched group closes at once', async () => {
   renderGroup(serving())
-  await screen.findByRole('switch', { name: 'Clientes VIP' })
+  await screen.findByRole('switch', { name: 'VIP customers' })
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
 
 test('closing with an unsaved switch asks first, and keeping stays on the group', async () => {
   renderGroup(serving())
-  await screen.findByRole('switch', { name: 'Clientes VIP' })
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
+  await screen.findByRole('switch', { name: 'VIP customers' })
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
-  expect(await screen.findByText('¿Descartás los precios?')).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí editando' }))
-  expect(screen.getByRole('switch', { name: 'Clientes VIP' })).toHaveAttribute('aria-checked', 'true')
+  expect(await screen.findByText('Discard the prices?')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
+  expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'true')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()
 })
 
 test('discarding leaves the group; turning a switch back to its saved value is not a change', async () => {
   renderGroup(serving())
-  await screen.findByRole('switch', { name: 'Clientes VIP' })
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
-  await userEvent.click(screen.getByRole('switch', { name: 'Precio por cantidad' }))
+  await screen.findByRole('switch', { name: 'VIP customers' })
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Bulk price' }))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
 
 test('after saving, dirty is measured against what the server accepted, not the query cache', async () => {
   const client = renderGroup(serving((body) => jsonResponse(200, body)))
-  await screen.findByRole('switch', { name: 'Clientes VIP' })
-  await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá los precios' }))
-  await screen.findByText('Precios guardados')
+  await screen.findByRole('switch', { name: 'VIP customers' })
+  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
+  await screen.findByText('Prices saved')
 
   act(() => {
     client.setQueryData(keys.pricingSettings(), { is_bulk_pricing: false, is_vip_customers: false })
   })
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(screen.getByText('Lista de grupos')).toBeInTheDocument())
-  expect(screen.queryByText('¿Descartás los precios?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard the prices?')).not.toBeInTheDocument()
 })
 
-test('the group obeys the icon and text rule: "Guardá los precios" is a text-only submit and Cerrar is icon-only', async () => {
+test('the group obeys the icon and text rule: "Save the prices" is a text-only submit and Cerrar is icon-only', async () => {
   renderGroup(serving())
 
-  const save = await screen.findByRole('button', { name: 'Guardá los precios' })
+  const save = await screen.findByRole('button', { name: 'Save the prices' })
   expect(save).toHaveAttribute('type', 'submit')
   expect(save.querySelector('svg')).toBeNull()
-  expect(screen.getByRole('button', { name: 'Cerrar' }).textContent).toBe('')
+  expect(screen.getByRole('button', { name: 'Close' }).textContent).toBe('')
   expectIconAndTextRule(document.body)
 })

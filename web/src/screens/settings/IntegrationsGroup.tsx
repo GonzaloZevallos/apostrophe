@@ -31,18 +31,20 @@ import {
   CHANNEL_CHAT_HELP,
   LOAD_THE_TOKEN_FIRST,
   OWN_CHAT_INFO,
-  PREVIOUS_PIN_NOTICE,
-} from './integrationsMessages'
+  PREVIOUS_PIN_NOTICE, SETTINGS_TEXT, GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE,
+} from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
+import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
 
-const TITLE = 'Integraciones'
-const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
-const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+const TITLE = INTEGRATIONS_LINK_WORD
+const TEST_SENT_TOAST: SuccessToast = SETTINGS_TEXT.testSent
+const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 
 const LEAVE: LeaveWording = {
-  question: '¿Descartás el cambio?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
+  question: COMMON_TEXT.discardTheChange,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export interface PinnedCatalog {
@@ -84,7 +86,7 @@ interface IntegrationsFormProps {
   onSaved?: () => void
   /** Called whenever "something typed and not saved" changes. */
   onDirtyChange?: (dirty: boolean) => void
-  /** The "Ir al catálogo" link: the group shows it, an Onboarding step does not. */
+  /** The "Go to the catalog" link: the group shows it, an Onboarding step does not. */
   showCatalogLink: boolean
 }
 
@@ -205,7 +207,7 @@ export function IntegrationsForm({
       <form className="formulario" onSubmit={onFormSubmit} onKeyDown={onFormKeyDown}>
         {tokenFieldOpen ? (
           <label className="campo">
-            <span className="campo__rotulo">Token del bot</span>
+            <span className="campo__rotulo">{SETTINGS_TEXT.botToken}</span>
             <input
               className="campo__input"
               type="password"
@@ -217,20 +219,20 @@ export function IntegrationsForm({
         ) : (
           <div className="catalogo__fila">
             <span className="catalogo__fila-texto">
-              <span>Token del bot</span>
+              <span>{SETTINGS_TEXT.botToken}</span>
               <span className="catalogo__fila-detalle">
-                Guardado el {formatDate(accepted.tokenSavedOn as string)} · no se muestra más
+                {SETTINGS_TEXT.savedOn}{formatDate(accepted.tokenSavedOn as string)}{SETTINGS_TEXT.notShownAgain}
               </span>
             </span>
             <Boton variant="link" onClick={() => setTokenChanging(true)}>
-              Cambiar
+              {COMMON_TEXT.change}
             </Boton>
           </div>
         )}
 
         <div className="campo">
           <label className="campo__rotulo" htmlFor={`${fieldId}-channel`}>
-            Chat del canal
+            {SETTINGS_TEXT.channelChat}
           </label>
           <input
             id={`${fieldId}-channel`}
@@ -247,7 +249,7 @@ export function IntegrationsForm({
 
         <div className="campo">
           <label className="campo__rotulo" htmlFor={`${fieldId}-own`}>
-            Tu chat
+            {SETTINGS_TEXT.yourChat}
           </label>
           <div className="campo__fila">
             <input
@@ -265,7 +267,7 @@ export function IntegrationsForm({
               ariaDescribedBy={canSearch ? undefined : `${fieldId}-search-help`}
               onClick={() => void onSearchOwnChat()}
             >
-              Buscar mi chat
+              {SETTINGS_TEXT.findMyChat}
             </Boton>
           </div>
           <div id={`${fieldId}-own-help`}>
@@ -291,13 +293,13 @@ export function IntegrationsForm({
         )}
 
         <Boton icon="probar" disabled={testing} onClick={() => void onProbarlo()}>
-          Probarlo
+          {SETTINGS_TEXT.testIt}
         </Boton>
       </form>
 
       {showCatalogLink && (
         <BotonLink to={CATALOG} variant="link">
-          Ir al catálogo
+          {SETTINGS_TEXT.goToCatalog}
         </BotonLink>
       )}
     </>

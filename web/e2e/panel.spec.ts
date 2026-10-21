@@ -8,7 +8,7 @@
  * what `results.md`'s PRD needs a figure for — a priced variety, a purchase, a sale
  * left owing, a sale paid on the spot, an expense — then proves Inicio (now the
  * panel) shows nothing it did not read from `GET /panel` in this same run: every
- * figure, across Hoy, Semana and Mes, and the "Te deben" teaser's own navigation
+ * figure, across Hoy, Semana and Mes, and the "Owed to you" teaser's own navigation
  * (PRD, "No curl" metric: "opens Inicio, switches across the three periods, opens
  * Te deben from the block and a customer from the teaser").
  *
@@ -91,12 +91,12 @@ function grams(value: number): string {
 }
 
 function countLabel(count: number): string {
-  return `${count} ${count === 1 ? 'venta' : 'ventas'}`
+  return `${count} ${count === 1 ? 'sale' : 'sales'}`
 }
 
 /** `salesOwingCount`: the Te deben head's count line. */
 function owingLabel(count: number): string {
-  return `${countLabel(count)} debiendo`
+  return `${countLabel(count)} owing`
 }
 
 // A local mirror of `web/src/components/MarcaEstado.tsx`'s own word table and
@@ -105,9 +105,9 @@ function owingLabel(count: number): string {
 // every value fed through it below comes from the one `GET /panel` answer this
 // run fetches, never invented.
 const STATUS_WORD: Record<Status, string> = {
-  no_entries: 'sin entradas',
-  sold_out: 'agotada',
-  low: 'baja',
+  no_entries: 'no entries',
+  sold_out: 'sold out',
+  low: 'low',
   ok: 'ok',
 }
 
@@ -117,17 +117,17 @@ function detailFor(
 ): string {
   switch (variety.status) {
     case 'no_entries':
-      return 'Cargale la primera entrada'
+      return 'Add its first entry'
     case 'sold_out':
       return variety.sold_out_since === null
-        ? 'Sin gramos'
-        : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
+        ? 'No grams'
+        : `No grams since ${formatDate(variety.sold_out_since, today)}`
     case 'low':
       return variety.threshold === null
-        ? 'Avisás por debajo del umbral'
+        ? 'You are warned below the threshold'
         : `Avisás abajo de ${grams(variety.threshold)}`
     case 'ok':
-      return 'Al ritmo de los últimos 30 días'
+      return 'At the pace of the last 30 days'
   }
 }
 
@@ -136,7 +136,7 @@ function detailFor(
  * is `MarcaEstado`'s, not this note's. */
 function sideNoteFor(variety: { status: Status; days_left: number | null }): string | null {
   if (variety.days_left === null) return null
-  return `${variety.days_left} días`
+  return `${variety.days_left} days`
 }
 
 /** `web/src/format/dates.ts`'s own `formatDate`: dd/mm, or dd/mm/yyyy when the
@@ -180,53 +180,53 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A priced variety.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
   // Backdated well before this run's own month (sales.spec.ts does the same for
   // Jazmín): the extra, month-only sale seeded below needs a price that reaches
   // back that far too.
   await setPriceDate(page, '2000-01-01')
-  await page.getByLabel(/^Precio de lista/).fill('1000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByLabel(/^List price/).fill('1000')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 
-  // A purchase: the "Origen" pill defaults to "Compra" (`EntradaStock.tsx`).
+  // A purchase: the "Origen" pill defaults to "Purchase" (`EntradaStock.tsx`).
   await page.goto(STOCK_ENTRY_NEW)
-  await page.getByLabel('Gramos').fill('50')
-  await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
-  await expect(page.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByLabel('Costo total').fill('45000')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await expect(page.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByLabel('Total cost').fill('45000')
+  await page.getByRole('button', { name: 'Save the entry' }).click()
+  await expect(page.getByText('Entry saved')).toBeVisible()
 
   // A customer, for the sale left owing.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Teléfono').fill('+5491155550077')
-  await page.getByLabel('Nombre').fill('Carla Pérez')
-  await page.getByRole('button', { name: 'Guardá y usá' }).click()
+  await page.getByLabel('Phone').fill('+5491155550077')
+  await page.getByLabel('Name').fill('Carla Pérez')
+  await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Cliente guardado')).toBeVisible()
+  await expect(page.getByText('Customer saved')).toBeVisible()
 
   // A sale left owing, to Carla.
-  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
-  const todayIso = await page.getByLabel('Fecha').inputValue()
+  const todayIso = await page.getByLabel('Date').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await page.getByRole('radio', { name: 'Owing' }).check()
+  await page.getByRole('button', { name: 'Save sale' }).click()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // A sale paid on the spot, no customer.
   await page.goto(SALES)
-  await page.getByRole('link', { name: 'Nueva venta' }).click()
+  await page.getByRole('link', { name: 'New sale' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('button', { name: 'Save sale' }).click()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // Two more sales, dated at the start of this week and the start of this month —
   // so Hoy, Semana and Mes can differ by more than their range label, whatever day
@@ -268,14 +268,14 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     }
   }
 
-  // An expense, in the business's own default "Otros" category.
+  // An expense, in the business's own default "Other" category.
   await openGastos(page)
-  await page.getByRole('link', { name: 'Cargar gasto' }).click()
-  await page.getByLabel('Categoría').selectOption({ label: 'Otros' })
-  await page.getByLabel('Monto').fill('1500')
-  await page.getByLabel('Detalle').fill('Bolsas de regalo')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByRole('link', { name: 'Add expense' }).click()
+  await page.getByLabel('Category').selectOption({ label: 'Other' })
+  await page.getByLabel('Amount').fill('1500')
+  await page.getByLabel('Details').fill('Bolsas de regalo')
+  await page.getByRole('button', { name: 'Save the expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
   // figure for figure, never recomputed here (plan invariant).
@@ -284,39 +284,39 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   )
 
   await page.goto(HOME)
-  await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
+  await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
 
   async function assertPeriod(period: PanelPeriod, rangeText: string, showsResults: boolean): Promise<void> {
     await expect(page.locator('.inicio__periodos .pie')).toContainText(rangeText)
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
     if (showsResults) {
       await expect(
-        page.getByRole('group', { name: 'Ganancia', exact: true }).locator('.panel-resultados__valor--acento'),
+        page.getByRole('group', { name: 'Profit', exact: true }).locator('.panel-resultados__valor--acento'),
       ).toHaveText(signedPesos(period.profit))
       await expect(
-        page.getByRole('group', { name: 'Caja', exact: true }).locator('.panel-resultados__valor'),
+        page.getByRole('group', { name: 'Cash', exact: true }).locator('.panel-resultados__valor'),
       ).toHaveText(signedPesos(period.cash))
       await expect(
-        page.getByRole('group', { name: 'Costo de lo vendido', exact: true }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Cost of goods sold', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.cost_of_goods))
       await expect(
-        page.getByRole('group', { name: 'Gastos', exact: true }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Expenses', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.expenses))
       await expect(
-        page.getByRole('group', { name: 'Regalaste', exact: true }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'You gave away', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(grams(period.grams_gifted))
       await expect(
-        page.getByRole('group', { name: 'Compras de flores', exact: true }).locator('.panel-lista__valor'),
+        page.getByRole('group', { name: 'Flower purchases', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
-      // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
+      // "includes pending cost", under both Cost of goods sold and Ganancia only,
       // never under Caja (plan, PRD: "Caja never carries it").
-      await expect(page.getByText('incluye costo pendiente')).toHaveCount(period.pending_cost ? 2 : 0)
+      await expect(page.getByText('includes pending cost')).toHaveCount(period.pending_cost ? 2 : 0)
     } else {
       // Hoy is only what can be acted on (results.md): no result figure at all.
-      for (const label of ['Ganancia', 'Caja', 'Costo de lo vendido', 'Gastos', 'Regalaste', 'Compras de flores']) {
+      for (const label of ['Profit', 'Cash', 'Cost of goods sold', 'Expenses', 'You gave away', 'Flower purchases']) {
         await expect(page.locator('main').getByText(label, { exact: true })).toHaveCount(0)
       }
-      await expect(page.getByText('incluye costo pendiente')).toHaveCount(0)
+      await expect(page.getByText('includes pending cost')).toHaveCount(0)
     }
 
     // "Vendiste ..."'s own subtitle: count, average (absent with no sales) and
@@ -326,24 +326,24 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     const subtitle =
       period.average_sale === null
         ? `${count} · ${gramsSoldText}`
-        : `${count} · promedio ${pesos(period.average_sale)} · ${gramsSoldText}`
+        : `${count} · average ${pesos(period.average_sale)} · ${gramsSoldText}`
     await expect(page.locator('.panel-ventas .pie')).toHaveText(subtitle)
   }
 
   // Hoy: the panel opens here (plan, "Front").
-  await expect(page.getByRole('button', { name: 'Hoy', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Today', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await assertPeriod(panel.periods.today, shortDate(todayIso), false)
 
   // Semana.
-  await page.getByRole('button', { name: 'Semana' }).click()
+  await page.getByRole('button', { name: 'Week' }).click()
   await assertPeriod(panel.periods.week, `${shortDate(panel.periods.week.start)} – ${shortDate(panel.periods.week.end)}`, true)
 
   // Mes.
-  await page.getByRole('button', { name: 'Mes' }).click()
+  await page.getByRole('button', { name: 'Month' }).click()
   await assertPeriod(panel.periods.month, `${shortDate(panel.periods.month.start)} – ${shortDate(panel.periods.month.end)}`, true)
 
   // Back to Hoy for the rest of the run.
-  await page.getByRole('button', { name: 'Hoy', exact: true }).click()
+  await page.getByRole('button', { name: 'Today', exact: true }).click()
 
   // Lo que te queda: Rosa's own row, straight from the fetched answer — grams,
   // status (shape and word), the detail line, and the side note, which is the
@@ -369,22 +369,22 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // oldest date. Each teaser row carries its own "desde dd/mm", inside its own link.
   await expect(page.locator('.bloque-deben__cuenta')).toHaveText(owingLabel(panel.debts.sales_owing_count))
   if (panel.debts.oldest !== null) {
-    await expect(page.locator('.bloque-deben__desde')).toHaveText(`desde ${shortDate(panel.debts.oldest)}`)
+    await expect(page.locator('.bloque-deben__desde')).toHaveText(`since ${shortDate(panel.debts.oldest)}`)
   }
 
   const [teaserRow] = panel.debts.teaser
   if (teaserRow === undefined) throw new Error('empty teaser in GET /panel')
   const teaserLink = page.locator('.bloque-deben__fila').filter({ hasText: teaserRow.name })
   await expect(teaserLink).toContainText(pesos(teaserRow.balance))
-  await expect(teaserLink).toContainText(`desde ${shortDate(teaserRow.owing_since)}`)
+  await expect(teaserLink).toContainText(`since ${shortDate(teaserRow.owing_since)}`)
 
   // Opens Te deben from the block's own heading, then goes back to Inicio.
-  await page.getByRole('link', { name: 'Te deben' }).click()
+  await page.getByRole('link', { name: 'Owed to you' }).click()
   await expectPath(page, CUSTOMERS)
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
   await page.goBack()
   await expectPath(page, HOME)
-  await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
+  await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
 
   // The teaser: Carla's own row, opening her card.
   await page.getByRole('link', { name: teaserRow.name }).first().click()
@@ -392,9 +392,9 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // On a computer the list sits beside the card and has its own title: read the card's (the pane
   // without the search box).
   await expect(
-    page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') }).locator('.encabezado__titulo'),
+    page.locator('main').filter({ hasNot: page.getByLabel('Search customer') }).locator('.encabezado__titulo'),
   ).toHaveText(teaserRow.name)
-  await expect(page.getByText(`Te debe ${pesos(teaserRow.balance)}`)).toBeVisible()
+  await expect(page.getByText(`Owes you ${pesos(teaserRow.balance)}`)).toBeVisible()
 
   // Nothing personal or technical reaches the console or the browser's own storage
   // (CODING_STANDARDS.md section 9) — a customer's name and several amounts moved

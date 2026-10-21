@@ -108,7 +108,7 @@ describe('validateSale', () => {
       ],
     })
     expect(errors).toEqual([
-      { field: 'line:a', message: 'Sativa no tiene precio para esa fecha' },
+      { field: 'line:a', message: 'Sativa has no price for that date' },
     ])
   })
 
@@ -127,7 +127,7 @@ describe('validateSale', () => {
   test('flags Debiendo with no customer', () => {
     const errors = validateSale({ method: 'owing', hasCustomer: false, lines: [] })
     expect(errors).toEqual([
-      { field: 'customer', message: 'Para dejar debiendo elegí un cliente' },
+      { field: 'customer', message: 'To leave it owing, pick a customer' },
     ])
   })
 

@@ -14,9 +14,10 @@ import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import { formatGrams, formatMoney } from '../../format/money'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
-import { GRAMS_HELP } from '../../sales/messages'
+import { GRAMS_HELP, SALES_TEXT } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
+import { COMMON_TEXT } from '../../copy/common'
 
 export interface LineState {
   key: string
@@ -95,12 +96,12 @@ export default function NuevaVentaLinea({
   // changes are for.
   const isComputer = useViewport() === 'computer'
   if (!isOpen) {
-    const displayName = variety?.name ?? 'Sin variedad'
+    const displayName = variety?.name ?? SALES_TEXT.noVariety
     const messageId = `linea-mensaje-${line.key}`
     return (
       <Boton
         variant="row"
-        ariaLabel={`Línea ${n}: ${displayName}`}
+        ariaLabel={SALES_TEXT.lineLabel(n, displayName)}
         ariaDescribedBy={error !== null ? messageId : undefined}
         onClick={onOpen}
       >
@@ -108,7 +109,7 @@ export default function NuevaVentaLinea({
           <span className="nueva-venta__linea-nombre">{displayName}</span>
           {preview !== null && (
             <span className="nueva-venta__linea-gramos">
-              {formatGrams(fromHundredths(preview.gramsHundredths))} g
+              {SALES_TEXT.withUnit(formatGrams(fromHundredths(preview.gramsHundredths)))}
             </span>
           )}
         </div>
@@ -120,7 +121,7 @@ export default function NuevaVentaLinea({
           preview !== null && (
             <div className="nueva-venta__linea-detalle">
               {preview.rule !== 'gift' && (
-                <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)} x g</span>
+                <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
               )}
               <ReglaInsignia rule={preview.rule} />
               <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
@@ -139,16 +140,16 @@ export default function NuevaVentaLinea({
   return (
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
       <label className="campo">
-        <span className="campo__rotulo">Variedad</span>
+        <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
         <select
           className="campo__input"
-          aria-label={`Variedad línea ${n}`}
+          aria-label={SALES_TEXT.lineVariety(n)}
           value={line.varietyId}
           ref={varietyRef}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ varietyId: event.target.value })}
         >
-          <option value="">Elegí una variedad</option>
+          <option value="">{COMMON_TEXT.pickAVariety}</option>
           {varieties.map((item) => (
             <option key={item.id} value={item.id}>
               {item.name}
@@ -157,10 +158,10 @@ export default function NuevaVentaLinea({
         </select>
       </label>
       <label className="campo">
-        <span className="campo__rotulo">Gramos</span>
+        <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
         <input
           className="campo__input"
-          aria-label={`Gramos línea ${n}`}
+          aria-label={SALES_TEXT.lineGrams(n)}
           type="text"
           inputMode="decimal"
           enterKeyHint="next"
@@ -183,18 +184,18 @@ export default function NuevaVentaLinea({
           <label>
             <input
               type="checkbox"
-              aria-label={`Regalo línea ${n}`}
+              aria-label={SALES_TEXT.lineGift(n)}
               checked={line.gift}
               disabled={line.specialPrice.trim() !== ''}
               onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
               onChange={(event) => onChange({ gift: event.target.checked })}
             />
-            Regalo
+            {SALES_TEXT.gift}
           </label>
         ) : (
           <OpcionInterruptor
-            label="Regalo"
-            ariaLabel={`Regalo línea ${n}`}
+            label={SALES_TEXT.gift}
+            ariaLabel={SALES_TEXT.lineGift(n)}
             checked={line.gift}
             disabled={line.specialPrice.trim() !== ''}
             onChange={(gift) => onChange({ gift })}
@@ -202,11 +203,11 @@ export default function NuevaVentaLinea({
         )}
         <input
           className="campo__input"
-          aria-label={`Precio especial línea ${n}`}
+          aria-label={SALES_TEXT.lineSpecialPrice(n)}
           type="text"
           inputMode="numeric"
           enterKeyHint="done"
-          placeholder="Precio especial"
+          placeholder={SALES_TEXT.specialPrice}
           value={line.specialPrice}
           disabled={line.gift}
           ref={specialPriceRef}
@@ -228,14 +229,14 @@ export default function NuevaVentaLinea({
       {error === null && !figuresLoading && preview !== null && (
         <div className="nueva-venta__linea-detalle">
           {preview.rule !== 'gift' && (
-            <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)} x g</span>
+            <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
           )}
           <ReglaInsignia rule={preview.rule} />
           <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
         </div>
       )}
       {canRemove && (
-        <Boton variant="icon" action="delete" ariaLabel={`Quitar línea ${n}`} onClick={onRemove} />
+        <Boton variant="icon" action="delete" ariaLabel={SALES_TEXT.removeLine(n)} onClick={onRemove} />
       )}
     </div>
   )

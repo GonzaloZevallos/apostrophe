@@ -14,6 +14,8 @@
 import type { Status } from '../api/stock'
 import { formatDate } from '../format/dates'
 import { formatGrams } from '../format/money'
+import { STOCK_TEXT } from '../copy/stock'
+import { COMMON_TEXT } from '../copy/common'
 
 export interface StockDetailSubject {
   status: Status
@@ -29,30 +31,30 @@ export interface StockSideNoteSubject {
 export function detailFor(variety: StockDetailSubject, today: string): string {
   switch (variety.status) {
     case 'no_entries':
-      return 'Cargale la primera entrada'
+      return STOCK_TEXT.firstEntry
     case 'sold_out':
       return variety.sold_out_since === null
-        ? 'Sin gramos'
-        : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
+        ? STOCK_TEXT.noGrams
+        : STOCK_TEXT.noGramsSince(formatDate(variety.sold_out_since, today))
     case 'low':
       return variety.threshold === null
-        ? 'Avisás por debajo del umbral'
-        : `Avisás abajo de ${formatGrams(variety.threshold)}`
+        ? STOCK_TEXT.warnBelowThreshold
+        : STOCK_TEXT.warnBelow(formatGrams(variety.threshold))
     case 'ok':
-      return 'Al ritmo de los últimos 30 días'
+      return STOCK_TEXT.atPace
   }
 }
 
 export function sideNoteFor(variety: StockSideNoteSubject): string | null {
   // The status word is `MarcaEstado`'s, never this note's: only the days left show here.
   if (variety.days_left === null) return null
-  return `${variety.days_left} días`
+  return STOCK_TEXT.daysLeft(variety.days_left)
 }
 
 /** The warning line next to a variety's status mark (`stock.md`, "On screen"): told from
  * the same `GET /stock` row `MarcaEstado` reads, never a figure the front works out itself. */
 export function warningFor(row: StockDetailSubject & { grams: number }): string {
-  if (row.threshold === null) return 'Aviso apagado'
-  if (row.status === 'low') return `Avisando: quedan ${formatGrams(row.grams)}`
-  return `Avisame abajo de ${formatGrams(row.threshold)}`
+  if (row.threshold === null) return COMMON_TEXT.warningOff
+  if (row.status === 'low') return STOCK_TEXT.warningLow(formatGrams(row.grams))
+  return STOCK_TEXT.warnMeBelow(formatGrams(row.threshold))
 }

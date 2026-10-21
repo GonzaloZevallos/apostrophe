@@ -14,6 +14,9 @@ import {
   ONBOARDING_STOCK,
   ONBOARDING_VARIETY,
 } from '../../routes'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
+import { COMMON_TEXT } from '../../copy/common'
+import { STEP_STOCK_ENTRY } from '../../copy/inicio'
 
 export interface StepInfo {
   slug: StepSlug
@@ -34,61 +37,61 @@ export const STEPS: readonly StepInfo[] = [
     slug: 'variety',
     path: ONBOARDING_VARIETY,
     required: true,
-    title: 'Cargá tu primera variedad',
-    why: 'Para vender, cada variedad necesita un nombre y su precio de hoy.',
-    shortName: 'variedad con precio',
-    name: 'Variedad con precio',
-    later: 'Variedades',
+    title: ONBOARDING_TEXT.addYourFirstVariety,
+    why: ONBOARDING_TEXT.toSellEachVarietyNeeds,
+    shortName: ONBOARDING_TEXT.varietyWithPriceLower,
+    name: COMMON_TEXT.varietyWithPrice,
+    later: COMMON_TEXT.varieties,
   },
   {
     slug: 'stock',
     path: ONBOARDING_STOCK,
     required: true,
-    title: 'Cargá lo que tenés hoy',
-    why: 'Sin stock no se puede vender: contanos cuántos gramos tenés de esta variedad.',
-    shortName: 'stock inicial',
-    name: 'Stock inicial',
-    later: 'Variedades',
+    title: STEP_STOCK_ENTRY,
+    why: ONBOARDING_TEXT.withoutStockItCannotBeSold,
+    shortName: ONBOARDING_TEXT.initialStockLower,
+    name: COMMON_TEXT.initialStock,
+    later: COMMON_TEXT.varieties,
   },
   {
     slug: 'header_footer',
     path: ONBOARDING_CATALOG_MESSAGE,
     required: false,
-    title: 'Cómo sale tu catálogo',
-    why: 'El encabezado y el pie van en cada catálogo que mandás. Ya tienen un texto: dejalo así o cambialo.',
-    shortName: 'mensaje del catálogo',
-    name: 'Mensaje del catálogo',
-    later: 'Configuración → Mensaje del catálogo',
+    title: ONBOARDING_TEXT.howYourCatalogLooks,
+    why: ONBOARDING_TEXT.headerAndFooterGoOnEveryCatalog,
+    shortName: ONBOARDING_TEXT.catalogMessageLower,
+    name: COMMON_TEXT.catalogMessage,
+    later: ONBOARDING_TEXT.settingsCatalogMessage,
   },
   {
     slug: 'bot',
     path: ONBOARDING_BOT,
     required: false,
-    title: 'Conectá tu bot de Telegram',
-    why: 'Con el bot, tu catálogo se publica y se actualiza solo en tu canal.',
-    shortName: 'bot de Telegram',
-    name: 'Bot de Telegram',
-    later: 'Configuración → Integraciones',
+    title: ONBOARDING_TEXT.connectYourTelegramBot,
+    why: ONBOARDING_TEXT.withTheBot,
+    shortName: COMMON_TEXT.telegramBot,
+    name: COMMON_TEXT.telegramBot,
+    later: ONBOARDING_TEXT.settingsIntegrations,
   },
   {
     slug: 'partner',
     path: ONBOARDING_PARTNER,
     required: false,
-    title: 'Enviale el link a tu socio',
-    why: 'Con el link tu socio entra a este negocio y ve lo mismo que vos. No hace falta que se sume ahora.',
-    shortName: 'socio',
-    name: 'Socio',
-    later: 'Configuración → Usuarios',
+    title: ONBOARDING_TEXT.sendTheLinkToYourPartner,
+    why: ONBOARDING_TEXT.withTheLinkYourPartner,
+    shortName: ONBOARDING_TEXT.partnerLower,
+    name: COMMON_TEXT.partner,
+    later: ONBOARDING_TEXT.settingsUsers,
   },
   {
     slug: 'categories',
     path: ONBOARDING_CATEGORIES,
     required: false,
-    title: 'Categorías de gastos',
-    why: 'Ordenan lo que gastás. Ya tenés las más comunes: sumá, renombrá o sacá las que quieras.',
-    shortName: 'categorías de gastos',
-    name: 'Categorías de gastos',
-    later: 'Configuración → Categorías de gastos',
+    title: COMMON_TEXT.expenseCategories,
+    why: ONBOARDING_TEXT.theyOrganiseWhatYouSpend,
+    shortName: ONBOARDING_TEXT.expenseCategoriesLower,
+    name: COMMON_TEXT.expenseCategories,
+    later: ONBOARDING_TEXT.settingsExpenseCategories,
   },
 ]
 
@@ -108,12 +111,12 @@ export function isOptional(slug: StepSlug): slug is OptionalStepSlug {
   return !stepInfo(slug).required
 }
 
-/** The first step has no step before it: no "Atrás". */
+/** The first step has no step before it: no "Back". */
 export function isFirst(slug: StepSlug): boolean {
   return stepNumber(slug) === 1
 }
 
-/** The last step has no step after it: no "Saltar el resto". */
+/** The last step has no step after it: no "Skip the rest". */
 export function isLast(slug: StepSlug): boolean {
   return stepNumber(slug) === STEP_COUNT
 }
@@ -125,5 +128,5 @@ export function previousPath(slug: StepSlug): string | undefined {
 
 /** The sentence under a skippable step's buttons, saying where it can be done later. */
 export function laterHint(info: StepInfo): string {
-  return `Si lo salteás, lo hacés después en ${info.later}.`
+  return ONBOARDING_TEXT.ifYouSkipIt(info.later)
 }

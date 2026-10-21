@@ -2,415 +2,415 @@
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "button:Mes anterior",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "button:Mes siguiente",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "button:Restaurar",
+    "target": "button:Restore",
     "issue": 47
   },
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "button:Copiar",
+    "target": "button:Copy",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "button:Publicar",
+    "target": "button:Publish",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Guardá el catálogo",
+    "target": "button:Save the catalog",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "switch:Mostrar en el catálogo",
+    "target": "switch:Show in the catalog",
     "issue": 47
   },
   {
     "screen": "ClienteEditar",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 46
   },
   {
     "screen": "ClienteEditar",
     "rule": "touch-action",
-    "target": "button:Guardá y usá",
+    "target": "button:Save and use",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "button:Borrar cobro",
+    "target": "button:Delete payment",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "button:‹ Clientes",
+    "target": "button:‹ Customers",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 46
   },
   {
     "screen": "ClienteNuevo",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 46
   },
   {
     "screen": "ClienteNuevo",
     "rule": "touch-action",
-    "target": "button:Guardá y usá",
+    "target": "button:Save and use",
     "issue": 46
   },
   {
     "screen": "Clientes",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 46
   },
   {
     "screen": "Clientes",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 46
   },
   {
     "screen": "Clientes",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 46
   },
   {
     "screen": "Clientes",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 46
   },
   {
     "screen": "Clientes",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 46
   },
   {
     "screen": "Clientes",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 46
   },
   {
     "screen": "Cobro",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 46
   },
   {
     "screen": "Cobro",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:Save",
     "issue": 46
   },
   {
     "screen": "Cobro",
     "rule": "touch-action",
-    "target": "button:Todo: $ #.#",
+    "target": "button:All: $ #.#",
     "issue": 46
   },
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "button:Borrar cobro",
+    "target": "button:Delete payment",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -421,7 +421,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "button:No, dejalo",
+    "target": "button:No, keep it",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -432,7 +432,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "button:Sí, borralo",
+    "target": "button:Yes, delete it",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -443,7 +443,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "button:‹ Clientes",
+    "target": "button:‹ Customers",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -454,7 +454,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -465,7 +465,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -476,7 +476,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -487,7 +487,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -498,7 +498,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -509,7 +509,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -520,583 +520,571 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 46
   },
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:Save",
     "issue": 46
   },
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-action",
-    "target": "button:Todo: $ #.#",
+    "target": "button:All: $ #.#",
     "issue": 46
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "touch-action",
-    "target": "button:Cerrar",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "target": "button:Close",
+    "issue": 46
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "touch-action",
-    "target": "button:Guardar",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "target": "button:Save",
+    "issue": 46
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "touch-action",
-    "target": "button:Todo: $ #.#",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "target": "button:All: $ #.#",
+    "issue": 46
   },
   {
     "screen": "Configuracion",
     "rule": "touch-action",
-    "target": "button:‹ Más",
+    "target": "button:‹ More",
     "issue": 60
   },
   {
     "screen": "Configuracion",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 60
   },
   {
     "screen": "Configuracion",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 60
   },
   {
     "screen": "Configuracion",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 60
   },
   {
     "screen": "Configuracion",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 60
   },
   {
     "screen": "Configuracion",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 60
   },
   {
     "screen": "Configuracion",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 60
   },
   {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-action",
-    "target": "radio:Claro",
+    "target": "radio:Light",
     "issue": 60
   },
   {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-action",
-    "target": "radio:Oscuro",
+    "target": "radio:Dark",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:+ Categoría",
+    "target": "button:+ Category",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar[6]",
+    "target": "button:Delete[6]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:No, dejala",
+    "target": "button:No, keep it",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar[6]",
+    "target": "button:Rename[6]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Sí, borrala",
+    "target": "button:Yes, delete it",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:+ Categoría",
+    "target": "button:+ Category",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:Rename[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Save",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:+ Categoría",
+    "target": "button:+ Category",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[6]",
+    "target": "button:Delete[6]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[6]",
+    "target": "button:Rename[6]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "touch-action",
-    "target": "button:Cambiar contraseña",
+    "target": "button:Cancel",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "touch-action",
-    "target": "button:Cancelar",
+    "target": "button:Sign out",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Change password",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "touch-action",
-    "target": "button:Cerrar sesión",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:Save",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "touch-action",
-    "target": "button:Mostrar",
+    "target": "button:Show",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCuenta",
     "rule": "touch-action",
-    "target": "button:Cambiar contraseña",
+    "target": "button:Sign out",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCuenta",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Change password",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCuenta",
     "rule": "touch-action",
-    "target": "button:Cerrar sesión",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-action",
-    "target": "button:Buscar mi chat",
+    "target": "button:Find my chat",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-action",
-    "target": "button:Más info",
+    "target": "button:More info",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-action",
-    "target": "button:Probarlo",
+    "target": "button:Test it",
     "issue": 60
   },
   {
     "screen": "ConfiguracionMensaje",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionMensaje",
     "rule": "touch-action",
-    "target": "button:Guardá el mensaje",
+    "target": "button:Save the message",
     "issue": 60
   },
   {
     "screen": "ConfiguracionNegocio",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionNegocio",
     "rule": "touch-action",
-    "target": "button:Guardá el nombre",
+    "target": "button:Save the name",
     "issue": 60
   },
   {
     "screen": "ConfiguracionPrecios",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionPrecios",
     "rule": "touch-action",
-    "target": "button:Guardá los precios",
+    "target": "button:Save the prices",
     "issue": 60
   },
   {
     "screen": "ConfiguracionUsuarios",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 60
   },
   {
     "screen": "ConfiguracionUsuarios",
     "rule": "touch-action",
-    "target": "button:Invitá a un socio",
+    "target": "button:Invite a partner",
     "issue": 60
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:Agregar otra variedad",
+    "target": "button:Add another variety",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:No, seguí cargando",
+    "target": "button:No, keep entering",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:Sí, descartala",
+    "target": "button:Yes, discard it",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "radio:Debiendo",
+    "target": "radio:Cash",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "radio:Efectivo",
+    "target": "radio:Owing",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "radio:Transferencia",
+    "target": "radio:Transfer",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Agregar otra variedad",
+    "target": "button:Add another variety",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Cerrar@Nueva ventaHoy #/#Elegir clien",
+    "target": "button:Close@New saleToday #/#Pick a custom",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
+    "issue": 78
+  },
+  {
+    "screen": "ElegirCliente",
+    "rule": "touch-action",
+    "target": "button:New customer",
     "issue": 78
   },
   {
@@ -1108,649 +1096,643 @@
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Nuevo cliente",
+    "target": "button:No customer",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Sin cliente",
+    "target": "radio:Cash",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "radio:Debiendo",
+    "target": "radio:Owing",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "radio:Efectivo",
-    "issue": 78
-  },
-  {
-    "screen": "ElegirCliente",
-    "rule": "touch-action",
-    "target": "radio:Transferencia",
+    "target": "radio:Transfer",
     "issue": 78
   },
   {
     "screen": "EntradaStock",
     "rule": "touch-action",
-    "target": "button:Ajuste",
+    "target": "button:Adjustment",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "touch-action",
-    "target": "button:Compra",
+    "target": "button:Save the entry",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "touch-action",
-    "target": "button:Cosecha",
+    "target": "button:Harvest",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "touch-action",
-    "target": "button:Guardá la entrada",
+    "target": "button:Initial stock",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "touch-action",
-    "target": "button:Stock inicial",
+    "target": "button:Purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Ajuste",
+    "target": "button:Adjustment",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Borrar entrada",
+    "target": "button:Delete entry",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Compra",
+    "target": "button:Harvest",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Cosecha",
+    "target": "button:Initial stock",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:No, keep it",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:No, dejala",
+    "target": "button:Purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Stock inicial",
+    "target": "button:Save",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Sí, borrala",
+    "target": "button:Yes, delete it",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Ajuste",
+    "target": "button:Adjustment",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Borrar entrada",
+    "target": "button:Delete entry",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Compra",
+    "target": "button:Harvest",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Cosecha",
+    "target": "button:Initial stock",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:No, keep editing",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:No, seguir editando",
+    "target": "button:Purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Stock inicial",
+    "target": "button:Save",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "touch-action",
-    "target": "button:Sí, guardar",
+    "target": "button:Yes, save",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "touch-action",
-    "target": "button:Ajuste",
+    "target": "button:Adjustment",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "touch-action",
-    "target": "button:Borrar entrada",
+    "target": "button:Delete entry",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "touch-action",
-    "target": "button:Compra",
+    "target": "button:Harvest",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "touch-action",
-    "target": "button:Cosecha",
+    "target": "button:Initial stock",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:Purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "touch-action",
-    "target": "button:Stock inicial",
+    "target": "button:Save",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "touch-action",
-    "target": "button:Ajuste",
+    "target": "button:Adjustment",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "touch-action",
-    "target": "button:Compra",
+    "target": "button:Save the entry",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "touch-action",
-    "target": "button:Cosecha",
+    "target": "button:Harvest",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "touch-action",
-    "target": "button:Guardá la entrada",
+    "target": "button:Initial stock",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "touch-action",
-    "target": "button:Stock inicial",
+    "target": "button:Purchase",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldAjuste · -# gSin ",
+    "target": "button:Delete@#/# · #K GoldAdjustment · -# g",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldCompra · # g$ #.#[1]",
+    "target": "button:Delete@#/# · #K GoldPurchase · # g$ #[1]",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldCompra · # g$ #.#[2]",
+    "target": "button:Delete@#/# · #K GoldPurchase · # g$ #[2]",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Golden CookiesCompra · #",
+    "target": "button:Delete@#/# · Golden CookiesPurchase ·",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Sir JackCosecha · # gSin",
+    "target": "button:Delete@#/# · Initial stock · # gNo co",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Stock inicial · # gSin c",
+    "target": "button:Delete@#/# · Sir JackHarvest · # gNo ",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Variedad LarguísimoLargu",
+    "target": "button:Delete@#/# · Variedad LarguísimoLargu",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Variedad sin ventasCompr",
+    "target": "button:Delete@#/# · Variedad sin ventasPurch",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "Entrar",
     "rule": "touch-action",
-    "target": "button:Entrá",
+    "target": "button:Sign in",
     "issue": 49
   },
   {
     "screen": "Entrar",
     "rule": "touch-action",
-    "target": "button:Mostrar",
+    "target": "button:Show",
     "issue": 49
   },
   {
     "screen": "EntrarFreno",
     "rule": "touch-action",
-    "target": "button:Entrá",
+    "target": "button:Sign in",
     "issue": 49
   },
   {
     "screen": "EntrarFreno",
     "rule": "touch-action",
-    "target": "button:Mostrar",
+    "target": "button:Show",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "button:Borrar venta",
+    "target": "button:Delete sale",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "button:No, dejala",
+    "target": "button:No, keep it",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "button:Sí, borrala",
+    "target": "button:Yes, delete it",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "button:‹ Ventas",
+    "target": "button:‹ Sales",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
     "screen": "EstadosGone",
     "rule": "touch-action",
-    "target": "button:‹ Ventas",
+    "target": "button:‹ Sales",
     "issue": 49
   },
   {
     "screen": "EstadosGone",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 49
   },
   {
     "screen": "EstadosGone",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49
   },
   {
     "screen": "EstadosGone",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 49
   },
   {
     "screen": "EstadosGone",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 49
   },
   {
     "screen": "EstadosGone",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 49
   },
   {
     "screen": "EstadosGone",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Month",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Today",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Month",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Today",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 49
   },
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Month",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Today",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 49
   },
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
@@ -1774,97 +1756,97 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Mes anterior",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Mes siguiente",
+    "target": "button:No, keep it",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:No, dejala",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Sí, borrala",
+    "target": "button:Yes, delete it",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
     "screen": "GastoDesdeGastos",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 48
   },
   {
     "screen": "GastoDesdeGastos",
     "rule": "touch-action",
-    "target": "button:Crear una categoría nueva",
+    "target": "button:Create a new category",
     "issue": 48
   },
   {
     "screen": "GastoDesdeGastos",
     "rule": "touch-action",
-    "target": "button:Guardá el gasto",
+    "target": "button:Save the expense",
     "issue": 48
   },
   {
     "screen": "GastoDesdeMas",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 48
   },
   {
     "screen": "GastoDesdeMas",
     "rule": "touch-action",
-    "target": "button:Crear una categoría nueva",
+    "target": "button:Create a new category",
     "issue": 48
   },
   {
     "screen": "GastoDesdeMas",
     "rule": "touch-action",
-    "target": "button:Guardá el gasto",
+    "target": "button:Save the expense",
     "issue": 48
   },
   {
@@ -1888,91 +1870,91 @@
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "button:Borrar gasto",
+    "target": "button:Delete expense",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "button:Crear una categoría nueva",
+    "target": "button:Create a new category",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "button:Guardá el gasto",
+    "target": "button:Save the expense",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "button:Mes anterior",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "button:Mes siguiente",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
     "screen": "GastoNuevo",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 48
   },
   {
     "screen": "GastoNuevo",
     "rule": "touch-action",
-    "target": "button:Crear una categoría nueva",
+    "target": "button:Create a new category",
     "issue": 48
   },
   {
     "screen": "GastoNuevo",
     "rule": "touch-action",
-    "target": "button:Guardá el gasto",
+    "target": "button:Save the expense",
     "issue": 48
   },
   {
@@ -1996,331 +1978,319 @@
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "button:Mes anterior",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "button:Mes siguiente",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Month",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Today",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Month",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Today",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Month",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Today",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 45
   },
   {
     "screen": "Invitacion",
     "rule": "touch-action",
-    "target": "button:Mostrar",
+    "target": "button:Show",
     "issue": 49
   },
   {
     "screen": "Invitacion",
     "rule": "touch-action",
-    "target": "button:Sumate a Negocio LarguísimoLarguísimoLarguísimoLarguí",
+    "target": "button:Join Negocio LarguísimoLarguísimoLarguísimoLarguísimo",
     "issue": 49
   },
   {
     "screen": "Mas",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 48
   },
   {
     "screen": "Mas",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 48
   },
   {
     "screen": "Mas",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 48
   },
   {
     "screen": "Mas",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 48
   },
   {
     "screen": "Mas",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 48
   },
   {
     "screen": "Mas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
     "screen": "NegocioNuevo",
     "rule": "touch-action",
-    "target": "button:Creá el negocio",
+    "target": "button:Create the business",
     "issue": 49
   },
   {
     "screen": "NegocioNuevo",
     "rule": "touch-action",
-    "target": "button:Mostrar",
+    "target": "button:Show",
     "issue": 49
   },
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "button:Agregar otra variedad",
+    "target": "button:Add another variety",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "radio:Debiendo",
+    "target": "radio:Cash",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "radio:Efectivo",
+    "target": "radio:Owing",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "radio:Transferencia",
+    "target": "radio:Transfer",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Agregar otra variedad",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "button:Cerrar",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "button:Cerrar@Nueva ventaHoy #/#Elegir clien",
+    "target": "button:Add another variety",
     "issue": 78
   },
   {
@@ -2332,13 +2302,25 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Close",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Close@New saleToday #/#Pick a custom",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Pick a customer",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
@@ -2356,19 +2338,19 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
+    "target": "button:New customer",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "touch-action",
     "target": "button:Nico Parra+#",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Nuevo cliente",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78
   },
   {
@@ -2380,91 +2362,79 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "radio:Debiendo",
+    "target": "radio:Cash",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "radio:Efectivo",
+    "target": "radio:Owing",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "radio:Transferencia",
+    "target": "radio:Transfer",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Agregar otra variedad",
+    "target": "button:Add another variety",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Línea #: Golden Cookies",
+    "target": "button:Line #: Golden Cookies",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Quitar línea #",
+    "target": "button:Remove line #",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "radio:Debiendo",
+    "target": "radio:Cash",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "radio:Efectivo",
+    "target": "radio:Owing",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "radio:Transferencia",
+    "target": "radio:Transfer",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Agregar otra variedad",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-action",
-    "target": "button:Cerrar",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-action",
-    "target": "button:Cerrar@Nueva ventaHoy #/#Elegir clien",
+    "target": "button:Add another variety",
     "issue": 78
   },
   {
@@ -2476,19 +2446,31 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Crear cliente",
+    "target": "button:Close",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Close@New saleToday #/#Pick a custom",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Create customer",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Pick a customer",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "touch-action",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
@@ -2512,7 +2494,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78
   },
   {
@@ -2524,787 +2506,787 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "radio:Debiendo",
+    "target": "radio:Cash",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "radio:Efectivo",
+    "target": "radio:Owing",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "radio:Transferencia",
+    "target": "radio:Transfer",
     "issue": 78
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-action",
-    "target": "button:Buscar mi chat",
+    "target": "button:Find my chat",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-action",
-    "target": "button:Más info",
+    "target": "button:More info",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-action",
-    "target": "button:Probarlo",
+    "target": "button:Test it",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-action",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-action",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-action",
-    "target": "button:Buscar mi chat",
+    "target": "button:Find my chat",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-action",
-    "target": "button:Más info",
+    "target": "button:More info",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-action",
-    "target": "button:Probarlo",
+    "target": "button:Test it",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-action",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-action",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Categoría",
+    "target": "button:Category",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar[6]",
+    "target": "button:Delete[6]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar[6]",
+    "target": "button:Rename[6]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-action",
-    "target": "button:Seguir",
+    "target": "button:Continue",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Categoría",
+    "target": "button:Category",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[1]",
+    "target": "button:Delete[1]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[2]",
+    "target": "button:Delete[2]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[3]",
+    "target": "button:Delete[3]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[4]",
+    "target": "button:Delete[4]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[5]",
+    "target": "button:Delete[5]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Eliminar[6]",
+    "target": "button:Delete[6]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[1]",
+    "target": "button:Rename[1]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[2]",
+    "target": "button:Rename[2]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[3]",
+    "target": "button:Rename[3]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[4]",
+    "target": "button:Rename[4]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[5]",
+    "target": "button:Rename[5]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Renombrar[6]",
+    "target": "button:Rename[6]",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-action",
-    "target": "button:Seguir",
+    "target": "button:Continue",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-action",
-    "target": "button:Dejar así",
+    "target": "button:Leave as is",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-action",
-    "target": "button:Saltar",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-action",
-    "target": "button:Saltar el resto",
+    "target": "button:Save",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-action",
-    "target": "button:Dejar así",
+    "target": "button:Leave as is",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-action",
-    "target": "button:Guardar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-action",
-    "target": "button:Saltar",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-action",
-    "target": "button:Saltar el resto",
+    "target": "button:Save",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-action",
-    "target": "button:Crear el link",
+    "target": "button:Create the link",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-action",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-action",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-action",
-    "target": "button:Crear el link",
+    "target": "button:Create the link",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-action",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-action",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingStock",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingStock",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingStock",
     "rule": "touch-action",
-    "target": "button:Guardá la entrada",
+    "target": "button:Save the entry",
     "issue": 49
   },
   {
     "screen": "OnboardingStockTexto130",
     "rule": "touch-action",
-    "target": "button:Atrás",
+    "target": "button:Back",
     "issue": 49
   },
   {
     "screen": "OnboardingStockTexto130",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 49
   },
   {
     "screen": "OnboardingStockTexto130",
     "rule": "touch-action",
-    "target": "button:Guardá la entrada",
+    "target": "button:Save the entry",
     "issue": 49
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:No, dejala",
+    "target": "button:No, keep it",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Sí, borrala",
+    "target": "button:Yes, delete it",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "touch-action",
-    "target": "button:Guardá el precio",
+    "target": "button:Save the price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "touch-action",
-    "target": "button:Hoy #/#",
+    "target": "button:Today #/#",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "touch-action",
-    "target": "button:Guardá el precio",
+    "target": "button:Save the price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "touch-action",
-    "target": "button:Hoy #/#",
+    "target": "button:Today #/#",
     "issue": 47
   },
   {
     "screen": "Reset",
     "rule": "touch-action",
-    "target": "button:Guardar y entrar",
+    "target": "button:Save and sign in",
     "issue": 49
   },
   {
     "screen": "Reset",
     "rule": "touch-action",
-    "target": "button:Mostrar",
+    "target": "button:Show",
     "issue": 49
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "button:Borrar",
+    "target": "button:Delete",
     "issue": 47
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "SacarDelStock",
     "rule": "touch-action",
-    "target": "button:Agregar otra variedad",
+    "target": "button:Add another variety",
     "issue": 47
   },
   {
     "screen": "SacarDelStock",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "SacarDelStock",
     "rule": "touch-action",
-    "target": "button:Consumo propio",
+    "target": "button:Own use",
     "issue": 47
   },
   {
     "screen": "SacarDelStock",
     "rule": "touch-action",
-    "target": "button:Guardá el retiro",
+    "target": "button:Save the withdrawal",
     "issue": 47
   },
   {
     "screen": "SacarDelStock",
     "rule": "touch-action",
-    "target": "button:Promoción",
+    "target": "button:Promotion",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldAjuste · -# gSin ",
+    "target": "button:Delete@#/# · #K GoldAdjustment · -# g",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldCompra · # g$ #.#[1]",
+    "target": "button:Delete@#/# · #K GoldPurchase · # g$ #[1]",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · #K GoldCompra · # g$ #.#[2]",
+    "target": "button:Delete@#/# · #K GoldPurchase · # g$ #[2]",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Golden CookiesCompra · #",
+    "target": "button:Delete@#/# · Golden CookiesPurchase ·",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Sir JackCosecha · # gSin",
+    "target": "button:Delete@#/# · Initial stock · # gNo co",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Stock inicial · # gSin c",
+    "target": "button:Delete@#/# · Sir JackHarvest · # gNo ",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Variedad LarguísimoLargu",
+    "target": "button:Delete@#/# · Variedad LarguísimoLargu",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:Borrar@#/# · Variedad sin ventasCompr",
+    "target": "button:Delete@#/# · Variedad sin ventasPurch",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "button:Borrar",
+    "target": "button:Delete",
     "issue": 47
   },
   {
@@ -3316,409 +3298,409 @@
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "button:Restaurar",
+    "target": "button:Restore",
     "issue": 47
   },
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "button:‹ Archivadas",
+    "target": "button:‹ Archived",
     "issue": 47
   },
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "VariedadNueva",
     "rule": "touch-action",
-    "target": "button:Agregá la variedad",
+    "target": "button:Add the variety",
     "issue": 47
   },
   {
     "screen": "VariedadNueva",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "touch-action",
-    "target": "button:Agregá la variedad",
+    "target": "button:Add the variety",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Guardá el nombre",
+    "target": "button:Save the name",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Archivar variedad",
+    "target": "button:Archive variety",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Close",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Editar aviso",
+    "target": "button:Edit warning",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Editar catálogo",
+    "target": "button:Edit catalog",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Editar nombre",
+    "target": "button:Edit name",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Guardá el aviso",
+    "target": "button:Save the warning",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:‹ Variedades",
+    "target": "button:‹ Varieties",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "Variedades",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "Variedades",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "Variedades",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "Variedades",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "Variedades",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "Variedades",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Asignar cliente",
+    "target": "button:Assign customer",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3729,18 +3711,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Borrar venta",
-    "issue": 78,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Cerrar",
+    "target": "button:Delete sale",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3752,6 +3723,17 @@
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
     "target": "button:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-action",
+    "target": "button:Close",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3784,7 +3766,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Nico Parra+#",
+    "target": "button:New customer",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3795,7 +3777,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Nuevo cliente",
+    "target": "button:Nico Parra+#",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3817,7 +3799,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:‹ Ventas",
+    "target": "button:‹ Sales",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3828,7 +3810,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3839,7 +3821,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3850,7 +3832,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3861,7 +3843,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3872,7 +3854,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3883,7 +3865,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3894,235 +3876,235 @@
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "button:Borrar venta",
+    "target": "button:Delete sale",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "button:No, dejala",
+    "target": "button:No, keep it",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "button:Sí, borrala",
+    "target": "button:Yes, delete it",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "button:‹ Ventas",
+    "target": "button:‹ Sales",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 78
   },
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78
   },
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "button:Borrar venta",
+    "target": "button:Delete sale",
     "issue": 78
   },
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "button:‹ Ventas",
+    "target": "button:‹ Sales",
     "issue": 78
   },
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 78
   },
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78
   },
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 78
   },
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 78
   },
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 78
   },
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Month",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Today",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 78
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "button:Hoy",
+    "target": "button:Month",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "button:Mes",
+    "target": "button:Today",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "button:Semana",
+    "target": "button:Week",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78
   },
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "button:Borrar este precio",
+    "target": "button:Delete this price",
     "issue": 47
   },
   {
@@ -4134,37 +4116,37 @@
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "link:Clientes",
+    "target": "link:Customers",
     "issue": 47
   },
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47
   },
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47
   },
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "link:Variedades",
+    "target": "link:Sales",
     "issue": 47
   },
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "link:Ventas",
+    "target": "link:Varieties",
     "issue": 47
   },
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   }
 ]

@@ -14,15 +14,15 @@ const E3 = { id: 3, effective_from: '2026-09-25', list_price: 11000, bulk_price:
 
 describe('deleteNotice', () => {
   test('with an earlier entry, says the price that applies again and its date', () => {
-    expect(deleteNotice([E3, E2, E1], 3)).toBe('Vuelve a regir $ 10.500 x g desde el 01/09')
+    expect(deleteNotice([E3, E2, E1], 3)).toBe('Back to $ 10.500 x g from 01/09')
   })
 
   test('for the first (oldest) entry, says there is no price before the next one', () => {
-    expect(deleteNotice([E3, E2, E1], 1)).toBe('No va a haber precio antes del 01/09')
+    expect(deleteNotice([E3, E2, E1], 1)).toBe('There will be no price before 01/09')
   })
 
   test('for the only entry, says the variety is left with no price', () => {
-    expect(deleteNotice([E1], 1)).toBe('Sin precio: no se puede vender')
+    expect(deleteNotice([E1], 1)).toBe('No price: cannot be sold')
   })
 
   test('never mentions sales', () => {

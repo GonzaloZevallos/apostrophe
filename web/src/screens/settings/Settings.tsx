@@ -23,16 +23,18 @@ import {
   SETTINGS_PRICES,
   SETTINGS_USERS,
 } from '../../routes'
+import { COMMON_TEXT } from '../../copy/common'
+import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
 
 const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
-  { to: SETTINGS_BUSINESS, label: 'Negocio', icon: 'negocio' },
-  { to: SETTINGS_USERS, label: 'Usuarios', icon: 'usuarios' },
-  { to: SETTINGS_PRICES, label: 'Precios', icon: 'precio' },
-  { to: SETTINGS_INTEGRATIONS, label: 'Integraciones', icon: 'integraciones' },
-  { to: SETTINGS_CATALOG_MESSAGE, label: 'Mensaje del catálogo', icon: 'mensaje' },
-  { to: EXPENSE_CATEGORIES, label: 'Categorías de gastos', icon: 'categorias' },
-  { to: SETTINGS_APPEARANCE, label: 'Apariencia', icon: 'apariencia' },
-  { to: SETTINGS_ACCOUNT, label: 'Tu cuenta', icon: 'cuenta' },
+  { to: SETTINGS_BUSINESS, label: COMMON_TEXT.business, icon: 'negocio' },
+  { to: SETTINGS_USERS, label: COMMON_TEXT.users, icon: 'usuarios' },
+  { to: SETTINGS_PRICES, label: COMMON_TEXT.prices, icon: 'precio' },
+  { to: SETTINGS_INTEGRATIONS, label: INTEGRATIONS_LINK_WORD, icon: 'integraciones' },
+  { to: SETTINGS_CATALOG_MESSAGE, label: COMMON_TEXT.catalogMessage, icon: 'mensaje' },
+  { to: EXPENSE_CATEGORIES, label: COMMON_TEXT.expenseCategories, icon: 'categorias' },
+  { to: SETTINGS_APPEARANCE, label: COMMON_TEXT.appearance, icon: 'apariencia' },
+  { to: SETTINGS_ACCOUNT, label: COMMON_TEXT.yourAccount, icon: 'cuenta' },
 ]
 
 export default function Settings() {
@@ -43,9 +45,9 @@ export default function Settings() {
       <div className="cuerpo ajustes">
         <div className="ajustes__titulos">
           <span className="encabezado__negocio ajustes__negocio">{me.business_name}</span>
-          <h1 className="ajustes__titulo">Configuración</h1>
+          <h1 className="ajustes__titulo">{COMMON_TEXT.settings}</h1>
         </div>
-        <nav className="ajustes__lista" aria-label="Configuración" data-menu>
+        <nav className="ajustes__lista" aria-label={COMMON_TEXT.settings} data-menu>
           {GROUPS.map((group) => (
             <InAppLink key={group.to} to={group.to} className="ajustes__item">
               <span className="ajustes__item-icono">

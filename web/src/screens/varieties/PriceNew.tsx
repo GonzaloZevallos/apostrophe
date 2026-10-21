@@ -33,6 +33,8 @@ import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import type { Variety } from '../Variedades'
 import PriceForm from './PriceForm'
 import PriceFrame from './PriceFrame'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
 
 /** The element focus returns to after "No, seguí cargando": the title when it is gone or is `body`. */
 function stillFocusable(element: Element | null): element is HTMLElement {
@@ -105,21 +107,21 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
   const failure = varietyQuery.error ?? settingsQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return (
-      <PriceFrame dialog={dialog} label="Nuevo precio" onBackdrop={leave} form={<GoneScreen label="Variedades" to={VARIETIES} />} />
+      <PriceFrame dialog={dialog} label={COMMON_TEXT.newPrice} onBackdrop={leave} form={<GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />} />
     )
   }
   if (failure !== null) {
     return (
       <PriceFrame
         dialog={dialog}
-        label="Nuevo precio"
+        label={COMMON_TEXT.newPrice}
         onBackdrop={leave}
         form={failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
       />
     )
   }
   if (varietyQuery.data === undefined || settingsQuery.data === undefined) {
-    return <PriceFrame dialog={dialog} label="Nuevo precio" onBackdrop={leave} form={<Loading />} />
+    return <PriceFrame dialog={dialog} label={COMMON_TEXT.newPrice} onBackdrop={leave} form={<Loading />} />
   }
 
   return (
@@ -148,10 +150,10 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
       {blocked && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el precio?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={VARIETIES_TEXT.descartasElPrecio}
+          detail={COMMON_TEXT.losesWhatYouEntered}
+          keepLabel={COMMON_TEXT.noKeepEntering}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </PriceFrame>
