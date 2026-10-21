@@ -2,12 +2,12 @@
 
 The varieties a business sells and the price history of each, seen only by that business (ADR-0004). Every other capability reads prices from here: a sale takes the current price of its day, the catalog shows today's.
 
-Variedades is the one screen for a variety. Its list and each variety's page hold:
+Varieties is the one screen for a variety. Its list and each variety's page hold:
 - the variety's prices (here);
 - its stock, entries, withdrawals and low-stock threshold (`stock.md`);
 - its catalog attributes (`catalog.md`).
 
-Which price fields a price entry shows and stores follows the business's pricing settings (pricing-settings.md). Variedades is a tab (navigation.md). It replaced the former Stock tab, the old Catálogo screen and the old Variedades screens; their paths redirect (navigation.md). It also covers the end of a variety's life: a variety with no history can be deleted, and one with history archived and later restored, with no past figure moving.
+Which price fields a price entry shows and stores follows the business's pricing settings (pricing-settings.md). Varieties is a tab (navigation.md). It replaced the former Stock tab, the old Catalog screen and the old Varieties screens; their paths redirect (navigation.md). It also covers the end of a variety's life: a variety with no history can be deleted, and one with history archived and later restored, with no past figure moving.
 
 ## Jobs
 
@@ -30,7 +30,7 @@ Its protagonist is the maintainer of the app, or the reviewer acting for them, i
 **When** I take grams out of my own stock without selling them (to share at a party so
 people get to know the business, or for my own use), **I want** to record them from my
 phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right
-and see in Ganancia what promoting the business and my own consumption cost me, without
+and see in Profit what promoting the business and my own consumption cost me, without
 recording a sale nobody made or an adjustment that reads as lost flower. (Served here by
 "Take from stock" on the list and on a variety's page, and the withdrawals in its "Stock y
 entradas"; defined in `stock.md`.)
@@ -53,7 +53,7 @@ This one is the varieties and navigation job applied to the end of a variety's l
 not a new job. Before it, a seller could only hide such a variety from the catalog and
 live with it in the lists, rename it to something like "NO USAR" or leave it sold out.
 
-**When** I open a variety I archived, from Archivadas, to check what it was or to bring it
+**When** I open a variety I archived, from Archived, to check what it was or to bring it
 back, **I want** its page to read at a glance as archived and read-only, with everything it
 had (summary, hidden flag, prices, stock and movements, low-stock warning, catalog
 attributes) still in view and Restaurar as its one safe action, **so I can** decide whether
@@ -62,7 +62,7 @@ variety that never moved, the delete looks like what it is: permanent.
 
 This refines the end-of-life job above for the archived page and the live page's delete;
 it is not a new job. Its secondary audience is the reviewer acting for the maintainer
-(design-capture.md), who approves the archived page and Archivadas from drawings and
+(design-capture.md), who approves the archived page and Archived from drawings and
 before/after captures, not by reading code. Before it, the archived page left out "Hidden",
 the low-stock warning and the catalog attributes, styled "Archived" like "Hidden" next to
 a live status mark, turned into the live variety in place on Restaurar, and had no drawing,
@@ -79,7 +79,7 @@ Success criteria:
    name.
 4. Everything here, deleting a mistaken entry included, is done from the phone with no API
    call by hand.
-5. Variedades says on its own, by shape and word and never by color alone, when a variety
+5. Varieties says on its own, by shape and word and never by color alone, when a variety
    is sold out or below its threshold (`stock.md`, criterion 4). The summary line is
    never blank.
 6. **One variety, one page**: a variety's stock and its movements (entries and
@@ -91,14 +91,14 @@ Success criteria:
    takes more than the phone. An entry started from a variety's page has that variety
    chosen, with "Initial stock" preselected only when it has no entries.
 8. **Nothing lost, nothing invented**: everything a seller could do on the former Stock,
-   Catálogo and Variedades screens is still reachable; every old path redirects
+   Catalog and Varieties screens is still reachable; every old path redirects
    permanently; no link points at a screen that does not exist.
 9. **Out of the way in a few taps**: from a variety's own page, on phone and computer, the
    seller takes it out of every list and picker. The app offers Delete only when the
    variety has no history, and Archive otherwise. It never offers a delete that will be
    refused.
 10. **The books don't move**: after archiving, every past sale and its lines, stock
-    figure, cost of goods, stock shortfall, Ganancia, Caja, Análisis figure and customer
+    figure, cost of goods, stock shortfall, Profit, Cash, Analysis figure and customer
     balance reads exactly as before, to the peso and the hundredth of a gram.
 11. **Comes back whole**: restoring brings the variety back with its prices, stock,
     entries, low-stock threshold, catalog attributes and hidden flag intact, and back in
@@ -112,7 +112,7 @@ Success criteria:
     carry no data.
 15. **Only my rules show, and switching loses nothing** (pricing-settings.md):
     - With Precio por cantidad off, no bulk price or bulk minimum shows in the price form or on the variety's page.
-    - With Clientes VIP off, no VIP price shows.
+    - With Customers VIP off, no VIP price shows.
     - Switched back on, every stored bulk and VIP price shows again.
 16. **The price form looks as designed**: it matches `docs/product/design-system/pantallas/` on the phone and the computer, in both themes:
     - on the computer, a modal over the variety's page, never a page of its own;
@@ -128,7 +128,7 @@ Success criteria:
 20. **The right weight on each action**: "Delete variety" (a live variety with no
     history) is drawn as a destructive action; Restaurar is drawn as a safe action, with no
     confirmation.
-21. **Approved from evidence**: the archived page and Archivadas have drawings in
+21. **Approved from evidence**: the archived page and Archived have drawings in
     `pantallas/` on phone and computer, light and dark; the sample app seeds one archived
     variety; `scripts/design/screens.json` lists both pages; before/after captures
     (ADR-0042) are attached to the PR with every difference listed.
@@ -143,7 +143,7 @@ Success criteria:
   Every amount is above zero.
 - **A VIP price at or above the list price** is refused with its own fixed message and its own refusal code (ADR-0008), which never repeats the amount (ADR-0005).
 - **Rules switched off** (pricing-settings.md):
-  - A price entry recorded while Precio por cantidad is off stores no bulk price or bulk minimum, and one recorded while Clientes VIP is off stores no VIP price, whatever the request sends. Nothing is copied forward from an earlier entry.
+  - A price entry recorded while Precio por cantidad is off stores no bulk price or bulk minimum, and one recorded while Customers VIP is off stores no VIP price, whatever the request sends. Nothing is copied forward from an earlier entry.
   - Earlier entries keep what they stored.
   - When a rule is switched back on, the current price shows no bulk or VIP line if its entry has none; the seller records a new entry if they want one.
 - One entry per variety per effective date; a second one on the same date is refused.
@@ -190,17 +190,17 @@ Success criteria:
   - Archiving and restoring are upkeep triggers for the pinned catalog
     (pinned-catalog.md).
 - **An archived variety is left out of**:
-  - Variedades' list and its summary line;
-  - Inicio's Lo que te queda, and the "Start with your varieties" rule (results.md);
-  - Nueva venta's variety picker (`sales.md`);
+  - Varieties' list and its summary line;
+  - Home's What you have left, and the "Start with your varieties" rule (results.md);
+  - New sale's variety picker (`sales.md`);
   - the stock entry form's variety picker (`stock.md`);
   - the price entry form;
   - the catalog text and the catalog screen's "what does not go out" list (`catalog.md`);
   - the pinned catalog.
 - **Past records keep it, by its plain name, with no "archivada" tag and no figure
   changed**: Ventas and a sale's detail, the customer's account, Todas las entradas,
-  Análisis' variety rows and every week, month and since-the-start figure, Results'
-  Ganancia and Caja, and the business export (which holds the archived flag as a stored
+  Analysis' variety rows and every week, month and since-the-start figure, Results'
+  Profit and Cash, and the business export (which holds the archived flag as a stored
   fact).
 - **Existing records stay workable** (ADR-0009): a stock entry of an archived variety can
   be edited or deleted from Todas las entradas; a sale containing one can be deleted,
@@ -209,13 +209,13 @@ Success criteria:
 - **Nothing new is recorded against an archived variety**: no sale line, stock entry or
   price entry; such a reference answers as gone. A form left open while a partner
   archives the variety is refused on save with accounts.md's "That is gone" rule and
-  keeps the rest of what was typed where the screen allows. In Nueva venta the line shows
+  keeps the rest of what was typed where the screen allows. In New sale the line shows
   the generic gone message and the form stays open (sales.md's rule for a variety not
   found).
 - **Names**: an archived variety keeps its name reserved under the uniqueness rule (case
   and spacing ignored).
   - Adding or renaming a variety to that name is refused inline with its own fixed
-    refusal: the name belongs to an archived variety, look in Archivadas. It repeats
+    refusal: the name belongs to an archived variety, look in Archived. It repeats
     nothing typed.
   - An archived variety can be renamed only after it is restored, so restore never
     collides: Restaurar has no name-clash refusal and no error state of its own. Its only
@@ -229,19 +229,19 @@ Success criteria:
   `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry),
   `/varieties/{low}/entries` (a variety's "See all" of entries and withdrawals),
   `/varieties/{low}/prices`, `/varieties/{low}/prices/new`, `/varieties/new` and
-  `/varieties/archived` (the Archivadas card). An archived variety's page is the same
+  `/varieties/archived` (the Archived card). An archived variety's page is the same
   `/varieties/{low}`, read-only.
 - A reload on any of them opens the screen, never the API's answer (ADR-0024 and
   ADR-0033 govern paths shared with the API).
 - Old paths (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`,
   `/mi-stock/entradas/{id}`, `/catalogo` and every other former Stock, Variedades or
-  Catálogo path) redirect permanently (navigation.md).
+  Catalog path) redirect permanently (navigation.md).
 
-### On screen: the Variedades list (`Varieties`)
+### On screen: the Varieties list (`Varieties`)
 
 - **A tab root** (navigation.md). On a computer it is two panes: the list on the left, the
   selected variety's page on the right.
-  - **On a computer**, opening Variedades with nothing selected selects the first
+  - **On a computer**, opening Varieties with nothing selected selects the first
     unarchived variety by name automatically, so a figure is always in view; this counts
     as no tap, and picking another variety replaces it. With no varieties, the right pane
     holds nothing that could be read as data.
@@ -275,13 +275,13 @@ Success criteria:
   computer, opening the stock withdrawal form with no variety chosen (`stock.md`).
 - **"New variety"**: adds a variety (a form).
 - **"All entries"** at the foot (`stock.md`), at `/varieties/entries`. It lists entries only.
-- **"Archivadas (N)"** at the foot, next to "All entries", opening the Archivadas
+- **"Archived (N)"** at the foot, next to "All entries", opening the Archived
   card. It is left out when there are none.
 
-### On screen: Archivadas
+### On screen: Archived
 
 - **A card** (navigation.md) at `/varieties/archived`: the bar or sidebar and
-  "‹ Variedades", without "+ New sale".
+  "‹ Varieties", without "+ New sale".
 - It lists every archived variety by name. Each row marks "Archived" as a neutral
   Insignia (a word, with no colour carrying the state, in both themes) and "Hidden", in its
   own text style beside it, when the variety is hidden, so the seller knows what Restaurar
@@ -290,12 +290,12 @@ Success criteria:
 - On a computer it uses the same two panes; opened with nothing selected, it selects the
   first archived variety by name.
 - **Restaurar** on a row is one tap with no confirmation, shows the toast "Variedad
-  restaurada", and the variety returns to Variedades' list exactly as it was: hidden flag,
+  restaurada", and the variety returns to Varieties' list exactly as it was: hidden flag,
   prices, stock, entries, threshold and catalog attributes.
 
 ### On screen: a variety's page (`VariedadDetalle`)
 
-- **A detail** (navigation.md): the bar or sidebar and "‹ Variedades", without
+- **A detail** (navigation.md): the bar or sidebar and "‹ Varieties", without
   "+ New sale".
 - **The summary line** at the top: grams, status, days left and today's list price (e.g.
   "64 g · ok · 21 days · $ 11.000 x g"), with "Hidden" when hidden.
@@ -314,7 +314,7 @@ Success criteria:
   - **Precios**: the last 3 price entries with "Effective from", newest first, each row with
     its delete action, and "See all" (`/varieties/{low}/prices`) for the full history.
     - Each row shows the list price.
-    - It shows the bulk price and minimum only while Precio por cantidad is on, and the VIP price ("VIP price") only while Clientes VIP is on, each only when the entry has one;
+    - It shows the bulk price and minimum only while Precio por cantidad is on, and the VIP price ("VIP price") only while Customers VIP is on, each only when the entry has one;
   - **Aviso de stock bajo**: the current warning, read-only, with an on/off switch and an
     "Edit" link, and nothing else (no "See all"):
     - it reads "Avisame abajo de 15 g", "Avisando: quedan 18,5 g" or "Warning off";
@@ -323,20 +323,20 @@ Success criteria:
     - turning the switch off saves at once;
     - every save, the switch-off included, shows the toast "Warning saved";
   - **En el catálogo**: the variety's catalog attributes, read-only (shown or hidden, emoji, % indica, aroma/sabor), with an "Edit" link, and nothing else (no "See all"). It is the only place they are edited (`catalog.md`):
-    - "Edit" opens one form with "Show in the catalog", Emoji, % indica and Aroma/sabor, ending in "Save the catalog";
+    - "Edit" opens one form with "Show in the catalog", Emoji, % indica and Aroma/flavor, ending in "Save the catalog";
     - each refusal (for example an aroma over 200 characters) shows under its own field and keeps everything typed;
     - leaving with something typed and not saved asks before discarding;
     - a save shows the toast "Catalog saved".
 - **One removal action**, worked out from history when the page is read:
   - with no history: "Delete variety", through a destructive ConfirmDialog, then the
-    toast "Variety deleted" and back to Variedades.
+    toast "Variety deleted" and back to Varieties.
     - The trigger on the page is drawn as a visibly critical action: icon + text with the
       `tacho` icon, its accessible name unchanged, and never a filled button outside a
       confirmation. The filled critical button is the ConfirmDialog's confirm answer only.
     - Its exact treatment is design's, inside the existing tokens and the icon and text
       rule; a style the design system lacks is drawn from tokens before it is built.
   - with history: "Archive variety", through a confirmation that names the grams on hand
-    when stock is not zero (e.g. "Te quedan 12 g. Si la archivás, dejan de verse en Inicio
+    when stock is not zero (e.g. "Te quedan 12 g. Si la archivás, dejan de verse en Home
     y en las listas, pero el stock queda guardado.") and simply asks with zero stock (the
     exact wording is design's), then the toast "Variety archived". Its trigger keeps a
     non-destructive look, clearly distinct from "Delete variety": archiving loses
@@ -347,13 +347,13 @@ Success criteria:
   - **Stale page, archive**: if the history went away after the page loaded, "Archivar
     variedad" still archives it, with no refusal.
 - **An archived variety's page** is the same page, read-only, with the back arrow
-  "‹ Archivadas" (with no history, back goes to Archivadas):
+  "‹ Archived" (with no history, back goes to Archived):
   - **Its summary line**: its grams, as a figure even when negative; today's list price,
-    or "Sin precio"; "Archived" as a neutral Insignia (a word, with no colour carrying
+    or "No price"; "Archived" as a neutral Insignia (a word, with no colour carrying
     the state, in both themes); and "Hidden", in its own text style beside it, when the
     variety is hidden. It shows no stock status mark and no days left: those warn about
     selling and restocking, and an archived variety is out of every list, picker and
-    Inicio.
+    Home.
   - **"Restore"** is its one action: a primary icon + text action, in the place of the
     live page's three actions, right under the summary line and its marks, so on the phone
     it is reachable without scrolling past any section. Nothing sits next to it. Its icon
@@ -361,7 +361,7 @@ Success criteria:
   - **Its sections, all read-only**:
     - **Stock y entradas**: the last 3 movements, with "See all";
     - **Precios**: the last 3 price entries, with "See all", following the same switch
-      rule as the live Precios section (no VIP price while Clientes VIP is off);
+      rule as the live Precios section (no VIP price while Customers VIP is off);
     - **Aviso de stock bajo**: the stored setting only, "Avisame abajo de N g" or "Aviso
       apagado"; never the live "Avisando: quedan N g"; no switch and no "Editar";
     - **En el catálogo**: the four stored attributes (shown or hidden in words, emoji,
@@ -370,16 +370,16 @@ Success criteria:
   - **"See all" from it** opens read-only lists: the prices list has no price delete;
     in the movements list, entry rows have no edit or delete and open nothing, while
     withdrawal rows still open the withdrawal's own detail (its back follows history to
-    this list, and with no history goes to Variedades). Each list's back arrow names the
+    this list, and with no history goes to Varieties). Each list's back arrow names the
     variety and returns to its archived page. Entries stay editable and deletable from
     "All entries", and withdrawals from their own detail, so nothing is lost.
   - no "+ Entry", "Take from stock", "New price", price delete, threshold switch,
     rename, Editar forms or removal action;
   - **Restaurar from the page** shows the toast "Variety restored" and goes back to
-    Archivadas in one move; the page never turns into the live variety in place, and no
-    history entry is duplicated. On a computer, Archivadas' right pane then selects the
+    Archived in one move; the page never turns into the live variety in place, and no
+    history entry is duplicated. On a computer, Archived' right pane then selects the
     next archived variety by name, else the previous one, replacing the current history
-    entry. With no archived variety left, it goes to Variedades, so an empty Archivadas is
+    entry. With no archived variety left, it goes to Varieties, so an empty Archived is
     never shown. The variety comes back exactly as it was;
   - to delete an archived variety that has no history, the seller restores it first, then
     deletes it. There is no second path.
@@ -398,7 +398,7 @@ Success criteria:
   - for the only entry, that the variety is left "No price: cannot be sold".
 
   The copy never mentions sales.
-- **After deleting**, today's prices update at once on the page and the list. Inicio may
+- **After deleting**, today's prices update at once on the page and the list. Home may
   show "Start with your varieties" again.
 - **Toasts**: "Variety saved", "Price saved", "Price deleted", "Variedad
   eliminada", "Variedad archivada" and "Variedad restaurada", with no names or amounts in
@@ -408,7 +408,7 @@ Success criteria:
   duplicate date or a VIP price at or above the list price, show inline and keep what was
   typed.
 - **A variety that is gone**, or another business's variety (archived or not) opened by
-  id, follows accounts.md's "That is gone." rule, with "Volver a Variedades".
+  id, follows accounts.md's "That is gone." rule, with "Back to Varieties".
 - No network shows "No connection"; a server error shows the generic retry (accounts.md).
 - Everything works on phone and computer, light and dark; no state is told by colour
   alone.
@@ -418,11 +418,11 @@ Success criteria:
 - **Kind**: a form (navigation.md) on both devices: no bar and no "+ New sale"; "Close"; leaving with something typed asks before discarding, and an untouched form closes at once. Back with no history goes to the variety's page. Only how it is drawn on the computer differs.
 - **Fields**:
   - the effective date and the list price;
-  - the bulk price and bulk minimum only while Precio por cantidad is on, and "VIP price" only while Clientes VIP is on, each optional;
+  - the bulk price and bulk minimum only while Precio por cantidad is on, and "VIP price" only while Customers VIP is on, each optional;
   - it says nothing about a rule that is switched off.
 - **Amounts in pesos**: the list price, the bulk price and the VIP price each show "$" before the amount. The bulk minimum, in grams, never does. The "$" is text under the design README's contrast rule (ADR-0029), drawn with existing tokens only. These fields are the shared price fields, so the "$" also shows in the Onboarding's step 1 (onboarding.md).
 - **"Effective from", a date chip**:
-  - it reads "Hoy dd/mm" by default, as Nueva venta's date does (sales.md);
+  - it reads "Today dd/mm" by default, as New sale's date does (sales.md);
   - tapping it opens the date choice; how that choice looks is design's, as long as it is reached from the chip;
   - a chosen day that is not today reads "dd/mm", without "Today";
   - going back to today is done from the same chip, where "Today" can be found; there is no separate control, and it never takes more than the chip and its choice;
@@ -440,20 +440,20 @@ Success criteria:
 ### Design evidence for the archived pages
 
 - **Drawings**: `docs/product/design-system/pantallas/` draws the archived variety's page
-  and Archivadas, on phone and computer, in light and dark; on a computer, Archivadas is
+  and Archived, on phone and computer, in light and dark; on a computer, Archived is
   two panes with the first archived variety by name selected. They cover the summary
   line, the "Archived" Insignia and "Hidden", the read-only sections and Restaurar. The
   live page's critical "Delete variety" trigger is drawn too.
 - **Registry** (`scripts/design/screens.json`): the existing `VariedadArchivada` and
   `VariedadArchivadaOscuro` entries point at the new drawing and the seeded archived
-  variety, never duplicated; the Compu twins and the Archivadas rows (phone and computer,
+  variety, never duplicated; the Compu twins and the Archived rows (phone and computer,
   light and dark) are added. Each row reaches its screen the way a seller does and
   captures its section whole (design-capture.md).
 - **Sample app** (`scripts/design/sample_app.py`): it seeds exactly one archived variety,
   hidden, whose only history is one opening-stock entry recorded with no cost, dated on or
   after the sample business's first record (no sale, no withdrawal), with a low-stock
   threshold, catalog attributes (emoji, % indica, aroma) and a current price entry. Every
-  period figure on Inicio, Ventas and Análisis stays as `muestra.md` has it; `muestra.md`
+  period figure on Home, Sales and Analysis stays as `muestra.md` has it; `muestra.md`
   gains only that variety's own rows, recaptured by the script (ADR-0035).
 - **Muestra guard**: it checks the archived variety's own grams, "Archived" and "Hidden"
   on its screens, not only denylisted literals.
@@ -480,7 +480,7 @@ Success criteria:
   - A VIP price with no bulk price, and a bulk price with no VIP price, are accepted.
   - No refusal contains the amount.
 - **Switched-off rules store nothing (criterion 15)**: a price entry sent with bulk or VIP values while that rule is off stores none of them; earlier entries' values are unchanged.
-- **Switches on screen (criterion 15)**: front tests show the price form, the Precios section and the full history with no bulk fields while Precio por cantidad is off and no VIP price while Clientes VIP is off, and every stored value back once switched on.
+- **Switches on screen (criterion 15)**: front tests show the price form, the Precios section and the full history with no bulk fields while Precio por cantidad is off and no VIP price while Customers VIP is off, and every stored value back once switched on.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
   page (with a VIP price when VIP customers is on), renames the variety, deletes a price
   entry, sets a low-stock threshold through "Edit", turns it off and on again through the
@@ -512,7 +512,7 @@ Success criteria:
   variety by name; no varieties leaves the right pane with no figure; archiving or
   deleting the selected variety selects the next, else the previous, else the empty
   state; on the phone the list never opens a variety.
-- **Nothing lost (criterion 8)**: every old Stock, Variedades and Catálogo path answers a
+- **Nothing lost (criterion 8)**: every old Stock, Varieties and Catalog path answers a
   permanent redirect, tested one by one, `/mi-stock/entradas/{id}` included; every old
   action maps to a place in the new screens; no link points at a missing screen; a reload
   on `/varieties/{low}/entries`, `/varieties/entries/{id}` and `/varieties/archived`
@@ -534,7 +534,7 @@ Success criteria:
   grams per variety, captured before archiving, after archiving and after restoring: 0
   differences.
 - **Out of every list and picker (criterion 9)**: front and API tests show an archived
-  variety absent from Variedades' list and summary line, Lo que te queda, Nueva venta's,
+  variety absent from Varieties' list and summary line, What you have left, New sale's,
   the stock entry form's and the price form's choices, the catalog text, its "what does
   not go out" list and the pinned catalog's text; upkeep edits the pin on archive and
   restore exactly when the text changes. 100% passing.
@@ -547,7 +547,7 @@ Success criteria:
   is refused as gone; an entry edit keeps its own archived variety and is refused moving
   onto another archived one; editing and deleting that entry, deleting a sale containing
   it (Deshacer included) and Asignar cliente still work.
-- **Findable (criterion 13)**: "Archivadas (N)" shows the right count and is absent with
+- **Findable (criterion 13)**: "Archived (N)" shows the right count and is absent with
   none; restore takes 1 tap from the card and from the archived page; the archived page
   offers no action but "Restore".
 - **Taps (criterion 9)**: through the front on a phone viewport, archiving or deleting
@@ -561,18 +561,18 @@ Success criteria:
 - **Read as archived (criterion 19)**: front tests on an archived variety's page, hidden
   and shown, show "Archived", plus "Hidden" when hidden; grams and price with no status
   mark and no days left; the four sections read-only, the threshold as a stored statement
-  and never "Avisando"; and no action but "Restore". Archivadas rows show "Archived"
+  and never "Avisando"; and no action but "Restore". Archived rows show "Archived"
   and, when hidden, "Hidden". No state is told by colour alone, in both themes. The
   muestra guard checks the seeded archived variety's grams, "Archived" and "Hidden".
 - **Right weight (criterion 20)**: front tests show the "Delete variety" trigger as
   icon + text with `tacho`, never a filled button, and the filled critical button only in
   its ConfirmDialog; "Archive variety" not drawn as destructive; Restaurar icon + text,
-  primary on the page and secondary on an Archivadas row, with no confirmation.
+  primary on the page and secondary on an Archived row, with no confirmation.
 - **Restore landing**: front tests show Restaurar from the archived page showing "Variedad
-  restaurada" and landing on Archivadas in one move; on a computer the next archived
-  variety by name selected, else the previous one; Variedades when none is left; no
+  restaurada" and landing on Archived in one move; on a computer the next archived
+  variety by name selected, else the previous one; Varieties when none is left; no
   duplicated history entry; the page never becoming the live variety in place; the
-  Archivadas row's restore unchanged.
+  Archived row's restore unchanged.
 - **Read-only lists**: front tests show the archived page's "See all" lists with no price
   delete and no entry edit, delete or open; withdrawal rows still opening their detail;
   each list's back arrow returning to the archived page.
@@ -581,7 +581,7 @@ Success criteria:
   delete, the archived page's old omissions, or the old restore-in-place landing (which
   criterion 1 of the restore reverses); the PR lists each.
 - **Approved from evidence (criterion 21)**: the four drawings exist for the archived
-  page and for Archivadas; `screens.json` lists them and their twins with no duplicate key
+  page and for Archived; `screens.json` lists them and their twins with no duplicate key
   (`assertScreens`); the sample app seeds one archived variety and `muestra.md` changes
   only by its rows; before/after captures from one script and one install, on the same
   Argentina day, with the fontsource version recorded (ADR-0042), are attached to the PR
@@ -589,19 +589,19 @@ Success criteria:
   drawing, and by a capture only where a registry row already reaches a variety with no
   history.
 - **Design**: `scripts/design/compare.sh` runs before and after for the list, the page,
-  Archivadas and the archived page, phone and computer, both themes, attached to the PR
+  Archived and the archived page, phone and computer, both themes, attached to the PR
   and judged by eye. The PR lists the two agreed departures from the drawing (the
   "Edit" forms of Aviso de stock bajo and En el catálogo).
 - **Price form looks as designed (criterion 16)**:
   - `scripts/design/compare.sh` runs before and after for the price form, phone and computer, both themes, and for the Onboarding's step 1, attached to the PR and judged by eye; every design-vs-docs difference is listed in the PR;
   - `scripts/design/screens.json` holds the price form's dark twins (phone and computer), following the dark-twin convention, and the Onboarding's price step, and `compare.sh` measures them.
 - **"$" scope (criterion 16)**: front tests show the "$" on the list, bulk and VIP price, never on the bulk minimum, and the same in the Onboarding's step 1, which shows no date chip.
-- **Date chip (criterion 17)**: front tests show "Hoy dd/mm" by default and "dd/mm" for another day, going back to today from the chip, the chosen date kept after a refused save, and no native date input opened to record a price from today.
+- **Date chip (criterion 17)**: front tests show "Today dd/mm" by default and "dd/mm" for another day, going back to today from the chip, the chosen date kept after a refused save, and no native date input opened to record a price from today.
 - **Modal (criterion 16)**: front tests through the real routes show the modal on a computer viewport and a full form screen on the phone, a direct link rendering the modal over its variety, the list behind it inert, and the close, save ("Price saved", the new entry in Precios) and discard flows.
 - **One source (criterion 18)**: a test shows "Check the grams entered" and "Price saved" each defined once, and the rendered text in every screen that shows them unchanged.
 - **Chrome proven by behaviour** (navigation.md, criterion 5): a Shell test shows "+ New sale" on a tab root and absent under card chrome.
 - **No regression (criteria 16–18)**: the existing suites pass; the only edited tests are those that found the native date input or the page layout, each listed in the PR; the contrast guard (ADR-0029) passes with no token change.
-- **Speed**: Variedades answers in under 300 ms with a few dozen varieties.
+- **Speed**: Varieties answers in under 300 ms with a few dozen varieties.
 
 ## Out of scope
 
@@ -616,7 +616,7 @@ Success criteria:
 - An "archivada" tag on past records.
 - Moving a stock entry onto an archived variety.
 - Live updates between partners while a screen is open.
-- Configuración and its groups, the pricing switches included (pricing-settings.md).
+- Settings and its groups, the pricing switches included (pricing-settings.md).
 - Editing catalog attributes or the threshold in place, without a form and a save.
 - Editing a price entry, its VIP price included (ADR-0003).
 - Copying a hidden rule's prices forward onto a new entry.

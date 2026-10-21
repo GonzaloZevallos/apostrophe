@@ -185,7 +185,7 @@ _Avoid_: type, tag, label, account, cost center
 _In the app_: Category
 
 **Profit**:
-Sales (shipping included, paid or not) minus cost of goods sold, stock shortfall, promotion cost, own-use cost and expenses, over a period, each counted on its own date; purchases never enter it. When any cost is pending, it is worked out over the costed part and marked "y N g sin costo", N adding the pending grams sold, gifted, taken out by negative adjustments and withdrawn in the period. It may be negative and is then shown with a minus sign; in the app: Ganancia.
+Sales (shipping included, paid or not) minus cost of goods sold, stock shortfall, promotion cost, own-use cost and expenses, over a period, each counted on its own date; purchases never enter it. When any cost is pending, it is worked out over the costed part and marked "y N g sin costo", N adding the pending grams sold, gifted, taken out by negative adjustments and withdrawn in the period. It may be negative and is then shown with a minus sign; in the app: Profit.
 _Avoid_: margin, earnings, net
 _In the app_: Profit
 
@@ -394,7 +394,7 @@ Four steps on Home for a business that existed before the Onboarding shipped and
 _Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
 
 **Onboarding**:
-The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted, in place of the first-run checklist. It has two required steps (a variety priced today, its opening stock) and optional ones (catalog header and footer, Telegram bot, a partner, expense categories), each saving what Settings or the variety's page saves. It resumes where it was left, is over for good once its closing screen "Listo" is reached or an import loads the business, and is never offered to a joined user's business or one that existed before it shipped.
+The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted, in place of the first-run checklist. It has two required steps (a variety priced today, its opening stock) and optional ones (catalog header and footer, Telegram bot, a partner, expense categories), each saving what Settings or the variety's page saves. It resumes where it was left, is over for good once its closing screen "Done" is reached or an import loads the business, and is never offered to a joined user's business or one that existed before it shipped.
 _Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
@@ -414,7 +414,7 @@ Which of bulk pricing (Bulk price) and VIP customers a business uses: two indepe
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Archived variety**:
-A variety the seller took out of every list and picker (Varieties, What you have left, New sale, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. Archive is the action offered for a variety with history, but an archived variety may have none. It keeps its name reserved and its hidden flag, is seen and restored only from Archived, has a read-only page, and restoring brings it back exactly as it was. In the app: Archivada.
+A variety the seller took out of every list and picker (Varieties, What you have left, New sale, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. Archive is the action offered for a variety with history, but an archived variety may have none. It keeps its name reserved and its hidden flag, is seen and restored only from Archived, has a read-only page, and restoring brings it back exactly as it was. In the app: Archived.
 _Avoid_: deleted, hidden, inactive, disabled
 
 **Variety history**:

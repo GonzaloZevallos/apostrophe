@@ -2,9 +2,9 @@
 
 Money a business spends on anything that isn't flower, filed under its own expense
 categories and seen only by that business (ADR-0004). Flower bought is a purchase (stock),
-never an expense. Results (#7) read expenses and purchases separately. Gastos is reached
-from Más on the phone and from the sidebar on a computer; categories are managed in
-Configuración → Categorías de gastos (navigation.md).
+never an expense. Results (#7) read expenses and purchases separately. Expenses is reached
+from More on the phone and from the sidebar on a computer; categories are managed in
+Settings → Expense categories (navigation.md).
 
 ## Jobs
 
@@ -21,8 +21,8 @@ when sales arrive.
 several times a day, **I want** the app laid out around what I actually do and how often,
 with expenses within reach for the weekly or monthly look and every setting in one place,
 **so I can** get back to the customer instead of hunting through menus. (The navigation
-job, navigation.md: served here by "+ Cargar gasto" in Más, a way to record from Gastos
-itself, Gastos as the one monthly view, and categories in Configuración.)
+job, navigation.md: served here by "+ Add expense" in More, a way to record from Expenses
+itself, Expenses as the one monthly view, and categories in Settings.)
 
 In practice, these jobs come together like this. The seller pays for something that isn't
 flower between orders, or sits down for the weekly or monthly look at spending. They load
@@ -33,7 +33,7 @@ on a bigger screen.
 Success criteria:
 
 1. An expense is recorded from the phone in under a minute. Its form opens in at most 2
-   taps from any tab root (Más → "+ Cargar gasto") and in 1 tap from Gastos. On a
+   taps from any tab root (More → "+ Add expense") and in 1 tap from Expenses. On a
    computer it takes no more taps than on the phone. The date is already set to today,
    and the category is picked from the business's list.
 2. For any month, the view shows every expense of that month and the month's total. It
@@ -43,10 +43,10 @@ Success criteria:
    never appears in the expense lists. That way results can count expenses and purchases
    separately without counting anything twice.
 4. Everything here is done from the phone with no API call by hand.
-5. **Categories are managed in one place.** Gastos has no add, rename or remove of
-   categories, only a link to Configuración → Categorías de gastos. The one exception is
+5. **Categories are managed in one place.** Expenses has no add, rename or remove of
+   categories, only a link to Settings → Expense categories. The one exception is
    creating a category inside the expense form.
-6. **It looks as designed.** Más and Gastos, phone and computer, match
+6. **It looks as designed.** More and Expenses, phone and computer, match
    `docs/product/design-system/pantallas/`, judged by eye.
 
 ## Behaviour
@@ -111,20 +111,20 @@ Success criteria:
 
 - **Gastos** (`Expenses`, route `/expenses`; the old `/gastos` redirects there permanently)
   is a tab root (navigation.md). It shows the bar on the phone or the sidebar on a
-  computer, with Gastos active, and "+ New sale". It is reached from Más on the phone
+  computer, with Expenses active, and "+ New sale". It is reached from More on the phone
   and from the sidebar on a computer, under the divider. It holds:
   - month navigation;
   - the fixed line "Flower purchases don't go here: enter them in Stock.";
-  - a link that opens Configuración → Categorías de gastos. Gastos itself never adds,
+  - a link that opens Settings → Expense categories. Expenses itself never adds,
     renames or removes a category;
   - its own way to record a new expense, opening the expense form with today's date in
     1 tap:
-    - on the phone, a secondary action in Gastos' body, never a second floating "+"
+    - on the phone, a secondary action in Expenses' body, never a second floating "+"
       competing with "+ New sale";
     - on a computer, the "Add expense" button in the page header.
 
     Its exact look is design's call.
-- **"+ Cargar gasto"**, first in Más on the phone (route `/more`; the old `/mas`
+- **"+ Add expense"**, first in More on the phone (route `/more`; the old `/mas`
   redirects there permanently), opens the expense form directly with today's date. Its
   subtitle is design's call.
 - **The expense form** is a form (navigation.md): no bar and no "+ New sale", and it
@@ -132,11 +132,11 @@ Success criteria:
   - "Category", "Amount" and "Details" are marked required.
   - Submit is blocked while the detail is blank.
   - The date comes filled with today.
-  - "Close" and a successful save go back by history to the screen that opened it (Más
-    or Gastos).
-  - With no history (a direct link), it goes back to Gastos on the current month.
+  - "Close" and a successful save go back by history to the screen that opened it (More
+    or Expenses).
+  - With no history (a direct link), it goes back to Expenses on the current month.
   - A successful save shows "Expense saved" with no jump elsewhere. After a save from
-    Gastos, Gastos stays on the month it was showing and refreshes.
+    Expenses, Expenses stays on the month it was showing and refreshes.
   - Leaving with something typed asks before discarding; an untouched form closes at
     once.
 - **A category gone while the expense form is open** (a partner removed it):
@@ -149,11 +149,11 @@ Success criteria:
   - there is no undo;
   - the total and the subtotal update at once, and a category left with no expenses that
     month disappears.
-- **Categories** are managed in Configuración → Categorías de gastos, and nowhere else:
+- **Categories** are managed in Settings → Expense categories, and nowhere else:
   add, rename and "Delete". A blocked removal shows the fixed refusal above. Creating
   one inside the expense form stays as described.
 - **An expense or category that is gone** when it is saved, deleted or opened follows the
-  app's rule in `accounts.md`: "That is gone." Opening one offers "Volver a Gastos" on
+  app's rule in `accounts.md`: "That is gone." Opening one offers "Back to Expenses" on
   the current month.
 - **Toasts**: "Expense saved", "Expense deleted", "Category saved" and "Categoría
   eliminada", with no amounts in them.
@@ -166,7 +166,7 @@ Success criteria:
 - Categories and expenses carry `business_id`, and their routes join the isolation sweep
   (ADR-0004).
 - No amounts or details are written to logs, the browser console or browser storage.
-- A link from Gastos to Configuración → Categorías de gastos appears only once that group
+- A link from Expenses to Settings → Expense categories appears only once that group
   exists. No link may point at a screen that doesn't exist, and no seller may lose
   category management.
 
@@ -186,31 +186,31 @@ Read from the data and from tests; there is no telemetry.
 - **M5, flower kept out (criterion 3)**: purchases that appear in the expense lists must be
   0, by construction. An expense has no field that could hold grams or a variety.
 - **M6, no curl (criterion 4)**: the end-to-end front run:
-  - records an expense from Más → "+ Cargar gasto" and one from Gastos;
+  - records an expense from More → "+ Add expense" and one from Expenses;
   - edits and deletes one;
   - moves between months;
-  - adds, renames and removes a category in Configuración, including a refused removal.
+  - adds, renames and removes a category in Settings, including a refused removal.
 - **M7, taps (criterion 1)**: the end-to-end run counts the taps to open the expense form,
   on phone and computer viewports:
   - from every tab root, ≤2;
-  - from Gastos, 1;
+  - from Expenses, 1;
   - on a computer, never more than on the phone.
 
   Target: 100% within budget.
-- **M8, Gastos chrome (criteria 1, 5)**: front tests show:
+- **M8, Expenses chrome (criteria 1, 5)**: front tests show:
   - the bar or sidebar, with "+ New sale";
   - the month navigation and the fixed flower line;
   - the record action: secondary on the phone (no second floating "+"), the header
     button on a computer.
-- **M9, categories left Gastos (criterion 5)**: front tests show:
-  - no add, rename or remove of categories in Gastos;
-  - a link that opens Configuración → Categorías de gastos;
+- **M9, categories left Expenses (criterion 5)**: front tests show:
+  - no add, rename or remove of categories in Expenses;
+  - a link that opens Settings → Expense categories;
   - inline creation in the expense form still working.
 - **M10, form return**: front tests cover:
-  - "Close" and a successful save going back by history to Más or to Gastos;
+  - "Close" and a successful save going back by history to More or to Expenses;
   - "Expense saved";
   - the discard confirmation, and the untouched close;
-  - the no-history fallback to Gastos on the current month.
+  - the no-history fallback to Expenses on the current month.
 - **M11, redirects**: `/gastos` → `/expenses` and `/mas` → `/more` answer a permanent
   redirect, each tested.
 - **M12, looks as designed (criterion 6)**: before and after comparisons from
@@ -225,5 +225,5 @@ Read from the data and from tests; there is no telemetry.
 - An all-time list of expenses per category.
 - A chronological list of expenses.
 - Archiving a category.
-- Managing categories from Gastos.
-- Building Configuración or its groups: navigation.md and their own issues.
+- Managing categories from Expenses.
+- Building Settings or its groups: navigation.md and their own issues.

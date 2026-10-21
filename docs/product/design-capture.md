@@ -27,9 +27,9 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - This refines the first job and its criterion 1 for the whole registry; it is not a new job. Its protagonist is the same maintainer or reviewer.
 - Before it (GH-219's and GH-150's evidence): `EstadosConfirmar` never reached "Delete sale", and `EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro` failed the font check on their offline step, on base and head alike, so every whole-registry `--strict` run exited 1 with every other row ok.
 
-**When** I review a change to how Análisis looks, **I want** current before and after captures of Análisis, a comparison over every other screen in the registry, and a plan that names every file the change edits, **so I can** approve or reject from the PR's evidence alone, without retaking captures, hand-checking screens or carrying an open finding into the next task.
+**When** I review a change to how Analysis looks, **I want** current before and after captures of Analysis, a comparison over every other screen in the registry, and a plan that names every file the change edits, **so I can** approve or reject from the PR's evidence alone, without retaking captures, hand-checking screens or carrying an open finding into the next task.
 
-- Its protagonist is the maintainer, or the reviewer acting for them (in the end Zeta). The seller is affected only indirectly: a change nobody can approve holds up the Costo de lo vendido and Stock shortfall rows they are waiting for.
+- Its protagonist is the maintainer, or the reviewer acting for them (in the end Zeta). The seller is affected only indirectly: a change nobody can approve holds up the Cost of goods sold and Stock shortfall rows they are waiting for.
 - It refines analysis.md's design metric and the job above; it is not a new product job and adds no product behaviour.
 - Before it (GH-141's follow-up): the muestra guard was edited outside the plan's declared seam, and the design evidence was missing or stale. The same spec-scope finding was raised three times on one head.
 
@@ -51,7 +51,7 @@ Success criteria:
 4. **Nothing a seller sees changes.** onboarding.md, navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
 5. **No test loosened.** A changed registry or enforcement test keeps everything it guarded and states the corrected rule.
 6. **Every row tells the truth about its record.** A row's declared path names the same sample record its route and steps reach and capture. The light `VariedadArchivada` row names Sir Jack (`{sold_out}`), an archived variety reached from Archivadas. A dark twin's own declaration matches its own capture; it need not show the light row's record.
-7. **The registry, its tests and navigation.md agree on the archived variety's page** and its parent "‹ Archivadas", with no recorded exception and no loosened test.
+7. **The registry, its tests and navigation.md agree on the archived variety's page** and its parent "‹ Archived", with no recorded exception and no loosened test.
 8. **Truthfulness costs the seller nothing.** Fixing a row's declaration changes no capability doc, nothing under `app/`, and nothing under `web/src/` but `web/src/design/screens.test.ts` within its declared seam. No row's steps change to make it truthful.
 9. **A wrong record never passes unnoticed again.** An entry whose path names a record different from the one its route names fails the registry test in the diff that introduces it.
 10. **The whole registry runs green.** One `--strict` call over the whole registry, with no `--only`, exits 0. No row is removed, skipped, excused or listed as a known failure to get there.
@@ -66,9 +66,9 @@ Success criteria, the Onboarding restyle's evidence (GH-164 follow-up) (numbered
 9. **Nothing clipped.** At 320 px with text at 130 %, no line, control or crop of any step or "Done" is clipped, and controls stay at least 44 px.
 10. **No seller-visible change beyond a listed fix.** Every suite passes; no test is edited to fit, the two registry tests excepted when rows are added.
 
-Success criteria, reviewing GH-141's change to Análisis:
+Success criteria, reviewing GH-141's change to Analysis:
 
-6. **Current captures of Análisis.** The PR has before and after captures of Análisis on phone and computer, in light and dark.
+6. **Current captures of Analysis.** The PR has before and after captures of Analysis on phone and computer, in light and dark.
    - "After" is the head that merges the change; "before" is that same head with only GH-141's change undone (pinned-catalog.md's "Restyling Integraciones" rule), with the undo diff in the PR.
    - If undoing GH-141 alone changes more than GH-141 did, the PR says so and lists the extra differences for Zeta; nothing more is undone.
    - Both sides come from head's `comparisons.mjs --strict`, one install, one Argentina day, fonts pinned (ADR-0042). The PR records the fontsource version.
@@ -124,8 +124,8 @@ Success criteria, captures at rest (numbered on their own; Metrics cites them as
 ### A row names what it reaches
 
 - The record a row names in its path is the record its route and steps reach and capture. A path that names no record (a form such as `/varieties/entries/new`, reached from a record) makes no claim about one.
-- **The light `VariedadArchivada` row** declares `/varieties/{sold_out}`. Its route (`/varieties/{sold_out}`), its steps (archive, open "Archivadas (1)", click "Sir Jack") and its capture are unchanged.
-- **`VariedadArchivadaOscuro`** declares and reaches `/varieties/{low}` (opens "Archivadas (2)", clicks Golden Cookies). The two themes need not show the same record.
+- **The light `VariedadArchivada` row** declares `/varieties/{sold_out}`. Its route (`/varieties/{sold_out}`), its steps (archive, open "Archived (1)", click "Sir Jack") and its capture are unchanged.
+- **`VariedadArchivadaOscuro`** declares and reaches `/varieties/{low}` (opens "Archived (2)", clicks Golden Cookies). The two themes need not show the same record.
 - **The `EntradaStockSinEntradas` rows** (light, dark, Compu and CompuOscuro) declare the stock entry form, `/varieties/entries/new`, and start from `/varieties/{no_entries}`: that is how a seller reaches the form with "Initial stock" preselected, and they are true as they stand.
 - **A row found naming a record other than the one it reaches** (path and route naming different records, or steps clicking a different record):
   - a fix to its declaration alone is made in the task that finds it;
@@ -139,7 +139,7 @@ Success criteria, captures at rest (numbered on their own; Metrics cites them as
 - **`OnboardingListo`** (the default row, phone light) follows that rule, on its own account written by the sample app (`scripts/design/sample_app.py`'s `ONBOARDING_ACCOUNTS`). It does not start at `/onboarding/categories`, does not run the whole flow through step 6, and never clicks "Skip the rest" on step 6.
 - **`OnboardingListoCompu` and `OnboardingListoOscuro`** keep their accounts, `listo_compu` and `listo_oscuro`.
 - **The computer dark row** (GH-164 follow-up) is new: it follows the registry's dark-twin convention for its name, on an account of its own written by the sample app. Its exact row and account names are the Tech Lead's.
-- **Each Listo entry has a distinct `open` account**; two entries on one account are refused, and a Listo entry never names an `ended` account (the kind is in `facts.account_kinds`, ADR-0042's GH-189 amendment).
+- **Each Listo entry has a distinct `open` account**; two entries on one account are refused, and a Done entry never names an `ended` account (the kind is in `facts.account_kinds`, ADR-0042's GH-189 amendment).
 - **Capture accounts are design tooling only**: written by the sample app alone, never by product code or by the seed `muestra.md` is rendered from.
 - **No product rule bends for a capture**: "Skip the rest" never appears on step 6, and Listo is reached when the last optional step is passed (step 6 by "Continue").
 
@@ -154,11 +154,11 @@ Success criteria, captures at rest (numbered on their own; Metrics cites them as
 
 - The real-registry test in `web/src/design/screens.test.ts` states the account rule, enforced by the registry's rule module (`scripts/design/screens.mjs`):
   - an entry may only name an account the sample writes, each with a kind in `facts.account_kinds` (`open` or `ended`; `assertAccountKinds` refuses a missing, partial or mismatched map);
-  - an `open` account belongs to one Listo entry: an `open` account on any other entry fails, and a Listo entry on an account that is not `open` fails;
+  - an `open` account belongs to one Listo entry: an `open` account on any other entry fails, and a Done entry on an account that is not `open` fails;
   - an `ended` account (a business whose Onboarding the sample ended at seed time) may be shared by read-only entries, such as the six `Inicio*` rows, and no Listo entry names it;
-  - a Listo entry that names an account the sample does not write fails;
+  - a Done entry that names an account the sample does not write fails;
   - two Listo entries on one account are refused (`assertSelectedAccounts`), the default Listo row included.
-- The account-validation tests and `assertSelectedAccounts` keep everything they guarded; the old static rule "an account only on a Listo entry" now lives in `assertSelectedAccounts`, against the kinds.
+- The account-validation tests and `assertSelectedAccounts` keep everything they guarded; the old static rule "an account only on a Done entry" now lives in `assertSelectedAccounts`, against the kinds.
 - **Same record in path and route**: the same test states that when an entry's `path` names at least one `{name}` placeholder, its placeholders equal the `route`'s exactly: the same names, in the same order, compared as written, before any normalisation.
   - A path with no placeholder names no record and passes, whatever its route holds. This is part of the rule, not an exemption: no entry is listed as exempt.
   - It only adds to the cross-check; ADR-0033's normalisation to `{id}` for matching against the front registry is unchanged.
@@ -206,9 +206,9 @@ Success criteria, captures at rest (numbered on their own; Metrics cites them as
 - **Never fixed here**: a wording difference is never fixed by changing copy (the doc wins, the difference is listed); anything that changes behaviour, copy, steps, actions or routes is split into its own bug and only listed in the PR.
 - **Everything matches**: the PR says so with the evidence; that is a valid outcome.
 
-### Reviewing GH-141's change to Análisis (criteria 6–9)
+### Reviewing GH-141's change to Analysis (criteria 6–9)
 
-- **The Análisis cells**: four, each captured before and after: phone and computer, light and dark. A cell missing on either side means the work is not done.
+- **The Analysis cells**: four, each captured before and after: phone and computer, light and dark. A cell missing on either side means the work is not done.
 - **Before and after**: "after" is the merging head; "before" is the merging head with only GH-141's change undone, the undo diff shown in the PR. Extra differences the undo causes because later changes rely on GH-141 are listed for Zeta; nothing more is undone.
 - **How both sides are taken**: head's `comparisons.mjs --strict`, one install, one Argentina day, pinned fonts. The PR records the head SHA, the undo diff, the fontsource version, and the overlay's diff stat only if ADR-0042's GH-219 overlay is used.
 - **Every other screen**: `ae.mjs` runs over the raw captures of every other screen in the registry, output attached. Each non-zero line is listed with its screen and side as one of:
@@ -217,7 +217,7 @@ Success criteria, captures at rest (numbered on their own; Metrics cites them as
   - an extra difference from the undo, listed for Zeta;
   - a difference GH-141 did not cause, filed as a follow-up issue the PR links, not fixed here.
 - A difference the brief and the docs cannot settle goes to Zeta in the PR. A missing screen or side, a one-sided `null` or an unreadable capture is a failure, never AE 0.
-- **Where and how long**: all the evidence is in the PR description, in one place. A set is valid only for the SHA it was taken on; a later commit editing an Análisis drawing, or any merge of master, makes it stale (a stale capture counts as missing), and it is retaken. Approval is given only on a set whose SHA is the merging head.
+- **Where and how long**: all the evidence is in the PR description, in one place. A set is valid only for the SHA it was taken on; a later commit editing an Analysis drawing, or any merge of master, makes it stale (a stale capture counts as missing), and it is retaken. Approval is given only on a set whose SHA is the merging head.
 - **The seam**: that plan declares `tests/design/test_muestra_screens.py` and `tests/design/muestra_guard.py` as seams for `muestra`, for that plan only. The guard keeps every check it had; any other edited test means the implementation is wrong.
 - **Escalation**: a cell that cannot be captured, or a head seed the undone state cannot run, stops the work and escalates. The undone state is never patched and no exception is recorded.
 - If nothing differs, `ae.mjs` exits 0 and the PR says so.
@@ -232,7 +232,7 @@ No telemetry; read from the PR evidence and from tests.
 - **Reached and whole (criterion 2)**: the four Listo captures are attached, each showing its whole section as the design file draws it, judged by eye; no row captures a screen other than the one it names; every crop that changed was clipped before.
 - **Agree (criterion 3)**: `web/src/design/screens.test.ts` and `routes.test.ts` pass with the corrected rule; the plan's invariants and Seams line name both; the PR records no exception.
 - **Nothing a seller sees changes (criterion 4)**: every suite passes; the only edited tests are the two registry tests; the only other edited files are `screens.json`, `screens.mjs`, `sample_app.py` and `comparisons.mjs`; nothing else under `app/` or `web/src/` changes.
-- **No test loosened (criterion 5)**: the real-registry test keeps every guard, and each of these is a tested case: an account on an entry that does not reach Listo fails; a Listo entry with an unwritten account fails; two entries on one account fail.
+- **No test loosened (criterion 5)**: the real-registry test keeps every guard, and each of these is a tested case: an account on an entry that does not reach Listo fails; a Done entry with an unwritten account fails; two entries on one account fail.
 - **Run B closed**: the clipped OnboardingListoOscuro crop and the unreachable OnboardingListo row are fixed by the same task; no issue is left open for either.
 - **Onboarding coverage (Onboarding criterion 6)**: the `--strict` output, exit 0; `index.json` holds a result for each of the seven screens at phone and computer in light and dark (Listo's computer dark row included), and each one's 320 px / 130 % capture in light; 0 missing sides.
 - **Onboarding before/after (Onboarding criterion 7)**: `ae.mjs` output for every screen and side is attached, with the undo diff when GH-164 had merged; the PR records the script, the single install, the date and the fontsource version.
@@ -248,10 +248,10 @@ No telemetry; read from the PR evidence and from tests.
 - **Offline fonts (criterion 11)**: the two `EstadosSinConexionCompu*` rows pass the applied-check with no note; the applied-check's code and its weights are unchanged; their captures show "No connection" in the computer layout in the app's own font, judged by eye in both themes.
 - **Reached as a seller does**: the `EstadosConfirmar` capture shows Antes de borrar whole, with the sale's date, amount and grams and both answers, judged by eye.
 - **Costs the seller nothing (criterion 12)**: the diff touches only `scripts/design/` and, if needed, the two registry tests within their seams; every suite passes with no other test edited; nothing under `app/` or `web/src/` (outside those tests) changes.
-- **Current Análisis captures (Análisis criterion 6)**: all 4 cells attached on both sides, 0 missing; the recorded SHA equals the merging head; the undo diff and the fontsource version are present.
-- **Every difference explained (Análisis criterion 7)**: `ae.mjs` exits 0, or every non-zero line is matched to intended, a fix, an undo extra for Zeta, or a linked follow-up; 0 unlisted differences; 0 failures from a missing or unreadable side.
-- **Guard declared, not loosened (Análisis criterion 8)**: the plan's seam names the two muestra files; the only edited tests are those two; the guard's existing checks all still run.
-- **Nothing a seller sees changes (Análisis criterion 9)**: every suite passes; no capture or comparison step is added to `.agentic/stack.yaml`, CI or the gate.
+- **Current Analysis captures (Analysis criterion 6)**: all 4 cells attached on both sides, 0 missing; the recorded SHA equals the merging head; the undo diff and the fontsource version are present.
+- **Every difference explained (Analysis criterion 7)**: `ae.mjs` exits 0, or every non-zero line is matched to intended, a fix, an undo extra for Zeta, or a linked follow-up; 0 unlisted differences; 0 failures from a missing or unreadable side.
+- **Guard declared, not loosened (Analysis criterion 8)**: the plan's seam names the two muestra files; the only edited tests are those two; the guard's existing checks all still run.
+- **Nothing a seller sees changes (Analysis criterion 9)**: every suite passes; no capture or comparison step is added to `.agentic/stack.yaml`, CI or the gate.
 - **Business measure**: spec-scope findings for missing or stale design evidence on the merging head: goal 0 (GH-141 had 3).
 - **Accepted under load (Load criterion 6)**: the PR's before/after evidence was taken on the loaded shared machine with no "unsatisfiable" note and no recorded exception; no plan invariant asks for an idle machine.
 - **Load doesn't change the result (Load criterion 7)**: the PR holds the load-independence proof; for both commits, `ae.mjs` shows exact AE 0 between the loaded and the idle run on every raw capture, design and built side, with no missing or one-sided capture, and exits 0; the installed `@fontsource/plus-jakarta-sans` version is recorded.
@@ -281,7 +281,7 @@ No telemetry; read from the PR evidence and from tests.
 - Loosening the applied-check, letting a capture load fonts from the network, or changing the app's own font loading to make a capture pass.
 - Widening the standing seam rule so every registry change declares the muestra guard files.
 - Fixing, in GH-141's follow-up, design differences GH-141 did not cause: they are filed as follow-ups.
-- Any change to Análisis's behaviour, figures or copy.
+- Any change to Analysis's behaviour, figures or copy.
 - Requiring an idle or unloaded machine for a capture.
 - Recording the machine's load alongside a capture, or narrowing a capture's claim by it.
 - A pixel tolerance in the comparison.

@@ -6,12 +6,12 @@ The text that offers today's sellable varieties to a business's customers. It is
 - its stock status right now (stock.md);
 - the business's pricing settings (pricing-settings.md), for the bulk line;
 
-between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Compartir and Copiar stay for sending it by hand. An archived variety (varieties.md) is never part of it.
+between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Share and Copiar stay for sending it by hand. An archived variety (varieties.md) is never part of it.
 
 Where its pieces live (navigation.md):
-- the catalog screen (`/varieties/catalog`) opens from "Send catalog" on Variedades;
+- the catalog screen (`/varieties/catalog`) opens from "Send catalog" on Varieties;
 - a variety's attributes are edited on its page, in "In the catalog";
-- the header and footer are edited in Configuración → Mensaje del catálogo (or, until that group exists, in the temporary place reached from the catalog screen; see below).
+- the header and footer are edited in Settings → Catalog message (or, until that group exists, in the temporary place reached from the catalog screen; see below).
 
 ## Jobs
 
@@ -23,7 +23,7 @@ Setting the catalog attributes and the header and footer is the setup step of th
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the catalog screen, at most 2 taps from any tab root.)
 
-**When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one variety and find everything about it on its own page, the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a variety I can't sell. (The navigation job applied to varieties, stock and the catalog, varieties.md: served here by the catalog screen and Compartir.)
+**When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one variety and find everything about it on its own page, the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a variety I can't sell. (The navigation job applied to varieties, stock and the catalog, varieties.md: served here by the catalog screen and Share.)
 
 **When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by leaving archived varieties out of the text and of what does not go out; defined in varieties.md.)
 
@@ -39,7 +39,7 @@ Success criteria:
 2. **Today, only what can be sold**: a variety appears only when it is unarchived, shown, has a current price on today's Argentina date and has stock above zero right now.
    - Archived, hidden, unpriced, sold-out and never-stocked varieties are out.
    - Low stock is still in.
-3. **Fast, from the phone**: from Variedades → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Compartir hands the native share sheet exactly the text Copiar copies; without a share sheet, Copiar remains. This includes the phone on the home network over plain http. There is no API call by hand.
+3. **Fast, from the phone**: from Varieties → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Share hands the native share sheet exactly the text Copiar copies; without a share sheet, Copiar remains. This includes the phone on the home network over plain http. There is no API call by hand.
 4. **No guessing why**: every unarchived variety that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
 5. **Businesses never mix** (ADR-0004): attributes, header and footer belong to one business. The text and the list never include another business's data.
 6. **Customers never see the VIP price**: the text never carries it, whatever the switches.
@@ -70,8 +70,8 @@ Success criteria:
   - A new business receives them when it opens.
   - A business that existed when the catalog shipped received them once, on upgrade.
   - There is no "restore default".
-- **Where**: they are edited only in Configuración → Mensaje del catálogo (navigation.md).
-  - **Temporary exception**: until that group exists, they are edited, exactly as before, in the temporary place reached only from the catalog screen (see On screen). It is removed when Configuración ships.
+- **Where**: they are edited only in Settings → Catalog message (navigation.md).
+  - **Temporary exception**: until that group exists, they are edited, exactly as before, in the temporary place reached only from the catalog screen (see On screen). It is removed when Settings ships.
 
 ### Catalog text
 
@@ -80,7 +80,7 @@ Success criteria:
 - **A variety block**:
   - `<emoji> **<name>**`, or `**<name>**` with no emoji;
   - `• N% indica / M% sativa`, only with a share;
-  - `• Aroma/sabor: <aroma>`, only with an aroma;
+  - `• Aroma/flavor: <aroma>`, only with an aroma;
   - `• Precio x gramo: $X`, the list price;
   - `• Desde N g: $Y c/u`: the bulk minimum and the bulk price. It shows only when the current price has a bulk price and Precio por cantidad is on. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).
 - **VIP price**: never in the text, whatever the switches (pricing-settings.md).
@@ -101,7 +101,7 @@ Success criteria:
 ### On screen: the catalog screen
 
 - **Route**: `/varieties/catalog`. The old `/catalogo` redirects there permanently (navigation.md).
-- **Opened from**: "Send catalog" on Variedades, and Inicio's "Your Telegram catalog is out of date" notice. It is a detail (navigation.md): the bar or sidebar and "‹ Variedades", without "+ New sale".
+- **Opened from**: "Send catalog" on Varieties, and Home's "Your Telegram catalog is out of date" notice. It is a detail (navigation.md): the bar or sidebar and "‹ Varieties", without "+ New sale".
 - **It always opens**, including when nothing qualifies: it then shows the empty state, and the pinned catalog keeps its own empty message and "Up to date" (pinned-catalog.md). "Send catalog" is disabled, with its reason in words (e.g. "Add a variety with a price and its stock"), only while the first-run checklist shows and nothing qualifies (navigation.md).
 - **"How it looks in Telegram"**: the text as a customer reads it.
   - Bold follows the pairing rule above.
@@ -118,21 +118,21 @@ Success criteria:
   - On success it shows the toast "Catalog copied".
   - It works from the phone over the home network's plain http.
   - A failure shows a fixed "Could not copy." and no toast.
-- **The pinned catalog's status and Publicar** (pinned-catalog.md): "Up to date" or "Out of date" with its fixed reason, and Publicar. When Publicar is unavailable, it says why in words and links to where the bot settings are: Configuración → Integraciones, or the temporary place until that exists.
+- **The pinned catalog's status and Publicar** (pinned-catalog.md): "Up to date" or "Out of date" with its fixed reason, and Publish. When Publish is unavailable, it says why in words and links to where the bot settings are: Settings → Integrations, or the temporary place until that exists.
 - **What does not go out, and why**: every unarchived variety out of today's catalog, by name, each with one reason, the first that applies:
   1. hidden by the seller ("hidden");
   2. no price today ("no price");
   3. Stock's own words: sold out ("sold out") or no entries ("no entries").
 
   Every reason is told by word, never by color alone (e.g. "Sir Jack, agotada · Mango Bomb, sin precio · X, oculta"). The exact wording is design's. Archived varieties are not listed here.
-- **Links**: each variety named in the preview or in what does not go out opens that variety's "In the catalog" section on its page. "Edit header and footer" opens Configuración → Mensaje del catálogo, or the temporary place until that exists.
+- **Links**: each variety named in the preview or in what does not go out opens that variety's "In the catalog" section on its page. "Edit header and footer" opens Settings → Catalog message, or the temporary place until that exists.
 - **The screen itself edits no header, footer or bot setting**: it only links out (navigation.md).
-- **The temporary place** (a deliberate, temporary exception while Configuración → Integraciones and Mensaje del catálogo do not exist):
-  - it holds the bot settings (token, channel chat, own chat, Probarlo) and the header and footer, working exactly as before, with no rework;
-  - it is reached only from the catalog screen, by "Edit header and footer" and Publicar's "unavailable" link;
+- **The temporary place** (a deliberate, temporary exception while Settings → Integrations and Catalog message do not exist):
+  - it holds the bot settings (token, channel chat, own chat, Test it) and the header and footer, working exactly as before, with no rework;
+  - it is reached only from the catalog screen, by "Edit header and footer" and Publish's "unavailable" link;
   - it is a form: "Close" goes back by history, and with none to the catalog screen; leaving with unsaved changes asks first;
-  - it has no tab, Más entry, Configuración group or "coming soon" mark, and shows no pin status and no Publicar;
-  - Configuración's own issue retargets both links and removes it. If Configuración already exists, it is not built.
+  - it has no tab, More entry, Settings group or "coming soon" mark, and shows no pin status and no Publish;
+  - Settings's own issue retargets both links and removes it. If Settings already exists, it is not built.
 - **Saving attributes** (on the variety's page) or **the header and footer** shows the toast "Catalog saved"; the catalog screen shows the new text the next time it opens. Toasts carry no data.
 - **Refusals** show inline and keep what was typed. Each carries a code from `contract.json` (ADR-0008) and never repeats the input (ADR-0005).
 - **A variety that is gone** follows accounts.md's "That is gone." rule.
@@ -160,11 +160,11 @@ Success criteria:
 - **Bold pairing**: the preview, with markers removed, equals the copied text. Bold falls between pairs read left to right, and an unpaired final `**` shows as typed. 100% passing.
 - **Inclusion (criterion 2)**: a matrix of archived/unarchived × shown/hidden × price/no price today × no entries, sold out, low and ok. Only unarchived + shown + priced + stock above 0 appears. 100% passing.
 - **Reasons (criterion 4)**: exactly one reason per unarchived variety that does not go out, in priority order, told by word; archived varieties are not listed. 100% passing.
-- **Share = copy (criterion 3)**: with a stubbed share sheet, Compartir hands exactly the API's text; with none available, Compartir is not shown and Copiar works; a cancel shows nothing; a forced failure shows "Could not share." and leaves Copiar; no message holds catalog text.
+- **Share = copy (criterion 3)**: with a stubbed share sheet, Share hands exactly the API's text; with none available, Share is not shown and Copiar works; a cancel shows nothing; a forced failure shows "Could not share." and leaves Copiar; no message holds catalog text.
 - **Always opens**: the catalog screen opens with nothing qualifying outside first run, and "Send catalog" is disabled only while the checklist shows and nothing qualifies.
 - **Address**: `/varieties/catalog` opens the catalog screen, also on reload; `/catalogo` answers a permanent redirect to it.
-- **Temporary place**: while Configuración's groups do not exist, a front test shows the bot settings and the header and footer save from it, both links open it, it shows no pin status and no Publicar, and no tab, Más or Configuración entry points to it.
-- **No curl (criterion 3)**: the end-to-end front run edits a variety's attributes on its page and the header and footer (in Configuración, or the temporary place until it exists), opens Variedades → "Send catalog" and taps Copiar. The clipboard equals the API's text.
+- **Temporary place**: while Settings's groups do not exist, a front test shows the bot settings and the header and footer save from it, both links open it, it shows no pin status and no Publish, and no tab, More or Settings entry points to it.
+- **No curl (criterion 3)**: the end-to-end front run edits a variety's attributes on its page and the header and footer (in Settings, or the temporary place until it exists), opens Varieties → "Send catalog" and taps Copiar. The clipboard equals the API's text.
 - **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen varieties, and opens in at most 2 taps from any tab root.
 - **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business. One business's switches never change another's text.
 - **No echo**: no refusal or log line contains the header, footer, aroma or emoji typed; after a full front run, the console and browser storage hold no catalog text.
