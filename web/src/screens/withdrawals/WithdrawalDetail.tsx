@@ -98,7 +98,7 @@ export default function WithdrawalDetail() {
 
   if (query.isError) {
     if (query.error instanceof ApiError && isGone(query.error.code)) {
-      return <GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />
+      return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
     }
     return (
       <main className="pantalla">
@@ -130,7 +130,7 @@ export default function WithdrawalDetail() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <span className="encabezado__titulo">{COMMON_TEXT.retiro}</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.withdrawal}</span>
         </div>
         <dl className="retiro__datos">
           <div className="retiro__dato">
@@ -138,11 +138,11 @@ export default function WithdrawalDetail() {
             <dd>{reasonWord}</dd>
           </div>
           <div className="retiro__dato">
-            <dt className="campo__rotulo">{COMMON_TEXT.fecha}</dt>
+            <dt className="campo__rotulo">{COMMON_TEXT.date}</dt>
             <dd>{date}</dd>
           </div>
         </dl>
-        <ul className="retiro__lineas" aria-label={COMMON_TEXT.variedades}>
+        <ul className="retiro__lineas" aria-label={COMMON_TEXT.varieties}>
           {withdrawal.lines.map((line, index) => (
             // A variety may repeat in several lines with no merging: the position is the identity.
             <li key={index} className="retiro__linea">
@@ -153,7 +153,7 @@ export default function WithdrawalDetail() {
         </ul>
         {withdrawal.note !== null && (
           <div className="retiro__dato">
-            <span className="campo__rotulo">{COMMON_TEXT.nota}</span>
+            <span className="campo__rotulo">{COMMON_TEXT.note}</span>
             <span>{withdrawal.note}</span>
           </div>
         )}
@@ -164,7 +164,7 @@ export default function WithdrawalDetail() {
           </span>
         )}
         <div className="retiro__acciones">
-          <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.editar} to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })} />
+          <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })} />
           <Boton variant="destructive" icon="tacho" onClick={() => setConfirmingDelete(true)}>
             {STOCK_TEXT.borrar}
           </Boton>
@@ -174,8 +174,8 @@ export default function WithdrawalDetail() {
         <ConfirmDialog
           title={STOCK_TEXT.antesDeBorrar}
           detail={confirmation}
-          confirmText={COMMON_TEXT.siBorralo}
-          cancelText={COMMON_TEXT.noDejalo}
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!deleting) void onConfirmDelete()
           }}

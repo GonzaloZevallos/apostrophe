@@ -2,7 +2,7 @@
  * `NuevaVenta`'s sheets at the screen seam, through a real data router
  * (`createMemoryRouter` + `RouterProvider`) with `fetch` faked: Elegir cliente and Nuevo
  * cliente are history entries (ADR-0027), so the system back gesture closes only the sheet
- * and "Cerrar" is the same move. The sale's own leave guard keeps asking "¿Descartás la
+ * and "Close" is the same move. The sale's own leave guard keeps asking "¿Descartás la
  * venta?" under Cerrar's condition, and a Nuevo cliente save that resolves after the user
  * already left the sheets still sets the customer and navigates nowhere.
  */
@@ -81,7 +81,7 @@ const back = (router: ReturnType<typeof renderForm>) => act(() => router.navigat
 const askedToDiscard = () => screen.queryByRole('alertdialog', { name: '¿Descartás la venta?' })
 
 async function typeNote(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(await screen.findByLabelText('Nota'), 'para Ana')
+  await user.type(await screen.findByLabelText('Note'), 'para Ana')
 }
 
 test('back with Elegir cliente open closes only the sheet, form intact, nothing asked', async () => {
@@ -96,7 +96,7 @@ test('back with Elegir cliente open closes only the sheet, form intact, nothing 
   expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
   expect(askedToDiscard()).not.toBeInTheDocument()
   expect(router.state.location.pathname).toBe(SALE_NEW)
-  expect(screen.getByLabelText('Nota')).toHaveValue('para Ana')
+  expect(screen.getByLabelText('Note')).toHaveValue('para Ana')
 })
 
 test('with Nuevo cliente over Elegir cliente, each back closes one level and never asks the sale question', async () => {
@@ -105,26 +105,26 @@ test('with Nuevo cliente over Elegir cliente, each back closes one level and nev
   await typeNote(user)
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
-  await user.click(await screen.findByRole('button', { name: 'Nuevo cliente' }))
+  await user.click(await screen.findByRole('button', { name: 'New customer' }))
   expect(screen.getByRole('button', { name: 'Crear cliente' })).toBeInTheDocument()
 
   await back(router)
   expect(screen.queryByRole('button', { name: 'Crear cliente' })).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Nuevo cliente' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'New customer' })).toBeInTheDocument()
 
   await back(router)
   expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
   expect(askedToDiscard()).not.toBeInTheDocument()
-  expect(screen.getByLabelText('Nota')).toHaveValue('para Ana')
+  expect(screen.getByLabelText('Note')).toHaveValue('para Ana')
 })
 
-test('"Cerrar" on Elegir cliente is the same move as back', async () => {
+test('"Close" on Elegir cliente is the same move as back', async () => {
   const user = userEvent.setup()
   const router = renderForm()
   await typeNote(user)
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
-  await user.click((await screen.findAllByRole('button', { name: 'Cerrar' })).at(-1)!)
+  await user.click((await screen.findAllByRole('button', { name: 'Close' })).at(-1)!)
 
   expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
   expect(askedToDiscard()).not.toBeInTheDocument()
@@ -156,9 +156,9 @@ test.each([
     },
   ],
   [
-    'Cerrar',
+    'Close',
     async () => {
-      await userEvent.click(screen.getAllByRole('button', { name: 'Cerrar' }).at(-1)!)
+      await userEvent.click(screen.getAllByRole('button', { name: 'Close' }).at(-1)!)
     },
   ],
 ])('a Nuevo cliente save resolving after %s still sets the customer and leaves only the form', async (_name, leave) => {
@@ -167,8 +167,8 @@ test.each([
   await typeNote(user)
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
-  await user.click(await screen.findByRole('button', { name: 'Nuevo cliente' }))
-  await user.type(screen.getByLabelText('Nombre'), 'Luz')
+  await user.click(await screen.findByRole('button', { name: 'New customer' }))
+  await user.type(screen.getByLabelText('Name'), 'Luz')
   await user.click(screen.getByRole('button', { name: 'Crear cliente' }))
   await waitFor(() => expect(releaseCreate).not.toBeNull())
 
@@ -179,7 +179,7 @@ test.each([
 
   await waitFor(() => expect(screen.getByRole('button', { name: /Luz/ })).toBeInTheDocument())
   expect(screen.queryByText('Buscar')).not.toBeInTheDocument()
-  expect(screen.getByLabelText('Nota')).toHaveValue('para Ana')
+  expect(screen.getByLabelText('Note')).toHaveValue('para Ana')
   expect(router.state.location.pathname).toBe(SALE_NEW)
   expect(sheetDepth(router.state.location.state)).toBe(0)
   // Nothing of the sheets is left in history: the next back is the form's own question.
@@ -188,26 +188,26 @@ test.each([
   expect(router.state.location.pathname).toBe(SALE_NEW)
 })
 
-test('a dirty form asks on back, asks again after "No, seguí cargando"', async () => {
+test('a dirty form asks on back, asks again after "No, keep entering"', async () => {
   const user = userEvent.setup()
   const router = renderForm()
   await typeNote(user)
 
   await back(router)
   expect(askedToDiscard()).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  await user.click(screen.getByRole('button', { name: 'No, keep entering' }))
   expect(askedToDiscard()).not.toBeInTheDocument()
-  expect(screen.getByLabelText('Nota')).toHaveValue('para Ana')
+  expect(screen.getByLabelText('Note')).toHaveValue('para Ana')
 
   await back(router)
   expect(askedToDiscard()).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Sí, descartala' }))
+  await user.click(screen.getByRole('button', { name: 'Yes, discard it' }))
   expect(await screen.findByText('Lista de ventas')).toBeInTheDocument()
 })
 
 test('an untouched form closes at once on back', async () => {
   const router = renderForm()
-  await screen.findByLabelText('Nota')
+  await screen.findByLabelText('Note')
 
   await back(router)
 

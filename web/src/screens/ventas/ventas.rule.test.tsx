@@ -5,7 +5,7 @@
  * option or an answer, or an icon-only control with its exact name; the always-visible
  * copy fits its limit as rendered.
  *
- * "Cerrar" on the sale form and its sheets is the icon-only close (`.boton-icono`, its
+ * "Close" on the sale form and its sheets is the icon-only close (`.boton-icono`, its
  * exact name kept).
  */
 
@@ -118,10 +118,10 @@ test.each(VIEWPORTS)("VentaDetalle: Deshacer is an undo, the actions carry an ic
   expectIconAndTextRule(container, OPTIONS)
 
   await user.click(screen.getByRole('button', { name: 'Asignar cliente' }))
-  await screen.findByRole('button', { name: 'Nuevo cliente' })
+  await screen.findByRole('button', { name: 'New customer' })
   expectIconAndTextRule(container, OPTIONS)
 
-  await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
+  await user.click(screen.getByRole('button', { name: 'New customer' }))
   expectIconAndTextRule(container, OPTIONS)
 })
 
@@ -144,20 +144,20 @@ test.each(VIEWPORTS)("NuevaVenta: with two lines, Elegir cliente and Nuevo clien
   )
   await user.selectOptions(await screen.findByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(await screen.findByRole('button', { name: 'Agregar otra variedad' }))
+  await user.click(await screen.findByRole('button', { name: 'Add another variety' }))
   expect(screen.getByRole('button', { name: 'Quitar línea 2' })).toHaveClass('boton-icono')
   expect(screen.getByText(GRAMS_HELP)).toHaveAttribute('data-copy', 'help')
   expectIconAndTextRule(container, OPTIONS)
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
-  await screen.findByRole('button', { name: 'Nuevo cliente' })
+  await screen.findByRole('button', { name: 'New customer' })
   expectIconAndTextRule(container, OPTIONS)
 
-  await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
+  await user.click(screen.getByRole('button', { name: 'New customer' }))
   expectIconAndTextRule(container, OPTIONS)
 })
 
-test('the helper rejects a text-only action on these screens (a link-styled "Agregar otra variedad" would fail)', () => {
+test('the helper rejects a text-only action on these screens (a link-styled "Add another variety" would fail)', () => {
   const { container } = render(
     <div>
       <button type="button" className="boton--fila-x">

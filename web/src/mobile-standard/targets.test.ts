@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { nameTargets, shorten, type RawTarget } from './targets.ts'
 
-const cell = { screen: 'Ventas', size: '375x812', theme: 'claro' } as const
+const cell = { screen: 'Sales', size: '375x812', theme: 'claro' } as const
 const raw = (over: Partial<RawTarget>): RawTarget => ({ testid: '', role: 'button', label: 'x', identity: '', ...over })
 const named = (items: (RawTarget | null)[]) =>
   nameTargets(items.map((r) => ({ rule: r === null ? 'h-scroll' : 'contrast', raw: r })), cell).map((v) => v.target)

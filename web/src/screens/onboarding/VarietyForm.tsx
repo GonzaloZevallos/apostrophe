@@ -58,7 +58,7 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
     <form className="formulario" onSubmit={onSubmit}>
       {saved === null ? (
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.nombre}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             className="campo__input"
             type="text"

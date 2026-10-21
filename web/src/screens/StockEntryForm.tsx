@@ -37,13 +37,13 @@ import { GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 export const COST_REQUIRED = STOCK_TEXT.unaCompraNecesitaUn
 export const COST_ON_NEGATIVE = STOCK_TEXT.unAjusteNegativoNo
-export const DATE_IN_FUTURE = COMMON_TEXT.laFechaNoPuede
+export const DATE_IN_FUTURE = COMMON_TEXT.dateCannotBeFuture
 
 const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
-  { value: 'purchase', label: COMMON_TEXT.compra },
-  { value: 'harvest', label: COMMON_TEXT.cosecha },
-  { value: 'opening_stock', label: COMMON_TEXT.stockInicial },
-  { value: 'adjustment', label: COMMON_TEXT.ajuste },
+  { value: 'purchase', label: COMMON_TEXT.purchase },
+  { value: 'harvest', label: COMMON_TEXT.harvest },
+  { value: 'opening_stock', label: COMMON_TEXT.initialStock },
+  { value: 'adjustment', label: COMMON_TEXT.adjustment },
 ]
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
@@ -291,8 +291,8 @@ export default function StockEntryForm({
         <ConfirmDialog
           title={STOCK_TEXT.antesDeBorrar}
           detail={STOCK_TEXT.borrasLaEntradaDel(formatDate(initial.date, initial.date), varietyName, formatGrams(initial.grams))}
-          confirmText={COMMON_TEXT.siBorrala}
-          cancelText={COMMON_TEXT.noDejala}
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!deleting) void onConfirmDelete()
           }}
@@ -309,14 +309,14 @@ export default function StockEntryForm({
         {fixedVarietyId !== undefined ? (
           <>
         <div className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.variedad}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
           <span className="campo__valor">{varietyName}</span>
           {varietyGrams !== null && (
             <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
           )}
         </div>
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.gramos}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
           <input
             className="campo__input"
             inputMode="decimal"
@@ -327,7 +327,7 @@ export default function StockEntryForm({
         </label>
         <div className="campo">
           <div className="origen-pildoras">
-            <span className="pildora pildora--activa pildora--fija">{COMMON_TEXT.stockInicial}</span>
+            <span className="pildora pildora--activa pildora--fija">{COMMON_TEXT.initialStock}</span>
           </div>
         </div>
         <label className="campo">
@@ -344,7 +344,7 @@ export default function StockEntryForm({
         ) : (
           <>
             <label className="campo">
-              <span className="campo__rotulo">{COMMON_TEXT.fecha}</span>
+              <span className="campo__rotulo">{COMMON_TEXT.date}</span>
               <input
                 className="campo__input"
                 type="date"
@@ -354,7 +354,7 @@ export default function StockEntryForm({
               />
             </label>
             <label className="campo">
-              <span className="campo__rotulo">{COMMON_TEXT.gramos}</span>
+              <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
               <input
                 className="campo__input"
                 inputMode="decimal"
@@ -364,7 +364,7 @@ export default function StockEntryForm({
               />
             </label>
             <label className="campo">
-              <span className="campo__rotulo">{COMMON_TEXT.variedad}</span>
+              <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
               <select
                 className="campo__input"
                 value={varietyId}
@@ -372,7 +372,7 @@ export default function StockEntryForm({
                 disabled={fixedVarietyId !== undefined}
                 required
               >
-                <option value="">{COMMON_TEXT.elegiUnaVariedad}</option>
+                <option value="">{COMMON_TEXT.pickAVariety}</option>
                 {varietiesByName(pickable).map((variety) => (
                   <option key={variety.id} value={variety.id}>
                     {variety.name}
@@ -412,7 +412,7 @@ export default function StockEntryForm({
               <span className="campo__ayuda" data-copy="help">{COST_REQUIRED_HELP}</span>
             </label>
             <label className="campo">
-              <span className="campo__rotulo">{COMMON_TEXT.nota}</span>
+              <span className="campo__rotulo">{COMMON_TEXT.note}</span>
               <input
                 className="campo__input"
                 value={note}
@@ -432,7 +432,7 @@ export default function StockEntryForm({
           <span className="pie" data-copy="help">{perGramPreview(formatMoney(preview))}</span>
         )}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {mode === 'nuevo' ? STOCK_TEXT.guardaLaEntrada : COMMON_TEXT.guardar}
+          {mode === 'nuevo' ? STOCK_TEXT.guardaLaEntrada : COMMON_TEXT.save}
         </Boton>
         {mode === 'editar' && (
           <Boton

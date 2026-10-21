@@ -74,7 +74,7 @@ function serving(put?: (body: PricingSettings) => Response) {
 test('shows the two switches as the server has them, told by aria-checked', async () => {
   renderGroup(serving())
 
-  const bulk = await screen.findByRole('switch', { name: 'Precio por cantidad' })
+  const bulk = await screen.findByRole('switch', { name: 'Bulk price' })
   expect(bulk).toHaveAttribute('aria-checked', 'true')
   expect(screen.getByRole('switch', { name: 'Clientes VIP' })).toHaveAttribute('aria-checked', 'false')
 })
@@ -98,7 +98,7 @@ test('saving sends both switches and shows the fixed toast "Precios guardados"',
   await screen.findByRole('switch', { name: 'Clientes VIP' })
 
   await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
-  await userEvent.click(screen.getByRole('switch', { name: 'Precio por cantidad' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Bulk price' }))
   await userEvent.click(screen.getByRole('button', { name: 'Guardá los precios' }))
 
   expect(await screen.findByText('Precios guardados')).toBeInTheDocument()
@@ -142,7 +142,7 @@ test('an untouched group closes at once', async () => {
   renderGroup(serving())
   await screen.findByRole('switch', { name: 'Clientes VIP' })
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
@@ -152,10 +152,10 @@ test('closing with an unsaved switch asks first, and keeping stays on the group'
   await screen.findByRole('switch', { name: 'Clientes VIP' })
   await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('¿Descartás los precios?')).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí editando' }))
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
   expect(screen.getByRole('switch', { name: 'Clientes VIP' })).toHaveAttribute('aria-checked', 'true')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()
 })
@@ -165,10 +165,10 @@ test('discarding leaves the group; turning a switch back to its saved value is n
   await screen.findByRole('switch', { name: 'Clientes VIP' })
   await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
   await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
-  await userEvent.click(screen.getByRole('switch', { name: 'Precio por cantidad' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Bulk price' }))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
@@ -183,7 +183,7 @@ test('after saving, dirty is measured against what the server accepted, not the 
   act(() => {
     client.setQueryData(keys.pricingSettings(), { is_bulk_pricing: false, is_vip_customers: false })
   })
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(screen.getByText('Lista de grupos')).toBeInTheDocument())
   expect(screen.queryByText('¿Descartás los precios?')).not.toBeInTheDocument()
@@ -195,6 +195,6 @@ test('the group obeys the icon and text rule: "Guardá los precios" is a text-on
   const save = await screen.findByRole('button', { name: 'Guardá los precios' })
   expect(save).toHaveAttribute('type', 'submit')
   expect(save.querySelector('svg')).toBeNull()
-  expect(screen.getByRole('button', { name: 'Cerrar' }).textContent).toBe('')
+  expect(screen.getByRole('button', { name: 'Close' }).textContent).toBe('')
   expectIconAndTextRule(document.body)
 })

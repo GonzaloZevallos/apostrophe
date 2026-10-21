@@ -1,5 +1,5 @@
 /**
- * `BusinessGroup` at the screen seam (plan, "Negocio"; `accounts.md`): renaming the
+ * `BusinessGroup` at the screen seam (plan, "Business"; `accounts.md`): renaming the
  * business, inline refusals, and the unsaved-changes rule measured against the name the
  * server last accepted. The API is faked at `fetch`, never mocked deeper (CODING_STANDARDS §10).
  */
@@ -82,10 +82,10 @@ test('renaming the business shows the fixed success toast, never the name or an 
   })
   renderBusiness(fetchMock)
 
-  const input = await screen.findByLabelText('Nombre del negocio')
+  const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, 'La Huerta Nueva')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
 
   expect(await screen.findByText(RENAME_SUCCESS)).toBeInTheDocument()
   expect(screen.getByDisplayValue('La Huerta Nueva')).toBeInTheDocument()
@@ -102,10 +102,10 @@ test('a rejected name keeps what was typed and shows the inline refusal, not a t
   })
   renderBusiness(fetchMock)
 
-  const input = await screen.findByLabelText('Nombre del negocio')
+  const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, '   ')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent(BUSINESS_NAME_INVALID_MESSAGE)
   expect(screen.queryByText(RENAME_SUCCESS)).not.toBeInTheDocument()
@@ -119,17 +119,17 @@ test('a dropped network while renaming shows "Sin conexión", never the generic 
   })
   renderBusiness(fetchMock)
 
-  const input = await screen.findByLabelText('Nombre del negocio')
+  const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, 'La Huerta Nueva')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText(RENAME_SUCCESS)).not.toBeInTheDocument()
 })
 
-test('"Cerrar" right after a save closes at once, with the refetch still pending: the saved name is not unsaved', async () => {
+test('"Close" right after a save closes at once, with the refetch still pending: the saved name is not unsaved', async () => {
   let gets = 0
   const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
     if (init?.method === 'PATCH') {
@@ -140,12 +140,12 @@ test('"Cerrar" right after a save closes at once, with the refetch still pending
   })
   renderBusiness(fetchMock)
 
-  const input = await screen.findByLabelText('Nombre del negocio')
+  const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, 'La Huerta Nueva')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
   await screen.findByText(RENAME_SUCCESS)
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
   expect(screen.queryByText('¿Descartás el nombre?')).not.toBeInTheDocument()
@@ -160,17 +160,17 @@ test('a real change after a save asks before closing, and keeping it leaves what
   })
   renderBusiness(fetchMock)
 
-  const input = await screen.findByLabelText('Nombre del negocio')
+  const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, 'La Huerta Nueva')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
   await screen.findByText(RENAME_SUCCESS)
   await userEvent.type(input, ' 2')
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('¿Descartás el nombre?')).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí editando' }))
-  expect(screen.getByLabelText('Nombre del negocio')).toHaveValue('La Huerta Nueva 2')
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
+  expect(screen.getByLabelText('Business name')).toHaveValue('La Huerta Nueva 2')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()
 })
 
@@ -178,7 +178,7 @@ test('an untouched name closes at once', async () => {
   renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 
   await screen.findByDisplayValue('La Huerta')
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })

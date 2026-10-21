@@ -1,7 +1,7 @@
 /**
  * `AppearanceGroup` through what the person sees and does (ADR-0026): two choices, Claro
  * and Oscuro, as a radio group; a tap applies and remembers the choice at once, with no save
- * button, no toast and no unsaved-changes question; "Cerrar" always closes at once.
+ * button, no toast and no unsaved-changes question; "Close" always closes at once.
  */
 
 import { SETTINGS, SETTINGS_APPEARANCE } from '../../routes'
@@ -44,7 +44,7 @@ function renderGroup() {
 
 async function open(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('link', { name: 'Abrir' }))
-  await screen.findByText('Apariencia')
+  await screen.findByText('Appearance')
 }
 
 test('offers Claro and Oscuro as a radio group, Claro marked when nothing is stored', async () => {
@@ -99,13 +99,13 @@ test('tapping Claro removes the attribute and the stored key', async () => {
   expect(screen.getByRole('radio', { name: 'Claro' })).toHaveAttribute('aria-checked', 'true')
 })
 
-test('"Cerrar" closes at once after choosing, with no question', async () => {
+test('"Close" closes at once after choosing, with no question', async () => {
   const user = userEvent.setup()
   const router = renderGroup()
   await open(user)
   await user.click(screen.getByRole('radio', { name: 'Oscuro' }))
 
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
 
   await act(async () => undefined)
   expect(router.state.location.pathname).toBe(SETTINGS)

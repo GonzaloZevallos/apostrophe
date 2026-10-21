@@ -71,11 +71,11 @@ interface Item {
 }
 
 const ITEMS: Item[] = [
-  { to: HOME, label: COMMON_TEXT.inicio, icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
-  { to: SALES, label: COMMON_TEXT.ventas, icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
+  { to: HOME, label: COMMON_TEXT.home, icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
+  { to: SALES, label: COMMON_TEXT.sales, icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
   {
     to: CUSTOMERS,
-    label: COMMON_TEXT.clientes,
+    label: COMMON_TEXT.customers,
     icono: 'clientes',
     placement: 'both',
     group: 'main',
@@ -83,15 +83,15 @@ const ITEMS: Item[] = [
   },
   {
     to: VARIETIES,
-    label: COMMON_TEXT.variedades,
+    label: COMMON_TEXT.varieties,
     icono: 'variedades',
     placement: 'both',
     group: 'main',
     place: 'varieties',
   },
-  { to: EXPENSES, label: COMMON_TEXT.gastos, icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
-  { to: ANALYSIS, label: COMMON_TEXT.analisis, icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
-  { to: MORE, label: COMMON_TEXT.mas, icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
+  { to: EXPENSES, label: COMMON_TEXT.expenses, icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
+  { to: ANALYSIS, label: COMMON_TEXT.analysis, icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
+  { to: MORE, label: COMMON_TEXT.more, icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
 ]
 
 const BAR_ITEMS = ITEMS.filter((item) => item.placement !== 'rail')
@@ -180,7 +180,7 @@ export default function Shell() {
                 className={NUEVA_VENTA_ESCRITORIO_CLASS}
                 ariaDescribedBy={railDescribedBy}
               >
-                {COMMON_TEXT.nuevaVenta}
+                {COMMON_TEXT.newSale}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta nueva-venta__falta--escritorio" id={RAIL_MISSING_ID}>
@@ -209,7 +209,7 @@ export default function Shell() {
           })}
           <InAppLink
             to={SETTINGS}
-            aria-label={COMMON_TEXT.configuracionDe0(me.business_name)}
+            aria-label={COMMON_TEXT.settingsFor(me.business_name)}
             aria-current={railPlace === 'business' ? 'page' : undefined}
             className={
               railPlace === 'business'
@@ -230,7 +230,7 @@ export default function Shell() {
           {chrome.barNuevaVenta && (
             <>
               <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
-                {COMMON_TEXT.nuevaVenta}
+                {COMMON_TEXT.newSale}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta" id={NUEVA_VENTA_MISSING_ID}>

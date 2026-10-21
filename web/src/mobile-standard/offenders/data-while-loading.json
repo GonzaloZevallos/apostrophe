@@ -14,19 +14,19 @@
   {
     "screen": "NuevaVenta",
     "rule": "data-while-loading",
-    "target": "span:Hoy #/#",
+    "target": "span:Today #/#",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "data-while-loading",
-    "target": "span:Hoy #/#",
+    "target": "span:Today #/#",
     "issue": 78
   },
   {
     "screen": "VentaGuardada",
     "rule": "data-while-loading",
-    "target": "span:Hoy #/#",
+    "target": "span:Today #/#",
     "issue": 78
   }
 ]

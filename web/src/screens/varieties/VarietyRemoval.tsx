@@ -144,7 +144,7 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
               : archiveDetail(grams)
           }
           confirmText={deleting ? VARIETIES_TEXT.siEliminala : VARIETIES_TEXT.siArchivala}
-          cancelText={COMMON_TEXT.noDejala}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!sending) void onConfirm()
           }}

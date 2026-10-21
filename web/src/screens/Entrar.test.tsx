@@ -41,7 +41,7 @@ afterEach(() => {
 test('the submit is text only and the screen follows the icon and text rule', () => {
   renderEntrar(new QueryClient())
   expect(screen.getByRole('button', { name: 'Entrá' })).toHaveAttribute('type', 'submit')
-  // "Mostrar" is PasswordField's own show/hide toggle, an option control.
+  // "Show" is PasswordField's own show/hide toggle, an option control.
   expectIconAndTextRule(document.body)
 })
 

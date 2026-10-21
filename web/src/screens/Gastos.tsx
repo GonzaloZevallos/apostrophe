@@ -40,8 +40,8 @@ import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
 import { COMMON_TEXT } from '../copy/common'
 
 export { FLOWER_NOTICE }
-export const NO_DISCARD_TITLE = COMMON_TEXT.noDejala
-export const YES_DELETE_TITLE = COMMON_TEXT.siBorrala
+export const NO_DISCARD_TITLE = COMMON_TEXT.noKeep
+export const YES_DELETE_TITLE = COMMON_TEXT.yesDelete
 
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
   return EXPENSES_TEXT.borrasElGastoDe(formatMoney(expense.amount), categoryName, formatDate(expense.spent_on, today))
@@ -171,16 +171,16 @@ export default function Gastos() {
     <main className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
-          <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.gastos}</span>
-          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.cargarGasto}>
+          <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
+          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.addExpense}>
             <Icono nombre="agregar" />
-            <span className="gastos__cargar-texto">{COMMON_TEXT.cargarGasto}</span>
+            <span className="gastos__cargar-texto">{COMMON_TEXT.addExpense}</span>
           </InAppLink>
           <div className="gastos__mes">
             <button
               type="button"
               className="gastos__mes-boton"
-              aria-label={COMMON_TEXT.mesAnterior}
+              aria-label={COMMON_TEXT.previousMonth}
               onClick={() => moveMonth(-1)}
             >
               <Icono nombre="atras" />
@@ -189,7 +189,7 @@ export default function Gastos() {
             <button
               type="button"
               className="gastos__mes-boton"
-              aria-label={COMMON_TEXT.mesSiguiente}
+              aria-label={COMMON_TEXT.nextMonth}
               onClick={() => moveMonth(1)}
             >
               <Icono nombre="chevron" />
@@ -287,10 +287,10 @@ export default function Gastos() {
             />
             {confirmingDiscard && (
               <ConfirmDialog
-                title={COMMON_TEXT.descartasLosCambios}
+                title={COMMON_TEXT.discardTheChanges}
                 detail={EXPENSES_TEXT.sePierdeLoQue}
                 confirmText={EXPENSES_TEXT.siDescartalos}
-                cancelText={COMMON_TEXT.noSeguiEditando}
+                cancelText={COMMON_TEXT.noKeepEditing}
                 onConfirm={closeEdit}
                 onCancel={() => setConfirmingDiscard(false)}
               />

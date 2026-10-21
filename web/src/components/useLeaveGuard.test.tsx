@@ -32,9 +32,9 @@ function Form({ startDirty }: { startDirty: boolean }) {
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás los cambios?"
+          question="Discard the changes?"
           detail="No vas a poder recuperarlos."
-          keepLabel="No, seguí editando"
+          keepLabel="No, keep editing"
           discardLabel="Sí, descartalos"
         />
       )}
@@ -72,10 +72,10 @@ test('a dirty form blocks and asks with the caller wording; keeping stays, disca
   await user.click(screen.getByRole('button', { name: 'Salir' }))
 
   expect(router.state.location.pathname).toBe(HOME)
-  expect(screen.getByRole('alertdialog', { name: '¿Descartás los cambios?' })).toBeInTheDocument()
+  expect(screen.getByRole('alertdialog', { name: 'Discard the changes?' })).toBeInTheDocument()
   expect(screen.getByText('No vas a poder recuperarlos.')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'No, seguí editando' }))
+  await user.click(screen.getByRole('button', { name: 'No, keep editing' }))
   expect(router.state.location.pathname).toBe(HOME)
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 

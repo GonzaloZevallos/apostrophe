@@ -107,8 +107,8 @@ function deleteTitle(sale: SaleDetail): string {
   return SALES_TEXT.borrasLaVentaDe(money, day, grams)
 }
 
-const DELETE_TOAST = COMMON_TEXT.ventaEliminada
-const UNDO_TOAST = COMMON_TEXT.ventaEliminadaLosGramos
+const DELETE_TOAST = COMMON_TEXT.saleDeleted
+const UNDO_TOAST = COMMON_TEXT.saleDeletedGramsBack
 
 /** One sheet stack per screen (ADR-0027): Asignar cliente is level 1, Nuevo cliente level 2. */
 export default function VentaDetalle() {
@@ -245,7 +245,7 @@ function VentaDetalleScreen() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label={COMMON_TEXT.ventas} to={SALES} />
+      return <GoneScreen label={COMMON_TEXT.sales} to={SALES} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -337,7 +337,7 @@ function VentaDetalleScreen() {
 
         {sale.note !== null && sale.note !== '' && (
           <div className="campo">
-            <span className="campo__rotulo">{COMMON_TEXT.nota}</span>
+            <span className="campo__rotulo">{COMMON_TEXT.note}</span>
             <span className="venta-detalle__nota">{sale.note}</span>
           </div>
         )}
@@ -368,9 +368,9 @@ function VentaDetalleScreen() {
       {confirmingDelete && (
         <ConfirmDialog
           title={deleteTitle(sale)}
-          detail={COMMON_TEXT.estoNoSePuede}
-          confirmText={COMMON_TEXT.siBorrala}
-          cancelText={COMMON_TEXT.noDejala}
+          detail={COMMON_TEXT.cannotUndo}
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!deleting) void removeSale('borrar')
           }}

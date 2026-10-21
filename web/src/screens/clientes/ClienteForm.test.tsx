@@ -1,7 +1,7 @@
 /**
  * `ClienteForm` at the screen seam: add and edit share the form; a refusal maps
  * to its field and keeps what was typed (`customers.md`); a save on a `gone`
- * customer closes the form and shows `GONE_NOTICE` instead of "Cliente guardado"
+ * customer closes the form and shows `GONE_NOTICE` instead of "Customer saved"
  * (plan, "Gone records").
  */
 
@@ -125,7 +125,7 @@ test('registers a customer and lands on its card', async () => {
   renderForm(CUSTOMER_NEW)
 
   await userEvent.type(screen.getByLabelText('Teléfono'), '+5491131785094')
-  await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
+  await userEvent.type(screen.getByLabelText('Name'), 'Nico')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
@@ -138,7 +138,7 @@ test('registers a customer and lands on its card', async () => {
 test('only Nombre is marked required; Teléfono stays optional', () => {
   renderForm(CUSTOMER_NEW)
 
-  expect(screen.getByLabelText('Nombre')).toBeRequired()
+  expect(screen.getByLabelText('Name')).toBeRequired()
   expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
 })
 
@@ -146,7 +146,7 @@ test('the form has Nombre required, an optional phone and no Canal field', async
   renderForm(CUSTOMER_NEW)
 
   expect(await screen.findByLabelText('VIP')).toBeInTheDocument()
-  expect(screen.getByLabelText('Nombre')).toBeRequired()
+  expect(screen.getByLabelText('Name')).toBeRequired()
   expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
   expect(screen.queryByRole('radio')).not.toBeInTheDocument()
   expect(screen.queryByText(/canal|whatsapp|telegram/i)).not.toBeInTheDocument()
@@ -156,7 +156,7 @@ test('with Clientes VIP off the form has no VIP field', async () => {
   api = stubFetchWithSettings(false)
   renderForm(CUSTOMER_NEW)
 
-  expect(await screen.findByLabelText('Nombre')).toBeInTheDocument()
+  expect(await screen.findByLabelText('Name')).toBeInTheDocument()
   expect(screen.queryByLabelText('VIP')).not.toBeInTheDocument()
 })
 
@@ -166,10 +166,10 @@ test('registering with no phone sends the request and shows the saved toast', as
   )
   renderForm(CUSTOMER_NEW)
 
-  await userEvent.type(screen.getByLabelText('Nombre'), 'Sol')
+  await userEvent.type(screen.getByLabelText('Name'), 'Sol')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
-  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers',
     expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', vip: false }) }),
@@ -190,7 +190,7 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
-  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
     expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', vip: false }) }),
@@ -204,12 +204,12 @@ test('a duplicate phone is refused on the phone field, keeping what was typed', 
   renderForm(CUSTOMER_NEW)
 
   await userEvent.type(screen.getByLabelText('Teléfono'), '+5491131785094')
-  await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
+  await userEvent.type(screen.getByLabelText('Name'), 'Nico')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Ese teléfono ya es de otro cliente')
   expect(screen.getByLabelText('Teléfono')).toHaveValue('+5491131785094')
-  expect(screen.getByLabelText('Nombre')).toHaveValue('Nico')
+  expect(screen.getByLabelText('Name')).toHaveValue('Nico')
 })
 
 test('edit loads the existing customer and saves the change', async () => {
@@ -231,10 +231,10 @@ test('edit loads the existing customer and saves the change', async () => {
   )
   renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
-  expect(await screen.findByLabelText('Nombre')).toHaveValue('Tincho')
+  expect(await screen.findByLabelText('Name')).toHaveValue('Tincho')
 
-  await userEvent.clear(screen.getByLabelText('Nombre'))
-  await userEvent.type(screen.getByLabelText('Nombre'), 'Tincho Aguirre')
+  await userEvent.clear(screen.getByLabelText('Name'))
+  await userEvent.type(screen.getByLabelText('Name'), 'Tincho Aguirre')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
@@ -250,12 +250,12 @@ test('saving an edit on a customer that is gone shows the gone notice, not the t
   )
   renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
-  expect(await screen.findByLabelText('Nombre')).toHaveValue('Tincho')
+  expect(await screen.findByLabelText('Name')).toHaveValue('Tincho')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   await waitFor(() => expect(screen.getByText('la ficha')).toBeInTheDocument())
-  expect(screen.getByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
-  expect(screen.queryByText('Cliente guardado')).not.toBeInTheDocument()
+  expect(screen.getByText('That is gone. The list is up to date.')).toBeInTheDocument()
+  expect(screen.queryByText('Customer saved')).not.toBeInTheDocument()
 })
 
 test('a 401 on save clears the cache and goes to Entrar, through the session boundary', async () => {
@@ -285,7 +285,7 @@ test('a 401 on save clears the cache and goes to Entrar, through the session bou
   )
 
   await userEvent.type(screen.getByLabelText('Teléfono'), '+5491131785094')
-  await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
+  await userEvent.type(screen.getByLabelText('Name'), 'Nico')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   await waitFor(() => expect(navigate).toHaveBeenCalledWith(LOGIN))
@@ -302,20 +302,20 @@ async function openFromList(): Promise<ReturnType<typeof renderForm>> {
 
 test('closing, or going back by history, with something typed asks the same question', async () => {
   const router = await openFromList()
-  await userEvent.type(screen.getByLabelText('Nombre'), 'Sol')
+  await userEvent.type(screen.getByLabelText('Name'), 'Sol')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   const viaCerrar = screen.getByRole('alertdialog').textContent
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep entering' }))
   expect(router.state.location.pathname).toBe(CUSTOMER_NEW)
-  expect(screen.getByLabelText('Nombre')).toHaveValue('Sol')
+  expect(screen.getByLabelText('Name')).toHaveValue('Sol')
 
   await act(() => router.navigate(-1))
   expect(screen.getByRole('alertdialog').textContent).toBe(viaCerrar)
   expect(viaCerrar).toContain('¿Descartás el cliente?')
   expect(router.state.location.pathname).toBe(CUSTOMER_NEW)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalo' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, discard it' }))
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
@@ -323,7 +323,7 @@ test('closing, or going back by history, with something typed asks the same ques
 test('an untouched form closes at once, by history', async () => {
   const router = await openFromList()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(router.state.location.pathname).toBe(CUSTOMERS)
@@ -333,7 +333,7 @@ test('an untouched form closes at once, by history', async () => {
 test('with no in-app history, Cerrar goes to the parent replacing the form', async () => {
   const router = renderForm(CUSTOMER_NEW, '/otra')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('REPLACE')
@@ -345,7 +345,7 @@ test('editing, Cerrar with no in-app history goes to the customer card', async (
   )
   const router = renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 7 }))
@@ -356,11 +356,11 @@ test('after registering, the form is replaced by the new customer card and Back 
     jsonResponse(201, { id: 10, name: 'Sol', phone: null, vip: false }),
   )
   const router = await openFromList()
-  await userEvent.type(screen.getByLabelText('Nombre'), 'Sol')
+  await userEvent.type(screen.getByLabelText('Name'), 'Sol')
 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
-  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 10 }))
   expect(router.state.historyAction).toBe('REPLACE')
@@ -377,12 +377,12 @@ test('after editing from the card, the save goes back by history: no second card
   const router = renderForm(CUSTOMERS)
   await act(() => router.navigate(pathTo(CUSTOMER, { id: 7 })))
   await userEvent.click(screen.getByRole('link', { name: 'Editar' }))
-  await userEvent.type(await screen.findByLabelText('Nombre'), ' Aguirre')
+  await userEvent.type(await screen.findByLabelText('Name'), ' Aguirre')
 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
-  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
@@ -419,7 +419,7 @@ function renderGone(entries: HistoryEntry[]) {
 }
 
 async function saveTheGoneEdit() {
-  await userEvent.type(await screen.findByLabelText('Nombre'), ' R')
+  await userEvent.type(await screen.findByLabelText('Name'), ' R')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 }
 
@@ -469,7 +469,7 @@ test('a gone edit on a direct link replaces the form with the card and shows the
 test('after a reload of the form, the gone exit still goes back once', async () => {
   fakeGoneCustomer()
   const { router, view, app } = renderGone([CUSTOMERS, CARD, { pathname: EDIT, state: inAppState({ pathname: CARD }) }])
-  await screen.findByLabelText('Nombre')
+  await screen.findByLabelText('Name')
   view.unmount()
   render(app)
 
@@ -484,7 +484,7 @@ test('a resize across 900 px between opening and leaving does not change where t
   fakeGoneCustomer()
   stubViewport('phone')
   const { router } = renderGone([CUSTOMERS, CARD, { pathname: EDIT, state: inAppState({ pathname: CARD }) }])
-  await screen.findByLabelText('Nombre')
+  await screen.findByLabelText('Name')
   stubViewport('computer')
 
   await saveTheGoneEdit()

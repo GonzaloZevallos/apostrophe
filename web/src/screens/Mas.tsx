@@ -22,26 +22,26 @@ interface Item {
 const ITEMS: Item[] = [
   {
     to: EXPENSE_NEW,
-    label: COMMON_TEXT.cargarGasto,
+    label: COMMON_TEXT.addExpense,
     icon: 'agregar',
     detail: SETTINGS_TEXT.categoriaMontoYDetalle,
   },
   {
     to: WITHDRAWAL_NEW,
-    label: COMMON_TEXT.sacarDelStock,
+    label: COMMON_TEXT.takeFromStock,
     icon: 'salidaStock',
     detail: SETTINGS_TEXT.promocionOConsumoPropio,
   },
-  { to: EXPENSES, label: COMMON_TEXT.gastos, icon: 'gastos', detail: SETTINGS_TEXT.porMesYPor },
+  { to: EXPENSES, label: COMMON_TEXT.expenses, icon: 'gastos', detail: SETTINGS_TEXT.porMesYPor },
   {
     to: ANALYSIS,
-    label: COMMON_TEXT.analisis,
+    label: COMMON_TEXT.analysis,
     icon: 'analisis',
     detail: SETTINGS_TEXT.variedadesSemanasMesesY,
   },
   {
     to: SETTINGS,
-    label: COMMON_TEXT.configuracion,
+    label: COMMON_TEXT.settings,
     icon: 'configuracion',
     detail: SETTINGS_TEXT.negocioUsuariosBotCatalogo,
   },
@@ -62,8 +62,8 @@ export default function Mas() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">{COMMON_TEXT.mas}</span>
-        <nav className="mas__lista" aria-label={COMMON_TEXT.mas} data-menu>
+        <span className="encabezado__titulo">{COMMON_TEXT.more}</span>
+        <nav className="mas__lista" aria-label={COMMON_TEXT.more} data-menu>
           {ITEMS.map((item) => (
             <InAppLink
               key={item.to}

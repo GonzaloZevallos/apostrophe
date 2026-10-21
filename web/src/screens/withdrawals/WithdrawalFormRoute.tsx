@@ -58,7 +58,7 @@ function EditHost() {
   })
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />
+      return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
     }
     return (
       <Frame>{existing.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Frame>
@@ -111,14 +111,14 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question={editing ? COMMON_TEXT.descartasLosCambios : STOCK_TEXT.descartasElRetiro}
+          question={editing ? COMMON_TEXT.discardTheChanges : STOCK_TEXT.descartasElRetiro}
           detail={
             editing
               ? STOCK_TEXT.sePierdeLoQue
-              : COMMON_TEXT.sePierdeLoQue
+              : COMMON_TEXT.losesWhatYouEntered
           }
-          keepLabel={editing ? COMMON_TEXT.noSeguiEditando : COMMON_TEXT.noSeguiCargando}
-          discardLabel={COMMON_TEXT.siDescartalo}
+          keepLabel={editing ? COMMON_TEXT.noKeepEditing : COMMON_TEXT.noKeepEntering}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </Frame>

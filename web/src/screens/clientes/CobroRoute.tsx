@@ -33,7 +33,7 @@ import CobroFrame from './CobroFrame'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENTS_TEXT } from '../../copy/payments'
 
-const LABEL = COMMON_TEXT.registrarCobro
+const LABEL = COMMON_TEXT.recordPayment
 
 /** The element focus returns to after "No, seguí cargando": the title when it is gone or is `body`. */
 function stillFocusable(element: Element | null): element is HTMLElement {
@@ -110,7 +110,7 @@ export default function CobroRoute() {
   if (isError) {
     const state =
       error instanceof ApiError && isGone(error.code) ? (
-        <GoneScreen label={COMMON_TEXT.clientes} to={CUSTOMERS} />
+        <GoneScreen label={COMMON_TEXT.customers} to={CUSTOMERS} />
       ) : error instanceof NetworkError ? (
         <SinConexion />
       ) : (
@@ -146,9 +146,9 @@ export default function CobroRoute() {
         <LeaveConfirm
           blocker={blocker}
           question={PAYMENTS_TEXT.descartasElCobro}
-          detail={COMMON_TEXT.sePierdeLoQue}
-          keepLabel={COMMON_TEXT.noSeguiCargando}
-          discardLabel={COMMON_TEXT.siDescartalo}
+          detail={COMMON_TEXT.losesWhatYouEntered}
+          keepLabel={COMMON_TEXT.noKeepEntering}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </CobroFrame>

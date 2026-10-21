@@ -34,8 +34,8 @@ describe('isGone', () => {
 
 describe('the fixed copy', () => {
   test('carries no data of its own', () => {
-    expect(GONE_NOTICE).toBe('Eso ya no está. La lista ya está al día.')
-    expect(GONE_DETAIL).toBe('Eso ya no está.')
+    expect(GONE_NOTICE).toBe('That is gone. The list is up to date.')
+    expect(GONE_DETAIL).toBe('That is gone.')
   })
 })
 

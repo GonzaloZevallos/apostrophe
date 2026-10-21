@@ -72,17 +72,17 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
 
   // The step's title already says it is opening stock, so no "Origen" label is drawn over the
   // static chip: not a button, not a radio, no other origin.
-  const chip = screen.getByText('Stock inicial')
+  const chip = screen.getByText('Initial stock')
   expect(screen.queryByText('Origen')).not.toBeInTheDocument()
   expect(chip.closest('button')).toBeNull()
   expect(screen.queryByRole('radio')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Compra' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Purchase' })).not.toBeInTheDocument()
   // The variety is named, not chosen.
   expect(await screen.findByText('Sir Jack')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Variedad')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Variety')).not.toBeInTheDocument()
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
 
-  await userEvent.type(screen.getByLabelText('Gramos'), '30')
+  await userEvent.type(screen.getByLabelText('Grams'), '30')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
@@ -109,10 +109,10 @@ test('the locked form asks only for grams and the optional cost, and the no-cost
   renderForm(vi.fn())
 
   await screen.findByText('Sir Jack')
-  expect(screen.queryByLabelText('Fecha')).not.toBeInTheDocument()
-  expect(screen.queryByLabelText('Nota')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Date')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Note')).not.toBeInTheDocument()
   expect(screen.getAllByRole('textbox').map((box) => box.closest('label')?.textContent)).toEqual([
-    expect.stringContaining('Gramos'),
+    expect.stringContaining('Grams'),
     expect.stringContaining('Costo total'),
   ])
   const costField = screen.getByLabelText(/^Costo total/).closest('label')
@@ -133,7 +133,7 @@ test('with a cost typed, the locked form posts it', async () => {
   renderForm(onSaved)
 
   await screen.findByText('Sir Jack')
-  await userEvent.type(screen.getByLabelText('Gramos'), '30')
+  await userEvent.type(screen.getByLabelText('Grams'), '30')
   await userEvent.type(screen.getByLabelText(/^Costo total/), '9000')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
@@ -157,10 +157,10 @@ test('without the locked props the form is the owner\'s whole form', async () =>
     </QueryClientProvider>,
   )
 
-  expect(await screen.findByLabelText('Fecha')).toHaveValue('2026-10-03')
-  expect(screen.getByLabelText('Variedad')).toBeEnabled()
-  expect(screen.getByLabelText('Nota')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Compra' })).toBeInTheDocument()
+  expect(await screen.findByLabelText('Date')).toHaveValue('2026-10-03')
+  expect(screen.getByLabelText('Variety')).toBeEnabled()
+  expect(screen.getByLabelText('Note')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Purchase' })).toBeInTheDocument()
   expect(screen.getByText('Obligatorio cuando es una compra')).toBeInTheDocument()
 })
 
@@ -198,9 +198,9 @@ test('the owner refuses the entry inline and the form does not report it saved',
   renderForm(onSaved)
 
   await screen.findByText('Sir Jack')
-  await userEvent.type(screen.getByLabelText('Gramos'), '30')
+  await userEvent.type(screen.getByLabelText('Grams'), '30')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
-  expect(await screen.findByText('La fecha no puede ser futura')).toBeInTheDocument()
+  expect(await screen.findByText('The date cannot be in the future')).toBeInTheDocument()
   expect(onSaved).not.toHaveBeenCalled()
 })

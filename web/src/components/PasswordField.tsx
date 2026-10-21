@@ -41,7 +41,7 @@ export default function PasswordField({
       </label>
       <span className="campo__mostrar">
         <Boton variant="link" onClick={() => setReveal((shown) => !shown)}>
-          {reveal ? COMMON_TEXT.ocultar : COMMON_TEXT.mostrar}
+          {reveal ? COMMON_TEXT.hide : COMMON_TEXT.show}
         </Boton>
       </span>
     </>
