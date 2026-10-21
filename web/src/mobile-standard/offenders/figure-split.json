@@ -319,7 +319,7 @@
   {
     "screen": "EstadosConfirmar",
     "rule": "figure-split",
-    "target": "span:¿Borrás la venta de $ #.# del #/#? Vuelven # g al stock",
+    "target": "span:Delete the sale of $ #.# from #/#? # g go back to stock",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -632,7 +632,7 @@
   {
     "screen": "VentaBorrar",
     "rule": "figure-split",
-    "target": "span:¿Borrás la venta de $ #.# del #/#? Vuelven # g al stock",
+    "target": "span:Delete the sale of $ #.# from #/#? # g go back to stock",
     "issue": 78,
     "sizes": [
       "246x437"

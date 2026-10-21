@@ -1012,13 +1012,13 @@
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
@@ -1072,13 +1072,13 @@
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
@@ -1096,7 +1096,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78
   },
   {
@@ -1456,7 +1456,7 @@
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "button:Borrar venta",
+    "target": "button:Delete sale",
     "issue": 49
   },
   {
@@ -2260,13 +2260,13 @@
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
@@ -2314,13 +2314,13 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
@@ -2350,7 +2350,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78
   },
   {
@@ -2392,25 +2392,25 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Línea #: Golden Cookies",
+    "target": "button:Line #: Golden Cookies",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Quitar línea #",
+    "target": "button:Remove line #",
     "issue": 78
   },
   {
@@ -2458,19 +2458,19 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Crear cliente",
+    "target": "button:Create customer",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Elegir cliente",
+    "target": "button:Pick a customer",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   },
   {
@@ -2494,7 +2494,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78
   },
   {
@@ -3700,7 +3700,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Asignar cliente",
+    "target": "button:Assign customer",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3711,7 +3711,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Borrar venta",
+    "target": "button:Delete sale",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3876,7 +3876,7 @@
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "button:Borrar venta",
+    "target": "button:Delete sale",
     "issue": 78
   },
   {
@@ -3936,7 +3936,7 @@
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "button:Borrar venta",
+    "target": "button:Delete sale",
     "issue": 78
   },
   {
@@ -3984,7 +3984,7 @@
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 78
   },
   {
@@ -4044,7 +4044,7 @@
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 78
   },
   {

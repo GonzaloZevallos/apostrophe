@@ -14,7 +14,7 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "pending-state",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   }
 ]

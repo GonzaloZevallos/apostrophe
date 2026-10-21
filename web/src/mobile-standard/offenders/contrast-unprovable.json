@@ -14,13 +14,13 @@
   {
     "screen": "DescartarVenta",
     "rule": "contrast-unprovable",
-    "target": "span:No vas a poder recuperar lo que cargaste.",
+    "target": "span:You won't be able to get back what you entered.",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "contrast-unprovable",
-    "target": "span:¿Descartás la venta?",
+    "target": "span:Discard the sale?",
     "issue": 78
   }
 ]
