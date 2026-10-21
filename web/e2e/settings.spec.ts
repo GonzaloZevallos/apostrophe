@@ -37,37 +37,37 @@ test('a seller goes through every Configuración group from the phone, with no c
 
   // A category with an expense in it, so its removal is refused later.
   await openGastos(page)
-  await page.getByRole('link', { name: 'Cargar gasto' }).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
   await page.getByRole('button', { name: 'Crear categoría' }).click()
-  await page.getByLabel('Monto').fill('4500')
+  await page.getByLabel('Amount').fill('4500')
   await page.getByLabel('Detalle').fill('Flete al mercado')
   await page.getByRole('button', { name: 'Guardá el gasto' }).click()
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
-  // One tap from Inicio's avatar: the list of groups, then a group, then "Cerrar" back.
+  // One tap from Inicio's avatar: the list of groups, then a group, then "Close" back.
   const openGroup = async (name: string): Promise<void> => {
     await page.getByRole('link', { name, exact: true }).click()
   }
   const close = async (): Promise<void> => {
-    await page.getByRole('button', { name: 'Cerrar', exact: true }).click()
-    await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
+    await page.getByRole('button', { name: 'Close', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
   }
   await page.goto(HOME)
-  await page.getByRole('link', { name: /^Configuración de / }).click()
-  await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
+  await page.getByRole('link', { name: /^Settings for / }).click()
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
 
   // Negocio.
   const renamedTo = `${businessName} Renombrado`
-  await openGroup('Negocio')
-  await page.getByLabel('Nombre del negocio').fill(renamedTo)
-  await page.getByRole('button', { name: 'Guardá el nombre' }).click()
+  await openGroup('Business')
+  await page.getByLabel('Business name').fill(renamedTo)
+  await page.getByRole('button', { name: 'Save the name' }).click()
   await expect(page.getByText('Negocio renombrado')).toBeVisible()
   await close()
 
   // Usuarios: a fresh join link.
-  await openGroup('Usuarios')
+  await openGroup('Users')
   await page.getByRole('button', { name: 'Invitá a un socio' }).click()
   await expect(page.locator('.usuarios__link')).not.toHaveText('')
   await close()
@@ -84,7 +84,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await close()
 
   // Mensaje del catálogo.
-  await openGroup('Mensaje del catálogo')
+  await openGroup('Catalog message')
   await page.getByLabel('Encabezado').fill('🌿 Catálogo de la semana')
   await page.getByLabel('Pie').fill('Consultas por privado.')
   await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
@@ -92,28 +92,28 @@ test('a seller goes through every Configuración group from the phone, with no c
   await close()
 
   // Categorías de gastos: add, rename, a refused removal, then remove.
-  await openGroup('Categorías de gastos')
+  await openGroup('Expense categories')
   await page.getByLabel('Nueva categoría').fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()
   const delivery = page.locator('.fila', { hasText: 'Delivery en bici' })
   await delivery.getByRole('button', { name: 'Renombrar' }).click()
   await page.getByLabel('Nombre de Delivery en bici').fill('Mensajería')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.locator('.fila', { hasText: 'Mensajería' })).toBeVisible()
   await page.locator('.fila', { hasText: 'Flete' }).getByRole('button', { name: 'Eliminar' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(
     page.getByText('No se puede borrar: todavía tiene gastos. Podés renombrarla.'),
   ).toBeVisible()
   await page.locator('.fila', { hasText: 'Mensajería' }).getByRole('button', { name: 'Eliminar' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Categoría eliminada')).toBeVisible()
   await expect(page.getByText('Mensajería')).toHaveCount(0)
   await close()
 
   // Apariencia: Oscuro applies at once, Claro removes it.
-  await openGroup('Apariencia')
+  await openGroup('Appearance')
   await page.getByRole('radio', { name: 'Oscuro' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro')
   await page.getByRole('radio', { name: 'Claro' }).click()
@@ -121,12 +121,12 @@ test('a seller goes through every Configuración group from the phone, with no c
   await close()
 
   // Tu cuenta: change the password, then log out by tapping "Cerrar sesión".
-  await openGroup('Tu cuenta')
-  await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
+  await openGroup('Your account')
+  await page.getByRole('button', { name: 'Change password' }).click()
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
   await sheet.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
-  await sheet.getByRole('button', { name: 'Guardar' }).click()
+  await sheet.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
   await expectPath(page, LOGIN)

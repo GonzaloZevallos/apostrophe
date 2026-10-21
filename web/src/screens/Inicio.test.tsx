@@ -166,7 +166,7 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   stubFetch(PANEL)
   renderInicio()
 
-  const avatar = await screen.findByRole('link', { name: 'Configuración de La Huerta' })
+  const avatar = await screen.findByRole('link', { name: 'Settings for La Huerta' })
   expect(avatar).toHaveAttribute('href', SETTINGS)
   expect(avatar).toHaveTextContent('LH')
   // The name stays above the title, as the design draws it.
@@ -181,7 +181,7 @@ test('switching to Semana shows the week\'s figures, including a negative Caja',
   renderInicio()
   await screen.findByText('Vendiste hoy')
 
-  screen.getByRole('button', { name: 'Semana' }).click()
+  screen.getByRole('button', { name: 'Week' }).click()
 
   expect(await screen.findByText('Vendiste esta semana')).toBeInTheDocument()
   expect(screen.getByText('28/09 – 04/10')).toBeInTheDocument()
@@ -199,10 +199,10 @@ function figureNames(): string[] {
     'Faltante de stock',
     'Promoción',
     'Consumo propio',
-    'Gastos',
-    'Compras de flores',
-    'Ganancia',
-    'Caja',
+    'Expenses',
+    'Flower purchases',
+    'Profit',
+    'Cash',
   ]
   return screen
     .getAllByRole('group')
@@ -222,12 +222,12 @@ test('Semana: Ganancia\'s note and the Faltante de stock row (with its own note)
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('Vendiste hoy')
-  screen.getByRole('button', { name: 'Semana' }).click()
+  screen.getByRole('button', { name: 'Week' }).click()
   await screen.findByText('Vendiste esta semana')
 
-  const ganancia = screen.getByRole('group', { name: 'Ganancia' })
+  const ganancia = screen.getByRole('group', { name: 'Profit' })
   expect(within(ganancia).getByText('incluye costo pendiente')).toBeInTheDocument()
-  expect(within(screen.getByRole('group', { name: 'Caja' })).queryByText('incluye costo pendiente')).toBeNull()
+  expect(within(screen.getByRole('group', { name: 'Cash' })).queryByText('incluye costo pendiente')).toBeNull()
 
   // `pending_cost` is false on the week fixture: the Costo row stays unmarked even
   // though Ganancia's own flag (`profit_pending`) is true — each note reads exactly
@@ -253,7 +253,7 @@ test('Semana: Faltante de stock shows with no note of its own when its cost isn\
   stubFetch(costedShortfall)
   renderInicio()
   await screen.findByText('Vendiste hoy')
-  screen.getByRole('button', { name: 'Semana' }).click()
+  screen.getByRole('button', { name: 'Week' }).click()
   await screen.findByText('Vendiste esta semana')
 
   const faltante = screen.getByRole('group', { name: 'Faltante de stock' })
@@ -265,7 +265,7 @@ test('Semana: Promoción and Consumo propio follow Faltante de stock and come be
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('Vendiste hoy')
-  screen.getByRole('button', { name: 'Semana' }).click()
+  screen.getByRole('button', { name: 'Week' }).click()
   await screen.findByText('Vendiste esta semana')
 
   expect(figureNames().slice(0, 6)).toEqual([
@@ -274,7 +274,7 @@ test('Semana: Promoción and Consumo propio follow Faltante de stock and come be
     'Faltante de stock',
     'Promoción',
     'Consumo propio',
-    'Gastos',
+    'Expenses',
   ])
   const promocion = screen.getByRole('group', { name: 'Promoción' })
   expect(within(promocion).getByText('$ 2.000')).toBeInTheDocument()
@@ -304,7 +304,7 @@ test('Hoy and a period with no withdrawal show neither Promoción nor Consumo pr
   expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
   expect(screen.queryByText('Consumo propio')).not.toBeInTheDocument()
 
-  screen.getByRole('button', { name: 'Mes' }).click()
+  screen.getByRole('button', { name: 'Month' }).click()
   await screen.findByText('Vendiste este mes')
   expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
   expect(screen.queryByText('Consumo propio')).not.toBeInTheDocument()
@@ -314,12 +314,12 @@ test('Mes: Costo de lo vendido\'s note and Ganancia\'s note show; there is no Fa
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('Vendiste hoy')
-  screen.getByRole('button', { name: 'Mes' }).click()
+  screen.getByRole('button', { name: 'Month' }).click()
   await screen.findByText('Vendiste este mes')
 
-  const ganancia = screen.getByRole('group', { name: 'Ganancia' })
+  const ganancia = screen.getByRole('group', { name: 'Profit' })
   expect(within(ganancia).getByText('incluye costo pendiente')).toBeInTheDocument()
-  expect(within(screen.getByRole('group', { name: 'Caja' })).queryByText('incluye costo pendiente')).toBeNull()
+  expect(within(screen.getByRole('group', { name: 'Cash' })).queryByText('incluye costo pendiente')).toBeNull()
   expect(noteIn('Costo de lo vendido')).toBe('incluye costo pendiente')
   expect(screen.queryByText('Faltante de stock')).not.toBeInTheDocument()
 })
@@ -357,15 +357,15 @@ test('no sales shows no average, and the range reads with no year', async () => 
   renderInicio()
   await screen.findByText('Vendiste hoy')
 
-  screen.getByRole('button', { name: 'Mes' }).click()
+  screen.getByRole('button', { name: 'Month' }).click()
 
   expect(await screen.findByText('Vendiste este mes')).toBeInTheDocument()
   expect(screen.getByText('01/10 – 31/10')).toBeInTheDocument()
   expect(screen.getByText('0 ventas · 0 g')).toBeInTheDocument()
   expect(screen.queryByText(/promedio/)).not.toBeInTheDocument()
   expect(screen.getAllByText('−$ 5.000')).toHaveLength(2) // profit and cash
-  expect(screen.getByRole('group', { name: 'Ganancia' })).toBeInTheDocument()
-  expect(screen.getByRole('group', { name: 'Caja' })).toBeInTheDocument()
+  expect(screen.getByRole('group', { name: 'Profit' })).toBeInTheDocument()
+  expect(screen.getByRole('group', { name: 'Cash' })).toBeInTheDocument()
 })
 
 test('Te deben: total, count, oldest date, and the teaser opens a customer card', async () => {
@@ -382,25 +382,25 @@ test('Te deben: total, count, oldest date, and the teaser opens a customer card'
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
 })
 
-test('the teaser\'s "Cobrar a X" opens Registrar cobro for that customer, from inside the app', async () => {
+test('the teaser\'s "Collect from X" opens Registrar cobro for that customer, from inside the app', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
-  screen.getByRole('link', { name: 'Cobrar a Ana Pérez' }).click()
+  screen.getByRole('link', { name: 'Collect from Ana Pérez' }).click()
 
   expect(await screen.findByText('cobro de 1')).toBeInTheDocument()
   expect(screen.getByText('desde la app')).toBeInTheDocument()
 })
 
-test('"Cobrar" carries the cobro icon, hidden from assistive technology, and keeps its name', async () => {
+test('"Collect" carries the cobro icon, hidden from assistive technology, and keeps its name', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
-  const link = screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  const link = screen.getByRole('link', { name: 'Collect from Ana Pérez' })
   expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(link).toHaveTextContent('Cobrar')
+  expect(link).toHaveTextContent('Collect')
 })
 
 test('the empty-state line the screen renders is the registered binding and fits its limit', async () => {
@@ -410,12 +410,12 @@ test('the empty-state line the screen renders is the registered binding and fits
   expect((await screen.findByText(EMPTY_DETAIL)).textContent?.length).toBeLessThanOrEqual(LIMITS.emptyLine)
 })
 
-test('tapping "Te deben" opens Clientes, where the debtors section is', async () => {
+test('tapping "Owed to you" opens Clientes, where the debtors section is', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
-  screen.getByRole('link', { name: 'Te deben' }).click()
+  screen.getByRole('link', { name: 'Owed to you' }).click()
 
   expect(await screen.findByText('pantalla clientes')).toBeInTheDocument()
 })
@@ -429,7 +429,7 @@ test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
   renderInicio()
 
   expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: 'Te deben' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
 
 test('stock rows: name, grams, status and days left, in the API\'s own order, with no total', async () => {
@@ -624,7 +624,7 @@ test('the Onboarding notice goes once the Onboarding is over', async () => {
   expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
 })
 
-test('tapping the finish notice sends advance, and "Listo" opens only from an answer with over: true', async () => {
+test('tapping the finish notice sends advance, and "Done" opens only from an answer with over: true', async () => {
   advanced = { ...FINISH, over: true, resume: null }
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
   renderInicio()
@@ -635,7 +635,7 @@ test('tapping the finish notice sends advance, and "Listo" opens only from an an
   expect(calls).toEqual(['GET /onboarding-progress', 'POST /onboarding-progress/advance'])
 })
 
-test('tapping the finish notice when advance answers over: false does not draw "Listo"', async () => {
+test('tapping the finish notice when advance answers over: false does not draw "Done"', async () => {
   advanced = { ...MID_ONBOARDING }
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
   renderInicio()
@@ -742,7 +742,7 @@ test('the same notices sit above Semana and Mes', async () => {
   renderInicio()
   await screen.findByText('Vendiste hoy')
 
-  screen.getByRole('button', { name: 'Mes' }).click()
+  screen.getByRole('button', { name: 'Month' }).click()
 
   await screen.findByText('Vendiste este mes')
   expect(screen.getByRole('list', { name: 'Para arrancar' })).toBeInTheDocument()

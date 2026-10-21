@@ -216,7 +216,7 @@ test('with Oscuro stored, Entrar, the invitation screen and the reset screen are
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 
   await page.goto(newBusinessInvitationUrl())
-  await expect(page.getByLabel('Nombre del negocio')).toBeVisible()
+  await expect(page.getByLabel('Business name')).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 

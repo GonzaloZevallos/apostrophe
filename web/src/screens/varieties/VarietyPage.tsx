@@ -121,7 +121,7 @@ function VarietyPageView({
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
-  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: COMMON_TEXT.variedades })
+  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: COMMON_TEXT.varieties })
   const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const archivedStockQuery = useQuery({
     queryKey: keys.archivedStock(),
@@ -149,7 +149,7 @@ function VarietyPageView({
 
   const failure = varietyQuery.error ?? pricesQuery.error ?? stockQuery.error ?? archivedCatalogQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
-    return <GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />
+    return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
   }
   if (failure !== null) {
     return <Card>{failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Card>
@@ -201,7 +201,7 @@ function VarietyPageView({
             <p className="variedad-resumen variedad-resumen--archivada">
               {formatGrams(row.grams)}
               {' · '}
-              {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.n0XG(formatMoney(variety.current_price.list_price))}
+              {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
             </p>
             <div className="variedad-marcas">
               <Insignia>{VARIETIES_TEXT.archivada}</Insignia>
@@ -215,7 +215,7 @@ function VarietyPageView({
             {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_SEPARATOR}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
             {row.days_left !== null && <>{OUT_OF_DATE_SEPARATOR}{row.days_left}{VARIETIES_TEXT.dias}</>}
             {' · '}
-            {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.n0XG(formatMoney(variety.current_price.list_price))}
+            {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
           </p>
         )}
 
@@ -265,10 +265,10 @@ function VarietyPageView({
               {VARIETIES_TEXT.entrada2}
             </BotonLink>
             <BotonLink variant="secondary" icon="precio" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
-              {COMMON_TEXT.nuevoPrecio}
+              {COMMON_TEXT.newPrice}
             </BotonLink>
             <BotonLink variant="secondary" icon="salidaStock" to={withdrawalNewFor(varietyId)}>
-              {COMMON_TEXT.sacarDelStock}
+              {COMMON_TEXT.takeFromStock}
             </BotonLink>
           </div>
         )}
@@ -300,10 +300,10 @@ function VarietyPageView({
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question={COMMON_TEXT.descartasElCambio}
+          question={COMMON_TEXT.discardTheChange}
           detail={DISCARD_DETAIL}
-          keepLabel={COMMON_TEXT.noSeguiEscribiendo}
-          discardLabel={COMMON_TEXT.siDescartalo}
+          keepLabel={COMMON_TEXT.noKeepTyping}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </main>

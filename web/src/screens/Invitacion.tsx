@@ -169,7 +169,7 @@ export default function Invitacion() {
       <form className="formulario" onSubmit={onSubmit}>
         {isNewBusiness && (
           <label className="campo">
-            <span className="campo__rotulo">{COMMON_TEXT.nombreDelNegocio}</span>
+            <span className="campo__rotulo">{COMMON_TEXT.businessName}</span>
             <input
               className="campo__input"
               type="text"

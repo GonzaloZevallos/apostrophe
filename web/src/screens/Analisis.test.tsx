@@ -137,16 +137,16 @@ test('month navigation requests the previous month and disables at the bounds', 
 
   await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
   // The fixture's `next` is null: October is the current month, nothing comes after.
-  expect(screen.getByRole('button', { name: 'Mes siguiente' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Next month' })).toBeDisabled()
 
-  await user.click(screen.getByRole('button', { name: 'Mes anterior' }))
+  await user.click(screen.getByRole('button', { name: 'Previous month' }))
   expect(requested).toContain('/analysis?month=2026-09')
 })
 
 test('the computer table carries headers, the margin stack, pending marks and the best/current week', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
 
-  const table = (await screen.findAllByText('Variedad')).find(
+  const table = (await screen.findAllByText('Variety')).find(
     (node) => node.closest('table') !== null,
   )
   expect(table).not.toBeUndefined()
@@ -197,7 +197,7 @@ test('the computer table carries headers, the margin stack, pending marks and th
   expect(marginSpans[0]).toHaveTextContent('y 2,5 g sin costo')
   expect(marginSpans[1]).toHaveTextContent('40%')
 
-  const weekTables = (await screen.findAllByText('Semana')).map((node) => node.closest('table'))
+  const weekTables = (await screen.findAllByText('Week')).map((node) => node.closest('table'))
   const weekTable = weekTables.find((t) => t !== null) as HTMLElement
   // Drop the header row and each row's cost sub-row.
   const rows = within(weekTable)
@@ -209,11 +209,11 @@ test('the computer table carries headers, the margin stack, pending marks and th
   expect((lastRow as HTMLElement).className).toContain('analisis__fila-actual')
   expect(within(lastRow as HTMLElement).getByText(BEST_WEEK_TABLE_MARK)).toBeInTheDocument()
 
-  const monthHeaders = await screen.findAllByText('Mes')
+  const monthHeaders = await screen.findAllByText('Month')
   const monthTable = monthHeaders
     .map((node) => node.closest('table'))
     .find((t) => t !== null) as HTMLElement
-  expect(within(monthTable).getByText('Caja')).toBeInTheDocument()
+  expect(within(monthTable).getByText('Cash')).toBeInTheDocument()
 })
 
 test('"Ninguna se destacó" shows in the week table when every week is $0', async () => {
@@ -230,7 +230,7 @@ test('"Ninguna se destacó" shows in the week table when every week is $0', asyn
   expect(await screen.findByText(NO_BEST_WEEK_LINE)).toBeInTheDocument()
 })
 
-test('month navigation disables "Mes anterior" when there is no earlier month', async () => {
+test('month navigation disables "Previous month" when there is no earlier month', async () => {
   // The chosen month is already the first record's own month: `previous` is null,
   // same shape `GET /analysis` would answer for a business that far back.
   const firstMonthFixture = {
@@ -240,7 +240,7 @@ test('month navigation disables "Mes anterior" when there is no earlier month', 
   renderAnalisis(async () => jsonResponse(200, firstMonthFixture))
 
   await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
-  expect(screen.getByRole('button', { name: 'Mes anterior' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Previous month' })).toBeDisabled()
 })
 
 test('Promoción and Consumo propio show apart from Faltante de stock, each with only its own pending grams', async () => {

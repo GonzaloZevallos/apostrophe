@@ -63,7 +63,7 @@ test('back with Asignar cliente open closes only the sheet and stays on the deta
   expect(screen.getByRole('button', { name: 'Asignar cliente' })).toBeInTheDocument()
 })
 
-test('"Cerrar" on the sheet is the same move as back', async () => {
+test('"Close" on the sheet is the same move as back', async () => {
   const user = userEvent.setup()
   const router = createMemoryRouter([{ path: SALE, element: <VentaDetalle /> }], {
     initialEntries: [pathTo(SALE, { id: 10 })],
@@ -77,7 +77,7 @@ test('"Cerrar" on the sheet is the same move as back', async () => {
   )
 
   await user.click(await screen.findByRole('button', { name: 'Asignar cliente' }))
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(screen.queryByText('Elegir cliente')).not.toBeInTheDocument()
   expect(sheetDepth(router.state.location.state)).toBe(0)

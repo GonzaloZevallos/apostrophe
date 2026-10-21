@@ -110,30 +110,30 @@ async function settled(): Promise<void> {
 }
 
 const CARDS: [string, string, string][] = [
-  ['a customer', pathTo(CUSTOMER, { id: 1 }), '‹ Clientes'],
-  ['a live variety', pathTo(VARIETY, { id: 1 }), '‹ Variedades'],
-  ['an archived variety', pathTo(VARIETY, { id: 2 }), '‹ Archivadas'],
-  ['Archivadas', ARCHIVED_VARIETIES, '‹ Variedades'],
-  ['Catálogo', CATALOG, '‹ Variedades'],
-  ['Todas las entradas', STOCK, '‹ Variedades'],
+  ['a customer', pathTo(CUSTOMER, { id: 1 }), '‹ Customers'],
+  ['a live variety', pathTo(VARIETY, { id: 1 }), '‹ Varieties'],
+  ['an archived variety', pathTo(VARIETY, { id: 2 }), '‹ Archived'],
+  ['Archived', ARCHIVED_VARIETIES, '‹ Varieties'],
+  ['Catalog', CATALOG, '‹ Varieties'],
+  ['All entries', STOCK, '‹ Varieties'],
   ["a variety's prices", pathTo(VARIETY_PRICES, { id: 1 }), '‹ 24K Gold'],
   ["a variety's entries", pathTo(VARIETY_ENTRIES, { id: 1 }), '‹ 24K Gold'],
-  ["a withdrawal's detail", pathTo(WITHDRAWAL, { id: 1 }), '‹ Variedades'],
-  ['a sale', pathTo(SALE, { id: 1 }), '‹ Ventas'],
-  ['Configuración', SETTINGS, '‹ Más'],
+  ["a withdrawal's detail", pathTo(WITHDRAWAL, { id: 1 }), '‹ Varieties'],
+  ['a sale', pathTo(SALE, { id: 1 }), '‹ Sales'],
+  ['Settings', SETTINGS, '‹ More'],
 ]
 
 describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
   test.each(CARDS)('%s shows exactly one "‹", the shell\'s', async (_name, path, card) => {
     viewport.current = size
     // On a computer `/varieties/archived` replaces itself with the first archived variety once
-    // the list is in (ArchivedIndex), so the card that settles is that variety's: "‹ Archivadas".
-    const label = size === 'computer' && path === ARCHIVED_VARIETIES ? '‹ Archivadas' : card
+    // the list is in (ArchivedIndex), so the card that settles is that variety's: "‹ Archived".
+    const label = size === 'computer' && path === ARCHIVED_VARIETIES ? '‹ Archived' : card
     await open(path)
     await settled()
 
-    // The label settles with the record (an archived variety first reads "‹ Variedades").
-    if (size === 'computer' && label === '‹ Más') expect(arrows()).toHaveLength(1)
+    // The label settles with the record (an archived variety first reads "‹ Varieties").
+    if (size === 'computer' && label === '‹ More') expect(arrows()).toHaveLength(1)
     else await waitFor(() => expect(arrows()).toEqual([label]))
     expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1)
     expect(backControls()).toHaveLength(1)

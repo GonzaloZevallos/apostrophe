@@ -1,6 +1,7 @@
 /**
  * The keyed copy module (ADR-0049): `es.snapshot.json` — the frozen `{key: Spanish value}`
- * of this move — still resolves key by key, so no word changed while the texts moved here.
+ * of this move — still resolves key by key; a file still marked es holds its Spanish value,
+ * one marked en holds another text (`architecture/copyLanguage.test.ts` judges it).
  * The language of each file and the one home of each value are checked under `architecture/`.
  */
 
@@ -37,8 +38,12 @@ function resolve(modules: Record<string, CopyFile>, key: string): string | undef
 }
 
 describe('the copy files', () => {
-  test('every snapshot key still resolves to its Spanish value', () => {
-    const wrong = Object.entries(snapshot).filter(([key, value]) => resolve(files, key) !== value)
+  test('every snapshot key still resolves, to its Spanish value while its file is marked es', () => {
+    const wrong = Object.entries(snapshot).filter(([key, value]) => {
+      const found = resolve(files, key)
+      const translated = files[`/src/copy/${key.split('.')[0] ?? ''}.ts`]?.LANGUAGE === 'en'
+      return found === undefined || (!translated && found !== value)
+    })
     expect(wrong).toEqual([])
   })
 

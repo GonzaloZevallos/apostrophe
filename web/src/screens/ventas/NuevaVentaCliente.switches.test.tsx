@@ -51,7 +51,7 @@ test('Elegir cliente shows a VIP customer\'s mark and the new-customer form its 
   const user = await openChooser(true)
   expect(await screen.findByText('VIP')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
+  await user.click(screen.getByRole('button', { name: 'New customer' }))
 
   expect(await screen.findByLabelText('VIP')).toBeInTheDocument()
 })
@@ -61,20 +61,20 @@ test('Elegir cliente shows no VIP mark and the new-customer form no VIP field wh
   expect(await screen.findByText('Ana VIP')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
+  await user.click(screen.getByRole('button', { name: 'New customer' }))
 
-  expect(await screen.findByLabelText('Nombre')).toBeInTheDocument()
+  expect(await screen.findByLabelText('Name')).toBeInTheDocument()
   expect(screen.queryByLabelText('VIP')).not.toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
 test('the new-customer form of Elegir cliente has Nombre required, a clearable optional phone and no Canal field', async () => {
   const user = await openChooser(false)
-  await user.click(await screen.findByRole('button', { name: 'Nuevo cliente' }))
+  await user.click(await screen.findByRole('button', { name: 'New customer' }))
 
-  expect(await screen.findByLabelText('Nombre')).toBeRequired()
+  expect(await screen.findByLabelText('Name')).toBeRequired()
   expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
-  const sheet = screen.getByLabelText('Nombre').closest('form')
+  const sheet = screen.getByLabelText('Name').closest('form')
   expect(sheet).not.toBeNull()
   expect(within(sheet as HTMLElement).queryByRole('radio')).not.toBeInTheDocument()
   expect(screen.queryByText(/canal|whatsapp|telegram/i)).not.toBeInTheDocument()

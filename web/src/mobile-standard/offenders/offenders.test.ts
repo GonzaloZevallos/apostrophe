@@ -105,7 +105,7 @@ describe('diffOffenders', () => {
 
   test('matches on all five fields: any one differing is a new offender and a fixed entry', () => {
     const variants: Partial<Violation>[] = [
-      { screen: 'Inicio' },
+      { screen: 'Home' },
       { size: '375x812' },
       { theme: 'oscuro' },
       { rule: 'input-font' },
@@ -130,7 +130,7 @@ describe('offendersOfCell', () => {
     const mine = offendersOfCell(cells, { screen: 'Entrar', size: '375x812', theme: 'oscuro' })
     expect(mine).toHaveLength(1)
     expect(mine[0]).toMatchObject({ size: '375x812', theme: 'oscuro' })
-    expect(offendersOfCell(cells, { screen: 'Inicio', size: '375x812', theme: 'oscuro' })).toEqual([])
+    expect(offendersOfCell(cells, { screen: 'Home', size: '375x812', theme: 'oscuro' })).toEqual([])
   })
 })
 

@@ -121,7 +121,7 @@ test.describe('the walk rejects what it cannot reach', () => {
   test('a reachable screen is not reported', async ({ browser }) => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
-    const screen = { ...PROBE, steps: [{ click: 'Semana' }] }
+    const screen = { ...PROBE, steps: [{ click: 'Week' }] }
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()
   })
@@ -146,7 +146,7 @@ test.describe('the states the walk adds', () => {
     const screen = asScreen({
       screen: 'Probe',
       route: SALE_NEW,
-      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { press: 'Cerrar' }],
+      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { press: 'Close' }],
       visible: '¿Descartás la venta?',
     })
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])

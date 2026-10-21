@@ -107,21 +107,21 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
   const failure = varietyQuery.error ?? settingsQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return (
-      <PriceFrame dialog={dialog} label={COMMON_TEXT.nuevoPrecio} onBackdrop={leave} form={<GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />} />
+      <PriceFrame dialog={dialog} label={COMMON_TEXT.newPrice} onBackdrop={leave} form={<GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />} />
     )
   }
   if (failure !== null) {
     return (
       <PriceFrame
         dialog={dialog}
-        label={COMMON_TEXT.nuevoPrecio}
+        label={COMMON_TEXT.newPrice}
         onBackdrop={leave}
         form={failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
       />
     )
   }
   if (varietyQuery.data === undefined || settingsQuery.data === undefined) {
-    return <PriceFrame dialog={dialog} label={COMMON_TEXT.nuevoPrecio} onBackdrop={leave} form={<Loading />} />
+    return <PriceFrame dialog={dialog} label={COMMON_TEXT.newPrice} onBackdrop={leave} form={<Loading />} />
   }
 
   return (
@@ -151,9 +151,9 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
         <LeaveConfirm
           blocker={blocker}
           question={VARIETIES_TEXT.descartasElPrecio}
-          detail={COMMON_TEXT.sePierdeLoQue}
-          keepLabel={COMMON_TEXT.noSeguiCargando}
-          discardLabel={COMMON_TEXT.siDescartalo}
+          detail={COMMON_TEXT.losesWhatYouEntered}
+          keepLabel={COMMON_TEXT.noKeepEntering}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </PriceFrame>

@@ -16,10 +16,10 @@ test('hides the password until Mostrar is pressed, and Ocultar hides it again', 
   const input = screen.getByLabelText('Contraseña nueva')
   expect(input).toHaveAttribute('type', 'password')
 
-  await user.click(screen.getByRole('button', { name: 'Mostrar' }))
+  await user.click(screen.getByRole('button', { name: 'Show' }))
   expect(input).toHaveAttribute('type', 'text')
 
-  await user.click(screen.getByRole('button', { name: 'Ocultar' }))
+  await user.click(screen.getByRole('button', { name: 'Hide' }))
   expect(input).toHaveAttribute('type', 'password')
 })
 

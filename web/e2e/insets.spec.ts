@@ -113,24 +113,24 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   await signUpNewBusiness(page, { businessName: `Flores del Borde ${uniqueTag()}`, email: `duena-bordes-${uniqueTag()}@example.com` })
 
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^Precio de lista/).fill('1000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill('+5491155550077')
-  await page.getByLabel('Nombre').fill('Lucía Borde')
+  await page.getByLabel('Name').fill('Lucía Borde')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Nueva venta a Lucía Borde' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
   const saleUrl = new URL(page.url()).pathname
@@ -187,12 +187,12 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
 
     // Registrar cobro, opened from Clientes' "Cobrar a": a form screen, a modal on a computer.
     await page.goto(CUSTOMERS)
-    await page.getByRole('link', { name: 'Cobrar a Lucía Borde' }).first().click()
+    await page.getByRole('link', { name: 'Collect from Lucía Borde' }).first().click()
     await setInsets(page, true)
-    await page.getByRole('button', { name: 'Guardar' }).evaluate((button) => {
+    await page.getByRole('button', { name: 'Save' }).evaluate((button) => {
       for (let el: Element | null = button; el; el = el.parentElement) el.scrollTop = el.scrollHeight
     })
-    expectInside(where('cobro form button'), await box(page, 'button:has-text("Guardar")'), viewport)
+    expectInside(where('cobro form button'), await box(page, 'button:has-text("Save")'), viewport)
 
     // A toast: the offline notice is the one that needs no timing.
     await page.context().setOffline(true)

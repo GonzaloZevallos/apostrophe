@@ -34,7 +34,7 @@ import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED, SETTINGS_TEXT } from '../../copy
 import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
 
-const TITLE = COMMON_TEXT.precios
+const TITLE = COMMON_TEXT.prices
 
 export const PAST_SALES_LINE =
   SETTINGS_TEXT.lasVentasYaHechas
@@ -43,9 +43,9 @@ export const VIP_HELP_LINE =
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasLosPrecios,
-  detail: COMMON_TEXT.sePierdeLoQue,
-  keepLabel: COMMON_TEXT.noSeguiEditando,
-  discardLabel: COMMON_TEXT.siDescartalo,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function PricingGroup() {
@@ -116,7 +116,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
       )}
       <form className="formulario" onSubmit={onSave}>
         <OpcionInterruptor
-          label={COMMON_TEXT.precioPorCantidad}
+          label={COMMON_TEXT.bulkPrice}
           checked={bulk}
           onChange={(next) => {
             setBulk(next)

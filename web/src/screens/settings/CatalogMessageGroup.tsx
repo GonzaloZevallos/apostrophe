@@ -17,13 +17,13 @@ import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
 import { SETTINGS_TEXT } from '../../copy/settings'
 
-const TITLE = COMMON_TEXT.mensajeDelCatalogo
+const TITLE = COMMON_TEXT.catalogMessage
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasElMensaje,
-  detail: COMMON_TEXT.sePierdeLoQue,
-  keepLabel: COMMON_TEXT.noSeguiEditando,
-  discardLabel: COMMON_TEXT.siDescartalo,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function CatalogMessageGroup() {

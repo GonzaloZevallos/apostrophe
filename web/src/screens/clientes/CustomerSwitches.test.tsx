@@ -17,7 +17,7 @@ import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 import ClienteForm from './ClienteForm'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -126,7 +126,7 @@ test('the customer form shows the VIP field only while Clientes VIP is on', asyn
 test('the customer form has no VIP field while Clientes VIP is off', async () => {
   stub(false, {})
   renderAt(CUSTOMER_NEW)
-  expect(await screen.findByText('Nombre')).toBeInTheDocument()
+  expect(await screen.findByText('Name')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 

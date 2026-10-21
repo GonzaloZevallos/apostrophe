@@ -37,18 +37,18 @@ async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
   const counter: Counter = { taps: 0 }
   const here = new URL(page.url()).pathname
   if (here === EXPENSES) {
-    await tap(counter, page.getByRole('link', { name: 'Cargar gasto' }))
+    await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   } else if (here === MORE) {
-    await tap(counter, page.getByRole('link', { name: /^\+ Cargar gasto/ }))
+    await tap(counter, page.getByRole('link', { name: /^\+ Add expense/ }))
   } else if (computer) {
-    await tap(counter, page.locator('.riel-lateral').getByRole('link', { name: 'Gastos' }))
-    await tap(counter, page.getByRole('link', { name: 'Cargar gasto' }))
+    await tap(counter, page.locator('.riel-lateral').getByRole('link', { name: 'Expenses' }))
+    await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   } else {
-    await tap(counter, page.locator('.bar-inferior').getByRole('link', { name: 'Más' }))
-    await tap(counter, page.getByRole('link', { name: /^\+ Cargar gasto/ }))
+    await tap(counter, page.locator('.bar-inferior').getByRole('link', { name: 'More' }))
+    await tap(counter, page.getByRole('link', { name: /^\+ Add expense/ }))
   }
   await expectPath(page, EXPENSE_NEW)
-  await expect(page.getByRole('button', { name: 'Cerrar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
   return counter.taps
 }
 
@@ -93,19 +93,19 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await signUpNewBusiness(page, { businessName: `Flores de Más ${uniqueTag()}`, email: `duena-mas-${uniqueTag()}@example.com` })
 
   await page.goto(MORE)
-  await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
-  await page.getByRole('button', { name: 'Cerrar' }).click()
+  await page.getByRole('link', { name: /^\+ Add expense/ }).click()
+  await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, MORE)
 
-  await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
-  await page.getByRole('combobox', { name: 'Categoría' }).selectOption({ label: 'Packaging' })
-  await page.getByLabel('Monto').fill('3200')
+  await page.getByRole('link', { name: /^\+ Add expense/ }).click()
+  await page.getByRole('combobox', { name: 'Category' }).selectOption({ label: 'Packaging' })
+  await page.getByLabel('Amount').fill('3200')
   await page.getByLabel('Detalle').fill('Cajas de cartón')
   await page.getByRole('button', { name: 'Guardá el gasto' }).click()
   await expectPath(page, MORE)
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }).click()
   await expect(page.getByText('Cajas de cartón')).toBeVisible()
   expect(consoleMessages).toEqual([])
 })
@@ -149,11 +149,11 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
         // stay roots (the others) are measured below.
         await settled(page, computer)
         await expect(
-          page.locator('.riel-lateral').getByRole('link', { name: /Nueva venta$/ }),
+          page.locator('.riel-lateral').getByRole('link', { name: /New sale$/ }),
           label,
         ).toHaveCount(0)
       } else {
-        await tap(counter, page.getByRole('link', { name: /Nueva venta$/ }).filter({ visible: true }).first())
+        await tap(counter, page.getByRole('link', { name: /New sale$/ }).filter({ visible: true }).first())
         await expectPath(page, SALE_NEW)
         measure(`sale ${root}`, device, counter.taps)
       }
@@ -161,27 +161,27 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       if (root === HOME || root === CUSTOMERS) {
         await page.goto(root)
         counter = { taps: 0 }
-        await tap(counter, page.getByRole('link', { name: 'Cobrar a Carla Toques' }).first())
+        await tap(counter, page.getByRole('link', { name: 'Collect from Carla Toques' }).first())
         await expectPath(page, CUSTOMER_PAYMENT)
-        await expect(page.getByRole('button', { name: 'Cerrar' }), label).toBeVisible()
+        await expect(page.getByRole('button', { name: 'Close' }), label).toBeVisible()
         measure(`payment ${root}`, device, counter.taps)
       }
 
       // Collecting from any tab root: Clientes through its tab (none from Clientes itself),
-      // then "Cobrar a <name>" on the debtor's row. Two taps at most, never more on a computer.
+      // then "Collect from <name>" on the debtor's row. Two taps at most, never more on a computer.
       await page.goto(root)
       counter = { taps: 0 }
-      if (root !== CUSTOMERS) await viaTab(page, counter, computer, 'Clientes')
+      if (root !== CUSTOMERS) await viaTab(page, counter, computer, 'Customers')
       await expectPath(page, CUSTOMERS)
-      await tap(counter, page.getByRole('link', { name: 'Cobrar a Carla Toques' }).first())
+      await tap(counter, page.getByRole('link', { name: 'Collect from Carla Toques' }).first())
       await expectPath(page, CUSTOMER_PAYMENT)
-      await expect(page.getByRole('button', { name: 'Cerrar' }), label).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Close' }), label).toBeVisible()
       await expect(page.locator('.cobro__cliente'), label).toContainText('Carla Toques')
       measure(`collect ${root}`, device, counter.taps)
 
       await page.goto(root)
       counter = { taps: 0 }
-      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Varieties')
       await settled(page, computer)
       await tap(counter, page.getByRole('link', { name: 'Mandar catálogo' }))
       await expectPath(page, CATALOG)
@@ -189,7 +189,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
       await page.goto(root)
       counter = { taps: 0 }
-      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Varieties')
       await settled(page, computer)
       await tap(counter, page.getByRole('link', { name: '+ Entrada de stock' }))
       await expectPath(page, STOCK_ENTRY_NEW)

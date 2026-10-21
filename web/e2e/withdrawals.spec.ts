@@ -27,23 +27,23 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // A variety with one lot: 50 g for $ 20.000.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Entrada de stock' }).click()
-  await page.getByLabel('Gramos').fill('50')
-  await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('20000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
 
   // From Más: a promotion of 5 g. The reason has no default, so saving waits for it.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Sacar del stock/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Take from stock/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === WITHDRAWAL_NEW)
-  await expect(page.getByRole('button', { name: 'Cerrar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
   await page.getByLabel('Variedad 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Gramos 1', { exact: true }).fill('5')
   await expect(page.getByRole('button', { name: 'Guardá el retiro' })).toBeDisabled()
@@ -55,8 +55,8 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page.getByText('−5 g')).toBeVisible()
-  // The variety's own "Sacar del stock" (the list beside it carries one with no variety).
-  await page.locator(`a[href*="${WITHDRAWAL_NEW}?variety="]`, { hasText: 'Sacar del stock' }).click()
+  // The variety's own "Take from stock" (the list beside it carries one with no variety).
+  await page.locator(`a[href*="${WITHDRAWAL_NEW}?variety="]`, { hasText: 'Take from stock' }).click()
   await expect(page.getByLabel('Variedad 1', { exact: true })).toHaveValue(/\d+/)
   await page.getByRole('button', { name: 'Consumo propio', exact: true }).click()
   await page.getByLabel('Gramos 1', { exact: true }).fill('2')
@@ -66,7 +66,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // A third one, a promotion of 1 g, to delete.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Sacar del stock/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Take from stock/ }).click()
   await page.getByLabel('Variedad 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Gramos 1', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Promoción', exact: true }).click()
@@ -81,7 +81,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await page.getByRole('button', { name: 'Borrar' }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
   await expect(page.getByText(/Vuelven 1 g al stock\./)).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, borralo' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Retiro eliminado')).toBeVisible()
 
   // Edit the 5 g promotion down to 4 g; saving is confirmed first.
@@ -89,9 +89,9 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page.getByRole('link', { name: /−1 g/ })).toHaveCount(0)
   await page.getByRole('link', { name: /−5 g/ }).click()
-  await page.getByRole('link', { name: 'Editar' }).click()
+  await page.getByRole('link', { name: 'Edit' }).click()
   await page.getByLabel('Gramos 1', { exact: true }).fill('4')
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
   await expect(page.getByText('Retiro guardado')).toBeVisible()
 
@@ -101,8 +101,8 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await expect(page.getByText('Promoción')).toHaveCount(0)
   await expect(page.getByText('Consumo propio')).toHaveCount(0)
   for (const [tab, heading] of [
-    ['Semana', 'Vendiste esta semana'],
-    ['Mes', 'Vendiste este mes'],
+    ['Week', 'Vendiste esta semana'],
+    ['Month', 'Vendiste este mes'],
   ] as const) {
     await page.getByRole('button', { name: tab, exact: true }).click()
     await expect(page.getByText(heading)).toBeVisible()
@@ -117,7 +117,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // Análisis: the same two figures, apart from Faltante de stock.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Analysis/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === ANALYSIS)
   await expect(page.getByText('Promoción $ 1.600').first()).toBeVisible()
   await expect(page.getByText('Consumo propio $ 800').first()).toBeVisible()

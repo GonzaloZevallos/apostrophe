@@ -35,11 +35,11 @@ import { COMMON_TEXT } from '../copy/common'
  * it carries Deshacer, so it is the separate `'saved'` marker below, never a
  * plain toast string. */
 export const TOAST_MESSAGES = [
-  COMMON_TEXT.clienteGuardado,
-  COMMON_TEXT.ventaEliminada,
-  COMMON_TEXT.ventaEliminadaLosGramos,
-  COMMON_TEXT.entradaGuardada,
-  COMMON_TEXT.entradaEliminada,
+  COMMON_TEXT.customerSaved,
+  COMMON_TEXT.saleDeleted,
+  COMMON_TEXT.saleDeletedGramsBack,
+  COMMON_TEXT.entrySaved,
+  COMMON_TEXT.entryDeleted,
 ] as const
 
 export type ToastMessage = (typeof TOAST_MESSAGES)[number]
@@ -51,7 +51,7 @@ function isToastMessage(value: unknown): value is ToastMessage {
 /** The fixed text `VentaDetalle` announces alongside its own Deshacer button
  * (plan, invariants: "Venta guardada" is the only success notice with
  * Deshacer) — exported so that screen never invents the copy itself. */
-export const SALE_SAVED = COMMON_TEXT.ventaGuardada
+export const SALE_SAVED = COMMON_TEXT.saleSaved
 
 export interface Feedback {
   kind: 'toast' | 'notice' | 'saved'

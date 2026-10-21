@@ -1,6 +1,6 @@
 /**
  * `Loading` in every screen body that rendered blank while its query waits
- * (`Estados`, "Cargando"): each screen is rendered with `fetch` held pending, so
+ * (`Estados`, "Loading"): each screen is rendered with `fetch` held pending, so
  * its query never settles, and the skeleton must stand where the content will go.
  */
 
@@ -35,7 +35,7 @@ import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 
 // The gated layout's providers: a screen may raise a flash (`GatedLayout`).
 function Context() {
@@ -102,7 +102,7 @@ interface Case {
 }
 
 const SCREENS: Case[] = [
-  { name: 'Ventas', element: () => <Ventas />, route: SALES, path: SALES },
+  { name: 'Sales', element: () => <Ventas />, route: SALES, path: SALES },
   { name: 'ClienteFicha', element: () => <ClienteFicha />, route: pathTo(CUSTOMER, { id: 7 }), path: CUSTOMER },
   {
     name: 'ClienteForm editing',
@@ -111,8 +111,8 @@ const SCREENS: Case[] = [
     path: CUSTOMER_EDIT,
   },
   { name: 'VentaDetalle', element: () => <VentaDetalle />, route: pathTo(SALE, { id: 9 }), path: SALE, dataRouter: true },
-  { name: 'Gastos', element: () => <Gastos />, route: EXPENSES, path: EXPENSES },
-  { name: 'Todas las entradas', element: () => <EntriesList />, route: STOCK, path: STOCK },
+  { name: 'Expenses', element: () => <Gastos />, route: EXPENSES, path: EXPENSES },
+  { name: 'All entries', element: () => <EntriesList />, route: STOCK, path: STOCK },
   {
     name: 'EntradaStock editing',
     element: () => <EntradaStock mode="editar" />,
@@ -128,7 +128,7 @@ test.each(SCREENS)('$name shows the skeleton while its query is pending', async 
     renderPending(screenCase.element(), screenCase.route, screenCase.path)
   }
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
 })
 
 const SETTINGS_GROUPS: { name: string; element: () => ReactElement; path: string }[] = [
@@ -150,14 +150,14 @@ const SETTINGS_GROUPS: { name: string; element: () => ReactElement; path: string
 test.each(SETTINGS_GROUPS)('$name shows the skeleton while its query is pending', async (group) => {
   renderPendingInDataRouter(group.element(), group.path)
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
 })
 
 test('a screen opened offline shows the skeleton under the offline banner, without throwing', async () => {
   vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
   renderPending(<Ventas />, SALES, SALES)
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   expect(screen.getByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
 })
 

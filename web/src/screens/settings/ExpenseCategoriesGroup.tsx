@@ -16,15 +16,15 @@ export { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasLaCategoria,
-  detail: COMMON_TEXT.sePierdeLoQue,
-  keepLabel: COMMON_TEXT.noSeguiEditando,
-  discardLabel: COMMON_TEXT.siDescartala,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function ExpenseCategoriesGroup() {
   const [dirty, setDirty] = useState(false)
   return (
-    <SettingsGroup title={COMMON_TEXT.categoriasDeGastos} dirty={dirty} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.expenseCategories} dirty={dirty} leave={LEAVE}>
       <ExpenseCategoriesEditor onDirtyChange={setDirty} />
     </SettingsGroup>
   )
