@@ -55,7 +55,6 @@ export const LONG_REFUSALS: readonly string[] = []
  * fails for a code with none): a code a screen words more closely points at that text, a gone
  * code at the gone notice, any other at the generic one. */
 export const REFUSAL_BY_CODE = {
-  RequestInvalid: GENERIC_REFUSAL,
   'account.rule_broken': GENERIC_REFUSAL,
   'account.email_invalid': GENERIC_REFUSAL,
   'account.business_name_invalid': GENERIC_REFUSAL,

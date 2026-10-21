@@ -135,7 +135,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
     setDirty(next)
   }, [])
 
-  function leave(toast: 'Entrada guardada' | 'Entrada eliminada'): void {
+  function leave(toast: 'Entry saved' | 'Entry deleted'): void {
     disarm()
     flash.armAfterLeaving(toast)
     back()
