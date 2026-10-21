@@ -91,7 +91,7 @@ describe('on a computer', () => {
   })
 })
 
-const DISCARD_QUESTION = '¿Descartás el precio?'
+const DISCARD_QUESTION = 'Discard the price?'
 
 function backdrop(): HTMLElement {
   const frame = document.querySelector<HTMLElement>('.precio-modal')
@@ -103,7 +103,7 @@ describe('on a phone', () => {
   test('the form is a full screen: no dialog, and no pane behind it', async () => {
     renderApp([NEW_PATH], 'phone')
 
-    expect(await screen.findByRole('button', { name: 'Guardá el precio' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Save the price' })).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(document.querySelector('.variedades-paneles__lista')).toBeNull()
     expect(document.querySelector('.variedades-paneles__detalle')).toBeNull()
@@ -114,7 +114,7 @@ describe('on a phone', () => {
   test('Escape does nothing: the phone has no dialog to dismiss', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'phone')
-    await screen.findByRole('button', { name: 'Guardá el precio' })
+    await screen.findByRole('button', { name: 'Save the price' })
 
     await user.keyboard('{Escape}')
 
@@ -134,7 +134,7 @@ describe('leaving an untouched form', () => {
     const warn = vi.spyOn(console, 'warn')
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    await screen.findByLabelText(/^Precio de lista/)
+    await screen.findByLabelText(/^List price/)
 
     await gesture(user)
 
@@ -150,7 +150,7 @@ describe('leaving an untouched form', () => {
   test('a click inside the dialog is not a click on the backdrop', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    await screen.findByLabelText(/^Precio de lista/)
+    await screen.findByLabelText(/^List price/)
     const dialog = screen.getByRole('dialog', { name: 'New price' })
 
     await user.click(within(dialog).getByText('New price'))
@@ -167,7 +167,7 @@ describe('leaving a form with something typed', () => {
   ])('%s asks first, and "No, keep entering" keeps the form with everything typed', async (_name, gesture) => {
     const user = userEvent.setup()
     const { router } = renderApp([VARIETY_PATH, NEW_PATH], 'computer')
-    await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+    await user.type(await screen.findByLabelText(/^List price/), '12000')
 
     await gesture(user)
 
@@ -175,13 +175,13 @@ describe('leaving a form with something typed', () => {
     expect(router.state.location.pathname).toBe(NEW_PATH)
     await user.click(screen.getByRole('button', { name: 'No, keep entering' }))
     expect(screen.queryByText(DISCARD_QUESTION)).not.toBeInTheDocument()
-    expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
+    expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
   })
 
   test('the question is a sibling of the dialog, and a second Escape while it asks does nothing', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+    await user.type(await screen.findByLabelText(/^List price/), '12000')
     const dialog = screen.getByRole('dialog', { name: 'New price' })
 
     await user.keyboard('{Escape}')
@@ -200,7 +200,7 @@ describe('leaving a form with something typed', () => {
   test('"No, keep entering" gives focus back to where it was, or to the title when that is gone', async () => {
     const user = userEvent.setup()
     renderApp([NEW_PATH], 'computer')
-    const field = await screen.findByLabelText(/^Precio de lista/)
+    const field = await screen.findByLabelText(/^List price/)
     await user.type(field, '12000')
     expect(field).toHaveFocus()
 
@@ -219,7 +219,7 @@ describe('leaving a form with something typed', () => {
   test('"Yes, discard it" lands on the variety page', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+    await user.type(await screen.findByLabelText(/^List price/), '12000')
     await user.keyboard('{Escape}')
 
     await user.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
@@ -264,8 +264,8 @@ describe('saving', () => {
           return original(url, init)
         }))(globalThis.fetch),
     )
-    await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-    await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+    await user.type(await screen.findByLabelText(/^List price/), '12000')
+    await user.click(screen.getByRole('button', { name: 'Save the price' }))
 
     await user.keyboard('{Escape}')
     await user.click(backdrop())
@@ -277,7 +277,7 @@ describe('saving', () => {
 
     expect(await screen.findByRole('link', { name: 'New price' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETY_PATH)
-    expect(await screen.findAllByText('Precio guardado')).toHaveLength(1)
+    expect(await screen.findAllByText('Price saved')).toHaveLength(1)
     expect(await screen.findByText('$ 12.000')).toBeInTheDocument()
   })
 
@@ -286,12 +286,12 @@ describe('saving', () => {
     const { router } = renderApp([NEW_PATH], 'computer', {
       'POST /varieties/1/prices': () => jsonResponse(409, { code: 'price_date_taken' }),
     })
-    await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-    await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+    await user.type(await screen.findByLabelText(/^List price/), '12000')
+    await user.click(screen.getByRole('button', { name: 'Save the price' }))
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()
     expect(screen.getByRole('dialog', { name: 'New price' })).toBeInTheDocument()
-    expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
+    expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
     expect(router.state.location.pathname).toBe(NEW_PATH)
   })
 })
@@ -300,18 +300,18 @@ describe('across 900 px', () => {
   test('a chosen day, the open choice and the typed price survive the flip, with the form kept mounted', async () => {
     const user = userEvent.setup()
     renderApp([NEW_PATH], 'computer')
-    await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+    await user.type(await screen.findByLabelText(/^List price/), '12000')
     await user.click(screen.getByRole('button', { name: /^Today 02\/10/ }))
-    fireEvent.change(screen.getByLabelText('Rige desde', { exact: true }), { target: { value: '2026-09-28' } })
+    fireEvent.change(screen.getByLabelText('Effective from', { exact: true }), { target: { value: '2026-09-28' } })
     await user.click(screen.getByRole('button', { name: '28/09' }))
-    const form = screen.getByRole('button', { name: 'Guardá el precio' }).closest('form')
+    const form = screen.getByRole('button', { name: 'Save the price' }).closest('form')
 
     flipViewport('phone')
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Guardá el precio' }).closest('form')).toBe(form)
+    expect(screen.getByRole('button', { name: 'Save the price' }).closest('form')).toBe(form)
     expect(screen.getByRole('button', { name: '28/09' })).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByLabelText('Rige desde', { exact: true })).toHaveValue('2026-09-28')
-    expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
+    expect(screen.getByLabelText('Effective from', { exact: true })).toHaveValue('2026-09-28')
+    expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
   })
 })

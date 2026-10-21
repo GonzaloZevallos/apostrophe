@@ -188,7 +188,7 @@ test('one primary action saves the variety and then its price', async () => {
   const router = renderStep()
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   expect(screen.getAllByRole('button', { name: /Guard|Agreg/ })).toHaveLength(1)
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
@@ -208,12 +208,12 @@ test('a name refusal sends no price request and keeps what was typed', async () 
   renderStep()
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Ya existe una variedad con ese nombre')
   expect(screen.getByLabelText(/^Name/)).toHaveValue('Mango Bomb')
-  expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
+  expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
   expect(calls.filter((call) => call.endsWith('/prices'))).toEqual([])
 })
 
@@ -223,12 +223,12 @@ test('a refused price keeps everything typed, shows on its field, and the retry 
   const router = renderStep()
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent('Revisá los precios cargados')
-  expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
+  expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   expect(screen.getByText('Variedad: Mango Bomb')).toBeInTheDocument()
 
@@ -243,7 +243,7 @@ test('a double tap sends one POST /varieties', async () => {
   renderStep()
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   const save = screen.getByRole('button', { name: 'Guardá la variedad' })
   await user.dblClick(save)
 
@@ -257,12 +257,12 @@ test('the price input keeps its DOM node and value across the variety write and 
   renderStep()
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
-  const price = screen.getByLabelText(/^Precio de lista/)
+  const price = screen.getByLabelText(/^List price/)
   await user.type(price, '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   await screen.findByRole('alert')
-  expect(screen.getByLabelText(/^Precio de lista/)).toBe(price)
+  expect(screen.getByLabelText(/^List price/)).toBe(price)
   expect(price).toHaveValue('12000')
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   expect(bodies['POST /varieties/1/prices']).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
@@ -274,7 +274,7 @@ test('variety saved and price refused, then step 2 and back with no reload: the 
   const router = renderStep()
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await screen.findByRole('alert')
 
@@ -286,7 +286,7 @@ test('variety saved and price refused, then step 2 and back with no reload: the 
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText(/^Precio de lista/), '9000')
+  await user.type(screen.getByLabelText(/^List price/), '9000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
   expect(count('POST /varieties')).toBe(1)
@@ -303,7 +303,7 @@ test('with one variety priced and a second saved with no price, step 1 shows the
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
@@ -321,13 +321,13 @@ test('two unpriced varieties and one priced: the first price save stays on step 
   const router = renderStep()
 
   expect(await screen.findByText('Variedad: Begonia')).toBeInTheDocument()
-  await user.type(screen.getByLabelText(/^Precio de lista/), '5000')
+  await user.type(screen.getByLabelText(/^List price/), '5000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   expect(await screen.findByText('Variedad: Caléndula')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(ONBOARDING_VARIETY)
-  expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '6000')
+  expect(screen.getByLabelText(/^List price/)).toHaveValue('')
+  await user.type(screen.getByLabelText(/^List price/), '6000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
   expect(count('POST /varieties')).toBe(0)
@@ -342,7 +342,7 @@ test('arriving with only a priced variety shows "Hecho" with its name and price;
   expect(await screen.findByText('$ 11.000 x g')).toBeInTheDocument()
   expect(screen.getByText('Hecho')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
-  expect(screen.queryByLabelText(/^Precio de lista/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^List price/)).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Seguir' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
@@ -372,7 +372,7 @@ test('a "Hecho" read that answers no price today refetches the progress and show
   renderStep()
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
-  expect(screen.getByLabelText(/^Precio de lista/)).toBeInTheDocument()
+  expect(screen.getByLabelText(/^List price/)).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
 })
 
@@ -387,7 +387,7 @@ test('the add-another flag opens the empty form, a reload keeps it, and the vari
   expect(router.state.location.state).toMatchObject({ anotherVariety: true })
 
   await user.type(name, 'Begonia')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '5000')
+  await user.type(screen.getByLabelText(/^List price/), '5000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
   // The step-1 entry the add-another opened is now stateless: history back shows "Hecho".
@@ -428,7 +428,7 @@ test('with the frame, the variety saved and a price typed: "Close" asks with the
   renderStep()
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await screen.findByRole('alert')
   await user.click(screen.getByRole('button', { name: 'Close' }))

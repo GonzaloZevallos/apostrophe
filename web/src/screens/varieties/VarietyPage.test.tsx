@@ -140,7 +140,7 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES), element: <main>Pantalla Variedades</main>, handle: { screen: 'varieties' } },
+              { path: relative(VARIETIES), element: <main>Varieties screen</main>, handle: { screen: 'varieties' } },
               {
                 path: relative(VARIETY),
                 element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
@@ -185,13 +185,13 @@ describe('the summary line', () => {
     renderPage(VARIETY_ONE)
 
     const line = await screen.findByText(/24 días/)
-    expect(line).toHaveTextContent('18 g · baja · 24 días · $ 11.000 x g')
+    expect(line).toHaveTextContent('18 g · low · 24 días · $ 11.000 x g')
     expect(screen.getByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
   })
 
   test.each([
-    ['sold_out', { grams: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, '0 g · agotada'],
-    ['no_entries', { grams: 0, status: 'no_entries', days_left: null }, '0 g · sin entradas'],
+    ['sold_out', { grams: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, '0 g · sold out'],
+    ['no_entries', { grams: 0, status: 'no_entries', days_left: null }, '0 g · no entries'],
     ['ok', { grams: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 días'],
   ])('a %s variety', async (_name, patch, expected) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
@@ -206,12 +206,12 @@ describe('the summary line', () => {
     expect(await screen.findByText(/Sin precio: no se puede vender/)).toBeInTheDocument()
   })
 
-  test('a variety left out of the catalog is marked "Oculta" beside its status', async () => {
+  test('a variety left out of the catalog is marked "Hidden" beside its status', async () => {
     const hidden = { ...CATALOG, varieties: [{ ...CATALOG.varieties[0], shown: false, state: 'hidden' }] }
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
-    const line = (await screen.findByText('Oculta')).closest('p')
-    expect(line).toHaveTextContent('18 g · baja · Oculta · 24 días')
+    const line = (await screen.findByText('Hidden')).closest('p')
+    expect(line).toHaveTextContent('18 g · low · Hidden · 24 días')
   })
 })
 
@@ -219,8 +219,8 @@ describe('the icon and text rule', () => {
   test("a live page's actions carry an icon hidden from assistive technology, their names stay the words", async () => {
     renderPage(VARIETY_ONE)
 
-    await screen.findByRole('link', { name: '+ Entrada' })
-    for (const name of ['+ Entrada', 'New price', 'Take from stock']) {
+    await screen.findByRole('link', { name: '+ Entry' })
+    for (const name of ['+ Entry', 'New price', 'Take from stock']) {
       const link = screen.getByRole('link', { name })
       expect(link.querySelectorAll('svg')).toHaveLength(1)
       expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
@@ -230,7 +230,7 @@ describe('the icon and text rule', () => {
   test("a price row's delete is the icon-only delete: no word, a 44 px class and its current name", async () => {
     renderPage(VARIETY_ONE)
 
-    const deletes = await screen.findAllByRole('button', { name: 'Borrar este precio' })
+    const deletes = await screen.findAllByRole('button', { name: 'Delete this price' })
     expect(deletes.length).toBeGreaterThan(0)
     for (const button of deletes) {
       expect(button).toHaveClass('boton-icono')
@@ -239,34 +239,34 @@ describe('the icon and text rule', () => {
     }
   })
 
-  test('"Eliminar variedad" is the critical icon + text action with its current word as its name', async () => {
+  test('"Delete variety" is the critical icon + text action with its current word as its name', async () => {
     renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
 
-    const button = await screen.findByRole('button', { name: 'Eliminar variedad' })
+    const button = await screen.findByRole('button', { name: 'Delete variety' })
     expect(button).toHaveClass('boton--critico')
     expect(button).not.toHaveClass('boton-icono')
-    expect(button.textContent).toBe('Eliminar variedad')
+    expect(button.textContent).toBe('Delete variety')
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   })
 
-  test('what the live page keeps as text is only its links and the switch; Archivar variedad has its icon', async () => {
+  test('what the live page keeps as text is only its links and the switch; Archive variety has its icon', async () => {
     renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
 
-    await screen.findByRole('link', { name: '+ Entrada' })
-    expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeInTheDocument()
+    await screen.findByRole('link', { name: '+ Entry' })
+    expect(await screen.findByRole('button', { name: 'Archive variety' })).toBeInTheDocument()
     const problems = iconAndTextProblems(screen.getByRole('main'))
     // The low-stock switch is a switch with its label beside it, no icon and no visible text
     // of its own (the rule's helper reads any text-less button as an icon-only control).
-    expect(problems.filter((problem) => !problem.includes('Avisar cuando quede poco'))).toEqual([])
+    expect(problems.filter((problem) => !problem.includes('Warn when running low'))).toEqual([])
   })
 
-  test('an archived variety keeps only Restaurar, with its icon', async () => {
+  test('an archived variety keeps only Restore, with its icon', async () => {
     renderPage(VARIETY_ONE, {
       'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
       'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
     })
 
-    expect(await screen.findByRole('button', { name: 'Restaurar' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Restore' })).toBeInTheDocument()
     expect(iconAndTextProblems(screen.getByRole('main'))).toEqual([])
   })
 })
@@ -280,14 +280,14 @@ describe("an archived variety's summary line and its one action", () => {
   test.each([
     ['hidden', false, true],
     ['shown', true, false],
-  ])('a %s one says Archivada, and Oculta only when hidden, with no status mark nor days left', async (_name, shown, oculta) => {
+  ])('a %s one says Archived, and Hidden only when hidden, with no status mark nor days left', async (_name, shown, hidden) => {
     renderPage(VARIETY_ONE, { ...ARCHIVED, 'GET /catalog/archived': () => json(200, [archivedRow(shown)]) })
 
     const line = await screen.findByText(/\$ 11\.000 x g/)
     expect(line).toHaveTextContent(/^18 g · \$ 11\.000 x g$/)
-    expect(screen.getByText('Archivada')).toHaveClass('insignia')
-    expect(screen.queryByText('Oculta') !== null).toBe(oculta)
-    expect(screen.queryByText(/baja|ok|agotada|sin entradas/)).not.toBeInTheDocument()
+    expect(screen.getByText('Archived')).toHaveClass('insignia')
+    expect(screen.queryByText('Hidden') !== null).toBe(hidden)
+    expect(screen.queryByText(/baja|ok|sold out|no entries/)).not.toBeInTheDocument()
     expect(screen.queryByText(/24 días/)).not.toBeInTheDocument()
   })
 
@@ -298,19 +298,19 @@ describe("an archived variety's summary line and its one action", () => {
       'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, grams: -4, status: 'sold_out' })),
     })
 
-    expect(await screen.findByText(/Sin precio/)).toHaveTextContent('-4 g · Sin precio: no se puede vender')
+    expect(await screen.findByText(/Sin precio/)).toHaveTextContent('-4 g · No price: cannot be sold')
   })
 
-  test('Restaurar is the only action: no entry, price, withdrawal, archive or delete', async () => {
+  test('Restore is the only action: no entry, price, withdrawal, archive or delete', async () => {
     renderPage(VARIETY_ONE, ARCHIVED)
 
-    await screen.findByRole('button', { name: 'Restaurar' })
+    await screen.findByRole('button', { name: 'Restore' })
     const main = screen.getByRole('main')
     const buttons = within(main).getAllByRole('button').map((button) => button.textContent)
-    expect(buttons.filter((name) => name !== '')).toEqual(['Restaurar'])
-    expect(within(main).queryByRole('button', { name: 'Eliminar variedad' })).toBeNull()
-    expect(within(main).queryByRole('button', { name: 'Archivar variedad' })).toBeNull()
-    for (const name of ['+ Entrada', 'New price', 'Take from stock']) {
+    expect(buttons.filter((name) => name !== '')).toEqual(['Restore'])
+    expect(within(main).queryByRole('button', { name: 'Delete variety' })).toBeNull()
+    expect(within(main).queryByRole('button', { name: 'Archive variety' })).toBeNull()
+    for (const name of ['+ Entry', 'New price', 'Take from stock']) {
       expect(within(main).queryByRole('link', { name })).toBeNull()
     }
   })
@@ -323,21 +323,21 @@ describe("an archived variety's four sections, read-only", () => {
     'GET /catalog/archived': () => json(200, [archivedRow(false)]),
   }
 
-  test('Stock y entradas, Precios, Aviso de stock bajo and En el catálogo are all shown, none editable', async () => {
+  test('Stock and entries, Precios, Low stock warning and In the catalog are all shown, none editable', async () => {
     renderPage(VARIETY_ONE, ARCHIVED)
 
     const section = async (name: string) => within((await screen.findByRole('heading', { name })).closest('section')!)
-    const stock = await section('Stock y entradas')
+    const stock = await section('Stock and entries')
     expect(stock.getAllByRole('listitem')).toHaveLength(3)
-    expect(stock.getByRole('link', { name: 'Ver todas' })).toBeInTheDocument()
+    expect(stock.getByRole('link', { name: 'See all' })).toBeInTheDocument()
     const prices = await section('Prices')
-    expect(prices.getByRole('link', { name: 'Ver todas' })).toBeInTheDocument()
-    expect(prices.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
-    const warning = await section('Aviso de stock bajo')
+    expect(prices.getByRole('link', { name: 'See all' })).toBeInTheDocument()
+    expect(prices.queryByRole('button', { name: 'Delete this price' })).toBeNull()
+    const warning = await section('Low stock warning')
     expect(warning.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
     expect(warning.queryByText(/Avisando/)).toBeNull()
-    const catalog = await section('En el catálogo')
-    expect(catalog.getByText('No se muestra')).toBeInTheDocument()
+    const catalog = await section('In the catalog')
+    expect(catalog.getByText('Not shown')).toBeInTheDocument()
     expect(catalog.getByText('🍪')).toBeInTheDocument()
     expect(catalog.getByText('70 %')).toBeInTheDocument()
     expect(catalog.getByText('Galletita y vainilla')).toBeInTheDocument()
@@ -346,7 +346,7 @@ describe("an archived variety's four sections, read-only", () => {
     expect(within(main).queryByRole('button', { name: /^Edit/ })).toBeNull()
   })
 
-  test('a threshold that is off reads Aviso apagado', async () => {
+  test('a threshold that is off reads Warning off', async () => {
     renderPage(VARIETY_ONE, {
       ...ARCHIVED,
       'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, threshold: null, status: 'ok' })),
@@ -357,14 +357,14 @@ describe("an archived variety's four sections, read-only", () => {
 })
 
 describe('the actions and the sections', () => {
-  test('"+ Entrada" opens the entry form with this variety, "New price" its price form', async () => {
+  test('"+ Entry" opens the entry form with this variety, "New price" its price form', async () => {
     renderPage(VARIETY_ONE)
 
-    expect(await screen.findByRole('link', { name: '+ Entrada' })).toHaveAttribute('href', `${STOCK_ENTRY_NEW}?variety=1`)
+    expect(await screen.findByRole('link', { name: '+ Entry' })).toHaveAttribute('href', `${STOCK_ENTRY_NEW}?variety=1`)
     expect(screen.getByRole('link', { name: 'New price' })).toHaveAttribute('href', pathTo(VARIETY_PRICE_NEW, { id: 1 }))
   })
 
-  test('the page is a detail: "‹ Varieties" and no "+ Nueva venta"', async () => {
+  test('the page is a detail: "‹ Varieties" and no "+ New sale"', async () => {
     const { router } = renderPage(VARIETY_ONE)
 
     const back = await screen.findByRole('button', { name: '‹ Varieties' })
@@ -374,10 +374,10 @@ describe('the actions and the sections', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
   })
 
-  test('Stock y entradas carries this variety\'s last 3 entries and "Ver todas"', async () => {
+  test('Stock and entries carries this variety\'s last 3 entries and "See all"', async () => {
     renderPage(VARIETY_ONE)
 
-    const section = (await screen.findByRole('heading', { name: 'Stock y entradas' })).closest('section')
+    const section = (await screen.findByRole('heading', { name: 'Stock and entries' })).closest('section')
     expect(section).not.toBeNull()
     const inside = within(section as HTMLElement)
     expect(inside.getByText('10 g')).toBeInTheDocument()
@@ -385,7 +385,7 @@ describe('the actions and the sections', () => {
     expect(inside.getByText('30 g')).toBeInTheDocument()
     expect(inside.queryByText('40 g')).not.toBeInTheDocument()
     expect(inside.queryByText('99 g')).not.toBeInTheDocument()
-    expect(inside.getByRole('link', { name: 'Ver todas' })).toHaveAttribute('href', pathTo(VARIETY_ENTRIES, { id: 1 }))
+    expect(inside.getByRole('link', { name: 'See all' })).toHaveAttribute('href', pathTo(VARIETY_ENTRIES, { id: 1 }))
   })
 
   test('"Take from stock" opens the withdrawal form with this variety already chosen', async () => {
@@ -397,7 +397,7 @@ describe('the actions and the sections', () => {
     )
   })
 
-  test('a withdrawal in Stock y entradas says its reason and a minus sign, mixed with entries, and opens its detail', async () => {
+  test('a withdrawal in Stock and entries says its reason and a minus sign, mixed with entries, and opens its detail', async () => {
     renderPage(pathTo(VARIETY, { id: 1 }), {
       'GET /stock/varieties/1/movements': () =>
         json(200, [
@@ -408,7 +408,7 @@ describe('the actions and the sections', () => {
         ]),
     })
 
-    const section = (await screen.findByRole('heading', { name: 'Stock y entradas' })).closest('section')
+    const section = (await screen.findByRole('heading', { name: 'Stock and entries' })).closest('section')
     const inside = within(section as HTMLElement)
     const reason = await inside.findByText(/Promoción/)
     expect(reason.closest('li')).toHaveTextContent('−5,5 g')
@@ -418,15 +418,15 @@ describe('the actions and the sections', () => {
     expect(inside.queryByText('30 g')).not.toBeInTheDocument()
   })
 
-  test('Precios carries the last 3 prices, "Vigente hoy" and "Ver todas"', async () => {
+  test('Precios carries the last 3 prices, "In force today" and "See all"', async () => {
     renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'Prices' })).closest('section')
     const inside = within(section as HTMLElement)
     expect(inside.getAllByText(/Rige desde/)).toHaveLength(3)
-    expect(inside.getByText('Vigente hoy')).toBeInTheDocument()
+    expect(inside.getByText('In force today')).toBeInTheDocument()
     expect(inside.queryByText('$ 9.800')).not.toBeInTheDocument()
-    expect(inside.getByRole('link', { name: 'Ver todas' })).toHaveAttribute('href', pathTo(VARIETY_PRICES, { id: 1 }))
+    expect(inside.getByRole('link', { name: 'See all' })).toHaveAttribute('href', pathTo(VARIETY_PRICES, { id: 1 }))
   })
 
 
@@ -439,7 +439,7 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Prices' })).closest('section')
     const inside = within(section as HTMLElement)
-    expect(await inside.findByText('Precio VIP · $ 9.000')).toBeInTheDocument()
+    expect(await inside.findByText('VIP price · $ 9.000')).toBeInTheDocument()
     expect(inside.queryByText(/Desde/)).not.toBeInTheDocument()
   })
 
@@ -466,19 +466,19 @@ describe('the actions and the sections', () => {
     const inside = within(section as HTMLElement)
     expect(await inside.findAllByText(/Rige desde/)).not.toHaveLength(0)
     expect(inside.queryByText(/VIP/)).not.toBeInTheDocument()
-    expect(inside.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
+    expect(inside.queryByRole('button', { name: 'Delete this price' })).toBeNull()
   })
-  test('only those two sections carry "Ver todas"', async () => {
+  test('only those two sections carry "See all"', async () => {
     renderPage(VARIETY_ONE)
 
     await screen.findByRole('heading', { name: 'Prices' })
-    expect(screen.getAllByRole('link', { name: 'Ver todas' })).toHaveLength(2)
+    expect(screen.getAllByRole('link', { name: 'See all' })).toHaveLength(2)
   })
 
-  test('Aviso de stock bajo reads the saved threshold, with a switch and "Edit"', async () => {
+  test('Low stock warning reads the saved threshold, with a switch and "Edit"', async () => {
     renderPage(VARIETY_ONE)
 
-    const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section')
+    const section = (await screen.findByRole('heading', { name: 'Low stock warning' })).closest('section')
     const inside = within(section as HTMLElement)
     expect(inside.getByText('Avisando: quedan 18 g')).toBeInTheDocument()
     expect(inside.getByRole('switch')).toBeChecked()
@@ -488,31 +488,31 @@ describe('the actions and the sections', () => {
   test.each([
     ['no threshold', { threshold: null, status: 'ok', grams: 90, days_left: 60 }, 'Warning off'],
     ['a threshold not reached', { threshold: 15, status: 'ok', grams: 90, days_left: 60 }, 'Avisame abajo de 15 g'],
-  ])('Aviso de stock bajo with %s', async (_name, patch, expected) => {
+  ])('Low stock warning with %s', async (_name, patch, expected) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
     expect(await screen.findByText(expected)).toBeInTheDocument()
   })
 
-  test('En el catálogo reads shown, emoji, % índica and aroma, with "Edit"', async () => {
+  test('In the catalog reads shown, emoji, % indica and aroma, with "Edit"', async () => {
     renderPage(VARIETY_ONE)
 
-    const section = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section')
+    const section = (await screen.findByRole('heading', { name: 'In the catalog' })).closest('section')
     const inside = within(section as HTMLElement)
     expect(await inside.findByText('🍪')).toBeInTheDocument()
     expect(inside.getByText('70 %')).toBeInTheDocument()
     expect(inside.getByText('Galletita y vainilla')).toBeInTheDocument()
-    expect(inside.getByText('Se muestra')).toBeInTheDocument()
+    expect(inside.getByText('Shown')).toBeInTheDocument()
     expect(inside.getByRole('button', { name: /Edit/ })).toBeInTheDocument()
     expect(section).toHaveAttribute('id', 'en-el-catalogo')
   })
 
-  test('En el catálogo tells a hidden variety by word', async () => {
+  test('In the catalog tells a hidden variety by word', async () => {
     const hidden = { ...CATALOG, varieties: [{ ...CATALOG.varieties[0], shown: false, state: 'hidden' }] }
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
-    const section = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section')
-    expect(await within(section as HTMLElement).findByText('No se muestra')).toBeInTheDocument()
+    const section = (await screen.findByRole('heading', { name: 'In the catalog' })).closest('section')
+    expect(await within(section as HTMLElement).findByText('Not shown')).toBeInTheDocument()
   })
 })
 
@@ -536,11 +536,11 @@ describe('gone and foreign varieties', () => {
 })
 
 describe('the openers push a history entry, so Back closes the form', () => {
-  test('"Edit" on Aviso de stock bajo pushes the threshold form', async () => {
+  test('"Edit" on Low stock warning pushes the threshold form', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
 
-    const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section')
+    const section = (await screen.findByRole('heading', { name: 'Low stock warning' })).closest('section')
     await user.click(within(section as HTMLElement).getByRole('button', { name: /Edit/ }))
 
     expect(router.state.location.pathname).toBe(VARIETY_ONE)
@@ -549,11 +549,11 @@ describe('the openers push a history entry, so Back closes the form', () => {
     expect(router.state.location.state).toBeNull()
   })
 
-  test('"Edit" on En el catálogo pushes the catalog form', async () => {
+  test('"Edit" on In the catalog pushes the catalog form', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
 
-    const section = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section')
+    const section = (await screen.findByRole('heading', { name: 'In the catalog' })).closest('section')
     await user.click(within(section as HTMLElement).getByRole('button', { name: /Edit/ }))
 
     expect(router.state.location.state).toEqual({ form: 'catalog' })
@@ -582,7 +582,7 @@ describe('the openers push a history entry, so Back closes the form', () => {
     await act(() => router.navigate('.', { state }))
 
     expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument()
-    expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
+    expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
     expect(screen.queryByText(/Próximamente/)).not.toBeInTheDocument()
   })
 })
@@ -592,55 +592,55 @@ describe('renaming from the page', () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
 
-    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit name' }))
 
     expect(router.state.location.state).toEqual({ form: 'rename' })
-    expect(await screen.findByText('Renombrar variedad')).toBeInTheDocument()
+    expect(await screen.findByText('Rename variety')).toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toHaveValue('24K Gold')
   })
 
   test('"Close" goes back by history and the form is gone', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
-    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit name' }))
 
     await user.click(await screen.findByRole('button', { name: 'Close' }))
 
     await waitFor(() => expect(router.state.location.state).toBeNull())
-    expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
+    expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
   })
 
   test('Back closes the form', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
-    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
-    await screen.findByText('Renombrar variedad')
+    await user.click(await screen.findByRole('button', { name: 'Edit name' }))
+    await screen.findByText('Rename variety')
 
     await act(() => router.navigate(-1))
 
-    expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
+    expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
   })
 
-  test('saving renames, closes the form and toasts "Variedad guardada"', async () => {
+  test('saving renames, closes the form and toasts "Variety saved"', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage(VARIETY_ONE, {
       'PATCH /varieties/1': () => json(200, { ...VARIETY_ROW, name: 'Gold' }),
     })
-    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit name' }))
     const field = await screen.findByLabelText('Name')
     await user.clear(field)
     await user.type(field, 'Gold')
     await user.click(screen.getByRole('button', { name: 'Save the name' }))
 
-    expect(await screen.findByText('Variedad guardada')).toBeInTheDocument()
-    expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
+    expect(await screen.findByText('Variety saved')).toBeInTheDocument()
+    expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
     expect(writes(fetchMock)).toEqual(['PATCH /varieties/1'])
   })
 
   test('leaving with a changed name asks first, and keeping stays on the form', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
-    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit name' }))
     await user.type(await screen.findByLabelText('Name'), ' 2')
 
     await user.click(screen.getByRole('button', { name: 'Close' }))
@@ -654,7 +654,7 @@ describe('renaming from the page', () => {
   test('discarding leaves the form without saving', async () => {
     const user = userEvent.setup()
     const { router, fetchMock } = renderPage(VARIETY_ONE)
-    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit name' }))
     await user.type(await screen.findByLabelText('Name'), ' 2')
     await user.click(screen.getByRole('button', { name: 'Close' }))
 
@@ -667,13 +667,13 @@ describe('renaming from the page', () => {
   test('a name already taken is refused inline and keeps what was typed', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, { 'PATCH /varieties/1': () => json(409, { code: 'variety.name_taken' }) })
-    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit name' }))
     const field = await screen.findByLabelText('Name')
     await user.clear(field)
     await user.type(field, 'Otra')
     await user.click(screen.getByRole('button', { name: 'Save the name' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Ya existe una variedad con ese nombre')
+    expect(await screen.findByRole('alert')).toHaveTextContent('A variety with that name already exists')
     expect(screen.getByLabelText(/^Name/)).toHaveValue('Otra')
   })
 })
@@ -713,7 +713,7 @@ describe('turning the warning off', () => {
     expect(await screen.findByText('Warning off')).toBeInTheDocument()
     expect(screen.getByRole('switch')).not.toBeChecked()
     expect(screen.getByRole('switch')).toBeEnabled()
-    expect(await screen.findByText('Aviso guardado')).toBeInTheDocument()
+    expect(await screen.findByText('Warning saved')).toBeInTheDocument()
   })
 
   test('a refusal leaves the switch on and says so inline', async () => {
@@ -728,7 +728,7 @@ describe('turning the warning off', () => {
     expect(await screen.findByRole('alert')).toBeInTheDocument()
     expect(screen.getByRole('switch')).toBeChecked()
     expect(screen.getByRole('switch')).toBeEnabled()
-    expect(screen.queryByText('Aviso guardado')).not.toBeInTheDocument()
+    expect(screen.queryByText('Warning saved')).not.toBeInTheDocument()
   })
 
   test('a dropped network leaves the switch on and shows the no-network state', async () => {
@@ -746,19 +746,19 @@ describe('turning the warning off', () => {
   })
 })
 
-describe('Aviso de stock bajo: the form', () => {
+describe('Low stock warning: the form', () => {
   const OFF = { ...STOCK_ROW, threshold: null, status: 'ok', grams: 90, days_left: 60 }
 
   test('the section is read-only until "Edit" opens the form with the saved amount', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE)
 
-    const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section') as HTMLElement
-    expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
-    await user.click(within(section).getByRole('button', { name: 'Editar aviso' }))
+    const section = (await screen.findByRole('heading', { name: 'Low stock warning' })).closest('section') as HTMLElement
+    expect(screen.queryByLabelText('Warn when below')).not.toBeInTheDocument()
+    await user.click(within(section).getByRole('button', { name: 'Edit warning' }))
 
-    expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('20')
-    expect(screen.getByRole('button', { name: 'Guardá el aviso' })).toBeInTheDocument()
+    expect(await screen.findByLabelText('Warn when below')).toHaveValue('20')
+    expect(screen.getByRole('button', { name: 'Save the warning' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
   })
 
@@ -767,11 +767,11 @@ describe('Aviso de stock bajo: the form', () => {
     const { router, fetchMock } = renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf(OFF)) })
 
     await user.click(await screen.findByRole('switch'))
-    expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('')
+    expect(await screen.findByLabelText('Warn when below')).toHaveValue('')
     await user.click(screen.getByRole('button', { name: 'Close' }))
 
     await waitFor(() => expect(router.state.location.state).toBeNull())
-    expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Warn when below')).not.toBeInTheDocument()
     expect(screen.getByRole('switch')).not.toBeChecked()
     expect(screen.getByText('Warning off')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual([])
@@ -788,11 +788,11 @@ describe('Aviso de stock bajo: the form', () => {
       },
     })
     await user.click(await screen.findByRole('switch'))
-    await user.type(await screen.findByLabelText('Avisar con menos de'), '15,5')
-    await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
+    await user.type(await screen.findByLabelText('Warn when below'), '15,5')
+    await user.click(screen.getByRole('button', { name: 'Save the warning' }))
 
-    expect(await screen.findByText('Aviso guardado')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
+    expect(await screen.findByText('Warning saved')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Warn when below')).not.toBeInTheDocument()
     expect(putOf(fetchMock)).toEqual({ url: '/stock/varieties/1/threshold', body: { grams: 15.5 } })
     await waitFor(() => expect(reads(fetchMock, 'GET /stock')).toBe(2))
     await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
@@ -802,37 +802,37 @@ describe('Aviso de stock bajo: the form', () => {
   test('a refused amount shows under the field and keeps what was typed', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }) })
-    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
-    const field = await screen.findByLabelText('Avisar con menos de')
+    await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
+    const field = await screen.findByLabelText('Warn when below')
     await user.clear(field)
     await user.type(field, '5')
-    await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
+    await user.click(screen.getByRole('button', { name: 'Save the warning' }))
 
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('Revisá el umbral cargado')
-    expect(alert.closest('label')).toHaveTextContent('Avisar con menos de')
-    expect(screen.getByLabelText(/^Avisar con menos de/)).toHaveValue('5')
+    expect(alert).toHaveTextContent('Check the threshold entered')
+    expect(alert.closest('label')).toHaveTextContent('Warn when below')
+    expect(screen.getByLabelText(/^Warn when below/)).toHaveValue('5')
   })
 
   test('text that is no amount is refused under the field without asking the server', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage(VARIETY_ONE)
-    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
-    const field = await screen.findByLabelText('Avisar con menos de')
+    await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
+    const field = await screen.findByLabelText('Warn when below')
     await user.clear(field)
     await user.type(field, 'mucho')
-    await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
+    await user.click(screen.getByRole('button', { name: 'Save the warning' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Revisá el umbral cargado')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Check the threshold entered')
     expect(writes(fetchMock)).toEqual([])
   })
 
   test('a variety that is gone while saving shows "That is gone."', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(404, { code: 'variety.not_found' }) })
-    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
-    await user.type(await screen.findByLabelText('Avisar con menos de'), '1')
-    await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
+    await user.type(await screen.findByLabelText('Warn when below'), '1')
+    await user.click(screen.getByRole('button', { name: 'Save the warning' }))
 
     expect(await screen.findByText('That is gone.')).toBeInTheDocument()
   })
@@ -840,24 +840,24 @@ describe('Aviso de stock bajo: the form', () => {
   test('Back closes the form', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
-    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
-    await screen.findByLabelText('Avisar con menos de')
+    await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
+    await screen.findByLabelText('Warn when below')
 
     await act(() => router.navigate(-1))
 
-    expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Warn when below')).not.toBeInTheDocument()
   })
 
   test('typed text is asked about before leaving; keeping stays, discarding closes', async () => {
     const user = userEvent.setup()
     const { router, fetchMock } = renderPage(VARIETY_ONE)
-    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
-    await user.type(await screen.findByLabelText('Avisar con menos de'), '5')
+    await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
+    await user.type(await screen.findByLabelText('Warn when below'), '5')
     await user.click(screen.getByRole('button', { name: 'Close' }))
 
     expect(await screen.findByText('Discard the change?')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'No, keep typing' }))
-    expect(screen.getByLabelText('Avisar con menos de')).toHaveValue('205')
+    expect(screen.getByLabelText('Warn when below')).toHaveValue('205')
     await user.click(screen.getByRole('button', { name: 'Close' }))
     await user.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
@@ -868,7 +868,7 @@ describe('Aviso de stock bajo: the form', () => {
   test('closing an untouched form does not ask', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
-    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
     await user.click(await screen.findByRole('button', { name: 'Close' }))
 
     await waitFor(() => expect(router.state.location.state).toBeNull())
@@ -878,13 +878,13 @@ describe('Aviso de stock bajo: the form', () => {
   test('a reload with the form open reopens it with the saved amount', async () => {
     renderPage(VARIETY_ONE, {}, { form: 'threshold' })
 
-    expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('20')
+    expect(await screen.findByLabelText('Warn when below')).toHaveValue('20')
   })
 })
 
-describe('En el catálogo: the form', () => {
+describe('In the catalog: the form', () => {
   const section = async () =>
-    (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section') as HTMLElement
+    (await screen.findByRole('heading', { name: 'In the catalog' })).closest('section') as HTMLElement
 
   test('the section is read-only until "Edit" opens one form holding the four saved values', async () => {
     const user = userEvent.setup()
@@ -892,13 +892,13 @@ describe('En el catálogo: the form', () => {
 
     const before = await section()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
-    await user.click(within(before).getByRole('button', { name: 'Editar catálogo' }))
+    await user.click(within(before).getByRole('button', { name: 'Edit catalog' }))
 
     expect(await screen.findByLabelText('Emoji')).toHaveValue('🍪')
-    expect(screen.getByLabelText('% índica')).toHaveValue('70')
-    expect(screen.getByLabelText('Aroma/sabor')).toHaveValue('Galletita y vainilla')
-    expect(screen.getByRole('switch', { name: 'Mostrar en el catálogo' })).toBeChecked()
-    expect(screen.getByRole('button', { name: 'Guardá el catálogo' })).toBeInTheDocument()
+    expect(screen.getByLabelText('% indica')).toHaveValue('70')
+    expect(screen.getByLabelText('Aroma/flavor')).toHaveValue('Galletita y vainilla')
+    expect(screen.getByRole('switch', { name: 'Show in the catalog' })).toBeChecked()
+    expect(screen.getByRole('button', { name: 'Save the catalog' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
   })
 
@@ -907,15 +907,15 @@ describe('En el catálogo: the form', () => {
     const { fetchMock } = renderPage(VARIETY_ONE, {
       'PUT /catalog/varieties/1': () => json(200, CATALOG),
     })
-    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
-    await user.click(screen.getByRole('switch', { name: 'Mostrar en el catálogo' }))
-    const aroma = screen.getByLabelText('Aroma/sabor')
+    await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
+    await user.click(screen.getByRole('switch', { name: 'Show in the catalog' }))
+    const aroma = screen.getByLabelText('Aroma/flavor')
     await user.clear(aroma)
     await user.type(aroma, 'Cítrico')
     await user.clear(screen.getByLabelText('Emoji'))
-    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+    await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 
-    expect(await screen.findByText('Catálogo guardado')).toBeInTheDocument()
+    expect(await screen.findByText('Catalog guardado')).toBeInTheDocument()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
     expect(putOf(fetchMock)).toEqual({
       url: '/catalog/varieties/1',
@@ -929,31 +929,31 @@ describe('En el catálogo: the form', () => {
     renderPage(VARIETY_ONE, {
       'PUT /catalog/varieties/1': () => json(422, { code: 'catalog.aroma_too_long' }),
     })
-    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.type(screen.getByLabelText('Emoji'), 'x')
-    await user.clear(screen.getByLabelText('% índica'))
-    await user.type(screen.getByLabelText('% índica'), '40')
-    await user.type(screen.getByLabelText('Aroma/sabor'), ' larguísimo')
-    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+    await user.clear(screen.getByLabelText('% indica'))
+    await user.type(screen.getByLabelText('% indica'), '40')
+    await user.type(screen.getByLabelText('Aroma/flavor'), ' larguísimo')
+    await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('El aroma es demasiado largo')
-    expect(alert.closest('label')).toHaveTextContent('Aroma/sabor')
+    expect(alert).toHaveTextContent('The aroma is too long')
+    expect(alert.closest('label')).toHaveTextContent('Aroma/flavor')
     expect(screen.getAllByRole('alert')).toHaveLength(1)
     expect(screen.getByLabelText(/^Aroma\/sabor/)).toHaveValue('Galletita y vainilla larguísimo')
     expect(screen.getByLabelText(/^Emoji/)).toHaveValue('🍪x')
-    expect(screen.getByLabelText(/^% índica/)).toHaveValue('40')
+    expect(screen.getByLabelText(/^% indica/)).toHaveValue('40')
   })
 
   test.each([
-    ['catalog.emoji_invalid', 'Emoji', 'Poné exactamente un emoji'],
-    ['catalog.indica_share_invalid', '% índica', 'El porcentaje de índica va de 0 a 100'],
+    ['catalog.emoji_invalid', 'Emoji', 'Enter exactly one emoji'],
+    ['catalog.indica_share_invalid', '% indica', 'The indica percentage goes from 0 to 100'],
   ])('%s is shown under %s only', async (code, label, message) => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(422, { code }) })
-    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
-    await user.type(screen.getByLabelText('Aroma/sabor'), '!')
-    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+    await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
+    await user.type(screen.getByLabelText('Aroma/flavor'), '!')
+    await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(message)
@@ -963,21 +963,21 @@ describe('En el catálogo: the form', () => {
   test('an index that is not whole digits is refused under its field without asking the server', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage(VARIETY_ONE)
-    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
-    await user.clear(screen.getByLabelText('% índica'))
-    await user.type(screen.getByLabelText('% índica'), '7,5')
-    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+    await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
+    await user.clear(screen.getByLabelText('% indica'))
+    await user.type(screen.getByLabelText('% indica'), '7,5')
+    await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 
     const alert = await screen.findByRole('alert')
-    expect(alert.closest('label')).toHaveTextContent('% índica')
+    expect(alert.closest('label')).toHaveTextContent('% indica')
     expect(writes(fetchMock)).toEqual([])
   })
 
   test('a variety that is gone while saving shows "That is gone."', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(404, { code: 'catalog.variety_not_found' }) })
-    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
-    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+    await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
+    await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 
     expect(await screen.findByText('That is gone.')).toBeInTheDocument()
   })
@@ -985,7 +985,7 @@ describe('En el catálogo: the form', () => {
   test('Back closes the form', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
-    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await screen.findByLabelText('Emoji')
 
     await act(() => router.navigate(-1))
@@ -996,13 +996,13 @@ describe('En el catálogo: the form', () => {
   test('typed text is asked about before leaving; keeping stays, discarding closes without saving', async () => {
     const user = userEvent.setup()
     const { router, fetchMock } = renderPage(VARIETY_ONE)
-    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
-    await user.type(screen.getByLabelText('Aroma/sabor'), ' y menta')
+    await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
+    await user.type(screen.getByLabelText('Aroma/flavor'), ' y menta')
     await user.click(screen.getByRole('button', { name: 'Close' }))
 
     expect(await screen.findByText('Discard the change?')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'No, keep typing' }))
-    expect(screen.getByLabelText('Aroma/sabor')).toHaveValue('Galletita y vainilla y menta')
+    expect(screen.getByLabelText('Aroma/flavor')).toHaveValue('Galletita y vainilla y menta')
     await user.click(screen.getByRole('button', { name: 'Close' }))
     await user.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
@@ -1013,7 +1013,7 @@ describe('En el catálogo: the form', () => {
   test('closing an untouched form does not ask', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
-    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.click(await screen.findByRole('button', { name: 'Close' }))
 
     await waitFor(() => expect(router.state.location.state).toBeNull())
@@ -1023,13 +1023,13 @@ describe('En el catálogo: the form', () => {
   test('a reload with the form open reopens it with the saved values', async () => {
     renderPage(VARIETY_ONE, {}, { form: 'catalog' })
 
-    expect(await screen.findByLabelText('Aroma/sabor')).toHaveValue('Galletita y vainilla')
+    expect(await screen.findByLabelText('Aroma/flavor')).toHaveValue('Galletita y vainilla')
     expect(screen.getByLabelText('Emoji')).toHaveValue('🍪')
   })
 
   test('the form never carries a maxLength: the length rule is the server\'s', async () => {
     renderPage(VARIETY_ONE, {}, { form: 'catalog' })
-    await screen.findByLabelText('Aroma/sabor')
+    await screen.findByLabelText('Aroma/flavor')
 
     for (const input of screen.getAllByRole('textbox')) expect(input).not.toHaveAttribute('maxLength')
   })

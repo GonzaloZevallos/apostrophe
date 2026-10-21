@@ -106,7 +106,7 @@ function variety(position: number): HTMLSelectElement {
   return screen.getByLabelText(`Variedad ${position}`) as HTMLSelectElement
 }
 
-const SUBMIT_NEW = 'Guardá el retiro'
+const SUBMIT_NEW = 'Save the withdrawal'
 
 /** A new withdrawal with the given varieties on its lines, ready to save. */
 async function fillNew(names: string[]) {
@@ -163,7 +163,7 @@ test('editing a line on a variety archived since keeps its id and name, also whi
 
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await userEvent.click(
-    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, guardar' }),
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, save' }),
   )
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(WITHDRAWAL_PATH, { id: 1 })))
@@ -224,7 +224,7 @@ test('removing the guilty line clears its message and frees the save; the health
   expect(variety(2)).toHaveValue('2')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Quitar variedad 1' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Quitar variety 1' }))
 
   expect(screen.queryByText(GONE)).not.toBeInTheDocument()
   expect(variety(1)).toHaveValue('2')
@@ -271,7 +271,7 @@ async function tapSave() {
 
 async function confirmSave() {
   await userEvent.click(
-    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, guardar' }),
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, save' }),
   )
 }
 

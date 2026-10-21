@@ -48,7 +48,7 @@ function renderHost(fetchImpl: FetchImpl) {
   return { fetchMock, queryClient }
 }
 
-test('starts on the saved name; a save patches the new name and hands "Variedad guardada" to its host', async () => {
+test('starts on the saved name; a save patches the new name and hands "Variety saved" to its host', async () => {
   const user = userEvent.setup()
   const { fetchMock } = renderHost(async () => jsonResponse(200, { id: 1, name: 'Gold 24K' }))
 
@@ -58,7 +58,7 @@ test('starts on the saved name; a save patches the new name and hands "Variedad 
   await user.type(input, 'Gold 24K')
   await user.click(screen.getByRole('button', { name: 'Save the name' }))
 
-  expect(await screen.findByText(/state: saved Variedad guardada/)).toBeInTheDocument()
+  expect(await screen.findByText(/state: saved Variety saved/)).toBeInTheDocument()
   expect(writes(fetchMock)).toEqual([{ call: 'PATCH /varieties/1', body: { name: 'Gold 24K' } }])
 })
 
@@ -92,7 +92,7 @@ test('a taken name is refused under the name and keeps what was typed', async ()
 
   const alert = await screen.findByRole('alert')
   expect(alert.closest('label')).toHaveTextContent('Name')
-  expect(alert).toHaveTextContent('Ya existe una variedad con ese nombre')
+  expect(alert).toHaveTextContent('A variety with that name already exists')
   expect(screen.getByLabelText(/^Name/)).toHaveValue('24K Gold 2')
   expect(screen.getByText(/state: open/)).toBeInTheDocument()
 })

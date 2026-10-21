@@ -332,7 +332,7 @@ test('every stock row says its state in a word as well as its mark, in both them
     const words = Array.from(container.querySelectorAll('.fila-stock')).map(
       (row) => row.querySelector('.marca-estado__palabra')?.textContent,
     )
-    expect(words).toEqual(['baja', 'ok', 'agotada', 'sin entradas'])
+    expect(words).toEqual(['low', 'ok', 'sold out', 'no entries'])
     for (const row of container.querySelectorAll('.marca-estado')) {
       expect(row.querySelector('.marca-estado__forma')).toHaveAttribute('aria-hidden', 'true')
     }

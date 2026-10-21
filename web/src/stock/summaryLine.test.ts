@@ -7,19 +7,19 @@ describe('summaryLine', () => {
   })
 
   test('says everything is fine when every variety is ok', () => {
-    expect(summaryLine(['ok', 'ok', 'ok'])).toBe('3 variedades · todo ok')
-    expect(summaryLine(['ok'])).toBe('1 variedad · todo ok')
+    expect(summaryLine(['ok', 'ok', 'ok'])).toBe('3 varieties · all ok')
+    expect(summaryLine(['ok'])).toBe('1 variety · all ok')
   })
 
   test('counts every status that is not ok, by word, in stock-status order', () => {
     expect(summaryLine(['low', 'ok', 'sold_out', 'no_entries'])).toBe(
-      '1 sin entradas · 1 agotada · 1 baja',
+      '1 no entries · 1 sold out · 1 low',
     )
   })
 
   test('leaves out the statuses nobody has and ignores ok', () => {
-    expect(summaryLine(['ok', 'low', 'low', 'ok'])).toBe('2 bajas')
-    expect(summaryLine(['sold_out', 'sold_out', 'ok'])).toBe('2 agotadas')
+    expect(summaryLine(['ok', 'low', 'low', 'ok'])).toBe('2 low')
+    expect(summaryLine(['sold_out', 'sold_out', 'ok'])).toBe('2 sold out')
   })
 
   test('is never blank for a non-empty list', () => {
