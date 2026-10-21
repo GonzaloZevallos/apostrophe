@@ -90,9 +90,9 @@ export default function InvitePartner({
           <div className="usuarios__link">{invite.url}</div>
           <div className="usuarios__acciones">
             <Boton variant="primary" icon="copiar" onClick={onCopy}>
-              {COMMON_TEXT.copiar}
+              {COMMON_TEXT.copy}
             </Boton>
-            <Boton variant="icon" action="share" ariaLabel={COMMON_TEXT.compartir} onClick={onShare} />
+            <Boton variant="icon" action="share" ariaLabel={COMMON_TEXT.share} onClick={onShare} />
           </div>
           <span className="campo__rotulo" data-copy="help">
             {inviteExpiry(formatDateShort(invite.expires_at.slice(0, 10)))}

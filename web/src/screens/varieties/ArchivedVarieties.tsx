@@ -54,7 +54,7 @@ export default function ArchivedVarieties() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">{COMMON_TEXT.archivadas}</h1>
+        <h1 className="encabezado__titulo">{COMMON_TEXT.archived}</h1>
         {notice}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !loaded && <Loading />}

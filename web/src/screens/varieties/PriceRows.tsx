@@ -114,8 +114,8 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
         <ConfirmDialog
           title={VARIETIES_TEXT.borrasElPrecioDesde(formatDateShort(deleting.effective_from))}
           detail={deleteNotice(history, deleting.id)}
-          confirmText={COMMON_TEXT.siBorrala}
-          cancelText={COMMON_TEXT.noDejala}
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!sending) void onConfirmDelete(deleting)
           }}

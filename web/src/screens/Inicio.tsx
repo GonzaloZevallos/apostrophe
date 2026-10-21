@@ -88,11 +88,11 @@ export default function Inicio() {
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">
             <span className="encabezado__negocio">{me.business_name}</span>
-            <span className="encabezado__titulo">{COMMON_TEXT.inicio}</span>
+            <span className="encabezado__titulo">{COMMON_TEXT.home}</span>
           </div>
           <InAppLink
             to={SETTINGS}
-            aria-label={COMMON_TEXT.configuracionDe0(me.business_name)}
+            aria-label={COMMON_TEXT.settingsFor(me.business_name)}
             className="inicio__avatar"
           >
             {initialsOf(me.business_name)}

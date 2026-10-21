@@ -34,9 +34,9 @@ export interface SelectorPagoProps {
 }
 
 const OPTIONS: { value: PaymentChoice; label: string }[] = [
-  { value: 'cash', label: COMMON_TEXT.efectivo },
-  { value: 'transfer', label: COMMON_TEXT.transferencia },
-  { value: 'owing', label: COMMON_TEXT.debiendo },
+  { value: 'cash', label: COMMON_TEXT.cashMethod },
+  { value: 'transfer', label: COMMON_TEXT.transfer },
+  { value: 'owing', label: COMMON_TEXT.owing },
 ]
 
 export default function SelectorPago({
@@ -50,7 +50,7 @@ export default function SelectorPago({
 
   return (
     <div>
-      <div className="selector-pago" role="radiogroup" aria-label={COMMON_TEXT.comoSePago}>
+      <div className="selector-pago" role="radiogroup" aria-label={COMMON_TEXT.howPaid}>
         {OPTIONS.map((option) => {
           const checked = value === option.value
           const disabled = option.value === 'owing' && owingDisabled

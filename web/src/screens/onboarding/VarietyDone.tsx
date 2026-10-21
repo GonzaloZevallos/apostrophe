@@ -59,7 +59,7 @@ export default function VarietyDone({ target, onStale }: VarietyDoneProps) {
       <div className="onboarding__tarjeta">
         <span className="onboarding__tarjeta-nombre">{target.name}</span>
         <span className="onboarding__tarjeta-detalle">
-          {price === null ? '' : COMMON_TEXT.n0XG(formatMoney(price.list_price))}
+          {price === null ? '' : COMMON_TEXT.pricePerGram(formatMoney(price.list_price))}
         </span>
         <span className="onboarding__tarjeta-detalle">{CHECKLIST_DONE}</span>
       </div>

@@ -89,12 +89,12 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
       <div className="gasto-form__cabecera">
         <span className="gasto-form__titulo">{VARIETIES_TEXT.renombrarVariedad}</span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.nombre}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             className="campo__input"
             type="text"
@@ -110,7 +110,7 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
         </label>
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {COMMON_TEXT.guardaElNombre}
+          {COMMON_TEXT.saveTheName}
         </Boton>
       </form>
     </div>

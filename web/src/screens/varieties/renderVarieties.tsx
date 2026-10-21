@@ -102,7 +102,7 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
                   <main>
                     <span>{VARIETIES_TEXT.paginaDeLaVariedad}</span>
                     <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>{VARIETIES_TEXT.verTodosLosPrecios}</InAppLink>
-                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>{COMMON_TEXT.nuevoPrecio}</InAppLink>
+                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>{COMMON_TEXT.newPrice}</InAppLink>
                   </main>
                 ),
               },
