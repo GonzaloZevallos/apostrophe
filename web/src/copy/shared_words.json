@@ -1,7 +1,0 @@
-{
-  "common.COMMON_TEXT.vip": "VIP is the same word in both languages",
-  "common.COMMON_TEXT.perGram": "' x g' is the price-per-gram shorthand, a format and not a word",
-  "stock.STOCK_TEXT.statusOk": "'ok' is the same word in both languages",
-  "varieties.VARIETIES_TEXT.emoji": "'Emoji' is the same word in both languages",
-  "pinnedCatalog.OUT_OF_DATE_JOINER": "' · ' joins a title to its reason in the pin notice and the variety rows: a punctuation separator, not a word, the same in both languages"
-}

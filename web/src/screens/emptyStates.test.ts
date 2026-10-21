@@ -42,7 +42,7 @@ describe('the empty-state wordings', () => {
   test('the guard rejects a screen that copies a wording, in code but not in a comment', () => {
     const files = {
       '/src/screens/A.tsx': 'const x = "Nobody owes you"',
-      '/src/screens/B.tsx': '/* "Nobody owes you" */\n// Sin entradas de stock\nconst y = 1',
+      '/src/screens/B.tsx': '/* "Nobody owes you" */\n// No stock entries yet\nconst y = 1',
       '/src/screens/emptyStates.ts': EMPTY_STATES.homeNobodyOwes,
     }
     expect(literalCopies(EMPTY_STATE_WORDINGS, files)).toEqual([

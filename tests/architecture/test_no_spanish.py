@@ -9,8 +9,7 @@ and English ones name the glossary's Spanish words (Probarlo, Ventas), so docstr
 not read.
 
 Three lists decide what the real tree may hold: `ALLOWLIST` (closed: files that stay
-Spanish for good, one reason each), `PENDING_SPANISH` (shrink-only: the files B1 and B2 of
-GH-53 translate; each says how many Spanish literals it may still hold) and nothing else.
+Spanish for good, one reason each), `PENDING_SPANISH` (shrink-only, now empty) and nothing else.
 """
 
 from __future__ import annotations
@@ -45,6 +44,13 @@ ALLOWLIST: dict[str, str] = {
     "app/spreadsheet_import/adapters/cells.py": (
         "the import recognises the Spanish sheet's values: Compra, Efectivo, Sí/No (invariant 7)"
     ),
+    "app/catalog/adapters/import_port.py": (
+        "the catalog import port reads the sheet's Sí/No value (invariant 7)"
+    ),
+    "app/stock/adapters/import_port.py": (
+        "the stock import port maps the sheet's entry kinds Compra, Cosecha, Stock inicial and "
+        "Ajuste to its own kinds (invariant 7)"
+    ),
     "app/spreadsheet_import/domain/plan.py": (
         "every Spanish literal left in it is one the sheet carries (invariant 7): a tab "
         "(Ventas, Entradas, Gastos, Catálogo), a column title that layout.py names (Variedad, "
@@ -54,16 +60,11 @@ ALLOWLIST: dict[str, str] = {
     ),
 }
 
-# Today's Spanish files: path relative to the repo root -> the most Spanish literals it may
-# hold. Shrink-only: B1 and B2 empty it; an entry whose file has no hit fails, a file not
-# listed that has a hit fails, and a count above the one written fails.
-PENDING_SPANISH: dict[str, int] = {
-    # The import's plan and report words, and the sheet values they quote (B1). The plan
-    # and the two import ports spell the sheet's own names as literals: B1 keeps what the
-    # sheet recognises (invariant 7) and moves only the report's words.
-    "app/catalog/adapters/import_port.py": 1,
-    "app/stock/adapters/import_port.py": 4,
-}
+# Spanish files still being translated: path relative to the repo root -> the most Spanish
+# literals it may hold. Empty since GH-53 landed its translation; shrink-only, so it stays
+# empty. An entry whose file has no hit fails, a file not listed that has a hit fails, and
+# a count above the one written fails.
+PENDING_SPANISH: dict[str, int] = {}
 
 
 def load_denylist(path: Path = DENYLIST_FILE) -> frozenset[str]:
@@ -238,3 +239,13 @@ def test_the_allowlist_names_a_real_file_each_with_a_reason() -> None:
 def test_app_holds_no_spanish_literal_beyond_the_pending_files() -> None:
     counts = spanish_counts(APP_ROOT, load_denylist(), ALLOWLIST)
     assert refusals(counts, PENDING_SPANISH) == []
+
+
+def test_no_file_is_pending_translation_any_more() -> None:
+    assert PENDING_SPANISH == {}
+
+
+def test_a_spanish_file_that_is_neither_allowed_nor_pending_is_refused() -> None:
+    assert refusals({"app/new.py": 1}, PENDING_SPANISH) == [
+        "app/new.py: 1 Spanish literal(s), not pending"
+    ]
