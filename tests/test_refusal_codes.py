@@ -201,9 +201,7 @@ def test_an_api_path_segment_is_a_front_segment_only_through_a_shared_front_path
         path.strip("/").split("/", 1)[0] for path in document["paths"] if path != "/"
     }
 
-    check_front_segment_overlap(
-        api_first_segments, front_segments, SHARED_FRONT_PATHS
-    )
+    check_front_segment_overlap(api_first_segments, front_segments, SHARED_FRONT_PATHS)
     assert {"expenses", "varieties"} <= api_first_segments & front_segments
 
 
@@ -220,9 +218,7 @@ def test_the_overlap_check_rejects_a_segment_with_no_shared_path() -> None:
         )
 
 
-REFUSALS_COPY_PATH = (
-    Path(__file__).resolve().parent.parent / "web" / "src" / "copy" / "refusals.ts"
-)
+REFUSALS_COPY_PATH = Path(__file__).resolve().parent.parent / "web" / "src" / "copy" / "refusals.ts"
 
 
 def copy_codes_of(source: str) -> set[str]:
@@ -255,11 +251,72 @@ def test_the_copy_check_fails_for_a_code_with_no_key_and_for_a_key_with_no_code(
         check_copy_covers({"a.code"}, {"a.code", "c.code"})
 
 
+REFUSAL_TEXT_LINE = re.compile(
+    r"^(?:\s+(?:\w+|'[^']+'): |const \w+ = )'((?:[^'\\]|\\.)+)',?$", re.MULTILINE
+)
+REFUSAL_LENGTH_LIMIT = 80
+
+
+def refusal_texts_of(source: str) -> list[str]:
+    """Every quoted refusal text in `copy/refusals.ts`, the quoted-key entries included."""
+    head = source[: source.index("export const REFUSAL_BY_CODE")]
+    return [text.replace("\\'", "'") for text in REFUSAL_TEXT_LINE.findall(head)]
+
+
+def long_refusals_of(source: str) -> set[str]:
+    """The refusals `LONG_REFUSALS` lists as allowed past the limit."""
+    match = re.search(r"export const LONG_REFUSALS[^=]*= \[(.*?)\]", source, re.DOTALL)
+    return set(re.findall(r"'((?:[^'\\]|\\.)*)'", match.group(1))) if match else set()
+
+
+def refusal_problems(source: str) -> list[str]:
+    """What is wrong with the refusal texts: a Spanish letter, a `${` hole (it would repeat
+    input), or a text past 80 characters that `LONG_REFUSALS` does not list."""
+    long_ones = long_refusals_of(source)
+    problems: list[str] = []
+    texts = refusal_texts_of(source)
+    if not texts:
+        return ["no refusal text found"]
+    for text in texts:
+        if re.search(r"[áéíóúñ¿¡]", text):
+            problems.append(f"a Spanish letter in {text!r}")
+        if "${" in text:
+            problems.append(f"{text!r} repeats input")
+        if len(text) > REFUSAL_LENGTH_LIMIT and text not in long_ones:
+            problems.append(f"{text!r} is {len(text)} characters, over {REFUSAL_LENGTH_LIMIT}")
+    return problems
+
+
 def test_the_refusal_copy_is_english_and_repeats_no_input() -> None:
     source = REFUSALS_COPY_PATH.read_text()
-    texts = re.findall(r"^\s+\w+: '((?:[^'\\]|\\.)+)',?$", source, re.MULTILINE)
 
-    assert texts, "no refusal text found"
-    for text in texts:
-        assert not re.search(r"[áéíóúñ¿¡]", text), "a Spanish letter in the refusal copy"
-        assert "${" not in text, "a refusal must repeat nothing typed"
+    assert len(refusal_texts_of(source)) > 20
+    assert refusal_problems(source) == []
+
+
+def test_the_refusal_check_reads_quoted_keys_and_rejects_each_rule() -> None:
+    long_text = "x" * 81
+    fixture = (
+        "const GENERIC_REFUSAL = 'Revisá los datos'\n"
+        "export const REFUSAL_TEXT = {\n"
+        "  fine: 'Fine.',\n"
+        "  withdrawal: {\n"
+        f"    'stock.a': '{long_text}',\n"
+        "    'stock.b': 'Hello ${name}',\n"
+        "  },\n"
+        "}\n"
+        "export const LONG_REFUSALS: readonly string[] = []\n"
+        "export const REFUSAL_BY_CODE = {\n"
+        "  'a.b': REFUSAL_TEXT.fine,\n"
+        "}\n"
+    )
+
+    problems = refusal_problems(fixture)
+
+    assert any("Spanish letter" in problem for problem in problems)
+    assert any("repeats input" in problem for problem in problems)
+    assert any("81 characters" in problem for problem in problems)
+    listed = fixture.replace(
+        "LONG_REFUSALS: readonly string[] = []", f"LONG_REFUSALS = ['{long_text}']"
+    )
+    assert not any("81 characters" in problem for problem in refusal_problems(listed))

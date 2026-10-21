@@ -26,9 +26,9 @@ export const REFUSAL_TEXT = {
   probarloOwnChatNotStarted: 'Open your bot in Telegram and tap Start, then test it again.',
   probarloOwnChatNotFound: 'We could not find your chat: check the number and tap Start in your bot.',
   probarloTestFailed: 'We could not send you the test: check the token and your chat.',
-  lookupNoMessages: 'We see no messages in your bot yet: open it in Telegram, tap Start, and look again.',
-  lookupSeveralChats: 'More than one person wrote to your bot: find your number with @userinfobot and type it here.',
-  lookupUpdatesUnreadable: 'We could not read your bot\'s messages: find your number with @userinfobot and type it here.',
+  lookupNoMessages: 'No messages in your bot yet: open it in Telegram, tap Start and look again.',
+  lookupSeveralChats: 'Several people wrote to your bot: find your number with @userinfobot, type it.',
+  lookupUpdatesUnreadable: 'We cannot read your bot\'s messages: find your number with @userinfobot, type it.',
   vipPriceNotBelowList: 'The VIP price has to be lower than the list price',
   pinReason: {
     telegram_unreachable: 'Telegram did not respond',

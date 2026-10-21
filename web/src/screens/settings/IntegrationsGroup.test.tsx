@@ -343,15 +343,15 @@ test('Buscar mi chat is disabled while its request runs', async () => {
 const LOOKUP_REFUSALS: [string, string][] = [
   [
     'pinned_catalog.no_messages',
-    'We see no messages in your bot yet: open it in Telegram, tap Start, and look again.',
+    'No messages in your bot yet: open it in Telegram, tap Start and look again.',
   ],
   [
     'pinned_catalog.several_chats',
-    'More than one person wrote to your bot: find your number with @userinfobot and type it here.',
+    'Several people wrote to your bot: find your number with @userinfobot, type it.',
   ],
   [
     'pinned_catalog.updates_unreadable',
-    "We could not read your bot's messages: find your number with @userinfobot and type it here.",
+    "We cannot read your bot's messages: find your number with @userinfobot, type it.",
   ],
   ['pinned_catalog.token_invalid', 'The token is not valid: copy it again from @BotFather.'],
   ['pinned_catalog.telegram_unreachable', 'Telegram did not respond'],
@@ -393,7 +393,7 @@ test('a lookup reason clears when Probarlo runs, and a Probarlo reason clears wh
 
   await screen.findByLabelText('Tu chat')
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('We see no messages in your bot yet')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No messages in your bot yet')
   await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
   await waitFor(() =>
     expect(screen.getByRole('alert')).toHaveTextContent('We could not send you the test'),
@@ -401,7 +401,7 @@ test('a lookup reason clears when Probarlo runs, and a Probarlo reason clears wh
   expect(screen.getAllByRole('alert')).toHaveLength(1)
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
   await waitFor(() =>
-    expect(screen.getByRole('alert')).toHaveTextContent('We see no messages in your bot yet'),
+    expect(screen.getByRole('alert')).toHaveTextContent('No messages in your bot yet'),
   )
   expect(screen.getAllByRole('alert')).toHaveLength(1)
 })
