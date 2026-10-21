@@ -13,6 +13,7 @@ quoted text is allowed only because it is in the fixture, never from a list kept
 from __future__ import annotations
 
 import io
+import re
 from collections.abc import Collection, Iterable
 from datetime import date
 from pathlib import Path
@@ -50,7 +51,8 @@ def spanish_in(text: str, quoted: Iterable[str], denylist: Collection[str]) -> l
     character, or a word (case aside) of `denylist`, longest quote first."""
     rest = text
     for quote in sorted({q for q in quoted if q}, key=len, reverse=True):
-        rest = rest.replace(quote, " ")
+        # Only a whole quote: "Cliente" inside "Clientes" is the report's own word.
+        rest = re.sub(rf"(?<!\w){re.escape(quote)}(?!\w)", " ", rest)
     found = SPANISH_CHARACTERS.findall(rest)
     found += [word for word in WORD.findall(rest) if word.lower() in denylist]
     return found
@@ -82,6 +84,11 @@ def test_a_quoted_text_is_taken_out_and_the_words_around_it_are_still_read() -> 
     quoted = ("Ventas",)
     assert spanish_in("Ventas row 2 [Total]: x", quoted, DENYLIST) == []
     assert spanish_in("Ventas row 2: guardá la venta", quoted, DENYLIST) != []
+
+
+def test_a_quote_inside_a_longer_word_of_the_report_is_not_taken_out() -> None:
+    assert spanish_in("Clientes: 3", ("Cliente",), DENYLIST) != []
+    assert spanish_in("Cliente row 2", ("Cliente",), DENYLIST) == []
 
 
 def test_a_text_with_a_spanish_character_is_seen_even_with_no_denylisted_word() -> None:
@@ -170,12 +177,23 @@ def _unfinished_and_blocked() -> Workbook:
     return workbook
 
 
+def _threshold_and_price_refused() -> Workbook:
+    """The Spanish-sheet fixture with a negative stock threshold and a bulk price above
+    the list price, so the report prints a problem under each of those two columns."""
+    workbook = _workbook(threshold=-1)
+    ajustes = workbook["Ajustes"]
+    ajustes.cell(row=37, column=4, value=1200)
+    ajustes.cell(row=37, column=5, value=10)
+    return workbook
+
+
 def test_the_import_report_prints_no_spanish_beyond_what_the_sheet_wrote(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
     workbooks = {
         "plain": _workbook(),
         "unfinished and blocked": _unfinished_and_blocked(),
+        "threshold and price refused": _threshold_and_price_refused(),
         "both switches": _priced_workbook(bulk=True, kind="Amigo", grams=10, total=8000),
     }
     business_id = _business_id(engine)
@@ -209,5 +227,7 @@ def test_the_import_report_prints_no_spanish_beyond_what_the_sheet_wrote(
     assert "Left out as unfinished:" in text
     assert "Falta pago" in text
     assert "Blocking problems:" in text
+    assert "stock.threshold_invalid" in text
+    assert "variety.price_entry_invalid" in text
     assert "Switches turned on: Bulk pricing, VIP customers" in text
     assert spanish_in(text, quoted, DENYLIST) == []

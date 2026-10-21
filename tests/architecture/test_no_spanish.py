@@ -46,10 +46,11 @@ ALLOWLIST: dict[str, str] = {
         "the import recognises the Spanish sheet's values: Compra, Efectivo, Sí/No (invariant 7)"
     ),
     "app/spreadsheet_import/domain/plan.py": (
-        "every Spanish literal in it is the sheet's own: a tab (Ventas, Entradas, Gastos), a "
-        "column title the report quotes in [brackets] (Variedad, Categoría, ...) or a Pago/Tipo "
-        "value the import recognises (Efectivo, Pendiente, Amigo, Regalo); the report's own "
-        "words are English (invariant 7)"
+        "every Spanish literal left in it is one the sheet carries (invariant 7): a tab "
+        "(Ventas, Entradas, Gastos, Catálogo), a column title that layout.py names (Variedad, "
+        "Categoría, Cliente, Precio especial (total)) or a Pago/Tipo value the import "
+        "recognises (Efectivo, Transferencia, Lista, Regalo); the report's own labels "
+        "are English, and tests/architecture/test_no_spanish_output.py reads what it prints"
     ),
 }
 
