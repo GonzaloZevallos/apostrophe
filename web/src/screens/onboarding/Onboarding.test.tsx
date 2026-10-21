@@ -163,8 +163,8 @@ test('the Onboarding entry opens the resume step with its title, "Paso N de 6" a
   renderAt(ONBOARDING)
 
   expect(await screen.findByText('Paso 2 de 6')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
-  expect(screen.getByText('Obligatorio')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Add what you have today' })).toBeInTheDocument()
+  expect(screen.getByText('Required')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Saltar' })).not.toBeInTheDocument()
   expect(screen.queryByText('New sale')).not.toBeInTheDocument()
   expect(calls).toEqual(['GET /onboarding-progress'])
@@ -199,7 +199,8 @@ test('"Done" entered with the flag has one line per step and never an amount', a
   expect(screen.getByText('Hecho · 2 entradas')).toBeInTheDocument()
   expect(screen.getByText('Para después — en Configuración → Integraciones')).toBeInTheDocument()
   expect(screen.getByText('Para después — en Configuración → Usuarios')).toBeInTheDocument()
-  expect(screen.getAllByText('Hecho')).toHaveLength(2)
+  // The two done lines and the heading, which now share the word.
+  expect(screen.getAllByText('Done')).toHaveLength(3)
 })
 
 test('"Saltar el resto" is hidden until both required steps are done', async () => {

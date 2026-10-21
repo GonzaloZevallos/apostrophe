@@ -163,7 +163,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
-  expect(await screen.findByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Add what you have today' })).toBeInTheDocument()
   expect(calls).not.toContain('POST /varieties')
   expect(priceBodies).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
 })
@@ -390,7 +390,7 @@ test('step 4 shows the publish line at once on a step already done, a bot saved 
   renderAt(ONBOARDING_BOT)
 
   expect(await screen.findByText(PUBLISH_LINE)).toBeInTheDocument()
-  expect(screen.getByText('Hecho')).toBeInTheDocument()
+  expect(screen.getByText('Done')).toBeInTheDocument()
 })
 
 test('step 5 offers Seguir only once a link is created, and passes done', async () => {
