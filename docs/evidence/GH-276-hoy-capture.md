@@ -6,6 +6,13 @@ Overlay diff stat, equal to `git diff --stat 16023685..bf373f48 -- scripts/desig
 `scripts/design/screens.json | 4 ++--` (1 file changed, 2 insertions, 2 deletions).
 `comparisons.mjs`, `screens.mjs` and `sample_app.py` are identical on both sides, so each side ran from its own checkout.
 
+## Status: whole-registry runs pending
+
+The GH-219 whole-registry before/after (`compare.sh --strict`, 157 rows, file order, no `--only`, base from its own
+checkout, head from this one) was started at 2026-10-21T19:46-03:00 as a background command and had not finished when this
+note was committed. The section below is the four-screen `--only` run of the earlier pass; it is to be replaced by the
+whole-registry result, not kept beside it (ADR-0042: the two methods are not mixed in one note).
+
 ## Method, and what is missing
 
 Both sides ran `scripts/design/compare.sh --strict --only InicioHoyCompu,InicioHoyCompuOscuro,InicioCompu,InicioCompuOscuro`,
