@@ -383,7 +383,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - Both themes keep the same tokens and values, and every state rule holds in both.
   - The manifest's colours and the splash are static and light. The status bar follows the app's chosen theme (`data-tema`), never the system's; on iOS it stays light, because iOS fixes its style at launch.
   - The font is self-hosted.
-- **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
+- **Language and formats**: every word on screen in English (product-language.md, which supersedes the earlier Spanish rule). Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`, the reset screen):
   - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). Where the design's wording differs from this file, this file wins and the difference is a defect in the design.
   - **One centred, phone-width layout** on every viewport, the computer's included; there is no computer-only layout for these screens.
@@ -433,7 +433,7 @@ How the app fills a phone's screen and responds to touch once installed (criteri
   - A save action pinned above the keyboard is not promised; that is each screen's own decision.
   - The tab bar and "+ Nueva venta" need not stay above the keyboard, since forms and sheets don't show them (navigation.md).
 - **Manifest**:
-  - `id` `"/"` (never changed once shipped), `scope` `"/"`, `lang` `"es"`, `display` `"standalone"`;
+  - `id` `"/"` (never changed once shipped), `scope` `"/"`, `lang` `"en"`, `display` `"standalone"`;
   - `theme_color` and `background_color` light `--papel`, and no `orientation`;
   - icons: the existing 192 and 512 keep `"purpose": "any"` unchanged;
   - a maskable 512 keeps today's look (same background and mark colours, full-bleed, the mark inside the safe zone), drawn by design.
@@ -483,7 +483,7 @@ These groups of Configuración (navigation.md) replace the former Negocio screen
 
 - **Negocio**: rename the business. Toast "Negocio renombrado"; refusals inline, keeping what was typed.
 - **Usuarios**:
-  - the users by email, sorted by email, the signed-in one marked "vos"; it always lists at least the signed-in user;
+  - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
   - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet.
 - **Apariencia**: Claro and Oscuro, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Cerrar" always closes at once.
 - **Tu cuenta**:
@@ -592,7 +592,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - the four places that state the rule say the same, and none names `claro` as an attribute value.
 - **Installed shell (criteria 33–36)**:
   - meta tags, fast test: the viewport has its four parts and no zoom restriction; `mobile-web-app-capable` and the iOS status-bar style `default` are present; exactly one `theme-color`, with no `media`;
-  - manifest, fast test: `id: "/"`, `scope: "/"`, `lang: "es"`, `display: "standalone"`, `theme_color` and `background_color` equal to `--papel`, no `orientation`; 192 and 512 icons `any` and a 512 `maskable` present;
+  - manifest, fast test: `id: "/"`, `scope: "/"`, `lang: "en"`, `display: "standalone"`, `theme_color` and `background_color` equal to `--papel`, no `orientation`; 192 and 512 icons `any` and a 512 `maskable` present;
   - installability: the manifest still passes the browser's installability check on `localhost` with its new fields;
   - status bar, front test driving `data-tema` directly: `theme-color` is light `--papel` with no attribute, the dark paper token with `oscuro`, light again once the attribute is removed, and stays light with the system emulated dark and no attribute;
   - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ Nueva venta", sheets and toasts use them; no existing token value changed;

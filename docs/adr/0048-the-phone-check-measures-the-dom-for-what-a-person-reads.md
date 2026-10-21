@@ -50,3 +50,16 @@ check. The phone check (`web/e2e/mobile.spec.ts`, GH-80) reads the page itself.
   change to either is a change to the lists, in the same diff.
 - **Budget**: the `mobile` project takes 6 minutes or less on the dev machine, run at
   `--workers=4` (the walk is read-only).
+
+## Amendment (GH-53, integration): the cell budget, measured
+
+`MOBILE_TEST_TIMEOUT_MS` (`web/playwright.config.ts`) is 600 000 ms. Indicative runs, English
+copy, the integration head:
+
+- pinned to two cores (`taskset -c 0,1`), `--workers=3`, the cell `246x437, claro` alone: 222 s;
+- the same, the two `246x437` cells (both themes) together: 228 s and 228 s;
+- on a loaded 16-core box during the delivery gates: 294 to 305 s.
+
+The ceiling is about twice the slowest of these. Not measured: the full eight cells together on
+two cores (it does not fit one foreground call) and the CI job itself; if either shows a cell
+over budget, it goes to the phone-standard owners as its own issue.

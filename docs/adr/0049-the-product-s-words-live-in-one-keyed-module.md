@@ -71,3 +71,18 @@ The guards are a ratchet, not a proof (GH-53, landing 1).
   judges it against that file.
 - `copy/refusals` has one key per code of `api/contract.json` (`REFUSAL_BY_CODE`), checked from
   `tests/test_refusal_codes.py`.
+
+## Amendment (GH-53, integration): the end state
+
+- Every copy file is `'en'`. `copyLanguage.test.ts` asserts it for every file of `web/src/copy/`
+  and keeps the no-Spanish-shape rule (letters, the back's denylist, a vos imperative with its
+  pronoun) over every text.
+- `es.snapshot.json` and `shared_words.json` are deleted, with `copyModules.test.ts`, which read
+  them: they judged the move and the translation in progress, and with every file `'en'` there is
+  no Spanish original left to compare. Invariant 3's "shared_words only shrinks" ends at zero.
+- `PENDING_SPANISH` in `tests/architecture/test_no_spanish.py` is empty and a test keeps it so. The
+  two import ports that read the sheet's own values (`Sí`, `Compra`, `Cosecha`, `Stock inicial`,
+  `Ajuste`) are in the closed `ALLOWLIST`, as `layout.py`, `cells.py` and `plan.py` are
+  (the import recognises the Spanish sheet).
+- `copy/emptyStates.ts` only references the wordings written in each area's copy file (plus the
+  sales line), so each value has one home.
