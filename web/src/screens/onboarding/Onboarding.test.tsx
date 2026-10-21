@@ -37,6 +37,8 @@ import {
 import { useBackOr } from '../../components/useBackOr'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { CHECKLIST_DONE } from '../../copy/inicio'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
+import { stepInfo } from './steps'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -196,10 +198,15 @@ test('"Done" entered with the flag has one line per step and never an amount', a
 
   expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
   expect(screen.getByText('6 of 6 steps')).toBeInTheDocument()
-  expect(screen.getAllByText(/^Done · 2 /)).toHaveLength(2)
+  expect(screen.getAllByText('Done · 2 varieties')).toHaveLength(1)
+  expect(screen.getAllByText('Done · 2 entries')).toHaveLength(1)
   expect(screen.getByText('For later — in Settings → Integrations')).toBeInTheDocument()
   expect(screen.getByText('For later — in Settings → Users')).toBeInTheDocument()
   expect(screen.getAllByText(CHECKLIST_DONE)).toHaveLength(2)
+})
+
+test('the resume notice names the partner step in English', () => {
+  expect(ONBOARDING_TEXT.missing(stepInfo('partner').shortName)).toBe('Missing: partner')
 })
 
 test('"Skip the rest" is hidden until both required steps are done', async () => {

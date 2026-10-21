@@ -320,6 +320,7 @@
   "pinnedCatalog.CHANNEL_MISSING_LINE": "Falta el canal: cargalo en Integraciones",
   "pinnedCatalog.INTEGRATIONS_LINK_WORD": "Integraciones",
   "pinnedCatalog.OUT_OF_DATE_TITLE": "Desactualizado",
+  "pinnedCatalog.OUT_OF_DATE_JOINER": " · ",
   "pinnedCatalog.PINNED_CATALOG_TEXT.catalogPublished": "Catálogo publicado",
   "pinnedCatalog.PINNED_CATALOG_TEXT.publish": "Publicar",
   "pinnedCatalog.PINNED_CATALOG_TEXT.theLastOneWasOn": "· El último fue el ",

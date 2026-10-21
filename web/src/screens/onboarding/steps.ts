@@ -79,7 +79,7 @@ export const STEPS: readonly StepInfo[] = [
     required: false,
     title: ONBOARDING_TEXT.sendTheLinkToYourPartner,
     why: ONBOARDING_TEXT.withTheLinkYourPartner,
-    shortName: 'socio',
+    shortName: ONBOARDING_TEXT.partnerLower,
     name: COMMON_TEXT.partner,
     later: ONBOARDING_TEXT.settingsUsers,
   },

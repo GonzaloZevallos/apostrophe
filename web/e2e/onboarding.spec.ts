@@ -51,7 +51,8 @@ test('a new business goes from the invitation to Nueva venta from "Done", with n
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await expect(page.getByRole('heading', { name: 'Done' })).toBeVisible()
-  await expect(page.getByText(/^Done · 1 /)).toHaveCount(2)
+  await expect(page.getByText('Done · 1 variety', { exact: true })).toHaveCount(1)
+  await expect(page.getByText('Done · 1 entry', { exact: true })).toHaveCount(1)
   await page.getByRole('button', { name: 'Add my first sale' }).click()
   await expectPath(page, SALE_NEW)
 

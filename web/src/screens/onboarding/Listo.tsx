@@ -38,8 +38,8 @@ export default function Listo() {
   }
 
   function doneText(slug: StepSlug): string {
-    if (slug === 'variety') return ONBOARDING_TEXT.doneWith(plural(progress.varieties_count, 'variedad', 'variedades'))
-    if (slug === 'stock') return ONBOARDING_TEXT.doneWith(plural(progress.stock_entries_count, 'entrada', 'entradas'))
+    if (slug === 'variety') return ONBOARDING_TEXT.doneWith(plural(progress.varieties_count, ONBOARDING_TEXT.varietyOne, ONBOARDING_TEXT.varietyMany))
+    if (slug === 'stock') return ONBOARDING_TEXT.doneWith(plural(progress.stock_entries_count, ONBOARDING_TEXT.entryOne, ONBOARDING_TEXT.entryMany))
     return CHECKLIST_DONE
   }
 
