@@ -64,7 +64,7 @@ import VarietyThresholdSection from './VarietyThresholdSection'
 import { useRestore } from './useRestore'
 import { COMMON_TEXT } from '../../copy/common'
 import { VARIETIES_TEXT } from '../../copy/varieties'
-import { OUT_OF_DATE_SEPARATOR } from '../../copy/pinnedCatalog'
+import { OUT_OF_DATE_JOINER } from '../../copy/pinnedCatalog'
 import { DISCARD_DETAIL } from '../../copy/onboarding'
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -211,9 +211,9 @@ function VarietyPageView({
         )}
         {row !== undefined && !archived && (
           <p className="variedad-resumen">
-            {formatGrams(row.grams)}{OUT_OF_DATE_SEPARATOR}<MarcaEstado estado={row.status} />
-            {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_SEPARATOR}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
-            {row.days_left !== null && <>{OUT_OF_DATE_SEPARATOR}{row.days_left}{VARIETIES_TEXT.dias}</>}
+            {formatGrams(row.grams)}{OUT_OF_DATE_JOINER}<MarcaEstado estado={row.status} />
+            {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_JOINER}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
+            {row.days_left !== null && <>{OUT_OF_DATE_JOINER}{row.days_left}{VARIETIES_TEXT.dias}</>}
             {' · '}
             {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
           </p>

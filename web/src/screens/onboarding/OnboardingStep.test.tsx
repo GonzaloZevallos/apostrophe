@@ -93,7 +93,7 @@ test('isFirst and isLast are decided by the position in the steps, one step each
 test('step 1 has no "Back": "Close" is its only way out', async () => {
   renderFrame('variety')
 
-  expect(await screen.findByText('Paso 1 de 6')).toBeInTheDocument()
+  expect(await screen.findByText('Step 1 of 6')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
 })
@@ -105,7 +105,7 @@ test.each(ORDER.slice(1).map((slug, index) => [slug, index + 1] as const))(
 
     await userEvent.click(await screen.findByRole('button', { name: 'Back' }))
 
-    expect(await screen.findByText(`Paso ${beforeIndex} de 6`)).toBeInTheDocument()
+    expect(await screen.findByText(`Step ${beforeIndex} of 6`)).toBeInTheDocument()
   },
 )
 
@@ -134,7 +134,7 @@ test('step 6 shows "Skip" only, even when the API allows skipping the rest', asy
 test('a required step draws no skip at all', async () => {
   renderFrame('stock')
 
-  expect(await screen.findByText('Paso 2 de 6')).toBeInTheDocument()
+  expect(await screen.findByText('Step 2 of 6')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Skip' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Skip the rest' })).not.toBeInTheDocument()
 })
@@ -153,8 +153,8 @@ test('both skips are buttons on one row with nothing between them', async () => 
   expect(skip).toHaveClass('boton--enlace')
   expect(rest).toHaveClass('boton--enlace')
   // The "later" hint is a line under the row, not inside it.
-  expect(screen.getByText(/Si lo salteás, lo hacés después en/)).not.toBe(row)
-  expect(row).not.toContainElement(screen.getByText(/Si lo salteás/))
+  expect(screen.getByText(/If you skip it, you can do it later in/)).not.toBe(row)
+  expect(row).not.toContainElement(screen.getByText(/If you skip it/))
 })
 
 function TypingBody({ onDirtyChange }: StepBodyProps) {

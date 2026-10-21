@@ -39,7 +39,7 @@ import { ORIGIN_LABEL } from './originLabel'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE, STOCK_TEXT } from '../copy/stock'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 import { COMMON_TEXT } from '../copy/common'
-import { OUT_OF_DATE_SEPARATOR } from '../copy/pinnedCatalog'
+import { OUT_OF_DATE_JOINER } from '../copy/pinnedCatalog'
 
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -151,10 +151,10 @@ export default function EntriesList({ varietyId }: Props) {
                 <InAppLink to={pathTo(WITHDRAWAL, { id: entry.id })} className="fila-entrada__enlace">
                   <span className="fila-entrada__texto">
                     <span className="fila-entrada__linea1">
-                      {formatDate(entry.date, me.today)}{OUT_OF_DATE_SEPARATOR}{nameOf(varietyId ?? 0)}
+                      {formatDate(entry.date, me.today)}{OUT_OF_DATE_JOINER}{nameOf(varietyId ?? 0)}
                     </span>
                     <span className="fila-entrada__linea2">
-                      {REASON_LABEL[entry.reason]}{OUT_OF_DATE_SEPARATOR}{`−${formatGrams(entry.grams)}`}
+                      {REASON_LABEL[entry.reason]}{OUT_OF_DATE_JOINER}{`−${formatGrams(entry.grams)}`}
                     </span>
                   </span>
                 </InAppLink>
@@ -163,10 +163,10 @@ export default function EntriesList({ varietyId }: Props) {
               <li key={`entry-${entry.id}`} className="fila-entrada">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
-                    {formatDate(entry.date, me.today)}{OUT_OF_DATE_SEPARATOR}{nameOf(entry.variety_id)}
+                    {formatDate(entry.date, me.today)}{OUT_OF_DATE_JOINER}{nameOf(entry.variety_id)}
                   </span>
                   <span className="fila-entrada__linea2">
-                    {ORIGIN_LABEL[entry.origin]}{OUT_OF_DATE_SEPARATOR}{formatGrams(entry.grams)}
+                    {ORIGIN_LABEL[entry.origin]}{OUT_OF_DATE_JOINER}{formatGrams(entry.grams)}
                   </span>
                 </span>
                 <span className="fila-entrada__cifras">

@@ -71,7 +71,7 @@ test('channel_missing disables Publicar, says the channel is missing and links t
   renderPin({ can_publish: false, publish_blocked_by: 'channel_missing', status: null })
 
   expect(await screen.findByRole('button', { name: 'Publish' })).toBeDisabled()
-  expect(screen.getByText(/Falta el canal: cargalo en/)).toBeInTheDocument()
+  expect(screen.getByText(/The channel is missing: enter it in/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Integrations' })).toHaveAttribute(
     'href',
     SETTINGS_INTEGRATIONS,
@@ -85,7 +85,7 @@ test('null enables Publicar and shows neither reason nor link', async () => {
   expect(screen.queryByRole('link', { name: 'Integrations' })).not.toBeInTheDocument()
   expect(screen.queryByText(/Test it first/)).not.toBeInTheDocument()
   expect(screen.getByText('Up to date')).toBeInTheDocument()
-  expect(screen.getByText(/El último fue el 29\/09/)).toBeInTheDocument()
+  expect(screen.getByText(/The last one was on 29\/09/)).toBeInTheDocument()
 })
 
 test.each([
@@ -95,7 +95,7 @@ test.each([
   ['missing_publish', 'It still has to be published with the new bot or channel'],
   ['too_long', 'It is too long for Telegram: shorten aromas or hide varieties.'],
 ] as const)(
-  'Desactualizado for %s reads its reason, shows no link and keeps Publicar enabled',
+  'Out of date for %s reads its reason, shows no link and keeps Publish enabled',
   async (reason, text) => {
     renderPin({
       can_publish: true,
@@ -110,7 +110,7 @@ test.each([
   },
 )
 
-test('missing_publish shows no "El último fue" line', async () => {
+test('missing_publish shows no "The last one was" line', async () => {
   renderPin({
     can_publish: true,
     publish_blocked_by: null,
@@ -118,7 +118,7 @@ test('missing_publish shows no "El último fue" line', async () => {
   })
 
   expect(await screen.findByText('Out of date')).toBeInTheDocument()
-  expect(screen.queryByText(/El último fue/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/The last one was/)).not.toBeInTheDocument()
 })
 
 test('Publicar on success shows "Catalog published" and refetches the status', async () => {
@@ -167,7 +167,7 @@ test('the blocked lines and the out-of-date reasons are the registered, measured
 test('channel_missing renders the registered line, link word included', async () => {
   renderPin({ can_publish: false, publish_blocked_by: 'channel_missing', status: null })
   await screen.findByRole('button', { name: 'Publish' })
-  expect(screen.getByText(/Falta el canal/).textContent).toBe(CHANNEL_MISSING_LINE)
+  expect(screen.getByText(/The channel is missing/).textContent).toBe(CHANNEL_MISSING_LINE)
 })
 
 test.each(Object.keys(PINNED_CATALOG_REASON_LABEL) as PinReason[])(
@@ -178,7 +178,7 @@ test.each(Object.keys(PINNED_CATALOG_REASON_LABEL) as PinReason[])(
     const shown = document.querySelector('.catalogo__publicar-estado')?.textContent
     const line = OUT_OF_DATE_LINES[reason]
     expect(shown).toBe(line)
-    expect(line.startsWith('Desactualizado · ')).toBe(true)
+    expect(line.startsWith('Out of date · ')).toBe(true)
     if (measure(line) > 80) {
       expect(LONG_REFUSALS).toContain(line)
       expect(LIMITED_COPY.map((entry) => entry.text)).not.toContain(line)
@@ -209,11 +209,11 @@ test('"Out of date" carries the hidden attention icon beside its reason; "Up to 
   const box = title.closest('.catalogo__publicar-estado') as HTMLElement
 
   expect(box.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(box).toHaveTextContent(`Desactualizado · ${PINNED_CATALOG_REASON_LABEL.message_gone}`)
+  expect(box).toHaveTextContent(`Out of date · ${PINNED_CATALOG_REASON_LABEL.message_gone}`)
   expectIconAndTextRule(document.body)
 })
 
-test('Al día has no attention icon, and Publicar is icon + text with its icon hidden', async () => {
+test('Up to date has no attention icon, and Publish is icon + text with its icon hidden', async () => {
   renderPin({ can_publish: true, publish_blocked_by: null, status: UP_TO_DATE })
 
   const title = await screen.findByText('Up to date')

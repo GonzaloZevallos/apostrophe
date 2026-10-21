@@ -24,18 +24,18 @@ export const CHANNEL_MISSING_LINE = `${CHANNEL_MISSING_LEAD}${INTEGRATIONS_LINK_
 
 /** The title of the status line when the pin is behind; the reason follows it. */
 export const OUT_OF_DATE_TITLE = 'Out of date'
-export const OUT_OF_DATE_SEPARATOR = ' · '
+export const OUT_OF_DATE_JOINER = ' · '
 
 /** The notice as the seller reads it, "Out of date · <reason>", one per reason: the
  * length is measured on this, never on the bare reason. `too_long` carries its fix (the
  * seller must shorten the catalog) and is the one over 80, so it is a named export listed
  * in `LONG_REFUSALS` instead of a `notice`. */
-export const OUT_OF_DATE_TOO_LONG_LINE = `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_SEPARATOR}${PINNED_CATALOG_REASON_LABEL.too_long}`
+export const OUT_OF_DATE_TOO_LONG_LINE = `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_JOINER}${PINNED_CATALOG_REASON_LABEL.too_long}`
 export const OUT_OF_DATE_LINES: Record<PinReason, string> = {
-  telegram_unreachable: `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_SEPARATOR}${PINNED_CATALOG_REASON_LABEL.telegram_unreachable}`,
-  bot_cannot_post: `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_SEPARATOR}${PINNED_CATALOG_REASON_LABEL.bot_cannot_post}`,
-  message_gone: `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_SEPARATOR}${PINNED_CATALOG_REASON_LABEL.message_gone}`,
-  missing_publish: `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_SEPARATOR}${PINNED_CATALOG_REASON_LABEL.missing_publish}`,
+  telegram_unreachable: `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_JOINER}${PINNED_CATALOG_REASON_LABEL.telegram_unreachable}`,
+  bot_cannot_post: `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_JOINER}${PINNED_CATALOG_REASON_LABEL.bot_cannot_post}`,
+  message_gone: `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_JOINER}${PINNED_CATALOG_REASON_LABEL.message_gone}`,
+  missing_publish: `${OUT_OF_DATE_TITLE}${OUT_OF_DATE_JOINER}${PINNED_CATALOG_REASON_LABEL.missing_publish}`,
   too_long: OUT_OF_DATE_TOO_LONG_LINE,
 }
 

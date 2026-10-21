@@ -156,7 +156,7 @@ test('shows the month, its total, each category with its subtotal, the expenses 
 
   expect(await screen.findByText('Octubre 2026')).toBeInTheDocument()
   expect(await screen.findByText('$ 4.500', { selector: '.cifra-xl' })).toBeInTheDocument()
-  expect(screen.getByText('1 gasto en 1 categoría')).toBeInTheDocument()
+  expect(screen.getByText('1 expense in 1 category')).toBeInTheDocument()
   expect(subtotalOf('Packaging')).toBe('$ 4.500')
   expect(screen.getByText('Bolsas')).toBeInTheDocument()
   // The September expense is not in October's view.
@@ -283,7 +283,7 @@ test('deleting names its date, category and amount, toasts in place, and the emp
 
   const dialog = screen.getByText('Delete the expense?').closest('.panel')
   expect(dialog).not.toBeNull()
-  expect(within(dialog as HTMLElement).getByText(/\$ 4\.500 en Packaging del 01\/10/)).toBeInTheDocument()
+  expect(within(dialog as HTMLElement).getByText(/expense of \$ 4\.500 in Packaging on 01\/10/)).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 

@@ -52,7 +52,6 @@ export const ONBOARDING_TEXT = {
   settingsCatalogMessage: 'Settings → Catalog message',
   connectYourTelegramBot: 'Connect your Telegram bot',
   withTheBot: 'With the bot, your catalog is published and kept up to date in your channel on its own.',
-  telegramBotLower: 'Telegram bot',
   settingsIntegrations: 'Settings → Integrations',
   sendTheLinkToYourPartner: 'Send the link to your partner',
   withTheLinkYourPartner: 'With the link your partner joins this business and sees the same as you. They don\'t need to join now.',

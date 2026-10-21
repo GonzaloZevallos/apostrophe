@@ -86,7 +86,7 @@ afterEach(() => {
 test('shows the saved token masked with Cambiar and the saved chats', async () => {
   renderGroup(SAVED)
 
-  expect(await screen.findByText('Guardado el 12/08 · no se muestra más')).toBeInTheDocument()
+  expect(await screen.findByText('Saved on 12/08 · not shown again')).toBeInTheDocument()
   expect(screen.getByLabelText('Your chat')).toHaveValue('123456789')
   expect(screen.getByLabelText('Channel chat')).toHaveValue('@mi_canal')
   await userEvent.click(screen.getByRole('button', { name: 'Change' }))
@@ -99,7 +99,7 @@ test('an empty business shows empty fields and no "Guardado" line', async () => 
   expect(await screen.findByLabelText('Bot token')).toHaveValue('')
   expect(screen.getByLabelText('Your chat')).toHaveValue('')
   expect(screen.getByLabelText('Channel chat')).toHaveValue('')
-  expect(screen.queryByText(/Guardado el/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Saved on/)).not.toBeInTheDocument()
 })
 
 test('links to the catalog screen, with no pin status and no Publicar', async () => {
@@ -134,7 +134,7 @@ test('Probarlo saves, clears the token, shows the toast and the "desfijalo" line
   expect(
     screen.getByText('The previous pinned message stays as it is; unpin it yourself in Telegram.'),
   ).toBeInTheDocument()
-  expect(screen.getByText('Guardado el 12/08 · no se muestra más')).toBeInTheDocument()
+  expect(screen.getByText('Saved on 12/08 · not shown again')).toBeInTheDocument()
   const call = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')
   expect(JSON.parse(call?.[1]?.body as string)).toEqual({
     token: '123:secret',
@@ -159,7 +159,7 @@ test('a refused Probarlo saves nothing and keeps everything typed, the token inc
   expect(screen.getByLabelText('Bot token')).toHaveValue('123:secret')
   expect(screen.getByLabelText('Your chat')).toHaveValue('555')
   expect(screen.getByLabelText('Channel chat')).toHaveValue('@probando')
-  expect(screen.queryByText(/Guardado el/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Saved on/)).not.toBeInTheDocument()
 })
 
 const PROBARLO_REASONS: [string, string][] = [
@@ -433,7 +433,7 @@ test('the help lines, the token hint and the consequence line each fit their lim
   }
   await userEvent.type(screen.getByLabelText('Your chat'), '1')
   await userEvent.click(screen.getByRole('button', { name: 'Test it' }))
-  const notice = await screen.findByText(/El mensaje fijado anterior/)
+  const notice = await screen.findByText(/The previous pinned message/)
   expect(Array.from(notice.textContent ?? '').length).toBeLessThanOrEqual(80)
 })
 

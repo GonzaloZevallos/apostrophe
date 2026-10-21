@@ -137,7 +137,7 @@ test('renaming a category toasts "Category saved" and shows what the server answ
 
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Rename' }))
-  const input = screen.getByLabelText('Nombre de Packaging')
+  const input = screen.getByLabelText('Name of Packaging')
   await userEvent.clear(input)
   await userEvent.type(input, '  empaque  ')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -169,10 +169,10 @@ test('after an add or a rename the list keeps the server order, by name without 
   // Rows are in the order of their rename buttons: alquiler, Bolsas, Packaging.
   const rename = async (index: number, current: string): Promise<void> => {
     await userEvent.click(screen.getAllByRole('button', { name: 'Rename' })[index] as HTMLElement)
-    expect(screen.getByLabelText(`Nombre de ${current}`)).toBeInTheDocument()
+    expect(screen.getByLabelText(`Name of ${current}`)).toBeInTheDocument()
   }
   await rename(2, 'Packaging')
-  const input = screen.getByLabelText('Nombre de Packaging')
+  const input = screen.getByLabelText('Name of Packaging')
   await userEvent.clear(input)
   await userEvent.type(input, 'Cajas')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -263,7 +263,7 @@ test('closing with a rename edited and not saved asks, and discarding leaves the
   renderGroup(serving())
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Rename' }))
-  await userEvent.type(screen.getByLabelText('Nombre de Packaging'), 's')
+  await userEvent.type(screen.getByLabelText('Name of Packaging'), 's')
 
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))

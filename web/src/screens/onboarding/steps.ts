@@ -69,7 +69,7 @@ export const STEPS: readonly StepInfo[] = [
     required: false,
     title: ONBOARDING_TEXT.connectYourTelegramBot,
     why: ONBOARDING_TEXT.withTheBot,
-    shortName: ONBOARDING_TEXT.telegramBotLower,
+    shortName: COMMON_TEXT.telegramBot,
     name: COMMON_TEXT.telegramBot,
     later: ONBOARDING_TEXT.settingsIntegrations,
   },

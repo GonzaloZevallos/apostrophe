@@ -97,7 +97,7 @@ test('"Invitá a un socio" shows the fresh link on screen instead of a toast', a
   await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
 
   expect(await screen.findByText('https://apostrophe.app/invitation/abc123')).toBeInTheDocument()
-  expect(await screen.findByText('Un link de un solo uso, vence el 09/10')).toBeInTheDocument()
+  expect(await screen.findByText('A one-time link, it expires on 09/10')).toBeInTheDocument()
   expect(screen.queryByText('Invitación lista')).not.toBeInTheDocument()
 })
 

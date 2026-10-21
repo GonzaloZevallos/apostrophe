@@ -165,7 +165,7 @@ test('collapsed, a rename saves at once through the owner route, with no other w
   })
   await screen.findByText('Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Rename' }))
-  const input = screen.getByLabelText('Nombre de Packaging')
+  const input = screen.getByLabelText('Name of Packaging')
   await userEvent.clear(input)
   await userEvent.type(input, 'Embalaje')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))

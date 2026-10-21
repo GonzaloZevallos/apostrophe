@@ -33,7 +33,7 @@ import BotonLink from '../components/BotonLink'
 import {
   CHANNEL_MISSING_LEAD,
   INTEGRATIONS_LINK_WORD,
-  OUT_OF_DATE_SEPARATOR,
+  OUT_OF_DATE_JOINER,
   OUT_OF_DATE_TITLE, PINNED_CATALOG_TEXT,
 } from '../copy/pinnedCatalog'
 import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
@@ -75,7 +75,7 @@ function StatusLine({ status }: { status: PinStatus }) {
         </span>
         {status.state === 'out_of_date' && status.reason !== null && (
           <span className="catalogo__publicar-detalle">
-            {OUT_OF_DATE_SEPARATOR}
+            {OUT_OF_DATE_JOINER}
             {PINNED_CATALOG_REASON_LABEL[status.reason]}
           </span>
         )}
@@ -99,7 +99,7 @@ function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
   if (blockedBy === 'not_tested') {
     return (
       <span className="campo__ayuda">
-        {PINNED_CATALOG_NOT_READY_REASON}{OUT_OF_DATE_SEPARATOR}{link}
+        {PINNED_CATALOG_NOT_READY_REASON}{OUT_OF_DATE_JOINER}{link}
       </span>
     )
   }

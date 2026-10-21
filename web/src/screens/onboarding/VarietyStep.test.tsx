@@ -189,7 +189,7 @@ test('one primary action saves the variety and then its price', async () => {
 
   await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
-  expect(screen.getAllByRole('button', { name: /Guard|Agreg/ })).toHaveLength(1)
+  expect(screen.getAllByRole('button', { name: /Save|Add/ })).toHaveLength(1)
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
@@ -230,7 +230,7 @@ test('a refused price keeps everything typed, shows on its field, and the retry 
   expect(alert).toHaveTextContent('Revisá los precios cargados')
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
-  expect(screen.getByText('Variedad: Mango Bomb')).toBeInTheDocument()
+  expect(screen.getByText('Variety: Mango Bomb')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
@@ -284,7 +284,7 @@ test('variety saved and price refused, then step 2 and back with no reload: the 
   expect(await screen.findByText('paso dos')).toBeInTheDocument()
   await act(() => router.navigate(-1))
 
-  expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
+  expect(await screen.findByText('Variety: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   await user.type(screen.getByLabelText(/^Precio de lista/), '9000')
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
@@ -301,7 +301,7 @@ test('with one variety priced and a second saved with no price, step 1 shows the
   const user = userEvent.setup()
   const router = renderStep()
 
-  expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
+  expect(await screen.findByText('Variety: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
@@ -320,11 +320,11 @@ test('two unpriced varieties and one priced: the first price save stays on step 
   const user = userEvent.setup()
   const router = renderStep()
 
-  expect(await screen.findByText('Variedad: Begonia')).toBeInTheDocument()
+  expect(await screen.findByText('Variety: Begonia')).toBeInTheDocument()
   await user.type(screen.getByLabelText(/^Precio de lista/), '5000')
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
-  expect(await screen.findByText('Variedad: Caléndula')).toBeInTheDocument()
+  expect(await screen.findByText('Variety: Caléndula')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(ONBOARDING_VARIETY)
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('')
   await user.type(screen.getByLabelText(/^Precio de lista/), '6000')
@@ -340,7 +340,7 @@ test('arriving with only a priced variety shows "Hecho" with its name and price;
 
   expect(await screen.findByText('Mango Bomb')).toBeInTheDocument()
   expect(await screen.findByText('$ 11.000 x g')).toBeInTheDocument()
-  expect(screen.getByText('Hecho')).toBeInTheDocument()
+  expect(screen.getByText('Done')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   expect(screen.queryByLabelText(/^Precio de lista/)).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Continue' }))
@@ -371,7 +371,7 @@ test('a "Hecho" read that answers no price today refetches the progress and show
   )
   renderStep()
 
-  expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
+  expect(await screen.findByText('Variety: Mango Bomb')).toBeInTheDocument()
   expect(screen.getByLabelText(/^Precio de lista/)).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
 })
@@ -392,7 +392,7 @@ test('the add-another flag opens the empty form, a reload keeps it, and the vari
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
   // The step-1 entry the add-another opened is now stateless: history back shows "Hecho".
   await act(() => router.navigate(-1))
-  expect(await screen.findByText('Hecho')).toBeInTheDocument()
+  expect(await screen.findByText('Done')).toBeInTheDocument()
   expect(router.state.location.state).toBeNull()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
 })
@@ -408,7 +408,7 @@ test('a reload with the add-another flag and nothing written draws the name fiel
   renderStep(entry)
 
   expect(await screen.findByLabelText(/^Name/)).toBeInTheDocument()
-  expect(screen.queryByText('Hecho')).not.toBeInTheDocument()
+  expect(screen.queryByText('Done')).not.toBeInTheDocument()
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
 })
 

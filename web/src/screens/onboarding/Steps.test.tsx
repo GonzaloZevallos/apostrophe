@@ -151,7 +151,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   const user = userEvent.setup()
   renderAt(ONBOARDING_VARIETY)
 
-  expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
+  expect(await screen.findByText('Variety: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   // The price is effective today: there is no date to change.
   expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
@@ -390,7 +390,7 @@ test('step 4 shows the publish line at once on a step already done, a bot saved 
   renderAt(ONBOARDING_BOT)
 
   expect(await screen.findByText(PUBLISH_LINE)).toBeInTheDocument()
-  expect(screen.getByText('Hecho')).toBeInTheDocument()
+  expect(screen.getByText('Done')).toBeInTheDocument()
 })
 
 test('step 5 offers Seguir only once a link is created, and passes done', async () => {
