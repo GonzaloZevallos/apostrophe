@@ -36,3 +36,22 @@ conflicting with it (the `*Messages.ts` files master kept editing were deleted b
 - A literal text in a screen is a defect the guards (GH-53, landing 1) catch.
 - Toast and notice unions typed on literal strings (`SuccessToast`) keep their literals
   in `components/AvisoExito.tsx` for now; they are the one place a word is spelled twice.
+
+## What the guards do not see
+
+The guards are a ratchet, not a proof (GH-53, landing 1).
+
+- **Front** (`copyOnly.test.ts`): JSX text and string `aria-label`, `title` and
+  `placeholder` attributes under `screens/`, `shell/` and `components/`. Not seen: a
+  text built by a helper in another module, a text in a prop other than those three, a
+  literal union typed on copy values.
+- **Back** (`tests/architecture/test_no_spanish.py`): Python string literals under `app/`
+  by AST, judged one at a time against Spanish characters and the frozen denylist
+  `tests/fixtures/spanish_copy.json` (its `shared_words` are valid English and are
+  left out). Not seen: a Spanish text with no accent and no denylisted word, one split
+  over several literals, a docstring (documentation, and English ones name the
+  glossary's Spanish words), a text outside Python files.
+- **Closed allowlist**: the migrations, `app/legacy_front_paths.json`, and the import's
+  `layout.py` and `cells.py`, one reason each. `PENDING_SPANISH` is shrink-only: a listed
+  file with no hit, a file with a hit that is not listed, or a count above the one written
+  fails.
