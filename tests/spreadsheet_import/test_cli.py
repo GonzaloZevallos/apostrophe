@@ -751,7 +751,7 @@ def test_a_business_with_only_renamed_or_removed_seeded_categories_is_accepted(
 ) -> None:
     categories = client.get("/expense-categories").json()
     by_name = {c["name"]: c["id"] for c in categories}
-    client.patch(f"/expense-categories/{by_name['Otros']}", json={"name": "Varios"})
+    client.patch(f"/expense-categories/{by_name['Other']}", json={"name": "Varios"})
     client.delete(f"/expense-categories/{by_name['Packaging']}")
 
     business_id = _business_id(engine)

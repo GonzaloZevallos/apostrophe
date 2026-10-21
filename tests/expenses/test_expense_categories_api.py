@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.expenses.adapters.tables import ExpenseRow
 from tests.conftest import PASSWORD
 
-DEFAULTS = ["Envíos y traslados", "Insumos de cultivo", "Otros", "Packaging"]
+DEFAULTS = ["Growing supplies", "Other", "Packaging", "Shipping and transport"]
 
 
 def _names(client: TestClient) -> list[str]:
@@ -89,12 +89,12 @@ def test_renaming_to_its_own_name_with_different_case_is_allowed(client: TestCli
 
 def test_an_unused_category_is_removable_defaults_included(client: TestClient) -> None:
     categories = client.get("/expense-categories").json()
-    otros = next(c for c in categories if c["name"] == "Otros")
+    otros = next(c for c in categories if c["name"] == "Other")
 
     removed = client.delete(f"/expense-categories/{otros['id']}")
 
     assert removed.status_code == 204
-    assert "Otros" not in _names(client)
+    assert "Other" not in _names(client)
 
 
 def test_removing_every_category_then_opening_another_business_leaves_the_first_empty(

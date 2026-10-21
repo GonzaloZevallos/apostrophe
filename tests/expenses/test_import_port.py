@@ -46,10 +46,10 @@ def test_write_category_matches_a_seeded_category_whatever_the_case_or_spacing(
     with Session(engine) as session:
         port = ExpensesImport(session, BUSINESS_ID)
 
-        matched_id = port.write_category("  insumos   DE cultivo  ", NoCommit())
+        matched_id = port.write_category("  growing   SUPPLIES  ", NoCommit())
         session.commit()
 
-        again_id = port.write_category("Insumos de cultivo", NoCommit())
+        again_id = port.write_category("Growing supplies", NoCommit())
 
     assert matched_id == again_id
 

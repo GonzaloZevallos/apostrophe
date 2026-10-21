@@ -51,10 +51,6 @@ ALLOWLIST: dict[str, str] = {
 # hold. Shrink-only: B1 and B2 empty it; an entry whose file has no hit fails, a file not
 # listed that has a hit fails, and a count above the one written fails.
 PENDING_SPANISH: dict[str, int] = {
-    # The catalog's fixed lines and the new-business defaults (B2).
-    "app/catalog/domain/header_footer.py": 2,
-    "app/catalog/domain/text.py": 5,
-    "app/expenses/domain/category.py": 3,
     # The import's plan and report words, and the sheet values they quote (B1). The plan
     # and the two import ports spell the sheet's own names as literals: B1 keeps what the
     # sheet recognises (invariant 7) and moves only the report's words.
