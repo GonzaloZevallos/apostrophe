@@ -1818,6 +1818,12 @@ body {
   gap: 2px;
 }
 
+.venta-detalle__resumen > .cifra-xl {
+  /* The big total shrinks on the narrowest phone so "$ 12.345,00" stays on one line. */
+  font-size: clamp(32px, 14vw, 54px);
+  white-space: nowrap;
+}
+
 .venta-detalle__subtitulo {
   font-size: 14px;
   color: var(--tinta2);
@@ -1896,6 +1902,8 @@ body {
 .venta-detalle__renglon-monto {
   font-size: 17px;
   font-weight: 600;
+  flex: none;
+  white-space: nowrap;
 }
 
 .venta-detalle__renglon--total .venta-detalle__renglon-monto {
@@ -2066,6 +2074,7 @@ body {
 
 .venta-detalle__total {
   margin-left: auto;
+  white-space: nowrap;
   font-size: 18px;
   font-weight: 600;
 }

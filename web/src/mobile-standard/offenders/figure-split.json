@@ -301,24 +301,6 @@
   {
     "screen": "EstadosConfirmar",
     "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "figure-split",
     "target": "span:Delete the sale of $ #.# from #/#? # g go back to stock",
     "issue": 49,
     "sizes": [
@@ -495,15 +477,6 @@
     ]
   },
   {
-    "screen": "NuevaVentaConLinea",
-    "rule": "figure-split",
-    "target": "span:$ #.# x g",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
     "target": "p:# g · baja · # días · $ #.# x g",
@@ -607,24 +580,6 @@
     "rule": "figure-split",
     "target": "span:Precio VIP · $ #.#",
     "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 78,
     "sizes": [
       "246x437"
     ]
@@ -633,24 +588,6 @@
     "screen": "VentaBorrar",
     "rule": "figure-split",
     "target": "span:Delete the sale of $ #.# from #/#? # g go back to stock",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaDetalle",
-    "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaDetalle",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
     "issue": 78,
     "sizes": [
       "246x437"
