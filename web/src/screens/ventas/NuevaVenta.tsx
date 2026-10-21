@@ -74,11 +74,11 @@ import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
-export const NO_LINES_MESSAGE = SALES_TEXT.cargaAlMenosUna
+export const NO_LINES_MESSAGE = SALES_TEXT.addAtLeastOne
 export { OWING_HINT }
-export const PAYMENT_REQUIRED_MESSAGE = SALES_TEXT.elegiComoSePago
-export const SPECIAL_PRICE_INVALID_MESSAGE = SALES_TEXT.elPrecioEspecialTiene
-export const LINE_GRAMS_INVALID = SALES_TEXT.cargaLosGramosComa
+export const PAYMENT_REQUIRED_MESSAGE = SALES_TEXT.pickHowPaid
+export const SPECIAL_PRICE_INVALID_MESSAGE = SALES_TEXT.specialPriceAboveZero
+export const LINE_GRAMS_INVALID = SALES_TEXT.enterGrams
 export const LINE_VARIETY_MISSING = COMMON_TEXT.pickAVariety
 
 function emptyLine(): LineState {
@@ -145,8 +145,8 @@ const SUBMIT_OVERRIDES: Partial<
   >
 > = {
   'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
-  'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.elEnvioNoPuede },
-  'sale.note_too_long': { field: 'note', message: SALES_TEXT.laNotaEsDemasiado },
+  'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.shippingNotNegative },
+  'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
   'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
   'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
   'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
@@ -464,7 +464,7 @@ function NuevaVentaForm() {
     }
     const shippingCharged = parseShipping(shipping)
     if (shippingCharged === null) {
-      setShippingError(SALES_TEXT.elEnvioNoPuede)
+      setShippingError(SALES_TEXT.shippingNotNegative)
       return
     }
 
@@ -577,7 +577,7 @@ function NuevaVentaForm() {
               {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
               {customer === null ? (
                 <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
-                  {SALES_TEXT.elegirCliente}
+                  {SALES_TEXT.pickCustomer}
                 </Boton>
               ) : (
                 <Boton variant="row" onClick={customerSheet.open}>
@@ -623,10 +623,10 @@ function NuevaVentaForm() {
               </Boton>
 
               <div className="nueva-venta__fila-dato">
-                <span>{SALES_TEXT.envioCobrado}</span>
+                <span>{SALES_TEXT.shippingCharged}</span>
                 <input
                   className="campo__input"
-                  aria-label={SALES_TEXT.envio}
+                  aria-label={SALES_TEXT.shipping}
                   type="text"
                   inputMode="numeric"
                   value={shipping}
@@ -688,10 +688,10 @@ function NuevaVentaForm() {
               <span className="rotulo nueva-venta__gramos">
                 {formatGrams(fromHundredths(totals.gramsSoldHundredths))}{COMMON_TEXT.soldSuffix}
                 {totals.gramsGiftedHundredths > 0 &&
-                  SALES_TEXT.n0DeRegalo(formatGrams(fromHundredths(totals.gramsGiftedHundredths)))}
+                  SALES_TEXT.giftGrams(formatGrams(fromHundredths(totals.gramsGiftedHundredths)))}
               </span>
               <Boton textOnly="submit" type="submit" disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
-                {SALES_TEXT.guardaLaVenta}
+                {SALES_TEXT.saveSale}
               </Boton>
             </div>
           </div>
@@ -705,8 +705,8 @@ function NuevaVentaForm() {
         <div className="nueva-venta__aviso">
           <LeaveConfirm
             blocker={blocker}
-            question={SALES_TEXT.descartasLaVenta}
-            detail={SALES_TEXT.noVasAPoder}
+            question={SALES_TEXT.discardSale}
+            detail={SALES_TEXT.cannotRecover}
             keepLabel={COMMON_TEXT.noKeepEntering}
             discardLabel={COMMON_TEXT.yesDiscard}
           />

@@ -9,6 +9,7 @@
  */
 
 import type { COMMON_TEXT } from '../copy/common'
+import type { SALES_TEXT } from '../copy/sales'
 import type { PRICE_SAVED } from '../copy/varieties'
 
 export type SuccessToast =
@@ -28,7 +29,7 @@ export type SuccessToast =
   | 'Negocio renombrado'
   | 'Contraseña cambiada · cerramos tus otras sesiones'
   | 'Invitación lista'
-  | 'Cliente asignado'
+  | (typeof SALES_TEXT)['customerAssigned']
   | 'Aviso guardado'
   | 'Catálogo guardado'
   | 'Precios guardados'

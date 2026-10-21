@@ -9,7 +9,7 @@
 export const LANGUAGE: 'es' | 'en' = 'es'
 
 export const EMPTY_STATES = {
-  salesList: 'Todavía no registraste ninguna venta en este período.',
+  salesList: "You haven't recorded any sales in this period yet.",
   customersList: 'Todavía no agregaste ningún cliente.',
   homeNobodyOwes: 'Nadie te debe',
   homeVarietiesTitle: 'Arrancá por las variedades',

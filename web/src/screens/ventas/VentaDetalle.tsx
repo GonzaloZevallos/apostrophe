@@ -57,7 +57,7 @@ import NuevaVentaCliente from './NuevaVentaCliente'
 import { COMMON_TEXT } from '../../copy/common'
 import { SALES_TEXT } from '../../copy/sales'
 
-export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = SALES_TEXT.estaVentaYaTiene
+export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = SALES_TEXT.saleHasCustomer
 const ASSIGN_TOAST_MS = 2500
 
 /** `PUT /sales/{id}/customer`'s own refusals, matched only through `RefusalCode`
@@ -82,7 +82,7 @@ function paymentSummary(payment: Sale['payment']): string {
     case 'transfer':
       return 'pagada por transferencia'
     case 'owing':
-      return SALES_TEXT.quedoDebiendo
+      return SALES_TEXT.leftOwing
     case 'none':
       return ''
   }
@@ -94,7 +94,7 @@ function paymentSummary(payment: Sale['payment']): string {
 function summaryLine(sale: SaleDetail): string {
   const parts = [
     formatGrams(sale.total_grams),
-    sale.customer === null ? SALES_TEXT.sinCliente : sale.customer.name,
+    sale.customer === null ? SALES_TEXT.noCustomer : sale.customer.name,
     paymentSummary(sale.payment),
   ]
   return parts.filter((part) => part !== '').join(' · ')
@@ -104,7 +104,7 @@ function deleteTitle(sale: SaleDetail): string {
   const money = formatMoney(sale.total)
   const day = formatDateShort(sale.date)
   const grams = formatGrams(sale.total_grams)
-  return SALES_TEXT.borrasLaVentaDe(money, day, grams)
+  return SALES_TEXT.deleteSaleConfirm(money, day, grams)
 }
 
 const DELETE_TOAST = COMMON_TEXT.saleDeleted
@@ -280,14 +280,14 @@ function VentaDetalleScreen() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">{SALES_TEXT.ventaDel0(formatDateShort(sale.date))}</span>
+          <span className="encabezado__titulo">{SALES_TEXT.saleOf(formatDateShort(sale.date))}</span>
         </div>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
             <span className="venta-guardada__texto">{SALE_SAVED}</span>
             <Boton variant="undo" disabled={deleting} onClick={() => void removeSale('deshacer')}>
-              {SALES_TEXT.deshacer}
+              {SALES_TEXT.undo}
             </Boton>
           </div>
         )}
@@ -301,7 +301,7 @@ function VentaDetalleScreen() {
         </div>
 
         <div>
-          <span className="venta-detalle__encabezado-lineas">{SALES_TEXT.lineas}</span>
+          <span className="venta-detalle__encabezado-lineas">{SALES_TEXT.lines}</span>
           <div className="venta-detalle__lineas">
             {sale.lines.map((line, index) => (
               // A sale can have two lines of the same variety (a gift line and a
@@ -315,7 +315,7 @@ function VentaDetalleScreen() {
                 </div>
                 <div className="venta-detalle__linea-inferior">
                   <span className="venta-detalle__precio">
-                    {formatMoney(line.price_per_gram)}{SALES_TEXT.porGramo}
+                    {formatMoney(line.price_per_gram)}{SALES_TEXT.perGram}
                   </span>
                   <ReglaInsignia rule={line.pricing_rule} />
                   <span className="venta-detalle__total">{formatMoney(line.line_total)}</span>
@@ -323,7 +323,7 @@ function VentaDetalleScreen() {
               </div>
             ))}
             <div className="venta-detalle__renglon">
-              <span>{SALES_TEXT.envioCobrado}</span>
+              <span>{SALES_TEXT.shippingCharged}</span>
               <span className="venta-detalle__renglon-monto">
                 {formatMoney(sale.shipping_charged)}
               </span>
@@ -342,7 +342,7 @@ function VentaDetalleScreen() {
           </div>
         )}
 
-        {assigned && <AvisoExito texto={SALES_TEXT.clienteAsignado} />}
+        {assigned && <AvisoExito texto={SALES_TEXT.customerAssigned} />}
         {assignOffline && <SinConexion />}
         {assignError !== null && (
           <span className="campo__error" role="alert">
@@ -353,11 +353,11 @@ function VentaDetalleScreen() {
         <div className="venta-detalle__acciones">
           {sale.customer === null && (
             <Boton variant="secondary" icon="personaMas" onClick={assignSheet.open}>
-              {SALES_TEXT.asignarCliente}
+              {SALES_TEXT.assignCustomer}
             </Boton>
           )}
 
-          <Boton variant="icon" action="delete" ariaLabel={SALES_TEXT.borrarVenta} onClick={() => setConfirmingDelete(true)} />
+          <Boton variant="icon" action="delete" ariaLabel={SALES_TEXT.deleteSale} onClick={() => setConfirmingDelete(true)} />
         </div>
       </div>
 
