@@ -44,7 +44,7 @@
   {
     "screen": "Analisis",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
@@ -92,7 +92,7 @@
   {
     "screen": "Archivadas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -146,7 +146,7 @@
   {
     "screen": "Catalogo",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -230,7 +230,7 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -302,7 +302,7 @@
   {
     "screen": "ClienteFicha",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 46
   },
   {
@@ -350,7 +350,7 @@
   {
     "screen": "Clientes",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 46
   },
   {
@@ -386,7 +386,7 @@
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 46
   },
   {
@@ -509,7 +509,7 @@
   {
     "screen": "CobroBorrar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -592,7 +592,7 @@
   {
     "screen": "Configuracion",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 60
   },
   {
@@ -1426,7 +1426,7 @@
   {
     "screen": "EntradasTodas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -1510,7 +1510,7 @@
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
@@ -1552,7 +1552,7 @@
   {
     "screen": "EstadosGone",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
@@ -1612,7 +1612,7 @@
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
@@ -1672,7 +1672,7 @@
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
@@ -1732,7 +1732,7 @@
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 49
   },
   {
@@ -1810,7 +1810,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
@@ -1936,7 +1936,7 @@
   {
     "screen": "GastoEditar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
@@ -2020,7 +2020,7 @@
   {
     "screen": "Gastos",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
@@ -2074,7 +2074,7 @@
   {
     "screen": "Inicio",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 45
   },
   {
@@ -2128,7 +2128,7 @@
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 45
   },
   {
@@ -2182,7 +2182,7 @@
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 45
   },
   {
@@ -2230,7 +2230,7 @@
   {
     "screen": "Mas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 48
   },
   {
@@ -3058,7 +3058,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3160,7 +3160,7 @@
   {
     "screen": "RetiroDetalle",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3280,7 +3280,7 @@
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3328,7 +3328,7 @@
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3376,7 +3376,7 @@
   {
     "screen": "VariedadArchivada",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3448,7 +3448,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3562,7 +3562,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3652,7 +3652,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3694,7 +3694,7 @@
   {
     "screen": "Variedades",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   },
   {
@@ -3865,7 +3865,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -3930,7 +3930,7 @@
   {
     "screen": "VentaBorrar",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78
   },
   {
@@ -3978,7 +3978,7 @@
   {
     "screen": "VentaDetalle",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78
   },
   {
@@ -4038,7 +4038,7 @@
   {
     "screen": "Ventas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78
   },
   {
@@ -4098,7 +4098,7 @@
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 78
   },
   {
@@ -4146,7 +4146,7 @@
   {
     "screen": "VerTodas",
     "rule": "touch-action",
-    "target": "navigation:Navegación",
+    "target": "navigation:Navigation",
     "issue": 47
   }
 ]

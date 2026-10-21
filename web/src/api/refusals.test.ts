@@ -46,22 +46,22 @@ describe('resolveOverride', () => {
   //   resolveOverride({ 'invitacion.vencida': 'x' }, 'account.invitation_not_usable')
   test('finds the override a screen named for a code the contract lists', () => {
     const overrides: Partial<Record<RefusalCode, string>> = {
-      'account.invitation_not_usable': 'Esta invitación ya no sirve',
+      'account.invitation_not_usable': 'This invitation no longer works',
     }
 
     expect(resolveOverride(overrides, 'account.invitation_not_usable')).toBe(
-      'Esta invitación ya no sirve',
+      'This invitation no longer works',
     )
   })
 
   test('finds nothing for a code that has no override', () => {
-    const overrides = { 'account.invitation_not_usable': 'Esta invitación ya no sirve' }
+    const overrides = { 'account.invitation_not_usable': 'This invitation no longer works' }
 
     expect(resolveOverride(overrides, 'account.email_taken')).toBeUndefined()
   })
 
   test('finds nothing for a code the contract does not list at all', () => {
-    const overrides = { 'account.invitation_not_usable': 'Esta invitación ya no sirve' }
+    const overrides = { 'account.invitation_not_usable': 'This invitation no longer works' }
 
     expect(resolveOverride(overrides, 'made_up.code')).toBeUndefined()
   })
