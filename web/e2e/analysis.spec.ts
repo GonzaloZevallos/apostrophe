@@ -66,13 +66,13 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // An expense, today, with a category created inline.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
-  await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
-  await page.getByRole('button', { name: 'Crear categoría' }).click()
+  await page.getByRole('button', { name: 'Create a new category' }).click()
+  await page.getByLabel('New category name').fill('Flete')
+  await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount').fill('1500')
-  await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page.getByText('Gasto guardado')).toBeVisible()
+  await page.getByLabel('Details').fill('Flete al mercado')
+  await page.getByRole('button', { name: 'Save the expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
 
   // Más → Análisis.
   await openMas(page)
