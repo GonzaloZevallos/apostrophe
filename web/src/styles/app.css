@@ -796,6 +796,8 @@ body {
   justify-content: center;
   width: var(--alto-tocable);
   height: var(--alto-tocable);
+  /* A long title beside it wraps; it never narrows the thumb target. */
+  flex-shrink: 0;
   border-radius: var(--radio-pildora);
   background: var(--superficie);
   color: var(--tinta);

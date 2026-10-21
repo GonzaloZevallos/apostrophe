@@ -7,6 +7,7 @@
  */
 
 import { CUSTOMERS, LOGIN, SALE_NEW } from '../routes.ts'
+import { COMMON_TEXT } from '../copy/common.ts'
 import type { WalkStep } from './states.ts'
 
 export interface PendingTap {
@@ -37,11 +38,11 @@ export const PENDING_TAPS: readonly PendingTap[] = [
     route: CUSTOMERS,
     steps: [
       { click: 'Nico Parra' },
-      { click: 'Registrar cobro' },
-      { fill: { label: 'Monto', value: '1000' } },
-      { click: 'Efectivo' },
+      { click: COMMON_TEXT.recordPayment },
+      { fill: { label: COMMON_TEXT.amount, value: '1000' } },
+      { click: COMMON_TEXT.cash },
     ],
-    button: 'Guardar',
+    button: COMMON_TEXT.save,
     write: { method: 'POST', path: /^\/customers\/\d+\/payments$/ },
   },
   {

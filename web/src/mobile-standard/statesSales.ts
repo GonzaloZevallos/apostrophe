@@ -65,7 +65,7 @@ export const SALES_STATES: readonly WalkState[] = [
     screen: 'CobroBorrar',
     route: CUSTOMER.replace(':id', '{debtor}'),
     steps: [{ click: 'Borrar cobro' }],
-    visible: 'Sí, borralo',
+    visible: COMMON_TEXT.yesDelete,
   },
   {
     screen: 'VentasFechas',

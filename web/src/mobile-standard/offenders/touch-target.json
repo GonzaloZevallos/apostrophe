@@ -129,15 +129,6 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-target",
     "target": "link:#/# · Consumo propio−# g",
     "issue": 47,
     "sizes": [
@@ -293,15 +284,6 @@
   {
     "screen": "Cobro",
     "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Cobro",
-    "rule": "touch-target",
     "target": "textbox:Cash",
     "issue": 46
   },
@@ -314,15 +296,6 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "touch-target",
     "target": "textbox:Cash",
     "issue": 46
   },
@@ -331,15 +304,6 @@
     "rule": "touch-target",
     "target": "textbox:Transfer",
     "issue": 46
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "touch-target",
-    "target": "button:Close",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "CobroDesdeInicio",
@@ -944,7 +908,12 @@
     "screen": "OnboardingCategorias",
     "rule": "touch-target",
     "target": "button:Eliminar",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "OnboardingCategorias",
@@ -956,7 +925,12 @@
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-target",
     "target": "button:Eliminar",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "OnboardingCategoriasTexto130",
@@ -1011,15 +985,6 @@
     "rule": "touch-target",
     "target": "button:Saltar el resto",
     "issue": 49
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "PrecioConfirmarBorrado",
@@ -1194,15 +1159,6 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadDetalle",
-    "rule": "touch-target",
     "target": "link:#/# · Consumo propio−# g",
     "issue": 47,
     "sizes": [
@@ -1259,15 +1215,6 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "touch-target",
     "target": "link:#/# · Consumo propio−# g",
     "issue": 47,
     "sizes": [
@@ -1320,15 +1267,6 @@
     "rule": "touch-target",
     "target": "switch:Avisar cuando quede poco",
     "issue": 47
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "VariedadUmbral",
@@ -1532,15 +1470,6 @@
     "rule": "touch-target",
     "target": "link:Sales",
     "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VerTodas",
-    "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
     "sizes": [
       "246x437"
     ]
