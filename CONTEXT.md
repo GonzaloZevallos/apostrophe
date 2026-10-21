@@ -24,7 +24,7 @@ _Avoid_: signup link, referral, code
 ## Catalog and prices
 
 **Variety**:
-A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Variedades tab. A variety with no history can be deleted; one with history can be archived and restored. In the app: Variedad; the tab is Variedades.
+A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Varieties tab. A variety with no history can be deleted; one with history can be archived and restored. _In the app_: Variety; the tab is Varieties.
 _Avoid_: product, strain, item, SKU
 _In the app_: Variety
 
@@ -86,7 +86,7 @@ _In the app_: Line
 _Avoid_: item, row, product
 
 **Gift**:
-Grams handed over for free inside a sale: charged $0, still taken from stock. Grams shared to promote the business are a promotion, never a gift. In the app: Regalo.
+Grams handed over for free inside a sale: charged $0, still taken from stock. Grams shared to promote the business are a promotion, never a gift. _In the app_: Gift.
 _Avoid_: sample, freebie
 _In the app_: Gift
 
@@ -111,7 +111,7 @@ _In the app_: Note
 _Avoid_: comment, description, memo
 
 **Payment**:
-Money a customer hands over on a date, in cash or by transfer, with no note. Either an on-the-spot payment recorded with its sale, or a later payment recorded through Registrar cobro, opened by "Cobrar" on a debtor row of Clientes or Inicio or from the customer's card. Its date, amount and method never change; it is deleted and recorded again, never edited. In the app: Cobro.
+Money a customer hands over on a date, in cash or by transfer, with no note. Either an on-the-spot payment recorded with its sale, or a later payment recorded through Record payment, opened by "Collect" on a debtor row of Customers or Home or from the customer's card. Its date, amount and method never change; it is deleted and recorded again, never edited. _In the app_: Payment.
 _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
 
@@ -138,24 +138,24 @@ _In the app_: Purchase
 _Avoid_: order, buy
 
 **Lot**:
-The grams of one stock entry together with their cost per gram. Grams sold, gifted or withdrawn come out of the oldest lot of their variety first, oldest by date; a stock entry or withdrawal recorded late or corrected takes its place by date, and the lots after it are worked out again (ADR-0009). In the app: Lote.
+The grams of one stock entry together with their cost per gram. Grams sold, gifted or withdrawn come out of the oldest lot of their variety first, oldest by date; a stock entry or withdrawal recorded late or corrected takes its place by date, and the lots after it are worked out again (ADR-0009). _In the app_: Lot.
 _Avoid_: batch
 _In the app_: Lot
 
 **Stock**:
-The grams of a variety on hand: everything that came in minus everything sold, gifted or withdrawn. It can go negative, and the figure still shows, never hidden. In the app: Stock, shown on Variedades and a variety's page.
+The grams of a variety on hand: everything that came in minus everything sold, gifted or withdrawn. It can go negative, and the figure still shows, never hidden. _In the app_: Stock, shown on Varieties and a variety's page.
 _Avoid_: inventory, balance
 _In the app_: Stock
 
 **Pending cost**:
-What grams sold, gifted or withdrawn beyond everything recorded as coming in cost: not yet known, and never shown as $0. A later stock entry of that variety, wherever its date falls in the lot order, settles it (ADR-0009). In the app: Costo pendiente.
+What grams sold, gifted or withdrawn beyond everything recorded as coming in cost: not yet known, and never shown as $0. A later stock entry of that variety, wherever its date falls in the lot order, settles it (ADR-0009). _In the app_: Pending cost.
 _Avoid_: unknown cost, zero cost
 _In the app_: Pending cost
 
 **Draw**:
 Grams going out of a variety, taking from its lots oldest first: a sale line (gifts included), a negative adjustment or a stock withdrawal line. It has a costed part and, beyond every lot, pending grams. In the app it has no word of its own.
 _Avoid_: outflow, consumption, movement, out
-_In the app_: no word of its own; on screen it is the line's "Costo de lo vendido".
+_In the app_: no word of its own; on screen it is the line's "Cost of goods sold".
 
 **Lot order**:
 The one order a variety's lots and draws are taken in: by date, then by recording order.
@@ -197,7 +197,7 @@ _Avoid_: cash flow, balance, profit
 ## Telegram
 
 **Catalog**:
-The text that offers every unarchived, shown variety with stock above zero and a current price today: its emoji, name, indica share, aroma and prices, between the business's header and footer. It keeps its **bold** markers and its own money format ($11.000). In the app: Catálogo.
+The text that offers every unarchived, shown variety with stock above zero and a current price today: its emoji, name, indica share, aroma and prices, between the business's header and footer. It keeps its **bold** markers and its own money format ($11.000). _In the app_: Catalog.
 _Avoid_: menu, price list, flyer
 _In the app_: Catalog
 
@@ -207,7 +207,7 @@ _Avoid_: post, broadcast
 _In the app_: Pinned message
 
 **Test send**:
-The catalog sent only to the user's own Telegram chat, using the bot settings typed on the screen. They are saved only if it succeeds. A successful test since the settings last changed is required before Publicar. _In the app_: Test it.
+The catalog sent only to the user's own Telegram chat, using the bot settings typed on the screen. They are saved only if it succeeds. A successful test since the settings last changed is required before Publish. _In the app_: Test it.
 _Avoid_: preview, draft
 _In the app_: Test it
 
@@ -224,11 +224,11 @@ _In the app_: no word of its own
 ## Language
 
 **Stock status**:
-How a variety stands on stock, the first that fits: no entries (nothing has moved: no stock entry, no sale or gift, no withdrawal), sold out (stock at or below zero), low (above zero and under its threshold), ok. It is told by shape and word, never by color alone. In the app: Sin entradas, agotada, baja, ok.
+How a variety stands on stock, the first that fits: no entries (nothing has moved: no stock entry, no sale or gift, no withdrawal), sold out (stock at or below zero), low (above zero and under its threshold), ok. It is told by shape and word, never by color alone. _In the app_: no entries, sold out, low, ok.
 _Avoid_: stock level, alert, availability
 
 **Days left**:
-A variety's stock divided by the average daily grams sold, gifted or withdrawn over the last 30 days, rounded down to whole days. It is not shown when stock is at or below zero or nothing went out in those 30 days. In the app: Al ritmo de los últimos 30 días.
+A variety's stock divided by the average daily grams sold, gifted or withdrawn over the last 30 days, rounded down to whole days. It is not shown when stock is at or below zero or nothing went out in those 30 days. _In the app_: At the pace of the last 30 days.
 _Avoid_: runway, coverage, forecast
 
 **Opening stock**:
@@ -244,11 +244,11 @@ A stock entry recording the difference between a physical count and the stock th
 _Avoid_: correction, recount, shrinkage, write-off
 
 **Catalog attributes**:
-What a variety shows in the catalog: whether it is shown, its emoji, its indica share and its aroma. They never affect prices, stock or sales, and are edited only on the variety's own page. In the app: En el catálogo.
+What a variety shows in the catalog: whether it is shown, its emoji, its indica share and its aroma. They never affect prices, stock or sales, and are edited only on the variety's own page. _In the app_: In the catalog.
 _Avoid_: catalog settings, metadata, tags
 
 **Hidden variety**:
-A variety the seller chose to leave out of the catalog, whatever its price or stock. Hidden means only that: a hidden variety is still in Variedades and every picker. A variety out for lack of price or stock is not hidden, and an archived variety is a separate thing that keeps its hidden flag. In the app: Oculta.
+A variety the seller chose to leave out of the catalog, whatever its price or stock. Hidden means only that: a hidden variety is still in Varieties and every picker. A variety out for lack of price or stock is not hidden, and an archived variety is a separate thing that keeps its hidden flag. _In the app_: Hidden.
 _Avoid_: inactive, disabled, archived (that is an archived variety)
 
 **Indica share**:
@@ -276,43 +276,43 @@ A balance below zero, left only when a sale that payments had settled is deleted
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
-Every sale of a business that is not fully paid once settlement is applied, partially paid ones included, each counted once. In the app: te debe (in Ventas) and the count line of Clientes' Te deben section and Inicio's Te deben block.
+Every sale of a business that is not fully paid once settlement is applied, partially paid ones included, each counted once. _In the app_: owes you (in Sales) and the count line of the "Owed to you" section of Customers and of Home's "Owed to you" block.
 _Avoid_: unpaid orders, pending sales, open invoices
 
 **Total owed**:
-The sum of every customer's balance above $0 in a business; credits never subtract from it. In the app: the total heading Clientes' Te deben section and Inicio's Te deben block.
+The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading of the "Owed to you" section of Customers and of Home's "Owed to you" block.
 _Avoid_: receivables, outstanding
 
 **Margin**:
-A variety's sales of costed grams in a period minus what those grams cost, in pesos; gifts add their cost and $0 of sales, so it can be negative. Sales of costed grams are, per line, line total × costed grams ÷ line grams, half up; pending grams are left out and marked "y N g sin costo". In the app: Margen.
+A variety's sales of costed grams in a period minus what those grams cost, in pesos; gifts add their cost and $0 of sales, so it can be negative. Sales of costed grams are, per line, line total × costed grams ÷ line grams, half up; pending grams are left out and marked "and N g without cost". _In the app_: Margin.
 _Avoid_: profit, earnings, markup, ganancia
 
 **Margin percentage**:
-A variety's margin over its sales of costed grams in the period. There is none when those are $0, as for a variety only gifted or with every gram pending. In the app: Margen %.
+A variety's margin over its sales of costed grams in the period. There is none when those are $0, as for a variety only gifted or with every gram pending. _In the app_: Margin %.
 _Avoid_: markup, rentabilidad, return
 
 **Average margin**:
-A month's total margin across its varieties over the month's sales of costed grams, marked when any variety carries pending grams. In the app: Margen promedio.
+A month's total margin across its varieties over the month's sales of costed grams, marked when any variety carries pending grams. _In the app_: Average margin.
 _Avoid_: average profit, mean margin
 
 **First record**:
-The earliest sale, stock entry, stock withdrawal, payment or expense a business recorded in the app. Análisis's history and its since-the-start totals begin there, so no withdrawal's cost is ever left out of them. In the app: Desde el primer registro.
+The earliest sale, stock entry, stock withdrawal, payment or expense a business recorded in the app. Analysis's history and its since-the-start totals begin there, so no withdrawal's cost is ever left out of them. _In the app_: Since the first record.
 _Avoid_: start date, opening date, inception
 
 **Best week**:
-Of the last 8 Monday-to-Sunday weeks, the one with the highest sales, shipping included; on a tie the most recent wins, and none is marked when all are $0. In the app: Mejor semana.
+Of the last 8 Monday-to-Sunday weeks, the one with the highest sales, shipping included; on a tie the most recent wins, and none is marked when all are $0. _In the app_: Best week.
 _Avoid_: top week, record week
 
 **Best weekday**:
-Since the first record, the weekday with the highest sales total; on a tie the earlier day from Monday to Sunday wins, and none is marked when all are $0. In the app: Mejor día.
+Since the first record, the weekday with the highest sales total; on a tie the earlier day from Monday to Sunday wins, and none is marked when all are $0. _In the app_: Best day.
 _Avoid_: peak day, top day
 
 **Stock shortfall**:
-What the grams taken out by negative adjustments in a period cost, on the adjustment's date, from their lots as they stand today, oldest first; a part beyond every lot is pending, never $0. It lowers profit. In the app: Faltante de stock.
+What the grams taken out by negative adjustments in a period cost, on the adjustment's date, from their lots as they stand today, oldest first; a part beyond every lot is pending, never $0. It lowers profit. _In the app_: Stock shortfall.
 _Avoid_: shrinkage, write-off, loss, merma
 
 **Stock withdrawal**:
-A dated record of grams of one or more varieties taken out of stock for one reason, Promotion or Own use, with an optional note. No money moves and Caja is untouched. Its grams are costed on its date from the lots, oldest first, and a part beyond every lot is pending cost, never $0. The cost shows as its own line per reason and lowers profit; it never enters a variety's margin or the cost of goods sold. It can be edited or deleted at any time. In the app: Retiro, recorded with the action "Sacar del stock"; the reasons read Promoción and Consumo propio.
+A dated record of grams of one or more varieties taken out of stock for one reason, Promotion or Own use, with an optional note. No money moves and Cash is untouched. Its grams are costed on its date from the lots, oldest first, and a part beyond every lot is pending cost, never $0. The cost shows as its own line per reason and lowers profit; it never enters a variety's margin or the cost of goods sold. It can be edited or deleted at any time. _In the app_: Withdrawal, recorded with the action "Take from stock"; the reasons read Promotion and Own use.
 _Avoid_: gift (a gift is a sale line at $0 price), shrinkage, write-off
 
 **Publish**:
@@ -320,7 +320,7 @@ Posting and pinning the catalog in the business's channel chat, or editing the a
 _Avoid_: broadcast, push, sync
 
 **Bot settings**:
-A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. In the app: Integraciones, in Settings.
+A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. _In the app_: Integrations, in Settings.
 _Avoid_: integration, connection, config
 
 **Out of date**:
@@ -328,8 +328,8 @@ The pinned catalog's state when customers are not seeing today's catalog: the la
 _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
-Inicio's one-screen view of a business in Argentina time. Hoy shows what was sold today, money owed and stock per variety. Semana and Mes add cost of goods sold, stock shortfall, promotion and own-use cost, expenses, grams gifted, purchases, profit and cash; read only, every figure from the server. In the app: Inicio (tabs Hoy · Semana · Mes).
-_Avoid_: dashboard, overview, home, summary, Análisis
+Home's one-screen view of a business in Argentina time. Today shows what was sold today, money owed and stock per variety. Week and Month add cost of goods sold, stock shortfall, promotion and own-use cost, expenses, grams gifted, purchases, profit and cash; read only, every figure from the server. _In the app_: Home (tabs Today · Week · Month).
+_Avoid_: dashboard, overview, home, summary, Analysis
 
 **Average sale**:
 A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
@@ -361,7 +361,7 @@ The one-time load of a business's history from the `Control_de_ventas_y_gastos` 
 _Avoid_: migration, sync, upload, restore
 
 **Unfinished row**:
-A row of Ventas, Entradas or Gastos that the spreadsheet import leaves out because the sheet itself marks it not ready: Ventas by text instead of a number in its Total formula, Entradas and Gastos by a non-blank Revisar. It is listed in the import's report with the sheet's own text, creates no customer, no VIP and no kept spelling, and never blocks the import.
+A row of the sheet's Ventas, Entradas or Gastos that the spreadsheet import leaves out because the sheet itself marks it not ready: Ventas by text instead of a number in its Total formula, Entradas and Gastos by a non-blank Revisar. It is listed in the import's report with the sheet's own text, creates no customer, no VIP and no kept spelling, and never blocks the import.
 _Avoid_: incomplete row, invalid row, skipped row
 _In the app_: (operator terminal only; never shown on screen)
 
@@ -370,7 +370,7 @@ A signed-in device of one user, lasting 30 days as a cookie and a token. A chang
 _Avoid_: login, device, token, connection
 
 **Password change**:
-A user setting a new password with their current one, from Settings → Your account. The only rule is at least 10 characters, and the same password is accepted. It closes every other session of that user and retires their unused reset links, while the device that made the change stays signed in. In the app: Cambiar contraseña.
+A user setting a new password with their current one, from Settings → Your account. The only rule is at least 10 characters, and the same password is accepted. It closes every other session of that user and retires their unused reset links, while the device that made the change stays signed in. _In the app_: Change password.
 _Avoid_: password update, rotation, edit password
 
 **Reset link**:
@@ -382,7 +382,7 @@ The app's fixed structure for a business: the tabs, More, Settings, and the one 
 _Avoid_: menu, sitemap, routing, shell
 
 **Tab root**:
-A screen reached straight from the bar or the sidebar (Inicio, Ventas, Clientes, Variedades, Gastos, Analysis, More); it shows the bar and "+ Nueva venta". Every other screen is a card or detail (with a back arrow to its parent) or a form or sheet (with "Cerrar").
+A screen reached straight from the bar or the sidebar (Home, Sales, Customers, Varieties, Expenses, Analysis, More); it shows the bar and "+ New sale". Every other screen is a card or detail (with a back arrow to its parent) or a form or sheet (with "Close").
 _Avoid_: home, main screen, section
 
 **Settings**:
@@ -390,7 +390,7 @@ The one place holding every business-wide setting, in groups: Business, Users, P
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
-Four steps on Inicio for a business that existed before the Onboarding shipped and has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns. A brand-new business gets the Onboarding instead.
+Four steps on Home for a business that existed before the Onboarding shipped and has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Done" when met; the checklist goes for good the first time the two required steps are met and never returns. A brand-new business gets the Onboarding instead.
 _Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
 
 **Onboarding**:
@@ -402,7 +402,7 @@ A device's choice of Light or Dark. It is made only in Settings → Appearance, 
 _Avoid_: preference, dark mode setting, skin, user setting
 
 **Own chat lookup**:
-Finding the seller's own chat number among the private chats that wrote to the business's bot, using the token Probarlo would use. It fills the own chat field only when exactly one person wrote privately, shows only the number and saves nothing; settings are still saved only by a successful test send. In the app: Buscar mi chat.
+Finding the seller's own chat number among the private chats that wrote to the business's bot, using the token Test it would use. It fills the own chat field only when exactly one person wrote privately, shows only the number and saves nothing; settings are still saved only by a successful test send. _In the app_: Find my chat.
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
@@ -414,23 +414,23 @@ Which of bulk pricing (Bulk price) and VIP customers a business uses: two indepe
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Archived variety**:
-A variety the seller took out of every list and picker (Variedades, Lo que te queda, Nueva venta, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. Archive is the action offered for a variety with history, but an archived variety may have none. It keeps its name reserved and its hidden flag, is seen and restored only from Archivadas, has a read-only page, and restoring brings it back exactly as it was. In the app: Archivada.
-_Avoid_: deleted, hidden, inactive, disabled, oculta
+A variety the seller took out of every list and picker (Varieties, What you have left, New sale, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. Archive is the action offered for a variety with history, but an archived variety may have none. It keeps its name reserved and its hidden flag, is seen and restored only from Archived, has a read-only page, and restoring brings it back exactly as it was. In the app: Archivada.
+_Avoid_: deleted, hidden, inactive, disabled
 
 **Variety history**:
 Any sale line of a variety (gifts and special prices included) or any stock entry of it (any origin, an adjustment of either sign included), or any stock withdrawal line of it, worked out live and never stored. A variety with history can only be archived. A variety without history can be deleted for good, and its price entries, threshold and catalog attributes go with it.
 _Avoid_: usage, activity, movements, references
 
 **Promotion**:
-A stock withdrawal to make the business known, e.g. grams shared at a party for several people to try. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. In the app: Promoción.
+A stock withdrawal to make the business known, e.g. grams shared at a party for several people to try. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. _In the app_: Promotion.
 _Avoid_: gift (a gift is a sale line, to someone, inside a sale), sample, freebie, promo
 
 **Own use**:
-A stock withdrawal the seller consumes personally. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. In the app: Consumo propio.
+A stock withdrawal the seller consumes personally. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. _In the app_: Own use.
 _Avoid_: personal, shrinkage
 
 **More info**:
-The longer how-or-why behind a shortened line, one tap away on an "i" at the end of that line, expanded in place and collapsed on a second tap; it always opens closed and is never remembered. Never a consequence, a refusal's fix or a state. In the app: Más info (its accessible name, with aria-expanded).
+The longer how-or-why behind a shortened line, one tap away on an "i" at the end of that line, expanded in place and collapsed on a second tap; it always opens closed and is never remembered. Never a consequence, a refusal's fix or a state. _In the app_: More info (its accessible name, with aria-expanded).
 _Avoid_: tooltip, popover, help modal, info sheet, details
 
 **Icon and text rule**:
@@ -446,7 +446,7 @@ The checks every change must pass before it merges: pytest, vitest and e2e. A re
 _Avoid_: pipeline, build, test run
 
 **Tappable notice**:
-A notice the seller taps to open what it points to, such as Inicio's "Seguí con la configuración". It keeps its designed card (no row spacing or divider), its sentence carries the meaning and is its accessible name, and its chevron is decorative. It is neither an action row nor a control of the icon and text rule's closed lists.
+A notice the seller taps to open what it points to, such as Home's "Go on to the setup". It keeps its designed card (no row spacing or divider), its sentence carries the meaning and is its accessible name, and its chevron is decorative. It is neither an action row nor a control of the icon and text rule's closed lists.
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
