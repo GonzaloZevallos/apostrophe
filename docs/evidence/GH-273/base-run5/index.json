@@ -1,0 +1,1094 @@
+[
+  {
+    "screen": "Entrar",
+    "file": "/tmp/gh273-runs/base/run5/shots/Entrar.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Entrar.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Entrar.built.png"
+  },
+  {
+    "screen": "EntrarOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/EntrarOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EntrarOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EntrarOscuro.built.png"
+  },
+  {
+    "screen": "NegocioNuevo",
+    "file": "/tmp/gh273-runs/base/run5/shots/NegocioNuevo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/NegocioNuevo.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/NegocioNuevo.built.png"
+  },
+  {
+    "screen": "Invitacion",
+    "file": "/tmp/gh273-runs/base/run5/shots/Invitacion.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Invitacion.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Invitacion.built.png"
+  },
+  {
+    "screen": "Reset",
+    "file": "/tmp/gh273-runs/base/run5/shots/Reset.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Reset.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Reset.built.png"
+  },
+  {
+    "screen": "ResetOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/ResetOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ResetOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ResetOscuro.built.png"
+  },
+  {
+    "screen": "Inicio",
+    "file": "/tmp/gh273-runs/base/run5/shots/Inicio.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Inicio.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Inicio.built.png"
+  },
+  {
+    "screen": "InicioHoy",
+    "file": "/tmp/gh273-runs/base/run5/shots/InicioHoy.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/InicioHoy.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/InicioHoy.built.png"
+  },
+  {
+    "screen": "InicioOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/InicioOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/InicioOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/InicioOscuro.built.png"
+  },
+  {
+    "screen": "InicioCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/InicioCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/InicioCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/InicioCompu.built.png"
+  },
+  {
+    "screen": "InicioHoyCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/InicioHoyCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/InicioHoyCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/InicioHoyCompu.built.png"
+  },
+  {
+    "screen": "InicioHoyCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/InicioHoyCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/InicioHoyCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/InicioHoyCompuOscuro.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "file": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVez.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVez.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVez.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVezCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVezCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVezCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVezCompu.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVezOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVezOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVezOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/InicioPrimeraVezOscuro.built.png"
+  },
+  {
+    "screen": "Ventas",
+    "file": "/tmp/gh273-runs/base/run5/shots/Ventas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Ventas.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Ventas.built.png"
+  },
+  {
+    "screen": "VentasCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentasCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentasCompu.built.png"
+  },
+  {
+    "screen": "NuevaVenta",
+    "file": "/tmp/gh273-runs/base/run5/shots/NuevaVenta.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/NuevaVenta.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/NuevaVenta.built.png"
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "file": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCliente.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCliente.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCliente.built.png"
+  },
+  {
+    "screen": "NuevaVentaCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCompu.built.png"
+  },
+  {
+    "screen": "VentaDetalle",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentaDetalle.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentaDetalle.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentaDetalle.built.png"
+  },
+  {
+    "screen": "VentaDetalleCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentaDetalleCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentaDetalleCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentaDetalleCompu.built.png"
+  },
+  {
+    "screen": "VentasOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentasOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentasOscuro.built.png"
+  },
+  {
+    "screen": "VentasCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentasCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentasCompuOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/NuevaVentaOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/NuevaVentaOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/NuevaVentaOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaClienteOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/NuevaVentaClienteOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/NuevaVentaClienteOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/NuevaVentaClienteOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/NuevaVentaCompuOscuro.built.png"
+  },
+  {
+    "screen": "VentaDetalleOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentaDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentaDetalleOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentaDetalleOscuro.built.png"
+  },
+  {
+    "screen": "VentaDetalleCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentaDetalleCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentaDetalleCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentaDetalleCompuOscuro.built.png"
+  },
+  {
+    "screen": "VentaGuardada",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentaGuardada.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentaGuardada.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentaGuardada.built.png"
+  },
+  {
+    "screen": "VentaGuardadaOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VentaGuardadaOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VentaGuardadaOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VentaGuardadaOscuro.built.png"
+  },
+  {
+    "screen": "Clientes",
+    "file": "/tmp/gh273-runs/base/run5/shots/Clientes.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Clientes.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Clientes.built.png"
+  },
+  {
+    "screen": "ClientesCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClientesCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClientesCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClientesCompu.built.png"
+  },
+  {
+    "screen": "ClienteFicha",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClienteFicha.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClienteFicha.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClienteFicha.built.png"
+  },
+  {
+    "screen": "ClienteNuevo",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClienteNuevo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClienteNuevo.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClienteNuevo.built.png"
+  },
+  {
+    "screen": "ClienteNuevoCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClienteNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClienteNuevoCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClienteNuevoCompu.built.png"
+  },
+  {
+    "screen": "ClienteEditar",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClienteEditar.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClienteEditar.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClienteEditar.built.png"
+  },
+  {
+    "screen": "ClienteEditarCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClienteEditarCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClienteEditarCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClienteEditarCompu.built.png"
+  },
+  {
+    "screen": "Cobro",
+    "file": "/tmp/gh273-runs/base/run5/shots/Cobro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Cobro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Cobro.built.png"
+  },
+  {
+    "screen": "CobroCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/CobroCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/CobroCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/CobroCompu.built.png"
+  },
+  {
+    "screen": "ClientesOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClientesOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClientesOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClientesOscuro.built.png"
+  },
+  {
+    "screen": "ClientesCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClientesCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClientesCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClientesCompuOscuro.built.png"
+  },
+  {
+    "screen": "ClienteFichaOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/ClienteFichaOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ClienteFichaOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ClienteFichaOscuro.built.png"
+  },
+  {
+    "screen": "CobroOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/CobroOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/CobroOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/CobroOscuro.built.png"
+  },
+  {
+    "screen": "CobroCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/CobroCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/CobroCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/CobroCompuOscuro.built.png"
+  },
+  {
+    "screen": "EntradaStock",
+    "file": "/tmp/gh273-runs/base/run5/shots/EntradaStock.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EntradaStock.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EntradaStock.built.png"
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "file": "/tmp/gh273-runs/base/run5/shots/EntradaStockEditar.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EntradaStockEditar.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EntradaStockEditar.built.png"
+  },
+  {
+    "screen": "EntradaStockCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/EntradaStockCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EntradaStockCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EntradaStockCompu.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "file": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradas.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradas.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasOscuro.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasCompu.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EntradaStockSinEntradasCompuOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "file": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradas.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradas.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "file": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasVariedad.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasVariedad.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasVariedad.built.png"
+  },
+  {
+    "screen": "SacarDelStock",
+    "file": "/tmp/gh273-runs/base/run5/shots/SacarDelStock.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/SacarDelStock.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/SacarDelStock.built.png"
+  },
+  {
+    "screen": "SacarDelStockCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/SacarDelStockCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/SacarDelStockCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/SacarDelStockCompu.built.png"
+  },
+  {
+    "screen": "RetiroDetalle",
+    "file": "/tmp/gh273-runs/base/run5/shots/RetiroDetalle.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/RetiroDetalle.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/RetiroDetalle.built.png"
+  },
+  {
+    "screen": "VerTodas",
+    "file": "/tmp/gh273-runs/base/run5/shots/VerTodas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VerTodas.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VerTodas.built.png"
+  },
+  {
+    "screen": "PrecioNuevo",
+    "file": "/tmp/gh273-runs/base/run5/shots/PrecioNuevo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/PrecioNuevo.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/PrecioNuevo.built.png"
+  },
+  {
+    "screen": "PrecioNuevoCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoCompu.built.png"
+  },
+  {
+    "screen": "PrecioNuevoOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoOscuro.built.png"
+  },
+  {
+    "screen": "PrecioNuevoCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/PrecioNuevoCompuOscuro.built.png"
+  },
+  {
+    "screen": "VariedadNueva",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadNueva.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadNueva.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadNueva.built.png"
+  },
+  {
+    "screen": "VariedadNuevaCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadNuevaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadNuevaCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadNuevaCompu.built.png"
+  },
+  {
+    "screen": "Variedades",
+    "file": "/tmp/gh273-runs/base/run5/shots/Variedades.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Variedades.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Variedades.built.png"
+  },
+  {
+    "screen": "VariedadesCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadesCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadesCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadesCompu.built.png"
+  },
+  {
+    "screen": "VariedadDetalle",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadDetalle.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadDetalle.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadDetalle.built.png"
+  },
+  {
+    "screen": "Archivadas",
+    "file": "/tmp/gh273-runs/base/run5/shots/Archivadas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Archivadas.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Archivadas.built.png"
+  },
+  {
+    "screen": "ArchivadasCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ArchivadasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ArchivadasCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ArchivadasCompu.built.png"
+  },
+  {
+    "screen": "Gastos",
+    "file": "/tmp/gh273-runs/base/run5/shots/Gastos.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Gastos.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Gastos.built.png"
+  },
+  {
+    "screen": "GastosCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/GastosCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/GastosCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/GastosCompu.built.png"
+  },
+  {
+    "screen": "GastoNuevo",
+    "file": "/tmp/gh273-runs/base/run5/shots/GastoNuevo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/GastoNuevo.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/GastoNuevo.built.png"
+  },
+  {
+    "screen": "GastoNuevoCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/GastoNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/GastoNuevoCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/GastoNuevoCompu.built.png"
+  },
+  {
+    "screen": "Catalogo",
+    "file": "/tmp/gh273-runs/base/run5/shots/Catalogo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Catalogo.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Catalogo.built.png"
+  },
+  {
+    "screen": "CatalogoCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/CatalogoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/CatalogoCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/CatalogoCompu.built.png"
+  },
+  {
+    "screen": "Analisis",
+    "file": "/tmp/gh273-runs/base/run5/shots/Analisis.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Analisis.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Analisis.built.png"
+  },
+  {
+    "screen": "AnalisisCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/AnalisisCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/AnalisisCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/AnalisisCompu.built.png"
+  },
+  {
+    "screen": "AnalisisOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/AnalisisOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/AnalisisOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/AnalisisOscuro.built.png"
+  },
+  {
+    "screen": "AnalisisCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/AnalisisCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/AnalisisCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/AnalisisCompuOscuro.built.png"
+  },
+  {
+    "screen": "Mas",
+    "file": "/tmp/gh273-runs/base/run5/shots/Mas.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Mas.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Mas.built.png"
+  },
+  {
+    "screen": "Configuracion",
+    "file": "/tmp/gh273-runs/base/run5/shots/Configuracion.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/Configuracion.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/Configuracion.built.png"
+  },
+  {
+    "screen": "ConfiguracionCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionNegocio",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionNegocio.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionNegocio.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionNegocio.built.png"
+  },
+  {
+    "screen": "ConfiguracionNegocioCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionNegocioCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionNegocioCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionNegocioCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionUsuarios",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionUsuarios.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionUsuarios.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionUsuarios.built.png"
+  },
+  {
+    "screen": "ConfiguracionUsuariosCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionUsuariosCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionUsuariosCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionUsuariosCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionPrecios",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionPrecios.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionPrecios.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionPrecios.built.png"
+  },
+  {
+    "screen": "ConfiguracionPreciosCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionPreciosCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionPreciosCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionPreciosCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegraciones",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegraciones.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegraciones.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegraciones.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesOscuro.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionIntegracionesCompuOscuro.built.png"
+  },
+  {
+    "screen": "ConfiguracionMensaje",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionMensaje.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionMensaje.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionMensaje.built.png"
+  },
+  {
+    "screen": "ConfiguracionMensajeCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionMensajeCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionMensajeCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionMensajeCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCategorias.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCategorias.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCategorias.built.png"
+  },
+  {
+    "screen": "ConfiguracionCategoriasCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCategoriasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCategoriasCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCategoriasCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionApariencia",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionApariencia.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionApariencia.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionApariencia.built.png"
+  },
+  {
+    "screen": "ConfiguracionAparienciaCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionAparienciaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionAparienciaCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionAparienciaCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCuenta.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCuenta.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCuenta.built.png"
+  },
+  {
+    "screen": "ConfiguracionCuentaCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCuentaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCuentaCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ConfiguracionCuentaCompu.built.png"
+  },
+  {
+    "screen": "OnboardingStock",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingStock.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingStock.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingStock.built.png"
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingMensaje.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingMensaje.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingMensaje.built.png"
+  },
+  {
+    "screen": "OnboardingBot",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingBot.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingBot.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingBot.built.png"
+  },
+  {
+    "screen": "OnboardingSocio",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingSocio.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingSocio.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingSocio.built.png"
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingCategorias.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingCategorias.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingCategorias.built.png"
+  },
+  {
+    "screen": "OnboardingStockOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingStockOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingStockOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingStockOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingBotOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingBotOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingBotOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingBotOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingSocioOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingStockCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingStockCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingStockCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingStockCompu.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeCompu.built.png"
+  },
+  {
+    "screen": "OnboardingBotCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingBotCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingBotCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingBotCompu.built.png"
+  },
+  {
+    "screen": "OnboardingSocioCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioCompu.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasCompu.built.png"
+  },
+  {
+    "screen": "OnboardingStockCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingStockCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingStockCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingStockCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingBotCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingBotCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingBotCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingBotCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingSocioCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingStockTexto130",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingStockTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingStockTexto130.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingStockTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeTexto130.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingMensajeTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingBotTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingBotTexto130.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingBotTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioTexto130.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingSocioTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasTexto130.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingCategoriasTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingVariedad",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedad.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedad.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedad.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadCompu.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadTexto130",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadTexto130.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadTexto130.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingVariedadCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingPrecio",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingPrecio.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingPrecio.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingPrecio.built.png"
+  },
+  {
+    "screen": "OnboardingListo",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingListo.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingListo.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingListo.built.png"
+  },
+  {
+    "screen": "OnboardingListoCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingListoCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingListoCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingListoCompu.built.png"
+  },
+  {
+    "screen": "OnboardingListoOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingListoOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingListoOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingListoOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingListoCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingListoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingListoCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingListoCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingListoTexto130",
+    "file": "/tmp/gh273-runs/base/run5/shots/OnboardingListoTexto130.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/OnboardingListoTexto130.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/OnboardingListoTexto130.built.png"
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "file": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexion.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexion.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexion.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionCompu.built.png"
+  },
+  {
+    "screen": "EstadosGone",
+    "file": "/tmp/gh273-runs/base/run5/shots/EstadosGone.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EstadosGone.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EstadosGone.built.png"
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "file": "/tmp/gh273-runs/base/run5/shots/EstadosConfirmar.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EstadosConfirmar.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EstadosConfirmar.built.png"
+  },
+  {
+    "screen": "MasOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/MasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/MasOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/MasOscuro.built.png"
+  },
+  {
+    "screen": "VariedadDetalleOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadDetalleOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadDetalleOscuro.built.png"
+  },
+  {
+    "screen": "ArchivadasOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/ArchivadasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ArchivadasOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ArchivadasOscuro.built.png"
+  },
+  {
+    "screen": "ArchivadasCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/ArchivadasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/ArchivadasCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/ArchivadasCompuOscuro.built.png"
+  },
+  {
+    "screen": "CatalogoOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/CatalogoOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/CatalogoOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/CatalogoOscuro.built.png"
+  },
+  {
+    "screen": "CatalogoCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/CatalogoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/CatalogoCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/CatalogoCompuOscuro.built.png"
+  },
+  {
+    "screen": "VerTodasOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VerTodasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VerTodasOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VerTodasOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasVariedadOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasVariedadOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasVariedadOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/TodasLasEntradasVariedadOscuro.built.png"
+  },
+  {
+    "screen": "RetiroDetalleOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/RetiroDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/RetiroDetalleOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/RetiroDetalleOscuro.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionOscuro.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/EstadosSinConexionCompuOscuro.built.png"
+  },
+  {
+    "screen": "VariedadArchivada",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadArchivada.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadArchivada.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadArchivada.built.png"
+  },
+  {
+    "screen": "VariedadArchivadaOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaOscuro.built.png"
+  },
+  {
+    "screen": "VariedadArchivadaCompu",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaCompu.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaCompu.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaCompu.built.png"
+  },
+  {
+    "screen": "VariedadArchivadaCompuOscuro",
+    "file": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaCompuOscuro.design.png",
+    "built": "/tmp/gh273-runs/base/run5/shots/VariedadArchivadaCompuOscuro.built.png"
+  }
+]

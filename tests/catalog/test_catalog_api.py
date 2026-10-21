@@ -203,8 +203,8 @@ def test_a_new_business_opens_with_both_openings_in_one_commit(client: TestClien
     catalog = client.get("/catalog").json()
     categories = client.get("/expense-categories").json()
 
-    assert catalog["header"] == "\U0001f33f **CATÁLOGO** \U0001f33f"
-    assert catalog["footer"] == "\U0001f4e9 Consultas y pedidos por privado."
+    assert catalog["header"] == "\U0001f33f **CATALOG** \U0001f33f"
+    assert catalog["footer"] == "\U0001f4e9 Questions and orders by private message."
     assert catalog["varieties"] == []
     assert len(categories) == 4
 

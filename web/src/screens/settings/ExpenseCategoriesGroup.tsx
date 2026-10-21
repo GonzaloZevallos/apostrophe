@@ -9,20 +9,22 @@
 import { useState } from 'react'
 import ExpenseCategoriesEditor from './ExpenseCategoriesEditor'
 import SettingsGroup from './SettingsGroup'
+import { SETTINGS_TEXT } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
 
 export { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
 
 const LEAVE = {
-  question: '¿Descartás la categoría?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
+  question: SETTINGS_TEXT.discardTheCategory,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function ExpenseCategoriesGroup() {
   const [dirty, setDirty] = useState(false)
   return (
-    <SettingsGroup title="Categorías de gastos" dirty={dirty} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.expenseCategories} dirty={dirty} leave={LEAVE}>
       <ExpenseCategoriesEditor onDirtyChange={setDirty} />
     </SettingsGroup>
   )

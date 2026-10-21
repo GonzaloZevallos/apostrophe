@@ -9,11 +9,12 @@ import type { ReactNode } from 'react'
 import { useParams } from 'react-router'
 import GoneScreen from '../../components/GoneScreen'
 import { VARIETIES } from '../../routes'
+import { COMMON_TEXT } from '../../copy/common'
 
 const WHOLE_NUMBER = /^[0-9]+$/
 
 export default function VarietyRoute({ render }: { render: (varietyId: number) => ReactNode }) {
   const { id } = useParams<{ id: string }>()
-  if (id === undefined || !WHOLE_NUMBER.test(id)) return <GoneScreen label="Variedades" to={VARIETIES} />
+  if (id === undefined || !WHOLE_NUMBER.test(id)) return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
   return <>{render(Number(id))}</>
 }

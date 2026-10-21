@@ -1,5 +1,5 @@
 /**
- * Which of a customer's account rows carries "Borrar cobro" (`payments.md`, "On
+ * Which of a customer's account rows carries "Delete payment" (`payments.md`, "On
  * screen": it exists on every later payment, once). A later payment can appear as
  * several `payment` rows (one per sale it settled), a `credit` row (what was left
  * over), or both; a sale row is never a later payment.

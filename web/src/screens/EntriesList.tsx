@@ -36,8 +36,10 @@ import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from '../routes'
 import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './stockMessages'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE, STOCK_TEXT } from '../copy/stock'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
+import { COMMON_TEXT } from '../copy/common'
+import { OUT_OF_DATE_JOINER } from '../copy/pinnedCatalog'
 
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -84,7 +86,7 @@ export default function EntriesList({ varietyId }: Props) {
 
   const error = stockQuery.error ?? varietyQuery.error ?? movementsQuery.error
   if (varietyQuery.error instanceof ApiError && isGone(varietyQuery.error.code)) {
-    return <GoneScreen label="Variedades" to={VARIETIES} />
+    return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
   }
   if (error !== null) {
     return <Card>{error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Card>
@@ -115,7 +117,7 @@ export default function EntriesList({ varietyId }: Props) {
     setFailed(false)
     try {
       await deleteEntry(String(entry.id))
-      flash.showNow('Entrada eliminada')
+      flash.showNow(COMMON_TEXT.entryDeleted)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) setGoneNotice(true)
       else if (caught instanceof NetworkError) setOffline(true)
@@ -130,7 +132,7 @@ export default function EntriesList({ varietyId }: Props) {
   return (
     <Card>
       <h1 className="encabezado__titulo">
-        {varietyId === undefined ? 'Todas las entradas' : 'Entradas'}
+        {varietyId === undefined ? COMMON_TEXT.allEntries : COMMON_TEXT.entries}
       </h1>
       {(goneNotice || goneExited) && <GoneNotice />}
       {offline && <SinConexion />}
@@ -149,10 +151,10 @@ export default function EntriesList({ varietyId }: Props) {
                 <InAppLink to={pathTo(WITHDRAWAL, { id: entry.id })} className="fila-entrada__enlace">
                   <span className="fila-entrada__texto">
                     <span className="fila-entrada__linea1">
-                      {formatDate(entry.date, me.today)} · {nameOf(varietyId ?? 0)}
+                      {formatDate(entry.date, me.today)}{OUT_OF_DATE_JOINER}{nameOf(varietyId ?? 0)}
                     </span>
                     <span className="fila-entrada__linea2">
-                      {REASON_LABEL[entry.reason]} · {`−${formatGrams(entry.grams)}`}
+                      {REASON_LABEL[entry.reason]}{OUT_OF_DATE_JOINER}{`−${formatGrams(entry.grams)}`}
                     </span>
                   </span>
                 </InAppLink>
@@ -161,21 +163,21 @@ export default function EntriesList({ varietyId }: Props) {
               <li key={`entry-${entry.id}`} className="fila-entrada">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
-                    {formatDate(entry.date, me.today)} · {nameOf(entry.variety_id)}
+                    {formatDate(entry.date, me.today)}{OUT_OF_DATE_JOINER}{nameOf(entry.variety_id)}
                   </span>
                   <span className="fila-entrada__linea2">
-                    {ORIGIN_LABEL[entry.origin]} · {formatGrams(entry.grams)}
+                    {ORIGIN_LABEL[entry.origin]}{OUT_OF_DATE_JOINER}{formatGrams(entry.grams)}
                   </span>
                 </span>
                 <span className="fila-entrada__cifras">
                   {entry.total_cost === null ? (
-                    <span className="fila-entrada__costo fila-entrada__costo--sin">Sin costo</span>
+                    <span className="fila-entrada__costo fila-entrada__costo--sin">{STOCK_TEXT.sinCosto}</span>
                   ) : (
                     <>
                       <span className="fila-entrada__costo">{formatMoney(entry.total_cost)}</span>
                       {entry.cost_per_gram !== null && (
                         <span className="fila-entrada__linea2">
-                          {formatMoney(entry.cost_per_gram)} x g
+                          {formatMoney(entry.cost_per_gram)}{COMMON_TEXT.perGram}
                         </span>
                       )}
                     </>
@@ -183,11 +185,11 @@ export default function EntriesList({ varietyId }: Props) {
                 </span>
                 {!readOnly && (
                   <span className="fila-entrada__acciones">
-                    <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(STOCK_ENTRY, { id: entry.id })} />
+                    <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(STOCK_ENTRY, { id: entry.id })} />
                     <Boton
                       variant="icon"
                       action="delete"
-                      ariaLabel="Borrar"
+                      ariaLabel={STOCK_TEXT.borrar}
                       onClick={() => setConfirming(entry)}
                     />
                   </span>
@@ -200,10 +202,10 @@ export default function EntriesList({ varietyId }: Props) {
 
       {confirming !== null && (
         <ConfirmDialog
-          title="Antes de borrar"
-          detail={`¿Borrás la entrada del ${formatDate(confirming.date, me.today)} de ${nameOf(confirming.variety_id)}, ${formatGrams(confirming.grams)}? Esto no se puede deshacer.`}
-          confirmText="Sí, borrala"
-          cancelText="No, dejala"
+          title={STOCK_TEXT.antesDeBorrar}
+          detail={STOCK_TEXT.borrasLaEntradaDel(formatDate(confirming.date, me.today), nameOf(confirming.variety_id), formatGrams(confirming.grams))}
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!deleting) void onConfirmDelete(confirming)
           }}

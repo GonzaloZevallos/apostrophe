@@ -9,6 +9,8 @@
 import InAppLink from '../components/InAppLink'
 import Icono, { type NombreIcono } from '../components/Icono'
 import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS, WITHDRAWAL_NEW } from '../routes'
+import { SETTINGS_TEXT } from '../copy/settings'
+import { COMMON_TEXT } from '../copy/common'
 
 interface Item {
   to: string
@@ -20,28 +22,28 @@ interface Item {
 const ITEMS: Item[] = [
   {
     to: EXPENSE_NEW,
-    label: 'Cargar gasto',
+    label: COMMON_TEXT.addExpense,
     icon: 'agregar',
-    detail: 'Categoría, monto y detalle',
+    detail: SETTINGS_TEXT.categoryAmountAndDetails,
   },
   {
     to: WITHDRAWAL_NEW,
-    label: 'Sacar del stock',
+    label: COMMON_TEXT.takeFromStock,
     icon: 'salidaStock',
-    detail: 'Promoción o consumo propio',
+    detail: SETTINGS_TEXT.promotionOrOwnUse,
   },
-  { to: EXPENSES, label: 'Gastos', icon: 'gastos', detail: 'Por mes y por categoría' },
+  { to: EXPENSES, label: COMMON_TEXT.expenses, icon: 'gastos', detail: SETTINGS_TEXT.byMonthAndByCategory },
   {
     to: ANALYSIS,
-    label: 'Análisis',
+    label: COMMON_TEXT.analysis,
     icon: 'analisis',
-    detail: 'Variedades, semanas, meses y días',
+    detail: SETTINGS_TEXT.varietiesWeeksMonthsAndDays,
   },
   {
     to: SETTINGS,
-    label: 'Configuración',
+    label: COMMON_TEXT.settings,
     icon: 'configuracion',
-    detail: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
+    detail: SETTINGS_TEXT.businessUsersBotCatalogAndMore,
   },
 ]
 
@@ -60,8 +62,8 @@ export default function Mas() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">Más</span>
-        <nav className="mas__lista" aria-label="Más" data-menu>
+        <span className="encabezado__titulo">{COMMON_TEXT.more}</span>
+        <nav className="mas__lista" aria-label={COMMON_TEXT.more} data-menu>
           {ITEMS.map((item) => (
             <InAppLink
               key={item.to}

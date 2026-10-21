@@ -2,7 +2,7 @@
  * Step 2, "Cargá lo que tenés hoy": the owner's stock form, locked to the variety the API
  * names as `stock_target` and to the origin Stock inicial, dated today. With no cost the lot
  * costs $0, and the form says so next to the cost field. Once saved (or when the step is already done and no variety
- * is waiting for stock) the step offers "Seguir" (which sends `advance`) and "Agregar otra
+ * is waiting for stock) the step offers "Continue" (which sends `advance`) and "Agregar otra
  * variedad" (back to step 1); the progress stays on steps 1 and 2 while varieties are added.
  */
 
@@ -18,6 +18,8 @@ import { anotherVarietyState } from './anotherVariety'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
+import { COMMON_TEXT } from '../../copy/common'
 
 export default function StockStep({ me, progress, onDirtyChange, onProgress }: StepBodyProps) {
   const queryClient = useQueryClient()
@@ -37,7 +39,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     try {
       keepProgress(queryClient, await getOnboardingProgress())
     } catch {
-      // The saved stock stays saved; "Seguir" sends `advance` and answers afresh.
+      // The saved stock stays saved; "Continue" sends `advance` and answers afresh.
     }
   }
 
@@ -45,17 +47,17 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     return (
       <>
         <p className="onboarding__porque">
-          ¿Tenés otra para cargar ahora? Cada una lleva su nombre, su precio y su stock inicial.
+          {ONBOARDING_TEXT.anotherToAddNow}
         </p>
         {savedName !== null && (
           <div className="onboarding__tarjeta">
             <span className="onboarding__tarjeta-nombre">{savedName}</span>
-            <span className="onboarding__tarjeta-detalle">Con precio de hoy y con su stock inicial</span>
+            <span className="onboarding__tarjeta-detalle">{ONBOARDING_TEXT.withTodaysPriceAndStock}</span>
           </div>
         )}
         <div className="onboarding__acciones">
           <StepSubmit disabled={sending} onSubmit={() => void run(sendAdvance)}>
-            Seguir
+            {ONBOARDING_TEXT.continue}
           </StepSubmit>
           <Boton
             variant="secondary"
@@ -63,7 +65,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
             disabled={sending}
             onClick={() => void navigate(ONBOARDING_VARIETY, { state: inAppState(location, anotherVarietyState()) })}
           >
-            Agregar otra variedad
+            {COMMON_TEXT.addAnotherVariety}
           </Boton>
         </div>
         {notice}
@@ -73,9 +75,9 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
   if (target === null) {
     return (
       <>
-        <p className="onboarding__porque">Primero cargá una variedad con su precio de hoy.</p>
+        <p className="onboarding__porque">{ONBOARDING_TEXT.firstAddAVariety}</p>
         <Boton icon="agregar" onClick={() => void navigate(ONBOARDING_VARIETY)}>
-          Cargar una variedad
+          {ONBOARDING_TEXT.addAVariety}
         </Boton>
       </>
     )

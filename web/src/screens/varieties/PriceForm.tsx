@@ -20,13 +20,14 @@ import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
-import { PRICE_SAVED } from './priceMessages'
+import { PRICE_SAVED, VARIETIES_TEXT } from '../../copy/varieties'
 import {
   fieldOfCode,
   readPriceValues,
   type PriceErrors,
   type PriceValues,
 } from './priceFieldRules'
+import { COMMON_TEXT } from '../../copy/common'
 
 export interface PriceFormProps {
   varietyId: number
@@ -123,15 +124,15 @@ export default function PriceForm({
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
         <span id={titleId} ref={titleRef} tabIndex={-1} className="gasto-form__titulo">
-          Nuevo precio
+          {COMMON_TEXT.newPrice}
         </span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" disabled={sending} onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} disabled={sending} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <div className="campo">
-          <span id={captionId} className="campo__rotulo">Rige desde</span>
+          <span id={captionId} className="campo__rotulo">{VARIETIES_TEXT.rigeDesde}</span>
           <span className="precio-chip">
             <Boton
               variant="secondary"
@@ -153,10 +154,10 @@ export default function PriceForm({
                   setChoosingDate(false)
                 }}
               >
-                Hoy
+                {COMMON_TEXT.today}
               </Boton>
               <label className="precio-fecha__campo">
-                <span className="campo__rotulo">Rige desde</span>
+                <span className="campo__rotulo">{VARIETIES_TEXT.rigeDesde}</span>
                 <input
                   className="campo__input"
                   type="date"
@@ -181,7 +182,7 @@ export default function PriceForm({
         <FieldError message={errors.form} />
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardá el precio
+          {VARIETIES_TEXT.guardaElPrecio}
         </Boton>
       </form>
     </div>

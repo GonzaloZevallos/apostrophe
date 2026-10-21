@@ -22,10 +22,11 @@ import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import AuthPage from '../components/AuthPage'
 import Boton from '../components/Boton'
 import PasswordField from '../components/PasswordField'
-import { BRAKE_MESSAGE, INVITE_ONLY_LINE, LOGIN_HINT } from './authMessages'
+import { BRAKE_MESSAGE, BRAND_NAME, INVITE_ONLY_LINE, LOGIN_HINT, AUTH_TEXT } from '../copy/auth'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
-export const CREDENTIALS_WRONG = 'Email o contraseña incorrectos'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const CREDENTIALS_WRONG = AUTH_TEXT.wrongEmailOrPassword
+export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 export { BRAKE_MESSAGE, LOGIN_HINT, ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 
 const LOGIN_OVERRIDES: Partial<Record<RefusalCode, 'locked'>> = {
@@ -71,13 +72,13 @@ export default function Entrar() {
     <AuthPage>
       <div>
         <span className="marca">
-          apostrophe<span className="marca__apostrofe">’</span>
+          {BRAND_NAME}<span className="marca__apostrofe">’</span>
         </span>
-        <p className="subtitulo">Tus ventas, tu stock y lo que te deben.</p>
+        <p className="subtitulo">{AUTH_TEXT.tagline}</p>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Email</span>
+          <span className="campo__rotulo">{AUTH_TEXT.emailAddress}</span>
           <input
             className="campo__input"
             type="email"
@@ -86,9 +87,9 @@ export default function Entrar() {
             required
           />
         </label>
-        <PasswordField label="Contraseña" value={password} onChange={setPassword} error={error} />
+        <PasswordField label={AUTH_TEXT.password} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Entrá
+          {AUTH_TEXT.signIn}
         </Boton>
         {locked ? (
           <span className="campo__error" role="alert">

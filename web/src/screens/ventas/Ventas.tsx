@@ -42,18 +42,19 @@ import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
-import { EMPTY_LIST } from '../../sales/messages'
+import { EMPTY_LIST, SALES_TEXT } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
+import { COMMON_TEXT } from '../../copy/common'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
 export { EMPTY_LIST }
 
 const PERIOD_LABEL: Record<Period, string> = {
-  hoy: 'Hoy',
-  semana: 'Semana',
-  mes: 'Mes',
-  fechas: 'Fechas',
+  hoy: COMMON_TEXT.today,
+  semana: COMMON_TEXT.week,
+  mes: COMMON_TEXT.month,
+  fechas: SALES_TEXT.dates,
 }
 
 const PERIODS: Period[] = ['hoy', 'semana', 'mes', 'fechas']
@@ -114,13 +115,13 @@ export default function Ventas() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="ventas__cabecera">
-          <span className="encabezado__titulo">Ventas</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
 
           <Pestanas
             items={PESTANA_ITEMS}
             value={period}
             onChange={setPeriod}
-            ariaLabel="Período"
+            ariaLabel={COMMON_TEXT.period}
             ajuste={computer ? undefined : 'celdas'}
           />
 
@@ -137,11 +138,11 @@ export default function Ventas() {
         {period === 'fechas' && (
           <div className="periodos__fechas">
             <label className="campo">
-              <span className="campo__rotulo">Desde</span>
+              <span className="campo__rotulo">{SALES_TEXT.from}</span>
               <input
                 className="campo__input"
                 type="date"
-                aria-label="Desde"
+                aria-label={SALES_TEXT.from}
                 value={custom.start}
                 max={custom.end}
                 onChange={(event) =>
@@ -150,11 +151,11 @@ export default function Ventas() {
               />
             </label>
             <label className="campo">
-              <span className="campo__rotulo">Hasta</span>
+              <span className="campo__rotulo">{SALES_TEXT.to}</span>
               <input
                 className="campo__input"
                 type="date"
-                aria-label="Hasta"
+                aria-label={SALES_TEXT.to}
                 value={custom.end}
                 min={custom.start}
                 onChange={(event) =>
@@ -186,11 +187,11 @@ export default function Ventas() {
                     <span className="fila-venta__cuerpo">
                       <span className="fila-venta__nombre">
                         {sale.customer === null ? (
-                          <span className="fila-venta__sin-cliente">Sin cliente</span>
+                          <span className="fila-venta__sin-cliente">{SALES_TEXT.noCustomer}</span>
                         ) : (
                           <>
                             {sale.customer.name}
-                            {vipCustomers && sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
+                            {vipCustomers && sale.customer.vip && <Insignia tono="acento">{COMMON_TEXT.vip}</Insignia>}
                           </>
                         )}
                       </span>
@@ -207,7 +208,7 @@ export default function Ventas() {
                       <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda' : 'fila-venta__cifra'}>
                         {formatMoney(sale.total)}
                       </span>
-                      {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">te debe</span>}
+                      {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">{SALES_TEXT.owesYou}</span>}
                     </span>
                     <Icono nombre="chevron" />
                   </InAppLink>

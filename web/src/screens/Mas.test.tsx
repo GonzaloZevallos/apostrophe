@@ -18,32 +18,32 @@ function renderMas() {
       <Mas />
     </MemoryRouter>,
   )
-  return screen.getByRole('navigation', { name: 'Más' })
+  return screen.getByRole('navigation', { name: 'More' })
 }
 
-test('lists "+ Cargar gasto", "Sacar del stock", Gastos and Análisis first, in that order, Configuración last, nothing else', () => {
+test('lists "+ Cargar gasto", "Take from stock", Gastos and Análisis first, in that order, Configuración last, nothing else', () => {
   const entries = within(renderMas()).getAllByRole('link')
 
   expect(entries.map((entry) => entry.querySelector('.mas__item-rotulo')?.textContent)).toEqual([
-    'Cargar gasto',
-    'Sacar del stock',
-    'Gastos',
-    'Análisis',
-    'Configuración',
+    'Add expense',
+    'Take from stock',
+    'Expenses',
+    'Analysis',
+    'Settings',
   ])
-  expect(entries[0]).toHaveTextContent('Categoría, monto y detalle')
+  expect(entries[0]).toHaveTextContent('Category, amount and details')
   expect(entries[1]).toHaveAttribute('href', WITHDRAWAL_NEW)
-  expect(entries[2]).toHaveTextContent('Por mes y por categoría')
-  expect(entries[3]).toHaveTextContent('Variedades, semanas, meses y días')
+  expect(entries[2]).toHaveTextContent('By month and by category')
+  expect(entries[3]).toHaveTextContent('Varieties, weeks, months and days')
   expect(entries[4]).toHaveTextContent(
-    'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
+    'Business, users, bot, catalog, categories, appearance and your account',
   )
   expect(entries[4]).toHaveAttribute('href', SETTINGS)
 })
 
-test('"Cargar gasto" shows the agregar icon and the word alone, and keeps its "+ Cargar gasto" name', () => {
+test('"Add expense" shows the agregar icon and the word alone, and keeps its "+ Add expense" name', () => {
   const nav = renderMas()
-  const entry = within(nav).getByRole('link', { name: /^\+ Cargar gasto Categoría, monto y detalle$/ })
+  const entry = within(nav).getByRole('link', { name: /^\+ Add expense Category, amount and details$/ })
 
   expect(entry).toHaveAttribute('href', EXPENSE_NEW)
   expect(entry.textContent).not.toContain('+')
@@ -64,5 +64,5 @@ test('every entry opens a route the table mounts: no placeholder, nothing not bu
     expect(leaf?.route.path, `${target} reaches the catch-all`).not.toBe('*')
     expect(leaf).toBeDefined()
   }
-  expect(within(nav).queryByRole('link', { name: /^Negocio$/ })).not.toBeInTheDocument()
+  expect(within(nav).queryByRole('link', { name: /^Business$/ })).not.toBeInTheDocument()
 })

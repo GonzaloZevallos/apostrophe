@@ -10,10 +10,10 @@ import type { Page } from '@playwright/test'
 import { expect } from '../fixtures.js'
 
 export async function setPriceDate(page: Page, iso: string): Promise<void> {
-  const date = page.getByLabel('Rige desde', { exact: true })
+  const date = page.getByLabel('Effective from', { exact: true })
   await expect(date).toHaveCount(0)
   await page.locator('.precio-chip').getByRole('button').click()
   await expect(date).toHaveCount(1)
-  await expect(page.getByLabel('Rige desde')).toHaveCount(1)
+  await expect(page.getByLabel('Effective from')).toHaveCount(1)
   await date.fill(iso)
 }

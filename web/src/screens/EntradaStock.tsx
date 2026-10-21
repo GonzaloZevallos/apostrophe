@@ -30,6 +30,8 @@ import { useFlash } from '../flash/useFlash'
 import { STOCK, VARIETIES } from '../routes'
 import Boton from '../components/Boton'
 import StockEntryForm from './StockEntryForm'
+import { COMMON_TEXT } from '../copy/common'
+import { STOCK_TEXT } from '../copy/stock'
 
 interface Props {
   mode: 'nuevo' | 'editar'
@@ -85,7 +87,7 @@ export default function EntradaStock({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Variedades" to={VARIETIES} />
+      return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
     }
     return <Frame>{errorOf(existing.error)}</Frame>
   }
@@ -133,7 +135,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
     setDirty(next)
   }, [])
 
-  function leave(toast: 'Entrada guardada' | 'Entrada eliminada'): void {
+  function leave(toast: 'Entry saved' | 'Entry deleted'): void {
     disarm()
     flash.armAfterLeaving(toast)
     back()
@@ -151,10 +153,10 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
       <div className="cuerpo">
         <div className="gasto-form__cabecera">
           <span className="gasto-form__titulo">
-            {mode === 'nuevo' ? 'Nueva entrada' : 'Editar entrada'}
+            {mode === 'nuevo' ? STOCK_TEXT.nuevaEntrada : STOCK_TEXT.editarEntrada}
           </span>
           <span className="gasto-form__cerrar">
-            <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={back} />
+            <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={back} />
           </span>
         </div>
         <StockEntryForm
@@ -164,8 +166,8 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
           initial={initial}
           preselectedVarietyId={chosenVariety}
           preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : undefined}
-          onSaved={() => leave('Entrada guardada')}
-          onDeleted={() => leave('Entrada eliminada')}
+          onSaved={() => leave(COMMON_TEXT.entrySaved)}
+          onDeleted={() => leave(COMMON_TEXT.entryDeleted)}
           onGone={entryIsGone}
           onDirtyChange={onDirtyChange}
           dialogHost={dialogHost}
@@ -174,10 +176,10 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
       <div ref={setDialogHost} className="sin-caja" />
       {blocker.state === 'blocked' && (
         <ConfirmDialog
-          title={mode === 'nuevo' ? '¿Descartás la entrada?' : '¿Descartás los cambios?'}
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          confirmText="Sí, descartalo"
-          cancelText="No, seguí cargando"
+          title={mode === 'nuevo' ? STOCK_TEXT.descartasLaEntrada : COMMON_TEXT.discardTheChanges}
+          detail={COMMON_TEXT.losesWhatYouEntered}
+          confirmText={COMMON_TEXT.yesDiscard}
+          cancelText={COMMON_TEXT.noKeepEntering}
           onConfirm={() => blocker.proceed()}
           onCancel={() => blocker.reset()}
         />

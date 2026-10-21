@@ -121,7 +121,7 @@ test.describe('the walk rejects what it cannot reach', () => {
   test('a reachable screen is not reported', async ({ browser }) => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
-    const screen = { ...PROBE, steps: [{ click: 'Semana' }] }
+    const screen = { ...PROBE, steps: [{ click: 'Week' }] }
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()
   })
@@ -146,8 +146,8 @@ test.describe('the states the walk adds', () => {
     const screen = asScreen({
       screen: 'Probe',
       route: SALE_NEW,
-      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { press: 'Cerrar' }],
-      visible: '¿Descartás la venta?',
+      steps: [{ fill: { label: 'Line 1 variety', value: 'Sir Jack' } }, { press: 'Close' }],
+      visible: 'Discard the sale?',
     })
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()
@@ -311,7 +311,7 @@ test('opening a live invitation under the write guard shows its form, not "Sin c
   await page.goto(INVITATION.replace(':token', String(readFacts()['join_token'])))
   await settle(page)
   await expect(page.getByText('Te quedaste sin internet')).toHaveCount(0)
-  await expect(page.getByLabel('Email')).toBeVisible()
+  await expect(page.getByLabel('Email address')).toBeVisible()
   await context.close()
 })
 
@@ -352,7 +352,7 @@ test.describe('the colour, loading and shift checkers', () => {
   })
 
   test('a loading screen with no content area, no aria-busy, an empty-state wording and a figure is reported for each', async ({ browser }) => {
-    const found = await onPage(browser, '<p>Nadie te debe.</p>', 'loading')
+    const found = await onPage(browser, '<p>Nobody owes you.</p>', 'loading')
     expect(rulesOf(found)).toEqual(['aria-busy', 'blank-while-loading', 'false-empty'])
     const busy = await onPage(
       browser,

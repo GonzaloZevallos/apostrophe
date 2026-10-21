@@ -6,12 +6,13 @@
  */
 
 import type { Status } from '../api/stock'
+import { STOCK_TEXT } from '../copy/stock'
 
 /** Stock-status order (`stock.md`), `ok` left out: it is never counted on its own. */
 const COUNTED: readonly { status: Status; one: string; many: string }[] = [
-  { status: 'no_entries', one: 'sin entradas', many: 'sin entradas' },
-  { status: 'sold_out', one: 'agotada', many: 'agotadas' },
-  { status: 'low', one: 'baja', many: 'bajas' },
+  { status: 'no_entries', one: STOCK_TEXT.statusNoEntries, many: STOCK_TEXT.statusNoEntries },
+  { status: 'sold_out', one: STOCK_TEXT.statusSoldOut, many: STOCK_TEXT.statusSoldOutMany },
+  { status: 'low', one: STOCK_TEXT.statusLow, many: STOCK_TEXT.statusLowMany },
 ]
 
 export function summaryLine(statuses: readonly Status[]): string | null {
@@ -21,5 +22,5 @@ export function summaryLine(statuses: readonly Status[]): string | null {
     return count === 0 ? [] : [`${count} ${count === 1 ? one : many}`]
   })
   if (parts.length > 0) return parts.join(' · ')
-  return `${statuses.length} ${statuses.length === 1 ? 'variedad' : 'variedades'} · todo ok`
+  return `${statuses.length} ${statuses.length === 1 ? STOCK_TEXT.varietyOne : STOCK_TEXT.varietyMany}${STOCK_TEXT.allOkSuffix}`
 }

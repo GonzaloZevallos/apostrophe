@@ -1,6 +1,6 @@
 /**
  * The limits on always-visible copy (docs/product/icon-and-text-rule.md): every copy
- * module (`messages.ts` or `*Messages.ts`) registers its fixed help lines, notices and
+ * module (a file of `web/src/copy/`) registers its fixed help lines, notices and
  * empty-state strings in `LIMITED_COPY` — the same binding the screen renders, with
  * placeholders filled from `SAMPLES`, never fixture or API data — and lists the
  * refusals it keeps over 80 characters in `LONG_REFUSALS`.
@@ -12,25 +12,29 @@ import { copyProblems, LIMITS, measure, SAMPLES, type CopyModule } from './limit
 /** Today's copy modules, written once. A new module is added here in the diff that
  * creates it; the glob below fails until it is. */
 const KNOWN_MODULES = [
-  '/src/sales/messages.ts',
-  '/src/screens/authMessages.ts',
-  '/src/screens/clientes/messages.ts',
-  '/src/screens/catalogMessages.ts',
-  '/src/screens/pinPublishMessages.ts',
-  '/src/screens/settings/integrationsMessages.ts',
-  '/src/components/estadosMessages.ts',
-  '/src/screens/analisisMessages.ts',
-  '/src/screens/gastosMessages.ts',
-  '/src/screens/inicioMessages.ts',
-  '/src/screens/onboarding/onboardingMessages.ts',
-  '/src/screens/settings/messages.ts',
-  '/src/screens/stockMessages.ts',
-  '/src/screens/varieties/priceMessages.ts',
-  '/src/screens/varieties/thresholdMessages.ts',
-  '/src/screens/varieties/varietiesMessages.ts',
+  '/src/copy/analysis.ts',
+  '/src/copy/auth.ts',
+  '/src/copy/catalog.ts',
+  '/src/copy/common.ts',
+  '/src/copy/customers.ts',
+  '/src/copy/dates.ts',
+  '/src/copy/expenses.ts',
+  '/src/copy/inicio.ts',
+  '/src/copy/onboarding.ts',
+  '/src/copy/payments.ts',
+  '/src/copy/pinnedCatalog.ts',
+  '/src/copy/refusals.ts',
+  '/src/copy/sales.ts',
+  '/src/copy/settings.ts',
+  '/src/copy/shell.ts',
+  '/src/copy/stock.ts',
+  '/src/copy/varieties.ts',
 ]
 
-const found = import.meta.glob<CopyModule>('/src/**/{messages,*Messages}.ts', { eager: true })
+const found = import.meta.glob<CopyModule>(
+  ['/src/copy/*.ts', '!/src/copy/limits.ts', '!/src/copy/emptyStates.ts', '!/src/copy/*.test.ts'],
+  { eager: true },
+)
 
 describe('the copy modules', () => {
   test('are exactly the ones this list names', () => {

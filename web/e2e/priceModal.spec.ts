@@ -15,20 +15,20 @@ test.use({ viewport: { width: 1280, height: 720 } })
 
 async function addVariety(page: Page, name: string): Promise<void> {
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByPlaceholder('Nombre de la variedad').fill(name)
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByPlaceholder('Variety name').fill(name)
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
 }
 
-/** Signs up, makes two varieties and opens "Nuevo precio" of Rosa; returns Rosa's id. */
+/** Signs up, makes two varieties and opens "New price" of Rosa; returns Rosa's id. */
 async function openPriceModal(page: Page): Promise<number> {
   await signUpNewBusiness(page)
   await addVariety(page, 'Lirio')
   await addVariety(page, 'Rosa')
   await page.locator('.variedades-paneles__lista').getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await expect(page.getByRole('dialog', { name: 'Nuevo precio' })).toBeVisible()
+  await page.getByRole('link', { name: 'New price' }).click()
+  await expect(page.getByRole('dialog', { name: 'New price' })).toBeVisible()
   // The host takes focus to the title once the form is there: its effects have run.
   await expect(page.locator('.gasto-form__titulo')).toBeFocused()
   const found = /\/varieties\/(\d+)\/prices\/new$/.exec(new URL(page.url()).pathname)

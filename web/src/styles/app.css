@@ -796,6 +796,8 @@ body {
   justify-content: center;
   width: var(--alto-tocable);
   height: var(--alto-tocable);
+  /* A long title beside it wraps; it never narrows the thumb target. */
+  flex-shrink: 0;
   border-radius: var(--radio-pildora);
   background: var(--superficie);
   color: var(--tinta);
@@ -1816,6 +1818,12 @@ body {
   gap: 2px;
 }
 
+.venta-detalle__resumen > .cifra-xl {
+  /* The big total shrinks on the narrowest phone so "$ 12.345,00" stays on one line. */
+  font-size: clamp(32px, 14vw, 54px);
+  white-space: nowrap;
+}
+
 .venta-detalle__subtitulo {
   font-size: 14px;
   color: var(--tinta2);
@@ -1894,6 +1902,8 @@ body {
 .venta-detalle__renglon-monto {
   font-size: 17px;
   font-weight: 600;
+  flex: none;
+  white-space: nowrap;
 }
 
 .venta-detalle__renglon--total .venta-detalle__renglon-monto {
@@ -1984,6 +1994,8 @@ body {
 .panel-lista__valor {
   font-size: 17px;
   font-weight: 600;
+  /* A figure is never broken across lines: the label beside it wraps instead. */
+  white-space: nowrap;
 }
 
 .bloque-deben {
@@ -2062,6 +2074,7 @@ body {
 
 .venta-detalle__total {
   margin-left: auto;
+  white-space: nowrap;
   font-size: 18px;
   font-weight: 600;
 }
@@ -2504,6 +2517,20 @@ body {
   font-size: 13px;
 }
 
+/* A figure never breaks between "$" and its number: when the row is short of room the
+ * whole figure drops to the next line. From 300 px up; the 246 px cell (a 320 px phone with
+ * text at 130%) keeps its listed overflow under #46, which the phone check holds. */
+@media (min-width: 300px) {
+  .cuenta-cliente__fila {
+    flex-wrap: wrap;
+  }
+
+  .cuenta-cliente__monto,
+  .cuenta-cliente__saldo {
+    white-space: nowrap;
+  }
+}
+
 .marca-estado {
   display: inline-flex;
   align-items: center;
@@ -2788,6 +2815,12 @@ body {
   color: var(--tinta);
   text-decoration: none;
   font-weight: 600;
+  /* A tap-sized box on a row that looks as tall as before: the row's own padding is what the
+   * negative margin gives back. */
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  margin: -13px 0;
 }
 
 .catalogo__fila {
@@ -2932,6 +2965,10 @@ body {
 /* The cost lines of a week or month (`Analisis.dc.html`, `AnalisisCompu.dc.html`):
    Costo de lo vendido, Faltante de stock, Promoción and Consumo propio, each in
    words, on a line of their own under the row's figures. */
+.analisis__costos > span {
+  white-space: nowrap;
+}
+
 .analisis__costos {
   display: flex;
   flex-basis: 100%;
@@ -3394,10 +3431,15 @@ body {
   padding: 0;
 }
 
-/* The reveal ("Mostrar"/"Ocultar") is not in the design: it sits at the field's right
+/* The reveal ("Show"/"Hide") is not in the design: it sits at the field's right
  * edge so it reads as the field's own, not as a third button. */
 .auth-page .campo__mostrar {
   align-self: flex-end;
+}
+
+/* "Show" is shorter than the Spanish word was: the button keeps the tap width. */
+.campo__mostrar .boton--enlace {
+  min-width: var(--alto-tocable);
 }
 
 /* Mostrar/Ocultar, Cancelar, "Todo: $ X" and the variety's Editar were `.boton-enlace`: accent

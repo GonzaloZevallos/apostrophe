@@ -107,7 +107,7 @@ test('the document never lets the system pick a color or draws an iOS splash', (
 test('the manifest carries its identity fields and the light papel', () => {
   expect(manifest.id).toBe(HOME)
   expect(manifest.scope).toBe(HOME)
-  expect(manifest.lang).toBe('es')
+  expect(manifest.lang).toBe('en')
   expect(manifest.display).toBe('standalone')
   expect(manifest.theme_color).toBe(lightPapel())
   expect(manifest.background_color).toBe(lightPapel())
@@ -154,4 +154,9 @@ test('themeColorViolations rejects a single meta with the wrong color', () => {
   expect(themeColorViolations(broken, lightPapel())).toEqual([
     'the theme-color is not the light --papel',
   ])
+})
+
+test('the document says the app is in English', () => {
+  expect(indexHtml).toMatch(/<html lang="en">/)
+  expect(indexHtml).not.toMatch(/lang="es"/)
 })

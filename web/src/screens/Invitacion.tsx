@@ -28,15 +28,17 @@ import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { formatDateShort } from '../format/dates'
-import { expiryLine, NOT_USABLE_DETAIL, NOT_USABLE_TITLE, WEAK_PASSWORD_MESSAGE } from './authMessages'
+import { expiryLine, NOT_USABLE_DETAIL, NOT_USABLE_TITLE, WEAK_PASSWORD_MESSAGE, AUTH_TEXT } from '../copy/auth'
+import { COMMON_TEXT } from '../copy/common'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE, BUSINESS_NAME_INVALID_MESSAGE as COPY_BUSINESS_NAME_INVALID_MESSAGE } from '../copy/settings'
 
 export { NOT_USABLE_DETAIL, NOT_USABLE_TITLE }
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
-export const EMAIL_TAKEN_MESSAGE = 'Ya hay una cuenta con ese email'
+export const EMAIL_TAKEN_MESSAGE = AUTH_TEXT.emailTaken
 export { WEAK_PASSWORD_MESSAGE }
-export const EMAIL_INVALID_MESSAGE = 'Ingresá un email válido'
-export const BUSINESS_NAME_INVALID_MESSAGE = 'Ponele un nombre al negocio, sin espacios de más'
+export const EMAIL_INVALID_MESSAGE = AUTH_TEXT.enterValidEmail
+export const BUSINESS_NAME_INVALID_MESSAGE = COPY_BUSINESS_NAME_INVALID_MESSAGE
 
 type AcceptAction = { kind: 'inline'; message: string } | { kind: 'not_usable' }
 
@@ -156,18 +158,18 @@ export default function Invitacion() {
   return (
     <AuthPage
       titleClass="invitacion__titulo"
-      eyebrow={isNewBusiness ? 'Invitación válida' : 'Te invitaron a'}
-      title={isNewBusiness ? 'Armá tu negocio' : (view.business_name ?? undefined)}
+      eyebrow={isNewBusiness ? AUTH_TEXT.validInvitation : AUTH_TEXT.youWereInvitedTo}
+      title={isNewBusiness ? AUTH_TEXT.setUpYourBusiness : (view.business_name ?? undefined)}
       subtitle={
         isNewBusiness
-          ? 'Ponele un nombre y creá tu usuario. Después podés invitar a un socio.'
-          : 'Creá tu usuario y vas a ver las ventas, el stock y los clientes de este negocio. Sólo de este.'
+          ? AUTH_TEXT.nameItAndCreate
+          : AUTH_TEXT.createYourUser
       }
     >
       <form className="formulario" onSubmit={onSubmit}>
         {isNewBusiness && (
           <label className="campo">
-            <span className="campo__rotulo">Nombre del negocio</span>
+            <span className="campo__rotulo">{COMMON_TEXT.businessName}</span>
             <input
               className="campo__input"
               type="text"
@@ -178,7 +180,7 @@ export default function Invitacion() {
           </label>
         )}
         <label className="campo">
-          <span className="campo__rotulo">Email</span>
+          <span className="campo__rotulo">{AUTH_TEXT.emailAddress}</span>
           <input
             className="campo__input"
             type="email"
@@ -187,9 +189,9 @@ export default function Invitacion() {
             required
           />
         </label>
-        <PasswordField label="Contraseña" value={password} onChange={setPassword} error={error} />
+        <PasswordField label={AUTH_TEXT.password} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {isNewBusiness ? 'Creá el negocio' : `Sumate a ${view.business_name}`}
+          {isNewBusiness ? AUTH_TEXT.createTheBusiness : AUTH_TEXT.joinBusiness(view.business_name)}
         </Boton>
       </form>
       <div className="pie">

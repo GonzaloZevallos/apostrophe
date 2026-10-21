@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { EMPTY_STATE_WORDINGS, EMPTY_STATES } from '../screens/emptyStates.ts'
+import { EMPTY_STATE_WORDINGS, EMPTY_STATES } from '../copy/emptyStates.ts'
 import { FORBIDDEN_WHILE_LOADING } from './emptyStates.ts'
 
 test('the forbidden list is the screens’ own wordings, none copied', () => {

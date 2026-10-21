@@ -1,0 +1,4 @@
+head throttle=4 N=12 gray=0 black=12 null=0 other=0
+head throttle=10 N=12 gray=0 black=12 null=0 other=0
+head throttle=1 N=30 gray=0 black=30 null=0 other=0
+base throttle=4 N=12 gray=3 black=9 null=0 other=0

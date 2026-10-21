@@ -10,7 +10,11 @@ from typing import Any
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
+from app.pinned_catalog.adapters.tables import PinnedCatalogRow
 from app.pinned_catalog.domain.errors import TelegramUnreachable
 from tests.fakes.telegram import FakeTelegram
 
@@ -541,3 +545,37 @@ def test_the_withdrawal_write_routes_are_exactly_the_three_the_tests_above_trigg
         ("PUT", "/stock/withdrawals/{withdrawal_id}"),
         ("DELETE", "/stock/withdrawals/{withdrawal_id}"),
     }
+
+
+def test_a_pin_posted_with_the_spanish_fixed_lines_gets_one_edit_and_no_new_post(
+    client: TestClient, telegram: FakeTelegram, engine: Engine
+) -> None:
+    """GH-53: only the catalog's fixed lines changed language. A pin posted before it
+    differs from today's text in those lines alone, so the next upkeep trigger edits it in
+    place (one edit, zero posts) and records the English text."""
+    variety = _register_qualifying_variety(client, "V1")
+    _publish(client)
+    posted = [call for call in telegram.calls if call[0] == "send" and call[2] == "@canal"]
+    assert len(posted) == 1
+    assert "Price per gram: $9.000" in posted[0][3]
+    with Session(engine) as session:
+        row = session.scalars(select(PinnedCatalogRow)).one()
+        english_stored = row.last_published_text
+        assert english_stored is not None
+        row.last_published_text = english_stored.replace("Price per gram:", "Precio x gramo:")
+        session.commit()
+    telegram.calls.clear()
+
+    saved = client.put(
+        f"/catalog/varieties/{variety['id']}",
+        json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
+    )
+
+    assert saved.status_code == 200, saved.text
+    assert [call[0] for call in telegram.calls] == ["edit"]
+    assert telegram.calls[0][3] == posted[0][3]
+    with Session(engine) as session:
+        assert session.scalars(select(PinnedCatalogRow)).one().last_published_text == english_stored
+    status = _status(client)
+    assert status is not None
+    assert status["state"] == "up_to_date"

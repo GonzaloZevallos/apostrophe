@@ -33,6 +33,8 @@ import { formatDate } from '../../format/dates'
 import { formatGrams } from '../../format/money'
 import { VARIETIES, WITHDRAWAL_EDIT, pathTo } from '../../routes'
 import { REASON_OPTIONS } from './withdrawalReasons'
+import { COMMON_TEXT } from '../../copy/common'
+import { STOCK_TEXT } from '../../copy/stock'
 
 
 /** A deleted withdrawal's own query shares the `'stock'` prefix every other stock figure
@@ -77,7 +79,7 @@ export default function WithdrawalDetail() {
     try {
       await deleteWithdrawal(withdrawalId)
       invalidateStockAfterDeleting(queryClient, withdrawalId)
-      flash.armAfterLeaving('Retiro eliminado')
+      flash.armAfterLeaving(STOCK_TEXT.retiroEliminado)
       back()
     } catch (caught) {
       setConfirmingDelete(false)
@@ -96,7 +98,7 @@ export default function WithdrawalDetail() {
 
   if (query.isError) {
     if (query.error instanceof ApiError && isGone(query.error.code)) {
-      return <GoneScreen label="Variedades" to={VARIETIES} />
+      return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
     }
     return (
       <main className="pantalla">
@@ -121,26 +123,26 @@ export default function WithdrawalDetail() {
   const date = formatDate(withdrawal.date, me.today)
   const confirmation =
     withdrawal.reason === 'promotion'
-      ? `¿Borrás la promoción del ${date}? Vuelven ${formatGrams(withdrawal.total_grams)} al stock.`
-      : `¿Borrás el consumo propio del ${date}? Vuelven ${formatGrams(withdrawal.total_grams)} al stock.`
+      ? STOCK_TEXT.borrasLaPromocionDel(date, formatGrams(withdrawal.total_grams))
+      : STOCK_TEXT.borrasElConsumoPropio(date, formatGrams(withdrawal.total_grams))
 
   return (
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <span className="encabezado__titulo">Retiro</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.withdrawal}</span>
         </div>
         <dl className="retiro__datos">
           <div className="retiro__dato">
-            <dt className="campo__rotulo">Motivo</dt>
+            <dt className="campo__rotulo">{STOCK_TEXT.motivo}</dt>
             <dd>{reasonWord}</dd>
           </div>
           <div className="retiro__dato">
-            <dt className="campo__rotulo">Fecha</dt>
+            <dt className="campo__rotulo">{COMMON_TEXT.date}</dt>
             <dd>{date}</dd>
           </div>
         </dl>
-        <ul className="retiro__lineas" aria-label="Variedades">
+        <ul className="retiro__lineas" aria-label={COMMON_TEXT.varieties}>
           {withdrawal.lines.map((line, index) => (
             // A variety may repeat in several lines with no merging: the position is the identity.
             <li key={index} className="retiro__linea">
@@ -151,7 +153,7 @@ export default function WithdrawalDetail() {
         </ul>
         {withdrawal.note !== null && (
           <div className="retiro__dato">
-            <span className="campo__rotulo">Nota</span>
+            <span className="campo__rotulo">{COMMON_TEXT.note}</span>
             <span>{withdrawal.note}</span>
           </div>
         )}
@@ -162,18 +164,18 @@ export default function WithdrawalDetail() {
           </span>
         )}
         <div className="retiro__acciones">
-          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })} />
+          <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })} />
           <Boton variant="destructive" icon="tacho" onClick={() => setConfirmingDelete(true)}>
-            Borrar
+            {STOCK_TEXT.borrar}
           </Boton>
         </div>
       </div>
       {confirmingDelete && (
         <ConfirmDialog
-          title="Antes de borrar"
+          title={STOCK_TEXT.antesDeBorrar}
           detail={confirmation}
-          confirmText="Sí, borralo"
-          cancelText="No, dejalo"
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!deleting) void onConfirmDelete()
           }}

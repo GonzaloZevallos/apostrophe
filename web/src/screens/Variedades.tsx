@@ -44,15 +44,17 @@ import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
-import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
+import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE, VARIETIES_TEXT } from '../copy/varieties'
+import { COMMON_TEXT } from '../copy/common'
+import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
 const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 
-export const VARIETY_SAVED = 'Variedad guardada'
-export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
-export const NAME_TAKEN_MESSAGE = 'Ya existe una variedad con ese nombre'
-export const NAME_INVALID_MESSAGE = 'Ponele un nombre a la variedad, sin espacios de más'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const VARIETY_SAVED = VARIETIES_TEXT.variedadGuardada
+export const NO_PRICE_TODAY = VARIETIES_TEXT.sinPrecioNoSe
+export const NAME_TAKEN_MESSAGE = VARIETIES_TEXT.yaExisteUnaVariedad
+export const NAME_INVALID_MESSAGE = VARIETIES_TEXT.poneleUnNombreA
+export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 
 interface PriceEntry {
   id: number
@@ -75,7 +77,7 @@ export interface Variety {
 function figuresOf(row: VarietyStock, today: string): string {
   const grams = formatGrams(row.grams)
   if (row.status === 'sold_out' || row.status === 'no_entries') return `${grams} · ${detailFor(row, today)}`
-  return row.days_left === null ? grams : `${grams} · ${row.days_left} días`
+  return row.days_left === null ? grams : VARIETIES_TEXT.n01Dias(grams, row.days_left)
 }
 
 export default function Variedades() {
@@ -107,13 +109,13 @@ export default function Variedades() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">Variedades</h1>
+        <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
           {catalogDisabled ? (
             <>
               <Boton icon="telegram" disabled ariaDescribedBy={CATALOG_REASON_ID}>
-                Mandar catálogo
+                {VARIETIES_TEXT.mandarCatalogo}
               </Boton>
               <p className="variedades__motivo" id={CATALOG_REASON_ID} data-copy="help">
                 {CATALOG_DISABLED_REASON}
@@ -121,18 +123,18 @@ export default function Variedades() {
             </>
           ) : (
             <BotonLink to={CATALOG} icon="telegram">
-              Mandar catálogo
+              {VARIETIES_TEXT.mandarCatalogo}
             </BotonLink>
           )}
-          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel="+ Entrada de stock">
-            Entrada de stock
+          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel={VARIETIES_TEXT.entradaDeStock}>
+            {COMMON_TEXT.stockEntry}
           </BotonLink>
           <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="salidaStock">
-            Sacar del stock
+            {COMMON_TEXT.takeFromStock}
           </BotonLink>
           <span className="variedades__nueva">
             <BotonLink to={VARIETY_NEW} variant="link">
-              Nueva variedad
+              {COMMON_TEXT.newVariety}
             </BotonLink>
           </span>
         </div>
@@ -162,14 +164,14 @@ export default function Variedades() {
                 <span className="variedad-fila__encabezado">
                   <MarcaEstado estado={row.status} />
                   <span className="variedad-fila__nombre">{variety.name}</span>
-                  {hidden.has(variety.id) && <span className="variedad-fila__oculta">Oculta</span>}
+                  {hidden.has(variety.id) && <span className="variedad-fila__oculta">{VARIETIES_TEXT.oculta}</span>}
                 </span>
                 <span className="variedad-fila__pie">
                   <span className="variedad-fila__detalle">{figuresOf(row, me.today)}</span>
                   <span className="variedad-fila__precio">
                     {variety.current_price === null
                       ? NO_PRICE_TODAY
-                      : `${formatMoney(variety.current_price.list_price)} x g`}
+                      : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
                   </span>
                 </span>
               </PaneRowLink>
@@ -177,12 +179,12 @@ export default function Variedades() {
           </div>
         )}
         <InAppLink to={STOCK} className="variedades__todas">
-          <span>Todas las entradas</span>
+          <span>{COMMON_TEXT.allEntries}</span>
           <span aria-hidden="true">›</span>
         </InAppLink>
         {archivedCount > 0 && (
           <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
-            <span>Archivadas ({archivedCount})</span>
+            <span>{VARIETIES_TEXT.archivadas}{archivedCount})</span>
             <span aria-hidden="true">›</span>
           </InAppLink>
         )}

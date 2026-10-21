@@ -14,7 +14,7 @@ import { COMPUTER_QUERY } from '../../format/breakpoints'
 import { SALES } from '../../routes'
 import Ventas, { EMPTY_LIST } from './Ventas'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 
 function Context() {
   return <Outlet context={ME} />
@@ -61,7 +61,7 @@ test('on the phone the period tabs sit in the equal-cells grid', () => {
   stubViewport(false)
   renderVentas()
 
-  const group = screen.getByRole('group', { name: 'Período' })
+  const group = screen.getByRole('group', { name: 'Period' })
   expect(group).toHaveClass('pestanas--celdas')
   expect(group.querySelectorAll('.pestanas__celdas > button')).toHaveLength(4)
 })
@@ -70,7 +70,7 @@ test('on the computer the period tabs stay the plain tab list', () => {
   stubViewport(true)
   renderVentas()
 
-  const group = screen.getByRole('group', { name: 'Período' })
+  const group = screen.getByRole('group', { name: 'Period' })
   expect(group).not.toHaveClass('pestanas--celdas')
   expect(group.querySelector('.pestanas__celdas')).toBeNull()
 })

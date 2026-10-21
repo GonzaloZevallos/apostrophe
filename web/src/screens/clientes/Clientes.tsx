@@ -4,7 +4,7 @@
  * never in the URL (plan, invariants: "No customer search query ... in a front
  * URL"). Debounced at 150 ms before it becomes the query key
  * (`keys.customers(q)`), so a result that is still catching up to a newer
- * keystroke stays marked `aria-busy` with "Buscando…" instead of ever being shown
+ * keystroke stays marked `aria-busy` with "Searching…" instead of ever being shown
  * as the answer to the query currently typed (`keepPreviousData`). A dropped
  * network or a server error on the list itself shows the matching state instead
  * of a misleading "no customers yet" (PRD, "Feedback").
@@ -26,13 +26,18 @@ import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
-import { EMPTY_CUSTOMERS, EVERYONE } from './messages'
+import { EMPTY_CUSTOMERS, EVERYONE, CUSTOMERS_TEXT } from '../../copy/customers'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
+import { COMMON_TEXT } from '../../copy/common'
 
-export const SEARCH_LABEL = 'Buscar cliente'
-export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
-export const SEARCHING = 'Buscando…'
+export const SEARCH_LABEL = CUSTOMERS_TEXT.searchCustomer
+export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
+export const SEARCHING = CUSTOMERS_TEXT.searching
+/** "1 customer" or "n customers": the plural is two keys. */
+const customerCountLine = (count: number): string =>
+  count === 1 ? CUSTOMERS_TEXT.oneCustomer : CUSTOMERS_TEXT.customerCount(count)
+
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
@@ -67,10 +72,10 @@ export default function Clientes() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <span className="encabezado__titulo">Clientes</span>
+          <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
         </div>
         <div className="campo__rotulo">
-          <span>{`${total.data?.length ?? 0} clientes`}</span>
+          <span>{customerCountLine(total.data?.length ?? 0)}</span>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">
@@ -85,7 +90,7 @@ export default function Clientes() {
         </label>
         <div className="clientes__accion">
           <BotonLink to={CUSTOMER_NEW} icon="personaMas">
-            Nuevo cliente
+            {COMMON_TEXT.newCustomer}
           </BotonLink>
         </div>
         {query === '' && <TeDeben />}

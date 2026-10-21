@@ -16,7 +16,7 @@ import {
   STEP_PUBLISHED,
   STEP_SECOND_USER,
   STEP_STOCK_ENTRY,
-} from '../inicioMessages'
+} from '../../copy/inicio'
 
 const LABEL: Record<ChecklistStepName, string> = {
   priced_variety: STEP_PRICED_VARIETY,

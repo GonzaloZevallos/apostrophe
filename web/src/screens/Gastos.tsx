@@ -36,20 +36,21 @@ import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
-import { FLOWER_NOTICE } from './gastosMessages'
+import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
+import { COMMON_TEXT } from '../copy/common'
 
 export { FLOWER_NOTICE }
-export const NO_DISCARD_TITLE = 'No, dejala'
-export const YES_DELETE_TITLE = 'Sí, borrala'
+export const NO_DISCARD_TITLE = COMMON_TEXT.noKeep
+export const YES_DELETE_TITLE = COMMON_TEXT.yesDelete
 
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
-  return `¿Borrás el gasto de ${formatMoney(expense.amount)} en ${categoryName} del ${formatDate(expense.spent_on, today)}?`
+  return EXPENSES_TEXT.deleteTheExpenseOf(formatMoney(expense.amount), categoryName, formatDate(expense.spent_on, today))
 }
 
 function countLine(expenses: number, categories: number): string {
-  const spent = expenses === 1 ? '1 gasto' : `${expenses} gastos`
-  const inCategories = categories === 1 ? '1 categoría' : `${categories} categorías`
-  return `${spent} en ${inCategories}`
+  const spent = expenses === 1 ? EXPENSES_TEXT.expenseOne : EXPENSES_TEXT.expenseMany(expenses)
+  const inCategories = categories === 1 ? EXPENSES_TEXT.oneCategory : EXPENSES_TEXT.categoriesCount(categories)
+  return EXPENSES_TEXT.expenseCountIn(spent, inCategories)
 }
 
 function DeleteConfirm({
@@ -97,8 +98,8 @@ function DeleteConfirm({
   return (
     <div className="capa" role="presentation">
       <div className="capa__contenido panel">
-        <span className="panel__titulo">¿Borrás el gasto?</span>
-        <span className="panel__detalle">{deleteQuestion(expense, categoryName, today)} Esto no se puede deshacer.</span>
+        <span className="panel__titulo">{EXPENSES_TEXT.deleteTheExpense}</span>
+        <span className="panel__detalle">{deleteQuestion(expense, categoryName, today)}{EXPENSES_TEXT.thisCannotBeUndone}</span>
         {offline && <SinConexion />}
         {error !== null && (
           <span className="campo__error" role="alert">
@@ -170,16 +171,16 @@ export default function Gastos() {
     <main className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
-          <span className="encabezado__titulo gastos__titulo">Gastos</span>
-          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
+          <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
+          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.addExpense}>
             <Icono nombre="agregar" />
-            <span className="gastos__cargar-texto">Cargar gasto</span>
+            <span className="gastos__cargar-texto">{COMMON_TEXT.addExpense}</span>
           </InAppLink>
           <div className="gastos__mes">
             <button
               type="button"
               className="gastos__mes-boton"
-              aria-label="Mes anterior"
+              aria-label={COMMON_TEXT.previousMonth}
               onClick={() => moveMonth(-1)}
             >
               <Icono nombre="atras" />
@@ -188,7 +189,7 @@ export default function Gastos() {
             <button
               type="button"
               className="gastos__mes-boton"
-              aria-label="Mes siguiente"
+              aria-label={COMMON_TEXT.nextMonth}
               onClick={() => moveMonth(1)}
             >
               <Icono nombre="chevron" />
@@ -204,7 +205,7 @@ export default function Gastos() {
           <>
             <div className="gastos__resumen">
               <div className="gastos__total">
-                <span className="rotulo">Gastaste en el mes</span>
+                <span className="rotulo">{EXPENSES_TEXT.youSpentThisMonth}</span>
                 <span className="cifra-xl">{formatMoney(view.data.total)}</span>
                 {latest.length > 0 && (
                   <span className="gastos__conteo">{countLine(latest.length, view.data.categories.length)}</span>
@@ -212,7 +213,7 @@ export default function Gastos() {
               </div>
               {view.data.categories.length > 0 && (
                 <>
-                  <span className="gastos__seccion">Por categoría</span>
+                  <span className="gastos__seccion">{EXPENSES_TEXT.byCategory}</span>
                   <div className="gastos__categorias">
                     {view.data.categories.map((category) => (
                       <div key={category.id} className="gastos__categoria">
@@ -234,7 +235,7 @@ export default function Gastos() {
             </div>
             {latest.length > 0 && (
               <div className="gastos__ultimos">
-                <span className="gastos__seccion">Últimos</span>
+                <span className="gastos__seccion">{EXPENSES_TEXT.latest}</span>
                 {latest.map(({ expense, categoryName }) => (
                   <button
                     key={expense.id}
@@ -258,7 +259,7 @@ export default function Gastos() {
         <div className="gastos__pie">
           <span className="pie">{FLOWER_NOTICE}</span>
           <BotonLink to={EXPENSE_CATEGORIES} variant="link">
-            Categorías
+            {EXPENSES_TEXT.categories}
           </BotonLink>
         </div>
       </div>
@@ -286,10 +287,10 @@ export default function Gastos() {
             />
             {confirmingDiscard && (
               <ConfirmDialog
-                title="¿Descartás los cambios?"
-                detail="Se pierde lo que cambiaste: el gasto sigue como estaba."
-                confirmText="Sí, descartalos"
-                cancelText="No, seguí editando"
+                title={COMMON_TEXT.discardTheChanges}
+                detail={EXPENSES_TEXT.whatYouChangedIsLost}
+                confirmText={EXPENSES_TEXT.yesDiscardThem}
+                cancelText={COMMON_TEXT.noKeepEditing}
                 onConfirm={closeEdit}
                 onCancel={() => setConfirmingDiscard(false)}
               />
@@ -305,7 +306,7 @@ export default function Gastos() {
           onCancel={() => setDeleteTarget(null)}
           onDone={() => {
             setDeleteTarget(null)
-            flash.showNow('Gasto eliminado')
+            flash.showNow(EXPENSES_TEXT.expenseDeleted)
           }}
           onGone={() => {
             setDeleteTarget(null)

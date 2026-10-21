@@ -5,11 +5,14 @@
  * cannot toast anything else.
  */
 
+import type { EXPENSES_TEXT } from '../copy/expenses'
+import type { SETTINGS_TEXT } from '../copy/settings'
+
 export type SuccessToast =
-  | 'Gasto guardado'
-  | 'Gasto eliminado'
-  | 'Categoría guardada'
-  | 'Categoría eliminada'
+  | (typeof EXPENSES_TEXT)['expenseSaved']
+  | (typeof EXPENSES_TEXT)['expenseDeleted']
+  | (typeof SETTINGS_TEXT)['categorySaved']
+  | (typeof SETTINGS_TEXT)['categoryDeleted']
 
 export default function Aviso({ texto }: { texto: SuccessToast }) {
   return (

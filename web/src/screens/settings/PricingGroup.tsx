@@ -2,7 +2,7 @@
  * "Precios" (`ConfiguracionPrecios.dc.html`, `ConfiguracionPreciosCompu.dc.html`;
  * `pricing-settings.md`): the business's two pricing switches, Precio por cantidad and
  * Clientes VIP. A form like the other business-wide groups: "Cerrar", the unsaved-changes
- * question, "Guardá los precios" and the toast "Precios guardados" (no data in it).
+ * question, "Save the prices" and the toast "Prices saved" (no data in it).
  *
  * Two fixed lines: one says that past sales keep their price and that switching off deletes
  * nothing, the other sits under the VIP switch, on or off, and says each variety needs its
@@ -30,21 +30,22 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import SinConexion from '../../components/SinConexion'
-import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED } from './messages'
+import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED, SETTINGS_TEXT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
+import { COMMON_TEXT } from '../../copy/common'
 
-const TITLE = 'Precios'
+const TITLE = COMMON_TEXT.prices
 
 export const PAST_SALES_LINE =
-  'Las ventas ya hechas conservan el precio con el que se registraron. Apagar una opción no borra nada.'
+  SETTINGS_TEXT.pastSalesKeepTheirPrice
 export const VIP_HELP_LINE =
-  'Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera.'
+  SETTINGS_TEXT.eachVarietyNeedsItsVipPrice
 
 const LEAVE = {
-  question: '¿Descartás los precios?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
+  question: SETTINGS_TEXT.discardThePrices,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function PricingGroup() {
@@ -115,7 +116,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
       )}
       <form className="formulario" onSubmit={onSave}>
         <OpcionInterruptor
-          label="Precio por cantidad"
+          label={COMMON_TEXT.bulkPrice}
           checked={bulk}
           onChange={(next) => {
             setBulk(next)
@@ -123,7 +124,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
           }}
         />
         <OpcionInterruptor
-          label="Clientes VIP"
+          label={SETTINGS_TEXT.vipCustomers}
           checked={vip}
           onChange={(next) => {
             setVip(next)
@@ -139,7 +140,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          Guardá los precios
+          {SETTINGS_TEXT.saveThePrices}
         </Boton>
       </form>
     </SettingsGroup>
