@@ -17,6 +17,7 @@ import type { PanelAnswer, PanelDebts } from '../../api/panel'
 import FlashProvider from '../../flash/FlashProvider'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, VARIETY, pathTo } from '../../routes'
 import { chooseTheme } from '../../theme'
+import { PAYMENTS_TEXT } from '../../copy/payments'
 import CobroRoute from '../clientes/CobroRoute'
 import Inicio from '../Inicio'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
@@ -401,8 +402,8 @@ test('Record payment opened from Inicio: a partial payment returns in one move, 
   const { router } = renderInicio()
   await payFromInicio('5000')
 
-  expect(await screen.findByText('Payment saved · still owing $ 6.000')).toBeInTheDocument()
-  expect(screen.getByText('Payment saved · still owing $ 6.000').textContent).not.toMatch(/Ana/)
+  expect(await screen.findByText(PAYMENTS_TEXT.cobroGuardadoQuedaDebiendo('$ 6.000'))).toBeInTheDocument()
+  expect(screen.getByText(PAYMENTS_TEXT.cobroGuardadoQuedaDebiendo('$ 6.000')).textContent).not.toMatch(/Ana/)
   expect(router.state.location.pathname).toBe(HOME)
   expect(router.state.historyAction).toBe('POP')
   expect(await screen.findByText('$ 27.000')).toBeInTheDocument()
@@ -431,7 +432,7 @@ test('Record payment opened from Inicio: a full payment says plain "Payment save
   const { router } = renderInicio()
   await payFromInicio('11000')
 
-  expect(await screen.findByText('Payment saved')).toBeInTheDocument()
+  expect(await screen.findByText(PAYMENTS_TEXT.cobroGuardado)).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(HOME)
   await waitFor(() => expect(screen.queryByText('Ana Pérez')).not.toBeInTheDocument())
   expect(screen.getAllByRole('link', { name: /^Collect from / })).toHaveLength(3)

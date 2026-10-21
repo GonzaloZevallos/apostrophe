@@ -4,14 +4,14 @@
  */
 
 import type { LimitedCopy } from './limits'
-import { EMPTY_STATES } from './emptyStates'
-import { COMMON_TEXT } from './common'
+import { COMMON_TEXT } from './common.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const EMPTY_TITLE = EMPTY_STATES.homeVarietiesTitle
-export const EMPTY_DETAIL = EMPTY_STATES.homeVarietiesDetail
-export const NOBODY_OWES = EMPTY_STATES.homeNobodyOwes
+export const EMPTY_TITLE = 'Start with your varieties'
+export const EMPTY_DETAIL = 'Add your first variety with its price. Without a price it cannot be sold.'
+/** Shown in the Te deben block; Clientes' own copy of this line is `customers.NOBODY_OWES` (group c moves both to payments). */
+export const NOBODY_OWES = 'Nobody owes you'
 export const PINNED_CATALOG_OUT_OF_DATE = 'Your Telegram catalog is out of date'
 
 export const CHECKLIST_TITLE = 'To get started'

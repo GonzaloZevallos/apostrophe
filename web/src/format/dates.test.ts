@@ -69,8 +69,8 @@ describe('sinceWhen', () => {
 })
 
 describe('formatMonthLong', () => {
-  test('names the month in Spanish, with its year', () => {
-    expect(formatMonthLong('2026-10')).toBe('Octubre 2026')
+  test('names the month in English, with its year', () => {
+    expect(formatMonthLong('2026-10')).toBe('October 2026')
   })
 
   test('rejects a string that is not an API month', () => {

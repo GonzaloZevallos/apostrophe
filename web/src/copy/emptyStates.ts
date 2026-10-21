@@ -6,21 +6,32 @@
  * screen fails `emptyStates.test.ts`.
  */
 
+import { EMPTY_DETAIL, EMPTY_TITLE } from './inicio.ts'
+import { EMPTY_MONTH_LINE, NO_HISTORY_LINE } from './analysis.ts'
+
 export const LANGUAGE: 'es' | 'en' = 'es'
 
 export const EMPTY_STATES = {
   salesList: 'Todavía no registraste ninguna venta en este período.',
   customersList: 'Todavía no agregaste ningún cliente.',
-  homeNobodyOwes: 'Nobody owes you',
-  homeVarietiesTitle: 'Start with your varieties',
+  homeNobodyOwes: 'Nadie te debe',
+  homeVarietiesTitle: 'Arrancá por las variedades',
   homeVarietiesDetail:
-    'Add your first variety with its price. Without a price it cannot be sold.',
+    'Cargá tu primera variedad con su precio. Sin precio no se puede vender.',
   stockTitle: 'Sin entradas de stock',
   stockDetail: 'Cargá tu stock inicial o una compra',
   catalogTitle: 'No hay nada en el catálogo hoy',
   catalogDetail: 'No hay nada para copiar todavía',
-  analysisNoHistory: 'There is nothing to analyze yet.',
-  analysisEmptyMonth: 'You did not sell or give away anything this month.',
+  analysisNoHistory: 'Todavía no hay nada para analizar.',
+  analysisEmptyMonth: 'No vendiste ni regalaste nada este mes.',
 } as const
 
-export const EMPTY_STATE_WORDINGS: readonly string[] = Object.values(EMPTY_STATES)
+/** Inicio's and Análisis' English wordings are written in their own copy files (GH-53); the
+ * Spanish originals above stay until `emptyStates` itself is translated. */
+export const EMPTY_STATE_WORDINGS: readonly string[] = [
+  ...Object.values(EMPTY_STATES),
+  EMPTY_TITLE,
+  EMPTY_DETAIL,
+  NO_HISTORY_LINE,
+  EMPTY_MONTH_LINE,
+]

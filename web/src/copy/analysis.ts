@@ -4,12 +4,11 @@
  */
 
 import { SAMPLES, type LimitedCopy } from './limits'
-import { EMPTY_STATES } from './emptyStates'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const NO_HISTORY_LINE = EMPTY_STATES.analysisNoHistory
-export const EMPTY_MONTH_LINE = EMPTY_STATES.analysisEmptyMonth
+export const NO_HISTORY_LINE = 'There is nothing to analyze yet.'
+export const EMPTY_MONTH_LINE = 'You did not sell or give away anything this month.'
 export const VARIETY_TOTAL_NOTE = 'The variety table adds up the sales of the month without shipping.'
 export const SINCE_FIRST_RECORD_LABEL =
   'Moved since your first record, not the money you have in cash'
@@ -44,7 +43,7 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const ANALYSIS_TEXT = {
-  vendisteEnElMes: 'You sold this month',
+  vendisteEnElMes: 'You sold in the month',
   vendidos: ' sold · ',
   regalados: ' given away',
   margenPromedio01: (percent: string | number, pending_grams: string | number) => ` · average margin ${percent}%${pending_grams}`,
@@ -53,10 +52,10 @@ export const ANALYSIS_TEXT = {
   delMes: '% of the month',
   costo: 'cost ',
   margen: 'margin ',
-  parte: 'Share',
+  parte: 'Part',
   gramosRegalo: 'Gift grams',
-  costLabel: 'Costo',
-  margen2: 'Margen',
+  costLabel: 'Cost',
+  margen2: 'Margin',
   semanaASemanaUltimas: 'Week by week · last 8',
   gastos: 'expenses ',
   ganancia: 'profit ',

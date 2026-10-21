@@ -75,8 +75,8 @@ test('reads the best and worst variety by margin, the best week, the best weekda
     .filter((node) => node.closest('.analisis__variedades') !== null)
     .map((node) => node.textContent)
   expect(varietyNames).toEqual(['Flor A', 'Flor B', 'Flor Gift'])
-  expect(screen.getByText(/margen \$ 40\.000/)).toBeInTheDocument()
-  expect(screen.getByText(/margen \$ -5\.000/)).toBeInTheDocument()
+  expect(screen.getByText(/margin \$ 40\.000/)).toBeInTheDocument()
+  expect(screen.getByText(/margin \$ -5\.000/)).toBeInTheDocument()
 
   // The fixture's last week (28/9) carries `best: true`.
   expect(screen.getAllByText(BEST_WEEK_MARK)).toHaveLength(1)
@@ -97,7 +97,7 @@ test('pending marks show their own N, never a $0 cost', async () => {
   expect(screen.getByText(/Stock shortfall \$ 3\.000 and 1 g without cost/)).toBeInTheDocument()
 
   // "Flor B"'s own cost and margin carry the same mark.
-  expect(screen.getByText(/costo \$ 9\.000 and 2,5 g without cost/)).toBeInTheDocument()
+  expect(screen.getByText(/cost \$ 9\.000 and 2,5 g without cost/)).toBeInTheDocument()
 })
 
 test('a variety only gifted shows no margin percentage', async () => {
@@ -109,7 +109,7 @@ test('a variety only gifted shows no margin percentage', async () => {
     .map((node) => node.closest('.analisis__variedad'))
     .find((node) => node !== null)
   expect(giftRow).not.toBeUndefined()
-  const margin = within(giftRow as HTMLElement).getByText(/^margen/)
+  const margin = within(giftRow as HTMLElement).getByText(/^margin/)
   expect(margin.textContent).not.toMatch(/%/)
 })
 
@@ -135,7 +135,7 @@ test('month navigation requests the previous month and disables at the bounds', 
     return jsonResponse(200, analysisFixture)
   })
 
-  await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
+  await screen.findByText('October 2026', { selector: '.gastos__mes-etiqueta' })
   // The fixture's `next` is null: October is the current month, nothing comes after.
   expect(screen.getByRole('button', { name: 'Next month' })).toBeDisabled()
 
@@ -152,7 +152,7 @@ test('the computer table carries headers, the margin stack, pending marks and th
   expect(table).not.toBeUndefined()
   const varietyTable = (table as HTMLElement).closest('table') as HTMLElement
   expect(within(varietyTable).getByText('Gift grams')).toBeInTheDocument()
-  expect(within(varietyTable).getByText('Margen')).toBeInTheDocument()
+  expect(within(varietyTable).getByText('Margin')).toBeInTheDocument()
 
   // "Flor B" (margin $ 6.000, 40%, 2,5 g pending): the table's own cell, with no
   // "margen" label and no "costo" label — those belong to the card view only.
@@ -175,8 +175,8 @@ test('the computer table carries headers, the margin stack, pending marks and th
   const headerNames = within(varietyTable)
     .getAllByRole('columnheader')
     .map((header) => header.textContent)
-  const costoIndex = headerNames.indexOf('Costo')
-  const margenIndex = headerNames.indexOf('Margen')
+  const costoIndex = headerNames.indexOf('Cost')
+  const margenIndex = headerNames.indexOf('Margin')
   expect(costoIndex).toBeGreaterThanOrEqual(0)
   expect(margenIndex).toBeGreaterThanOrEqual(0)
 
@@ -239,7 +239,7 @@ test('month navigation disables "Previous month" when there is no earlier month'
   }
   renderAnalisis(async () => jsonResponse(200, firstMonthFixture))
 
-  await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
+  await screen.findByText('October 2026', { selector: '.gastos__mes-etiqueta' })
   expect(screen.getByRole('button', { name: 'Previous month' })).toBeDisabled()
 })
 
@@ -320,16 +320,16 @@ test('every week and month row shows Cost of goods sold, in the PRD order', asyn
   const first = weekRows[0]!
   const lines = Array.from(first.querySelectorAll('span'))
     .map((node) => node.textContent ?? '')
-    .filter((text) => /^(Cost of goods sold|Stock shortfall|Promotion|Own use|gastos|ganancia|caja)/.test(text))
+    .filter((text) => /^(Cost of goods sold|Stock shortfall|Promotion|Own use|expenses|profit|cash)/.test(text))
     .map((text) => text.replace(/ \$.*$/, ''))
   expect(lines).toEqual([
     'Cost of goods sold',
     'Stock shortfall',
     'Promotion',
     'Own use',
-    'gastos',
-    'ganancia',
-    'caja',
+    'expenses',
+    'profit',
+    'cash',
   ])
   expect(within(first).getByText(`Cost of goods sold $ ${FIXTURE_FIRST_WEEK.cost_of_goods.amount.toLocaleString('es-AR')}`)).toBeInTheDocument()
 })

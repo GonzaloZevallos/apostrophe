@@ -689,7 +689,7 @@ const CHECKLIST = answer({
 const IMPORT_NOTICE_TEXT = 'Connect the bot so the pinned catalog updates by itself'
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`the checklist draws four steps, "Hecho" only on the met ones, and tells required from optional in words (${theme})`, async () => {
+  test(`the checklist draws four steps, "Done" only on the met ones, and tells required from optional in words (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, CHECKLIST)
     renderInicio()
@@ -697,12 +697,12 @@ for (const theme of ['claro', 'oscuro'] as const) {
     const list = await screen.findByRole('list', { name: 'To get started' })
     const steps = within(list).getAllByRole('listitem')
     expect(steps.map((step) => step.textContent)).toEqual([
-      'Add a variety with its priceRequiredHecho',
+      'Add a variety with its priceRequiredDone',
       'Add what you have todayRequired',
       'Connect the botOptional',
-      'Invite a partnerOptionalHecho',
+      'Invite a partnerOptionalDone',
     ])
-    expect(within(list).getAllByText('Hecho')).toHaveLength(2)
+    expect(within(list).getAllByText('Done')).toHaveLength(2)
     // The attention icon is for the notices: the checklist carries none.
     expect(list.closest('section')?.querySelector('.aviso-ambar__icono')).toBeNull()
     expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()

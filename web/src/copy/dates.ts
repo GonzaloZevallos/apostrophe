@@ -2,7 +2,7 @@
 
 import type { LimitedCopy } from './limits'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = []
 export const LONG_REFUSALS: readonly string[] = []
