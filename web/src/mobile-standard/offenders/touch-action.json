@@ -1066,7 +1066,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Close@New saleToday #/#Elegir client",
+    "target": "button:Close@New saleToday #/#Pick a custom",
     "issue": 78
   },
   {
@@ -1558,7 +1558,7 @@
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 49
   },
   {
@@ -1618,7 +1618,7 @@
   {
     "screen": "EstadosReintento",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 49
   },
   {
@@ -1678,7 +1678,7 @@
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-action",
-    "target": "button:Fechas",
+    "target": "button:Dates",
     "issue": 49
   },
   {
@@ -2308,7 +2308,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Close@New saleToday #/#Elegir client",
+    "target": "button:Close@New saleToday #/#Pick a custom",
     "issue": 78
   },
   {
@@ -2452,7 +2452,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Close@New saleToday #/#Elegir client",
+    "target": "button:Close@New saleToday #/#Pick a custom",
     "issue": 78
   },
   {
