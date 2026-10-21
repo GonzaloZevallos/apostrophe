@@ -216,7 +216,7 @@ export const SCREENS = [
 
   screen({ id: 'sales', path: SALES, kind: 'root', title: COMMON_TEXT.sales, place: { bar: 'sales', rail: 'sales' } }),
   screen({ id: 'sale-new', path: SALE_NEW, kind: 'form', title: COMMON_TEXT.newSale, parent: 'sales' }),
-  screen({ id: 'sale', path: SALE, kind: 'card', title: SHELL_TEXT.venta, parent: 'sales' }),
+  screen({ id: 'sale', path: SALE, kind: 'card', title: SHELL_TEXT.sale, parent: 'sales' }),
 
   screen({
     id: 'customers',
@@ -227,7 +227,7 @@ export const SCREENS = [
     place: { bar: 'customers', rail: 'customers' },
   }),
   screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', title: COMMON_TEXT.newCustomer, parent: 'customers' }),
-  screen({ id: 'customer', path: CUSTOMER, kind: 'card', title: SHELL_TEXT.cliente, pane: 'detail', parent: 'customers' }),
+  screen({ id: 'customer', path: CUSTOMER, kind: 'card', title: SHELL_TEXT.customer, pane: 'detail', parent: 'customers' }),
   screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', title: COMMON_TEXT.editCustomer, parent: 'customer' }),
   screen({
     id: 'customer-payment',
@@ -274,7 +274,7 @@ export const SCREENS = [
     title: COMMON_TEXT.expenses,
     place: { bar: 'more', rail: 'expenses' },
   }),
-  screen({ id: 'expense-new', path: EXPENSE_NEW, kind: 'form', title: SHELL_TEXT.gastoNuevo, parent: 'expenses' }),
+  screen({ id: 'expense-new', path: EXPENSE_NEW, kind: 'form', title: SHELL_TEXT.newExpense, parent: 'expenses' }),
   screen({
     id: 'analysis',
     path: ANALYSIS,
@@ -327,7 +327,7 @@ export const SCREENS = [
   // The Onboarding's steps and "Listo" are forms whose parent is Inicio: "Cerrar" and back
   // with no history land there. `router.tsx` draws them in `OnboardingLayout`, the
   // Onboarding's own frame (one centred column, no bar, no rail), not in `Shell`.
-  screen({ id: 'onboarding', path: ONBOARDING, kind: 'form', title: SHELL_TEXT.onboarding, parent: 'home' }),
+  screen({ id: 'onboarding', path: ONBOARDING, kind: 'form', title: SHELL_TEXT.gettingStarted, parent: 'home' }),
   screen({ id: 'onboarding-variety', path: ONBOARDING_VARIETY, kind: 'form', title: COMMON_TEXT.varietyWithPrice, parent: 'home' }),
   screen({ id: 'onboarding-stock', path: ONBOARDING_STOCK, kind: 'form', title: COMMON_TEXT.initialStock, parent: 'home' }),
   screen({

@@ -171,7 +171,7 @@ export default function Shell() {
     <BackParentContext.Provider value={backParent}>
     <div className="disposicion">
       {chrome.rail && (
-        <nav className="riel-lateral" aria-label={SHELL_TEXT.navegacion} data-menu>
+        <nav className="riel-lateral" aria-label={SHELL_TEXT.navigation} data-menu>
           {chrome.railNuevaVenta && (
             <>
               <BotonLink
@@ -240,7 +240,7 @@ export default function Shell() {
             </>
           )}
           {chrome.bar && (
-            <nav className="bar-inferior" aria-label={SHELL_TEXT.navegacion} data-menu>
+            <nav className="bar-inferior" aria-label={SHELL_TEXT.navigation} data-menu>
               {BAR_ITEMS.map((item) => (
                 <BarItem key={item.to} item={item} active={barPlace === item.place} />
               ))}

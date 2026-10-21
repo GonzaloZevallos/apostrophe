@@ -114,7 +114,7 @@ export default function Reset() {
     return (
       <AuthPage title={DEAD_LINK_MESSAGE}>
         <BotonLink variant="link" to={LOGIN}>
-          {AUTH_TEXT.entrar}
+          {AUTH_TEXT.goToSignIn}
         </BotonLink>
       </AuthPage>
     )
@@ -137,11 +137,11 @@ export default function Reset() {
   }
 
   return (
-    <AuthPage title={AUTH_TEXT.elegiTuContrasenaNueva}>
+    <AuthPage title={AUTH_TEXT.chooseYourNewPassword}>
       <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
-        <PasswordField label={AUTH_TEXT.contrasenaNueva} value={password} onChange={setPassword} error={error} />
+        <PasswordField label={AUTH_TEXT.newPassword} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {AUTH_TEXT.guardarYEntrar}
+          {AUTH_TEXT.saveAndSignIn}
         </Boton>
       </form>
     </AuthPage>

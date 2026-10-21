@@ -32,7 +32,7 @@ import { BRAKE_MESSAGE, WEAK_PASSWORD_MESSAGE, AUTH_TEXT } from '../copy/auth'
 import { COMMON_TEXT } from '../copy/common'
 import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
-export const WRONG_CURRENT_PASSWORD_MESSAGE = AUTH_TEXT.laContrasenaActualNo
+export const WRONG_CURRENT_PASSWORD_MESSAGE = AUTH_TEXT.currentPasswordWrong
 export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 const CURRENT_PASSWORD_WRONG_CODE: RefusalCode = 'account.current_password_wrong'
 
@@ -97,7 +97,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
         <span className="panel__titulo">{COMMON_TEXT.changePassword}</span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
-            <span className="campo__rotulo">{AUTH_TEXT.contrasenaActual}</span>
+            <span className="campo__rotulo">{AUTH_TEXT.currentPassword}</span>
             <input
               className="campo__input"
               type="password"
@@ -112,7 +112,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
             )}
           </label>
           <label className="campo">
-            <span className="campo__rotulo">{AUTH_TEXT.contrasenaNueva}</span>
+            <span className="campo__rotulo">{AUTH_TEXT.newPassword}</span>
             <input
               className="campo__input"
               type={reveal ? 'text' : 'password'}

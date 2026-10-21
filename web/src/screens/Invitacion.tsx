@@ -35,9 +35,9 @@ import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE, BUSINESS_NAME_
 export { NOT_USABLE_DETAIL, NOT_USABLE_TITLE }
 export const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
-export const EMAIL_TAKEN_MESSAGE = AUTH_TEXT.yaHayUnaCuenta
+export const EMAIL_TAKEN_MESSAGE = AUTH_TEXT.emailTaken
 export { WEAK_PASSWORD_MESSAGE }
-export const EMAIL_INVALID_MESSAGE = AUTH_TEXT.ingresaUnEmailValido
+export const EMAIL_INVALID_MESSAGE = AUTH_TEXT.enterValidEmail
 export const BUSINESS_NAME_INVALID_MESSAGE = COPY_BUSINESS_NAME_INVALID_MESSAGE
 
 type AcceptAction = { kind: 'inline'; message: string } | { kind: 'not_usable' }
@@ -158,12 +158,12 @@ export default function Invitacion() {
   return (
     <AuthPage
       titleClass="invitacion__titulo"
-      eyebrow={isNewBusiness ? AUTH_TEXT.invitacionValida : AUTH_TEXT.teInvitaronA}
-      title={isNewBusiness ? AUTH_TEXT.armaTuNegocio : (view.business_name ?? undefined)}
+      eyebrow={isNewBusiness ? AUTH_TEXT.validInvitation : AUTH_TEXT.youWereInvitedTo}
+      title={isNewBusiness ? AUTH_TEXT.setUpYourBusiness : (view.business_name ?? undefined)}
       subtitle={
         isNewBusiness
-          ? AUTH_TEXT.poneleUnNombreY
-          : AUTH_TEXT.creaTuUsuarioY
+          ? AUTH_TEXT.nameItAndCreate
+          : AUTH_TEXT.createYourUser
       }
     >
       <form className="formulario" onSubmit={onSubmit}>
@@ -180,7 +180,7 @@ export default function Invitacion() {
           </label>
         )}
         <label className="campo">
-          <span className="campo__rotulo">{AUTH_TEXT.email}</span>
+          <span className="campo__rotulo">{AUTH_TEXT.emailAddress}</span>
           <input
             className="campo__input"
             type="email"
@@ -189,9 +189,9 @@ export default function Invitacion() {
             required
           />
         </label>
-        <PasswordField label={AUTH_TEXT.contrasena} value={password} onChange={setPassword} error={error} />
+        <PasswordField label={AUTH_TEXT.password} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {isNewBusiness ? AUTH_TEXT.creaElNegocio : AUTH_TEXT.sumateA0(view.business_name)}
+          {isNewBusiness ? AUTH_TEXT.createTheBusiness : AUTH_TEXT.joinBusiness(view.business_name)}
         </Boton>
       </form>
       <div className="pie">
