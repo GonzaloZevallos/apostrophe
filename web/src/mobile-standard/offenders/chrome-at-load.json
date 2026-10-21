@@ -218,6 +218,18 @@
     "issue": 59
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
     "screen": "InicioHoy",
     "rule": "chrome-at-load",
     "target": "link:Nueva venta",
@@ -225,6 +237,18 @@
   },
   {
     "screen": "InicioHoy",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "InicioImportado",
     "rule": "chrome-at-load",
     "target": "navigation:Navegación",
     "issue": 59

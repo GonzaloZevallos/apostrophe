@@ -183,6 +183,18 @@
     "issue": 59
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "chrome-mid-scroll",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
     "screen": "InicioHoy",
     "rule": "chrome-mid-scroll",
     "target": "link:Nueva venta",
@@ -190,6 +202,18 @@
   },
   {
     "screen": "InicioHoy",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "chrome-mid-scroll",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "InicioImportado",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navegación",
     "issue": 59

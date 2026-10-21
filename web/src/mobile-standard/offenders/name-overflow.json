@@ -197,7 +197,19 @@
     "issue": 45
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
     "screen": "InicioHoy",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
     "rule": "name-overflow",
     "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
     "issue": 45

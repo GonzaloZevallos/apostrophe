@@ -595,6 +595,36 @@
     "issue": 45
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 45
+  },
+  {
     "screen": "InicioHoy",
     "rule": "text-size",
     "target": "span:Clientes",
@@ -620,6 +650,36 @@
   },
   {
     "screen": "InicioHoy",
+    "rule": "text-size",
+    "target": "span:Ventas",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "text-size",
+    "target": "span:Clientes",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "text-size",
+    "target": "span:Inicio",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "text-size",
+    "target": "span:Más",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "text-size",
+    "target": "span:Variedades",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
     "rule": "text-size",
     "target": "span:Ventas",
     "issue": 45

@@ -708,6 +708,45 @@
     ]
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Configuración de Negocio LarguísimoLarguísimoLarguísimo",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Inicio",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Más",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Te deben",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Ventas",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
     "screen": "InicioHoy",
     "rule": "touch-target",
     "target": "link:Configuración de Negocio LarguísimoLarguísimoLarguísimo",
@@ -739,6 +778,45 @@
   },
   {
     "screen": "InicioHoy",
+    "rule": "touch-target",
+    "target": "link:Ventas",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Configuración de Negocio LarguísimoLarguísimoLarguísimo",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Inicio",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Más",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Te deben",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
     "rule": "touch-target",
     "target": "link:Ventas",
     "issue": 45,
