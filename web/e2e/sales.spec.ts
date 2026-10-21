@@ -182,7 +182,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // A variety with no price that day is caught on its own line, before saving.
   await fillSaleLine(page, 1, { variety: 'Mimosa', grams: '5' })
-  await expect(page.getByText('Mimosa no tiene precio para esa fecha')).toBeVisible()
+  await expect(page.getByText('Mimosa has no price for that date')).toBeVisible()
 
   // Swap it for a priced variety and add a second line.
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
@@ -209,12 +209,12 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // when line 2 opened (plan, "Line editor": one open line at a time); line 2
   // (Lirio) is still the open editor.
   const previewJazmin = page.getByRole('button', { name: /^Line 1: Jazmín/ })
-  await expect(previewJazmin.locator('.insignia')).toHaveText('lista')
+  await expect(previewJazmin.locator('.insignia')).toHaveText('list')
   await expect(previewJazmin.getByText('$ 500 x g', { exact: true })).toBeVisible()
   await expect(previewJazmin.getByText('$ 5.000', { exact: true })).toBeVisible()
 
   const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Line 2 variety') })
-  await expect(previewLirio.locator('.insignia')).toHaveText('lista')
+  await expect(previewLirio.locator('.insignia')).toHaveText('list')
   await expect(previewLirio.getByText('$ 300 x g', { exact: true })).toBeVisible()
   await expect(previewLirio.getByText('$ 6.000', { exact: true })).toBeVisible()
 
@@ -229,11 +229,11 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // same figures, line for line, since nothing changed in between.
   await expect(page.locator('.cifra-xl')).toHaveText('$ 12.000')
   const detailJazmin = page.locator('.venta-detalle__linea').filter({ hasText: 'Jazmín' })
-  await expect(detailJazmin.locator('.insignia')).toHaveText('lista')
+  await expect(detailJazmin.locator('.insignia')).toHaveText('list')
   await expect(detailJazmin.locator('.venta-detalle__precio')).toHaveText('$ 500 per gram')
   await expect(detailJazmin.locator('.venta-detalle__total')).toHaveText('$ 5.000')
   const detailLirio = page.locator('.venta-detalle__linea').filter({ hasText: 'Lirio' })
-  await expect(detailLirio.locator('.insignia')).toHaveText('lista')
+  await expect(detailLirio.locator('.insignia')).toHaveText('list')
   await expect(detailLirio.locator('.venta-detalle__precio')).toHaveText('$ 300 per gram')
   await expect(detailLirio.locator('.venta-detalle__total')).toHaveText('$ 6.000')
   await expect(page.getByText('Shipping charged')).toBeVisible()

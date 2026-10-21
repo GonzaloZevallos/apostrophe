@@ -237,7 +237,7 @@ async function sweep(page: Page, { name, scale }: PhoneCase): Promise<void> {
   await expectNoSidewaysOverflow(page, `${name}: Nueva venta`, scale)
   await expectThumbSized(page, `${name}: Nueva venta`, scale)
   await page.getByRole('button', { name: 'Close' }).click()
-  const discard = page.getByRole('alertdialog', { name: '¿Descartás la venta?' })
+  const discard = page.getByRole('alertdialog', { name: 'Discard the sale?' })
   await expect(discard).toBeVisible()
   await settled(page)
   await expectThumbSized(page, `${name}: the discard dialog`, scale)

@@ -147,7 +147,7 @@ test.describe('the states the walk adds', () => {
       screen: 'Probe',
       route: SALE_NEW,
       steps: [{ fill: { label: 'Line 1 variety', value: 'Sir Jack' } }, { press: 'Close' }],
-      visible: '¿Descartás la venta?',
+      visible: 'Discard the sale?',
     })
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()

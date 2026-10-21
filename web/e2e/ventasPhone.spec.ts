@@ -104,7 +104,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
     await expectNoSidewaysOverflow(page)
 
     await tabs.getByRole('button', { name: 'Dates' }).click()
-    for (const label of ['Desde', 'Hasta']) {
+    for (const label of ['From', 'To']) {
       const input = page.getByLabel(label, { exact: true })
       const found = await box(input)
       expect(found.height, `${phone.name}: ${label} height`).toBeGreaterThanOrEqual(TOUCH_TARGET)

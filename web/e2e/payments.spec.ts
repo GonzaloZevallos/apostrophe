@@ -162,12 +162,12 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // from #20), never the debt or the credit it leaves. ---
   await page.goto(SALES)
   const saleTwoRow = page.locator('.fila-venta').filter({ hasText: '$ 8.000' })
-  await expect(saleTwoRow.getByText('te debe')).toBeVisible()
+  await expect(saleTwoRow.getByText('owes you')).toBeVisible()
   await saleTwoRow.click()
   await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(
     page.getByRole('alertdialog', {
-      name: `¿Borrás la venta de $ 8.000 del ${today}? Vuelven 8 g al stock.`,
+      name: `Delete the sale of $ 8.000 from ${today}? 8 g go back to stock.`,
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
