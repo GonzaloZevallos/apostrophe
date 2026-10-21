@@ -45,6 +45,12 @@ ALLOWLIST: dict[str, str] = {
     "app/spreadsheet_import/adapters/cells.py": (
         "the import recognises the Spanish sheet's values: Compra, Efectivo, Sí/No (invariant 7)"
     ),
+    "app/spreadsheet_import/domain/plan.py": (
+        "every Spanish literal in it is the sheet's own: a tab (Ventas, Entradas, Gastos), a "
+        "column title the report quotes in [brackets] (Variedad, Categoría, ...) or a Pago/Tipo "
+        "value the import recognises (Efectivo, Pendiente, Amigo, Regalo); the report's own "
+        "words are English (invariant 7)"
+    ),
 }
 
 # Today's Spanish files: path relative to the repo root -> the most Spanish literals it may
@@ -55,12 +61,9 @@ PENDING_SPANISH: dict[str, int] = {
     "app/catalog/domain/header_footer.py": 2,
     "app/catalog/domain/text.py": 5,
     "app/expenses/domain/category.py": 3,
-    # The import's plan and report words, and the sheet values they quote (B1). The plan
-    # and the two import ports spell the sheet's own names as literals: B1 keeps what the
-    # sheet recognises (invariant 7) and moves only the report's words.
+    # The two import ports spell the sheet's own values as literals (what the sheet
+    # recognises stays, invariant 7).
     "app/catalog/adapters/import_port.py": 1,
-    "app/spreadsheet_import/adapters/report.py": 2,
-    "app/spreadsheet_import/domain/plan.py": 27,
     "app/stock/adapters/import_port.py": 4,
 }
 
