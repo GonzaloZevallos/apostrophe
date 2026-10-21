@@ -410,7 +410,7 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Stock and entries' })).closest('section')
     const inside = within(section as HTMLElement)
-    const reason = await inside.findByText(/Promoción/)
+    const reason = await inside.findByText(/Promotion/)
     expect(reason.closest('li')).toHaveTextContent('−5,5 g')
     expect(reason.closest('a')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 5 }))
     expect(inside.getByText('10 g')).toBeInTheDocument()

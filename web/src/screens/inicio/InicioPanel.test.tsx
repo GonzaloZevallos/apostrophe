@@ -1,7 +1,7 @@
 /**
  * The panel's body through the `Inicio` screen (Testing Library, `fetch` faked): what Hoy
- * draws and what it leaves for Semana and Mes, Lo que te queda's link on a low variety,
- * and "Collect from <name>" through the real Registrar cobro and back, in both themes
+ * draws and what it leaves for Semana and Mes, What you have left's link on a low variety,
+ * and "Collect from <name>" through the real Record payment and back, in both themes
  * (`data-tema`, set the way the Configuración switch does).
  */
 
@@ -27,12 +27,12 @@ const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10
 const RESULT_LABELS = [
   'Profit',
   'Cash',
-  'Costo de lo vendido',
-  'Faltante de stock',
-  'Promoción',
-  'Consumo propio',
+  'Cost of goods sold',
+  'Stock shortfall',
+  'Promotion',
+  'Own use',
   'Expenses',
-  'Regalaste',
+  'You gave away',
   'Flower purchases',
 ]
 
@@ -171,10 +171,10 @@ afterEach(() => {
 })
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`Hoy draws sold today, Te deben and Lo que te queda in that order, and no result figure (${theme})`, async () => {
+  test(`Hoy draws sold today, Owed to you and What you have left in that order, and no result figure (${theme})`, async () => {
     chooseTheme(theme)
     const { container } = renderInicio()
-    await screen.findByText('Vendiste hoy')
+    await screen.findByText('You sold today')
 
     const order = ['.panel-ventas', '.bloque-deben', '.lista-stock'].map((selector) => {
       const node = container.querySelector(selector)
@@ -183,14 +183,14 @@ for (const theme of ['claro', 'oscuro'] as const) {
     })
     expect(order[0]?.compareDocumentPosition(order[1] as Element)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
     expect(order[1]?.compareDocumentPosition(order[2] as Element)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
-    expect(screen.getByText('2 ventas · promedio $ 7.500 · 10 g')).toBeInTheDocument()
+    expect(screen.getByText('2 sales · average $ 7.500 · 10 g')).toBeInTheDocument()
     for (const label of RESULT_LABELS) expect(screen.queryByText(label)).not.toBeInTheDocument()
     for (const label of RESULT_LABELS) expect(screen.queryByRole('group', { name: label })).toBeNull()
     expect(container.querySelector('.panel-cifras')).toBeNull()
     expect(container.querySelector('.panel-lista')).toBeNull()
     expect(container.querySelector('.panel-resultados')).toBeNull()
     expect(container.querySelector('.panel-periodo--con-cifras')).toBeNull()
-    expect(screen.queryByText('incluye costo pendiente')).not.toBeInTheDocument()
+    expect(screen.queryByText('includes pending cost')).not.toBeInTheDocument()
   })
 }
 
@@ -203,9 +203,9 @@ test('Hoy shows the average only when there were sales, and real zeros otherwise
     },
   }
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
-  expect(screen.getByText('0 ventas · 0 g')).toBeInTheDocument()
+  expect(screen.getByText('0 sales · 0 g')).toBeInTheDocument()
   expect(screen.queryByText(/promedio/)).not.toBeInTheDocument()
 })
 
@@ -223,26 +223,26 @@ test('Hoy hides the withdrawal lines too, even when today carries one', async ()
     },
   }
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
   for (const label of RESULT_LABELS) expect(screen.queryByText(label)).not.toBeInTheDocument()
 })
 
-test('Semana and Mes keep every result figure, Promoción and Consumo propio right after Faltante de stock', async () => {
+test('Semana and Mes keep every result figure, Promotion and Own use right after Stock shortfall', async () => {
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
   await userEvent.click(screen.getByRole('button', { name: 'Week' }))
-  await screen.findByText('Vendiste esta semana')
+  await screen.findByText('You sold this week')
   for (const label of RESULT_LABELS) expect(screen.getByRole('group', { name: label })).toBeInTheDocument()
   // The seven list figures, then Ganancia and Caja closing them, as the design and
   // results.md draw them.
   expect(figureNames()).toEqual([
-    'Regalaste',
-    'Costo de lo vendido',
-    'Faltante de stock',
-    'Promoción',
-    'Consumo propio',
+    'You gave away',
+    'Cost of goods sold',
+    'Stock shortfall',
+    'Promotion',
+    'Own use',
     'Expenses',
     'Flower purchases',
     'Profit',
@@ -250,31 +250,31 @@ test('Semana and Mes keep every result figure, Promoción and Consumo propio rig
   ])
 
   await userEvent.click(screen.getByRole('button', { name: 'Month' }))
-  await screen.findByText('Vendiste este mes')
-  for (const label of ['Profit', 'Cash', 'Costo de lo vendido', 'Expenses', 'Regalaste', 'Flower purchases']) {
+  await screen.findByText('You sold this month')
+  for (const label of ['Profit', 'Cash', 'Cost of goods sold', 'Expenses', 'You gave away', 'Flower purchases']) {
     expect(screen.getByRole('group', { name: label })).toBeInTheDocument()
   }
-  // The same Te deben block and Lo que te queda sit under every tab.
-  expect(screen.getByText('Lo que te queda')).toBeInTheDocument()
+  // The same Owed to you block and What you have left sit under every tab.
+  expect(screen.getByText('What you have left')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Collect from Ana Pérez' })).toBeInTheDocument()
 })
 
 test('the sold headline and the result figures share one group, and the two blocks another, in the phone order', async () => {
-  // `InicioCompu.dc.html`: headline beside the figures, then Te deben beside Lo que te queda.
+  // `InicioCompu.dc.html`: headline beside the figures, then Owed to you beside What you have left.
   // The groups are what the computer layout lays out; found by what they hold, and the
   // order stays the phone's. No test id: the phone check names its offenders by the nearest one.
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
   await userEvent.click(screen.getByRole('button', { name: 'Week' }))
-  const headline = await screen.findByText('Vendiste esta semana')
+  const headline = await screen.findByText('You sold this week')
 
   const figures = headline.parentElement?.parentElement as HTMLElement
-  expect(figures).toContainElement(screen.getByText('Regalaste'))
+  expect(figures).toContainElement(screen.getByText('You gave away'))
   expect(figures).toContainElement(screen.getByText('Profit'))
   expect(figures).not.toContainElement(screen.getByText('Owed to you'))
 
   const debts = screen.getByText('Owed to you')
-  const left = screen.getByText('Lo que te queda')
+  const left = screen.getByText('What you have left')
   let blocks = debts.parentElement as HTMLElement
   while (!blocks.contains(left)) blocks = blocks.parentElement as HTMLElement
   expect(blocks).not.toContainElement(headline)
@@ -284,9 +284,9 @@ test('the sold headline and the result figures share one group, and the two bloc
 
   // Hoy has no result figures: its group holds the headline alone.
   await userEvent.click(screen.getByRole('button', { name: 'Today' }))
-  const today = (await screen.findByText('Vendiste hoy')).parentElement?.parentElement as HTMLElement
+  const today = (await screen.findByText('You sold today')).parentElement?.parentElement as HTMLElement
   expect(today).not.toContainElement(screen.getByText('Owed to you'))
-  expect(within(today).queryByText('Regalaste')).toBeNull()
+  expect(within(today).queryByText('You gave away')).toBeNull()
 })
 
 test('a low variety links to its page; every other row is plain text, and order stays by name', async () => {
@@ -345,7 +345,7 @@ test('"Nobody owes you" shows with nothing to tap when nobody owes', async () =>
   renderInicio()
 
   expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Cobrar a/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Collect from/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
 
@@ -384,7 +384,7 @@ const THREE_DEBTORS = debts(
   4,
 )
 
-test('Registrar cobro opened from Inicio: a partial payment returns in one move, the toast never names the customer, the row keeps its new balance', async () => {
+test('Record payment opened from Inicio: a partial payment returns in one move, the toast never names the customer, the row keeps its new balance', async () => {
   panelNow = { ...PANEL, debts: THREE_DEBTORS }
   panelAfterPayment = {
     ...PANEL,
@@ -410,7 +410,7 @@ test('Registrar cobro opened from Inicio: a partial payment returns in one move,
   expect(within(row).getByText('$ 6.000')).toBeInTheDocument()
 })
 
-test('Registrar cobro opened from Inicio: a full payment says plain "Payment saved", the row leaves and the teaser refills to 3', async () => {
+test('Record payment opened from Inicio: a full payment says plain "Payment saved", the row leaves and the teaser refills to 3', async () => {
   paymentAnswer = {
     ...paymentFixture,
     after: { balance: 0, owing_since: null, standing: 'settled' },
@@ -436,10 +436,10 @@ test('Registrar cobro opened from Inicio: a full payment says plain "Payment sav
   await waitFor(() => expect(screen.queryByText('Ana Pérez')).not.toBeInTheDocument())
   expect(screen.getAllByRole('link', { name: /^Collect from / })).toHaveLength(3)
   expect(screen.getByRole('link', { name: 'Collect from Dani Ruiz' })).toBeInTheDocument()
-  expect(screen.getByText('3 ventas debiendo')).toBeInTheDocument()
+  expect(screen.getByText('3 sales owing')).toBeInTheDocument()
 })
 
-test('Registrar cobro opened from Inicio: with nobody left owing the block reads "Nobody owes you"', async () => {
+test('Record payment opened from Inicio: with nobody left owing the block reads "Nobody owes you"', async () => {
   paymentAnswer = {
     ...paymentFixture,
     after: { balance: 0, owing_since: null, standing: 'settled' },
@@ -450,23 +450,23 @@ test('Registrar cobro opened from Inicio: with nobody left owing the block reads
   await payFromInicio('11000')
 
   expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Cobrar a/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Collect from/ })).not.toBeInTheDocument()
 })
 
-test('"Close" on Registrar cobro opened from Inicio returns to Inicio in one move', async () => {
+test('"Close" on Record payment opened from Inicio returns to Inicio in one move', async () => {
   const { router } = renderInicio()
   await screen.findByText('$ 37.000')
   await userEvent.click(screen.getByRole('link', { name: 'Collect from Ana Pérez' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
-  expect(await screen.findByText('Vendiste hoy')).toBeInTheDocument()
+  expect(await screen.findByText('You sold today')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(HOME)
   expect(router.state.historyAction).toBe('POP')
 })
 
 test('the period switch is text tabs (Pestanas) with the range last in the same row', async () => {
   const { container } = renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
   const row = container.querySelector<HTMLElement>('.inicio__periodos')!
   const group = within(row).getByRole('group', { name: 'Period' })
@@ -479,26 +479,26 @@ test('the period switch is text tabs (Pestanas) with the range last in the same 
   expect(row.lastElementChild?.textContent).toMatch(/^Today \d\d\/\d\d$/)
 })
 
-test('a Te deben row reads the name, then the amount in amber with its date, Cobrar beside it', async () => {
+test('a Owed to you row reads the name, then the amount in amber with its date, Cobrar beside it', async () => {
   const { container } = renderInicio()
   await screen.findByText('$ 37.000')
 
   const head = container.querySelector('.bloque-deben')!
-  expect(head.querySelector('.bloque-deben__cuenta')).toHaveTextContent('4 ventas debiendo')
+  expect(head.querySelector('.bloque-deben__cuenta')).toHaveTextContent('4 sales owing')
   expect(head.querySelector('.bloque-deben__cuenta')).toHaveClass('pie')
-  expect(head.querySelector('.bloque-deben__desde')).toHaveTextContent(/^desde \d\d\/\d\d$/)
+  expect(head.querySelector('.bloque-deben__desde')).toHaveTextContent(/^since \d\d\/\d\d$/)
 
   const row = container.querySelector<HTMLElement>('.bloque-deben__fila')!
   const data = row.querySelector<HTMLElement>('.bloque-deben__datos')!
   expect(data.firstElementChild).toHaveTextContent('Ana Pérez')
   expect(data.querySelector('.monto-deuda')).toHaveTextContent(/^\$ [\d.]+$/)
-  expect(data.lastElementChild).toHaveTextContent(/^\$ [\d.]+ · desde \d\d\/\d\d$/)
+  expect(data.lastElementChild).toHaveTextContent(/^\$ [\d.]+ · since \d\d\/\d\d$/)
   const cobrar = within(row).getByRole('link', { name: 'Collect from Ana Pérez' })
   expect(cobrar).toHaveTextContent('Collect')
   expect(data.contains(cobrar)).toBe(false)
 })
 
-test('Lo que te queda: every status has its word once and days only as the side figure', async () => {
+test('What you have left: every status has its word once and days only as the side figure', async () => {
   panelNow = {
     ...PANEL,
     stock: [

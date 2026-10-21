@@ -73,21 +73,21 @@ test("heads with the total owed and lists debtors in the API's own order", async
   ])
 })
 
-test('one sale still owing reads "1 venta debiendo", singular', async () => {
+test('one sale still owing reads "1 sale owing", singular', async () => {
   // `sales_owing_count` is overridden in memory, never read off the fixture
   // (plan invariant: "A test of a count line fakes the count it asserts and
   // compares against a literal string, never one derived from a fixture value").
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 1 }))
   renderTeDeben()
 
-  expect(await screen.findByText('1 venta debiendo')).toBeInTheDocument()
+  expect(await screen.findByText('1 sale owing')).toBeInTheDocument()
 })
 
-test('three sales still owing read "3 ventas debiendo", plural', async () => {
+test('three sales still owing read "3 sales owing", plural', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 3 }))
   renderTeDeben()
 
-  expect(await screen.findByText('3 ventas debiendo')).toBeInTheDocument()
+  expect(await screen.findByText('3 sales owing')).toBeInTheDocument()
 })
 
 test('nobody owing shows the fixed "Nobody owes you"', async () => {

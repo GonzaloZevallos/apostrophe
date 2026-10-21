@@ -36,7 +36,7 @@ test('a tap creates one link through the route and tells the parent', async () =
   const onLinkCreated = vi.fn()
   render(<InvitePartner onLinkCreated={onLinkCreated} />)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Invite a partner' }))
 
   expect(await screen.findByText(LINK_URL)).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -51,7 +51,7 @@ test('a failed tap does not tell the parent a link was created', async () => {
   const onLinkCreated = vi.fn()
   render(<InvitePartner onLinkCreated={onLinkCreated} />)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Invite a partner' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(onLinkCreated).not.toHaveBeenCalled()
@@ -71,7 +71,7 @@ test('the token goes to no console and no browser storage', async () => {
   ]
   render(<InvitePartner onLinkCreated={() => undefined} />)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Invite a partner' }))
   await screen.findByText(LINK_URL)
 
   for (const spy of spies) {
@@ -98,8 +98,8 @@ test('with its own action the button says that word and still creates the link t
   expect(fetchMock.mock.calls[0]?.[0]).toBe('/invitations')
 })
 
-test('with no action it renders today\'s soft "Invitá a un socio"', () => {
+test('with no action it renders today\'s soft "Invite a partner"', () => {
   render(<InvitePartner onLinkCreated={() => undefined} />)
-  const button = screen.getByRole('button', { name: 'Invitá a un socio' })
+  const button = screen.getByRole('button', { name: 'Invite a partner' })
   expect(button).toHaveClass('boton--suave')
 })

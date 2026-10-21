@@ -154,7 +154,7 @@ afterEach(() => {
 test('shows the month, its total, each category with its subtotal, the expenses and the flower line', async () => {
   renderExpenses([EXPENSES], store([...SEED]))
 
-  expect(await screen.findByText('Octubre 2026')).toBeInTheDocument()
+  expect(await screen.findByText('October 2026')).toBeInTheDocument()
   expect(await screen.findByText('$ 4.500', { selector: '.cifra-xl' })).toBeInTheDocument()
   expect(screen.getByText('1 expense in 1 category')).toBeInTheDocument()
   expect(subtotalOf('Packaging')).toBe('$ 4.500')
@@ -177,23 +177,23 @@ test('an empty month shows $ 0, no categories, the flower line and the record ac
 test('opens on the month in ?month= and moving between months writes it without piling history', async () => {
   const router = renderExpenses([EXPENSES + '?month=2026-09'], store([...SEED]))
 
-  expect(await screen.findByText('Septiembre 2026')).toBeInTheDocument()
+  expect(await screen.findByText('September 2026')).toBeInTheDocument()
   expect(await screen.findByText('Cinta vieja')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Next month' }))
-  expect(await screen.findByText('Octubre 2026')).toBeInTheDocument()
+  expect(await screen.findByText('October 2026')).toBeInTheDocument()
   expect(router.state.location.search).toBe('?month=2026-10')
   expect(await screen.findByText('Bolsas')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Previous month' }))
-  expect(await screen.findByText('Septiembre 2026')).toBeInTheDocument()
+  expect(await screen.findByText('September 2026')).toBeInTheDocument()
   expect(router.state.location.search).toBe('?month=2026-09')
 })
 
 test('a bad ?month= opens on the current month', async () => {
   renderExpenses([EXPENSES + '?month=2026-13'], store([...SEED]))
 
-  expect(await screen.findByText('Octubre 2026')).toBeInTheDocument()
+  expect(await screen.findByText('October 2026')).toBeInTheDocument()
 })
 
 test('records from Gastos on a past month: back to that month with the expense shown, toasting once', async () => {
@@ -212,7 +212,7 @@ test('records from Gastos on a past month: back to that month with the expense s
   expect(await screen.findByText('Cinta nueva')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(EXPENSES)
   expect(router.state.location.search).toBe('?month=2026-09')
-  expect(screen.getByText('Septiembre 2026')).toBeInTheDocument()
+  expect(screen.getByText('September 2026')).toBeInTheDocument()
   expect(await screen.findAllByText('Expense saved')).toHaveLength(1)
   expect(totalShown()).toBe('$ 2.200')
   expect(fetch).toHaveBeenCalledWith(EXPENSES, expect.objectContaining({ method: 'POST' }))

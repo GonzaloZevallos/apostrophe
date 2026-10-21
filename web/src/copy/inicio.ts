@@ -3,29 +3,29 @@
  * `copy/copyLimits.test.ts`. `Inicio.tsx` renders these same bindings.
  */
 
-import type { LimitedCopy } from './limits'
-import { EMPTY_STATES } from './emptyStates'
+import type { LimitedCopy } from './limits.ts'
+import { COMMON_TEXT } from './common.ts'
 import { NOBODY_OWES } from './customers.ts'
 
-export const LANGUAGE: 'es' | 'en' = 'es'
+export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const EMPTY_TITLE = EMPTY_STATES.homeVarietiesTitle
-export const EMPTY_DETAIL = EMPTY_STATES.homeVarietiesDetail
+export const EMPTY_TITLE = 'Start with your varieties'
+export const EMPTY_DETAIL = 'Add your first variety with its price. Without a price it cannot be sold.'
 export { NOBODY_OWES }
-export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
+export const PINNED_CATALOG_OUT_OF_DATE = 'Your Telegram catalog is out of date'
 
-export const CHECKLIST_TITLE = 'Para arrancar'
-export const CHECKLIST_REQUIRED = 'Obligatorio'
-export const CHECKLIST_OPTIONAL = 'Opcional'
-export const CHECKLIST_DONE = 'Hecho'
-export const STEP_PRICED_VARIETY = 'Cargá una variedad con su precio'
-export const STEP_STOCK_ENTRY = 'Cargá lo que tenés hoy'
-export const STEP_PUBLISHED = 'Conectá el bot'
-export const STEP_SECOND_USER = 'Invitá a un socio'
-export const IMPORT_NOTICE = 'Conectá el bot para que el catálogo fijado se actualice solo'
-export const IMPORT_NOTICE_DISMISS = 'Descartar aviso'
+export const CHECKLIST_TITLE = 'To get started'
+export const CHECKLIST_REQUIRED = 'Required'
+export const CHECKLIST_OPTIONAL = 'Optional'
+export const CHECKLIST_DONE = COMMON_TEXT.done
+export const STEP_PRICED_VARIETY = 'Add a variety with its price'
+export const STEP_STOCK_ENTRY = 'Add what you have today'
+export const STEP_PUBLISHED = 'Connect the bot'
+export const STEP_SECOND_USER = 'Invite a partner'
+export const IMPORT_NOTICE = 'Connect the bot so the pinned catalog updates by itself'
+export const IMPORT_NOTICE_DISMISS = 'Dismiss notice'
 /** The line under "+ Nueva venta" while the checklist shows and no variety has a price. */
-export const NUEVA_VENTA_MISSING = 'Cargale un precio a una variedad para poder vender'
+export const NUEVA_VENTA_MISSING = 'Add a price to a variety so you can sell'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_TITLE },
@@ -43,12 +43,13 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const INICIO_TEXT = {
-  loQueTeQueda: 'Lo que te queda',
-  desde0: (oldest: string | number) => `desde ${oldest}`,
-  sinceDate: (owing_since: string | number) => ` · desde ${owing_since}`,
-  vendisteHoy: 'Vendiste hoy',
-  vendisteEstaSemana: 'Vendiste esta semana',
-  vendisteEsteMes: 'Vendiste este mes',
-  regalaste: 'Regalaste',
-  n0Promedio12: (count: string | number, average_sale: string | number, grams: string | number) => `${count} · promedio ${average_sale} · ${grams}`,
+  loQueTeQueda: 'What you have left',
+  desde0: (oldest: string | number) => `since ${oldest}`,
+  sinceDate: (owing_since: string | number) => ` · since ${owing_since}`,
+  vendisteHoy: 'You sold today',
+  vendisteEstaSemana: 'You sold this week',
+  vendisteEsteMes: 'You sold this month',
+  regalaste: 'You gave away',
+  n0Promedio12: (count: string | number, average_sale: string | number, grams: string | number) => `${count} · average ${average_sale} · ${grams}`,
+  pendingCostNote: 'includes pending cost',
 } as const

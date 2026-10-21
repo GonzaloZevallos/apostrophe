@@ -8,7 +8,7 @@
   {
     "screen": "Gastos",
     "rule": "data-while-loading",
-    "target": "span:Septiembre #",
+    "target": "span:September #",
     "issue": 48
   },
   {

@@ -90,11 +90,11 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(withdrawalNewFor(variety))
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
-  await page.getByRole('button', { name: 'Promoción', exact: true }).click()
+  await page.getByRole('button', { name: 'Promotion', exact: true }).click()
   await page.getByRole('button', { name: 'Save the withdrawal' }).click()
   await expect(page.getByText('Withdrawal saved')).toBeVisible()
   await page.goto(pathTo(VARIETY, { id: variety }))
-  await page.locator('.fila-entrada__enlace', { hasText: 'Promoción' }).click()
+  await page.locator('.fila-entrada__enlace', { hasText: 'Promotion' }).click()
   const withdrawal = await idAt(page, WITHDRAWAL)
 
   return { variety, customer, sale, entry, withdrawal, customerName }

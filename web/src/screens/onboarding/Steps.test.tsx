@@ -164,7 +164,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
-  expect(await screen.findByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Add what you have today' })).toBeInTheDocument()
   expect(calls).not.toContain('POST /varieties')
   expect(priceBodies).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
 })

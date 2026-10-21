@@ -101,7 +101,7 @@ for (const viewport of VIEWPORTS) {
     await page.goto(CUSTOMERS)
     const owing = page.getByRole('region', { name: 'Owed to you' })
     await expect(owing.locator('.cifra-xl')).toHaveText('$ 10.000')
-    await expect(owing.getByText('3 ventas debiendo')).toBeVisible()
+    await expect(owing.getByText('3 sales owing')).toBeVisible()
     expect(await debtorOrder(page)).toEqual(['Collect from Zoe Vieja', 'Collect from Beto Deudor', 'Collect from Carla Deudora'])
     // Whoever owes nothing is only in the A–Z list below, with no "Collect".
     await expect(owing.getByRole('link', { name: /Ana AlDia/ })).toHaveCount(0)
@@ -125,7 +125,7 @@ for (const viewport of VIEWPORTS) {
 
     // The section is the API's new answer: she left, the total and the count follow.
     await expect(owing.locator('.cifra-xl')).toHaveText('$ 5.000')
-    await expect(owing.getByText('2 ventas debiendo')).toBeVisible()
+    await expect(owing.getByText('2 sales owing')).toBeVisible()
     expect(await debtorOrder(page)).toEqual(['Collect from Zoe Vieja', 'Collect from Beto Deudor'])
 
     // One move back from Clientes does not land on Registrar cobro again.

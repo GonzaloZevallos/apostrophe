@@ -166,8 +166,8 @@ test('the Onboarding entry opens the resume step with its title, "Step N of 6" a
   renderAt(ONBOARDING)
 
   expect(await screen.findByText('Step 2 of 6')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
-  expect(screen.getByText('Obligatorio')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Add what you have today' })).toBeInTheDocument()
+  expect(screen.getByText('Required')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Skip' })).not.toBeInTheDocument()
   expect(screen.queryByText('New sale')).not.toBeInTheDocument()
   expect(calls).toEqual(['GET /onboarding-progress'])

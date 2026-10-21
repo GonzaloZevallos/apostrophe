@@ -80,7 +80,7 @@ test('marks the signed-in user "you", nobody else, with the users sorted as answ
   expect(juliRow).not.toHaveTextContent('you')
 })
 
-test('"Invitá a un socio" shows the fresh link on screen instead of a toast', async () => {
+test('"Invite a partner" shows the fresh link on screen instead of a toast', async () => {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     if (init?.method === 'POST' && url === '/invitations') {
       return Promise.resolve(
@@ -94,7 +94,7 @@ test('"Invitá a un socio" shows the fresh link on screen instead of a toast', a
   })
   renderUsers(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Invite a partner' }))
 
   expect(await screen.findByText('https://apostrophe.app/invitation/abc123')).toBeInTheDocument()
   expect(await screen.findByText('A one-time link, it expires on 09/10')).toBeInTheDocument()
@@ -115,7 +115,7 @@ test('"Copy" copies the invite link through copyText, the only clipboard path', 
   })
   renderUsers(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Invite a partner' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
 
   expect(clipboard.copyText).toHaveBeenCalledWith('https://apostrophe.app/invitation/abc123')
@@ -130,7 +130,7 @@ test('a dropped network while inviting shows "Sin conexión", never the generic 
   })
   renderUsers(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Invite a partner' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
@@ -144,10 +144,10 @@ test('an untouched group closes at once, with no confirmation', async () => {
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
 
-test('"Invitá a un socio" is an icon + text action: the icon is hidden, so the name stays the word', async () => {
+test('"Invite a partner" is an icon + text action: the icon is hidden, so the name stays the word', async () => {
   renderUsers(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 
-  const invite = await screen.findByRole('button', { name: 'Invitá a un socio' })
+  const invite = await screen.findByRole('button', { name: 'Invite a partner' })
 
   expect(invite.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expectIconAndTextRule(document.body)
@@ -164,7 +164,7 @@ test('the fresh link\'s expiry line is the registered binding, rendered as a hel
   })
   renderUsers(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Invite a partner' }))
 
   const line = await screen.findByText(inviteExpiry('09/10'))
   expect(line).toHaveAttribute('data-copy', 'help')
@@ -182,7 +182,7 @@ test('Copiar is icon + text and Compartir under the fresh link is the icon-only 
     return Promise.resolve(jsonResponse(200, BUSINESS))
   })
   renderUsers(fetchMock)
-  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Invite a partner' }))
 
   const copy = await screen.findByRole('button', { name: 'Copy' })
   const share = screen.getByRole('button', { name: 'Share' })

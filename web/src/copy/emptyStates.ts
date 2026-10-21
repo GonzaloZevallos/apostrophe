@@ -7,6 +7,8 @@
  */
 
 import { EMPTY_CUSTOMERS, NOBODY_OWES } from './customers.ts'
+import { EMPTY_DETAIL, EMPTY_TITLE } from './inicio.ts'
+import { EMPTY_MONTH_LINE, NO_HISTORY_LINE } from './analysis.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'es'
 
@@ -39,4 +41,8 @@ export const EMPTY_STATE_WORDINGS: readonly string[] = [
   STOCK_EMPTY_DETAIL,
   CATALOG_EMPTY_TITLE,
   CATALOG_EMPTY_DETAIL,
+  EMPTY_TITLE,
+  EMPTY_DETAIL,
+  NO_HISTORY_LINE,
+  EMPTY_MONTH_LINE,
 ]

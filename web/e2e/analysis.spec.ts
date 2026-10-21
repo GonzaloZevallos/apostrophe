@@ -84,7 +84,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // `AnalisisCompu.dc.html`'s tables are the ones on screen — the phone's cards
   // carry the same rows but are CSS-hidden here, the same switch the shell's own
   // side rail/bottom bar already make.
-  await expect(page.getByText('Vendiste en el mes')).toBeVisible()
+  await expect(page.getByText('You sold in the month')).toBeVisible()
   const varietyRow = page
     .locator('.analisis__tabla-contenedor--variedades tbody tr')
     .filter({ hasText: 'Rosa' })
@@ -92,16 +92,16 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(varietyRow.getByRole('cell').nth(5)).toContainText('$') // Costo
   await expect(varietyRow.getByRole('cell').nth(6)).toContainText('$') // Margen
 
-  await expect(page.getByText('Semana a semana · últimas 8')).toBeVisible()
+  await expect(page.getByText('Week by week · last 8')).toBeVisible()
   const weekRows = page.locator('.analisis__tabla-contenedor--semanas tbody tr')
   await expect(weekRows.first()).toBeVisible()
 
-  await expect(page.getByText('Por día de la semana')).toBeVisible()
+  await expect(page.getByText('By day of the week')).toBeVisible()
   await expect(page.locator('.analisis__dia').first()).toBeVisible()
 
-  await expect(page.getByText('Gastos del mes')).toBeVisible()
+  await expect(page.getByText('Expenses of the month')).toBeVisible()
   await expect(page.getByText('Flete').first()).toBeVisible()
-  await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
+  await expect(page.getByText('Kept apart, added in Stock').first()).toBeVisible()
 
   await expect(page.locator('.gastos__mes-etiqueta').first()).toHaveText(/\S/)
   const monthLabelBefore = await page
@@ -116,11 +116,11 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.locator('.gastos__mes-etiqueta').first()).not.toHaveText(
     monthLabelBefore ?? '',
   )
-  await expect(page.getByText('No vendiste ni regalaste nada este mes.')).toBeVisible()
-  await expect(page.getByText('Semana a semana · últimas 8')).toBeVisible()
+  await expect(page.getByText('You did not sell or give away anything this month.')).toBeVisible()
+  await expect(page.getByText('Week by week · last 8')).toBeVisible()
   await expect(weekRows.first()).toBeVisible()
-  await expect(page.getByText('Por día de la semana')).toBeVisible()
-  await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
+  await expect(page.getByText('By day of the week')).toBeVisible()
+  await expect(page.getByText('Kept apart, added in Stock').first()).toBeVisible()
 
   expect(consoleMessages).toEqual([])
 })
@@ -132,9 +132,9 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
  *
  * - Rosa: no stock entry at all, so everything taken from it is pending: a promotion of 2 g on
  *   the first of last month (a past month, fully pending), and today a negative adjustment of
- *   1 g (the current month's Faltante de stock, fully pending) and an own use of 1 g.
+ *   1 g (the current month's Stock shortfall, fully pending) and an own use of 1 g.
  * - Lirio: one purchase lot of 10 g for $ 10.000 and a sale of 15 g two weeks ago: its Costo de
- *   lo vendido is $ 10.000 y 5 g sin costo (a past week, partly pending).
+ *   is $ 10.000 and 5 g without cost (a past week, partly pending).
  *
  * It saves screenshots of the header, the rows and "Desde el primer registro" at a phone and a
  * computer viewport, in both themes, as attachments of this test (the PR's evidence).
@@ -180,7 +180,7 @@ async function recordWithdrawal(
   await expect(page.getByText('Withdrawal saved')).toBeVisible()
 }
 
-test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Consumo propio, fully and partly pending', async ({
+test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use, fully and partly pending', async ({
   page,
 }, testInfo) => {
   const consoleMessages: string[] = []
@@ -219,8 +219,8 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
     cost: '10000',
   })
   await recordEntry(page, { date: today, grams: '-1', variety: 'Rosa', origin: 'Adjustment' })
-  await recordWithdrawal(page, { date: lastMonth, grams: '2', variety: 'Rosa', reason: 'Promoción' })
-  await recordWithdrawal(page, { date: today, grams: '1', variety: 'Rosa', reason: 'Consumo propio' })
+  await recordWithdrawal(page, { date: lastMonth, grams: '2', variety: 'Rosa', reason: 'Promotion' })
+  await recordWithdrawal(page, { date: today, grams: '1', variety: 'Rosa', reason: 'Own use' })
 
   await page.goto(SALE_NEW)
   await page.getByLabel('Date').fill(twoWeeksAgo)
@@ -232,40 +232,40 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   // The computer: the week and month tables carry one cost sub-row under each row.
   await page.setViewportSize({ width: 1280, height: 920 })
   await page.goto(ANALYSIS)
-  await expect(page.getByText('Vendiste en el mes')).toBeVisible()
+  await expect(page.getByText('You sold in the month')).toBeVisible()
   const weekCosts = page.locator('.analisis__tabla-contenedor--semanas .analisis__fila-costos')
   const monthCosts = page.locator('.analisis__tabla-contenedor--meses .analisis__fila-costos')
   const weekRows = await weekCosts.count()
   expect(weekRows).toBeGreaterThan(2)
   for (const costs of [weekCosts, monthCosts]) {
     for (let i = 0; i < (await costs.count()); i += 1) {
-      await expect(costs.nth(i)).toContainText('Costo de lo vendido')
+      await expect(costs.nth(i)).toContainText('Cost of goods sold')
     }
   }
 
   // A past week, partly pending: the costed 10 g plus 5 g still without a cost.
   await expect(
-    weekCosts.filter({ hasText: 'Costo de lo vendido $ 10.000 y 5 g sin costo' }),
+    weekCosts.filter({ hasText: 'Cost of goods sold $ 10.000 and 5 g without cost' }),
   ).toHaveCount(1)
   // A week with no sales reads a real $ 0.
-  await expect(weekCosts.filter({ hasText: 'Costo de lo vendido $ 0' }).first()).toBeVisible()
+  await expect(weekCosts.filter({ hasText: 'Cost of goods sold $ 0' }).first()).toBeVisible()
   // The current week, its last row, has the fully pending shortfall and own use.
-  await expect(weekCosts.last()).toContainText('Faltante de stock 1 g sin costo')
-  await expect(weekCosts.last()).toContainText('Consumo propio 1 g sin costo')
-  await expect(weekCosts.first()).not.toContainText('Faltante de stock')
+  await expect(weekCosts.last()).toContainText('Stock shortfall 1 g without cost')
+  await expect(weekCosts.last()).toContainText('Own use 1 g without cost')
+  await expect(weekCosts.first()).not.toContainText('Stock shortfall')
   // A past month, fully pending promotion; only the current month has the shortfall.
-  await expect(monthCosts.filter({ hasText: 'Promoción 2 g sin costo' })).toHaveCount(1)
-  await expect(monthCosts.filter({ hasText: 'Faltante de stock 1 g sin costo' })).toHaveCount(1)
-  await expect(monthCosts.last()).toContainText('Faltante de stock 1 g sin costo')
+  await expect(monthCosts.filter({ hasText: 'Promotion 2 g without cost' })).toHaveCount(1)
+  await expect(monthCosts.filter({ hasText: 'Stock shortfall 1 g without cost' })).toHaveCount(1)
+  await expect(monthCosts.last()).toContainText('Stock shortfall 1 g without cost')
 
   // The header and "Desde el primer registro": fully pending, grams only.
-  const header = page.locator('.cuerpo > div').filter({ hasText: 'Vendiste en el mes' }).first()
-  await expect(header).toContainText('Faltante de stock 1 g sin costo')
-  await expect(header).toContainText('Consumo propio 1 g sin costo')
+  const header = page.locator('.cuerpo > div').filter({ hasText: 'You sold in the month' }).first()
+  await expect(header).toContainText('Stock shortfall 1 g without cost')
+  await expect(header).toContainText('Own use 1 g without cost')
   const since = page.locator('.analisis__historico')
-  await expect(since).toContainText('Faltante de stock 1 g sin costo')
-  await expect(since).toContainText('Promoción 2 g sin costo')
-  await expect(since).toContainText('Consumo propio 1 g sin costo')
+  await expect(since).toContainText('Stock shortfall 1 g without cost')
+  await expect(since).toContainText('Promotion 2 g without cost')
+  await expect(since).toContainText('Own use 1 g without cost')
 
   // Never a pending cost read as a zero, anywhere a cost line is drawn.
   for (const region of [weekCosts, monthCosts, header, since]) {
@@ -275,9 +275,9 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   // The same rows on the phone, as cards.
   await page.setViewportSize({ width: 390, height: 844 })
   const phoneWeeks = page.locator('.analisis__semana')
-  await expect(phoneWeeks.filter({ hasText: 'Costo de lo vendido $ 10.000 y 5 g sin costo' })).toHaveCount(1)
-  await expect(phoneWeeks.last()).toContainText('Faltante de stock 1 g sin costo')
-  await expect(page.locator('.analisis__mes-fila').filter({ hasText: 'Promoción 2 g sin costo' })).toHaveCount(1)
+  await expect(phoneWeeks.filter({ hasText: 'Cost of goods sold $ 10.000 and 5 g without cost' })).toHaveCount(1)
+  await expect(phoneWeeks.last()).toContainText('Stock shortfall 1 g without cost')
+  await expect(page.locator('.analisis__mes-fila').filter({ hasText: 'Promotion 2 g without cost' })).toHaveCount(1)
 
   // Screenshots for the PR: header, the rows and the since-the-first-record block, per
   // viewport and theme.

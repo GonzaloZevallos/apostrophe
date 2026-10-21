@@ -71,77 +71,51 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Consumo propio $ #.# y # g sin costo",
+    "target": "span:Own use $ #.# and # g without cost",
     "issue": 48,
     "sizes": [
-      "430x932",
       "246x437"
     ]
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#",
+    "target": "span:Stock shortfall $ #.#",
     "issue": 48,
     "sizes": [
-      "430x932",
+      "320x568"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Promotion $ #.#[1]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
       "246x437"
     ]
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#[1]",
+    "target": "span:Promotion $ #.#[2]",
     "issue": 48,
     "sizes": [
       "320x568",
-      "375x812"
+      "246x437"
     ]
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#[2]",
+    "target": "span:expenses $ #.#.#.#",
     "issue": 48,
     "sizes": [
       "320x568",
-      "375x812"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Promoción $ #.#",
-    "issue": 48,
-    "sizes": [
+      "375x812",
       "430x932"
     ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Promoción $ #.#[1]",
-    "issue": 48,
-    "sizes": [
-      "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Promoción $ #.#[2]",
-    "issue": 48,
-    "sizes": [
-      "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:gastos $ #.#.#.#",
-    "issue": 48
   },
   {
     "screen": "CatalogoAtributos",
@@ -321,15 +295,6 @@
   {
     "screen": "Inicio",
     "rule": "figure-split",
-    "target": "span:# ventas · promedio $ #.#.# · # g",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "figure-split",
     "target": "span:$ #.#",
     "issue": 45,
     "sizes": [
@@ -357,15 +322,6 @@
   {
     "screen": "InicioHoy",
     "rule": "figure-split",
-    "target": "span:# ventas · promedio $ #.#.# · # g",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "figure-split",
     "target": "span:$ #.#",
     "issue": 45,
     "sizes": [
@@ -377,15 +333,6 @@
     "rule": "figure-split",
     "target": "span:$ #.#.#.#",
     "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "figure-split",
-    "target": "span:# ventas · promedio $ #.#.# · # g",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "InicioPrimeraVez",
@@ -529,6 +476,44 @@
     "issue": 47,
     "sizes": [
       "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "issue": 48,
+    "target": "span:Stock shortfall $ #.#[1]",
+    "sizes": [
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "issue": 48,
+    "target": "span:Stock shortfall $ #.#[2]",
+    "sizes": [
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "issue": 48,
+    "target": "span:Own use $ #.# and # g without cost[1]",
+    "sizes": [
+      "375x812"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "issue": 48,
+    "target": "span:Own use $ #.# and # g without cost[2]",
+    "sizes": [
+      "375x812"
     ]
   }
 ]
