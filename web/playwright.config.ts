@@ -41,7 +41,10 @@ const readyOn = (port: number): RegExp =>
   new RegExp(`Uvicorn running on http://${E2E_HOST.replace(/\./g, '\\.')}:${port}\\b`)
 
 // One cell walks every registry screen twice (loaded, then held); a cell's own budget.
-const MOBILE_TEST_TIMEOUT_MS = 300_000
+// Measured in the presubmit run of GH-53 (3 workers, machine load average about 33 on 16
+// cores): the eight cells took 275 to 305 s, so 300 s cut five of them off. The budget is
+// at least 2x the longest, as for the other ceilings above.
+const MOBILE_TEST_TIMEOUT_MS = 600_000
 
 // Read once. The caller names the directory (a run never overwrites an earlier one); the
 // config never computes a name from the time or the sha.
