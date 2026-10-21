@@ -174,13 +174,32 @@
     "screen": "ClienteFicha",
     "rule": "figure-split",
     "target": "span:$ #.#[1]",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "246x437",
+      "320x568",
+      "375x812"
+    ]
   },
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
     "target": "span:$ #.#[2]",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "246x437",
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "figure-split",
+    "target": "span:$ #.#",
+    "issue": 46,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "ClienteFicha",
@@ -205,19 +224,38 @@
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#[1]",
-    "issue": 46
+    "target": "span:balance $ #.#[1]",
+    "issue": 46,
+    "sizes": [
+      "246x437",
+      "320x568",
+      "375x812"
+    ]
   },
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#[2]",
-    "issue": 46
+    "target": "span:balance $ #.#[2]",
+    "issue": 46,
+    "sizes": [
+      "246x437",
+      "320x568",
+      "375x812"
+    ]
   },
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#[3]",
+    "target": "span:balance $ #.#",
+    "issue": 46,
+    "sizes": [
+      "430x932"
+    ]
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "figure-split",
+    "target": "span:balance $ #.#[3]",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -241,8 +279,7 @@
     "issue": 46,
     "sizes": [
       "320x568",
-      "375x812",
-      "430x932"
+      "375x812"
     ]
   },
   {
@@ -252,7 +289,15 @@
     "issue": 46,
     "sizes": [
       "320x568",
-      "375x812",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:$ #.#",
+    "issue": 46,
+    "sizes": [
       "430x932"
     ]
   },
@@ -269,29 +314,36 @@
   {
     "screen": "CobroBorrar",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#[1]",
+    "target": "span:balance $ #.#[1]",
     "issue": 46,
     "sizes": [
       "320x568",
-      "375x812",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:balance $ #.#[2]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:balance $ #.#",
+    "issue": 46,
+    "sizes": [
       "430x932"
     ]
   },
   {
     "screen": "CobroBorrar",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:saldo $ #.#[3]",
+    "target": "span:balance $ #.#[3]",
     "issue": 46,
     "sizes": [
       "320x568",

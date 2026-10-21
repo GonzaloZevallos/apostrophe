@@ -26,7 +26,7 @@
   {
     "screen": "ClienteEditar",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 46
   },
   {
@@ -38,7 +38,7 @@
   {
     "screen": "ClienteNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 46
   },
   {
@@ -206,7 +206,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Search",
+    "target": "textbox:Buscar",
     "issue": 78
   },
   {
@@ -584,7 +584,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Search",
+    "target": "textbox:Buscar",
     "issue": 78
   },
   {
@@ -662,7 +662,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Search",
+    "target": "textbox:Buscar",
     "issue": 78
   },
   {
@@ -704,7 +704,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 78
   },
   {
@@ -896,7 +896,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "autocomplete",
-    "target": "textbox:Search",
+    "target": "textbox:Buscar",
     "issue": 78,
     "sizes": [
       "320x568",

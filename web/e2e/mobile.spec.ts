@@ -338,7 +338,7 @@ test.describe('the colour, loading and shift checkers', () => {
       'loaded',
     )
     expect(rulesOf(found)).toEqual(['contrast', 'contrast-unprovable'])
-    expect(found.filter((v) => v.rule === 'contrast').map((v) => v.target)).toEqual(['p:Gris claro', 'textbox:Search::placeholder'])
+    expect(found.filter((v) => v.rule === 'contrast').map((v) => v.target)).toEqual(['p:Gris claro', 'textbox:Buscar::placeholder'])
     expect(found.filter((v) => v.rule === 'contrast-unprovable').map((v) => v.target)).toEqual(['p:Sobre un degradado'])
   })
 
@@ -352,7 +352,7 @@ test.describe('the colour, loading and shift checkers', () => {
   })
 
   test('a loading screen with no content area, no aria-busy, an empty-state wording and a figure is reported for each', async ({ browser }) => {
-    const found = await onPage(browser, '<p>Nadie te debe.</p>', 'loading')
+    const found = await onPage(browser, '<p>Nobody owes you.</p>', 'loading')
     expect(rulesOf(found)).toEqual(['aria-busy', 'blank-while-loading', 'false-empty'])
     const busy = await onPage(
       browser,

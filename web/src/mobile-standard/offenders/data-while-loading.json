@@ -2,7 +2,7 @@
   {
     "screen": "Clientes",
     "rule": "data-while-loading",
-    "target": "span:# clientes",
+    "target": "span:# customers",
     "issue": 46
   },
   {
