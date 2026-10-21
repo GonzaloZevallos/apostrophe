@@ -61,10 +61,10 @@ async function openFor(handlers: Record<string, () => Response>): Promise<Return
 async function line(grams: string) {
   const user = userEvent.setup()
   // The varieties arrive after the form mounts: wait until the line can offer them.
-  const picker = await screen.findByLabelText('Variedad línea 1')
+  const picker = await screen.findByLabelText('Line 1 variety')
   await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(1))
   await user.selectOptions(picker, '3')
-  await user.type(screen.getByLabelText('Gramos línea 1'), grams)
+  await user.type(screen.getByLabelText('Line 1 grams'), grams)
 }
 
 afterEach(async () => {
@@ -92,7 +92,7 @@ test('at the bulk minimum the lowest rule wins: a VIP price above the bulk price
   await line('10')
 
   expect(await screen.findByText('$ 800 x g')).toBeInTheDocument()
-  expect(screen.getByText('por cantidad')).toBeInTheDocument()
+  expect(screen.getByText('bulk')).toBeInTheDocument()
 })
 
 test('with Clientes VIP off there is no VIP mark and the line is priced as anyone', async () => {
@@ -114,7 +114,7 @@ test('with Precio por cantidad off a line at the minimum is priced at list, with
   await line('10')
 
   expect(await screen.findByText('$ 1.000 x g')).toBeInTheDocument()
-  expect(screen.queryByText('por cantidad')).not.toBeInTheDocument()
+  expect(screen.queryByText('bulk')).not.toBeInTheDocument()
 })
 
 test('a date change loads the switches again', async () => {

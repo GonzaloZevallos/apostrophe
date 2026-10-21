@@ -1,5 +1,5 @@
 /**
- * `VentaDetalle`'s Asignar cliente sheet at the screen seam, through a real data router
+ * `VentaDetalle`'s Assign customer sheet at the screen seam, through a real data router
  * (`createMemoryRouter` + `RouterProvider`) with `fetch` faked: the sheet is a history entry
  * (ADR-0027), so the system back gesture closes only the sheet, asks nothing and stays on
  * the detail.
@@ -34,7 +34,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('back with Asignar cliente open closes only the sheet and stays on the detail', async () => {
+test('back with Assign customer open closes only the sheet and stays on the detail', async () => {
   const user = userEvent.setup()
   const router = createMemoryRouter(
     [
@@ -51,16 +51,16 @@ test('back with Asignar cliente open closes only the sheet and stays on the deta
     </QueryClientProvider>,
   )
 
-  await user.click(await screen.findByRole('button', { name: 'Asignar cliente' }))
-  expect(screen.getByText('Elegir cliente')).toBeInTheDocument()
+  await user.click(await screen.findByRole('button', { name: 'Assign customer' }))
+  expect(screen.getByText('Pick a customer')).toBeInTheDocument()
   expect(sheetDepth(router.state.location.state)).toBe(1)
 
   await act(() => router.navigate(-1))
 
-  expect(screen.queryByText('Elegir cliente')).not.toBeInTheDocument()
+  expect(screen.queryByText('Pick a customer')).not.toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 10 }))
-  expect(screen.getByRole('button', { name: 'Asignar cliente' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Assign customer' })).toBeInTheDocument()
 })
 
 test('"Close" on the sheet is the same move as back', async () => {
@@ -76,10 +76,10 @@ test('"Close" on the sheet is the same move as back', async () => {
     </QueryClientProvider>,
   )
 
-  await user.click(await screen.findByRole('button', { name: 'Asignar cliente' }))
+  await user.click(await screen.findByRole('button', { name: 'Assign customer' }))
   await user.click(screen.getByRole('button', { name: 'Close' }))
 
-  expect(screen.queryByText('Elegir cliente')).not.toBeInTheDocument()
+  expect(screen.queryByText('Pick a customer')).not.toBeInTheDocument()
   expect(sheetDepth(router.state.location.state)).toBe(0)
   expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 10 }))
 })

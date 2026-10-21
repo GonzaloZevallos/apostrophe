@@ -105,14 +105,14 @@ test('Fechas opens on the current month and never lets the start run past the en
   renderVentas()
   await waitFor(() => expect(api).toHaveBeenCalledTimes(1))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Fechas' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Dates' }))
 
-  const start = await screen.findByLabelText('Desde')
-  const end = screen.getByLabelText('Hasta')
+  const start = await screen.findByLabelText('From')
+  const end = screen.getByLabelText('To')
   expect(start).toHaveValue('2026-10-01')
   expect(end).toHaveValue('2026-10-31')
   expect(start).toHaveAttribute('max', '2026-10-31')
-  // Regression: "Hasta" must never carry a `max` lower than its own default value
+  // Regression: "To" must never carry a `max` lower than its own default value
   // (the month's last day, which can fall after today) — that would start the
   // field invalid and leave no way back to the range the PRD says Fechas opens on.
   expect(end).not.toHaveAttribute('max')
@@ -153,7 +153,7 @@ test("the period's total and count are the sum and the number of sales shown", a
   expect(screen.getByText('03/10 · 2 ventas')).toBeInTheDocument()
   expect(screen.getByText('Nico')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
-  expect(screen.getByText('Sin cliente')).toBeInTheDocument()
+  expect(screen.getByText('No customer')).toBeInTheDocument()
   expect(screen.getByText('Blue Dream · 5 g')).toBeInTheDocument()
 })
 
@@ -169,7 +169,7 @@ test('the header shows the range next to the total, dd/mm, collapsed to one date
   await userEvent.click(screen.getByRole('button', { name: 'Month' }))
   expect(await screen.findByText('01/10 – 31/10 · 0 ventas')).toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Fechas' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Dates' }))
   // Fechas opens on the current month's own range too (`custom` starts as
   // `monthRange(me.today)`), so it reads exactly like Mes here.
   expect(await screen.findByText('01/10 – 31/10 · 0 ventas')).toBeInTheDocument()
@@ -183,7 +183,7 @@ test('each row carries the chevron icon', async () => {
   expect(row.querySelector('svg')).not.toBeNull()
 })
 
-test('a sale with no customer shows "Sin cliente" and no VIP badge', async () => {
+test('a sale with no customer shows "No customer" and no VIP badge', async () => {
   api.mockResolvedValue(
     jsonResponse(200, [
       {
@@ -202,36 +202,36 @@ test('a sale with no customer shows "Sin cliente" and no VIP badge', async () =>
   )
   renderVentas()
 
-  expect(await screen.findByText('Sin cliente')).toBeInTheDocument()
+  expect(await screen.findByText('No customer')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
-test('a sale still owing shows its total in amber with "te debe" under it, from the API', async () => {
+test('a sale still owing shows its total in amber with "owes you" under it, from the API', async () => {
   // `sale.json` (plan, invariants: "used by the front's fetch fakes"): `still_owing`
   // true, `total` 11000.
   api.mockResolvedValue(jsonResponse(200, [saleFixture]))
   renderVentas()
 
   const row = await screen.findByRole('link')
-  expect(within(row).getByText('te debe')).toBeInTheDocument()
+  expect(within(row).getByText('owes you')).toBeInTheDocument()
   expect(within(row).getByText('$ 11.000')).toHaveClass('monto-deuda')
 })
 
-test('a sale paid in full shows no "te debe" mark', async () => {
+test('a sale paid in full shows no "owes you" mark', async () => {
   api.mockResolvedValue(
     jsonResponse(200, [{ ...saleFixture, payment: 'cash', still_owing: false }]),
   )
   renderVentas()
 
   const row = await screen.findByRole('link')
-  expect(within(row).queryByText('te debe')).not.toBeInTheDocument()
+  expect(within(row).queryByText('owes you')).not.toBeInTheDocument()
 })
 
 test('an empty period shows the empty-list text, not a blank list', async () => {
   api.mockResolvedValue(jsonResponse(200, []))
   renderVentas()
 
-  expect(await screen.findByText('Todavía no registraste ninguna venta en este período.')).toBeInTheDocument()
+  expect(await screen.findByText("You haven't recorded any sales in this period yet.")).toBeInTheDocument()
 })
 
 test('a dropped network shows Sin conexión, never the empty-list text', async () => {
@@ -240,11 +240,11 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(
-    screen.queryByText('Todavía no registraste ninguna venta en este período.'),
+    screen.queryByText("You haven't recorded any sales in this period yet."),
   ).not.toBeInTheDocument()
 })
 
-test('arriving back from Borrar venta or Deshacer shows "Sale deleted · the grams go back to stock"', async () => {
+test('arriving back from Delete sale or Deshacer shows "Sale deleted · the grams go back to stock"', async () => {
   api.mockResolvedValue(jsonResponse(200, []))
   renderVentas({ toast: 'Sale deleted · the grams go back to stock' })
 
