@@ -3394,10 +3394,15 @@ body {
   padding: 0;
 }
 
-/* The reveal ("Mostrar"/"Ocultar") is not in the design: it sits at the field's right
+/* The reveal ("Show"/"Hide") is not in the design: it sits at the field's right
  * edge so it reads as the field's own, not as a third button. */
 .auth-page .campo__mostrar {
   align-self: flex-end;
+}
+
+/* "Show" is shorter than the Spanish word was: the button keeps the tap width. */
+.campo__mostrar .boton--enlace {
+  min-width: var(--alto-tocable);
 }
 
 /* Mostrar/Ocultar, Cancelar, "Todo: $ X" and the variety's Editar were `.boton-enlace`: accent

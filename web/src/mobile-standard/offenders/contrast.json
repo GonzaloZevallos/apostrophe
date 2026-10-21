@@ -92,13 +92,13 @@
   {
     "screen": "VariedadNueva",
     "rule": "contrast",
-    "target": "textbox:NombreHasta # caracteres · no puede repetir el nombr",
+    "target": "textbox:NameHasta # caracteres · no puede repetir el nombre ",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "contrast",
-    "target": "textbox:NombreHasta # caracteres · no puede repetir el nombr",
+    "target": "textbox:NameHasta # caracteres · no puede repetir el nombre ",
     "issue": 47
   },
   {

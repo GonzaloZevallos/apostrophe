@@ -2,13 +2,13 @@
   {
     "screen": "Analisis",
     "rule": "touch-target",
-    "target": "button:Previous month",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-target",
-    "target": "button:Next month",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
@@ -103,27 +103,27 @@
   {
     "screen": "Catalogo",
     "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-target",
     "target": "link:Sir Jack",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-target",
-    "target": "link:Variety sin ventas",
+    "target": "link:Variedad sin ventas",
     "issue": 47,
     "sizes": [
       "320x568",
       "375x812",
       "430x932"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
     ]
   },
   {
@@ -194,7 +194,7 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "switch:Show en el catálogo",
+    "target": "switch:Mostrar en el catálogo",
     "issue": 47
   },
   {
@@ -293,6 +293,15 @@
   {
     "screen": "Cobro",
     "rule": "touch-target",
+    "target": "button:Close",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Cobro",
+    "rule": "touch-target",
     "target": "textbox:Cash",
     "issue": 46
   },
@@ -305,6 +314,15 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-target",
+    "target": "button:Close",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "touch-target",
     "target": "textbox:Cash",
     "issue": 46
   },
@@ -317,32 +335,23 @@
   {
     "screen": "CobroDesdeInicio",
     "rule": "touch-target",
-    "target": "textbox:Cash",
+    "target": "button:Close",
     "issue": 46,
     "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
       "246x437"
     ]
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "touch-target",
-    "target": "textbox:Transfer",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "target": "textbox:Cash",
+    "issue": 46
   },
   {
-    "screen": "Configuracion",
+    "screen": "CobroDesdeInicio",
     "rule": "touch-target",
-    "target": "button:‹ More",
-    "issue": 60
+    "target": "textbox:Transfer",
+    "issue": 46
   },
   {
     "screen": "Configuracion",
@@ -444,6 +453,15 @@
     ]
   },
   {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
     "screen": "EstadosGone",
     "rule": "touch-target",
     "target": "link:Home",
@@ -456,6 +474,15 @@
     "screen": "EstadosGone",
     "rule": "touch-target",
     "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -480,6 +507,15 @@
     ]
   },
   {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
     "screen": "EstadosReintento",
     "rule": "touch-target",
     "target": "link:Home",
@@ -492,6 +528,15 @@
     "screen": "EstadosReintento",
     "rule": "touch-target",
     "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -516,15 +561,24 @@
     ]
   },
   {
-    "screen": "GastoConfirmarBorrado",
+    "screen": "EstadosSinConexion",
     "rule": "touch-target",
-    "target": "button:Previous month",
-    "issue": 48
+    "target": "link:Sales",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
     "target": "button:Next month",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-target",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
@@ -536,7 +590,7 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Categorys",
+    "target": "link:Categorías",
     "issue": 48
   },
   {
@@ -569,13 +623,13 @@
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "button:Previous month",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "button:Next month",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
@@ -587,7 +641,7 @@
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "link:Categorys",
+    "target": "link:Categorías",
     "issue": 48
   },
   {
@@ -620,13 +674,13 @@
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "button:Previous month",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "button:Next month",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
@@ -638,7 +692,7 @@
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "link:Categorys",
+    "target": "link:Categorías",
     "issue": 48
   },
   {
@@ -667,12 +721,6 @@
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimo",
-    "issue": 45
   },
   {
     "screen": "Inicio",
@@ -708,9 +756,9 @@
     ]
   },
   {
-    "screen": "InicioHoy",
+    "screen": "Inicio",
     "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimo",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
     "issue": 45
   },
   {
@@ -747,9 +795,9 @@
     ]
   },
   {
-    "screen": "InicioPrimeraVez",
+    "screen": "InicioHoy",
     "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimo",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
     "issue": 45
   },
   {
@@ -784,6 +832,12 @@
     "sizes": [
       "246x437"
     ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-target",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
+    "issue": 45
   },
   {
     "screen": "Mas",
@@ -1393,6 +1447,15 @@
     ]
   },
   {
+    "screen": "VentaBorrar",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
     "screen": "VentaDetalle",
     "rule": "touch-target",
     "target": "link:Home",
@@ -1405,6 +1468,15 @@
     "screen": "VentaDetalle",
     "rule": "touch-target",
     "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1429,6 +1501,15 @@
     ]
   },
   {
+    "screen": "Ventas",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
     "screen": "VentasFechas",
     "rule": "touch-target",
     "target": "link:Home",
@@ -1441,6 +1522,15 @@
     "screen": "VentasFechas",
     "rule": "touch-target",
     "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 78,
     "sizes": [
       "246x437"

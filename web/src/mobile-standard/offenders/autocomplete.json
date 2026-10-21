@@ -56,18 +56,12 @@
   {
     "screen": "Cobro",
     "rule": "autocomplete",
-    "target": "textbox:Date",
+    "target": "textbox:Amount",
     "issue": 46
   },
   {
     "screen": "Cobro",
     "rule": "autocomplete",
-    "target": "textbox:Amount",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "autocomplete",
     "target": "textbox:Date",
     "issue": 46
   },
@@ -78,28 +72,22 @@
     "issue": 46
   },
   {
-    "screen": "CobroDesdeInicio",
+    "screen": "CobroDesdeClientes",
     "rule": "autocomplete",
     "target": "textbox:Date",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "issue": 46
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "autocomplete",
     "target": "textbox:Amount",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "issue": 46
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "autocomplete",
+    "target": "textbox:Date",
+    "issue": 46
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
@@ -176,19 +164,19 @@
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "combobox:Variety línea #",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "combobox:Variedad línea #",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
     "target": "textbox:Date",
+    "issue": 78
+  },
+  {
+    "screen": "DescartarVenta",
+    "rule": "autocomplete",
+    "target": "textbox:Envío",
     "issue": 78
   },
   {
@@ -212,7 +200,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "combobox:Variety línea #",
+    "target": "combobox:Variedad línea #",
     "issue": 78
   },
   {
@@ -224,13 +212,13 @@
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Date",
+    "target": "textbox:Envío",
     "issue": 78
   },
   {
@@ -434,7 +422,7 @@
   {
     "screen": "GastoDesdeGastos",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Amount",
     "issue": 48
   },
   {
@@ -446,7 +434,7 @@
   {
     "screen": "GastoDesdeGastos",
     "rule": "autocomplete",
-    "target": "textbox:Amount",
+    "target": "textbox:Detalle",
     "issue": 48
   },
   {
@@ -458,7 +446,7 @@
   {
     "screen": "GastoDesdeMas",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Amount",
     "issue": 48
   },
   {
@@ -470,7 +458,7 @@
   {
     "screen": "GastoDesdeMas",
     "rule": "autocomplete",
-    "target": "textbox:Amount",
+    "target": "textbox:Detalle",
     "issue": 48
   },
   {
@@ -482,7 +470,7 @@
   {
     "screen": "GastoEditar",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Amount",
     "issue": 48
   },
   {
@@ -494,7 +482,7 @@
   {
     "screen": "GastoEditar",
     "rule": "autocomplete",
-    "target": "textbox:Amount",
+    "target": "textbox:Detalle",
     "issue": 48
   },
   {
@@ -506,7 +494,7 @@
   {
     "screen": "GastoNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Amount",
     "issue": 48
   },
   {
@@ -518,7 +506,7 @@
   {
     "screen": "GastoNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Amount",
+    "target": "textbox:Detalle",
     "issue": 48
   },
   {
@@ -529,18 +517,6 @@
   },
   {
     "screen": "Invitacion",
-    "rule": "autocomplete",
-    "target": "textbox:Email",
-    "issue": 49
-  },
-  {
-    "screen": "NegocioNuevo",
-    "rule": "autocomplete",
-    "target": "textbox:Contraseña",
-    "issue": 49
-  },
-  {
-    "screen": "NegocioNuevo",
     "rule": "autocomplete",
     "target": "textbox:Email",
     "issue": 49
@@ -552,21 +528,33 @@
     "issue": 49
   },
   {
-    "screen": "NuevaVenta",
+    "screen": "NegocioNuevo",
     "rule": "autocomplete",
-    "target": "combobox:Variety línea #",
-    "issue": 78
+    "target": "textbox:Contraseña",
+    "issue": 49
+  },
+  {
+    "screen": "NegocioNuevo",
+    "rule": "autocomplete",
+    "target": "textbox:Email",
+    "issue": 49
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "combobox:Variedad línea #",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
     "target": "textbox:Date",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "autocomplete",
+    "target": "textbox:Envío",
     "issue": 78
   },
   {
@@ -590,7 +578,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "combobox:Variety línea #",
+    "target": "combobox:Variedad línea #",
     "issue": 78
   },
   {
@@ -602,13 +590,13 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Date",
+    "target": "textbox:Envío",
     "issue": 78
   },
   {
@@ -632,19 +620,19 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "combobox:Variety línea #",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLinea",
-    "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "combobox:Variedad línea #",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
     "target": "textbox:Date",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLinea",
+    "rule": "autocomplete",
+    "target": "textbox:Envío",
     "issue": 78
   },
   {
@@ -668,7 +656,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "combobox:Variety línea #",
+    "target": "combobox:Variedad línea #",
     "issue": 78
   },
   {
@@ -680,13 +668,13 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Date",
+    "target": "textbox:Envío",
     "issue": 78
   },
   {
@@ -806,6 +794,12 @@
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
+    "target": "textbox:Bulk price $ Opcional · menor al precio de lista",
+    "issue": 47
+  },
+  {
+    "screen": "PrecioNuevo",
+    "rule": "autocomplete",
     "target": "textbox:Mínimo en gramos Desde cuántos gramos aplica",
     "issue": 47
   },
@@ -822,9 +816,9 @@
     "issue": 47
   },
   {
-    "screen": "PrecioNuevo",
+    "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Bulk price $ Opcional · menor al precio de ",
+    "target": "textbox:Bulk price $ Opcional · menor al precio de lista",
     "issue": 47
   },
   {
@@ -843,12 +837,6 @@
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
     "target": "textbox:Precio de lista $ Por gramo, en pesos enteros",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioNuevoFormulario",
-    "rule": "autocomplete",
-    "target": "textbox:Bulk price $ Opcional · menor al precio de ",
     "issue": 47
   },
   {
@@ -860,7 +848,7 @@
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "combobox:Variety #",
+    "target": "combobox:Variedad #",
     "issue": 47
   },
   {
@@ -884,13 +872,13 @@
   {
     "screen": "VariedadNueva",
     "rule": "autocomplete",
-    "target": "textbox:Nombre Hasta # caracteres · no puede repetir el nomb",
+    "target": "textbox:Name Hasta # caracteres · no puede repetir el nombre",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Nombre Hasta # caracteres · no puede repetir el nomb",
+    "target": "textbox:Name Hasta # caracteres · no puede repetir el nombre",
     "issue": 47
   },
   {
