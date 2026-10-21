@@ -1986,6 +1986,8 @@ body {
 .panel-lista__valor {
   font-size: 17px;
   font-weight: 600;
+  /* A figure is never broken across lines: the label beside it wraps instead. */
+  white-space: nowrap;
 }
 
 .bloque-deben {
