@@ -523,6 +523,7 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
 
 
 # -- the whole answer agrees with its sources and with GET /catalog ----------------------
+# The table creates sales and deletes prices, so it stays apart from the statement-count tests.
 
 
 def _build_no_variety(client: TestClient, engine: Engine) -> None:
