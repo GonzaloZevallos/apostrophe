@@ -40,9 +40,9 @@ export interface Records {
 export async function signUp(page: Page, label: string): Promise<void> {
   await page.goto(newBusinessInvitationUrl())
   await page.getByLabel('Business name').fill(`Flores de ${label} ${uniqueTag()}`)
-  await page.getByLabel('Email').fill(`duena-${label}-${uniqueTag()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await page.getByLabel('Email address').fill(`duena-${label}-${uniqueTag()}@example.com`)
+  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByRole('button', { name: 'Create the business' }).click()
   // A new business lands in the Onboarding; this spec is about something else.
   await leaveOnboarding(page)
 }

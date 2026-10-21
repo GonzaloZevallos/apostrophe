@@ -153,7 +153,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más, in that
   // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
   // the side rail, `.riel-lateral`, shares the same `aria-label` but is hidden here).
-  const tabBar = page.getByRole('navigation', { name: 'Navegación' }).last()
+  const tabBar = page.getByRole('navigation', { name: 'Navigation' }).last()
   await expect(tabBar.getByRole('link')).toHaveText([
     'Home',
     'Sales',

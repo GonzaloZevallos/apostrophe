@@ -60,9 +60,9 @@ for (const viewport of VIEWPORTS) {
     const partnerPage = await partnerContext.newPage()
     watchConsole(partnerPage, consoleMessages)
     await partnerPage.goto(inviteUrl)
-    await partnerPage.getByLabel('Email').fill(`socio-${uniqueTag()}@example.com`)
-    await partnerPage.getByLabel('Contraseña').fill(DEFAULT_PASSWORD)
-    await partnerPage.getByRole('button', { name: /^Sumate a / }).click()
+    await partnerPage.getByLabel('Email address').fill(`socio-${uniqueTag()}@example.com`)
+    await partnerPage.getByLabel('Password').fill(DEFAULT_PASSWORD)
+    await partnerPage.getByRole('button', { name: /^Join / }).click()
     await expect(partnerPage.locator('.encabezado__negocio')).toBeVisible()
 
     await expect(partnerPage.getByText(ONBOARDING_NOTICE)).toBeVisible()

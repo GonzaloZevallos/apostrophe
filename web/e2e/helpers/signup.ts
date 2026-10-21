@@ -59,8 +59,8 @@ export async function signUpNewBusiness(
   await page.goto(newBusinessInvitationUrl())
 
   const nameField = page.getByLabel('Business name')
-  const emailField = page.getByLabel('Email')
-  const passwordField = page.getByLabel('Contraseña')
+  const emailField = page.getByLabel('Email address')
+  const passwordField = page.getByLabel('Password')
   await nameField.fill(businessName)
   await emailField.fill(email)
   await passwordField.fill(password)
@@ -68,7 +68,7 @@ export async function signUpNewBusiness(
   await expect(emailField).toHaveValue(email)
   await expect(passwordField).toHaveValue(password)
 
-  const create = page.getByRole('button', { name: 'Creá el negocio' })
+  const create = page.getByRole('button', { name: 'Create the business' })
   await expect(create).toBeEnabled()
   await create.click()
   if (!stayInOnboarding) await leaveOnboarding(page)

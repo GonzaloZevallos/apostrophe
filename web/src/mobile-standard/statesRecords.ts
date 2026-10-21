@@ -18,6 +18,7 @@ import {
   VARIETIES,
   VARIETY,
 } from '../routes.ts'
+import { AUTH_TEXT } from '../copy/auth.ts'
 import { COMMON_TEXT } from '../copy/common.ts'
 import type { WalkState } from './states.ts'
 
@@ -135,6 +136,6 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'ConfiguracionContrasena',
     route: SETTINGS_ACCOUNT,
     steps: [{ click: COMMON_TEXT.changePassword }],
-    visible: 'Contraseña actual',
+    visible: AUTH_TEXT.currentPassword,
   },
 ]

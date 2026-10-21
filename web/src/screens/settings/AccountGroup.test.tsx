@@ -101,12 +101,12 @@ test('changing the password shows the fixed toast and closes the sheet, with no 
 
   await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
   const sheet = within(screen.getByRole('presentation'))
-  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
-  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'nuevaclave123')
+  await userEvent.type(screen.getByLabelText('Current password'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('New password'), 'nuevaclave123')
   await userEvent.click(sheet.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(PASSWORD_CHANGED_SUCCESS)).toBeInTheDocument()
-  expect(screen.queryByLabelText('Contraseña actual')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Current password')).not.toBeInTheDocument()
 })
 
 test('a wrong current password clears it inline and keeps the new one, never navigating to Entrar', async () => {
@@ -122,8 +122,8 @@ test('a wrong current password clears it inline and keeps the new one, never nav
 
   await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
   const sheet = within(screen.getByRole('presentation'))
-  const currentField = screen.getByLabelText('Contraseña actual')
-  const newField = screen.getByLabelText('Contraseña nueva')
+  const currentField = screen.getByLabelText('Current password')
+  const newField = screen.getByLabelText('New password')
   await userEvent.type(currentField, 'viejaequivocada')
   await userEvent.type(newField, 'nuevaclave123')
   await userEvent.click(sheet.getByRole('button', { name: 'Save' }))
@@ -145,12 +145,12 @@ test('a short new password shows the invitation\'s own too-short text, keeping e
 
   await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
   const sheet = within(screen.getByRole('presentation'))
-  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
-  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'corta')
+  await userEvent.type(screen.getByLabelText('Current password'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('New password'), 'corta')
   await userEvent.click(sheet.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(WEAK_PASSWORD_MESSAGE)).toBeInTheDocument()
-  expect(screen.getByLabelText('Contraseña actual')).toHaveValue('viejaclave123')
+  expect(screen.getByLabelText('Current password')).toHaveValue('viejaclave123')
 })
 
 test('a lock shows the login brake\'s own message, keeping everything typed', async () => {
@@ -164,19 +164,19 @@ test('a lock shows the login brake\'s own message, keeping everything typed', as
 
   await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
   const sheet = within(screen.getByRole('presentation'))
-  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
-  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'nuevaclave123')
+  await userEvent.type(screen.getByLabelText('Current password'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('New password'), 'nuevaclave123')
   await userEvent.click(sheet.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(BRAKE_MESSAGE)).toBeInTheDocument()
-  expect(screen.getByLabelText('Contraseña nueva')).toHaveValue('nuevaclave123')
+  expect(screen.getByLabelText('New password')).toHaveValue('nuevaclave123')
 })
 
 test('the reveal control toggles the new-password field between hidden and shown', async () => {
   renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
-  const field = screen.getByLabelText('Contraseña nueva')
+  const field = screen.getByLabelText('New password')
   expect(field).toHaveAttribute('type', 'password')
 
   await userEvent.click(screen.getByRole('button', { name: 'Show' }))
@@ -225,7 +225,7 @@ test('Cambiar contraseña and Cerrar sesión are icon + text, "Close" the icon-o
 test('the password sheet follows the icon and text rule', async () => {
   renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
   await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
-  await screen.findByLabelText('Contraseña actual')
+  await screen.findByLabelText('Current password')
 
   expectIconAndTextRule(document.body)
 })

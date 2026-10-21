@@ -218,7 +218,7 @@ describe('the list', () => {
     renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
-    const bar = screen.getAllByRole('navigation', { name: 'Navegación' }).at(-1) as HTMLElement
+    const bar = screen.getAllByRole('navigation', { name: 'Navigation' }).at(-1) as HTMLElement
     expect(within(bar).getAllByRole('link').map((link) => link.textContent)).toEqual([
       'Home',
       'Sales',

@@ -208,9 +208,9 @@ test('a seller does everything the backend offers today, from the front alone', 
   watchConsole(partnerPage, consoleMessages)
   await partnerPage.goto(inviteUrl)
   await expect(partnerPage.locator('.invitacion__titulo')).toHaveText(renamedTo)
-  await partnerPage.getByLabel('Email').fill(`socio-${uniqueTag()}@example.com`)
-  await partnerPage.getByLabel('Contraseña').fill(PASSWORD)
-  await partnerPage.getByRole('button', { name: `Sumate a ${renamedTo}` }).click()
+  await partnerPage.getByLabel('Email address').fill(`socio-${uniqueTag()}@example.com`)
+  await partnerPage.getByLabel('Password').fill(PASSWORD)
+  await partnerPage.getByRole('button', { name: `Join ${renamedTo}` }).click()
   await expect(partnerPage.locator('.encabezado__negocio')).toHaveText(renamedTo)
   await partnerContext.close()
 

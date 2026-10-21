@@ -1,12 +1,13 @@
 /**
  * The three primary actions whose tap must show its pending state at once (PRD,
- * requirement 7): Nueva venta's save, Registrar cobro's save and Entrar's "Entrá". Each
+ * requirement 7): Nueva venta's save, Registrar cobro's save and Entrar's "Sign in". Each
  * is a screen of the walk (its name is one `Violation.screen` may carry), the steps that
  * fill the form up to the button, the button's name and the one write the tap sends. The
  * write is held and then aborted (invariant 6): it never reaches the backend.
  */
 
 import { CUSTOMERS, LOGIN, SALE_NEW } from '../routes.ts'
+import { AUTH_TEXT } from '../copy/auth.ts'
 import { COMMON_TEXT } from '../copy/common.ts'
 import type { WalkStep } from './states.ts'
 
@@ -50,10 +51,10 @@ export const PENDING_TAPS: readonly PendingTap[] = [
     route: LOGIN,
     signedOut: true,
     steps: [
-      { fill: { label: 'Email', value: '{email}' } },
-      { fill: { label: 'Contraseña', value: 'equivocada123' } },
+      { fill: { label: AUTH_TEXT.emailAddress, value: '{email}' } },
+      { fill: { label: AUTH_TEXT.password, value: 'equivocada123' } },
     ],
-    button: 'Entrá',
+    button: AUTH_TEXT.signIn,
     write: { method: 'POST', path: /^\/auth\/login$/ },
   },
 ]

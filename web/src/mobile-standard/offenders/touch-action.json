@@ -1432,7 +1432,7 @@
   {
     "screen": "Entrar",
     "rule": "touch-action",
-    "target": "button:Entrá",
+    "target": "button:Sign in",
     "issue": 49
   },
   {
@@ -1444,7 +1444,7 @@
   {
     "screen": "EntrarFreno",
     "rule": "touch-action",
-    "target": "button:Entrá",
+    "target": "button:Sign in",
     "issue": 49
   },
   {

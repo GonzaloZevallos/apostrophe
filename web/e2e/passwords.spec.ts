@@ -56,16 +56,16 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await otherPage.goto(LOGIN)
-  await otherPage.getByLabel('Email').fill(ownerEmail)
-  await otherPage.getByLabel('Contraseña').fill(PASSWORD)
-  await otherPage.getByRole('button', { name: 'Entrá' }).click()
+  await otherPage.getByLabel('Email address').fill(ownerEmail)
+  await otherPage.getByLabel('Password').fill(PASSWORD)
+  await otherPage.getByRole('button', { name: 'Sign in' }).click()
   await expect(otherPage.locator('.encabezado__negocio')).toHaveText(businessName)
 
   await page.goto(SETTINGS_ACCOUNT)
   await page.getByRole('button', { name: 'Change password' }).click()
   const sheet = page.locator('.capa')
-  await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
-  await sheet.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
+  await sheet.getByLabel('Current password').fill(PASSWORD)
+  await sheet.getByLabel('New password').fill(NEW_PASSWORD)
   await sheet.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
 
@@ -110,9 +110,9 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
   const link = resetLink(ownerEmail)
 
   await page.goto(link)
-  await expect(page.getByText('Elegí tu contraseña nueva')).toBeVisible()
-  await page.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
-  await page.getByRole('button', { name: 'Guardar y entrar' }).click()
+  await expect(page.getByText('Choose your new password')).toBeVisible()
+  await page.getByLabel('New password').fill(NEW_PASSWORD)
+  await page.getByRole('button', { name: 'Save and sign in' }).click()
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // The same link, spent, now shows the dead-link state. The lookup itself

@@ -88,8 +88,8 @@ describe('steps', () => {
       screens: [
         entry({
           steps: [
-            { fill: { label: 'Email', value: '{email}' } },
-            { click: 'Entrá' },
+            { fill: { label: 'Email address', value: '{email}' } },
+            { click: 'Sign in' },
             { wait: 'Done' },
             { offline: true },
           ],
@@ -97,8 +97,8 @@ describe('steps', () => {
       ],
     })
     expect(screen?.steps).toEqual([
-      { fill: { label: 'Email', value: '{email}' } },
-      { click: 'Entrá' },
+      { fill: { label: 'Email address', value: '{email}' } },
+      { click: 'Sign in' },
       { wait: 'Done' },
       { offline: true },
     ])
@@ -116,7 +116,7 @@ describe('steps', () => {
   test.each([
     ['an unknown step', { tap: 'x' }],
     ['a click that is not text', { click: 3 }],
-    ['a fill without its value', { fill: { label: 'Email' } }],
+    ['a fill without its value', { fill: { label: 'Email address' } }],
     ['an offline that is not true', { offline: false }],
     ['a press that is not text', { press: 3 }],
     ['a select without its index', { select: { label: 'Variety' } }],

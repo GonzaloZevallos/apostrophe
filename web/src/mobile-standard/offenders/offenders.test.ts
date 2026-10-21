@@ -21,14 +21,14 @@ const violation = (extra: Partial<Violation> = {}): Violation => ({
   size: '320x568',
   theme: 'claro',
   rule: 'touch-target',
-  target: 'button:Entrá',
+  target: 'button:Sign in',
   ...extra,
 })
 
 const entry = (extra: Record<string, unknown> = {}) => ({
   screen: 'Entrar',
   rule: 'touch-target',
-  target: 'button:Entrá',
+  target: 'button:Sign in',
   issue: 49,
   ...extra,
 })

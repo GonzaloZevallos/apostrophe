@@ -177,9 +177,9 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
   await expectOnlyTheThemeStored(page)
 
   // Signed in again, Claro removes the attribute and the key.
-  await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Entrá' }).click()
+  await page.getByLabel('Email address').fill(email)
+  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
   await page.goto(SETTINGS_APPEARANCE)
@@ -212,7 +212,7 @@ test('with Oscuro stored, Entrar, the invitation screen and the reset screen are
   await logOut(page)
 
   await page.goto(LOGIN)
-  await expect(page.getByLabel('Email')).toBeVisible()
+  await expect(page.getByLabel('Email address')).toBeVisible()
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 
   await page.goto(newBusinessInvitationUrl())
@@ -221,7 +221,7 @@ test('with Oscuro stored, Entrar, the invitation screen and the reset screen are
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 
   await page.goto(resetLink(email))
-  await expect(page.getByLabel('Contraseña nueva')).toBeVisible()
+  await expect(page.getByLabel('New password')).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 

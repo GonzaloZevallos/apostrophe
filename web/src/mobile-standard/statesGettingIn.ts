@@ -7,14 +7,16 @@
  * silent pass. Writes are stubbed, never sent (invariant 6).
  */
 
+import { AUTH_TEXT, BRAKE_MESSAGE, DEAD_LINK_MESSAGE, NOT_USABLE_TITLE } from '../copy/auth.ts'
 import { COMMON_TEXT, ERROR_GENERICO_MENSAJE } from '../copy/common.ts'
 import { REFUSAL_TEXT } from '../copy/refusals.ts'
+import { SALES_TEXT } from '../copy/sales.ts'
 import { INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
 import type { WalkState } from './states.ts'
 
-const BRAKE = '5 intentos fallidos · probá de nuevo en 15 minutos'
-const INVITATION_DEAD = 'Esta invitación ya no sirve'
-const LINK_DEAD = 'Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'
+const BRAKE = BRAKE_MESSAGE
+const INVITATION_DEAD = NOT_USABLE_TITLE
+const LINK_DEAD = DEAD_LINK_MESSAGE
 const RETRY = ERROR_GENERICO_MENSAJE
 const GONE_NOTICE = REFUSAL_TEXT.goneNotice
 
@@ -27,9 +29,9 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
     route: LOGIN,
     signedOut: true,
     steps: [
-      { fill: { label: 'Email', value: '{email}' } },
-      { fill: { label: 'Contraseña', value: 'equivocada123' } },
-      { click: 'Entrá' },
+      { fill: { label: AUTH_TEXT.emailAddress, value: '{email}' } },
+      { fill: { label: AUTH_TEXT.password, value: 'equivocada123' } },
+      { click: AUTH_TEXT.signIn },
     ],
     visible: BRAKE,
     writes: [{ method: 'POST', path: /^\/auth\/login$/, status: 429, body: { code: 'account.login_locked' } }],
@@ -46,7 +48,7 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
   {
     screen: 'EstadosGoneAviso',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: 'Borrar venta' }, { click: COMMON_TEXT.yesDelete }],
+    steps: [{ click: SALES_TEXT.borrarVenta }, { click: COMMON_TEXT.yesDelete }],
     visible: GONE_NOTICE,
     writes: [{ method: 'DELETE', path: /^\/sales\/\d+$/, status: 404, body: { code: 'sale.not_found' } }],
   },

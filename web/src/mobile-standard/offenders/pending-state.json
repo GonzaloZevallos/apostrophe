@@ -8,7 +8,7 @@
   {
     "screen": "Entrar",
     "rule": "pending-state",
-    "target": "button:Entrá",
+    "target": "button:Sign in",
     "issue": 49
   },
   {
