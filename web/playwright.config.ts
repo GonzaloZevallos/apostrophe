@@ -41,11 +41,11 @@ const readyOn = (port: number): RegExp =>
   new RegExp(`Uvicorn running on http://${E2E_HOST.replace(/\./g, '\\.')}:${port}\\b`)
 
 // One cell walks every registry screen twice (loaded, then held); a cell's own budget.
-// Measured (GH-53 integration, ADR-0048): pinned to two cores (`taskset -c 0,1`), three workers,
-// the two slowest cells (246x437, both themes) ran together in 228 s each, and one alone in 222 s.
-// On a loaded 16-core box the same cells took 294 to 305 s (GH-53 delivery gate). 600 s is about
-// 2x the slowest of those runs, as for the other ceilings above; the CI job's own run is not
-// measured here.
+// Measured (GH-53 integration, ADR-0048): all eight cells together, pinned to two cores
+// (`taskset -c 0,1 npx playwright test --project=mobile --workers=3`), took 238.9 to 246.2 s each,
+// slowest 430x932 claro at 246.2 s: a margin of 59% under 600 s (the rule is at least 25%). On a
+// loaded 16-core box the slowest cells took 294 to 305 s (GH-53 delivery gate), about half the
+// ceiling. The CI job is not measured: CI is off for billing (human decision, GH-53).
 const MOBILE_TEST_TIMEOUT_MS = 600_000
 
 // Read once. The caller names the directory (a run never overwrites an earlier one); the

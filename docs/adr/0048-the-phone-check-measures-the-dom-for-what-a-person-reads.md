@@ -53,13 +53,18 @@ check. The phone check (`web/e2e/mobile.spec.ts`, GH-80) reads the page itself.
 
 ## Amendment (GH-53, integration): the cell budget, measured
 
-`MOBILE_TEST_TIMEOUT_MS` (`web/playwright.config.ts`) is 600 000 ms. Indicative runs, English
-copy, the integration head:
+`MOBILE_TEST_TIMEOUT_MS` (`web/playwright.config.ts`) is 600 000 ms. Measured on the English copy,
+the integration head:
 
-- pinned to two cores (`taskset -c 0,1`), `--workers=3`, the cell `246x437, claro` alone: 222 s;
-- the same, the two `246x437` cells (both themes) together: 228 s and 228 s;
-- on a loaded 16-core box during the delivery gates: 294 to 305 s.
+- command: `taskset -c 0,1 npx playwright test --project=mobile --workers=3` (all eight cells in
+  one run, 12.3 minutes in all);
+- each cell: 320x568 claro 238.9 s, oscuro 239.6 s; 375x812 claro 241.2 s, oscuro 244.2 s;
+  430x932 claro 246.2 s, oscuro 245.3 s; 246x437 claro 243.5 s, oscuro 241.8 s;
+- slowest cell 246.2 s: a margin of 59% against 600 s (the rule asks for at least 25%), so the
+  ceiling stays;
+- earlier indicative runs: 222 s for one 246x437 cell alone on the same two cores, 228 s each for
+  two together, and 294 to 305 s on a loaded 16-core box during the delivery gates.
 
-The ceiling is about twice the slowest of these. Not measured: the full eight cells together on
-two cores (it does not fit one foreground call) and the CI job itself; if either shows a cell
-over budget, it goes to the phone-standard owners as its own issue.
+The CI job's own run is not measured: CI is turned off for billing, and the human waived that
+measurement (GH-53, decision on the integration escalation). If it is turned back on and a cell
+runs over budget, that cell goes to the phone-standard owners as its own issue.
