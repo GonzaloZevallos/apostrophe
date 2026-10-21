@@ -188,9 +188,9 @@ export default function Cobro({
     <>
       <div className="encabezado-fila">
         <span ref={titleRef} id={titleId} tabIndex={-1} className="panel__titulo">
-          {COMMON_TEXT.registrarCobro}
+          {COMMON_TEXT.recordPayment}
         </span>
-        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
       </div>
       <span className="cobro__cliente">
         {customer.name}
@@ -200,7 +200,7 @@ export default function Cobro({
       </span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
-            <span className="campo__rotulo">{COMMON_TEXT.monto}</span>
+            <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
             <input
               className="campo__input cobro__monto"
               type="text"
@@ -222,7 +222,7 @@ export default function Cobro({
           )}
 
           <label className="campo">
-            <span className="campo__rotulo">{COMMON_TEXT.fecha}</span>
+            <span className="campo__rotulo">{COMMON_TEXT.date}</span>
             <input
               className="campo__input"
               type="date"
@@ -242,7 +242,7 @@ export default function Cobro({
                 checked={method === 'cash'}
                 onChange={() => setMethod('cash')}
               />
-              {COMMON_TEXT.efectivo}
+              {COMMON_TEXT.cashMethod}
             </label>
             <label>
               <input
@@ -251,7 +251,7 @@ export default function Cobro({
                 checked={method === 'transfer'}
                 onChange={() => setMethod('transfer')}
               />
-              {COMMON_TEXT.transferencia}
+              {COMMON_TEXT.transfer}
             </label>
             {methodError !== null && (
               <span className="campo__error" role="alert">
@@ -277,7 +277,7 @@ export default function Cobro({
           {offline && <SinConexion />}
 
           <Boton textOnly="submit" type="submit" disabled={record.isPending}>
-            {COMMON_TEXT.guardar}
+            {COMMON_TEXT.save}
           </Boton>
         </form>
     </>

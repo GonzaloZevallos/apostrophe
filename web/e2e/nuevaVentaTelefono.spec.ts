@@ -38,12 +38,12 @@ async function box(locator: Locator): Promise<Box> {
 async function signInWithAPricedVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Jazmín')
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
   await setPriceDate(page, '2000-01-01')
   await page.getByLabel(/^Precio de lista/).fill('500')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
@@ -83,7 +83,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     await expect(save).toBeInViewport()
 
     // Header: the date input is 16 px or more and 44 px or more tall.
-    const date = page.getByLabel('Fecha')
+    const date = page.getByLabel('Date')
     expect(await date.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(16)
     expect((await box(date)).height).toBeGreaterThanOrEqual(44)
 
@@ -97,7 +97,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     const header = page.locator('.nueva-venta__cabecera')
     const before = await box(header)
     for (let line = 0; line < 4; line += 1) {
-      await page.getByRole('button', { name: 'Agregar otra variedad' }).click()
+      await page.getByRole('button', { name: 'Add another variety' }).click()
     }
     const scroller = page.locator('.nueva-venta__disposicion')
     await scroller.evaluate((node) => {
@@ -111,7 +111,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     const hintBox = await box(hint)
     expect(hintBox.x).toBeGreaterThan(0)
     expect(hintBox.y + hintBox.height).toBeLessThanOrEqual((await box(footer)).y)
-    const group = await box(page.getByRole('radiogroup', { name: 'Cómo se pagó' }))
+    const group = await box(page.getByRole('radiogroup', { name: 'How it was paid' }))
     expect(group.y + group.height).toBeLessThanOrEqual((await box(footer)).y)
 
     await expectShellFitsTheScreen(page)
@@ -125,12 +125,12 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
   await page.goto(SALE_NEW)
   const save = page.getByRole('button', { name: 'Guardá la venta' })
   await expect(save).toBeVisible()
-  const grams = page.getByText('vendidos')
+  const grams = page.getByText('sold')
   await expect(grams).toBeVisible()
 
   await page.setViewportSize({ width: 375, height: 380 })
   await expect(save).toBeInViewport()
-  await expect(page.getByLabel('Fecha')).toBeInViewport()
+  await expect(page.getByLabel('Date')).toBeInViewport()
 
   // Headless Chromium has no on-screen keyboard: the flag the visual-viewport hook sets is
   // set by hand, to see what the stylesheet does under it.

@@ -50,8 +50,8 @@ import { CHECKLIST_REQUIRED, CHECKLIST_OPTIONAL } from '../../copy/inicio'
 
 export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
 export const DISCARD_QUESTION = ONBOARDING_TEXT.descartasLoQueEscribiste
-export const KEEP_TYPING = COMMON_TEXT.noSeguiEscribiendo
-export const DISCARD = COMMON_TEXT.siDescartalo
+export const KEEP_TYPING = COMMON_TEXT.noKeepTyping
+export const DISCARD = COMMON_TEXT.yesDiscard
 
 type Skip = 'one' | 'rest'
 type Failure = 'offline' | 'error'
@@ -122,7 +122,7 @@ export default function OnboardingStep({
               {ONBOARDING_TEXT.atras}
             </Boton>
           )}
-          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={() => void navigate(HOME)} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={() => void navigate(HOME)} />
         </div>
 
         <div className="onboarding__progreso">

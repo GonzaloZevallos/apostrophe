@@ -12,10 +12,10 @@ import SelectorPago from './SelectorPago'
 
 test('is a radiogroup of three radios named Efectivo, Transferencia and Debiendo', () => {
   render(<SelectorPago value={null} onChange={() => {}} />)
-  expect(screen.getByRole('radiogroup', { name: 'Cómo se pagó' })).toBeInTheDocument()
-  expect(screen.getByRole('radio', { name: 'Efectivo' })).toBeInTheDocument()
-  expect(screen.getByRole('radio', { name: 'Transferencia' })).toBeInTheDocument()
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeInTheDocument()
+  expect(screen.getByRole('radiogroup', { name: 'How it was paid' })).toBeInTheDocument()
+  expect(screen.getByRole('radio', { name: 'Cash' })).toBeInTheDocument()
+  expect(screen.getByRole('radio', { name: 'Transfer' })).toBeInTheDocument()
+  expect(screen.getByRole('radio', { name: 'Owing' })).toBeInTheDocument()
 })
 
 test('allows no selection: none of the three is checked', () => {
@@ -27,9 +27,9 @@ test('allows no selection: none of the three is checked', () => {
 
 test('marks the chosen option checked, and only that one', () => {
   render(<SelectorPago value="cash" onChange={() => {}} />)
-  expect(screen.getByRole('radio', { name: 'Efectivo' })).toHaveAttribute('aria-checked', 'true')
-  expect(screen.getByRole('radio', { name: 'Transferencia' })).toHaveAttribute('aria-checked', 'false')
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toHaveAttribute('aria-checked', 'false')
+  expect(screen.getByRole('radio', { name: 'Cash' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('radio', { name: 'Transfer' })).toHaveAttribute('aria-checked', 'false')
+  expect(screen.getByRole('radio', { name: 'Owing' })).toHaveAttribute('aria-checked', 'false')
 })
 
 test('a disabled Debiendo carries the caller\'s description as its accessible description', () => {
@@ -41,7 +41,7 @@ test('a disabled Debiendo carries the caller\'s description as its accessible de
       owingDescription="Para dejar debiendo elegí un cliente"
     />,
   )
-  const owing = screen.getByRole('radio', { name: 'Debiendo' })
+  const owing = screen.getByRole('radio', { name: 'Owing' })
   expect(owing).toBeDisabled()
   expect(screen.getByText('Para dejar debiendo elegí un cliente')).toBeInTheDocument()
   const describedBy = owing.getAttribute('aria-describedby')
@@ -54,7 +54,7 @@ test('a disabled Debiendo carries the caller\'s description as its accessible de
 test('a disabled Debiendo never fires onChange', async () => {
   const onChange = vi.fn()
   render(<SelectorPago value={null} onChange={onChange} owingDisabled owingDescription="x" />)
-  screen.getByRole('radio', { name: 'Debiendo' }).click()
+  screen.getByRole('radio', { name: 'Owing' }).click()
   expect(onChange).not.toHaveBeenCalled()
 })
 
@@ -62,6 +62,6 @@ test('clicking an enabled option fires onChange with its value', async () => {
   const user = userEvent.setup()
   const onChange = vi.fn()
   render(<SelectorPago value={null} onChange={onChange} />)
-  await user.click(screen.getByRole('radio', { name: 'Transferencia' }))
+  await user.click(screen.getByRole('radio', { name: 'Transfer' }))
   expect(onChange).toHaveBeenCalledWith('transfer')
 })

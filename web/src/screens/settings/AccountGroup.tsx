@@ -22,9 +22,9 @@ import { COMMON_TEXT } from '../../copy/common'
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasLaContrasenaNueva,
-  detail: COMMON_TEXT.sePierdeLoQue,
-  keepLabel: COMMON_TEXT.noSeguiEditando,
-  discardLabel: COMMON_TEXT.siDescartala,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function AccountGroup() {
@@ -54,7 +54,7 @@ export default function AccountGroup() {
   }
 
   return (
-    <SettingsGroup title={COMMON_TEXT.tuCuenta} dirty={false} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.yourAccount} dirty={false} leave={LEAVE}>
       {({ disarm }) => (
         <>
           {passwordChanged && (
@@ -63,7 +63,7 @@ export default function AccountGroup() {
             </div>
           )}
           <Boton variant="secondary" icon="candado" onClick={() => setChangingPassword(true)}>
-            {COMMON_TEXT.cambiarContrasena}
+            {COMMON_TEXT.changePassword}
           </Boton>
           <Boton variant="secondary" icon="salirSesion" onClick={() => void onLogOut(disarm)} disabled={loggingOut}>
             {SETTINGS_TEXT.cerrarSesion}

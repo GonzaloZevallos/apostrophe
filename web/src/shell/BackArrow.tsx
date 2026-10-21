@@ -15,6 +15,7 @@
 import { useContext } from 'react'
 import { useParams } from 'react-router'
 import Boton from '../components/Boton'
+import { COMMON_TEXT } from '../copy/common'
 import { useBackOr } from '../components/useBackOr'
 import { HOME, parentOf, pathTo, screenOf, type ScreenId } from '../routes'
 import { BackParentContext, type BackOverride } from './useBackParent'
@@ -55,7 +56,7 @@ export default function BackArrow({ id }: { id: ScreenId }) {
   return (
     <div className="flecha-atras">
       <Boton variant="back" onClick={back}>
-        {`‹ ${word}`}
+        {COMMON_TEXT.backArrow(word)}
       </Boton>
     </div>
   )

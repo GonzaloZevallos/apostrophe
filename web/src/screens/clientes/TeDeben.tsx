@@ -27,9 +27,9 @@ export default function TeDeben() {
   if (data === undefined) return null
 
   return (
-    <section aria-label={COMMON_TEXT.teDeben}>
+    <section aria-label={COMMON_TEXT.owedToYou}>
       <div className="campo__rotulo clientes__seccion-cabecera">
-        <span>{COMMON_TEXT.teDeben}</span>
+        <span>{COMMON_TEXT.owedToYou}</span>
         {data.debtors.length > 0 && <span>{salesOwingCount(data.sales_owing_count)}</span>}
       </div>
 

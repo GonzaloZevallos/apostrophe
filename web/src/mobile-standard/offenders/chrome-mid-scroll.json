@@ -2,7 +2,7 @@
   {
     "screen": "Analisis",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
@@ -38,7 +38,7 @@
   {
     "screen": "Clientes",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -100,7 +100,7 @@
   {
     "screen": "EstadosGoneAviso",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -125,7 +125,7 @@
   {
     "screen": "EstadosSinConexion",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -173,7 +173,7 @@
   {
     "screen": "Inicio",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
@@ -185,7 +185,7 @@
   {
     "screen": "InicioHoy",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
@@ -197,7 +197,7 @@
   {
     "screen": "InicioPrimeraVez",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59
   },
   {
@@ -209,7 +209,7 @@
   {
     "screen": "Mas",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -277,7 +277,7 @@
   {
     "screen": "Variedades",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "320x568",
@@ -316,7 +316,7 @@
   {
     "screen": "Ventas",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "246x437"
@@ -335,7 +335,7 @@
   {
     "screen": "VentasFechas",
     "rule": "chrome-mid-scroll",
-    "target": "link:Nueva venta",
+    "target": "link:New sale",
     "issue": 59,
     "sizes": [
       "320x568",

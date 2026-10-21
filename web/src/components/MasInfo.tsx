@@ -34,7 +34,7 @@ export default function MasInfo({ line, more }: MasInfoProps) {
         <button
           type="button"
           className="mas-info__boton"
-          aria-label={COMMON_TEXT.masInfo}
+          aria-label={COMMON_TEXT.moreInfo}
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((was) => !was)}

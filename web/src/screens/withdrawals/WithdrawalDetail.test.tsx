@@ -1,8 +1,8 @@
 /**
  * The withdrawal detail screen (route `/withdrawals/:id`) through Testing Library, `fetch`
- * faked with the withdrawal fixture: its chrome, what it shows, "Editar" opening the
+ * faked with the withdrawal fixture: its chrome, what it shows, "Edit" opening the
  * filled form with a confirmed save, "Borrar" with its fixed text and toast, and both
- * "Eso ya no está." forms (`stock.md`, "A withdrawal's detail").
+ * "That is gone." forms (`stock.md`, "A withdrawal's detail").
  */
 
 import { screen, waitFor, within } from '@testing-library/react'
@@ -39,16 +39,16 @@ test('shows the date, the reason by word, every line and the note, with the bar 
   expect(screen.getByText('02/10')).toBeInTheDocument()
   expect(screen.getByText('5,5 g')).toBeInTheDocument()
   expect(screen.getByText('Para la fiesta')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Editar' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Edit' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Borrar' })).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
   expect(document.querySelector('.bar-inferior')).not.toBeNull()
 })
 
 test('the "‹" back goes to the page it was opened from', async () => {
   const { router } = renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Variedades' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -56,7 +56,7 @@ test('the "‹" back goes to the page it was opened from', async () => {
 test('with no history, back goes to Variedades', async () => {
   const { router } = renderWithdrawals([ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Variedades' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -77,12 +77,12 @@ test('Borrar names the promotion, the date and the grams; confirming deletes and
 
   const dialog = await screen.findByRole('alertdialog', { name: 'Antes de borrar' })
   expect(dialog).toHaveTextContent('¿Borrás la promoción del 02/10? Vuelven 5,5 g al stock.')
-  await userEvent.click(within(dialog).getByRole('button', { name: 'No, dejalo' }))
+  await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep it' }))
   expect(deletes).not.toHaveBeenCalled()
 
   await userEvent.click(screen.getByRole('button', { name: 'Borrar' }))
   await userEvent.click(
-    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, borralo' }),
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, delete it' }),
   )
 
   expect(await screen.findByText('Retiro eliminado')).toBeInTheDocument()
@@ -112,14 +112,14 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
       return jsonResponse(404, {})
     }),
   )
-  await userEvent.click(await screen.findByRole('link', { name: 'Editar' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Edit' }))
 
   expect(await screen.findByLabelText('Gramos 1')).toHaveValue('5.5')
-  expect(screen.getByLabelText('Nota')).toHaveValue('Para la fiesta')
+  expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
   expect(screen.getByRole('button', { name: 'Promoción' })).toHaveAttribute('aria-pressed', 'true')
   await userEvent.clear(screen.getByLabelText('Gramos 1'))
   await userEvent.type(screen.getByLabelText('Gramos 1'), '6')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   expect(puts).toEqual([])
 
   await userEvent.click(
@@ -141,14 +141,14 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
   ])
 })
 
-test('opening a withdrawal that is gone shows "Eso ya no está." and "Volver a Variedades"', async () => {
+test('opening a withdrawal that is gone shows "That is gone." and "Back to Varieties"', async () => {
   renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(await screen.findByText('That is gone.')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
-test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no está. La lista ya está al día."', async () => {
+test('deleting a withdrawal that is gone goes to Variedades with "That is gone. The list is up to date."', async () => {
   const { router } = renderWithdrawals(
     [VARIETIES_PATH, ONE],
     serving(WITHDRAWAL, async (url, init) =>
@@ -159,10 +159,10 @@ test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no est�
   )
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar' }))
   await userEvent.click(
-    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, borralo' }),
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, delete it' }),
   )
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
 })
 
@@ -171,6 +171,6 @@ test('the detail keeps the icon and text rule: Borrar carries its icon and word,
 
   const borrar = await screen.findByRole('button', { name: 'Borrar' })
   expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeInTheDocument()
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

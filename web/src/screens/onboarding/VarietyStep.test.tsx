@@ -3,7 +3,7 @@
  * `fetch` faked by a small stand-in for the API that answers `/onboarding-progress` from the
  * varieties it holds. One form with one primary action saves the variety and then its price;
  * a refused price keeps the variety and the retry sends only the price; a return to a done
- * step 1 shows the saved variety ("Hecho") and writes nothing; "Agregar otra variedad" opens
+ * step 1 shows the saved variety ("Hecho") and writes nothing; "Add another variety" opens
  * the form again through a bare history flag.
  */
 
@@ -187,7 +187,7 @@ test('one primary action saves the variety and then its price', async () => {
   const user = userEvent.setup()
   const router = renderStep()
 
-  await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
+  await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   expect(screen.getAllByRole('button', { name: /Guard|Agreg/ })).toHaveLength(1)
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
@@ -207,12 +207,12 @@ test('a name refusal sends no price request and keeps what was typed', async () 
   const user = userEvent.setup()
   renderStep()
 
-  await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
+  await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Ya existe una variedad con ese nombre')
-  expect(screen.getByLabelText(/^Nombre/)).toHaveValue('Mango Bomb')
+  expect(screen.getByLabelText(/^Name/)).toHaveValue('Mango Bomb')
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
   expect(calls.filter((call) => call.endsWith('/prices'))).toEqual([])
 })
@@ -222,14 +222,14 @@ test('a refused price keeps everything typed, shows on its field, and the retry 
   const user = userEvent.setup()
   const router = renderStep()
 
-  await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
+  await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent('Revisá los precios cargados')
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
-  expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   expect(screen.getByText('Variedad: Mango Bomb')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
@@ -242,7 +242,7 @@ test('a double tap sends one POST /varieties', async () => {
   const user = userEvent.setup()
   renderStep()
 
-  await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
+  await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   const save = screen.getByRole('button', { name: 'Guardá la variedad' })
   await user.dblClick(save)
@@ -256,7 +256,7 @@ test('the price input keeps its DOM node and value across the variety write and 
   const user = userEvent.setup()
   renderStep()
 
-  await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
+  await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
   const price = screen.getByLabelText(/^Precio de lista/)
   await user.type(price, '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
@@ -264,7 +264,7 @@ test('the price input keeps its DOM node and value across the variety write and 
   await screen.findByRole('alert')
   expect(screen.getByLabelText(/^Precio de lista/)).toBe(price)
   expect(price).toHaveValue('12000')
-  expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   expect(bodies['POST /varieties/1/prices']).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
 })
 
@@ -273,19 +273,19 @@ test('variety saved and price refused, then step 2 and back with no reload: the 
   const user = userEvent.setup()
   const router = renderStep()
 
-  await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
+  await user.type(await screen.findByLabelText(/^Name/), 'Mango Bomb')
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await screen.findByRole('alert')
 
   await act(() => router.navigate(ONBOARDING_STOCK))
   // The price typed is lost on leaving: the frame asks first.
-  await user.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  await user.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
   expect(await screen.findByText('paso dos')).toBeInTheDocument()
   await act(() => router.navigate(-1))
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
-  expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   await user.type(screen.getByLabelText(/^Precio de lista/), '9000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
@@ -302,7 +302,7 @@ test('with one variety priced and a second saved with no price, step 1 shows the
   const router = renderStep()
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
-  expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
@@ -341,7 +341,7 @@ test('arriving with only a priced variety shows "Hecho" with its name and price;
   expect(await screen.findByText('Mango Bomb')).toBeInTheDocument()
   expect(await screen.findByText('$ 11.000 x g')).toBeInTheDocument()
   expect(screen.getByText('Hecho')).toBeInTheDocument()
-  expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
   expect(screen.queryByLabelText(/^Precio de lista/)).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Seguir' }))
 
@@ -373,7 +373,7 @@ test('a "Hecho" read that answers no price today refetches the progress and show
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
   expect(screen.getByLabelText(/^Precio de lista/)).toBeInTheDocument()
-  expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
 })
 
 test('the add-another flag opens the empty form, a reload keeps it, and the variety write clears it from the entry', async () => {
@@ -382,7 +382,7 @@ test('the add-another flag opens the empty form, a reload keeps it, and the vari
   const user = userEvent.setup()
   const router = renderStep(inAppState({ pathname: ONBOARDING_STOCK }, { anotherVariety: true }))
 
-  const name = await screen.findByLabelText(/^Nombre/)
+  const name = await screen.findByLabelText(/^Name/)
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
   expect(router.state.location.state).toMatchObject({ anotherVariety: true })
 
@@ -394,7 +394,7 @@ test('the add-another flag opens the empty form, a reload keeps it, and the vari
   await act(() => router.navigate(-1))
   expect(await screen.findByText('Hecho')).toBeInTheDocument()
   expect(router.state.location.state).toBeNull()
-  expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
 })
 
 test('a reload with the add-another flag and nothing written draws the name field again and writes nothing', async () => {
@@ -402,36 +402,36 @@ test('a reload with the add-another flag and nothing written draws the name fiel
   nextId = 2
   const entry = inAppState({ pathname: ONBOARDING_STOCK }, { anotherVariety: true })
   renderStep(entry)
-  expect(await screen.findByLabelText(/^Nombre/)).toBeInTheDocument()
+  expect(await screen.findByLabelText(/^Name/)).toBeInTheDocument()
 
   cleanup()
   renderStep(entry)
 
-  expect(await screen.findByLabelText(/^Nombre/)).toBeInTheDocument()
+  expect(await screen.findByLabelText(/^Name/)).toBeInTheDocument()
   expect(screen.queryByText('Hecho')).not.toBeInTheDocument()
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
 })
 
-test('with the frame, nothing written and a name typed: "Cerrar" asks with the discard detail', async () => {
+test('with the frame, nothing written and a name typed: "Close" asks with the discard detail', async () => {
   const user = userEvent.setup()
   renderStep()
 
-  await user.type(await screen.findByLabelText(/^Nombre/), 'Mango')
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.type(await screen.findByLabelText(/^Name/), 'Mango')
+  await user.click(screen.getByRole('button', { name: 'Close' }))
   const dialog = await screen.findByRole('alertdialog')
   expect(within(dialog).getByText(DISCARD_DETAIL)).toBeInTheDocument()
 })
 
-test('with the frame, the variety saved and a price typed: "Cerrar" asks with the partly-saved detail', async () => {
+test('with the frame, the variety saved and a price typed: "Close" asks with the partly-saved detail', async () => {
   priceRefusals = 1
   const user = userEvent.setup()
   renderStep()
 
-  await user.type(await screen.findByLabelText(/^Nombre/), 'Mango')
+  await user.type(await screen.findByLabelText(/^Name/), 'Mango')
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await screen.findByRole('alert')
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
   const dialog = await screen.findByRole('alertdialog')
   expect(within(dialog).getByText(PARTLY_SAVED_DETAIL)).toBeInTheDocument()
 })

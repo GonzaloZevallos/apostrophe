@@ -386,9 +386,9 @@ export default function WithdrawalForm({
 
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">{COMMON_TEXT.sacarDelStock}</span>
+      <span className="gasto-form__titulo">{COMMON_TEXT.takeFromStock}</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.cerrar} onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
       </span>
     </div>
   )
@@ -426,7 +426,7 @@ export default function WithdrawalForm({
           </div>
         </fieldset>
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.fecha}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.date}</span>
           <input
             className="campo__input"
             type="date"
@@ -449,7 +449,7 @@ export default function WithdrawalForm({
               onChange={(event) => setLine(line.key, { varietyId: event.target.value })}
               required
             >
-              <option value="">{COMMON_TEXT.elegiUnaVariedad}</option>
+              <option value="">{COMMON_TEXT.pickAVariety}</option>
               {keptOptions([line], varieties, names).map((option) => (
                 <option key={option.value} value={option.value} disabled={option.disabled}>
                   {option.label}
@@ -499,10 +499,10 @@ export default function WithdrawalForm({
             }))
           }}
         >
-          {COMMON_TEXT.agregarOtraVariedad}
+          {COMMON_TEXT.addAnotherVariety}
         </Boton>
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.nota}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.note}</span>
           <input
             className="campo__input"
             value={form.note}
@@ -518,7 +518,7 @@ export default function WithdrawalForm({
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          {target === 'new' ? STOCK_TEXT.guardaElRetiro : COMMON_TEXT.guardar}
+          {target === 'new' ? STOCK_TEXT.guardaElRetiro : COMMON_TEXT.save}
         </Boton>
       </form>
       {confirmingSave && (

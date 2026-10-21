@@ -1,7 +1,7 @@
 /**
- * The browser's own Back on a dirty form asks the same question "Cerrar" does, at the
+ * The browser's own Back on a dirty form asks the same question "Close" does, at the
  * phone viewport, against the real backend: a dirty Registrar cobro asks "¿Descartás el
- * cobro?" and a dirty Nueva venta asks "¿Descartás la venta?". "No, seguí cargando" keeps
+ * cobro?" and a dirty Nueva venta asks "¿Descartás la venta?". "No, keep entering" keeps
  * what was typed.
  */
 
@@ -21,7 +21,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   page,
 }) => {
   await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Flores del Norte ${uniqueTag()}`)
+  await page.getByLabel('Business name').fill(`Flores del Norte ${uniqueTag()}`)
   await page.getByLabel('Email').fill(`duena-volver-${uniqueTag()}@example.com`)
   await page.getByLabel('Contraseña').fill(PASSWORD)
   await page.getByRole('button', { name: 'Creá el negocio' }).click()
@@ -29,36 +29,36 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await leaveOnboarding(page)
 
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^Precio de lista/).fill('1000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Nombre').fill('Carla Volver')
+  await page.getByLabel('Name').fill('Carla Volver')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Nueva venta a Carla Volver' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // A dirty Registrar cobro, reached from Clientes' "Cobrar a".
   await page.goto(CUSTOMERS)
-  await page.getByRole('link', { name: 'Cobrar a Carla Volver' }).first().click()
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
+  await page.getByRole('link', { name: 'Collect from Carla Volver' }).first().click()
+  await page.getByRole('radio', { name: 'Cash' }).check()
   await page.goBack()
   await expect(page.getByText('¿Descartás el cobro?')).toBeVisible()
-  await page.getByRole('button', { name: 'No, seguí cargando' }).click()
-  await expect(page.getByRole('radio', { name: 'Efectivo' })).toBeChecked()
-  await page.getByRole('button', { name: 'Cerrar' }).click()
-  await page.getByRole('button', { name: 'Sí, descartalo' }).click()
+  await page.getByRole('button', { name: 'No, keep entering' }).click()
+  await expect(page.getByRole('radio', { name: 'Cash' })).toBeChecked()
+  await page.getByRole('button', { name: 'Close' }).click()
+  await page.getByRole('button', { name: 'Yes, discard it' }).click()
   await expectPath(page, CUSTOMERS)
 
   // A dirty Nueva venta.
@@ -69,7 +69,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.goBack()
   await expect(page.getByText('¿Descartás la venta?')).toBeVisible()
-  await page.getByRole('button', { name: 'No, seguí cargando' }).click()
+  await page.getByRole('button', { name: 'No, keep entering' }).click()
   await expectPath(page, SALE_NEW)
   await expect(page.getByLabel('Gramos línea 1')).toHaveValue('3')
 })

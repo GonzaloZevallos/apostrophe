@@ -192,7 +192,7 @@ describe('the list', () => {
     expect(await screen.findByText('Todavía no cargaste ninguna variedad')).toBeInTheDocument()
     expect(screen.queryByText(/todo ok|sin entradas ·/)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
-    expect(screen.getByRole('link', { name: 'Nueva variedad' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'New variety' })).toBeInTheDocument()
   })
 
   test('the actions lead to the catalog, the entry form, the new variety form and every entry', async () => {
@@ -201,15 +201,15 @@ describe('the list', () => {
     await screen.findByText('24K Gold')
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
     expect(screen.getByRole('link', { name: '+ Entrada de stock' })).toHaveAttribute('href', STOCK_ENTRY_NEW)
-    expect(screen.getByRole('link', { name: 'Nueva variedad' })).toHaveAttribute('href', VARIETY_NEW)
-    expect(screen.getByRole('link', { name: /Todas las entradas/ })).toHaveAttribute('href', STOCK_PATH)
+    expect(screen.getByRole('link', { name: 'New variety' })).toHaveAttribute('href', VARIETY_NEW)
+    expect(screen.getByRole('link', { name: /All entries/ })).toHaveAttribute('href', STOCK_PATH)
   })
 
-  test('a secondary "Sacar del stock" opens the withdrawal form with no variety chosen', async () => {
+  test('a secondary "Take from stock" opens the withdrawal form with no variety chosen', async () => {
     renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
-    const link = screen.getByRole('link', { name: 'Sacar del stock' })
+    const link = screen.getByRole('link', { name: 'Take from stock' })
     expect(link).toHaveAttribute('href', WITHDRAWAL_NEW)
     expect(link).toHaveClass('boton--suave')
   })
@@ -220,18 +220,18 @@ describe('the list', () => {
     await screen.findByText('24K Gold')
     const bar = screen.getAllByRole('navigation', { name: 'Navegación' }).at(-1) as HTMLElement
     expect(within(bar).getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'Inicio',
-      'Ventas',
-      'Clientes',
-      'Variedades',
-      'Más',
+      'Home',
+      'Sales',
+      'Customers',
+      'Varieties',
+      'More',
     ])
   })
 
   test('a failed read shows the generic retry, ', async () => {
     renderApp(VARIETIES_PATH, { answers: { 'GET /stock': () => json(500, { code: 'unknown' }) } })
 
-    expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()
+    expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
   })
 })
 
@@ -313,7 +313,7 @@ describe('on a computer: two panes', () => {
 
     expect(await screen.findByText('Todavía no cargaste ninguna variedad')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETIES_PATH)
-    expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Variedades'])
+    expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Varieties'])
   })
 
   test('Back from a form opened over the page returns to the variety, both panes still there', async () => {
@@ -321,10 +321,10 @@ describe('on a computer: two panes', () => {
     await screen.findByRole('heading', { name: 'Sir Jack' })
 
     await userEvent.click(screen.getByRole('button', { name: 'Editar nombre' }))
-    expect(await screen.findByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(await screen.findByRole('button', { name: 'Close' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'Cerrar' })).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument())
     expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 7 }))
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toBeInTheDocument()
   })
@@ -437,7 +437,7 @@ describe('the icon and text rule', () => {
     await screen.findByText('24K Gold')
 
     expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
-    for (const name of ['Mandar catálogo', '+ Entrada de stock', 'Sacar del stock']) {
+    for (const name of ['Mandar catálogo', '+ Entrada de stock', 'Take from stock']) {
       const link = screen.getByRole('link', { name })
       expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     }
@@ -446,11 +446,11 @@ describe('the icon and text rule', () => {
   test('the rule helper rejects the list screen when an action loses its icon', async () => {
     renderApp(VARIETIES_PATH)
     await screen.findByText('24K Gold')
-    screen.getByRole('link', { name: 'Sacar del stock' }).querySelector('svg')?.remove()
+    screen.getByRole('link', { name: 'Take from stock' }).querySelector('svg')?.remove()
 
     const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
     expect(problems).toHaveLength(1)
-    expect(problems[0]).toContain('Sacar del stock')
+    expect(problems[0]).toContain('Take from stock')
   })
 
   test('the empty list screen follows the rule too', async () => {
@@ -486,12 +486,12 @@ describe('the icon and text rule', () => {
   })
 })
 
-describe('Nueva variedad', () => {
+describe('New variety', () => {
   test('saves the name, says "Variedad guardada" and goes back to the list', async () => {
     const { router, fetchMock } = renderApp(VARIETIES_PATH, {
       answers: { 'POST /varieties': () => json(201, { id: 9, name: 'Sour Diesel', current_price: null }) },
     })
-    await userEvent.click(await screen.findByRole('link', { name: 'Nueva variedad' }))
+    await userEvent.click(await screen.findByRole('link', { name: 'New variety' }))
 
     await userEvent.type(await screen.findByPlaceholderText('Nombre de la variedad'), 'Sour Diesel')
     fetchMock.mockClear()
@@ -523,28 +523,28 @@ describe('Nueva variedad', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
 
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('Ese nombre es de una variedad archivada. Buscala en Archivadas.')
-    expect(alert.closest('label')).toHaveTextContent('Nombre')
+    expect(alert).toHaveTextContent('That name belongs to an archived variety. Look for it in Archived.')
+    expect(alert.closest('label')).toHaveTextContent('Name')
     expect(screen.getByPlaceholderText('Nombre de la variedad')).toHaveValue('Sir Jack')
   })
 
-  test('"Cerrar" with something typed asks before discarding; with nothing, it just leaves', async () => {
+  test('"Close" with something typed asks before discarding; with nothing, it just leaves', async () => {
     const { router } = renderApp(VARIETIES_PATH)
-    await userEvent.click(await screen.findByRole('link', { name: 'Nueva variedad' }))
+    await userEvent.click(await screen.findByRole('link', { name: 'New variety' }))
     await userEvent.type(await screen.findByPlaceholderText('Nombre de la variedad'), 'Sour')
 
-    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
     expect(await screen.findByText('¿Descartás la variedad?')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETY_NEW)
 
-    await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Yes, discard it' }))
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   })
 
-  test('a direct link has no history: "Cerrar" goes to the list', async () => {
+  test('a direct link has no history: "Close" goes to the list', async () => {
     const { router } = renderApp(VARIETY_NEW)
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   })

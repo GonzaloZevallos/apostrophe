@@ -2,13 +2,13 @@
   {
     "screen": "DescartarVenta",
     "rule": "contrast-unprovable",
-    "target": "button:No, seguí cargando",
+    "target": "button:No, keep entering",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "contrast-unprovable",
-    "target": "button:Sí, descartala",
+    "target": "button:Yes, discard it",
     "issue": 78
   },
   {

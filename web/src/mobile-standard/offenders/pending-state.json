@@ -2,7 +2,7 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "pending-state",
-    "target": "button:Guardar",
+    "target": "button:Save",
     "issue": 46
   },
   {

@@ -37,7 +37,6 @@ export const LONG_REFUSALS: readonly string[] = []
 export const AUTH_TEXT = {
   contrasenaActual: 'Contraseña actual',
   contrasenaNueva: 'Contraseña nueva',
-  cancelar: 'Cancelar',
   apostrophe: 'apostrophe',
   tusVentasTuStock: 'Tus ventas, tu stock y lo que te deben.',
   email: 'Email',

@@ -27,9 +27,9 @@ interface Business {
 
 const LEAVE = {
   question: SETTINGS_TEXT.descartasLaInvitacion,
-  detail: COMMON_TEXT.sePierdeLoQue,
-  keepLabel: COMMON_TEXT.noSeguiEditando,
-  discardLabel: COMMON_TEXT.siDescartala,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 export default function UsersGroup() {
@@ -40,7 +40,7 @@ export default function UsersGroup() {
   })
 
   return (
-    <SettingsGroup title={COMMON_TEXT.usuarios} dirty={false} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.users} dirty={false} leave={LEAVE}>
       {isPending && <Loading />}
       {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       {!isPending && !isError && (

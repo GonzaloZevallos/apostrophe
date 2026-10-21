@@ -25,8 +25,8 @@ test('a tap that leaves Variedades on the phone is not replaced when the viewpor
     email: `seleccion-${uniqueTag()}@example.com`,
   })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
 
@@ -41,7 +41,7 @@ test('a tap that leaves Variedades on the phone is not replaced when the viewpor
     await page.setViewportSize(COMPUTER)
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
     await expectPath(page, CATALOG)
-    await expect(page.getByRole('heading', { name: 'Catálogo', level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Catalog', level: 1 })).toBeVisible()
     await expectPath(page, CATALOG)
   }
 })

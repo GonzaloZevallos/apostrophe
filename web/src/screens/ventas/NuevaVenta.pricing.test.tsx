@@ -53,7 +53,7 @@ async function openFor(handlers: Record<string, () => Response>): Promise<Return
   const mock = stubFetch({ 'GET /auth/me': () => json(ME), 'GET /customers/7': () => json(VIP_ANA), ...handlers })
   await act(() => router.navigate(SALE_NEW, { state: { customerId: '7' } }))
   render(<App />)
-  await screen.findByText('Nueva venta')
+  await screen.findByText('New sale')
   await screen.findByText('Ana VIP')
   return mock
 }
@@ -127,7 +127,7 @@ test('a date change loads the switches again', async () => {
   await waitFor(() => expect(asked()).toBeGreaterThanOrEqual(1))
   const before = asked()
 
-  fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2026-10-01' } })
+  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-10-01' } })
 
   await waitFor(() => expect(asked()).toBeGreaterThan(before))
 })

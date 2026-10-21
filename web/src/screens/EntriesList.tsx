@@ -86,7 +86,7 @@ export default function EntriesList({ varietyId }: Props) {
 
   const error = stockQuery.error ?? varietyQuery.error ?? movementsQuery.error
   if (varietyQuery.error instanceof ApiError && isGone(varietyQuery.error.code)) {
-    return <GoneScreen label={COMMON_TEXT.variedades} to={VARIETIES} />
+    return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
   }
   if (error !== null) {
     return <Card>{error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Card>
@@ -117,7 +117,7 @@ export default function EntriesList({ varietyId }: Props) {
     setFailed(false)
     try {
       await deleteEntry(String(entry.id))
-      flash.showNow(COMMON_TEXT.entradaEliminada)
+      flash.showNow(COMMON_TEXT.entryDeleted)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) setGoneNotice(true)
       else if (caught instanceof NetworkError) setOffline(true)
@@ -132,7 +132,7 @@ export default function EntriesList({ varietyId }: Props) {
   return (
     <Card>
       <h1 className="encabezado__titulo">
-        {varietyId === undefined ? COMMON_TEXT.todasLasEntradas : COMMON_TEXT.entradas}
+        {varietyId === undefined ? COMMON_TEXT.allEntries : COMMON_TEXT.entries}
       </h1>
       {(goneNotice || goneExited) && <GoneNotice />}
       {offline && <SinConexion />}
@@ -177,7 +177,7 @@ export default function EntriesList({ varietyId }: Props) {
                       <span className="fila-entrada__costo">{formatMoney(entry.total_cost)}</span>
                       {entry.cost_per_gram !== null && (
                         <span className="fila-entrada__linea2">
-                          {formatMoney(entry.cost_per_gram)}{COMMON_TEXT.xG}
+                          {formatMoney(entry.cost_per_gram)}{COMMON_TEXT.perGram}
                         </span>
                       )}
                     </>
@@ -185,7 +185,7 @@ export default function EntriesList({ varietyId }: Props) {
                 </span>
                 {!readOnly && (
                   <span className="fila-entrada__acciones">
-                    <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.editar} to={pathTo(STOCK_ENTRY, { id: entry.id })} />
+                    <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(STOCK_ENTRY, { id: entry.id })} />
                     <Boton
                       variant="icon"
                       action="delete"
@@ -204,8 +204,8 @@ export default function EntriesList({ varietyId }: Props) {
         <ConfirmDialog
           title={STOCK_TEXT.antesDeBorrar}
           detail={STOCK_TEXT.borrasLaEntradaDel(formatDate(confirming.date, me.today), nameOf(confirming.variety_id), formatGrams(confirming.grams))}
-          confirmText={COMMON_TEXT.siBorrala}
-          cancelText={COMMON_TEXT.noDejala}
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!deleting) void onConfirmDelete(confirming)
           }}
