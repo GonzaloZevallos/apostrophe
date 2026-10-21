@@ -5,8 +5,8 @@
  * rename on either side fails a check instead of quietly falling back here.
  */
 
-import { REFUSAL_TEXT } from '../copy/refusals'
-import contract from './contract.json'
+import { REFUSAL_TEXT } from '../copy/refusals.ts'
+import contract from './contract.json' with { type: 'json' }
 
 export type RefusalKind = 'refusal' | 'gone'
 

@@ -3,6 +3,7 @@
  * renders, listed in `LIMITED_COPY` with its kind (`copy/copyLimits.test.ts` measures it). */
 
 import { type LimitedCopy } from './limits.ts'
+import type { RefusalCode } from '../api/refusals.ts'
 import { COMMON_TEXT } from './common.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -49,7 +50,7 @@ const LIMITED_COPY_1: readonly LimitedCopy[] = [
 export const THRESHOLD_INVALID_MESSAGE = 'Check the threshold entered'
 export const THRESHOLD_SAVED = 'Warning saved'
 
-export const THRESHOLD_OVERRIDES: Partial<Record<string, string>> = {
+export const THRESHOLD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.threshold_invalid': THRESHOLD_INVALID_MESSAGE,
 }
 

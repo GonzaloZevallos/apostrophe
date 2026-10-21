@@ -2792,6 +2792,12 @@ body {
   color: var(--tinta);
   text-decoration: none;
   font-weight: 600;
+  /* A tap-sized box on a row that looks as tall as before: the row's own padding is what the
+   * negative margin gives back. */
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  margin: -13px 0;
 }
 
 .catalogo__fila {

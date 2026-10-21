@@ -83,18 +83,6 @@
   {
     "screen": "Catalogo",
     "rule": "touch-target",
-    "target": "link:Mango Bomb",
-    "issue": 47,
-    "sizes": [
-      "246x437",
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
     "target": "link:More",
     "issue": 47,
     "sizes": [
