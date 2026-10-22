@@ -13,7 +13,8 @@
  * number.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, paymentLink, pathTo } from '../../routes'
+import { consumePaymentReturn } from '../../paymentReturn'
 import { inAppState } from '../../components/inAppState'
 import { useGoneNotice } from '../../components/goneExit'
 import { SheetRouterProvider } from '../../components/useSheetStack'
@@ -125,6 +126,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  consumePaymentReturn()
 })
 
 test('a customer that is gone shows the gone screen, with a way back to the list', async () => {
@@ -1021,4 +1023,65 @@ test('the card and its form follow the icon and text rule: Delete payment is ico
   await userEvent.click(registrar)
   await screen.findByRole('button', { name: 'Save' })
   expectIconAndTextRule(document.body, RULE)
+})
+
+// Back from Record payment the card is at its place (PM option a): the hand-off the link left is
+// applied once the customer has rendered, then taken.
+const PLAIN_CLICK = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false }
+
+function fakeCustomer(customer: unknown): void {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, customer),
+      'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
+    }),
+  )
+}
+
+test('after Close the card focuses "Record payment" and scrolls to the offset it was at', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  Object.defineProperty(window, 'scrollY', { configurable: true, value: 210 })
+  paymentLink(1, 'card').onClick(PLAIN_CLICK)
+  fakeCustomer(OWING_CUSTOMER)
+  renderFicha('1')
+
+  const record = await screen.findByRole('link', { name: 'Record payment' })
+
+  await waitFor(() => expect(record).toHaveFocus())
+  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 210 }))
+  Reflect.deleteProperty(window, 'scrollY')
+})
+
+test('when the balance is paid and the control is gone the card focuses its heading', async () => {
+  paymentLink(1, 'card').onClick(PLAIN_CLICK)
+  fakeCustomer({ ...OWING_CUSTOMER, balance: 0, owing_since: null, standing: 'settled' })
+  renderFicha('1')
+
+  const heading = await screen.findByText(OWING_CUSTOMER.name)
+
+  await waitFor(() => expect(heading).toHaveFocus())
+  expect(screen.queryByRole('link', { name: 'Record payment' })).not.toBeInTheDocument()
+})
+
+test('a hand-off for another customer leaves the card alone', async () => {
+  paymentLink(2, 'card').onClick(PLAIN_CLICK)
+  fakeCustomer(OWING_CUSTOMER)
+  renderFicha('1')
+
+  const record = await screen.findByRole('link', { name: 'Record payment' })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  expect(record).not.toHaveFocus()
+})
+
+test('with no hand-off the card moves nothing and focuses nothing', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  fakeCustomer(OWING_CUSTOMER)
+  renderFicha('1')
+
+  const record = await screen.findByRole('link', { name: 'Record payment' })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  expect(record).not.toHaveFocus()
+  expect(scrollTo).not.toHaveBeenCalled()
 })
