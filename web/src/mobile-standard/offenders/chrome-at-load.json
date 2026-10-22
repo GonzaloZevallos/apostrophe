@@ -39,7 +39,11 @@
     "screen": "Clientes",
     "rule": "chrome-at-load",
     "target": "link:New sale",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
   },
   {
     "screen": "Clientes",

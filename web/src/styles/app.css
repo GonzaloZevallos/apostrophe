@@ -1060,6 +1060,14 @@ body {
   font-weight: 600;
 }
 
+/* At 130 % zoom (246 CSS px) the avatar's 48 px would squeeze the name into a column of
+ * letters and make every row taller; it is decoration, so the row drops it there. */
+@media (max-width: 299px) {
+  .lista-clientes__fila > .avatar {
+    display: none;
+  }
+}
+
 .lista-clientes__fila > svg {
   flex-shrink: 0;
   color: var(--tenue);

@@ -122,7 +122,7 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--boton-texto` | par | `--boton` | 15,97 | 15,80 |  |
 | `--critico-texto` | par | `--critico` | 12,59 | 11,13 |  |
 | `--nav-inactivo` | par | `--papel` | 4,69 | 4,97 | `.bar-inferior__item` |
-| `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg` |
+| `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg`, `.lista-clientes__fila > svg` |
 <!-- contraste:fin -->
 
 ## En el celular
