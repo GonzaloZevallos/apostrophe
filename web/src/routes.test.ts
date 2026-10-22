@@ -625,7 +625,7 @@ describe("the screen Record payment was opened from", () => {
     ["an unknown screen name", { underneath: "sales" }],
     ["an object", { underneath: { name: "home" } }],
     ["a number", { underneath: 3 }],
-    ["a state without it", { inApp: true }],
+    ["a state without it", { from: "/customers" }],
     ["a bare string", "home"],
     ["null", null],
     ["undefined", undefined],
