@@ -10,6 +10,8 @@ This is the same "run my business from my phone" job as every other capability. 
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "Collect" on every debtor row of Customers and Home, which opens Record payment with the customer chosen in at most 2 taps.)
 
+**When** a customer pays me while I'm chatting with them on my phone, **I want** to open Record payment from their card or debtor row, record the payment and be back on that customer straight away, **so I** see their balance drop without losing my place. (GH-46 follow-up: on the phone Record payment is a sheet over the screen it was opened from, never a page of its own.)
+
 Success criteria:
 
 1. **Fast from the phone**: a payment is recorded in under a minute, with the date already set to today. Record payment, with the customer chosen, opens in at most 2 taps from any tab root ("Collect" on Customers or Home). Paying everything owed takes one tap ("All").
@@ -27,6 +29,7 @@ Success criteria:
 6. **Payment dates are kept**: a payment keeps its own date and method, so Cash (#7) counts money on the day it came in, never on the sale's date.
 7. **Businesses never mix, nothing leaks**: a payment belongs to one customer of its own business (ADR-0004). Another business's customer or payment is gone (404). No amount or name goes to an error, a log, the console or browser storage (ADR-0005).
 8. **No curl, and the browser computes nothing**: everything is done from the phone. Every balance, owing since and settlement shown comes from the API.
+9. **Never lose your place**: on the phone, Record payment opens as a sheet over the screen it was opened from (the customer's card, Customers or Home) and closes with "Close". Saving or closing lands the seller back on that screen, with the balance already lower after a save. On the computer it is a modal. The product docs, the drawing and the built app agree on this.
 
 ## Behaviour
 
@@ -105,7 +108,11 @@ Success criteria:
 ### On screen: Record payment (`Payment`)
 
 - **Opened from**: "Collect" on a debtor row of Customers (either section, or search results) or of Home's "Owed to you" block, and "Record payment" on the customer's card. Each opens it with that customer already chosen.
-- **A sheet** (navigation.md): no bar and no "+ New sale"; "Close", and a confirmation when leaving with something typed.
+- **A sheet on the phone, a modal on the computer** (navigation.md):
+  - On the phone it is a sheet over the screen it was opened from (the customer's card, Customers or Home), never a page of its own. That screen stays underneath.
+  - On the computer it is a modal over the same screen.
+  - No bar and no "+ New sale". "Close", with a confirmation when leaving with something typed.
+  - Saving or "Close" lands the seller back on the screen it was opened from.
 - **The sheet**:
   - "All: $ X" fills the amount with the whole balance in one tap;
   - the date comes filled with today;
@@ -115,8 +122,8 @@ Success criteria:
   - "Payment saved · still owing $ X" when something remains;
   - "Payment saved" when nothing does.
 
-  This is the second deliberate exception to accounts.md's no-data toast rule. The screen it was opened from refreshes from the API.
-- **Refusals** show inline in Spanish and keep everything typed:
+  This is the second deliberate exception to accounts.md's no-data toast rule. The screen it was opened from refreshes from the API, so the lower balance is already there when the sheet closes.
+- **Refusals** show inline and keep everything typed:
   - above the balance;
   - future date;
   - amount at or below $0;
@@ -136,6 +143,7 @@ Success criteria:
   - payment gone.
 - No amount or name in refusals, logs, the console or browser storage (ADR-0005).
 - Every balance, owing since, settlement split, total and count on screen is read from the API.
+- The screens registry carries no key for "modal on the computer"; no registry check tells a sheet from a page. The design capture and the e2e run are the evidence.
 
 ## Metrics
 
@@ -162,6 +170,12 @@ Success criteria:
   - records a partial payment;
   - deletes a payment;
   - reads the Customers' "Owed to you" section and its count line.
+- **Sheet on the phone (criterion 9)**: an end-to-end run at a phone viewport opens Record payment from "Collect" on Customers, "Collect" on Home and the card's "Record payment". It checks four things:
+  - it is a sheet with the screen underneath still mounted, not a navigation;
+  - "Close" returns to that same screen;
+  - a save returns there with the balance read lower;
+  - at a computer viewport, the same entry points open a modal.
+- **Design agreement (criterion 9)**: the design capture of Record payment on the phone shows the drawing and the built app both as a sheet. The evidence note leaves no open difference.
 
 ## Out of scope
 
@@ -170,5 +184,7 @@ Success criteria:
 - Assigning a payment to a sale by hand.
 - Deleting an on-the-spot payment on its own; editing a payment.
 - A separate Owed to you screen.
+- Record payment as a full page on the phone.
+- A screens-registry key or check telling a sheet from a page.
 - Cash and profit: the results capability (#7).
 - Live updates between partners.
