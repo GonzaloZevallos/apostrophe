@@ -5006,6 +5006,37 @@ body {
   }
 }
 
+/* Registrar cobro as a sheet on a phone (`Cobro.dc.html`): the host is a full-screen layer over
+ * the screen it was opened from, which sits hidden behind it. "Close" is on top, as the form
+ * draws it, and Save stays at the bottom, within thumb reach, while the form scrolls under it.
+ * The sheet scrolls by itself, and the page behind is held still while it is open. */
+@media (max-width: 899.98px) {
+  html:has(.cobro-hoja) {
+    overflow: hidden;
+  }
+
+  .cobro-hoja {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    min-height: 0;
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .cobro-hoja > .cuerpo > .formulario {
+    flex: 1;
+  }
+
+  .cobro-hoja > .cuerpo > .formulario > button[type='submit'] {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    box-shadow: 0 calc(-1 * var(--espacio-md)) 0 0 var(--papel);
+  }
+}
+
 /* Registrar cobro's route over Clientes (ADR-0044): on a computer the list and the card sit
  * behind the modal, inert; on a phone the wrapper adds no box of its own. */
 .cobro-paneles {
