@@ -73,10 +73,16 @@ The mobile standard keeps offender lists under `web/src/mobile-standard/offender
 - `unreachable.json` lists screens the mobile walk cannot reach yet.
 - The other lists, such as `touch-target.json`, list the real cells that fall short of a rule.
 
+This file is the one place the rule is written. CODING_STANDARDS.md §10 and its twin in `docs/product/design-system/README.md` name the trade in one sentence and point here.
+
 - **No growth (invariant 9).** The offender lists never grow, with one exception: the trade below.
 - **The trade.** In the same change, a screen's `unreachable` entry is removed and its real cells are added to whichever offender lists they belong in.
   - Every added cell names the same screen as the removed entry's `screen`.
   - Only those cells count toward the trade.
+- **Matched by screen, not by issue.** Whether a trade is valid depends only on the screen name. A traded cell must name an issue, and it may name either:
+  - the removed `unreachable` entry's issue, or
+  - the issue already tracking that screen's existing offender cells.
+  - CobroDesdeInicio's cells carry #46, while its removed entry carried #45. Both are valid.
 - **Not a trade.** Any other growth breaks invariant 9:
   - cells for a screen whose `unreachable` entry stays;
   - cells naming a different screen from the one whose entry was removed.
@@ -100,7 +106,7 @@ There is no telemetry. These are read from the task's evidence and from review.
   - an entry kept plus cells added fails;
   - cells naming another screen fail;
   - a screen made reachable with no cells passes.
-- **Nothing hidden (offender job, criterion 2):** after a trade, every cell of the newly reachable screen is in the offender lists.
+- **Nothing hidden (offender job, criterion 2):** after a trade, every cell of the newly reachable screen is in the offender lists, each naming an issue.
 - **No one-off exceptions (offender job, criterion 3):** no per-task exception for a screen becoming reachable remains, CobroDesdeInicio's included.
 - **Self-evident trade (offender job, criterion 4):** the reviewer confirms the trade from the offender-file diff alone.
 
@@ -113,3 +119,4 @@ There is no telemetry. These are read from the task's evidence and from review.
 - A cap on how many cells a reachable screen may bring.
 - Changing the touch-target standard itself, or fixing the cells that become visible.
 - Letting offender lists grow in any case other than the trade.
+- Translating `docs/product/design-system/README.md`.
