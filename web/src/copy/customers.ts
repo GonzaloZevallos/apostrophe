@@ -27,6 +27,7 @@ export const CUSTOMERS_TEXT = {
   credit: 'Credit ',
   creditLabel: 'Credit',
   phone: 'Phone',
+  phoneOptional: '(optional)',
   yes: 'Yes',
   off: 'No',
   deletePayment: 'Delete payment',

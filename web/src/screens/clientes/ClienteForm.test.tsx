@@ -145,7 +145,7 @@ test('only Nombre is marked required; Teléfono stays optional', () => {
 test('the form has Nombre required, an optional phone and no Canal field', async () => {
   renderForm(CUSTOMER_NEW)
 
-  expect(await screen.findByLabelText('VIP')).toBeInTheDocument()
+  expect(await screen.findByRole('switch', { name: 'VIP' })).toBeInTheDocument()
   expect(screen.getByLabelText('Name')).toBeRequired()
   expect(screen.getByLabelText('Phone')).not.toBeRequired()
   expect(screen.queryByRole('radio')).not.toBeInTheDocument()
@@ -157,7 +157,47 @@ test('with Clientes VIP off the form has no VIP field', async () => {
   renderForm(CUSTOMER_NEW)
 
   expect(await screen.findByLabelText('Name')).toBeInTheDocument()
-  expect(screen.queryByLabelText('VIP')).not.toBeInTheDocument()
+  expect(screen.queryByRole('switch', { name: 'VIP' })).not.toBeInTheDocument()
+})
+
+test('with Clientes VIP off the form shows no VIP caption either', async () => {
+  api = stubFetchWithSettings(false)
+  renderForm(CUSTOMER_NEW)
+
+  expect(await screen.findByLabelText('Name')).toBeInTheDocument()
+  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+})
+
+test('on open the Name field has focus and comes before Phone', async () => {
+  renderForm(CUSTOMER_NEW)
+
+  const name = await screen.findByLabelText('Name')
+  expect(name).toHaveFocus()
+  const phone = screen.getByLabelText('Phone')
+  expect(name.compareDocumentPosition(phone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.getByText('(optional)')).toBeInTheDocument()
+  expect(name).toHaveClass('campo__input--enfoque')
+  expect(phone).toHaveClass('campo__input--enfoque')
+})
+
+test('the VIP switch toggles, shows Yes or No, and is saved', async () => {
+  api.mockResolvedValue(jsonResponse(201, { id: 11, name: 'Vera', phone: null, vip: true }))
+  renderForm(CUSTOMER_NEW)
+
+  const vip = await screen.findByRole('switch', { name: 'VIP' })
+  expect(vip).not.toBeChecked()
+  expect(screen.getByText('No')).toBeInTheDocument()
+  await userEvent.click(vip)
+  expect(vip).toBeChecked()
+  expect(screen.getByText('Yes')).toBeInTheDocument()
+  await userEvent.type(screen.getByLabelText('Name'), 'Vera')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(api).toHaveBeenCalledWith(
+    '/customers',
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Vera', phone: '', vip: true }) }),
+  )
 })
 
 test('registering with no phone sends the request and shows the saved toast', async () => {

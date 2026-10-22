@@ -182,6 +182,61 @@ body {
   color: var(--deuda);
 }
 
+/* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
+ * the focused field. Only `CustomerFields` carries the class; the outline stays (made
+ * transparent, so forced-colors still draws it) and is never removed. */
+.campo__input--enfoque:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 2px var(--tinta);
+}
+
+/* The customer form's second row: Phone takes the rest, VIP a fixed cell. */
+.cliente-fila {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.cliente-fila__telefono {
+  flex: 1;
+  min-width: 0;
+}
+
+.cliente-fila__telefono .campo__input {
+  font-size: 16px;
+}
+
+.cliente-fila__vip {
+  flex: none;
+  width: 104px;
+}
+
+/* The VIP pill: the state word and a smaller track inside a rounded surface. */
+.cliente-fila__vip .opcion-interruptor {
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs) 0 var(--espacio-md);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  font-size: 16px;
+  color: var(--tinta2);
+}
+
+.cliente-fila__vip .opcion-interruptor__pista {
+  width: 40px;
+  height: 24px;
+  padding: 0;
+}
+
+.cliente-fila__vip .opcion-interruptor__pulgar {
+  width: 16px;
+  height: 16px;
+  margin: 0 2px;
+}
+
+.cliente-fila__vip .opcion-interruptor__input:checked + .opcion-interruptor__pista .opcion-interruptor__pulgar {
+  transform: translateX(16px);
+}
+
 .boton {
   display: flex;
   align-items: center;
@@ -5174,39 +5229,71 @@ body {
   text-decoration: none;
 }
 
-.cobro__metodo {
-  display: flex;
-  flex-direction: row;
-  gap: var(--espacio-xs);
-  border: 0;
-  padding: var(--espacio-xs);
-  margin: 0;
-  background: var(--superficie);
-  border-radius: var(--radio-pildora);
-}
-
-.cobro__metodo > legend {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
-
-.cobro__metodo > label {
-  flex: 1;
+/* The date row (`Cobro.dc.html`): "Date" on the left, "Today 05/10" on the right. The native
+ * date input is stretched over the whole row, transparent (the same technique as
+ * `.fecha-pildora`), so a tap anywhere opens the picker and the row is the touch target. */
+.fecha-fila {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  border-bottom: 1px solid var(--linea);
+  font-size: 16px;
+}
+
+.fecha-fila__valor {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+/* The native input is stretched over the row and painted invisible by its text fill, not by
+ * `opacity: 0`: its `color` stays a real token, so the contrast check still reads a readable
+ * value, and it stays a visible, 44 px-tall control to assistive technology. */
+.fecha-fila__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  -webkit-text-fill-color: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.fecha-fila__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+/* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */
+.cobro__metodo {
+  display: flex;
+  flex-direction: column;
   gap: var(--espacio-xs);
-  padding: var(--espacio-md) 0;
-  border-radius: var(--radio-pildora);
+}
+
+.cobro__metodo > .selector-pago {
+  background: var(--superficie);
+}
+
+.cobro__metodo .selector-pago__opcion {
+  min-height: var(--alto-tocable);
+  touch-action: manipulation;
+  padding: 0;
   font-size: 15px;
 }
 
-.cobro__metodo > label:has(input:checked) {
+.cobro__metodo .selector-pago__opcion--activa {
   background: var(--papel);
-  font-weight: 600;
 }
 
 .cobro__resumen {

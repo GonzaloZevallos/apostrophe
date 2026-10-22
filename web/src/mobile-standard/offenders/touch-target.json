@@ -162,12 +162,6 @@
     "issue": 47
   },
   {
-    "screen": "ClienteEditar",
-    "rule": "touch-target",
-    "target": "checkbox:VIP",
-    "issue": 46
-  },
-  {
     "screen": "ClienteFicha",
     "rule": "touch-target",
     "target": "link:Home",
@@ -193,12 +187,6 @@
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "touch-target",
-    "target": "checkbox:VIP",
-    "issue": 46
   },
   {
     "screen": "InicioChecklist",
@@ -331,42 +319,6 @@
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "Cobro",
-    "rule": "touch-target",
-    "target": "textbox:Cash",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "touch-target",
-    "target": "textbox:Transfer",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "touch-target",
-    "target": "textbox:Cash",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "touch-target",
-    "target": "textbox:Transfer",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "touch-target",
-    "target": "textbox:Cash",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "touch-target",
-    "target": "textbox:Transfer",
-    "issue": 46
   },
   {
     "screen": "Configuracion",
@@ -905,12 +857,6 @@
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-target",
     "target": "button:No customer",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-target",
-    "target": "checkbox:VIP",
     "issue": 78
   },
   {

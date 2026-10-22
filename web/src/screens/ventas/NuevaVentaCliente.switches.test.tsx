@@ -53,7 +53,7 @@ test('Pick a customer shows a VIP customer\'s mark and the new-customer form its
 
   await user.click(screen.getByRole('button', { name: 'New customer' }))
 
-  expect(await screen.findByLabelText('VIP')).toBeInTheDocument()
+  expect(await screen.findByRole('switch', { name: 'VIP' })).toBeInTheDocument()
 })
 
 test('Pick a customer shows no VIP mark and the new-customer form no VIP field while Clientes VIP is off', async () => {
@@ -64,8 +64,15 @@ test('Pick a customer shows no VIP mark and the new-customer form no VIP field w
   await user.click(screen.getByRole('button', { name: 'New customer' }))
 
   expect(await screen.findByLabelText('Name')).toBeInTheDocument()
-  expect(screen.queryByLabelText('VIP')).not.toBeInTheDocument()
+  expect(screen.queryByRole('switch', { name: 'VIP' })).not.toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+})
+
+test('opening the new-customer form of Pick a customer puts the focus on Name', async () => {
+  const user = await openChooser(false)
+  await user.click(await screen.findByRole('button', { name: 'New customer' }))
+
+  expect(await screen.findByLabelText('Name')).toHaveFocus()
 })
 
 test('the new-customer form of Pick a customer has Nombre required, a clearable optional phone and no Canal field', async () => {

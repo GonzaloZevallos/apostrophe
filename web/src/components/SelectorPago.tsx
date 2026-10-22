@@ -14,7 +14,7 @@
  * gives a description — the caller (the sale form) decides when that is true,
  * this component only wires the two together.
  *
- * Disabled Debiendo carries the native `disabled` attribute too, not only
+ * It is a thin wrapper over `SegmentedChoice`, which holds the markup. Disabled Debiendo carries the native `disabled` attribute too, not only
  * `aria-disabled` (review finding, plan-invariant: PM adjustment 2 says tests
  * "change only selectors for removed native controls" — a `button` can be
  * natively disabled same as the `<input type="radio">` it replaces, so the
@@ -25,6 +25,7 @@
 import { useId } from 'react'
 import type { PaymentChoice } from '../sales/pricing'
 import { COMMON_TEXT } from '../copy/common'
+import SegmentedChoice from './SegmentedChoice'
 
 export interface SelectorPagoProps {
   value: PaymentChoice | null
@@ -47,34 +48,15 @@ export default function SelectorPago({
 }: SelectorPagoProps) {
   const descriptionId = useId()
   const showDescription = owingDisabled && owingDescription !== undefined
+  const options = OPTIONS.map((option) =>
+    option.value === 'owing'
+      ? { ...option, disabled: owingDisabled, describedBy: showDescription ? descriptionId : undefined }
+      : option,
+  )
 
   return (
     <div>
-      <div className="selector-pago" role="radiogroup" aria-label={COMMON_TEXT.howPaid}>
-        {OPTIONS.map((option) => {
-          const checked = value === option.value
-          const disabled = option.value === 'owing' && owingDisabled
-          return (
-            <button
-              key={option.value}
-              type="button"
-              role="radio"
-              aria-checked={checked}
-              aria-disabled={disabled}
-              disabled={disabled}
-              aria-describedby={option.value === 'owing' && showDescription ? descriptionId : undefined}
-              className={
-                checked ? 'selector-pago__opcion selector-pago__opcion--activa' : 'selector-pago__opcion'
-              }
-              onClick={() => {
-                if (!disabled) onChange(option.value)
-              }}
-            >
-              {option.label}
-            </button>
-          )
-        })}
-      </div>
+      <SegmentedChoice options={options} value={value} onChange={onChange} ariaLabel={COMMON_TEXT.howPaid} />
       {showDescription && (
         <span id={descriptionId} className="selector-pago__ayuda">
           {owingDescription}

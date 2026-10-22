@@ -370,7 +370,7 @@ async function payFromInicio(amount: string): Promise<void> {
   const inside = within(sheet as HTMLElement)
   await userEvent.clear(inside.getByLabelText('Amount'))
   await userEvent.type(inside.getByLabelText('Amount'), amount)
-  await userEvent.click(inside.getByLabelText('Cash'))
+  await userEvent.click(inside.getByRole('radio', { name: 'Cash' }))
   await userEvent.click(inside.getByRole('button', { name: 'Save' }))
 }
 

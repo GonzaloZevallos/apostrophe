@@ -1,7 +1,9 @@
+import { useEffect, useId, useRef } from 'react'
+import OpcionInterruptor from '../../components/OpcionInterruptor'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { COMMON_TEXT } from '../../copy/common'
 /**
- * The shared "Teléfono / Nombre / VIP" fields (`NuevaVentaCliente.dc.html`,
+ * The shared "Nombre / Teléfono / VIP" fields (`NuevaVentaCliente.dc.html`,
  * `ClienteForm.tsx`): split out of `ClienteForm` (plan, "Shape") so the "Nuevo
  * cliente" sub-form inside `NuevaVentaCliente`'s sheet renders exactly the same
  * markup, labels and structure as /clientes/nuevo — one place that knows what a
@@ -36,29 +38,23 @@ export default function CustomerFields({
   phoneError,
   showVip,
 }: CustomerFieldsProps) {
+  const nameRef = useRef<HTMLInputElement>(null)
+  const phoneId = useId()
+  const phoneHintId = useId()
+
+  // The drawing opens with Name focused (`NuevaVentaCliente.dc.html`): once, on mount.
+  useEffect(() => {
+    nameRef.current?.focus()
+  }, [])
+
   return (
     <>
       <div className="campo">
         <label className="campo">
-          <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
-          <input
-            className="campo__input"
-            type="tel"
-            value={value.phone}
-            onChange={(event) => onChange({ ...value, phone: event.target.value })}
-          />
-        </label>
-        {phoneError !== null && (
-          <span className="campo__error" role="alert">
-            {phoneError}
-          </span>
-        )}
-      </div>
-      <div className="campo">
-        <label className="campo">
           <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
-            className="campo__input"
+            ref={nameRef}
+            className="campo__input campo__input--enfoque"
             type="text"
             value={value.name}
             onChange={(event) => onChange({ ...value, name: event.target.value })}
@@ -71,16 +67,40 @@ export default function CustomerFields({
           </span>
         )}
       </div>
-      {showVip && (
-        <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.vip}</span>
+      <div className="cliente-fila">
+        <div className="campo cliente-fila__telefono">
+          <span className="campo__rotulo">
+            <label htmlFor={phoneId}>{CUSTOMERS_TEXT.phone}</label>{' '}
+            <span id={phoneHintId}>{CUSTOMERS_TEXT.phoneOptional}</span>
+          </span>
           <input
-            type="checkbox"
-            checked={value.vip}
-            onChange={(event) => onChange({ ...value, vip: event.target.checked })}
+            id={phoneId}
+            className="campo__input campo__input--enfoque"
+            type="tel"
+            value={value.phone}
+            aria-describedby={phoneHintId}
+            onChange={(event) => onChange({ ...value, phone: event.target.value })}
           />
-        </label>
-      )}
+          {phoneError !== null && (
+            <span className="campo__error" role="alert">
+              {phoneError}
+            </span>
+          )}
+        </div>
+        {showVip && (
+          <div className="campo cliente-fila__vip">
+            <span className="campo__rotulo" aria-hidden="true">
+              {COMMON_TEXT.vip}
+            </span>
+            <OpcionInterruptor
+              label={value.vip ? CUSTOMERS_TEXT.yes : CUSTOMERS_TEXT.off}
+              ariaLabel={COMMON_TEXT.vip}
+              checked={value.vip}
+              onChange={(vip) => onChange({ ...value, vip })}
+            />
+          </div>
+        )}
+      </div>
     </>
   )
 }
