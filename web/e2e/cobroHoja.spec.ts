@@ -192,7 +192,7 @@ for (const viewport of VIEWPORTS) {
         test(`from ${origin}, ${how}: the same offset and focus where the seller was`, async ({ page }) => {
           test.setTimeout(180_000)
           await makeDebtor(page)
-          if (origin === 'customers') await owingCustomers(page, 30)
+          if (origin === 'customers') await owingCustomers(page, 12)
           await goToOrigin(page, origin)
 
           const opener = openerOn(page, origin)
@@ -217,10 +217,10 @@ for (const viewport of VIEWPORTS) {
           if (how !== 'full') {
             await expect(openerOn(page, origin)).toBeFocused()
           } else if (origin === 'customers') {
-            // Thirty more customers still owe, so the block stays and its heading takes focus.
+            // Twelve more customers still owe, so the block stays and its heading takes focus.
             await expect(page.locator(':focus')).toHaveText('Owed to you')
             await expect(page.getByRole('link', { name: OPENER.customers })).toHaveCount(0)
-            await expect(page.getByRole('link', { name: /^Collect from Zeta/ })).toHaveCount(60)
+            await expect(page.getByRole('link', { name: /^Collect from Zeta/ })).toHaveCount(24)
           } else if (origin === 'home') {
             await expect(page.locator(':focus')).toHaveText('Nobody owes you')
           } else {
