@@ -14,3 +14,17 @@ test('a one-word name gives one letter, and an empty one gives none', () => {
 test('does not split an emoji or an accented letter', () => {
   expect(initialsOf('Álamo 🌿 Verde')).toBe('Á🌿')
 })
+
+test('names of people: the first two words, the first character of each', () => {
+  expect(initialsOf('Juan Pérez')).toBe('JP')
+  expect(initialsOf('Juan')).toBe('J')
+  expect(initialsOf('(Ana) Pérez')).toBe('(P')
+})
+
+test('a name that starts with an emoji keeps the whole emoji', () => {
+  expect(initialsOf('🌿 Verde')).toBe('🌿V')
+})
+
+test('extra inner spaces do not count as words', () => {
+  expect(initialsOf('Juan      Pérez')).toBe('JP')
+})

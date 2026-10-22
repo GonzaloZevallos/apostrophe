@@ -394,7 +394,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(
     page.locator('main').filter({ hasNot: page.getByLabel('Search customer') }).locator('.encabezado__titulo'),
   ).toHaveText(teaserRow.name)
-  await expect(page.getByText(`Owes you ${pesos(teaserRow.balance)}`)).toBeVisible()
+  await expect(page.locator('.ficha-deuda', { hasText: new RegExp(`Owes you\\s*${pesos(teaserRow.balance).replace(/[$.]/g, '\\$&')}`) })).toBeVisible()
 
   // Nothing personal or technical reaches the console or the browser's own storage
   // (CODING_STANDARDS.md section 9) — a customer's name and several amounts moved
