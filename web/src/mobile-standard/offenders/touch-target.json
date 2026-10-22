@@ -333,42 +333,6 @@
     ]
   },
   {
-    "screen": "Cobro",
-    "rule": "touch-target",
-    "target": "textbox:Cash",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "touch-target",
-    "target": "textbox:Transfer",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "touch-target",
-    "target": "textbox:Cash",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "touch-target",
-    "target": "textbox:Transfer",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "touch-target",
-    "target": "textbox:Cash",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "touch-target",
-    "target": "textbox:Transfer",
-    "issue": 46
-  },
-  {
     "screen": "Configuracion",
     "rule": "touch-target",
     "target": "link:Home",
