@@ -312,8 +312,13 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   const account = document.querySelector('.cuenta-cliente')
   expect(account).not.toBeNull()
   const inAccount = within(account as HTMLElement)
-  expect(inAccount.getByText('Payment · cash · On account of the sale of 14/09')).toBeInTheDocument()
+  // The joined "Payment · cash · On account of …" line is now two lines: the
+  // title, and the sub-line under it.
+  expect(inAccount.getByText('Payment · cash')).toBeInTheDocument()
+  expect(inAccount.getAllByText('Payment · transfer')).toHaveLength(2)
+  expect(inAccount.getAllByText('On account of the sale of 14/09')).toHaveLength(2)
   expect(inAccount.getByText('Credit')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Account · running balance' })).toBeInTheDocument()
 
   // Each row shows its own figure (`.cuenta-cliente__monto`) next to the running
   // balance it left (`.cuenta-cliente__saldo`) — plan, "On screen": "with the
@@ -352,6 +357,28 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   // `standing`, never a comparison on the number itself.
   expect(creditFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 2.000')
   expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('Credit $ 2.000')
+
+  // Title over sub-line on the left, the sale naming no variety and no grams.
+  expect(saleFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Sale')
+  expect(saleFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('Left owing')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · cash')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
+  expect(creditFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(creditFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent(/^Credit$/)
+
+  // Amber marks only what is owed: the owed balance and the settled one are not
+  // amber-by-credit; the credit figure is the blue treatment, never amber.
+  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-deuda')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-deuda')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-deuda')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-credito')
+  expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-credito')
+  expect(creditFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-deuda')
+  for (const fila of filas) {
+    expect(fila.querySelector('.cuenta-cliente__monto')).not.toHaveClass('monto-deuda')
+  }
 })
 
 test('Delete payment asks before deleting, then shows "Payment deleted" and refreshes the account', async () => {

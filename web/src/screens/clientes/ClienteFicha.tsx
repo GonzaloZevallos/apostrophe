@@ -23,7 +23,6 @@ import { invalidateResource, keys } from '../../api/keys'
 import { useIsVipCustomers } from '../../api/pricingSettings'
 import {
   type AccountRow,
-  type HowPaid,
   type PaymentMethod,
   deletePayment,
   getAccount,
@@ -47,53 +46,20 @@ import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
-import { deleteRowIndices } from './accountRows'
+import { type BalanceTone, METHOD_LABEL, deleteRowIndices, ledgerRowView } from './accountRows'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 
-const HOW_PAID_LABEL: Record<Exclude<HowPaid, 'none'>, string> = {
-  cash: CUSTOMERS_TEXT.paidInCash,
-  transfer: CUSTOMERS_TEXT.paidByTransfer,
-  owing: CUSTOMERS_TEXT.leftOwing,
-}
-
-const METHOD_LABEL: Record<PaymentMethod, string> = {
-  cash: CUSTOMERS_TEXT.methodCash,
-  transfer: CUSTOMERS_TEXT.methodTransfer,
+/** The balance line's class, by the tone `ledgerRowView` chose: amber only for what is
+ * owed, the neutral/blue accent for a credit, plain ink for a settled balance. */
+const BALANCE_TONE_CLASS: Record<BalanceTone, string> = {
+  debt: 'monto-deuda',
+  credit: 'monto-credito',
+  neutral: '',
 }
 
 function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
   return CUSTOMERS_TEXT.deletePaymentOf(formatMoney(payment.amount), METHOD_LABEL[payment.method], formatDateShort(payment.paid_on))
-}
-
-/** One account row's own text (plan, "Front"), never built from a sign
- * comparison: a sale row reads `sale.how_paid`, a payment row names the sale it
- * reached, a credit row always reads "A favor" — all three only through `kind`. */
-function rowLabel(row: AccountRow): string {
-  if (row.kind === 'sale') {
-    return row.sale.how_paid === 'none' ? '' : HOW_PAID_LABEL[row.sale.how_paid]
-  }
-  if (row.kind === 'payment') {
-    return CUSTOMERS_TEXT.paymentOnAccount(METHOD_LABEL[row.payment.method], formatDateShort(row.applied_to.sale_date))
-  }
-  return CUSTOMERS_TEXT.creditLabel
-}
-
-function rowAmount(row: AccountRow): string {
-  return row.standing === 'credit'
-    ? CUSTOMERS_TEXT.creditAmount(formatMoneyMagnitude(row.running_balance))
-    : CUSTOMERS_TEXT.balanceAmount(formatMoney(row.running_balance))
-}
-
-/** The row's own figure (design, `ClienteFicha.dc.html`: each row shows its own
- * amount — a sale's `total`, a payment's own `applied_to.amount`, a credit's own
- * leftover `amount` — next to, never instead of, the running balance `rowAmount`
- * reads below it. Which field to read comes only from `kind`, never a sign on a
- * number (plan, invariants). */
-function rowOwnAmount(row: AccountRow): string {
-  if (row.kind === 'sale') return formatMoney(row.sale.total)
-  if (row.kind === 'payment') return formatMoney(row.applied_to.amount)
-  return formatMoneyMagnitude(row.amount)
 }
 
 /** A row's React key, from the ids its own kind carries (never its index). A
@@ -248,15 +214,23 @@ export default function ClienteFicha() {
           )}
         </div>
 
-        <div className="cuenta-cliente">
+        <section className="cuenta-cliente" aria-labelledby="cuenta-cliente-titulo">
+          <h2 id="cuenta-cliente-titulo" className="rotulo cuenta-cliente__encabezado">
+            {CUSTOMERS_TEXT.accountHeading}
+          </h2>
           {rows.map((row, index) => {
-            const label = rowLabel(row)
+            const view = ledgerRowView(row)
             return (
               <div key={rowKey(row)} className="cuenta-cliente__fila">
                 <span className="cuenta-cliente__fecha">{formatDateShort(row.date)}</span>
-                {label !== '' && <span>{label}</span>}
-                <span className="cuenta-cliente__monto">{rowOwnAmount(row)}</span>
-                <span className="cuenta-cliente__saldo">{rowAmount(row)}</span>
+                <div className="cuenta-cliente__texto">
+                  <span className="cuenta-cliente__titulo">{view.title}</span>
+                  <span className="cuenta-cliente__sub">{view.sub}</span>
+                </div>
+                <div className="cuenta-cliente__cifras">
+                  <span className="cuenta-cliente__monto">{view.own}</span>
+                  <span className={`cuenta-cliente__saldo ${BALANCE_TONE_CLASS[view.balanceTone]}`.trim()}>{view.balance}</span>
+                </div>
                 {deleteIndices.has(index) && row.kind !== 'sale' && (
                   <Boton
                     variant="icon"
@@ -275,7 +249,7 @@ export default function ClienteFicha() {
               </div>
             )
           })}
-        </div>
+        </section>
 
         <div className="clientes__accion">
           <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">

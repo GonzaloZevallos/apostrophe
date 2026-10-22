@@ -109,9 +109,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // cobro reaching that sale instead.
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Record payment' })).toHaveCount(0)
-  await expect(
-    page.getByText(`Payment · cash · On account of the sale of ${today}`),
-  ).toBeVisible()
+  await expect(page.getByText('Payment · cash')).toBeVisible()
+  await expect(page.getByText(`On account of the sale of ${today}`)).toBeVisible()
 
   // Sale 2: 8 g of Rosa, also left owing — $8.000.
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()

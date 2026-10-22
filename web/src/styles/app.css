@@ -2529,34 +2529,86 @@ body {
 .cuenta-cliente {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+}
+
+.cuenta-cliente__encabezado {
+  margin: 0;
+  padding: 18px 0 6px;
 }
 
 .cuenta-cliente__fila {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+  column-gap: 12px;
+  row-gap: 4px;
+  padding: 13px 0;
   border-bottom: 1px solid var(--deuda-linea);
 }
 
+.cuenta-cliente__fila:last-child {
+  border-bottom: 0;
+}
+
 .cuenta-cliente__fecha {
+  flex: none;
+  width: 42px;
+  color: var(--tinta2);
+  font-size: 13px;
+}
+
+/* The title over its sub-line takes what is left and shrinks; the title ellipsizes. */
+.cuenta-cliente__texto {
+  flex: 1 1 8rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cuenta-cliente__titulo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.cuenta-cliente__sub {
   color: var(--tinta2);
   font-size: 13px;
 }
 
 /* A figure never breaks between "$" and its number: when the row is short of room the
- * whole figure drops to the next line. From 300 px up; the 246 px cell (a 320 px phone with
- * text at 130%) keeps its listed overflow under #46, which the phone check holds. */
-@media (min-width: 300px) {
-  .cuenta-cliente__fila {
-    flex-wrap: wrap;
-  }
+ * whole block drops to the next line, aligned to the right. */
+.cuenta-cliente__cifras {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
 
-  .cuenta-cliente__monto,
-  .cuenta-cliente__saldo {
-    white-space: nowrap;
-  }
+.cuenta-cliente__monto {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cuenta-cliente__saldo {
+  color: var(--tinta2);
+  font-size: 12px;
+}
+
+/* Amber and the blue accent only on the balance line, by its tone; the muted ink of
+ * the plain balance is for a settled one. */
+.cuenta-cliente__saldo.monto-deuda {
+  color: var(--deuda);
+}
+
+.cuenta-cliente__saldo.monto-credito {
+  color: var(--acento);
 }
 
 .marca-estado {
