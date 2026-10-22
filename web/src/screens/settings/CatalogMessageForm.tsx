@@ -5,7 +5,7 @@
  * the body of the "Mensaje del catálogo" group and of the Onboarding's catalog step; its host
  * draws the frame and the leave guard.
  *
- * Success shows the fixed toast "Catálogo guardado" and calls `onSaved`. A refusal shows
+ * Success shows the fixed toast "Catalog saved" and calls `onSaved`. A refusal shows
  * inline under its field and keeps what was typed; a dropped network shows "Sin conexión",
  * never the generic retry.
  *
@@ -31,10 +31,10 @@ import {
   CATALOG_SAVED,
   FOOTER_TOO_LONG_MESSAGE,
   GENERIC_REFUSAL_MESSAGE,
-  HEADER_TOO_LONG_MESSAGE,
-} from './messages'
+  HEADER_TOO_LONG_MESSAGE, SETTINGS_TEXT,
+} from '../../copy/settings'
 
-const SUBMIT_LABEL = 'Guardá el mensaje'
+const SUBMIT_LABEL = SETTINGS_TEXT.saveTheMessage
 
 interface HeaderFooter {
   header: string
@@ -143,7 +143,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SUBMIT_LAB
       <form className="formulario" onSubmit={onSave}>
         <div className="campo">
           <label className="campo__rotulo" htmlFor="catalog-header">
-            Encabezado
+            {SETTINGS_TEXT.header}
           </label>
           <textarea
             id="catalog-header"
@@ -163,7 +163,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SUBMIT_LAB
         </div>
         <div className="campo">
           <label className="campo__rotulo" htmlFor="catalog-footer">
-            Pie
+            {SETTINGS_TEXT.footer}
           </label>
           <textarea
             id="catalog-footer"

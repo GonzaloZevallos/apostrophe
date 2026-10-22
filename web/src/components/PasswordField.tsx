@@ -7,6 +7,7 @@
 
 import { useState } from 'react'
 import Boton from './Boton'
+import { COMMON_TEXT } from '../copy/common'
 
 export default function PasswordField({
   label,
@@ -40,7 +41,7 @@ export default function PasswordField({
       </label>
       <span className="campo__mostrar">
         <Boton variant="link" onClick={() => setReveal((shown) => !shown)}>
-          {reveal ? 'Ocultar' : 'Mostrar'}
+          {reveal ? COMMON_TEXT.hide : COMMON_TEXT.show}
         </Boton>
       </span>
     </>

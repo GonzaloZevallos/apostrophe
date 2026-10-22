@@ -1,5 +1,7 @@
 # Sistema de diseño · apostrophe
 
+> **Language.** The app's language is English (`docs/product/product-language.md`). This contract and the screens in `pantallas/` are written in Spanish: `pantallas/` is the reference for structure, hierarchy and components, not for the words, which live in `web/src/copy/`.
+
 Contrato de diseño para el frontend. Estos archivos son la fuente de verdad del
 color, los formatos, los tipos del dominio y las reglas de precio. El diseño
 visual completo (celular y compu) ya no vive en un lienzo aparte: el HTML
@@ -53,7 +55,7 @@ un solo azul usado con cuentagotas.
 - **Líneas finas antes que tarjetas.** Sin sombras, sin bordes en los paneles.
 - **Un solo color de acento**, y sólo para acción, enlace y ganancia.
 - Rótulos en minúscula, escritos como frases ("Vendiste esta semana").
-- Castellano rioplatense con vos: Cargá, Guardá, Te debe, Elegí.
+- El idioma de la app es el inglés (`docs/product/product-language.md`): "Save", "Owes you", "Choose". Las pantallas de `pantallas/` están dibujadas en castellano y son la referencia de estructura, no de palabras.
 
 ## Accesibilidad — no se negocia
 

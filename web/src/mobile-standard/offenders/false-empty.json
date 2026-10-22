@@ -2,7 +2,7 @@
   {
     "screen": "Clientes",
     "rule": "false-empty",
-    "target": "span:Todavía no agregaste ningún cliente.",
+    "target": "span:You have not added any customers yet.",
     "issue": 46
   }
 ]

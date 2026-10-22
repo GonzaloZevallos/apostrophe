@@ -2,31 +2,31 @@
   {
     "screen": "Clientes",
     "rule": "data-while-loading",
-    "target": "span:# clientes",
+    "target": "span:# customers",
     "issue": 46
   },
   {
     "screen": "Gastos",
     "rule": "data-while-loading",
-    "target": "span:Septiembre #",
+    "target": "span:September #",
     "issue": 48
   },
   {
     "screen": "NuevaVenta",
     "rule": "data-while-loading",
-    "target": "span:Hoy #/#",
+    "target": "span:Today #/#",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "data-while-loading",
-    "target": "span:Hoy #/#",
+    "target": "span:Today #/#",
     "issue": 78
   },
   {
     "screen": "VentaGuardada",
     "rule": "data-while-loading",
-    "target": "span:Hoy #/#",
+    "target": "span:Today #/#",
     "issue": 78
   }
 ]

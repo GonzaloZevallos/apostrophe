@@ -3,7 +3,9 @@ import { pageProbe } from '../../../scripts/design/probe.mjs'
 import {
   SETTLE_BOUND,
   SETTLE_FRAMES,
+  SETTLE_REASON_UNSETTLED,
   settleWith,
+  shotKept,
   signatureOf,
   type SettleFrame,
   type SettlePort,
@@ -19,7 +21,49 @@ type FakeResponse = {
 type FakeWindow = {
   fetch: (...args: unknown[]) => Promise<FakeResponse>
   __captureQuiet: () => Promise<boolean>
+  __captureMutated: () => boolean
   __captureSignature: unknown
+  MutationObserver: new (callback: () => void) => FakeObserver
+  document: object
+}
+
+// What the probe asks of a `MutationObserver`: to watch a node with options, and to hand over
+// records the browser has queued but not yet delivered to the callback.
+type FakeObserver = {
+  observe(target: object, options: Record<string, boolean>): void
+  takeRecords(): unknown[]
+}
+
+// A page's observer: `mutate()` queues a record and, as the browser does, delivers it to the
+// callback on a later microtask, so a frame can read the flag between the two.
+function fakeObservers() {
+  const state = {
+    observed: [] as Array<{ target: object; options: Record<string, boolean> }>,
+    queued: [] as unknown[],
+    callbacks: [] as Array<() => void>,
+    mutate() {
+      state.queued.push({})
+      queueMicrotask(() => {
+        if (state.queued.length === 0) return
+        state.queued = []
+        for (const callback of state.callbacks) callback()
+      })
+    },
+  }
+  class Observer implements FakeObserver {
+    constructor(callback: () => void) {
+      state.callbacks.push(callback)
+    }
+    observe(target: object, options: Record<string, boolean>) {
+      state.observed.push({ target, options })
+    }
+    takeRecords() {
+      const taken = state.queued
+      state.queued = []
+      return taken
+    }
+  }
+  return { state, Observer }
 }
 
 // One real macrotask: the body of a response arrives on a turn later than its headers.
@@ -47,8 +91,8 @@ function responseOf(body: unknown): FakeResponse {
 
 // The probe installed exactly as the capture installs it: its source, serialised, run with
 // `window` bound to a plain object. Nothing outside the function is in scope for it.
-function install(fetch: FakeWindow['fetch']): FakeWindow {
-  const win = { fetch } as FakeWindow
+function install(fetch: FakeWindow['fetch'], observers = fakeObservers()): FakeWindow {
+  const win = { fetch, MutationObserver: observers.Observer, document: { id: 'document' } } as unknown as FakeWindow
   const source = `(${pageProbe.toString()})(${signatureOf.toString()})`
   new Function('window', source)(win)
   return win
@@ -119,7 +163,8 @@ describe('the probe on a page whose late answer is drawn by a timer', () => {
         await turn()
         return {
           idle,
-          pendingFiniteAnimation: false,
+          unfinishedAnimation: false,
+          mutated: false,
           fontsLoaded: true,
           hash: page.drawn ? 'drawn' : 'undrawn',
         }
@@ -232,5 +277,100 @@ describe('the probe', () => {
 
   it('exposes the layout signature it was given', () => {
     expect(install(() => Promise.resolve(responseOf({}))).__captureSignature).toBeTypeOf('function')
+  })
+})
+
+describe('the probe\'s mutation flag', () => {
+  it('watches the whole document: attributes, child list, character data and the subtree', () => {
+    const observers = fakeObservers()
+    const win = install(() => Promise.resolve(responseOf({})), observers)
+    expect(observers.state.observed).toEqual([
+      {
+        target: win.document,
+        options: { attributes: true, childList: true, characterData: true, subtree: true },
+      },
+    ])
+  })
+
+  it('reads false before anything changed', () => {
+    expect(install(() => Promise.resolve(responseOf({}))).__captureMutated()).toBe(false)
+  })
+
+  it('reads true once after a mutation and resets in the same call', async () => {
+    const observers = fakeObservers()
+    const win = install(() => Promise.resolve(responseOf({})), observers)
+    observers.state.mutate()
+    await turn()
+    expect(win.__captureMutated()).toBe(true)
+    expect(win.__captureMutated()).toBe(false)
+  })
+
+  it('counts a mutation the browser has queued but not yet delivered to the observer', () => {
+    const observers = fakeObservers()
+    const win = install(() => Promise.resolve(responseOf({})), observers)
+    observers.state.mutate()
+    expect(win.__captureMutated()).toBe(true)
+    expect(win.__captureMutated()).toBe(false)
+  })
+
+  it('sends back only a boolean, never what changed', async () => {
+    const observers = fakeObservers()
+    const win = install(() => Promise.resolve(responseOf({})), observers)
+    observers.state.mutate()
+    await turn()
+    expect(win.__captureMutated()).toBeTypeOf('boolean')
+  })
+
+  it('does not settle a page whose switch flips by an attribute that moves no box, until it stops', async () => {
+    // The hash is the same in every frame (nothing moves); only the mutation flag tells that the
+    // switch was still changing. It flips in the first two frames and then rests.
+    const observers = fakeObservers()
+    const win = install(() => Promise.resolve(responseOf({})), observers)
+    let frame = 0
+    const port: SettlePort = {
+      advance: () => Promise.resolve(),
+      frame: async (): Promise<SettleFrame> => {
+        frame += 1
+        if (frame <= 2) observers.state.mutate()
+        const idle = await win.__captureQuiet()
+        await turn()
+        return { idle, unfinishedAnimation: false, mutated: win.__captureMutated(), fontsLoaded: true, hash: 'same' }
+      },
+    }
+    expect(await settleWith(port, { advanceMs: 0, frames: SETTLE_FRAMES, bound: SETTLE_BOUND })).toBeNull()
+    // frame 1 is not quiet either (first call), 2 mutated, then three calm equal frames: 3, 4, 5.
+    expect(frame).toBe(5)
+  })
+
+  it('never settles a page that keeps mutating, and fails with the unsettled reason', async () => {
+    const observers = fakeObservers()
+    const win = install(() => Promise.resolve(responseOf({})), observers)
+    const port: SettlePort = {
+      advance: () => Promise.resolve(),
+      frame: async (): Promise<SettleFrame> => {
+        observers.state.mutate()
+        const idle = await win.__captureQuiet()
+        return { idle, unfinishedAnimation: false, mutated: win.__captureMutated(), fontsLoaded: true, hash: 'same' }
+      },
+    }
+    expect(await settleWith(port, { advanceMs: 0, frames: SETTLE_FRAMES, bound: SETTLE_BOUND })).toBe(
+      SETTLE_REASON_UNSETTLED,
+    )
+  })
+
+  it('rejects a shot when the DOM mutated after the last settled frame, whatever the hash', async () => {
+    const observers = fakeObservers()
+    const win = install(() => Promise.resolve(responseOf({})), observers)
+    const frame = async (): Promise<SettleFrame> => {
+      const idle = await win.__captureQuiet()
+      return { idle, unfinishedAnimation: false, mutated: win.__captureMutated(), fontsLoaded: true, hash: 'same' }
+    }
+    const port: SettlePort = { advance: () => Promise.resolve(), frame }
+    expect(await settleWith(port, { advanceMs: 0, frames: SETTLE_FRAMES, bound: SETTLE_BOUND })).toBeNull()
+    // At rest: the frame after the shot is calm and the shot is kept.
+    expect(shotKept(await frame(), 'same')).toBe(true)
+    // The shot (or the app) mutates the page: nothing is discarded, the shot is rejected.
+    observers.state.mutate()
+    expect(shotKept(await frame(), 'same')).toBe(false)
   })
 })

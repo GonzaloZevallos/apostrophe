@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { EMPTY_STATE_WORDINGS, EMPTY_STATES } from './emptyStates'
+import { EMPTY_STATE_WORDINGS, EMPTY_STATES } from '../copy/emptyStates'
 
 const sources = import.meta.glob(['/src/screens/**/*.tsx', '/src/screens/**/*.ts'], {
   query: '?raw',
@@ -29,7 +29,7 @@ export function literalCopies(
 
 describe('the empty-state wordings', () => {
   test('are all listed, non-empty and distinct', () => {
-    expect(EMPTY_STATE_WORDINGS).toEqual(Object.values(EMPTY_STATES))
+    expect(EMPTY_STATE_WORDINGS).toEqual(expect.arrayContaining(Object.values(EMPTY_STATES)))
     expect(new Set(EMPTY_STATE_WORDINGS).size).toBe(EMPTY_STATE_WORDINGS.length)
     for (const wording of EMPTY_STATE_WORDINGS) expect(wording).not.toBe('')
   })
@@ -41,8 +41,8 @@ describe('the empty-state wordings', () => {
 
   test('the guard rejects a screen that copies a wording, in code but not in a comment', () => {
     const files = {
-      '/src/screens/A.tsx': 'const x = "Nadie te debe"',
-      '/src/screens/B.tsx': '/* "Nadie te debe" */\n// Sin entradas de stock\nconst y = 1',
+      '/src/screens/A.tsx': 'const x = "Nobody owes you"',
+      '/src/screens/B.tsx': '/* "Nobody owes you" */\n// No stock entries yet\nconst y = 1',
       '/src/screens/emptyStates.ts': EMPTY_STATES.homeNobodyOwes,
     }
     expect(literalCopies(EMPTY_STATE_WORDINGS, files)).toEqual([

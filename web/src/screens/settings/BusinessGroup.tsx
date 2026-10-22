@@ -3,7 +3,7 @@
  * renaming the business.
  *
  * The business comes only from the session: `GET`/`PATCH /business` never take an id
- * (CODING_STANDARDS §9). Renaming shows the fixed toast "Negocio renombrado" (a constant,
+ * (CODING_STANDARDS §9). Renaming shows the fixed toast "Business renamed" (a constant,
  * never built from the response). A rejected name (`account.business_name_invalid`) shows
  * inline and keeps what was typed, dispatched through `refusals.ts`. A dropped network shows
  * "Sin conexión", never the generic retry, which would wrongly blame the server.
@@ -23,18 +23,19 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { BUSINESS_NAME_INVALID_MESSAGE, GENERIC_REFUSAL_MESSAGE, RENAME_SUCCESS } from './messages'
+import { BUSINESS_NAME_INVALID_MESSAGE, GENERIC_REFUSAL_MESSAGE, RENAME_SUCCESS, SETTINGS_TEXT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
+import { COMMON_TEXT } from '../../copy/common'
 
 interface Business {
   name: string
 }
 
 const LEAVE = {
-  question: '¿Descartás el nombre?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
+  question: SETTINGS_TEXT.discardTheName,
+  detail: COMMON_TEXT.losesWhatYouEntered,
+  keepLabel: COMMON_TEXT.noKeepEditing,
+  discardLabel: COMMON_TEXT.yesDiscard,
 }
 
 const RENAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {
@@ -49,7 +50,7 @@ export default function BusinessGroup() {
 
   if (isPending || isError) {
     return (
-      <SettingsGroup title="Negocio" dirty={false} leave={LEAVE}>
+      <SettingsGroup title={COMMON_TEXT.business} dirty={false} leave={LEAVE}>
         {isPending && <Loading />}
         {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       </SettingsGroup>
@@ -107,7 +108,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
   }
 
   return (
-    <SettingsGroup title="Negocio" dirty={name !== accepted} leave={LEAVE}>
+    <SettingsGroup title={COMMON_TEXT.business} dirty={name !== accepted} leave={LEAVE}>
       {renamed && (
         <div className="aviso-flotante">
           <AvisoExito texto={RENAME_SUCCESS} />
@@ -115,7 +116,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
       )}
       <form className="formulario" onSubmit={onRename}>
         <label className="campo">
-          <span className="campo__rotulo">Nombre del negocio</span>
+          <span className="campo__rotulo">{COMMON_TEXT.businessName}</span>
           <input
             className="campo__input"
             type="text"
@@ -130,7 +131,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
           )}
         </label>
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          Guardá el nombre
+          {COMMON_TEXT.saveTheName}
         </Boton>
         {offline && <SinConexion />}
       </form>

@@ -28,7 +28,7 @@ check. The phone check (`web/e2e/mobile.spec.ts`, GH-80) reads the page itself.
 - **Loading.** With the screen's GETs held (the session's own `/auth/me` passes: held, the
   gated layout renders nothing and no screen's loading state could be read), a screen that
   asked for data is read for `blank-while-loading`, `aria-busy`, `false-empty` (the one
-  list, `screens/emptyStates.ts`) and `data-while-loading`. After the release,
+  list, `copy/emptyStates.ts`) and `data-while-loading`. After the release,
   `chrome-shift` and `content-shift` come from a `layout-shift` observer installed before
   the app's scripts, counting only what moved from the release on: what moved before it
   (a font swapping in) is the page's own timing, and measured from navigation the content
@@ -50,3 +50,21 @@ check. The phone check (`web/e2e/mobile.spec.ts`, GH-80) reads the page itself.
   change to either is a change to the lists, in the same diff.
 - **Budget**: the `mobile` project takes 6 minutes or less on the dev machine, run at
   `--workers=4` (the walk is read-only).
+
+## Amendment (GH-53, integration): the cell budget, measured
+
+`MOBILE_TEST_TIMEOUT_MS` (`web/playwright.config.ts`) is 600 000 ms. Measured on the English copy,
+the integration head:
+
+- command: `taskset -c 0,1 npx playwright test --project=mobile --workers=3 --timeout=1800000` (all eight cells in
+  one run, 12.3 minutes in all);
+- each cell: 320x568 claro 238.9 s, oscuro 239.6 s; 375x812 claro 241.2 s, oscuro 244.2 s;
+  430x932 claro 246.2 s, oscuro 245.3 s; 246x437 claro 243.5 s, oscuro 241.8 s;
+- slowest cell 246.2 s: a margin of 59% against 600 s (the rule asks for at least 25%), so the
+  ceiling stays;
+- earlier indicative runs: 222 s for one 246x437 cell alone on the same two cores, 228 s each for
+  two together, and 294 to 305 s on a loaded 16-core box during the delivery gates.
+
+The CI job's own run is not measured: CI is turned off for billing, and the human waived that
+measurement (GH-53, decision on the integration escalation). If it is turned back on and a cell
+runs over budget, that cell goes to the phone-standard owners as its own issue.

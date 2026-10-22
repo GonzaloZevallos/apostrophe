@@ -603,7 +603,7 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         valid_variety_keys.add(result.key)
         threshold_refusal = checks.thresholds.get(row.ref)
         if threshold_refusal is not None:
-            problems.append(CellProblem(row.ref, "Umbral", threshold_refusal.code))
+            problems.append(CellProblem(row.ref, "Threshold", threshold_refusal.code))
 
     for history_row in split.price_history:
         _check_variety_mention(
@@ -616,7 +616,7 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         )
         refusal = checks.price_history.get(history_row.ref)
         if refusal is not None:
-            problems.append(CellProblem(history_row.ref, "Precio", refusal.code))
+            problems.append(CellProblem(history_row.ref, "Price", refusal.code))
 
     for catalog_entry in split.catalog:
         _check_variety_mention(

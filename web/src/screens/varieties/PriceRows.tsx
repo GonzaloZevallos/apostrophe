@@ -21,6 +21,9 @@ import { useFlash } from '../../flash/useFlash'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { deleteNotice } from '../priceDeleteNotice'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { OUT_OF_DATE_JOINER } from '../../copy/pinnedCatalog'
+import { COMMON_TEXT } from '../../copy/common'
 
 export interface PriceRow {
   id: number
@@ -61,7 +64,7 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
       await del(`/varieties/${varietyId}/prices/${entry.id}`)
       invalidateResource(queryClient, 'varieties')
       setDeleting(null)
-      flash.showNow('Precio eliminado')
+      flash.showNow(VARIETIES_TEXT.precioEliminado)
     } catch (caught) {
       setDeleting(null)
       if (caught instanceof ApiError && isGone(caught.code)) {
@@ -87,32 +90,32 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
         {rows.map((entry) => (
           <div key={entry.id} className="historial-fila">
             <span className="historial-fila__fecha">
-              Rige desde {formatDateShort(entry.effective_from)}
-              {currentPriceId === entry.id && <span className="historial-fila__vigente">Vigente hoy</span>}
+              {VARIETIES_TEXT.rigeDesde2}{formatDateShort(entry.effective_from)}
+              {currentPriceId === entry.id && <span className="historial-fila__vigente">{VARIETIES_TEXT.vigenteHoy}</span>}
             </span>
             <span>
               <span className="historial-fila__precio">{formatMoney(entry.list_price)}</span>
               {showBulk && entry.bulk_price !== null && entry.bulk_minimum !== null && (
                 <span className="historial-fila__detalle">
-                  Desde {formatGrams(entry.bulk_minimum)} · {formatMoney(entry.bulk_price)}
+                  {VARIETIES_TEXT.desde}{formatGrams(entry.bulk_minimum)}{OUT_OF_DATE_JOINER}{formatMoney(entry.bulk_price)}
                 </span>
               )}
               {showVip && entry.vip_price !== null && (
-                <span className="historial-fila__detalle">Precio VIP · {formatMoney(entry.vip_price)}</span>
+                <span className="historial-fila__detalle">{VARIETIES_TEXT.precioVip2}{formatMoney(entry.vip_price)}</span>
               )}
             </span>
             {!readOnly && (
-              <Boton variant="icon" action="delete" ariaLabel="Borrar este precio" onClick={() => setDeleting(entry)} />
+              <Boton variant="icon" action="delete" ariaLabel={VARIETIES_TEXT.borrarEstePrecio} onClick={() => setDeleting(entry)} />
             )}
           </div>
         ))}
       </div>
       {deleting !== null && (
         <ConfirmDialog
-          title={`¿Borrás el precio desde el ${formatDateShort(deleting.effective_from)}?`}
+          title={VARIETIES_TEXT.borrasElPrecioDesde(formatDateShort(deleting.effective_from))}
           detail={deleteNotice(history, deleting.id)}
-          confirmText="Sí, borrala"
-          cancelText="No, dejala"
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!sending) void onConfirmDelete(deleting)
           }}

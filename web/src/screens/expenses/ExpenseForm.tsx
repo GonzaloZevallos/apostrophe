@@ -33,9 +33,12 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseMoney } from '../../format/parse'
+import { EXPENSES_TEXT } from '../../copy/expenses'
+import { COMMON_TEXT } from '../../copy/common'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 // `expense_category.not_found` is the one code the expense form handles on its
 // own field instead of the generic gone notice (PM round 3): the expense itself
@@ -168,7 +171,7 @@ export default function ExpenseForm({
       } else {
         await editExpense(target.id, body)
       }
-      onDone('Gasto guardado')
+      onDone(EXPENSES_TEXT.expenseSaved)
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)
@@ -193,9 +196,9 @@ export default function ExpenseForm({
   // always leave.
   const header = (
     <div className="gasto-form__cabecera">
-      <span className="gasto-form__titulo">{target === 'nuevo' ? 'Cargar gasto' : 'Editar gasto'}</span>
+      <span className="gasto-form__titulo">{target === 'nuevo' ? COMMON_TEXT.addExpense : EXPENSES_TEXT.editExpense}</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
       </span>
     </div>
   )
@@ -215,7 +218,7 @@ export default function ExpenseForm({
       {header}
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Fecha</span>
+          <span className="campo__rotulo">{COMMON_TEXT.date}</span>
           <input
             className="campo__input"
             type="date"
@@ -226,7 +229,7 @@ export default function ExpenseForm({
           />
         </label>
         <label className="campo">
-          <span className="campo__rotulo">Categoría</span>
+          <span className="campo__rotulo">{COMMON_TEXT.category}</span>
           <select
             className="campo__input"
             value={form.category_id}
@@ -236,7 +239,7 @@ export default function ExpenseForm({
             }}
             required
           >
-            <option value="">Elegí una categoría</option>
+            <option value="">{EXPENSES_TEXT.pickACategory}</option>
             {allCategories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -252,7 +255,7 @@ export default function ExpenseForm({
         {creatingCategory ? (
           <div className="campo">
             <label className="campo">
-              <span className="campo__rotulo">Nombre de la categoría nueva</span>
+              <span className="campo__rotulo">{EXPENSES_TEXT.newCategoryName}</span>
               <input
                 className="campo__input"
                 value={newCategoryName}
@@ -269,16 +272,16 @@ export default function ExpenseForm({
               disabled={newCategorySending || newCategoryName.trim() === ''}
               onClick={onCreateCategory}
             >
-              Crear categoría
+              {EXPENSES_TEXT.createCategory}
             </Boton>
           </div>
         ) : (
           <Boton variant="link" onClick={() => setCreatingCategory(true)}>
-            Crear una categoría nueva
+            {EXPENSES_TEXT.createANewCategory}
           </Boton>
         )}
         <label className="campo">
-          <span className="campo__rotulo">Monto</span>
+          <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
           <input
             className="campo__input campo__input--monto"
             inputMode="numeric"
@@ -288,7 +291,7 @@ export default function ExpenseForm({
           />
         </label>
         <label className="campo">
-          <span className="campo__rotulo">Detalle</span>
+          <span className="campo__rotulo">{EXPENSES_TEXT.details}</span>
           <input
             className="campo__input"
             value={form.detail}
@@ -304,13 +307,13 @@ export default function ExpenseForm({
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          Guardá el gasto
+          {EXPENSES_TEXT.saveTheExpense}
         </Boton>
         {target !== 'nuevo' && onRequestDelete !== undefined && (
           <Boton
             variant="icon"
             action="delete"
-            ariaLabel="Borrar gasto"
+            ariaLabel={EXPENSES_TEXT.deleteExpense}
             onClick={() => onRequestDelete(target)}
           />
         )}

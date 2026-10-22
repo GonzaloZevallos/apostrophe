@@ -14,7 +14,7 @@ import { PINNED_CATALOG_REASON_LABEL } from '../api/refusals'
 import { copyProblems, measure } from '../copy/limits'
 import PinPublish from './PinPublish'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
-import * as pinPublishMessages from './pinPublishMessages'
+import * as pinPublishMessages from '../copy/pinnedCatalog'
 import type { PinReason } from '../api/refusals'
 import {
   INTEGRATIONS_LINK_WORD,
@@ -23,7 +23,7 @@ import {
   OUT_OF_DATE_LINES,
   NOT_READY_LINE,
   CHANNEL_MISSING_LINE,
-} from './pinPublishMessages'
+} from '../copy/pinnedCatalog'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -59,9 +59,9 @@ afterEach(() => {
 test('not_tested disables Publicar, says why and links to Integraciones', async () => {
   renderPin({ can_publish: false, publish_blocked_by: 'not_tested', status: null })
 
-  expect(await screen.findByRole('button', { name: 'Publicar' })).toBeDisabled()
-  expect(screen.getByText(/Probalo primero para ver cómo queda/)).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Integraciones' })).toHaveAttribute(
+  expect(await screen.findByRole('button', { name: 'Publish' })).toBeDisabled()
+  expect(screen.getByText(/Test it first to see how it looks/)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Integrations' })).toHaveAttribute(
     'href',
     SETTINGS_INTEGRATIONS,
   )
@@ -70,9 +70,9 @@ test('not_tested disables Publicar, says why and links to Integraciones', async 
 test('channel_missing disables Publicar, says the channel is missing and links to Integraciones', async () => {
   renderPin({ can_publish: false, publish_blocked_by: 'channel_missing', status: null })
 
-  expect(await screen.findByRole('button', { name: 'Publicar' })).toBeDisabled()
-  expect(screen.getByText(/Falta el canal: cargalo en/)).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Integraciones' })).toHaveAttribute(
+  expect(await screen.findByRole('button', { name: 'Publish' })).toBeDisabled()
+  expect(screen.getByText(/The channel is missing: enter it in/)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Integrations' })).toHaveAttribute(
     'href',
     SETTINGS_INTEGRATIONS,
   )
@@ -81,21 +81,21 @@ test('channel_missing disables Publicar, says the channel is missing and links t
 test('null enables Publicar and shows neither reason nor link', async () => {
   renderPin({ can_publish: true, publish_blocked_by: null, status: UP_TO_DATE })
 
-  expect(await screen.findByRole('button', { name: 'Publicar' })).toBeEnabled()
-  expect(screen.queryByRole('link', { name: 'Integraciones' })).not.toBeInTheDocument()
-  expect(screen.queryByText(/Probalo primero/)).not.toBeInTheDocument()
-  expect(screen.getByText('Al día')).toBeInTheDocument()
-  expect(screen.getByText(/El último fue el 29\/09/)).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Publish' })).toBeEnabled()
+  expect(screen.queryByRole('link', { name: 'Integrations' })).not.toBeInTheDocument()
+  expect(screen.queryByText(/Test it first/)).not.toBeInTheDocument()
+  expect(screen.getByText('Up to date')).toBeInTheDocument()
+  expect(screen.getByText(/The last one was on 29\/09/)).toBeInTheDocument()
 })
 
 test.each([
-  ['telegram_unreachable', 'Telegram no respondió'],
-  ['bot_cannot_post', 'El bot no puede publicar en el canal'],
-  ['message_gone', 'El mensaje fijado ya no está: publicalo de nuevo'],
-  ['missing_publish', 'Falta publicarlo con el bot o el canal nuevo'],
-  ['too_long', 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.'],
+  ['telegram_unreachable', 'Telegram did not respond'],
+  ['bot_cannot_post', 'The bot cannot post in the channel'],
+  ['message_gone', 'The pinned message is gone: publish it again'],
+  ['missing_publish', 'It still has to be published with the new bot or channel'],
+  ['too_long', 'It is too long for Telegram: shorten aromas or hide varieties.'],
 ] as const)(
-  'Desactualizado for %s reads its reason, shows no link and keeps Publicar enabled',
+  'Out of date for %s reads its reason, shows no link and keeps Publish enabled',
   async (reason, text) => {
     renderPin({
       can_publish: true,
@@ -103,25 +103,25 @@ test.each([
       status: { state: 'out_of_date', reason, last_published_on: '2026-09-29' },
     })
 
-    expect(await screen.findByText('Desactualizado')).toBeInTheDocument()
+    expect(await screen.findByText('Out of date')).toBeInTheDocument()
     expect(screen.getByText(new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Integraciones' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Publicar' })).toBeEnabled()
+    expect(screen.queryByRole('link', { name: 'Integrations' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeEnabled()
   },
 )
 
-test('missing_publish shows no "El último fue" line', async () => {
+test('missing_publish shows no "The last one was" line', async () => {
   renderPin({
     can_publish: true,
     publish_blocked_by: null,
     status: { state: 'out_of_date', reason: 'missing_publish', last_published_on: null },
   })
 
-  expect(await screen.findByText('Desactualizado')).toBeInTheDocument()
-  expect(screen.queryByText(/El último fue/)).not.toBeInTheDocument()
+  expect(await screen.findByText('Out of date')).toBeInTheDocument()
+  expect(screen.queryByText(/The last one was/)).not.toBeInTheDocument()
 })
 
-test('Publicar on success shows "Catálogo publicado" and refetches the status', async () => {
+test('Publicar on success shows "Catalog published" and refetches the status', async () => {
   const fetchMock = renderPin(
     { can_publish: true, publish_blocked_by: null, status: UP_TO_DATE },
     (url, init) =>
@@ -130,9 +130,9 @@ test('Publicar on success shows "Catálogo publicado" and refetches the status',
         : undefined,
   )
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Publicar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Publish' }))
 
-  expect(await screen.findByText('Catálogo publicado')).toBeInTheDocument()
+  expect(await screen.findByText('Catalog published')).toBeInTheDocument()
   const gets = fetchMock.mock.calls.filter(([url, init]) => url === '/pinned-catalog' && init?.method !== 'POST')
   expect(gets.length).toBeGreaterThanOrEqual(2)
 })
@@ -144,15 +144,15 @@ test('a failed Publicar shows its fixed reason', async () => {
       : undefined,
   )
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Publicar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Publish' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('El bot no puede publicar en el canal')
+  expect(await screen.findByRole('alert')).toHaveTextContent('The bot cannot post in the channel')
 })
 
 test('the blocked lines and the out-of-date reasons are the registered, measured bindings', async () => {
   renderPin({ can_publish: false, publish_blocked_by: 'not_tested', status: null })
-  await screen.findByRole('button', { name: 'Publicar' })
-  expect(screen.getByText(/Probalo primero/).textContent).toBe(NOT_READY_LINE)
+  await screen.findByRole('button', { name: 'Publish' })
+  expect(screen.getByText(/Test it first to see how it looks/).textContent).toBe(NOT_READY_LINE)
 
   const registered = LIMITED_COPY.map((entry) => entry.text)
   expect(registered).toContain(NOT_READY_LINE)
@@ -161,24 +161,24 @@ test('the blocked lines and the out-of-date reasons are the registered, measured
     expect(registered.includes(line) || LONG_REFUSALS.includes(line)).toBe(true)
   }
   for (const entry of LIMITED_COPY) expect(measure(entry.text)).toBeLessThanOrEqual(80)
-  expect(INTEGRATIONS_LINK_WORD).toBe('Integraciones')
+  expect(INTEGRATIONS_LINK_WORD).toBe('Integrations')
 })
 
 test('channel_missing renders the registered line, link word included', async () => {
   renderPin({ can_publish: false, publish_blocked_by: 'channel_missing', status: null })
-  await screen.findByRole('button', { name: 'Publicar' })
-  expect(screen.getByText(/Falta el canal/).textContent).toBe(CHANNEL_MISSING_LINE)
+  await screen.findByRole('button', { name: 'Publish' })
+  expect(screen.getByText(/The channel is missing/).textContent).toBe(CHANNEL_MISSING_LINE)
 })
 
 test.each(Object.keys(PINNED_CATALOG_REASON_LABEL) as PinReason[])(
   'out_of_date with %s renders exactly its registered line, and that line fits or is listed',
   async (reason) => {
     renderOutOfDate(reason)
-    await screen.findByRole('button', { name: 'Publicar' })
+    await screen.findByRole('button', { name: 'Publish' })
     const shown = document.querySelector('.catalogo__publicar-estado')?.textContent
     const line = OUT_OF_DATE_LINES[reason]
     expect(shown).toBe(line)
-    expect(line.startsWith('Desactualizado · ')).toBe(true)
+    expect(line.startsWith('Out of date · ')).toBe(true)
     if (measure(line) > 80) {
       expect(LONG_REFUSALS).toContain(line)
       expect(LIMITED_COPY.map((entry) => entry.text)).not.toContain(line)
@@ -188,10 +188,10 @@ test.each(Object.keys(PINNED_CATALOG_REASON_LABEL) as PinReason[])(
   },
 )
 
-test('the line a reason makes over 80 as shown is listed, not left out: too_long', () => {
+test('the line a reason makes, as shown in English, fits 80: nothing is listed as long', () => {
   const line = OUT_OF_DATE_LINES.too_long
-  expect(measure(line)).toBeGreaterThan(80)
-  expect(LONG_REFUSALS).toEqual([line])
+  expect(measure(line)).toBeLessThanOrEqual(80)
+  expect(LONG_REFUSALS).toEqual([])
   expect(copyProblems('pinPublishMessages', pinPublishMessages)).toEqual([])
 })
 
@@ -203,23 +203,23 @@ function renderOutOfDate(reason: PinReason) {
   })
 }
 
-test('"Desactualizado" carries the hidden attention icon beside its reason; "Al día" carries none', async () => {
+test('"Out of date" carries the hidden attention icon beside its reason; "Up to date" carries none', async () => {
   renderOutOfDate('message_gone')
-  const title = await screen.findByText('Desactualizado')
+  const title = await screen.findByText('Out of date')
   const box = title.closest('.catalogo__publicar-estado') as HTMLElement
 
   expect(box.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(box).toHaveTextContent(`Desactualizado · ${PINNED_CATALOG_REASON_LABEL.message_gone}`)
+  expect(box).toHaveTextContent(`Out of date · ${PINNED_CATALOG_REASON_LABEL.message_gone}`)
   expectIconAndTextRule(document.body)
 })
 
-test('Al día has no attention icon, and Publicar is icon + text with its icon hidden', async () => {
+test('Up to date has no attention icon, and Publish is icon + text with its icon hidden', async () => {
   renderPin({ can_publish: true, publish_blocked_by: null, status: UP_TO_DATE })
 
-  const title = await screen.findByText('Al día')
+  const title = await screen.findByText('Up to date')
   expect(title.closest('.catalogo__publicar-estado')?.querySelector('svg')).toBeNull()
-  const publish = screen.getByRole('button', { name: 'Publicar' })
-  expect(publish).toHaveTextContent('Publicar')
+  const publish = screen.getByRole('button', { name: 'Publish' })
+  expect(publish).toHaveTextContent('Publish')
   expect(publish.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expectIconAndTextRule(document.body)
 })

@@ -18,11 +18,16 @@ import {
   VARIETIES,
   VARIETY,
 } from '../routes.ts'
+import { AUTH_TEXT } from '../copy/auth.ts'
+import { COMMON_TEXT } from '../copy/common.ts'
+import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { STOCK_TEXT } from '../copy/stock.ts'
+import { VARIETIES_TEXT } from '../copy/varieties.ts'
 import type { WalkState } from './states.ts'
 
 /*
  * Configuración's other inner states are not walked, each for a reason: Usuarios' invite
- * panel and the Integraciones token field exist only after a write the walk aborts (the
+ * panel and the Integrations token field exist only after a write the walk aborts (the
  * invitation is a POST), or never in this fixture (no bot token is saved, so the field is
  * already open and "Cambiar" is absent). The new-category field is always on its group's
  * route, which the registry walks.
@@ -42,7 +47,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'ClientesBusqueda',
     route: CUSTOMERS,
-    steps: [{ fill: { label: 'Buscar cliente', value: 'Nico' } }],
+    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' } }],
     visible: 'Nico Parra',
   },
 
@@ -50,90 +55,90 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'EntradasTodas',
     route: STOCK,
     steps: [],
-    visible: 'Todas las entradas',
+    visible: COMMON_TEXT.allEntries,
   },
   {
     screen: 'EntradaStockConfirmarCambios',
     route: ENTRY_ROUTE,
-    steps: [{ wait: 'Editar entrada' }, { click: 'Guardar' }],
-    visible: '¿Guardás los cambios?',
+    steps: [{ wait: STOCK_TEXT.editarEntrada }, { click: COMMON_TEXT.save }],
+    visible: STOCK_TEXT.guardasLosCambios,
   },
   {
     screen: 'EntradaStockConfirmarBorrado',
     route: ENTRY_ROUTE,
-    steps: [{ click: 'Borrar entrada' }],
-    visible: 'Antes de borrar',
+    steps: [{ click: STOCK_TEXT.borrarEntrada }],
+    visible: STOCK_TEXT.antesDeBorrar,
   },
 
   {
     screen: 'PrecioNuevoFormulario',
     route: LOW_VARIETY,
-    steps: [{ click: 'Nuevo precio' }],
-    visible: 'Guardá el precio',
+    steps: [{ click: COMMON_TEXT.newPrice }],
+    visible: VARIETIES_TEXT.guardaElPrecio,
   },
   {
     screen: 'PrecioConfirmarBorrado',
     route: LOW_VARIETY,
-    steps: [{ press: 'Borrar este precio' }],
-    visible: 'Sí, borrala',
+    steps: [{ press: VARIETIES_TEXT.borrarEstePrecio }],
+    visible: COMMON_TEXT.yesDelete,
   },
-  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: 'Nueva variedad' }], visible: 'Agregá la variedad' },
+  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: COMMON_TEXT.newVariety }], visible: VARIETIES_TEXT.agregaLaVariedad },
   {
     screen: 'VariedadRenombrar',
     route: LOW_VARIETY,
-    steps: [{ press: 'Editar nombre' }],
-    visible: 'Guardá el nombre',
+    steps: [{ press: VARIETIES_TEXT.editarNombre }],
+    visible: COMMON_TEXT.saveTheName,
   },
-  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: 'Editar aviso' }], visible: 'Guardá el aviso' },
+  { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: VARIETIES_TEXT.editarAviso }], visible: VARIETIES_TEXT.guardaElAviso },
 
   {
     screen: 'CatalogoAtributos',
     route: LOW_VARIETY,
-    steps: [{ press: 'Editar catálogo' }],
-    visible: 'Guardá el catálogo',
+    steps: [{ press: VARIETIES_TEXT.editarCatalogo }],
+    visible: VARIETIES_TEXT.guardaElCatalogo,
   },
 
   {
     screen: 'GastoDesdeMas',
     route: MORE,
-    steps: [{ click: 'Cargar gasto' }],
-    visible: 'Guardá el gasto',
+    steps: [{ click: COMMON_TEXT.addExpense }],
+    visible: 'Save the expense',
   },
   {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
-    steps: [{ activate: 'Cargar gasto' }],
-    visible: 'Guardá el gasto',
+    steps: [{ activate: COMMON_TEXT.addExpense }],
+    visible: 'Save the expense',
   },
   {
     screen: 'GastoEditar',
     route: EXPENSES,
     steps: [{ activate: 'Bolsitas zip' }],
-    visible: 'Editar gasto',
+    visible: 'Edit expense',
   },
   {
     screen: 'GastoConfirmarBorrado',
     route: EXPENSES,
-    steps: [{ activate: 'Bolsitas zip' }, { activate: 'Borrar gasto' }],
-    visible: '¿Borrás el gasto?',
+    steps: [{ activate: 'Bolsitas zip' }, { activate: 'Delete expense' }],
+    visible: 'Delete the expense?',
   },
 
   {
     screen: 'ConfiguracionCategoriaRenombrar',
     route: EXPENSE_CATEGORIES,
-    steps: [{ click: 'Renombrar' }],
-    visible: 'Guardar',
+    steps: [{ click: 'Rename' }],
+    visible: COMMON_TEXT.save,
   },
   {
     screen: 'ConfiguracionCategoriaConfirmarBorrado',
     route: EXPENSE_CATEGORIES,
-    steps: [{ click: 'Eliminar' }],
-    visible: '¿Borrás la categoría?',
+    steps: [{ click: 'Delete' }],
+    visible: 'Delete the category?',
   },
   {
     screen: 'ConfiguracionContrasena',
     route: SETTINGS_ACCOUNT,
-    steps: [{ click: 'Cambiar contraseña' }],
-    visible: 'Contraseña actual',
+    steps: [{ click: COMMON_TEXT.changePassword }],
+    visible: AUTH_TEXT.currentPassword,
   },
 ]

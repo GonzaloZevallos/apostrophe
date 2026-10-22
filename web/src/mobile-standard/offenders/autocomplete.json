@@ -2,13 +2,13 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "autocomplete",
-    "target": "textbox:% índica",
+    "target": "textbox:% indica",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "autocomplete",
-    "target": "textbox:Aroma/sabor",
+    "target": "textbox:Aroma/flavor",
     "issue": 47
   },
   {
@@ -20,895 +20,883 @@
   {
     "screen": "ClienteEditar",
     "rule": "autocomplete",
-    "target": "textbox:Nombre",
+    "target": "textbox:Name",
     "issue": 46
   },
   {
     "screen": "ClienteEditar",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 46
   },
   {
     "screen": "ClienteNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Nombre",
+    "target": "textbox:Name",
     "issue": 46
   },
   {
     "screen": "ClienteNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 46
   },
   {
     "screen": "Clientes",
     "rule": "autocomplete",
-    "target": "textbox:Buscar cliente",
+    "target": "textbox:Search customer",
     "issue": 46
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "autocomplete",
-    "target": "textbox:Buscar cliente",
+    "target": "textbox:Search customer",
     "issue": 46
   },
   {
     "screen": "Cobro",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Amount",
     "issue": 46
   },
   {
     "screen": "Cobro",
     "rule": "autocomplete",
-    "target": "textbox:Monto",
+    "target": "textbox:Date",
     "issue": 46
   },
   {
     "screen": "CobroDesdeClientes",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Amount",
     "issue": 46
   },
   {
     "screen": "CobroDesdeClientes",
     "rule": "autocomplete",
-    "target": "textbox:Monto",
+    "target": "textbox:Date",
     "issue": 46
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "target": "textbox:Amount",
+    "issue": 46
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "autocomplete",
-    "target": "textbox:Monto",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "target": "textbox:Date",
+    "issue": 46
   },
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Nueva categoría",
+    "target": "textbox:New category",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "autocomplete",
-    "target": "textbox:Nombre de Categoría LarguísimoLarguísimoLarguísimoLa",
+    "target": "textbox:Name of Categoría LarguísimoLarguísimoLarguísimoLarg",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "autocomplete",
-    "target": "textbox:Nueva categoría",
+    "target": "textbox:New category",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "autocomplete",
-    "target": "textbox:Nueva categoría",
+    "target": "textbox:New category",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña actual",
+    "target": "textbox:Current password",
     "issue": 60
   },
   {
     "screen": "ConfiguracionContrasena",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña nueva",
+    "target": "textbox:New password",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "autocomplete",
-    "target": "textbox:Chat del canal",
+    "target": "textbox:Channel chat",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "autocomplete",
-    "target": "textbox:Token del bot",
+    "target": "textbox:Bot token",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "autocomplete",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 60
   },
   {
     "screen": "ConfiguracionMensaje",
     "rule": "autocomplete",
-    "target": "textbox:Encabezado",
+    "target": "textbox:Header",
     "issue": 60
   },
   {
     "screen": "ConfiguracionMensaje",
     "rule": "autocomplete",
-    "target": "textbox:Pie",
+    "target": "textbox:Footer",
     "issue": 60
   },
   {
     "screen": "ConfiguracionNegocio",
     "rule": "autocomplete",
-    "target": "textbox:Nombre del negocio",
+    "target": "textbox:Business name",
     "issue": 60
   },
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 78
   },
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 78
   },
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "combobox:Variedad",
+    "target": "combobox:Variety",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "textbox:Gramos",
+    "target": "textbox:Grams",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "combobox:Variedad Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Gramos",
+    "target": "textbox:Grams",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "combobox:Variedad Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "textbox:Gramos",
+    "target": "textbox:Grams",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "combobox:Variedad Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "textbox:Gramos",
+    "target": "textbox:Grams",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "combobox:Variedad Hoy tiene # g",
+    "target": "combobox:Variety It has # g today",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Obligatorio cuando es una compra",
+    "target": "textbox:Total cost Required for a purchase",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "textbox:Gramos",
+    "target": "textbox:Grams",
     "issue": 47
   },
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 47
   },
   {
     "screen": "Entrar",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña",
+    "target": "textbox:Password",
     "issue": 49
   },
   {
     "screen": "Entrar",
     "rule": "autocomplete",
-    "target": "textbox:Email",
+    "target": "textbox:Email address",
     "issue": 49
   },
   {
     "screen": "EntrarFreno",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña",
+    "target": "textbox:Password",
     "issue": 49
   },
   {
     "screen": "EntrarFreno",
     "rule": "autocomplete",
-    "target": "textbox:Email",
+    "target": "textbox:Email address",
     "issue": 49
   },
   {
     "screen": "GastoDesdeGastos",
     "rule": "autocomplete",
-    "target": "combobox:Categoría",
+    "target": "combobox:Category",
     "issue": 48
   },
   {
     "screen": "GastoDesdeGastos",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Amount",
     "issue": 48
   },
   {
     "screen": "GastoDesdeGastos",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 48
   },
   {
     "screen": "GastoDesdeGastos",
     "rule": "autocomplete",
-    "target": "textbox:Monto",
+    "target": "textbox:Details",
     "issue": 48
   },
   {
     "screen": "GastoDesdeMas",
     "rule": "autocomplete",
-    "target": "combobox:Categoría",
+    "target": "combobox:Category",
     "issue": 48
   },
   {
     "screen": "GastoDesdeMas",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Amount",
     "issue": 48
   },
   {
     "screen": "GastoDesdeMas",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 48
   },
   {
     "screen": "GastoDesdeMas",
     "rule": "autocomplete",
-    "target": "textbox:Monto",
+    "target": "textbox:Details",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "autocomplete",
-    "target": "combobox:Categoría",
+    "target": "combobox:Category",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Amount",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "autocomplete",
-    "target": "textbox:Monto",
+    "target": "textbox:Details",
     "issue": 48
   },
   {
     "screen": "GastoNuevo",
     "rule": "autocomplete",
-    "target": "combobox:Categoría",
+    "target": "combobox:Category",
     "issue": 48
   },
   {
     "screen": "GastoNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Detalle",
+    "target": "textbox:Amount",
     "issue": 48
   },
   {
     "screen": "GastoNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 48
   },
   {
     "screen": "GastoNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Monto",
+    "target": "textbox:Details",
     "issue": 48
   },
   {
     "screen": "Invitacion",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña",
+    "target": "textbox:Password",
     "issue": 49
   },
   {
     "screen": "Invitacion",
     "rule": "autocomplete",
-    "target": "textbox:Email",
+    "target": "textbox:Email address",
     "issue": 49
   },
   {
     "screen": "NegocioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña",
+    "target": "textbox:Business name",
     "issue": 49
   },
   {
     "screen": "NegocioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Email",
+    "target": "textbox:Password",
     "issue": 49
   },
   {
     "screen": "NegocioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Nombre del negocio",
+    "target": "textbox:Email address",
     "issue": 49
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 78
   },
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 78
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "combobox:Variedad línea #",
+    "target": "combobox:Line # variety",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Envío",
+    "target": "textbox:Date",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Shipping",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Gramos línea #",
+    "target": "textbox:Line # grams",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Nombre",
+    "target": "textbox:Name",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Precio especial línea #",
+    "target": "textbox:Line # special price",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Teléfono",
+    "target": "textbox:Phone",
     "issue": 78
   },
   {
     "screen": "OnboardingBot",
     "rule": "autocomplete",
-    "target": "textbox:Chat del canal",
+    "target": "textbox:Channel chat",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "autocomplete",
-    "target": "textbox:Token del bot",
+    "target": "textbox:Bot token",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "autocomplete",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Chat del canal",
+    "target": "textbox:Channel chat",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Token del bot",
+    "target": "textbox:Bot token",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "autocomplete",
-    "target": "textbox:Encabezado",
+    "target": "textbox:Header",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "autocomplete",
-    "target": "textbox:Pie",
+    "target": "textbox:Footer",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Encabezado",
+    "target": "textbox:Header",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Pie",
+    "target": "textbox:Footer",
     "issue": 49
   },
   {
     "screen": "OnboardingStock",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Opcional · si no lo cargás, el lote cues",
+    "target": "textbox:Total cost Optional · if you leave it out, the lot c",
     "issue": 49
   },
   {
     "screen": "OnboardingStock",
     "rule": "autocomplete",
-    "target": "textbox:Gramos",
+    "target": "textbox:Grams",
     "issue": 49
   },
   {
     "screen": "OnboardingStockTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Costo total Opcional · si no lo cargás, el lote cues",
+    "target": "textbox:Total cost Optional · if you leave it out, the lot c",
     "issue": 49
   },
   {
     "screen": "OnboardingStockTexto130",
     "rule": "autocomplete",
-    "target": "textbox:Gramos",
+    "target": "textbox:Grams",
     "issue": 49
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Mínimo en gramos Desde cuántos gramos aplica",
+    "target": "textbox:Bulk price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Precio VIP $ Opcional · menor al precio de lista",
+    "target": "textbox:Minimum in grams From how many grams it applies",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Precio de lista $ Por gramo, en pesos enteros",
+    "target": "textbox:VIP price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevo",
     "rule": "autocomplete",
-    "target": "textbox:Precio por cantidad $ Opcional · menor al precio de ",
+    "target": "textbox:List price $ Per gram, in whole pesos",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Mínimo en gramos Desde cuántos gramos aplica",
+    "target": "textbox:Bulk price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Precio VIP $ Opcional · menor al precio de lista",
+    "target": "textbox:Minimum in grams From how many grams it applies",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Precio de lista $ Por gramo, en pesos enteros",
+    "target": "textbox:VIP price $ Optional · below the list price",
     "issue": 47
   },
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Precio por cantidad $ Opcional · menor al precio de ",
+    "target": "textbox:List price $ Per gram, in whole pesos",
     "issue": 47
   },
   {
     "screen": "Reset",
     "rule": "autocomplete",
-    "target": "textbox:Contraseña nueva",
+    "target": "textbox:New password",
     "issue": 49
   },
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "combobox:Variedad #",
+    "target": "combobox:Variety #",
     "issue": 47
   },
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "textbox:Fecha",
+    "target": "textbox:Date",
     "issue": 47
   },
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "textbox:Gramos #",
+    "target": "textbox:Grams #",
     "issue": 47
   },
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "textbox:Nota",
+    "target": "textbox:Note",
     "issue": 47
   },
   {
     "screen": "VariedadNueva",
     "rule": "autocomplete",
-    "target": "textbox:Nombre Hasta # caracteres · no puede repetir el nomb",
+    "target": "textbox:Name Up to # characters · cannot repeat another vari",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Nombre Hasta # caracteres · no puede repetir el nomb",
+    "target": "textbox:Name Up to # characters · cannot repeat another vari",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "autocomplete",
-    "target": "textbox:Nombre",
+    "target": "textbox:Name",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "autocomplete",
-    "target": "textbox:Avisar con menos de",
+    "target": "textbox:Warn when below",
     "issue": 47
   },
   {
     "screen": "VentaAsignarCliente",
     "rule": "autocomplete",
-    "target": "textbox:Buscar",
+    "target": "textbox:Search",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -919,13 +907,13 @@
   {
     "screen": "VentasFechas",
     "rule": "autocomplete",
-    "target": "textbox:Desde",
+    "target": "textbox:From",
     "issue": 78
   },
   {
     "screen": "VentasFechas",
     "rule": "autocomplete",
-    "target": "textbox:Hasta",
+    "target": "textbox:To",
     "issue": 78
   }
 ]

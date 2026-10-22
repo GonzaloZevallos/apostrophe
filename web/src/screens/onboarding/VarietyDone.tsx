@@ -21,6 +21,9 @@ import SinConexion from '../../components/SinConexion'
 import { formatMoney } from '../../format/money'
 import { ONBOARDING_STOCK } from '../../routes'
 import type { Variety } from '../Variedades'
+import { COMMON_TEXT } from '../../copy/common'
+import { CHECKLIST_DONE } from '../../copy/inicio'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
 export interface VarietyDoneProps {
   target: OnboardingTarget
@@ -56,12 +59,12 @@ export default function VarietyDone({ target, onStale }: VarietyDoneProps) {
       <div className="onboarding__tarjeta">
         <span className="onboarding__tarjeta-nombre">{target.name}</span>
         <span className="onboarding__tarjeta-detalle">
-          {price === null ? '' : `${formatMoney(price.list_price)} x g`}
+          {price === null ? '' : COMMON_TEXT.pricePerGram(formatMoney(price.list_price))}
         </span>
-        <span className="onboarding__tarjeta-detalle">Hecho</span>
+        <span className="onboarding__tarjeta-detalle">{CHECKLIST_DONE}</span>
       </div>
       <Boton textOnly="submit" type="submit">
-        Seguir
+        {ONBOARDING_TEXT.continue}
       </Boton>
     </form>
   )

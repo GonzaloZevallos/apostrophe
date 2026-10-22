@@ -23,7 +23,7 @@ would have drifted the same way, so the layout is shared instead of copied.
 - **`PasswordField` owns the reveal** (`web/src/components/PasswordField.tsx`): the
   hidden input, the "Mostrar"/"Ocultar" button and the inline `role="alert"` error. A
   screen never rebuilds that toggle.
-- **Shared copy lives in `web/src/screens/authMessages.ts`.** A screen never imports a
+- **Shared copy lives in `web/src/copy/auth.ts`.** A screen never imports a
   message constant from another screen. `Invitacion.tsx` re-exports
   `WEAK_PASSWORD_MESSAGE` and `Reset.tsx` re-exports `DEAD_LINK_MESSAGE` only so
   existing test imports keep working.

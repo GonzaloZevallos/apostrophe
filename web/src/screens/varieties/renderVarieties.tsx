@@ -29,6 +29,8 @@ import PriceHistory from './PriceHistory'
 import PriceNew from './PriceNew'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -91,16 +93,16 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
               {
                 path: relative(VARIETIES),
                 handle: { screen: 'varieties' },
-                element: <main>Pantalla Variedades</main>,
+                element: <main>{VARIETIES_TEXT.pantallaVariedades}</main>,
               },
               {
                 path: relative(VARIETY),
                 handle: { screen: 'variety' },
                 element: (
                   <main>
-                    <span>Página de la variedad</span>
-                    <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>Ver todos los precios</InAppLink>
-                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>Nuevo precio</InAppLink>
+                    <span>{VARIETIES_TEXT.paginaDeLaVariedad}</span>
+                    <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>{VARIETIES_TEXT.verTodosLosPrecios}</InAppLink>
+                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>{COMMON_TEXT.newPrice}</InAppLink>
                   </main>
                 ),
               },
@@ -174,10 +176,10 @@ export function renderVarietiesInShell(initialEntries: string[], fetchImpl: Fetc
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES), element: <main>Pantalla Variedades</main>, handle: { screen: 'varieties' } },
+              { path: relative(VARIETIES), element: <main>{VARIETIES_TEXT.pantallaVariedades}</main>, handle: { screen: 'varieties' } },
               {
                 path: relative(ARCHIVED_VARIETIES),
-                element: <main>Pantalla Archivadas</main>,
+                element: <main>{VARIETIES_TEXT.pantallaArchivadas}</main>,
                 handle: { screen: 'varieties-archived' },
               },
               {

@@ -2,7 +2,7 @@
  * The limits on always-visible copy (docs/product/icon-and-text-rule.md) and the one
  * checker over the copy modules, run by `copyLimits.test.ts`.
  *
- * A limit is measured on the Spanish as shown, with every placeholder filled from
+ * A limit is measured on the copy as shown, with every placeholder filled from
  * `SAMPLES` (the worst cases), never from fixture or API data.
  */
 
@@ -26,7 +26,7 @@ export const SAMPLES = {
   amount: '$ 999.999',
   negativeAmount: '−$ 999.999',
   grams: '999,99 g',
-  name: 'Nombre de veinticuatro c',
+  name: 'Name of twenty-four char',
   count: '99',
 } as const
 
@@ -40,7 +40,7 @@ export interface LimitedCopy {
   text: string
 }
 
-/** What a copy module (`messages.ts` or `*Messages.ts`) exports besides its strings. */
+/** What a copy module (a file of `web/src/copy/`) exports besides its strings. */
 export interface CopyModule {
   LIMITED_COPY?: readonly LimitedCopy[]
   LONG_REFUSALS?: readonly string[]

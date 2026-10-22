@@ -2,19 +2,19 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "pending-state",
-    "target": "button:Guardar",
+    "target": "button:Save",
     "issue": 46
   },
   {
     "screen": "Entrar",
     "rule": "pending-state",
-    "target": "button:Entrá",
+    "target": "button:Sign in",
     "issue": 49
   },
   {
     "screen": "NuevaVentaConLinea",
     "rule": "pending-state",
-    "target": "button:Guardá la venta",
+    "target": "button:Save sale",
     "issue": 78
   }
 ]

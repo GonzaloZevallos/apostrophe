@@ -2,19 +2,19 @@
   {
     "screen": "Analisis",
     "rule": "touch-target",
-    "target": "button:Mes anterior",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-target",
-    "target": "button:Mes siguiente",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -23,7 +23,7 @@
   {
     "screen": "Analisis",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -32,7 +32,7 @@
   {
     "screen": "Analisis",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -41,7 +41,7 @@
   {
     "screen": "Archivadas",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -50,7 +50,7 @@
   {
     "screen": "Archivadas",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -59,7 +59,7 @@
   {
     "screen": "Archivadas",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -68,13 +68,13 @@
   {
     "screen": "Catalogo",
     "rule": "touch-target",
-    "target": "link:Editar encabezado y pie",
+    "target": "link:Edit header and footer",
     "issue": 47
   },
   {
     "screen": "Catalogo",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -83,85 +83,49 @@
   {
     "screen": "Catalogo",
     "rule": "touch-target",
-    "target": "link:Mango Bomb",
+    "target": "link:More",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "touch-target",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
       "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Más",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Sir Jack",
-    "issue": 47
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Variedad sin ventas",
-    "issue": 47,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Ventas",
-    "issue": 47,
-    "sizes": [
+      "430x932",
       "246x437"
     ]
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
-    "issue": 47,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -170,7 +134,7 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -179,7 +143,7 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -188,13 +152,13 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "switch:Mostrar en el catálogo",
+    "target": "switch:Show in the catalog",
     "issue": 47
   },
   {
@@ -206,7 +170,7 @@
   {
     "screen": "ClienteFicha",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -215,7 +179,7 @@
   {
     "screen": "ClienteFicha",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -224,7 +188,7 @@
   {
     "screen": "ClienteFicha",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -239,7 +203,7 @@
   {
     "screen": "Clientes",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -248,7 +212,7 @@
   {
     "screen": "Clientes",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -257,7 +221,7 @@
   {
     "screen": "Clientes",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -266,7 +230,7 @@
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -275,7 +239,7 @@
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -284,7 +248,7 @@
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -293,61 +257,43 @@
   {
     "screen": "Cobro",
     "rule": "touch-target",
-    "target": "textbox:Efectivo",
+    "target": "textbox:Cash",
     "issue": 46
   },
   {
     "screen": "Cobro",
     "rule": "touch-target",
-    "target": "textbox:Transferencia",
+    "target": "textbox:Transfer",
     "issue": 46
   },
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-target",
-    "target": "textbox:Efectivo",
+    "target": "textbox:Cash",
     "issue": 46
   },
   {
     "screen": "CobroDesdeClientes",
     "rule": "touch-target",
-    "target": "textbox:Transferencia",
+    "target": "textbox:Transfer",
     "issue": 46
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "touch-target",
-    "target": "textbox:Efectivo",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "target": "textbox:Cash",
+    "issue": 46
   },
   {
     "screen": "CobroDesdeInicio",
     "rule": "touch-target",
-    "target": "textbox:Transferencia",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
+    "target": "textbox:Transfer",
+    "issue": 46
   },
   {
     "screen": "Configuracion",
     "rule": "touch-target",
-    "target": "button:‹ Más",
-    "issue": 60
-  },
-  {
-    "screen": "Configuracion",
-    "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 60,
     "sizes": [
       "246x437"
@@ -356,7 +302,7 @@
   {
     "screen": "Configuracion",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 60,
     "sizes": [
       "246x437"
@@ -365,7 +311,7 @@
   {
     "screen": "Configuracion",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 60,
     "sizes": [
       "246x437"
@@ -374,25 +320,25 @@
   {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-target",
-    "target": "radio:Claro",
+    "target": "radio:Light",
     "issue": 60
   },
   {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-target",
-    "target": "radio:Oscuro",
+    "target": "radio:Dark",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-target",
-    "target": "link:Ir al catálogo",
+    "target": "link:Go to the catalog",
     "issue": 60
   },
   {
     "screen": "ConfiguracionIntegraciones",
     "rule": "touch-target",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 60,
     "sizes": [
       "246x437"
@@ -401,7 +347,7 @@
   {
     "screen": "EntradasTodas",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -410,7 +356,7 @@
   {
     "screen": "EntradasTodas",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -419,7 +365,7 @@
   {
     "screen": "EntradasTodas",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -428,7 +374,7 @@
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -437,7 +383,16 @@
   {
     "screen": "EstadosConfirmar",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -446,7 +401,7 @@
   {
     "screen": "EstadosGone",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -455,7 +410,16 @@
   {
     "screen": "EstadosGone",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -464,7 +428,7 @@
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -473,7 +437,16 @@
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -482,7 +455,7 @@
   {
     "screen": "EstadosReintento",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -491,7 +464,16 @@
   {
     "screen": "EstadosReintento",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -500,7 +482,7 @@
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -509,7 +491,16 @@
   {
     "screen": "EstadosSinConexion",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -518,40 +509,31 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
-    "target": "button:Mes anterior",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
-    "target": "button:Mes siguiente",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Cargar gasto",
+    "target": "link:Add expense",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Categorías",
+    "target": "link:Categories",
     "issue": 48
   },
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Inicio",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:Home",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -560,7 +542,16 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:More",
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -569,31 +560,31 @@
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "button:Mes anterior",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "button:Mes siguiente",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "link:Cargar gasto",
+    "target": "link:Add expense",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "link:Categorías",
+    "target": "link:Categories",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -602,7 +593,7 @@
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -611,7 +602,7 @@
   {
     "screen": "GastoEditar",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -620,31 +611,31 @@
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "button:Mes anterior",
+    "target": "button:Next month",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "button:Mes siguiente",
+    "target": "button:Previous month",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "link:Cargar gasto",
+    "target": "link:Add expense",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "link:Categorías",
+    "target": "link:Categories",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -653,7 +644,7 @@
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -662,7 +653,7 @@
   {
     "screen": "Gastos",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -671,13 +662,7 @@
   {
     "screen": "Inicio",
     "rule": "touch-target",
-    "target": "link:Configuración de Negocio LarguísimoLarguísimoLarguísimo",
-    "issue": 45
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -686,7 +671,7 @@
   {
     "screen": "Inicio",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -695,28 +680,28 @@
   {
     "screen": "Inicio",
     "rule": "touch-target",
-    "target": "link:Te deben",
+    "target": "link:Owed to you",
     "issue": 45
   },
   {
     "screen": "Inicio",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 45,
     "sizes": [
       "246x437"
     ]
   },
   {
-    "screen": "InicioHoy",
+    "screen": "Inicio",
     "rule": "touch-target",
-    "target": "link:Configuración de Negocio LarguísimoLarguísimoLarguísimo",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -725,7 +710,7 @@
   {
     "screen": "InicioHoy",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -734,28 +719,28 @@
   {
     "screen": "InicioHoy",
     "rule": "touch-target",
-    "target": "link:Te deben",
+    "target": "link:Owed to you",
     "issue": 45
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 45,
     "sizes": [
       "246x437"
     ]
   },
   {
-    "screen": "InicioPrimeraVez",
+    "screen": "InicioHoy",
     "rule": "touch-target",
-    "target": "link:Configuración de Negocio LarguísimoLarguísimoLarguísimo",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -764,7 +749,7 @@
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 45,
     "sizes": [
       "246x437"
@@ -773,31 +758,28 @@
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-target",
-    "target": "link:Te deben",
+    "target": "link:Owed to you",
     "issue": 45
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 45,
     "sizes": [
       "246x437"
     ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-target",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
+    "issue": 45
   },
   {
     "screen": "Mas",
     "rule": "touch-target",
-    "target": "link:Inicio",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Mas",
-    "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:Home",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -806,7 +788,16 @@
   {
     "screen": "Mas",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:More",
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Mas",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 48,
     "sizes": [
       "246x437"
@@ -815,7 +806,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-target",
-    "target": "button:Nuevo cliente",
+    "target": "button:New customer",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -825,7 +816,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-target",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -835,7 +826,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-target",
-    "target": "button:Sin cliente",
+    "target": "button:No customer",
     "issue": 78
   },
   {
@@ -847,19 +838,19 @@
   {
     "screen": "OnboardingBot",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingBot",
     "rule": "touch-target",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -868,19 +859,19 @@
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-target",
-    "target": "textbox:Tu chat",
+    "target": "textbox:Your chat",
     "issue": 49,
     "sizes": [
       "246x437"
@@ -889,111 +880,91 @@
   {
     "screen": "OnboardingCategorias",
     "rule": "touch-target",
-    "target": "button:Eliminar",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingCategorias",
-    "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "rule": "touch-target",
-    "target": "button:Eliminar",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingCategoriasTexto130",
-    "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingMensaje",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingSocio",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar",
+    "target": "button:Skip",
     "issue": 49
   },
   {
     "screen": "OnboardingSocioTexto130",
     "rule": "touch-target",
-    "target": "button:Saltar el resto",
+    "target": "button:Skip the rest",
     "issue": 49
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
       "375x812",
-      "430x932"
+      "430x932",
+      "246x437"
     ]
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1002,7 +973,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1011,7 +982,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1020,19 +991,19 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "ResetMuerto",
     "rule": "touch-target",
-    "target": "link:Entrar",
+    "target": "link:Go to sign in",
     "issue": 49
   },
   {
     "screen": "RetiroDetalle",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1041,7 +1012,7 @@
   {
     "screen": "RetiroDetalle",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1050,7 +1021,7 @@
   {
     "screen": "RetiroDetalle",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1059,7 +1030,7 @@
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1068,7 +1039,7 @@
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1077,7 +1048,7 @@
   {
     "screen": "TodasLasEntradas",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1086,7 +1057,7 @@
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1095,7 +1066,7 @@
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1104,7 +1075,7 @@
   {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1113,7 +1084,7 @@
   {
     "screen": "VariedadArchivada",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1122,7 +1093,7 @@
   {
     "screen": "VariedadArchivada",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1131,7 +1102,7 @@
   {
     "screen": "VariedadArchivada",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1140,39 +1111,31 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadDetalle",
-    "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
       "375x812",
-      "430x932"
+      "430x932",
+      "246x437"
     ]
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1181,7 +1144,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1190,7 +1153,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1199,45 +1162,37 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
       "375x812",
-      "430x932"
+      "430x932",
+      "246x437"
     ]
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1246,7 +1201,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1255,7 +1210,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1264,45 +1219,37 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "touch-target",
-    "target": "link:#/# · Consumo propio−# g",
+    "target": "link:#/# · Own use−# g",
     "issue": 47,
     "sizes": [
       "320x568",
       "375x812",
-      "430x932"
+      "430x932",
+      "246x437"
     ]
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[1]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[1]",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "link:#/# · Promoción−# g@#/# · Promoción−# g[2]",
+    "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
   },
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1311,7 +1258,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1320,7 +1267,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1329,22 +1276,13 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-target",
-    "target": "switch:Avisar cuando quede poco",
+    "target": "switch:Warn when running low",
     "issue": 47
   },
   {
     "screen": "Variedades",
     "rule": "touch-target",
-    "target": "link:Inicio",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Variedades",
-    "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1353,13 +1291,22 @@
   {
     "screen": "Variedades",
     "rule": "touch-target",
-    "target": "link:Nueva variedad",
+    "target": "link:More",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Variedades",
+    "rule": "touch-target",
+    "target": "link:New variety",
     "issue": 47
   },
   {
     "screen": "Variedades",
     "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1368,7 +1315,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-target",
-    "target": "button:Nuevo cliente",
+    "target": "button:New customer",
     "issue": 78,
     "sizes": [
       "320x568"
@@ -1377,7 +1324,7 @@
   {
     "screen": "VentaBorrar",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1386,7 +1333,16 @@
   {
     "screen": "VentaBorrar",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1395,7 +1351,7 @@
   {
     "screen": "VentaDetalle",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1404,7 +1360,16 @@
   {
     "screen": "VentaDetalle",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1413,7 +1378,7 @@
   {
     "screen": "Ventas",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1422,7 +1387,16 @@
   {
     "screen": "Ventas",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1431,7 +1405,7 @@
   {
     "screen": "VentasFechas",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:Home",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1440,7 +1414,16 @@
   {
     "screen": "VentasFechas",
     "rule": "touch-target",
-    "target": "link:Más",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-target",
+    "target": "link:Sales",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1449,7 +1432,7 @@
   {
     "screen": "VerTodas",
     "rule": "touch-target",
-    "target": "button:Borrar este precio",
+    "target": "link:Home",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1458,7 +1441,7 @@
   {
     "screen": "VerTodas",
     "rule": "touch-target",
-    "target": "link:Inicio",
+    "target": "link:More",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -1467,16 +1450,7 @@
   {
     "screen": "VerTodas",
     "rule": "touch-target",
-    "target": "link:Más",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VerTodas",
-    "rule": "touch-target",
-    "target": "link:Ventas",
+    "target": "link:Sales",
     "issue": 47,
     "sizes": [
       "246x437"

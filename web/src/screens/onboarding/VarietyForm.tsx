@@ -15,8 +15,10 @@ import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import PriceFields, { FieldError } from '../varieties/PriceFields'
 import type { PriceValues } from '../varieties/priceFieldRules'
-import { VARIETY_NAME_HELP } from '../varieties/priceMessages'
+import { VARIETY_NAME_HELP } from '../../copy/varieties'
 import { useVarietyWithPrice } from './useVarietyWithPrice'
+import { COMMON_TEXT } from '../../copy/common'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
 export interface VarietyFormProps {
   seed: OnboardingTarget | null
@@ -56,7 +58,7 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
     <form className="formulario" onSubmit={onSubmit}>
       {saved === null ? (
         <label className="campo">
-          <span className="campo__rotulo">Nombre</span>
+          <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             className="campo__input"
             type="text"
@@ -68,7 +70,7 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
           <FieldError message={nameError ?? undefined} />
         </label>
       ) : (
-        <p className="pie">{`Variedad: ${saved.name}`}</p>
+        <p className="pie">{ONBOARDING_TEXT.varietyNamed(saved.name)}</p>
       )}
       <PriceFields
         settings={settings}
@@ -79,7 +81,7 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
       <FieldError message={priceErrors.form} />
       {offline && <SinConexion />}
       <Boton textOnly="submit" type="submit" disabled={sending}>
-        Guardá la variedad
+        {ONBOARDING_TEXT.saveTheVariety}
       </Boton>
     </form>
   )

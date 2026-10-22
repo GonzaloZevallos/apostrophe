@@ -18,7 +18,9 @@ import SinConexion from '../../components/SinConexion'
 import { copyText } from '../../clipboard'
 import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
-import { inviteExpiry } from './messages'
+import { inviteExpiry } from '../../copy/settings'
+import { COMMON_TEXT } from '../../copy/common'
+import { STEP_SECOND_USER } from '../../copy/inicio'
 
 interface Invite {
   url: string
@@ -26,13 +28,13 @@ interface Invite {
 }
 
 /** The button that creates a link: its word and weight. The Onboarding's step 5 passes its own
- * ("Crear el link", primary); with none, Configuración → Usuarios keeps today's. */
+ * ("Create the link", primary); with none, Configuración → Usuarios keeps today's. */
 export interface InviteAction {
   label: string
   variant: 'primary' | 'secondary'
 }
 
-const DEFAULT_ACTION: InviteAction = { label: 'Invitá a un socio', variant: 'secondary' }
+const DEFAULT_ACTION: InviteAction = { label: STEP_SECOND_USER, variant: 'secondary' }
 
 export default function InvitePartner({
   onLinkCreated,
@@ -88,9 +90,9 @@ export default function InvitePartner({
           <div className="usuarios__link">{invite.url}</div>
           <div className="usuarios__acciones">
             <Boton variant="primary" icon="copiar" onClick={onCopy}>
-              Copiar
+              {COMMON_TEXT.copy}
             </Boton>
-            <Boton variant="icon" action="share" ariaLabel="Compartir" onClick={onShare} />
+            <Boton variant="icon" action="share" ariaLabel={COMMON_TEXT.share} onClick={onShare} />
           </div>
           <span className="campo__rotulo" data-copy="help">
             {inviteExpiry(formatDateShort(invite.expires_at.slice(0, 10)))}

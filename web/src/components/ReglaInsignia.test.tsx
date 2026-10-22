@@ -9,15 +9,15 @@ import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import ReglaInsignia from './ReglaInsignia'
 
-test('list reads "lista", neutral', () => {
+test('list reads "list", neutral', () => {
   render(<ReglaInsignia rule="list" />)
-  const badge = screen.getByText('lista')
+  const badge = screen.getByText('list')
   expect(badge.className).toBe('insignia')
 })
 
-test('bulk reads "por cantidad", accented', () => {
+test('bulk reads "bulk", accented', () => {
   render(<ReglaInsignia rule="bulk" />)
-  const badge = screen.getByText('por cantidad')
+  const badge = screen.getByText('bulk')
   expect(badge.className).toBe('insignia insignia--acento')
 })
 
@@ -26,12 +26,12 @@ test('vip reads "VIP", accented', () => {
   expect(screen.getByText('VIP').className).toBe('insignia insignia--acento')
 })
 
-test('gift reads "regalo", accented', () => {
+test('gift reads "gift", accented', () => {
   render(<ReglaInsignia rule="gift" />)
-  expect(screen.getByText('regalo').className).toBe('insignia insignia--acento')
+  expect(screen.getByText('gift').className).toBe('insignia insignia--acento')
 })
 
-test('special reads "especial", accented', () => {
+test('special reads "special", accented', () => {
   render(<ReglaInsignia rule="special" />)
-  expect(screen.getByText('especial').className).toBe('insignia insignia--acento')
+  expect(screen.getByText('special').className).toBe('insignia insignia--acento')
 })

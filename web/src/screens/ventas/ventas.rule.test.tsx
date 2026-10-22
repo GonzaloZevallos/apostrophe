@@ -5,7 +5,7 @@
  * option or an answer, or an icon-only control with its exact name; the always-visible
  * copy fits its limit as rendered.
  *
- * "Cerrar" on the sale form and its sheets is the icon-only close (`.boton-icono`, its
+ * "Close" on the sale form and its sheets is the icon-only close (`.boton-icono`, its
  * exact name kept).
  */
 
@@ -19,7 +19,7 @@ import type { Viewport } from '../../routes'
 import type { Me } from '../../api/me'
 import saleFixture from '../../api/fixtures/sale.json'
 import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
-import { GRAMS_HELP } from '../../sales/messages'
+import { GRAMS_HELP } from '../../copy/sales'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'
@@ -70,7 +70,7 @@ test.each(VIEWPORTS)("Ventas: an empty period shows its one line, within its lim
       </MemoryRouter>
     </QueryClientProvider>,
   )
-  const empty = await screen.findByText(/Todavía no registraste/)
+  const empty = await screen.findByText(/haven't recorded any sales/)
   expect(empty).toHaveAttribute('data-copy', 'emptyLine')
   expectIconAndTextRule(container, OPTIONS)
 })
@@ -106,26 +106,26 @@ function renderDetalle(state?: unknown) {
   )
 }
 
-test.each(VIEWPORTS)("VentaDetalle: Deshacer is an undo, the actions carry an icon and the Asignar cliente sheet passes (%s)", async (viewport) => {
+test.each(VIEWPORTS)("VentaDetalle: Deshacer is an undo, the actions carry an icon and the Assign customer sheet passes (%s)", async (viewport) => {
   stubViewport(viewport)
   vi.mocked(fetch).mockImplementation((path) =>
     Promise.resolve(String(path).startsWith(pathTo(CUSTOMERS)) ? json([ANA]) : json({ ...SALE_DETAIL, customer: null })),
   )
   const user = userEvent.setup()
   const { container } = renderDetalle(saleJustSaved())
-  await screen.findByRole('button', { name: 'Asignar cliente' })
-  expect(screen.getByRole('button', { name: 'Deshacer' })).toHaveClass('boton--enlace')
+  await screen.findByRole('button', { name: 'Assign customer' })
+  expect(screen.getByRole('button', { name: 'Undo' })).toHaveClass('boton--enlace')
   expectIconAndTextRule(container, OPTIONS)
 
-  await user.click(screen.getByRole('button', { name: 'Asignar cliente' }))
-  await screen.findByRole('button', { name: 'Nuevo cliente' })
+  await user.click(screen.getByRole('button', { name: 'Assign customer' }))
+  await screen.findByRole('button', { name: 'New customer' })
   expectIconAndTextRule(container, OPTIONS)
 
-  await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
+  await user.click(screen.getByRole('button', { name: 'New customer' }))
   expectIconAndTextRule(container, OPTIONS)
 })
 
-test.each(VIEWPORTS)("NuevaVenta: with two lines, Elegir cliente and Nuevo cliente open, every control follows the rule (%s)", async (viewport) => {
+test.each(VIEWPORTS)("NuevaVenta: with two lines, Pick a customer and Nuevo cliente open, every control follows the rule (%s)", async (viewport) => {
   stubViewport(viewport)
   vi.mocked(fetch).mockImplementation((path) =>
     Promise.resolve(String(path).startsWith(pathTo(CUSTOMERS)) ? json([ANA]) : json([ROSA])),
@@ -142,22 +142,22 @@ test.each(VIEWPORTS)("NuevaVenta: with two lines, Elegir cliente and Nuevo clien
       </SheetRouterProvider>
     </QueryClientProvider>,
   )
-  await user.selectOptions(await screen.findByLabelText('Variedad línea 1'), '1')
-  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(await screen.findByRole('button', { name: 'Agregar otra variedad' }))
-  expect(screen.getByRole('button', { name: 'Quitar línea 2' })).toHaveClass('boton-icono')
+  await user.selectOptions(await screen.findByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
+  await user.click(await screen.findByRole('button', { name: 'Add another variety' }))
+  expect(screen.getByRole('button', { name: 'Remove line 2' })).toHaveClass('boton-icono')
   expect(screen.getByText(GRAMS_HELP)).toHaveAttribute('data-copy', 'help')
   expectIconAndTextRule(container, OPTIONS)
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
-  await screen.findByRole('button', { name: 'Nuevo cliente' })
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
+  await screen.findByRole('button', { name: 'New customer' })
   expectIconAndTextRule(container, OPTIONS)
 
-  await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
+  await user.click(screen.getByRole('button', { name: 'New customer' }))
   expectIconAndTextRule(container, OPTIONS)
 })
 
-test('the helper rejects a text-only action on these screens (a link-styled "Agregar otra variedad" would fail)', () => {
+test('the helper rejects a text-only action on these screens (a link-styled "Add another variety" would fail)', () => {
   const { container } = render(
     <div>
       <button type="button" className="boton--fila-x">

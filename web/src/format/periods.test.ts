@@ -1,5 +1,5 @@
 /**
- * Period bounds (Hoy/Semana/Mes) on the one shared `periods.vectors.json` (plan
+ * Period bounds (Hoy/Week/Mes) on the one shared `periods.vectors.json` (plan
  * invariant: "Period bounds are tested on both sides from the one shared
  * `web/src/format/periods.vectors.json`; no test hand-copies expected bounds") —
  * the same vectors the backend's `tests/results/test_periods.py` runs over

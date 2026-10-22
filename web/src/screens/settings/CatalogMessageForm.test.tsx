@@ -55,19 +55,19 @@ function renderForm(put?: (body: Sent) => Response, submitLabel?: string) {
   return { puts, onSaved, onDirtyChange }
 }
 
-test('with no submitLabel the button reads "Guardá el mensaje", as Configuración draws it', async () => {
+test('with no submitLabel the button reads "Save the message", as Configuración draws it', async () => {
   renderForm()
 
-  expect(await screen.findByRole('button', { name: 'Guardá el mensaje' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Save the message' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
 })
 
 test('a submitLabel renames the button and it still saves through the owner route', async () => {
-  const { puts, onSaved } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }), 'Guardar')
+  const { puts, onSaved } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }), 'Save')
 
-  await userEvent.type(await screen.findByLabelText('Pie'), '!')
-  expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.type(await screen.findByLabelText('Footer'), '!')
+  expect(screen.queryByRole('button', { name: 'Save the message' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
   expect(puts).toEqual([{ header: CATALOG.header, footer: `${CATALOG.footer}!` }])
@@ -76,12 +76,12 @@ test('a submitLabel renames the button and it still saves through the owner rout
 test('saves through the owner route, calls onSaved and shows the toast', async () => {
   const { puts, onSaved } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }))
 
-  const header = await screen.findByLabelText('Encabezado')
+  const header = await screen.findByLabelText('Header')
   await userEvent.clear(header)
   await userEvent.type(header, 'Hola')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the message' }))
 
-  expect(await screen.findByText('Catálogo guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Catalog saved')).toBeInTheDocument()
   expect(puts).toEqual([{ header: 'Hola', footer: CATALOG.footer }])
   expect(onSaved).toHaveBeenCalledTimes(1)
 })
@@ -89,13 +89,13 @@ test('saves through the owner route, calls onSaved and shows the toast', async (
 test('reports dirty while the fields differ from what the server accepted, and clean after a save', async () => {
   const { onDirtyChange } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }))
 
-  const footer = await screen.findByLabelText('Pie')
+  const footer = await screen.findByLabelText('Footer')
   expect(onDirtyChange).toHaveBeenLastCalledWith(false)
 
   await userEvent.type(footer, '!')
   await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(true))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the message' }))
   await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(false))
 })
 
@@ -104,9 +104,9 @@ test('a refusal shows inline, keeps what was typed and does not call onSaved', a
     jsonResponse(422, { code: 'catalog.header_too_long' }),
   )
 
-  const header = await screen.findByLabelText('Encabezado')
+  const header = await screen.findByLabelText('Header')
   await userEvent.type(header, ' de más')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save the message' }))
 
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(header).toHaveValue(`${CATALOG.header} de más`)

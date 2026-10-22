@@ -2,7 +2,7 @@
  * Guard 1 (GH-166): every `kind: 'card'` screen of the registry is rendered through the real
  * route table, `Shell` included, with the API faked at `fetch`, and shows exactly one control
  * named "‹ <parent>" and none named "Volver". The wait is `findAllByRole`, never a timer
- * (ADR-0038). `GoneScreen`'s "Volver a …" is not a back and is not counted.
+ * (ADR-0038). `GoneScreen`'s "Back to …" is not a back and is not counted.
  *
  * A card that is not rendered yet is in `CARDS_EXEMPT` with its reason; the list is a2's to empty,
  * and an entry whose card is no longer a card fails.
@@ -65,15 +65,15 @@ const ACCOUNT = { balance: 0, owing_since: null, standing: 'settled', rows: [] }
 /** What only a card's loaded screen shows, awaited before its backs are counted, so a card
  * left in its not-found state (`GoneScreen`) cannot pass for the real one. */
 const LOADED: Partial<Record<ScreenId, string>> = {
-  sale: 'Líneas',
+  sale: 'Lines',
   customer: 'Ana Pérez',
-  settings: 'Configuración',
+  settings: 'Settings',
   variety: '24K Gold',
-  'variety-prices': 'Precios',
-  'variety-entries': 'Entradas',
-  stock: 'Todas las entradas',
+  'variety-prices': 'Prices',
+  'variety-entries': 'Entries',
+  stock: 'All entries',
   catalog: 'Sir Jack',
-  'varieties-archived': 'Archivada',
+  'varieties-archived': 'Archived',
   withdrawal: 'Zkittlez',
 }
 
@@ -176,7 +176,7 @@ test('the count catches a card that draws its own back next to the shell\'s', as
                 handle: { screen: 'sale' },
                 element: (
                   <Boton variant="back" onClick={() => undefined}>
-                    ‹ Ventas
+                    ‹ Sales
                   </Boton>
                 ),
               },

@@ -16,6 +16,7 @@ import { EXPENSES, EXPENSE_NEW, MORE, relative } from '../../routes'
 import Shell from '../../shell/Shell'
 import Gastos from '../Gastos'
 import ExpenseNewRoute from './ExpenseNewRoute'
+import { EXPENSES_TEXT } from '../../copy/expenses'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -48,9 +49,9 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
                 handle: { screen: 'more' },
                 element: (
                   <main>
-                    <span>Pantalla Más</span>
+                    <span>{EXPENSES_TEXT.moreScreen}</span>
                     <InAppLink to={EXPENSE_NEW}>
-                      Cargar gasto desde Más
+                      {EXPENSES_TEXT.addExpenseFromMore}
                     </InAppLink>
                   </main>
                 ),

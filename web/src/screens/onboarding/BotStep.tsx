@@ -1,9 +1,9 @@
 /**
- * Step 4, "Conectá tu bot de Telegram": the owner's integrations form without its link to
+ * Step 4, "Connect your Telegram bot": the owner's integrations form without its link to
  * the catalog, and the line that says where the catalog is published, shown only once the bot
  * is saved. A successful Probarlo (the only save) passes the step as `done`; a failed one
  * shows its reason and sends nothing. A bot saved earlier shows "Hecho", the line and
- * "Seguir". "Saltar" belongs to the frame.
+ * "Continue". "Skip" belongs to the frame.
  */
 
 import { useState } from 'react'
@@ -18,8 +18,10 @@ import { IntegrationsForm, type PinnedCatalog } from '../settings/IntegrationsGr
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+import { CHECKLIST_DONE } from '../../copy/inicio'
+import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
-export const PUBLISH_LINE = 'Cuando quieras, publicalo desde Variedades → Mandar catálogo'
+export const PUBLISH_LINE = ONBOARDING_TEXT.publishItFromVarieties
 
 export default function BotStep({ progress, onDirtyChange, onProgress }: StepBodyProps) {
   const query = useQuery({
@@ -37,7 +39,7 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
   }
   return (
     <>
-      {(done || tested) && <span className="onboarding__insignia">Hecho</span>}
+      {(done || tested) && <span className="onboarding__insignia">{CHECKLIST_DONE}</span>}
       <IntegrationsForm
         initial={query.data}
         showCatalogLink={false}
@@ -50,7 +52,7 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
       {(done || tested) && <p className="pie">{PUBLISH_LINE}</p>}
       {(done || tested) && (
         <StepSubmit disabled={sending} onSubmit={() => void send()}>
-          Seguir
+          {ONBOARDING_TEXT.continue}
         </StepSubmit>
       )}
       {notice}

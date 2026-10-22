@@ -7,7 +7,7 @@ adapters, and the switches moved through the real `PUT /pricing-settings`.
 import pytest
 from fastapi.testclient import TestClient
 
-BULK_LINE = "• Desde 10 g: $10.000 c/u"
+BULK_LINE = "• From 10 g: $10.000 each"
 VIP_PRICE_TEXTS = ("$9.000", "9.000", "9000")
 
 
@@ -58,7 +58,7 @@ def test_the_bulk_line_follows_precio_por_cantidad_alone(
 
     text = _text(client)
 
-    assert "• Precio x gramo: $11.000" in text
+    assert "• Price per gram: $11.000" in text
     assert (BULK_LINE in text) is bulk
 
 

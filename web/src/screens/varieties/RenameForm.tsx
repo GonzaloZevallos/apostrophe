@@ -27,6 +27,8 @@ import {
   VARIETY_SAVED,
   type Variety,
 } from '../Variedades'
+import { VARIETIES_TEXT } from '../../copy/varieties'
+import { COMMON_TEXT } from '../../copy/common'
 
 const RENAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'variety.name_taken': NAME_TAKEN_MESSAGE,
@@ -85,14 +87,14 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
   return (
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Renombrar variedad</span>
+        <span className="gasto-form__titulo">{VARIETIES_TEXT.renombrarVariedad}</span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Nombre</span>
+          <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             className="campo__input"
             type="text"
@@ -108,7 +110,7 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
         </label>
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardá el nombre
+          {COMMON_TEXT.saveTheName}
         </Boton>
       </form>
     </div>

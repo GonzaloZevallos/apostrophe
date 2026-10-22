@@ -1,9 +1,9 @@
 /**
  * `Inicio`, now the panel (plan, "Front": built only from
  * `web/src/api/fixtures/panel.json`): every figure on every tab, negative
- * Ganancia/Caja, the pending-cost note's placement, no-average, "Nadie te debe",
+ * Ganancia/Caja, the pending-cost note's placement, no-average, "Nobody owes you",
  * navigation, stock rows, a no-year range across a year boundary, the
- * "Arrancá por las variedades" banner above the figures, and a remount with a
+ * "Start with your varieties" banner above the figures, and a remount with a
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
@@ -32,7 +32,7 @@ import { invalidateResource } from '../api/keys'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import type { OnboardingProgress } from '../api/onboarding'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
-import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../copy/common'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -167,7 +167,7 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   stubFetch(PANEL)
   renderInicio()
 
-  const avatar = await screen.findByRole('link', { name: 'Configuración de La Huerta' })
+  const avatar = await screen.findByRole('link', { name: 'Settings for La Huerta' })
   expect(avatar).toHaveAttribute('href', SETTINGS)
   expect(avatar).toHaveTextContent('LH')
   // The name stays above the title, as the design draws it.
@@ -180,14 +180,14 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
 test('switching to Semana shows the week\'s figures, including a negative Caja', async () => {
   stubFetch(PANEL)
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
-  screen.getByRole('button', { name: 'Semana' }).click()
+  screen.getByRole('button', { name: 'Week' }).click()
 
-  expect(await screen.findByText('Vendiste esta semana')).toBeInTheDocument()
+  expect(await screen.findByText('You sold this week')).toBeInTheDocument()
   expect(screen.getByText('28/09 – 04/10')).toBeInTheDocument()
   expect(screen.getByText('$ 42.000')).toBeInTheDocument()
-  expect(screen.getByText('5 ventas · promedio $ 8.400 · 28 g')).toBeInTheDocument()
+  expect(screen.getByText('5 sales · average $ 8.400 · 28 g')).toBeInTheDocument()
   expect(screen.getByText('−$ 12.000')).toBeInTheDocument() // cash is negative
 })
 
@@ -195,15 +195,15 @@ test('switching to Semana shows the week\'s figures, including a negative Caja',
  * figure labels. */
 function figureNames(): string[] {
   const labels = [
-    'Regalaste',
-    'Costo de lo vendido',
-    'Faltante de stock',
-    'Promoción',
-    'Consumo propio',
-    'Gastos',
-    'Compras de flores',
-    'Ganancia',
-    'Caja',
+    'You gave away',
+    'Cost of goods sold',
+    'Stock shortfall',
+    'Promotion',
+    'Own use',
+    'Expenses',
+    'Flower purchases',
+    'Profit',
+    'Cash',
   ]
   return screen
     .getAllByRole('group')
@@ -215,32 +215,32 @@ function figureNames(): string[] {
 /** A figure's pending note: it lives inside the figure's own group. `null` when that
  * group has none. */
 function noteIn(label: string): string | null {
-  const note = within(screen.getByRole('group', { name: label })).queryByText('incluye costo pendiente')
+  const note = within(screen.getByRole('group', { name: label })).queryByText('includes pending cost')
   return note === null ? null : note.textContent
 }
 
-test('Semana: Ganancia\'s note and the Faltante de stock row (with its own note) show; Costo de lo vendido\'s doesn\'t', async () => {
+test('Semana: Ganancia\'s note and the Stock shortfall row (with its own note) show; Cost of goods sold\'s doesn\'t', async () => {
   stubFetch(PANEL)
   renderInicio()
-  await screen.findByText('Vendiste hoy')
-  screen.getByRole('button', { name: 'Semana' }).click()
-  await screen.findByText('Vendiste esta semana')
+  await screen.findByText('You sold today')
+  screen.getByRole('button', { name: 'Week' }).click()
+  await screen.findByText('You sold this week')
 
-  const ganancia = screen.getByRole('group', { name: 'Ganancia' })
-  expect(within(ganancia).getByText('incluye costo pendiente')).toBeInTheDocument()
-  expect(within(screen.getByRole('group', { name: 'Caja' })).queryByText('incluye costo pendiente')).toBeNull()
+  const ganancia = screen.getByRole('group', { name: 'Profit' })
+  expect(within(ganancia).getByText('includes pending cost')).toBeInTheDocument()
+  expect(within(screen.getByRole('group', { name: 'Cash' })).queryByText('includes pending cost')).toBeNull()
 
   // `pending_cost` is false on the week fixture: the Costo row stays unmarked even
   // though Ganancia's own flag (`profit_pending`) is true — each note reads exactly
   // one flag, never a combination.
-  expect(noteIn('Costo de lo vendido')).toBeNull()
+  expect(noteIn('Cost of goods sold')).toBeNull()
 
-  const faltante = screen.getByRole('group', { name: 'Faltante de stock' })
+  const faltante = screen.getByRole('group', { name: 'Stock shortfall' })
   expect(within(faltante).getByText('$ 3.000')).toBeInTheDocument()
-  expect(noteIn('Faltante de stock')).toBe('incluye costo pendiente')
+  expect(noteIn('Stock shortfall')).toBe('includes pending cost')
 })
 
-test('Semana: Faltante de stock shows with no note of its own when its cost isn\'t pending', async () => {
+test('Semana: Stock shortfall shows with no note of its own when its cost isn\'t pending', async () => {
   // A dedicated override: the shared fixture's week always carries a pending
   // shortfall, so nothing else proves the row renders without `pie` when
   // `shortfall.pending` is false.
@@ -253,39 +253,39 @@ test('Semana: Faltante de stock shows with no note of its own when its cost isn\
   }
   stubFetch(costedShortfall)
   renderInicio()
-  await screen.findByText('Vendiste hoy')
-  screen.getByRole('button', { name: 'Semana' }).click()
-  await screen.findByText('Vendiste esta semana')
+  await screen.findByText('You sold today')
+  screen.getByRole('button', { name: 'Week' }).click()
+  await screen.findByText('You sold this week')
 
-  const faltante = screen.getByRole('group', { name: 'Faltante de stock' })
+  const faltante = screen.getByRole('group', { name: 'Stock shortfall' })
   expect(within(faltante).getByText('$ 3.000')).toBeInTheDocument()
-  expect(noteIn('Faltante de stock')).toBeNull()
+  expect(noteIn('Stock shortfall')).toBeNull()
 })
 
-test('Semana: Promoción and Consumo propio follow Faltante de stock and come before Gastos, each with its own note flag', async () => {
+test('Semana: Promotion and Own use follow Stock shortfall and come before Gastos, each with its own note flag', async () => {
   stubFetch(PANEL)
   renderInicio()
-  await screen.findByText('Vendiste hoy')
-  screen.getByRole('button', { name: 'Semana' }).click()
-  await screen.findByText('Vendiste esta semana')
+  await screen.findByText('You sold today')
+  screen.getByRole('button', { name: 'Week' }).click()
+  await screen.findByText('You sold this week')
 
   expect(figureNames().slice(0, 6)).toEqual([
-    'Regalaste',
-    'Costo de lo vendido',
-    'Faltante de stock',
-    'Promoción',
-    'Consumo propio',
-    'Gastos',
+    'You gave away',
+    'Cost of goods sold',
+    'Stock shortfall',
+    'Promotion',
+    'Own use',
+    'Expenses',
   ])
-  const promocion = screen.getByRole('group', { name: 'Promoción' })
+  const promocion = screen.getByRole('group', { name: 'Promotion' })
   expect(within(promocion).getByText('$ 2.000')).toBeInTheDocument()
-  expect(noteIn('Promoción')).toBe('incluye costo pendiente')
-  const consumo = screen.getByRole('group', { name: 'Consumo propio' })
+  expect(noteIn('Promotion')).toBe('includes pending cost')
+  const consumo = screen.getByRole('group', { name: 'Own use' })
   expect(within(consumo).getByText('$ 1.000')).toBeInTheDocument()
-  expect(noteIn('Consumo propio')).toBeNull()
+  expect(noteIn('Own use')).toBeNull()
 })
 
-test('Hoy and a period with no withdrawal show neither Promoción nor Consumo propio', async () => {
+test('Hoy and a period with no withdrawal show neither Promotion nor Own use', async () => {
   // Today carries a withdrawal of each reason, as it does right after the form's
   // default date is saved: Hoy still hides both lines.
   const withdrawnToday: PanelAnswer = {
@@ -301,28 +301,28 @@ test('Hoy and a period with no withdrawal show neither Promoción nor Consumo pr
   }
   stubFetch(withdrawnToday)
   renderInicio()
-  await screen.findByText('Vendiste hoy')
-  expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
-  expect(screen.queryByText('Consumo propio')).not.toBeInTheDocument()
+  await screen.findByText('You sold today')
+  expect(screen.queryByText('Promotion')).not.toBeInTheDocument()
+  expect(screen.queryByText('Own use')).not.toBeInTheDocument()
 
-  screen.getByRole('button', { name: 'Mes' }).click()
-  await screen.findByText('Vendiste este mes')
-  expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
-  expect(screen.queryByText('Consumo propio')).not.toBeInTheDocument()
+  screen.getByRole('button', { name: 'Month' }).click()
+  await screen.findByText('You sold this month')
+  expect(screen.queryByText('Promotion')).not.toBeInTheDocument()
+  expect(screen.queryByText('Own use')).not.toBeInTheDocument()
 })
 
-test('Mes: Costo de lo vendido\'s note and Ganancia\'s note show; there is no Faltante de stock row', async () => {
+test('Mes: Cost of goods sold\'s note and Ganancia\'s note show; there is no Stock shortfall row', async () => {
   stubFetch(PANEL)
   renderInicio()
-  await screen.findByText('Vendiste hoy')
-  screen.getByRole('button', { name: 'Mes' }).click()
-  await screen.findByText('Vendiste este mes')
+  await screen.findByText('You sold today')
+  screen.getByRole('button', { name: 'Month' }).click()
+  await screen.findByText('You sold this month')
 
-  const ganancia = screen.getByRole('group', { name: 'Ganancia' })
-  expect(within(ganancia).getByText('incluye costo pendiente')).toBeInTheDocument()
-  expect(within(screen.getByRole('group', { name: 'Caja' })).queryByText('incluye costo pendiente')).toBeNull()
-  expect(noteIn('Costo de lo vendido')).toBe('incluye costo pendiente')
-  expect(screen.queryByText('Faltante de stock')).not.toBeInTheDocument()
+  const ganancia = screen.getByRole('group', { name: 'Profit' })
+  expect(within(ganancia).getByText('includes pending cost')).toBeInTheDocument()
+  expect(within(screen.getByRole('group', { name: 'Cash' })).queryByText('includes pending cost')).toBeNull()
+  expect(noteIn('Cost of goods sold')).toBe('includes pending cost')
+  expect(screen.queryByText('Stock shortfall')).not.toBeInTheDocument()
 })
 
 test('no sales shows no average, and the range reads with no year', async () => {
@@ -356,52 +356,52 @@ test('no sales shows no average, and the range reads with no year', async () => 
   }
   stubFetch(noSalesThisMonth)
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
-  screen.getByRole('button', { name: 'Mes' }).click()
+  screen.getByRole('button', { name: 'Month' }).click()
 
-  expect(await screen.findByText('Vendiste este mes')).toBeInTheDocument()
+  expect(await screen.findByText('You sold this month')).toBeInTheDocument()
   expect(screen.getByText('01/10 – 31/10')).toBeInTheDocument()
-  expect(screen.getByText('0 ventas · 0 g')).toBeInTheDocument()
+  expect(screen.getByText('0 sales · 0 g')).toBeInTheDocument()
   expect(screen.queryByText(/promedio/)).not.toBeInTheDocument()
   expect(screen.getAllByText('−$ 5.000')).toHaveLength(2) // profit and cash
-  expect(screen.getByRole('group', { name: 'Ganancia' })).toBeInTheDocument()
-  expect(screen.getByRole('group', { name: 'Caja' })).toBeInTheDocument()
+  expect(screen.getByRole('group', { name: 'Profit' })).toBeInTheDocument()
+  expect(screen.getByRole('group', { name: 'Cash' })).toBeInTheDocument()
 })
 
-test('Te deben: total, count, oldest date, and the teaser opens a customer card', async () => {
+test('Owed to you: total, count, oldest date, and the teaser opens a customer card', async () => {
   stubFetch(PANEL)
   const { container } = renderInicio()
 
   expect(await screen.findByText('$ 37.000')).toBeInTheDocument()
-  expect(screen.getByText('4 ventas debiendo')).toBeInTheDocument()
-  expect(container.querySelector('.bloque-deben__desde')).toHaveTextContent('desde 14/09')
+  expect(screen.getByText('4 sales owing')).toBeInTheDocument()
+  expect(container.querySelector('.bloque-deben__desde')).toHaveTextContent('since 14/09')
   const row = screen.getByText('Ana Pérez').closest('a')
   expect(row).not.toBeNull()
-  expect(row).toHaveTextContent(/\$ [\d.]+ · desde \d\d\/\d\d/)
+  expect(row).toHaveTextContent(/\$ [\d.]+ · since \d\d\/\d\d/)
   row?.click()
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
 })
 
-test('the teaser\'s "Cobrar a X" opens Registrar cobro for that customer, from inside the app', async () => {
+test('the teaser\'s "Collect from X" opens Record payment for that customer, from inside the app', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
-  screen.getByRole('link', { name: 'Cobrar a Ana Pérez' }).click()
+  screen.getByRole('link', { name: 'Collect from Ana Pérez' }).click()
 
   expect(await screen.findByText('cobro de 1')).toBeInTheDocument()
   expect(screen.getByText('desde la app')).toBeInTheDocument()
 })
 
-test('"Cobrar" carries the cobro icon, hidden from assistive technology, and keeps its name', async () => {
+test('"Collect" carries the cobro icon, hidden from assistive technology, and keeps its name', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
-  const link = screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  const link = screen.getByRole('link', { name: 'Collect from Ana Pérez' })
   expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(link).toHaveTextContent('Cobrar')
+  expect(link).toHaveTextContent('Collect')
 })
 
 test('the empty-state line the screen renders is the registered binding and fits its limit', async () => {
@@ -411,17 +411,17 @@ test('the empty-state line the screen renders is the registered binding and fits
   expect((await screen.findByText(EMPTY_DETAIL)).textContent?.length).toBeLessThanOrEqual(LIMITS.emptyLine)
 })
 
-test('tapping "Te deben" opens Clientes, where the debtors section is', async () => {
+test('tapping "Owed to you" opens Clientes, where the debtors section is', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
-  screen.getByRole('link', { name: 'Te deben' }).click()
+  screen.getByRole('link', { name: 'Owed to you' }).click()
 
   expect(await screen.findByText('pantalla clientes')).toBeInTheDocument()
 })
 
-test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
+test('"Nobody owes you" with nothing to tap when nobody owes', async () => {
   const empty: PanelAnswer = {
     ...PANEL,
     debts: { total_owed: 0, sales_owing_count: 0, oldest: null, teaser: [] },
@@ -429,8 +429,8 @@ test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
   stubFetch(empty)
   renderInicio()
 
-  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: 'Te deben' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
 
 test('stock rows: name, grams, status and days left, in the API\'s own order, with no total', async () => {
@@ -439,18 +439,18 @@ test('stock rows: name, grams, status and days left, in the API\'s own order, wi
 
   expect(await screen.findByText('Criolla')).toBeInTheDocument()
   expect(screen.getByText('18 g')).toBeInTheDocument()
-  expect(screen.getByText('6 días')).toBeInTheDocument()
+  expect(screen.getByText('6 days')).toBeInTheDocument()
   expect(screen.queryByText(/en total/)).not.toBeInTheDocument()
 })
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`"Arrancá por las variedades" shows above the panel, which still shows its real figures (${theme})`, async () => {
+  test(`"Start with your varieties" shows above the panel, which still shows its real figures (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, START)
     const { container } = renderInicio()
 
     expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
-    expect(screen.getByText('Vendiste hoy')).toBeInTheDocument()
+    expect(screen.getByText('You sold today')).toBeInTheDocument()
     expect(within(container.querySelector<HTMLElement>('.panel-ventas')!).getByText('$ 15.000')).toBeInTheDocument()
 
     // The banner sits above the panel, not in place of it.
@@ -468,7 +468,7 @@ test('a remount with a different answer never shows the first answer\'s figures'
   const client = new QueryClient()
   stubFetch(PANEL)
   const first = renderInicio(client)
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
   expect(within(first.container.querySelector<HTMLElement>('.panel-ventas')!).getByText('$ 15.000')).toBeInTheDocument()
   first.unmount()
   // `gcTime: 0` schedules the cache entry's removal for the next tick (TanStack's own
@@ -482,7 +482,7 @@ test('a remount with a different answer never shows the first answer\'s figures'
   }
   stubFetch(other)
   const second = renderInicio(client)
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
   const scoped = within(second.container.querySelector<HTMLElement>('.panel-ventas')!)
   expect(scoped.getByText('$ 999')).toBeInTheDocument()
@@ -502,7 +502,7 @@ test('shows "Sin conexión" when the panel fetch fails, with no figures', async 
   renderInicio()
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
-  expect(screen.queryByText('Vendiste hoy')).not.toBeInTheDocument()
+  expect(screen.queryByText('You sold today')).not.toBeInTheDocument()
 })
 
 test('shows the fixed pinned-catalog notice while the pin is out of date', async () => {
@@ -515,7 +515,7 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
   expect(notice.closest('a')).toHaveAttribute('href', CATALOG)
 })
 
-test('the stale-catalog notice and the "Arrancá por las variedades" state carry the decorative attention icon; a fresh pin has none', async () => {
+test('the stale-catalog notice and the "Start with your varieties" state carry the decorative attention icon; a fresh pin has none', async () => {
   stubFetch(PANEL, START, {
     status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
   })
@@ -534,7 +534,7 @@ test('the stale-catalog notice and the "Arrancá por las variedades" state carry
 
   stubFetch(PANEL, NONE)
   const fresh = renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
   expect(fresh.container.querySelector('.aviso-ambar')).toBeNull()
   expect(fresh.container.querySelector('.estado-vacio')).toBeNull()
 })
@@ -565,16 +565,16 @@ const FINISH: OnboardingProgress = {
 }
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`an Onboarding business sees the notice at the top with its count and what is missing, and never Arrancá (${theme})`, async () => {
+  test(`an Onboarding business sees the notice at the top with its count and what is missing, and never Start with your varieties (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
     renderInicio()
 
-    const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
-    expect(within(notice).getByText('1 de 6 pasos')).toBeInTheDocument()
-    expect(within(notice).getByText('Falta: stock inicial')).toBeInTheDocument()
+    const notice = await screen.findByRole('link', { name: /Go on to the setup/ })
+    expect(within(notice).getByText('1 of 6 steps')).toBeInTheDocument()
+    expect(within(notice).getByText('Missing: initial stock')).toBeInTheDocument()
     expect(notice).toHaveAttribute('href', ONBOARDING_STOCK)
-    await screen.findByText('Vendiste hoy')
+    await screen.findByText('You sold today')
     expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
   })
 }
@@ -596,11 +596,11 @@ test('with /first-run answering last, slot 1 stays empty: Arrancá never flashes
     }),
   )
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
   release(jsonResponse(200, ONBOARDING_ANSWER))
-  expect(await screen.findByText('Seguí con la configuración')).toBeInTheDocument()
+  expect(await screen.findByText('Go on to the setup')).toBeInTheDocument()
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
 })
 
@@ -609,19 +609,19 @@ test('a business never offered the Onboarding keeps Arrancá and sees no notice'
   renderInicio()
 
   expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
-  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+  expect(screen.queryByText('Go on to the setup')).not.toBeInTheDocument()
 })
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`the finish notice reads 6 de 6 with no Falta line and sends advance only on a tap (${theme})`, async () => {
+  test(`the finish notice reads 6 of 6 with no Missing line and sends advance only on a tap (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
     renderInicio()
 
-    const notice = await screen.findByRole('button', { name: /Seguí con la configuración/ })
-    expect(within(notice).getByText('6 de 6 pasos')).toBeInTheDocument()
-    expect(screen.queryByText(/Falta:/)).not.toBeInTheDocument()
-    await screen.findByText('Vendiste hoy')
+    const notice = await screen.findByRole('button', { name: /Go on to the setup/ })
+    expect(within(notice).getByText('6 of 6 steps')).toBeInTheDocument()
+    expect(screen.queryByText(/Missing:/)).not.toBeInTheDocument()
+    await screen.findByText('You sold today')
     expect(calls).toEqual(['GET /onboarding-progress'])
   })
 }
@@ -629,28 +629,28 @@ for (const theme of ['claro', 'oscuro'] as const) {
 test('the Onboarding notice goes once the Onboarding is over', async () => {
   stubFetch(PANEL, NONE, { status: null }, { ...FINISH, over: true, resume: null })
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
-  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+  expect(screen.queryByText('Go on to the setup')).not.toBeInTheDocument()
 })
 
-test('tapping the finish notice sends advance, and "Listo" opens only from an answer with over: true', async () => {
+test('tapping the finish notice sends advance, and "Done" opens only from an answer with over: true', async () => {
   advanced = { ...FINISH, over: true, resume: null }
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
   renderInicio()
 
-  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Go on to the setup/ }))
 
   expect(await screen.findByText('Listo listo=true')).toBeInTheDocument()
   expect(calls).toEqual(['GET /onboarding-progress', 'POST /onboarding-progress/advance'])
 })
 
-test('tapping the finish notice when advance answers over: false does not draw "Listo"', async () => {
+test('tapping the finish notice when advance answers over: false does not draw "Done"', async () => {
   advanced = { ...MID_ONBOARDING }
   stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
   renderInicio()
 
-  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Go on to the setup/ }))
 
   expect(await screen.findByText('paso stock')).toBeInTheDocument()
   expect(screen.queryByText(/Listo listo/)).not.toBeInTheDocument()
@@ -662,13 +662,13 @@ for (const theme of ['claro', 'oscuro'] as const) {
     stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
     renderInicio()
 
-    const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
+    const notice = await screen.findByRole('link', { name: /Go on to the setup/ })
     expect(notice).toHaveClass('boton-aviso')
     expect(notice).not.toHaveClass('boton--fila')
     expect(notice).not.toHaveAttribute('aria-label')
-    expect(notice.textContent).toContain('Seguí con la configuración')
-    expect(notice.textContent).toContain('1 de 6 pasos')
-    expect(notice.textContent).toContain('Falta: stock inicial')
+    expect(notice.textContent).toContain('Go on to the setup')
+    expect(notice.textContent).toContain('1 of 6 steps')
+    expect(notice.textContent).toContain('Missing: initial stock')
     // Only the title's decorative chevron: no attention icon, and it is hidden from the name.
     expect(notice.querySelectorAll('svg')).toHaveLength(1)
     expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
@@ -682,7 +682,7 @@ for (const theme of ['claro', 'oscuro'] as const) {
     stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
     renderInicio()
 
-    const notice = await screen.findByRole('button', { name: /Seguí con la configuración/ })
+    const notice = await screen.findByRole('button', { name: /Go on to the setup/ })
     expect(notice).toHaveClass('boton-aviso')
     expect(notice).not.toHaveClass('boton--fila')
     expect(notice).not.toHaveAttribute('aria-label')
@@ -705,41 +705,41 @@ const CHECKLIST = answer({
 test.each([
   ['none', answer({ kind: 'none', checklist: [] })],
   ['onboarding', answer({ kind: 'onboarding', checklist: [] })],
-])('a "%s" answer with an empty checklist draws no "Para arrancar" list', async (_kind, firstRun) => {
+])('a "%s" answer with an empty checklist draws no "To get started" list', async (_kind, firstRun) => {
   stubFetch(PANEL, firstRun)
   renderInicio()
 
-  await screen.findByText('Vendiste hoy')
-  expect(screen.queryByRole('list', { name: 'Para arrancar' })).not.toBeInTheDocument()
-  expect(screen.queryByText('Para arrancar')).not.toBeInTheDocument()
+  await screen.findByText('You sold today')
+  expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument()
+  expect(screen.queryByText('To get started')).not.toBeInTheDocument()
 })
 
 test('the kind decides: an "onboarding" answer carrying checklist items still draws no checklist', async () => {
   stubFetch(PANEL, answer({ kind: 'onboarding', checklist: CHECKLIST.checklist }))
   renderInicio()
 
-  await screen.findByText('Vendiste hoy')
-  expect(screen.queryByRole('list', { name: 'Para arrancar' })).not.toBeInTheDocument()
-  expect(screen.queryByText('Para arrancar')).not.toBeInTheDocument()
+  await screen.findByText('You sold today')
+  expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument()
+  expect(screen.queryByText('To get started')).not.toBeInTheDocument()
 })
 
-const IMPORT_NOTICE_TEXT = 'Conectá el bot para que el catálogo fijado se actualice solo'
+const IMPORT_NOTICE_TEXT = 'Connect the bot so the pinned catalog updates by itself'
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`the checklist draws four steps, "Hecho" only on the met ones, and tells required from optional in words (${theme})`, async () => {
+  test(`the checklist draws four steps, "Done" only on the met ones, and tells required from optional in words (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, CHECKLIST)
     renderInicio()
 
-    const list = await screen.findByRole('list', { name: 'Para arrancar' })
+    const list = await screen.findByRole('list', { name: 'To get started' })
     const steps = within(list).getAllByRole('listitem')
     expect(steps.map((step) => step.textContent)).toEqual([
-      'Cargá una variedad con su precioObligatorioHecho',
-      'Cargá lo que tenés hoyObligatorio',
-      'Conectá el botOpcional',
-      'Invitá a un socioOpcionalHecho',
+      'Add a variety with its priceRequiredDone',
+      'Add what you have todayRequired',
+      'Connect the botOptional',
+      'Invite a partnerOptionalDone',
     ])
-    expect(within(list).getAllByText('Hecho')).toHaveLength(2)
+    expect(within(list).getAllByText('Done')).toHaveLength(2)
     // The attention icon is for the notices: the checklist carries none.
     expect(list.closest('section')?.querySelector('.aviso-ambar__icono')).toBeNull()
     expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
@@ -751,7 +751,7 @@ test('the checklist is a box of its own, not the attention state', async () => {
   stubFetch(PANEL, CHECKLIST)
   const { container } = renderInicio()
 
-  const box = (await screen.findByRole('list', { name: 'Para arrancar' })).closest('section')!
+  const box = (await screen.findByRole('list', { name: 'To get started' })).closest('section')!
   expect(box).not.toBeNull()
   expect(container.querySelectorAll('.aviso-ambar__icono')).toHaveLength(0)
 })
@@ -759,10 +759,10 @@ test('the checklist is a box of its own, not the attention state', async () => {
 test('slot 1, then the out-of-date pin, then the import notice, then the figures, in that order', async () => {
   stubFetch(PANEL, answer({ ...CHECKLIST, import_notice: true }), { status: { state: 'out_of_date' } })
   const { container } = renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
   const nodes = [
-    screen.getByRole('list', { name: 'Para arrancar' }).closest('section')!,
+    screen.getByRole('list', { name: 'To get started' }).closest('section')!,
     screen.getByText(PINNED_CATALOG_OUT_OF_DATE),
     screen.getByText(IMPORT_NOTICE_TEXT),
     container.querySelector('.panel-ventas')!,
@@ -776,12 +776,12 @@ test('slot 1, then the out-of-date pin, then the import notice, then the figures
 test('the same notices sit above Semana and Mes', async () => {
   stubFetch(PANEL, answer({ ...CHECKLIST, import_notice: true }))
   renderInicio()
-  await screen.findByText('Vendiste hoy')
+  await screen.findByText('You sold today')
 
-  screen.getByRole('button', { name: 'Mes' }).click()
+  screen.getByRole('button', { name: 'Month' }).click()
 
-  await screen.findByText('Vendiste este mes')
-  expect(screen.getByRole('list', { name: 'Para arrancar' })).toBeInTheDocument()
+  await screen.findByText('You sold this month')
+  expect(screen.getByRole('list', { name: 'To get started' })).toBeInTheDocument()
   expect(screen.getByText(IMPORT_NOTICE_TEXT)).toBeInTheDocument()
 })
 
@@ -794,7 +794,7 @@ for (const theme of ['claro', 'oscuro'] as const) {
 
       const notice = (await screen.findByText(IMPORT_NOTICE_TEXT)).closest('.aviso-ambar')!
       expect(notice.querySelector('.aviso-ambar__icono svg')).toHaveAttribute('aria-hidden', 'true')
-      expect(within(notice as HTMLElement).getByRole('button', { name: 'Descartar aviso' })).toBeInTheDocument()
+      expect(within(notice as HTMLElement).getByRole('button', { name: 'Dismiss notice' })).toBeInTheDocument()
       expectIconAndTextRule(notice as HTMLElement)
     })
   }
@@ -805,7 +805,7 @@ test('dismissing the import notice sends the dismissal, asks /first-run again an
   renderInicio()
   await screen.findByText(IMPORT_NOTICE_TEXT)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Descartar aviso' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Dismiss notice' }))
 
   await waitFor(() => expect(screen.queryByText(IMPORT_NOTICE_TEXT)).not.toBeInTheDocument())
   expect(firstRunCalls).toContain('POST /first-run/import-notice/dismissal')
@@ -829,7 +829,7 @@ test('a failed dismissal keeps the notice and says so', async () => {
   renderInicio()
   await screen.findByText(IMPORT_NOTICE_TEXT)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Descartar aviso' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Dismiss notice' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.getByText(IMPORT_NOTICE_TEXT)).toBeInTheDocument()
@@ -849,9 +849,9 @@ test('a failed /first-run draws no slot 1 and no error: the figures still show',
   )
   renderInicio()
 
-  expect(await screen.findByText('Vendiste hoy')).toBeInTheDocument()
+  expect(await screen.findByText('You sold today')).toBeInTheDocument()
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
-  expect(screen.queryByRole('list', { name: 'Para arrancar' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument()
   expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
 })
 
@@ -859,10 +859,10 @@ test('a stock write elsewhere makes the next read of /first-run, and the checkli
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   stubFetch(PANEL, CHECKLIST)
   renderInicio(client)
-  await screen.findByRole('list', { name: 'Para arrancar' })
+  await screen.findByRole('list', { name: 'To get started' })
   stubFetch(PANEL, NONE)
 
   invalidateResource(client, 'stock')
 
-  await waitFor(() => expect(screen.queryByRole('list', { name: 'Para arrancar' })).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument())
 })

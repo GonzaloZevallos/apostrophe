@@ -9,10 +9,10 @@ describe('findOwnBacks', () => {
   test("rejects a screen's own back, as a variant, as JSX text, as a string, as an escape", () => {
     expect(findOwnBacks(file('<Boton variant="back" onClick={go}>x</Boton>'))).toHaveLength(1)
     expect(findOwnBacks(file("<BotonLink to={P} variant='back'>x</BotonLink>"))).toHaveLength(1)
-    expect(findOwnBacks(file('<p>\n  ‹ Variedades\n</p>'))).toEqual([
+    expect(findOwnBacks(file('<p>\n  ‹ Varieties\n</p>'))).toEqual([
       "/src/screens/X.tsx:2: writes a '‹' itself; only the shell's BackArrow does",
     ])
-    expect(findOwnBacks(file("const label = '‹ Variedades'"))).toHaveLength(1)
+    expect(findOwnBacks(file("const label = '‹ Varieties'"))).toHaveLength(1)
     expect(findOwnBacks(file('const label = `‹ ${name}`'))).toHaveLength(1)
     expect(findOwnBacks(file("const label = '\\u2039 Variedades'"))).toHaveLength(1)
     expect(findOwnBacks(file('<p>&lsaquo; Variedades</p>'))).toHaveLength(1)

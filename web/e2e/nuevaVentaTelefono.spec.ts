@@ -2,7 +2,7 @@
  * Nueva venta's phone shell, in a real phone browser (GH-78, `nv-shell`): the fixed header, the
  * scrolling body and the footer pinned to the visual viewport. jsdom loads no stylesheet, so the
  * layout is proven here: at 320, 375 and 430 px and at 130 % text (a 246 px-wide viewport, the
- * width the mobile audit measured) the footer's total and "Guardá la venta" are on screen on
+ * width the mobile audit measured) the footer's total and "Save sale" are on screen on
  * load, the header stays put while the body scrolls, how it was paid and the Debiendo hint
  * scroll fully above the footer with the screen's side margin, a shortened viewport (the
  * keyboard's stand-in: headless Chromium has no on-screen keyboard) leaves the footer in view,
@@ -38,16 +38,16 @@ async function box(locator: Locator): Promise<Box> {
 async function signInWithAPricedVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Jazmín')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Jazmín')
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
   await setPriceDate(page, '2000-01-01')
-  await page.getByLabel(/^Precio de lista/).fill('500')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByLabel(/^List price/).fill('500')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 }
 
 /** Nothing the shell owns (header, customer, shipping, note, payment, footer) reaches past the
@@ -72,7 +72,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: HEIGHT })
     await page.goto(SALE_NEW)
-    const save = page.getByRole('button', { name: 'Guardá la venta' })
+    const save = page.getByRole('button', { name: 'Save sale' })
     await expect(save).toBeVisible()
 
     // The footer's total and button are on screen on load, no scrolling.
@@ -83,7 +83,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     await expect(save).toBeInViewport()
 
     // Header: the date input is 16 px or more and 44 px or more tall.
-    const date = page.getByLabel('Fecha')
+    const date = page.getByLabel('Date')
     expect(await date.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(16)
     expect((await box(date)).height).toBeGreaterThanOrEqual(44)
 
@@ -97,7 +97,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     const header = page.locator('.nueva-venta__cabecera')
     const before = await box(header)
     for (let line = 0; line < 4; line += 1) {
-      await page.getByRole('button', { name: 'Agregar otra variedad' }).click()
+      await page.getByRole('button', { name: 'Add another variety' }).click()
     }
     const scroller = page.locator('.nueva-venta__disposicion')
     await scroller.evaluate((node) => {
@@ -107,11 +107,11 @@ test('the form is three zones at every phone width: footer in view, header fixed
 
     // Scrolled to the end: how it was paid and the Debiendo hint sit fully above the footer,
     // with the screen's own side margin, never at x = 0.
-    const hint = page.getByText('Para dejar debiendo elegí un cliente')
+    const hint = page.getByText('To leave it owing, pick a customer')
     const hintBox = await box(hint)
     expect(hintBox.x).toBeGreaterThan(0)
     expect(hintBox.y + hintBox.height).toBeLessThanOrEqual((await box(footer)).y)
-    const group = await box(page.getByRole('radiogroup', { name: 'Cómo se pagó' }))
+    const group = await box(page.getByRole('radiogroup', { name: 'How it was paid' }))
     expect(group.y + group.height).toBeLessThanOrEqual((await box(footer)).y)
 
     await expectShellFitsTheScreen(page)
@@ -123,14 +123,14 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
 }) => {
   await signInWithAPricedVariety(page)
   await page.goto(SALE_NEW)
-  const save = page.getByRole('button', { name: 'Guardá la venta' })
+  const save = page.getByRole('button', { name: 'Save sale' })
   await expect(save).toBeVisible()
-  const grams = page.getByText('vendidos')
+  const grams = page.getByText('sold')
   await expect(grams).toBeVisible()
 
   await page.setViewportSize({ width: 375, height: 380 })
   await expect(save).toBeInViewport()
-  await expect(page.getByLabel('Fecha')).toBeInViewport()
+  await expect(page.getByLabel('Date')).toBeInViewport()
 
   // Headless Chromium has no on-screen keyboard: the flag the visual-viewport hook sets is
   // set by hand, to see what the stylesheet does under it.

@@ -1,9 +1,9 @@
 /**
  * `AvisoAmbar`: the amber notice box (`.aviso-ambar`) the app draws for a state a person
- * must read: the stale pinned catalog, "Desactualizado", "Sin conexión", the server-error
+ * must read: the stale pinned catalog, "Out of date", "Sin conexión", the server-error
  * retry. With `attention`, the one `atencion` icon sits beside its sentence, decorative
  * (`aria-hidden`, in `currentColor`): the sentence and the colour still carry the state
- * (`docs/product/icon-and-text-rule.md`, "Notices"). Informational notices ("Al día", "Eso ya
+ * (`docs/product/icon-and-text-rule.md`, "Notices"). Informational notices ("Up to date", "Eso ya
  * no está.", toasts) never pass it.
  */
 

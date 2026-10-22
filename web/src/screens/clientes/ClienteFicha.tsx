@@ -48,20 +48,22 @@ import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
 import { deleteRowIndices } from './accountRows'
+import { COMMON_TEXT } from '../../copy/common'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
 
 const HOW_PAID_LABEL: Record<Exclude<HowPaid, 'none'>, string> = {
-  cash: 'Pagada por efectivo',
-  transfer: 'Pagada por transferencia',
-  owing: 'Quedó debiendo',
+  cash: CUSTOMERS_TEXT.paidInCash,
+  transfer: CUSTOMERS_TEXT.paidByTransfer,
+  owing: CUSTOMERS_TEXT.leftOwing,
 }
 
 const METHOD_LABEL: Record<PaymentMethod, string> = {
-  cash: 'efectivo',
-  transfer: 'transferencia',
+  cash: CUSTOMERS_TEXT.methodCash,
+  transfer: CUSTOMERS_TEXT.methodTransfer,
 }
 
 function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
-  return `¿Borrás el cobro de ${formatMoney(payment.amount)} (${METHOD_LABEL[payment.method]}) del ${formatDateShort(payment.paid_on)}?`
+  return CUSTOMERS_TEXT.deletePaymentOf(formatMoney(payment.amount), METHOD_LABEL[payment.method], formatDateShort(payment.paid_on))
 }
 
 /** One account row's own text (plan, "Front"), never built from a sign
@@ -72,15 +74,15 @@ function rowLabel(row: AccountRow): string {
     return row.sale.how_paid === 'none' ? '' : HOW_PAID_LABEL[row.sale.how_paid]
   }
   if (row.kind === 'payment') {
-    return `Cobro · ${METHOD_LABEL[row.payment.method]} · A cuenta de la venta del ${formatDateShort(row.applied_to.sale_date)}`
+    return CUSTOMERS_TEXT.paymentOnAccount(METHOD_LABEL[row.payment.method], formatDateShort(row.applied_to.sale_date))
   }
-  return 'A favor'
+  return CUSTOMERS_TEXT.creditLabel
 }
 
 function rowAmount(row: AccountRow): string {
   return row.standing === 'credit'
-    ? `A favor ${formatMoneyMagnitude(row.running_balance)}`
-    : `saldo ${formatMoney(row.running_balance)}`
+    ? CUSTOMERS_TEXT.creditAmount(formatMoneyMagnitude(row.running_balance))
+    : CUSTOMERS_TEXT.balanceAmount(formatMoney(row.running_balance))
 }
 
 /** The row's own figure (design, `ClienteFicha.dc.html`: each row shows its own
@@ -162,7 +164,7 @@ export default function ClienteFicha() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Clientes" to={CUSTOMERS} />
+      return <GoneScreen label={COMMON_TEXT.customers} to={CUSTOMERS} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -200,13 +202,13 @@ export default function ClienteFicha() {
       <div className="cuerpo">
         <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo">{data.name}</span>
-          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
+          <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
         {deletedToast && (
           <div className="toast" role="status">
-            <span className="toast__texto">Cobro eliminado</span>
+            <span className="toast__texto">{CUSTOMERS_TEXT.paymentDeleted}</span>
           </div>
         )}
         {deletePaymentOffline && <SinConexion />}
@@ -214,34 +216,34 @@ export default function ClienteFicha() {
 
         {data.standing === 'owes' && (
           <div className="ficha-deuda">
-            <span className="cifra-m monto-deuda">Te debe {formatMoney(data.balance)}</span>
+            <span className="cifra-m monto-deuda">{CUSTOMERS_TEXT.owesYou}{formatMoney(data.balance)}</span>
             {data.owing_since !== null && (
-              <span className="rotulo">desde el {formatDateShort(data.owing_since)}</span>
+              <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
             )}
             <div className="clientes__accion">
               <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
-                Registrar cobro
+                {COMMON_TEXT.recordPayment}
               </BotonLink>
             </div>
           </div>
         )}
         {data.standing === 'credit' && (
           <div className="campo">
-            <span className="cifra-m monto-credito">A favor {formatMoneyMagnitude(data.balance)}</span>
+            <span className="cifra-m monto-credito">{CUSTOMERS_TEXT.credit}{formatMoneyMagnitude(data.balance)}</span>
           </div>
         )}
 
         <div className="formulario">
           {data.phone !== null && (
             <div className="campo">
-              <span className="campo__rotulo">Teléfono</span>
+              <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
               <span>{formatPhone(data.phone)}</span>
             </div>
           )}
           {vipCustomers && (
             <div className="campo">
-              <span className="campo__rotulo">VIP</span>
-              <span>{data.vip ? 'Sí' : 'No'}</span>
+              <span className="campo__rotulo">{COMMON_TEXT.vip}</span>
+              <span>{data.vip ? CUSTOMERS_TEXT.yes : CUSTOMERS_TEXT.off}</span>
             </div>
           )}
         </div>
@@ -259,7 +261,7 @@ export default function ClienteFicha() {
                   <Boton
                     variant="icon"
                     action="delete"
-                    ariaLabel="Borrar cobro"
+                    ariaLabel={CUSTOMERS_TEXT.deletePayment}
                     onClick={() =>
                       setConfirmingDelete({
                         id: row.payment.id,
@@ -277,7 +279,7 @@ export default function ClienteFicha() {
 
         <div className="clientes__accion">
           <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">
-            Nueva venta a {data.name}
+            {CUSTOMERS_TEXT.newSaleTo}{data.name}
           </BotonLink>
         </div>
       </div>
@@ -285,9 +287,9 @@ export default function ClienteFicha() {
       {confirmingDelete !== null && (
         <ConfirmDialog
           title={deletePaymentTitle(confirmingDelete)}
-          detail="Esto no se puede deshacer."
-          confirmText="Sí, borralo"
-          cancelText="No, dejalo"
+          detail={COMMON_TEXT.cannotUndo}
+          confirmText={COMMON_TEXT.yesDelete}
+          cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => void onConfirmDeletePayment()}
           onCancel={() => setConfirmingDelete(null)}
         />

@@ -30,10 +30,10 @@ describe('formatDate', () => {
 
 describe('chipDate', () => {
   test('reads "Hoy dd/mm" for today', () => {
-    expect(chipDate('2026-10-15', '2026-10-15')).toBe('Hoy 15/10')
+    expect(chipDate('2026-10-15', '2026-10-15')).toBe('Today 15/10')
   })
 
-  test('reads "dd/mm" for another day, without "Hoy" and without the year', () => {
+  test('reads "dd/mm" for another day, without "Today" and without the year', () => {
     expect(chipDate('2026-10-02', '2026-10-15')).toBe('02/10')
   })
 
@@ -69,8 +69,8 @@ describe('sinceWhen', () => {
 })
 
 describe('formatMonthLong', () => {
-  test('names the month in Spanish, with its year', () => {
-    expect(formatMonthLong('2026-10')).toBe('Octubre 2026')
+  test('names the month in English, with its year', () => {
+    expect(formatMonthLong('2026-10')).toBe('October 2026')
   })
 
   test('rejects a string that is not an API month', () => {
@@ -89,7 +89,7 @@ describe('shiftMonth', () => {
 })
 
 describe('todayRange', () => {
-  test('is today to today, for "Hoy"', () => {
+  test('is today to today, for "Today"', () => {
     expect(todayRange('2026-10-03')).toEqual({ start: '2026-10-03', end: '2026-10-03' })
   })
 })

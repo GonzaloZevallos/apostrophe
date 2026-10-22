@@ -44,18 +44,21 @@ import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import CustomerFields from './CustomerFields'
+import { COMMON_TEXT } from '../../copy/common'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const SAVED_TOAST = 'Cliente guardado'
-export const NAME_REQUIRED = 'Ponele un nombre'
-export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
-export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const SAVED_TOAST = COMMON_TEXT.customerSaved
+export const NAME_REQUIRED = CUSTOMERS_TEXT.giveItAName
+export const PHONE_INVALID = CUSTOMERS_TEXT.notAPhone
+export const PHONE_TAKEN = CUSTOMERS_TEXT.phoneTaken
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 type Field = 'name' | 'phone' | 'form'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
-  'customer.name_too_long': { field: 'name', message: 'El nombre es demasiado largo' },
+  'customer.name_too_long': { field: 'name', message: COMMON_TEXT.nameTooLong },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
@@ -78,7 +81,7 @@ export default function ClienteForm({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Clientes" to={CUSTOMERS} />
+      return <GoneScreen label={COMMON_TEXT.customers} to={CUSTOMERS} />
     }
     if (existing.error instanceof NetworkError) {
       return (
@@ -206,9 +209,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       <div className="cuerpo">
         <div className="encabezado-fila">
           <span className="encabezado__titulo">
-            {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
+            {mode === 'nuevo' ? COMMON_TEXT.newCustomer : COMMON_TEXT.editCustomer}
           </span>
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
         </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields
@@ -229,17 +232,17 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           )}
           {offline && <SinConexion />}
           <Boton textOnly="submit" type="submit" disabled={save.isPending}>
-            Guardá y usá
+            {CUSTOMERS_TEXT.saveAndUse}
           </Boton>
         </form>
       </div>
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el cliente?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={CUSTOMERS_TEXT.discardTheCustomer}
+          detail={COMMON_TEXT.losesWhatYouEntered}
+          keepLabel={COMMON_TEXT.noKeepEntering}
+          discardLabel={COMMON_TEXT.yesDiscard}
         />
       )}
     </main>

@@ -324,3 +324,72 @@ not touched; six rows read another account instead.
   the four optional steps, and is called only for the tooling account, never for La Huerta.
 - **History.** The evidence files of earlier tasks (`docs/evidence/GH-45-*`, `GH-131-*`) and
   `.agentic/tasks/` keep the old helper and account names; they are not edited.
+
+## Amendment: a capture is taken only once the screen is at rest (GH-273)
+
+Supersedes only the GH-261 amendment's sentence that `VariedadesCompu built: AE 2888` was "an unsettled
+CSS transition". Nothing earlier is edited. Everything else there stands.
+
+**The cause was not a transition.** The 88 x 52 px area is the "Aviso de stock bajo" switch
+(`button.interruptor`), which has no transition. It is `disabled` while stock is re-read
+(`disabled={saving || refreshing}`, `refreshing = stockQuery.isFetching`) and `.interruptor:disabled`
+draws at opacity 0.6: grey is a shot taken during the re-read, black is the screen at rest, enabled
+and on. The re-read was not started by the screen on its own: it was started by the capture's own
+`fullPage` screenshot, which makes Chromium resize the viewport for a moment (1x1), flips
+`(min-width: 900px)` and remounts the page inside `VarietiesLayout` (not `Shell`), whose queries
+re-subscribe and refetch (docs/evidence/GH-273-capture-at-rest.md). The app is unchanged: the switch
+stays disabled while it refreshes, and the capture waits for it.
+
+**The rules** (`scripts/design/settle.mjs`, `probe.mjs`, `comparisons.mjs`)
+
+1. **Control state is in the layout record**, only as DOM properties or attributes from the closed list
+   in `frameRecords`: `disabled`, `checked`, `aria-checked`, `aria-pressed`, `aria-selected`,
+   `aria-disabled`, `aria-busy`. Never a computed style, colour or class list.
+2. **A mutation flag.** The probe's `MutationObserver` on `document` keeps one boolean, read and reset
+   by each frame; a frame in which the DOM mutated is never calm (not the layout hash).
+3. **Quiet hops.** After the real `MessageChannel` hop, `SETTLE_QUIET_HOPS` (2) more real hops run
+   before the flag is read. Measured under 10x CPU throttling: the largest lag seen was 0 extra hops, so
+   2 is a margin, not a measured need, and these hops do not fix this finding.
+4. **Finished animations.** `unfinished` (the one pure function) flags only finite animations that are
+   pending or running; each frame calls `finish()` on those and such a frame is never calm. Paused and
+   infinite animations are never touched. This is not credited with this finding (the switch has no
+   animation).
+5. **The shot never disturbs the page.** The viewport first grows to the document's height and a plain
+   shot is taken unless the page is wider than the viewport; the caret is hidden by a stylesheet, not
+   by Playwright's `style` writes. This, and not the hops, is what closes the finding.
+6. **A frame after the shot, with no clock advance.** The PNG is kept only if that frame is calm and
+   its hash equals the last settled frame's; otherwise the side is `null`, no PNG is written and the
+   sheet shows "—".
+7. **One reason.** Every way of not coming to rest returns `SETTLE_REASON_UNSETTLED`
+   (`la pantalla no quedó quieta`); the failure notes carry the fixed text and the side only.
+
+**Cost.** A few real hops per frame, one observer callback per DOM mutation, one extra evaluate per
+side, bounded by `SETTLE_BOUND` and `TIMEOUT`. Nothing runs in the app or the gate. The viewport growth
+and the plain shot touch every row on both sides; they were exercised by the whole-registry runs below.
+
+**Known risks.** The in-page mappers and the observer are tested only on stub documents. A screen whose
+script keeps mutating the DOM never comes to rest and now fails its row: that is a decision per row for
+PM, never an exception. The frame after the shot does not advance the clock, so it misses timers the fake
+clock has not reached, on purpose. `refetchOnWindowFocus` stays at react-query's default. The viewport
+branch of each layout decides whether a full-page shot would remount (`VarietiesLayout` does).
+
+**What the evidence shows** (docs/evidence/GH-273-capture-at-rest.md, 2026-10-20, fontsource 5.3.0,
+base `6541887d`, head `27eefcb0`).
+
+- Five whole-registry `--strict` runs of the head and five of the base with head's tooling (overlay),
+  every one exit 0, fresh samples, no `--only`: `ae.mjs` run 1 against runs 2 to 5 on each side and base
+  against head all print 0 non-zero lines of 312, `VariedadesCompu built` included, no `null` side.
+- The diagnostic pair on the single `VariedadesCompu` row: the head's tooling gave 0 gray captures in 54
+  (12 at 4x CPU throttling, 12 at 10x, 30 unthrottled); the base's own tooling gave 3 gray of 12 at 4x.
+  By eye the switch rests enabled and on, in light and dark on `VariedadDetalle`.
+- Two throwaway rows, one that re-reads on every tick and keeps a button disabled, one that restarts a
+  finite transition on every tick, each fail under `--strict`: exit 1, the side `null`, no PNG, the fixed
+  sentence.
+
+GH-261's `VariedadesCompu built: AE 2888` is **resolved**, on those repeats and on the pair.
+
+**One consequence the finding did not ask for.** Rule 5 changes pixels. The base's own tooling and the
+head's, run on the same app (`6541887d`), differ on 48 `built` lines (none on `design`), the same 48 in two
+runs, mostly phone rows with a fixed bottom bar: growing the viewport to the document and taking a plain
+shot moves what depends on the viewport's height. Those 48 rows were not judged by eye. They are not
+excused: they are escalated, and captures taken by the earlier tooling are not comparable with these.

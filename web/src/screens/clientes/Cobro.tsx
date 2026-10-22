@@ -1,6 +1,6 @@
 /**
  * "Registrar cobro" (`Cobro`, `payments.md`): the form, drawn inside `CobroFrame` by its host
- * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "Todo: $ X"
+ * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "All: $ X"
  * fills the amount with the customer's own `balance` (never typed in by the seller for that
  * case); the date defaults to today; Efectivo · Transferencia is required. The host owns how it
  * is left (the leave guard, Escape, the backdrop, where "Cerrar" goes): this form only says
@@ -38,6 +38,8 @@ import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 import { parseMoney } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
+import { COMMON_TEXT } from '../../copy/common'
+import { PAYMENTS_TEXT } from '../../copy/payments'
 
 export interface CobroProps {
   customerId: string
@@ -71,11 +73,11 @@ const GONE_CODES: ReadonlySet<PaymentRefusalCode> = new Set([
 ])
 
 const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
-  'payment.above_balance': 'El monto supera lo que te debe.',
-  'payment.future_date': 'La fecha no puede ser futura.',
-  'payment.amount_invalid': 'Ingresá un monto válido.',
+  'payment.above_balance': PAYMENTS_TEXT.amountOverBalance,
+  'payment.future_date': PAYMENTS_TEXT.dateInFuture,
+  'payment.amount_invalid': PAYMENTS_TEXT.enterValidAmount,
 }
-const METHOD_REQUIRED_MESSAGE = 'Elegí efectivo o transferencia.'
+const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.chooseCashOrTransfer
 
 /** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
@@ -152,7 +154,7 @@ export default function Cobro({
     setMethodError(null)
     setOffline(false)
     if (!parsedAmount.ok) {
-      setAmountError('Ingresá un monto válido.')
+      setAmountError(PAYMENTS_TEXT.enterValidAmount)
       return
     }
     if (method === null) {
@@ -164,8 +166,8 @@ export default function Cobro({
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
-          ? `Cobro guardado · queda debiendo ${formatMoney(recorded.after.balance)}`
-          : 'Cobro guardado',
+          ? PAYMENTS_TEXT.savedStillOwing(formatMoney(recorded.after.balance))
+          : PAYMENTS_TEXT.saved,
       )
       onDone()
     } catch (caught) {
@@ -186,19 +188,19 @@ export default function Cobro({
     <>
       <div className="encabezado-fila">
         <span ref={titleRef} id={titleId} tabIndex={-1} className="panel__titulo">
-          Registrar cobro
+          {COMMON_TEXT.recordPayment}
         </span>
-        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={onCancel} />
       </div>
       <span className="cobro__cliente">
         {customer.name}
         {customer.standing === 'owes' && customer.owing_since !== null
-          ? ` · te debe ${formatMoney(customer.balance)} desde el ${formatDateShort(customer.owing_since)}`
+          ? PAYMENTS_TEXT.owesYouSince(formatMoney(customer.balance), formatDateShort(customer.owing_since))
           : ''}
       </span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
-            <span className="campo__rotulo">Monto</span>
+            <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
             <input
               className="campo__input cobro__monto"
               type="text"
@@ -210,7 +212,7 @@ export default function Cobro({
           </label>
           <div className="cobro__todo">
             <Boton variant="link" onClick={() => setAmount(String(balance))}>
-              Todo: {formatMoney(balance)}
+              {PAYMENTS_TEXT.all}{formatMoney(balance)}
             </Boton>
           </div>
           {amountError !== null && (
@@ -220,7 +222,7 @@ export default function Cobro({
           )}
 
           <label className="campo">
-            <span className="campo__rotulo">Fecha</span>
+            <span className="campo__rotulo">{COMMON_TEXT.date}</span>
             <input
               className="campo__input"
               type="date"
@@ -232,7 +234,7 @@ export default function Cobro({
           </label>
 
           <fieldset className="campo cobro__metodo">
-            <legend className="campo__rotulo">Método</legend>
+            <legend className="campo__rotulo">{PAYMENTS_TEXT.method}</legend>
             <label>
               <input
                 type="radio"
@@ -240,7 +242,7 @@ export default function Cobro({
                 checked={method === 'cash'}
                 onChange={() => setMethod('cash')}
               />
-              Efectivo
+              {COMMON_TEXT.cashMethod}
             </label>
             <label>
               <input
@@ -249,7 +251,7 @@ export default function Cobro({
                 checked={method === 'transfer'}
                 onChange={() => setMethod('transfer')}
               />
-              Transferencia
+              {COMMON_TEXT.transfer}
             </label>
             {methodError !== null && (
               <span className="campo__error" role="alert">
@@ -260,14 +262,14 @@ export default function Cobro({
 
           {parsedAmount.ok && preview.data !== undefined && (
             <div className="campo cobro__resumen">
-              <span className="campo__rotulo">Se descuenta de la deuda más vieja</span>
+              <span className="campo__rotulo">{PAYMENTS_TEXT.takenFromOldestDebt}</span>
               {preview.data.applied_to.map((split) => (
                 <span key={split.sale_id}>
-                  {formatMoney(split.amount)} a la venta del {formatDateShort(split.sale_date)}
+                  {formatMoney(split.amount)}{PAYMENTS_TEXT.toTheSaleOf}{formatDateShort(split.sale_date)}
                 </span>
               ))}
               {preview.data.after.standing === 'owes' && (
-                <span>Le queda debiendo {formatMoney(preview.data.after.balance)}</span>
+                <span>{PAYMENTS_TEXT.stillOwes}{formatMoney(preview.data.after.balance)}</span>
               )}
             </div>
           )}
@@ -275,7 +277,7 @@ export default function Cobro({
           {offline && <SinConexion />}
 
           <Boton textOnly="submit" type="submit" disabled={record.isPending}>
-            Guardar
+            {COMMON_TEXT.save}
           </Boton>
         </form>
     </>

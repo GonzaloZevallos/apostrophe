@@ -99,7 +99,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   ),
   "settings-appearance": expectation("form", "settings", SETTINGS_PLACE),
   "settings-account": expectation("form", "settings", SETTINGS_PLACE),
-  // The Onboarding's steps and "Listo": forms whose parent is Inicio (onboarding.md).
+  // The Onboarding's steps and "Done": forms whose parent is Inicio (onboarding.md).
   onboarding: expectation("form", "home", HOME_PLACE),
   "onboarding-variety": expectation("form", "home", HOME_PLACE),
   "onboarding-stock": expectation("form", "home", HOME_PLACE),
@@ -158,11 +158,11 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
 
   test("the label and the back fallback are one result: Configuración says Más on the phone, Inicio on a computer", () => {
     expect(parentOf("settings", "phone")).toMatchObject({
-      title: "Más",
+      title: "More",
       path: routes.MORE,
     });
     expect(parentOf("settings", "computer")).toMatchObject({
-      title: "Inicio",
+      title: "Home",
       path: routes.HOME,
     });
   });
@@ -176,12 +176,12 @@ describe("the screens that are a modal on a computer", () => {
 });
 
 describe("the new stock entry form's parent", () => {
-  const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", title: "Variedades" };
+  const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", title: "Varieties" };
 
   test("is Variedades, and editing an entry keeps Todas las entradas", () => {
     expect(parentOf("stock-entry-new", "phone")).toEqual(VARIEDADES);
     expect(parentOf("stock-entry-new", "computer")).toEqual(VARIEDADES);
-    expect(parentOf("stock-entry", "phone")).toEqual({ id: "stock", path: "/varieties/entries", title: "Todas las entradas" });
+    expect(parentOf("stock-entry", "phone")).toEqual({ id: "stock", path: "/varieties/entries", title: "All entries" });
   });
 });
 
@@ -428,11 +428,11 @@ describe("a path resolves to its own screen", () => {
   });
 });
 
-/** Screens compare.sh reaches by steps from another route: "Listo" opens only from the write
+/** Screens compare.sh reaches by steps from another route: "Done" opens only from the write
  * that ended the Onboarding, never by loading its own path (onboarding.md). An archived variety's
- * page is reached only by archiving a live one and opening it from "Archivadas" (varieties.md).
+ * page is reached only by archiving a live one and opening it from "Archived" (varieties.md).
  * The stock entry form of a variety with no entries is opened from that variety's page with
- * "Entrada", so the form preselects "Stock inicial" (stock.md). A registry row that reaches its
+ * "Entrada", so the form preselects "Initial stock" (stock.md). A registry row that reaches its
  * screen by steps is named here, or the route check below reports its route as not its path. */
 const REACHED_BY_STEPS = [
   "OnboardingListo",
@@ -475,7 +475,7 @@ function sampleOnboardingBusinesses(): number {
   return 1 + (declared.match(/"[^"]+"/g) ?? []).length;
 }
 
-/** What is wrong with the rows that end the Onboarding: reaching "Listo" ends a business's
+/** What is wrong with the rows that end the Onboarding: reaching "Done" ends a business's
  * Onboarding for good, so one capture can do it per business of the sample (ADR-0036 §7). */
 function listoRowsOverBound(
   rows: readonly { readonly screen: string; readonly steps?: readonly unknown[] }[],
@@ -484,13 +484,13 @@ function listoRowsOverBound(
   const ending = rows.filter((row) =>
     (row.steps ?? []).some(
       (step) =>
-        typeof step === "object" && step !== null && "click" in step && step.click === "Saltar el resto",
+        typeof step === "object" && step !== null && "click" in step && step.click === "Skip the rest",
     ),
   );
   return ending.length <= businesses
     ? []
     : [
-        `${ending.length} rows click "Saltar el resto" but the sample has ${businesses} ${businesses === 1 ? "business" : "businesses"} in Onboarding: "Listo" ends a business's Onboarding for good, so it is reached once per business (ADR-0036 §7). Rows: ${ending.map((row) => row.screen).join(", ")}`,
+        `${ending.length} rows click "Skip the rest" but the sample has ${businesses} ${businesses === 1 ? "business" : "businesses"} in Onboarding: "Done" ends a business's Onboarding for good, so it is reached once per business (ADR-0036 §7). Rows: ${ending.map((row) => row.screen).join(", ")}`,
       ];
 }
 
@@ -532,12 +532,12 @@ describe("screens.json against the English routes", () => {
     ]);
   });
 
-  test("no more rows end the Onboarding with \"Saltar el resto\" than the sample has businesses in Onboarding", () => {
+  test("no more rows end the Onboarding with \"Skip the rest\" than the sample has businesses in Onboarding", () => {
     expect(listoRowsOverBound(screensJson.screens, sampleOnboardingBusinesses())).toEqual([]);
   });
 
   test("the Listo bound refuses a row that ends the Onboarding of a business that is already finished, and counts La Huerta plus the sample's extra businesses", () => {
-    const skip = [{ click: "Saltar el resto" }];
+    const skip = [{ click: "Skip the rest" }];
     const rows = [
       { screen: "A", steps: skip },
       { screen: "B", steps: skip },
@@ -545,7 +545,7 @@ describe("screens.json against the English routes", () => {
     ];
     expect(listoRowsOverBound(rows, 2)).toEqual([]);
     expect(listoRowsOverBound(rows, 1)).toEqual([
-      expect.stringContaining("2 rows click \"Saltar el resto\" but the sample has 1 business in Onboarding"),
+      expect.stringContaining("2 rows click \"Skip the rest\" but the sample has 1 business in Onboarding"),
     ]);
     expect(listoRowsOverBound(rows, 1)[0]).toContain("ADR-0036");
     expect(sampleOnboardingBusinesses()).toBeGreaterThanOrEqual(2);
@@ -582,7 +582,7 @@ describe("screens.json against the English routes", () => {
   test("/varieties/entries shows today's entries list, as a card under Variedades", () => {
     const leaf = matchRoutes(router.routes, "/varieties/entries")?.at(-1);
     expect(screenIdOf(leaf?.route ?? {})).toBe("stock");
-    expect(parentOf("stock", "phone")?.title).toBe("Variedades");
+    expect(parentOf("stock", "phone")?.title).toBe("Varieties");
   });
 
   test("routes.ts keeps no legacy list: the old paths live only in app/legacy_front_paths.json", () => {
