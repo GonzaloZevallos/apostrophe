@@ -5088,14 +5088,30 @@ body {
   color: var(--tinta);
 }
 
+/* The native input is stretched over the row and painted invisible by its text fill, not by
+ * `opacity: 0`: its `color` stays a real token, so the contrast check still reads a readable
+ * value, and it stays a visible, 44 px-tall control to assistive technology. */
 .fecha-fila__input {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  opacity: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  -webkit-text-fill-color: transparent;
   cursor: pointer;
   font-size: 16px;
+}
+
+.fecha-fila__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
 }
 
 /* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */

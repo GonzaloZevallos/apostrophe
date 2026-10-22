@@ -29,10 +29,15 @@ export function parseMoney(input: string): ParseResult<number> {
 /** What a person typed into the amount field, read leniently as whole pesos: the one place
  * typed money text becomes a number. Everything from the first comma on is cents and goes;
  * with no comma, a last dot followed by one or two digits is cents too (a dot followed by
- * three is a thousands separator). Then only digits stay. No digit left gives `null`. */
-export function readMoneyInput(text: string): number | null {
+ * three is a thousands separator). Then only digits stay. No digit left gives `null`.
+ *
+ * After a `'delete'` edit the text is the figure the field itself showed, with a digit
+ * missing ("$ 20.00" from "$ 20.000"), so its dots are thousands whatever follows them and
+ * the cents rule does not apply. */
+export function readMoneyInput(text: string, edit: 'insert' | 'delete' = 'insert'): number | null {
   const commaAt = text.indexOf(',')
-  const whole = commaAt === -1 ? text.replace(/\.\d{1,2}$/, '') : text.slice(0, commaAt)
+  const noCents = commaAt === -1 ? text : text.slice(0, commaAt)
+  const whole = commaAt === -1 && edit === 'insert' ? noCents.replace(/\.\d{1,2}$/, '') : noCents
   const digits = whole.replace(/\D/g, '')
   return digits === '' ? null : Number(digits)
 }

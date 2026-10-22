@@ -75,7 +75,6 @@ const GONE_CODES: ReadonlySet<PaymentRefusalCode> = new Set([
 
 const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
   'payment.above_balance': PAYMENTS_TEXT.amountOverBalance,
-  'payment.future_date': PAYMENTS_TEXT.dateInFuture,
   'payment.amount_invalid': PAYMENTS_TEXT.enterValidAmount,
 }
 const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.chooseCashOrTransfer
@@ -111,12 +110,14 @@ export default function Cobro({
   const [date, setDate] = useState(today)
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
+  const [dateError, setDateError] = useState<string | null>(null)
   const [methodError, setMethodError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
   const flash = useFlash()
   const dateTextId = useId()
   const methodErrorId = useId()
+  const dateErrorId = useId()
 
   // Touched means any of the three fields differs from what the form opened with.
   const dirty = amount !== balance || date !== today || method !== null
@@ -153,6 +154,7 @@ export default function Cobro({
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setAmountError(null)
+    setDateError(null)
     setMethodError(null)
     setOffline(false)
     if (previewAmount === null) {
@@ -177,6 +179,7 @@ export default function Cobro({
         onGone()
       } else if (caught instanceof ApiError) {
         if (caught.code === 'payment.method_required') setMethodError(METHOD_REQUIRED_MESSAGE)
+        else if (caught.code === 'payment.future_date') setDateError(PAYMENTS_TEXT.dateInFuture)
         else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
@@ -209,7 +212,11 @@ export default function Cobro({
               inputMode="numeric"
               value={amount === null ? '' : formatMoney(amount)}
               onChange={(event) => {
-                const next = readMoneyInput(event.target.value)
+                const inputType = (event.nativeEvent as InputEvent).inputType
+                const next = readMoneyInput(
+                  event.target.value,
+                  typeof inputType === 'string' && inputType.startsWith('delete') ? 'delete' : 'insert',
+                )
                 if (next === null || Number.isSafeInteger(next)) setAmount(next)
               }}
               required
@@ -235,13 +242,19 @@ export default function Cobro({
               className="fecha-fila__input"
               type="date"
               aria-label={COMMON_TEXT.date}
-              aria-describedby={dateTextId}
+              aria-describedby={dateError === null ? dateTextId : `${dateTextId} ${dateErrorId}`}
               value={date}
               max={today}
               onChange={(event) => setDate(event.target.value)}
               required
             />
           </div>
+
+          {dateError !== null && (
+            <span id={dateErrorId} className="campo__error" role="alert">
+              {dateError}
+            </span>
+          )}
 
           <div className="cobro__metodo">
             <SegmentedChoice

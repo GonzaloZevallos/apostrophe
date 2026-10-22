@@ -256,6 +256,24 @@ describe('the form as drawn', () => {
     expect(date).toHaveAccessibleDescription('28/09')
   })
 
+  test('one Backspace on the shown figure removes one digit, not the thousands', async () => {
+    await openForm()
+    const amount = screen.getByLabelText('Amount')
+    await userEvent.type(amount, '{Backspace}')
+    expect(amount).toHaveValue('$ 1.100')
+  })
+
+  test('a future-date refusal shows beside the date, and the date input points at it', async () => {
+    await openForm({ 'POST /customers/1/payments': () => jsonResponse(422, { code: 'payment.future_date' }) })
+    const date = screen.getByLabelText('Date')
+    await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('The date cannot be in the future.')
+    expect(date.getAttribute('aria-describedby')?.split(' ')).toContain(alert.id)
+    expect(date).toHaveAccessibleDescription(/Today 03\/10.*The date cannot be in the future/)
+  })
+
   test('the method is one radiogroup holding Cash and Transfer, none chosen', async () => {
     await openForm()
     const group = screen.getByRole('radiogroup', { name: 'Method' })
