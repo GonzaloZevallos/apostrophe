@@ -48,6 +48,8 @@ are all on the built side.
 | `InicioPrimeraVezOscuro` | built | different dimensions | intended | Same. |
 | `VariedadesCompu` | built | 2888 | follow-up #273 | Only the switch of the open variety differs (gray before, black after). Two more captures of each side: the base was gray both times, the head black once and gray once, so the capture is unstable. Cause not investigated. |
 
+> `VariedadesCompu` above: resolved by GH-273, cause not a transition (docs/evidence/GH-273-capture-at-rest.md; ADR-0042, GH-273 and GH-291 amendments). Row kept as observed.
+
 ## 3. What the captures still show against the drawings
 
 Read by eye in the "after" sheets of `Inicio`, `InicioHoy`, `InicioOscuro`, `InicioCompu`,

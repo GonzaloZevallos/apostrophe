@@ -106,6 +106,8 @@ Two more whole-registry `--strict` runs, `6541887d`'s own `scripts/design` on `6
 - The pattern is the phone rows with a fixed bottom bar (AE about 80,000 on `Inicio`, `Ventas`, `Clientes`, `Variedades`, `Gastos`, `Mas`, `EstadosSinConexion`, ...; about 7,600 to 8,000 on the others), a few large (`CobroCompu` 128,000, `PrecioNuevoCompu` 711,680, `Analisis` 199,324, `EstadosConfirmar` 331,646, `VariedadNuevaCompu` 277,682) and `VariedadesCompu built` 468. Not looked at row by row.
 - Reading: growing the viewport to the document's height and taking a plain shot moves what depends on the viewport's height (fixed bars, `dvh`, `min-height`) compared with the old full-page shot. **This is an unbriefed pixel change of the capture on 48 built lines. It is not excused and not judged here**: it is escalated to the Tech Lead (the open plan rows on `comparisons.mjs:392` and `:402`). Captures taken by the old tooling are not comparable with captures taken by this one.
 
+> Tracked as issue #310 (opened by GH-291). Finding above kept as written.
+
 ### The diagnostic pair (single `VariedadesCompu` row, built, 1280x920, light)
 
 `--only VariedadesCompu --strict`, one `comparisons.mjs` run per sample, one sample app per tree, CPU throttling by CDP `Emulation.setCPUThrottlingRate` set in a throwaway copy (not committed). The verdict is the pixel of the switch's track in the PNG (`121,118,113` gray, `35,30,24` black), read from every PNG. Counts in `diagnostic-pair/counts.txt`.
