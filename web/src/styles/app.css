@@ -4982,6 +4982,20 @@ body {
     opacity: 0.28;
   }
 
+  /* A long breakdown ("Taken from the oldest debt" over many sales) makes the dialog taller than
+   * the screen: the host scrolls it, so Save is always reachable. The scrim is the host's own
+   * background, which stays one screen while the dialog scrolls over it. */
+  .cobro-modal {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: var(--espacio-xl);
+    background: color-mix(in srgb, var(--tinta) 28%, transparent);
+  }
+
+  .cobro-modal::before {
+    content: none;
+  }
+
   .precio-modal > .cuerpo,
   .cobro-modal > .cuerpo {
     position: relative;

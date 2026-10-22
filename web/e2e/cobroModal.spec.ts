@@ -53,7 +53,7 @@ async function openCobroModal(page: Page, origin: Origin = 'customers'): Promise
   }
   await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
   // The host takes focus to the title once the form is there: its effects have run.
-  await expect(page.locator('.cobro-modal .panel__titulo')).toBeFocused()
+  await expect(page.getByRole('dialog', { name: 'Record payment' }).getByText('Record payment', { exact: true })).toBeFocused()
 }
 
 test('Tab cycled through the dialog never focuses anything in the list, the card or the side rail', async ({ page }) => {

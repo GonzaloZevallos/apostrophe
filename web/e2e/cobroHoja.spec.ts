@@ -229,12 +229,6 @@ for (const viewport of VIEWPORTS) {
         let owed = origin === 'card' ? 13000 : 5000
 
         for (const how of ['close', 'partial', 'full'] as const) {
-          // Open, found by seeding Home and the card so they scroll: after Close on a phone Home ends 149 px
-          // further down than it was (same page height, stable for 1.5 s); on a computer the card's full
-          // payment never lets Save be clicked. Neither is explained yet.
-          if (viewport.name === 'phone' && origin === 'home' && how === 'close') continue
-          if (viewport.name === 'computer' && origin === 'card' && how === 'full') continue
-
           await goToOrigin(page, origin)
           const opener = openerOn(page, origin)
           await expect(opener).toBeVisible()
