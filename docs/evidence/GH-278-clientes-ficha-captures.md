@@ -117,3 +117,12 @@ Nothing is loosened; each is a lookup that follows a split or an assertion that 
 - Split lookup: the joined `Payment · cash · On account of the sale of dd/mm` is now the title
   `Payment · cash` and the sub-line `On account of the sale of dd/mm` (`ClienteFicha.test.tsx`,
   `payments.spec.ts`).
+
+## Integration: invariant 12 at 246x437
+
+The integrated offender lists hold 14 more (entry, size) cells than `4e9751e2` (1678 to 1692): CobroBorrar's
+Delete payment step is reachable at 246x437 now that ClienteFicha no longer overflows there, so its
+`unreachable` entry goes and its shell offenders (Home, Sales, More touch targets, text size, touch action,
+chrome and one figure-split) are listed against #46. Without the new entries the 246x437 run fails on unlisted
+CobroBorrar offenders; with the base lists it fails on the stale `unreachable` entry (`fixedButListed`; see
+`69f70080`). The shell's bar and text at 246 px belong to #59. Every other rule only shrinks.
