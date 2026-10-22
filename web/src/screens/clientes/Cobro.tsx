@@ -212,11 +212,10 @@ export default function Cobro({
               inputMode="numeric"
               value={amount === null ? '' : formatMoney(amount)}
               onChange={(event) => {
-                const inputType = (event.nativeEvent as InputEvent).inputType
-                const next = readMoneyInput(
-                  event.target.value,
-                  typeof inputType === 'string' && inputType.startsWith('delete') ? 'delete' : 'insert',
-                )
+                const native = event.nativeEvent
+                const deleting =
+                  'inputType' in native && typeof native.inputType === 'string' && native.inputType.startsWith('delete')
+                const next = readMoneyInput(event.target.value, deleting ? 'delete' : 'insert')
                 if (next === null || Number.isSafeInteger(next)) setAmount(next)
               }}
               required
