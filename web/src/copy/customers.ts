@@ -6,6 +6,7 @@
  */
 
 import { SAMPLES, type LimitedCopy } from './limits.ts'
+import { SHELL_TEXT } from './shell.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -39,7 +40,7 @@ export const CUSTOMERS_TEXT = {
   paidByTransfer: 'Paid by transfer',
   leftOwing: 'Left owing',
   deletePaymentOf: (amount: string | number, method: string | number, paid_on: string | number) => `Delete the payment of ${amount} (${method}) from ${paid_on}?`,
-  saleTitle: 'Sale',
+  saleTitle: SHELL_TEXT.sale,
   nothingToPay: 'Nothing to pay',
   accountHeading: 'Account · running balance',
   paymentTitle: (method: string | number) => `Payment · ${method}`,
