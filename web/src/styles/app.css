@@ -5015,9 +5015,12 @@ body {
     overflow: hidden;
   }
 
-  .cobro-hoja {
+  /* Under `.disposicion` so it is not beaten by `.disposicion .pantalla { padding: 0 }`: the
+   * sheet leaves the flow, so it owns the four insets itself. */
+  .disposicion .cobro-hoja {
     position: fixed;
     inset: 0;
+    padding: var(--inset-arriba) var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
     z-index: 20;
     min-height: 0;
     height: 100dvh;
@@ -5025,13 +5028,13 @@ body {
     overscroll-behavior: contain;
   }
 
-  .cobro-hoja > .cuerpo > .formulario {
+  .disposicion .cobro-hoja > .cuerpo > .formulario {
     flex: 1;
   }
 
-  .cobro-hoja > .cuerpo > .formulario > button[type='submit'] {
+  .disposicion .cobro-hoja > .cuerpo > .formulario > button[type='submit'] {
     position: sticky;
-    bottom: 0;
+    bottom: var(--inset-abajo);
     margin-top: auto;
     box-shadow: 0 calc(-1 * var(--espacio-md)) 0 0 var(--papel);
   }
