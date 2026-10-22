@@ -320,6 +320,21 @@
     "issue": 45
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "figure-split",
+    "target": "span:$ #.#",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#",
+    "issue": 45
+  },
+  {
     "screen": "InicioHoy",
     "rule": "figure-split",
     "target": "span:$ #.#",
@@ -327,6 +342,21 @@
     "sizes": [
       "246x437"
     ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "figure-split",
+    "target": "span:$ #.#",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#",
+    "issue": 45
   },
   {
     "screen": "InicioHoy",

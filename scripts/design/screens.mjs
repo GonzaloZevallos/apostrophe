@@ -161,9 +161,9 @@ function assertAccount(s) {
 }
 
 // The entry that reaches the closing screen "Listo" ends its business's Onboarding for
-// good (ADR-0036), so each `open` business can serve one such entry per sample run. An
-// `ended` business (its Onboarding ended at seed time) serves read-only entries and no
-// Listo entry.
+// good (ADR-0036), so each `open` business can serve one such entry per sample run. Every
+// other kind (`ended`, `pre_onboarding`, `imported`) is read-only: it serves entries that
+// change nothing, which several rows may share, and no Listo entry (ADR-0042, GH-274).
 const LISTO = 'OnboardingListo'
 const DEFAULT_ACCOUNT = 'La Huerta'
 
@@ -174,7 +174,8 @@ function reachesListo(s) {
   return (s.design ?? s.screen) === LISTO
 }
 
-const KINDS = ['open', 'ended']
+const KINDS = ['open', 'ended', 'pre_onboarding', 'imported']
+const OPEN = 'open'
 
 // The sample writes each account's kind in `facts.account_kinds`. A refusal names the
 // account, never its credential, and never prints the value it refused.
@@ -191,6 +192,7 @@ export function assertAccountKinds(accounts, kinds) {
   }
   for (const [name, kind] of Object.entries(table)) {
     if (!(name in accounts)) throw new Error(`account_kinds names ${name}, which is not one of the sample's accounts`)
+    // The text predates the two read-only kinds and an existing test pins it; the list above decides.
     if (!KINDS.includes(/** @type {string} */ (kind))) throw new Error(`account ${name} must have the kind open or ended`)
   }
 }
@@ -217,7 +219,7 @@ function isOnboardingComputer(name) {
 // capture. The messages are fixed text: they name the screens, never a credential.
 /**
  * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} selected
- * @param {Readonly<Record<string, 'open' | 'ended'>>} kinds
+ * @param {Readonly<Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported'>>} kinds
  * @returns {void}
  */
 export function assertSelectedAccounts(selected, kinds) {
@@ -227,10 +229,10 @@ export function assertSelectedAccounts(selected, kinds) {
       throw new Error(`${s.screen}: account is not one of the sample's accounts`)
     }
     const kind = kinds[s.account]
-    if (reachesListo(s) && kind !== 'open') {
-      throw new Error(`${s.screen}: reaches ${LISTO} on an ended account, and a Listo entry needs an open one`)
+    if (reachesListo(s) && kind !== OPEN) {
+      throw new Error(`${s.screen}: reaches ${LISTO} on ${/^[aeiou]/.test(kind) ? 'an' : 'a'} ${kind} account, and a Listo entry needs an open one`)
     }
-    if (!reachesListo(s) && kind === 'open') {
+    if (!reachesListo(s) && kind === OPEN) {
       throw new Error(`${s.screen}: names an open account but does not reach ${LISTO}, so only an ended account can serve it`)
     }
   }

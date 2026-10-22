@@ -42,7 +42,19 @@
     "issue": 45
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45
+  },
+  {
     "screen": "InicioHoy",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
     "rule": "aria-busy",
     "target": "",
     "issue": 45
