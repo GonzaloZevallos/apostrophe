@@ -2529,6 +2529,118 @@ body {
 .cuenta-cliente {
   display: flex;
   flex-direction: column;
+}
+
+.cuenta-cliente__encabezado {
+  margin: 0;
+  padding: 18px 0 6px;
+}
+
+.cuenta-cliente__fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--deuda-linea);
+}
+
+.cuenta-cliente__fila:last-child {
+  border-bottom: 0;
+}
+
+.cuenta-cliente__fecha {
+  flex: none;
+  width: 42px;
+  color: var(--tinta2);
+  font-size: 13px;
+}
+
+/* The title over its sub-line takes what is left and shrinks; the title ellipsizes. */
+.cuenta-cliente__texto {
+  flex: 1 1 8rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cuenta-cliente__titulo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.cuenta-cliente__sub {
+  color: var(--tinta2);
+  font-size: 13px;
+}
+
+/* A figure never breaks between "$" and its number: when the row is short of room the
+ * whole block drops to the next line, aligned to the right. */
+.cuenta-cliente__cifras {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.cuenta-cliente__monto {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cuenta-cliente__saldo {
+  color: var(--tinta2);
+  font-size: 12px;
+}
+
+/* Amber and the blue accent only on the balance line, by its tone; the muted ink of
+ * the plain balance is for a settled one. */
+.cuenta-cliente__saldo.monto-deuda {
+  color: var(--deuda);
+}
+
+.cuenta-cliente__saldo.monto-credito {
+  color: var(--acento);
+}
+
+.marca-estado {
+  flex: none;
+  gap: var(--espacio-sm);
+  white-space: nowrap;
+}
+
+.fila-stock__pie .marca-estado__forma {
+  flex: none;
+}
+
+.fila-stock__detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+/* Payments and balances (plan, "Front"): a debt is always amber, a credit always
+   the neutral/blue accent — never green or red (design README's accessibility
+   rule), and never told by color alone: every amber or blue figure here sits next
+   to its own text ("te debe desde dd/mm", "A favor $ X"). */
+.monto-deuda {
+  color: var(--deuda);
+}
+
+.monto-credito {
+  color: var(--acento);
+}
+
+.cuenta-cliente {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 

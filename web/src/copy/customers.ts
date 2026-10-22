@@ -5,7 +5,7 @@
  * (docs/product/icon-and-text-rule.md).
  */
 
-import type { LimitedCopy } from './limits.ts'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -16,10 +16,6 @@ export const EVERYONE = 'Everyone · A–Z'
 /** "Owed to you" with nobody owing. */
 export const NOBODY_OWES = 'Nobody owes you'
 
-export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyTitle', text: EMPTY_CUSTOMERS },
-  { kind: 'emptyTitle', text: NOBODY_OWES },
-]
 export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
@@ -43,7 +39,11 @@ export const CUSTOMERS_TEXT = {
   paidByTransfer: 'Paid by transfer',
   leftOwing: 'Left owing',
   deletePaymentOf: (amount: string | number, method: string | number, paid_on: string | number) => `Delete the payment of ${amount} (${method}) from ${paid_on}?`,
-  paymentOnAccount: (method: string | number, sale_date: string | number) => `Payment · ${method} · On account of the sale of ${sale_date}`,
+  saleTitle: 'Sale',
+  nothingToPay: 'Nothing to pay',
+  accountHeading: 'Account · running balance',
+  paymentTitle: (method: string | number) => `Payment · ${method}`,
+  onAccountOf: (sale_date: string | number) => `On account of the sale of ${sale_date}`,
   creditAmount: (running_balance: string | number) => `Credit ${running_balance}`,
   giveItAName: 'Give them a name',
   notAPhone: 'That does not look like a phone number with its area code',
@@ -54,3 +54,15 @@ export const CUSTOMERS_TEXT = {
   methodTransfer: 'transfer',
   balanceAmount: (running_balance: string | number) => `balance ${running_balance}`,
 } as const
+
+/** The ledger's fixed words, registered with the filled placeholder the screen shows
+ * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
+export const LIMITED_COPY: readonly LimitedCopy[] = [
+  { kind: 'emptyTitle', text: EMPTY_CUSTOMERS },
+  { kind: 'emptyTitle', text: NOBODY_OWES },
+  { kind: 'help', text: CUSTOMERS_TEXT.saleTitle },
+  { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },
+  { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },
+  { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(CUSTOMERS_TEXT.methodTransfer) },
+  { kind: 'help', text: CUSTOMERS_TEXT.onAccountOf(SAMPLES.date) },
+]
