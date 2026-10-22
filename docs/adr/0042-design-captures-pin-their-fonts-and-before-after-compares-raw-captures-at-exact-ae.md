@@ -294,6 +294,8 @@ the fixed head `a3db92ab`; every run exited 0. `@fontsource/plus-jakarta-sans` w
   separate cause that this change does not address and that a later task has to.
 - Consequently the fixed head is not AE 0 on every row and side across the five runs.
 
+> Superseded by the GH-273 amendment, on this point only: `VariedadesCompu built: AE 2888` was not a transition and is resolved (docs/evidence/GH-273-capture-at-rest.md). GH-261's acceptance "AE 0 on every row and side" is met there. What a capture guarantees is stated in the GH-291 amendment. The two bullets above are kept as written.
+
 **Known risk.** `probe.test.ts` models the paused clock and react-query's notify timer. It does not
 run react-query itself, so a change in how react-query schedules its notification is not covered.
 
@@ -394,6 +396,8 @@ runs, mostly phone rows with a fixed bottom bar: growing the viewport to the doc
 shot moves what depends on the viewport's height. Those 48 rows were not judged by eye. They are not
 excused: they are escalated, and captures taken by the earlier tooling are not comparable with these.
 
+> Tracked as issue #310 (opened by GH-291): judge these 48 built lines by eye. They sit outside the one-commit guarantee stated in the GH-291 amendment. Paragraph above kept as written.
+
 ## Amendment: capture accounts for a pre-Onboarding and an imported business (GH-274)
 
 2026-10-20. The first-run checklist and the after-import notice (docs/adr/0046) each need a
@@ -433,3 +437,11 @@ This adds two kinds to GH-189's `open` and `ended`. No product code, route or se
   are GH-189's risk unchanged: a price from the host's `today` is a future one on a server that is
   still on the day before, and the self-check stops the sample. One fresh sample per run on one
   Argentina day. A price effective on day D stays current on D+1, so step 1 survives midnight.
+
+## Amendment: what a capture guarantees (GH-291)
+
+*What a capture guarantees.* Under `--strict`, a whole-registry run gives, for every row and side, either a settled capture or a `null` side that fails the run (GH-273 Rules 2, 5 and 6; Rule 4 is not credited with this). A capture that did not come to rest is never kept as a PNG that differs. Two passing runs on the same terms (one commit, one version of the capture tooling, one Argentina day, one pinned fontsource version, one fresh sample) were AE 0 on every row and side in every run recorded in GH-273 (docs/evidence/GH-273-capture-at-rest.md). A difference between two settled runs on those terms is a defect to report, not an expected variation. A comparison across any of those terms (a tooling change such as the 48 lines of Rule 5, another commit, another day) is outside this guarantee.
+
+GH-261's acceptance "AE 0 on every row and side" is met by GH-273's evidence (docs/evidence/GH-273-capture-at-rest.md).
+
+This amendment added only four marker lines and reworded or deleted no existing line. The markers sit under the GH-261 evidence bullets, under GH-273's 48-line paragraph, in docs/evidence/GH-45-inicio-captures.md and in docs/evidence/GH-273-capture-at-rest.md. The 48 lines are tracked as issue #310.
