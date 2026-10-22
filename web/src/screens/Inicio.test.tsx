@@ -157,6 +157,7 @@ function renderInicio(
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  chooseTheme('claro')
   calls.length = 0
   firstRunCalls.length = 0
   advanced = null
@@ -442,23 +443,26 @@ test('stock rows: name, grams, status and days left, in the API\'s own order, wi
   expect(screen.queryByText(/en total/)).not.toBeInTheDocument()
 })
 
-test('"Start with your varieties" shows above the panel, which still shows its real figures', async () => {
-  stubFetch(PANEL, START)
-  const { container } = renderInicio()
+for (const theme of ['claro', 'oscuro'] as const) {
+  test(`"Start with your varieties" shows above the panel, which still shows its real figures (${theme})`, async () => {
+    chooseTheme(theme)
+    stubFetch(PANEL, START)
+    const { container } = renderInicio()
 
-  expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
-  expect(screen.getByText('You sold today')).toBeInTheDocument()
-  expect(within(container.querySelector<HTMLElement>('.panel-ventas')!).getByText('$ 15.000')).toBeInTheDocument()
+    expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
+    expect(screen.getByText('You sold today')).toBeInTheDocument()
+    expect(within(container.querySelector<HTMLElement>('.panel-ventas')!).getByText('$ 15.000')).toBeInTheDocument()
 
-  // The banner sits above the panel, not in place of it.
-  const titleIndex = Array.from(container.querySelectorAll('.cuerpo > *')).findIndex((el) =>
-    el.textContent?.includes(EMPTY_TITLE),
-  )
-  const panelIndex = Array.from(container.querySelectorAll('.cuerpo > *')).findIndex((el) =>
-    el.classList.contains('inicio__periodos'),
-  )
-  expect(titleIndex).toBeLessThan(panelIndex)
-})
+    // The banner sits above the panel, not in place of it.
+    const titleIndex = Array.from(container.querySelectorAll('.cuerpo > *')).findIndex((el) =>
+      el.textContent?.includes(EMPTY_TITLE),
+    )
+    const panelIndex = Array.from(container.querySelectorAll('.cuerpo > *')).findIndex((el) =>
+      el.classList.contains('inicio__periodos'),
+    )
+    expect(titleIndex).toBeLessThan(panelIndex)
+  })
+}
 
 test('a remount with a different answer never shows the first answer\'s figures', async () => {
   const client = new QueryClient()
@@ -560,17 +564,20 @@ const FINISH: OnboardingProgress = {
   steps: STEPS_AFTER_ONE.map((item) => ({ ...item, state: 'done' as const })),
 }
 
-test('an Onboarding business sees the notice at the top with its count and what is missing, and never Arrancá', async () => {
-  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
-  renderInicio()
+for (const theme of ['claro', 'oscuro'] as const) {
+  test(`an Onboarding business sees the notice at the top with its count and what is missing, and never Start with your varieties (${theme})`, async () => {
+    chooseTheme(theme)
+    stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
+    renderInicio()
 
-  const notice = await screen.findByRole('link', { name: /Go on to the setup/ })
-  expect(within(notice).getByText('1 of 6 steps')).toBeInTheDocument()
-  expect(within(notice).getByText('Missing: initial stock')).toBeInTheDocument()
-  expect(notice).toHaveAttribute('href', ONBOARDING_STOCK)
-  await screen.findByText('You sold today')
-  expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
-})
+    const notice = await screen.findByRole('link', { name: /Go on to the setup/ })
+    expect(within(notice).getByText('1 of 6 steps')).toBeInTheDocument()
+    expect(within(notice).getByText('Missing: initial stock')).toBeInTheDocument()
+    expect(notice).toHaveAttribute('href', ONBOARDING_STOCK)
+    await screen.findByText('You sold today')
+    expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+  })
+}
 
 test('with /first-run answering last, slot 1 stays empty: Arrancá never flashes for an Onboarding business', async () => {
   let release: (response: Response) => void = () => undefined
@@ -605,16 +612,19 @@ test('a business never offered the Onboarding keeps Arrancá and sees no notice'
   expect(screen.queryByText('Go on to the setup')).not.toBeInTheDocument()
 })
 
-test('the finish notice reads 6 of 6 with no Missing line and sends advance only on a tap', async () => {
-  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
-  renderInicio()
+for (const theme of ['claro', 'oscuro'] as const) {
+  test(`the finish notice reads 6 of 6 with no Missing line and sends advance only on a tap (${theme})`, async () => {
+    chooseTheme(theme)
+    stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
+    renderInicio()
 
-  const notice = await screen.findByRole('button', { name: /Go on to the setup/ })
-  expect(within(notice).getByText('6 of 6 steps')).toBeInTheDocument()
-  expect(screen.queryByText(/Missing:/)).not.toBeInTheDocument()
-  await screen.findByText('You sold today')
-  expect(calls).toEqual(['GET /onboarding-progress'])
-})
+    const notice = await screen.findByRole('button', { name: /Go on to the setup/ })
+    expect(within(notice).getByText('6 of 6 steps')).toBeInTheDocument()
+    expect(screen.queryByText(/Missing:/)).not.toBeInTheDocument()
+    await screen.findByText('You sold today')
+    expect(calls).toEqual(['GET /onboarding-progress'])
+  })
+}
 
 test('the Onboarding notice goes once the Onboarding is over', async () => {
   stubFetch(PANEL, NONE, { status: null }, { ...FINISH, over: true, resume: null })
@@ -646,34 +656,40 @@ test('tapping the finish notice when advance answers over: false does not draw "
   expect(screen.queryByText(/Listo listo/)).not.toBeInTheDocument()
 })
 
-test('the resume notice keeps its words and its card: boton-aviso, never a row, named by its visible text, with no icon of its own', async () => {
-  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
-  renderInicio()
+for (const theme of ['claro', 'oscuro'] as const) {
+  test(`the resume notice keeps its words and its card: boton-aviso, never a row, named by its visible text, with no icon of its own (${theme})`, async () => {
+    chooseTheme(theme)
+    stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
+    renderInicio()
 
-  const notice = await screen.findByRole('link', { name: /Go on to the setup/ })
-  expect(notice).toHaveClass('boton-aviso')
-  expect(notice).not.toHaveClass('boton--fila')
-  expect(notice).not.toHaveAttribute('aria-label')
-  expect(notice.textContent).toContain('Go on to the setup')
-  expect(notice.textContent).toContain('1 of 6 steps')
-  expect(notice.textContent).toContain('Missing: initial stock')
-  // Only the title's decorative chevron: no attention icon, and it is hidden from the name.
-  expect(notice.querySelectorAll('svg')).toHaveLength(1)
-  expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expectIconAndTextRule(notice)
-})
+    const notice = await screen.findByRole('link', { name: /Go on to the setup/ })
+    expect(notice).toHaveClass('boton-aviso')
+    expect(notice).not.toHaveClass('boton--fila')
+    expect(notice).not.toHaveAttribute('aria-label')
+    expect(notice.textContent).toContain('Go on to the setup')
+    expect(notice.textContent).toContain('1 of 6 steps')
+    expect(notice.textContent).toContain('Missing: initial stock')
+    // Only the title's decorative chevron: no attention icon, and it is hidden from the name.
+    expect(notice.querySelectorAll('svg')).toHaveLength(1)
+    expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expectIconAndTextRule(notice)
+  })
+}
 
-test('the finish notice is the same card as a button, named by its visible text', async () => {
-  stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
-  renderInicio()
+for (const theme of ['claro', 'oscuro'] as const) {
+  test(`the finish notice is the same card as a button, named by its visible text (${theme})`, async () => {
+    chooseTheme(theme)
+    stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, FINISH)
+    renderInicio()
 
-  const notice = await screen.findByRole('button', { name: /Go on to the setup/ })
-  expect(notice).toHaveClass('boton-aviso')
-  expect(notice).not.toHaveClass('boton--fila')
-  expect(notice).not.toHaveAttribute('aria-label')
-  expect(notice.querySelectorAll('svg')).toHaveLength(1)
-  expectIconAndTextRule(notice)
-})
+    const notice = await screen.findByRole('button', { name: /Go on to the setup/ })
+    expect(notice).toHaveClass('boton-aviso')
+    expect(notice).not.toHaveClass('boton--fila')
+    expect(notice).not.toHaveAttribute('aria-label')
+    expect(notice.querySelectorAll('svg')).toHaveLength(1)
+    expectIconAndTextRule(notice)
+  })
+}
 
 const CHECKLIST = answer({
   kind: 'checklist',
@@ -684,6 +700,27 @@ const CHECKLIST = answer({
     { step: 'second_user', required: false, done: true },
   ],
   nothing_qualifies: true,
+})
+
+test.each([
+  ['none', answer({ kind: 'none', checklist: [] })],
+  ['onboarding', answer({ kind: 'onboarding', checklist: [] })],
+])('a "%s" answer with an empty checklist draws no "To get started" list', async (_kind, firstRun) => {
+  stubFetch(PANEL, firstRun)
+  renderInicio()
+
+  await screen.findByText('You sold today')
+  expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument()
+  expect(screen.queryByText('To get started')).not.toBeInTheDocument()
+})
+
+test('the kind decides: an "onboarding" answer carrying checklist items still draws no checklist', async () => {
+  stubFetch(PANEL, answer({ kind: 'onboarding', checklist: CHECKLIST.checklist }))
+  renderInicio()
+
+  await screen.findByText('You sold today')
+  expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument()
+  expect(screen.queryByText('To get started')).not.toBeInTheDocument()
 })
 
 const IMPORT_NOTICE_TEXT = 'Connect the bot so the pinned catalog updates by itself'
@@ -707,7 +744,6 @@ for (const theme of ['claro', 'oscuro'] as const) {
     expect(list.closest('section')?.querySelector('.aviso-ambar__icono')).toBeNull()
     expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
     expectIconAndTextRule(list)
-    window.localStorage.clear()
   })
 }
 
@@ -749,16 +785,19 @@ test('the same notices sit above Semana and Mes', async () => {
   expect(screen.getByText(IMPORT_NOTICE_TEXT)).toBeInTheDocument()
 })
 
-for (const kind of ['none', 'start_varieties'] as const) {
-  test(`the import notice shows beside a "${kind}" slot 1, with the attention icon and a dismiss control`, async () => {
-    stubFetch(PANEL, answer({ kind, import_notice: true }))
-    renderInicio()
+for (const theme of ['claro', 'oscuro'] as const) {
+  for (const kind of ['none', 'start_varieties'] as const) {
+    test(`the import notice shows beside a "${kind}" slot 1, with the attention icon and a dismiss control (${theme})`, async () => {
+      chooseTheme(theme)
+      stubFetch(PANEL, answer({ kind, import_notice: true }))
+      renderInicio()
 
-    const notice = (await screen.findByText(IMPORT_NOTICE_TEXT)).closest('.aviso-ambar')!
-    expect(notice.querySelector('.aviso-ambar__icono svg')).toHaveAttribute('aria-hidden', 'true')
-    expect(within(notice as HTMLElement).getByRole('button', { name: 'Dismiss notice' })).toBeInTheDocument()
-    expectIconAndTextRule(notice as HTMLElement)
-  })
+      const notice = (await screen.findByText(IMPORT_NOTICE_TEXT)).closest('.aviso-ambar')!
+      expect(notice.querySelector('.aviso-ambar__icono svg')).toHaveAttribute('aria-hidden', 'true')
+      expect(within(notice as HTMLElement).getByRole('button', { name: 'Dismiss notice' })).toBeInTheDocument()
+      expectIconAndTextRule(notice as HTMLElement)
+    })
+  }
 }
 
 test('dismissing the import notice sends the dismissal, asks /first-run again and the notice goes', async () => {

@@ -426,7 +426,11 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(clicks(row('InicioHoy'))).toEqual([])
     expect(row('InicioHoy')).toMatchObject({ design: 'Inicio', section: HOY_PHONE })
     expect(clicks(row('InicioHoyCompu'))).toEqual([])
-    expect(row('InicioHoyCompu')).toMatchObject({ design: 'InicioCompu', viewport: [1280, 920] })
+    expect(row('InicioHoyCompu')).toMatchObject({
+      design: 'InicioCompu',
+      section: HOY_PHONE,
+      viewport: [1280, 920],
+    })
     // GH-274: added beside the original assertion, which stays as it was.
     expect(row('InicioHoyCompu').section).toBe(HOY_PHONE)
   })
@@ -435,11 +439,24 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(clicks(row('InicioHoyCompuOscuro'))).toEqual([])
     expect(row('InicioHoyCompuOscuro')).toMatchObject({
       design: 'InicioCompu',
+      section: HOY_PHONE,
       tema: 'oscuro',
       viewport: [1280, 920],
     })
     // GH-274: the original `toBeUndefined()` cannot hold, the brief crops this row to the new Hoy caption.
     expect(row('InicioHoyCompuOscuro').section).toBe(HOY_PHONE)
+  })
+
+  it('crops the computer Hoy rows to one frame of InicioCompu.dc.html, never to two', () => {
+    const drawing = readFileSync(
+      resolve(process.cwd(), '..', 'docs/product/design-system/pantallas/InicioCompu.dc.html'),
+      'utf-8',
+    )
+    for (const key of ['InicioHoyCompu', 'InicioHoyCompuOscuro']) {
+      const section = row(key).section ?? ''
+      expect(sectionOccurrences(drawing, section), key).toBe(1)
+      expect(sectionOccurrences(drawing + drawing, section), `${key} drawn twice`).toBe(2)
+    }
   })
 
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {

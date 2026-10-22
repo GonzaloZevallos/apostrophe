@@ -32,6 +32,13 @@ This refines the navigation job and criterion 5; it is not a new job. Its protag
 
 **When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Settings, Varieties and the catalog screen. (Served here by the Onboarding as a brand-new business's one first-run element, opened on accepting the invitation and from Home's notice; defined in onboarding.md.)
 
+**When** I review a change to Home's first-run elements before approving it, **I want** the tests, the `/first-run` contract and the design capture to prove what navigation.md, results.md and ADR-0046 say in every state they can be in and in both themes, **so I can** approve from the evidence alone, without trusting partial checks or carrying open findings into the next task.
+
+- Its protagonist is the maintainer, or the reviewer acting for them, as in gate.md, design-capture.md and onboarding.md criterion 6. The seller is affected only indirectly: a head nobody can approve holds up the work they are waiting for.
+- It refines criterion 12, results.md criteria 10–12 and ADR-0046; it is not a new product job and adds no product behaviour.
+- Its capture side (the `InicioHoyCompu` row) is design-capture.md's.
+- Before it (GH-45's follow-up): the agreement test reached `/first-run` only where the checklist shows, the shape of `checklist` outside the checklist kind was undecided, only the checklist test ran in both themes, and the Hoy capture showed a difference by construction.
+
 Choosing which pricing rules the business uses (pricing-settings.md) belongs in Settings too, as the Prices group.
 
 Before this structure: the bar was Home · Sales · Customers · Stock · More; one variety was split across Stock, Varieties and Catalog; collecting a debt took four taps from Customers; settings were split across Business, Catalog and Expenses → Categorías, and the bot was configured inside Catalog. Nothing of it is kept but the redirects from its paths, and, until Settings's Integrations and Catalog message exist, the temporary place for the bot and the header and footer reached from the catalog screen (catalog.md).
@@ -58,6 +65,15 @@ Success criteria:
 10. **One move back.** Back or "Close" leaves a screen in one tap and never lands on the same screen twice in history, the "That is gone." exits and Record payment included. With no history, back goes to the screen the form, sheet or card belongs to.
 11. **Every address opens its screen.** A reload on any Varieties route, parameterised ones included, opens the screen and never the API's answer. Every old Spanish path, `/variedades/{id}` and `/mi-stock/entradas/{id}` included, answers a permanent redirect to its new route with the id carried across.
 12. **First run, one element at a time.** A brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the first-run checklist; an imported business sees the dismissable after-import notice; never two first-run elements at once, and each leads to its fix.
+
+Success criteria, reviewing the first run (GH-45 follow-up):
+
+13. **Approved from the evidence alone.** A review of the merging head raises no important finding about the first run's agreement test, the shape of `checklist`, its theme coverage or the Hoy capture, and none is carried into another task.
+14. **A broken answer fails a test.** In any reachable state (no variety; priced without stock; stock without a price; sold out; qualifying; checklist gone), a test fails if `/first-run`'s `nothing_qualifies` is not exactly "the kind is the checklist and `GET /catalog` has no text", or if its checklist steps disagree with the data.
+15. **One shape for `checklist`.** Its shape outside the checklist kind is written once, here. The API, `contract.json` and the front agree on it, and a test pins it.
+16. **Both themes.** Every first-run test on Home runs in light and in dark.
+17. **The capture tells the truth.** `InicioHoyCompu` is compared against its own named section (design-capture.md).
+18. **Nothing a seller sees changes, and no test is loosened.** This file, results.md and every screen read and behave as before; every suite passes; edited tests keep every assertion they had; registry changes stay within their declared seams.
 
 ## Behaviour
 
@@ -186,6 +202,17 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   None of them holds personal data. No checklist step is ever stored as ticked.
 - Which element shows, and each checklist step, is answered by the server for the session's business.
 
+### What `/first-run` answers, and how it is proven (GH-45 follow-up)
+
+- **The shape of `checklist`**: outside the checklist kind (the Onboarding notice, "Start with your varieties", none), `checklist` is an empty list `[]`, never `null`. The after-import notice is its own flag and never changes it. This is the one statement of the shape: the plan, the API schema and the front read it, and the contract checker is not changed. Home shows the checklist only when the kind says so, never because the list has items.
+- **`nothing_qualifies`** is true exactly when the kind is the checklist and the catalog has no text to send; in every other kind it is false, whatever the catalog holds. It is read only by the checklist's rule that disables "Send catalog", and outside the checklist it means nothing. It is never widened to answer for every kind.
+- **The agreement test** compares `/first-run` with its sources in eight states: no variety; priced without stock; stock without a price; sold out; qualifying; checklist gone; an open Onboarding; and an imported business, while its notice shows and once it is over. In every state:
+  - the kind and the notice flag equal what their sources say: `/onboarding-progress`, the import fact and the publish fact;
+  - `GET /catalog` itself is read (not only the port the server reads it through), and `nothing_qualifies` equals "the kind is the checklist and `GET /catalog` has no text".
+
+  Each first-run element (the Onboarding notice, the checklist, "Start with your varieties", the after-import notice, none) appears in at least one state. It adds checks only; no rule or matrix here changes.
+- **Both themes**: the front tests of the Onboarding notice, the checklist, "Start with your varieties", the after-import notice, "+ New sale"'s missing-price line and the disabled "Send catalog" each run in light and dark, keeping every assertion they had. Home's figures are out of this scope.
+
 ### The Onboarding (first run of a brand-new business)
 
 - **Entry**: accepting a new-business invitation lands in the Onboarding instead of Home. That is the only time it opens by itself.
@@ -271,6 +298,10 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   - two first-run elements never show at once;
   - "Send catalog" is disabled only while the checklist shows and nothing qualifies.
 - **First-run state isolated**: its routes are in the sweep and the gated-route test; business removal leaves 0 rows of it and exported count = deleted count.
+- **First-run agreement (criteria 13, 14)**: over the eight states, `/first-run`'s kind and notice flag equal their sources, and `nothing_qualifies` equals "the kind is the checklist and `GET /catalog` has no text": 0 differences; each of the five elements appears in at least one state; a deliberately broken `nothing_qualifies` makes the test fail, shown once in the PR and not committed. 0 findings of these kinds on the merging head, and 0 carried into another task.
+- **One shape (criterion 15)**: a backend test shows `checklist == []` for every kind that is not the checklist; a front test shows `[]` is read as no checklist; the plan, the schema and the front agree, and the contract checker's code is unchanged.
+- **Both themes (criterion 16)**: each of the six first-run front tests runs in light and dark, and no test has fewer assertions than before.
+- **Nothing loosened (criterion 18)**: every suite passes; the only edited tests are the agreement test, the Home first-run tests and the two registry tests, each keeping its assertions; under `web/src/` nothing but tests changes, apart from the front's `/first-run` type if it declared `checklist` nullable.
 - **Redirects (criterion 11)**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada`, and `/variedades/{id}` and `/mi-stock/entradas/{id}` with the id carried across. A test shows every redirect target is a `screens.json` path, with no exemption. There is one redirect mechanism, on the server, and none in the front.
 - **Reloads under `/varieties` (criterion 11)**: a browser navigation to each Varieties route, parameterised ones included (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`) and `/varieties/archived`, opens the screen, never the API's answer; the front's own API calls still reach the API.
 - **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail, the Archived card, the archived variety's page, Prices, the Onboarding's screens and Home's first-run states included; Zeta approves the pull request that states them.
@@ -301,3 +332,6 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - Auto-selecting a customer on Customers' two panes.
 - Any token, wording or layout change to a screen beyond what the chrome rule gives it.
 - A business-wide list of stock withdrawals.
+- Changing the contract checker so it can declare a nullable array; a `null` checklist.
+- A `nothing_qualifies` that answers for every kind, or a catalog read added to every Home read for it.
+- Theme coverage of Home's Hoy, Semana and Mes figures as part of the first-run review.

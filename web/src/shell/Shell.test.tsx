@@ -42,6 +42,7 @@ import {
   type Screen,
 } from '../routes'
 import Mas from '../screens/Mas'
+import { chooseTheme } from '../theme'
 import Shell from './Shell'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
@@ -105,6 +106,7 @@ function stubFirstRun(answer: FirstRunAnswer | 'pending' | undefined): void {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  chooseTheme('claro')
 })
 
 function renderShell(
@@ -495,22 +497,25 @@ function checklist(pricedDone: boolean): FirstRunAnswer {
   }
 }
 
-test.each([
-  ['phone', false, 2],
-  ['computer', true, 2],
-])('%s: while the checklist shows with no priced variety, "New sale" stays a link and says what is missing', async (_name, computer, buttons) => {
-  renderShell([HOME], { computer, firstRun: checklist(false) })
+for (const theme of ['claro', 'oscuro'] as const) {
+  test.each([
+    ['phone', false, 2],
+    ['computer', true, 2],
+  ])(`%s: while the checklist shows with no priced variety, "New sale" stays a link and says what is missing (${theme})`, async (_name, computer, buttons) => {
+    chooseTheme(theme)
+    renderShell([HOME], { computer, firstRun: checklist(false) })
 
-  const lines = await screen.findAllByText(MISSING_LINE)
-  expect(lines.length).toBeGreaterThan(0)
-  const links = screen.getAllByRole('link', { name: /New sale/ })
-  expect(links).toHaveLength(buttons)
-  for (const link of links) expect(link).toHaveAttribute('href', SALE_NEW)
-  for (const link of links) {
-    const describedBy = link.getAttribute('aria-describedby')
-    expect(describedBy === null ? null : document.getElementById(describedBy)?.textContent).toBe(MISSING_LINE)
-  }
-})
+    const lines = await screen.findAllByText(MISSING_LINE)
+    expect(lines.length).toBeGreaterThan(0)
+    const links = screen.getAllByRole('link', { name: /New sale/ })
+    expect(links).toHaveLength(buttons)
+    for (const link of links) expect(link).toHaveAttribute('href', SALE_NEW)
+    for (const link of links) {
+      const describedBy = link.getAttribute('aria-describedby')
+      expect(describedBy === null ? null : document.getElementById(describedBy)?.textContent).toBe(MISSING_LINE)
+    }
+  })
+}
 
 test.each([
   ['the priced-variety step is done', checklist(true)],
