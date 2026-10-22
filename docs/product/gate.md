@@ -73,7 +73,7 @@ The mobile standard keeps offender lists under `web/src/mobile-standard/offender
 - `unreachable.json` lists screens the mobile walk cannot reach yet.
 - The other lists, such as `touch-target.json`, list the real cells that fall short of a rule.
 
-This file is the one place the rule is written. CODING_STANDARDS.md §10 and its twin in `docs/product/design-system/README.md` name the trade in one sentence and point here.
+This file is the one place the rule is written. The other live texts name the trade in one sentence and point here: CODING_STANDARDS.md §10, its twin in `docs/product/design-system/README.md`, item 39 of `docs/product/accounts.md`, and the header of `web/src/mobile-standard/offenders/index.ts`.
 
 - **No growth (invariant 9).** The offender lists never grow, except by the trade below. It was first written as invariant 9 of the GH-271 plan.
 - **The trade, per cell.** An offender cell (screen, size, theme) may be added only when the same change removes that screen's `unreachable` coverage at that size and theme. The real cells go in whichever offender lists they belong in.
