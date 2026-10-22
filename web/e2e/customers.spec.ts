@@ -98,16 +98,26 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.getByRole('link', { name: 'Noe Sinnumero' }).first().click()
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 4\.000/ })).toBeVisible()
 
-  // The block is a small label over a large figure: the figure is set larger than its label.
-  const sizes = await page.locator('.ficha-deuda').evaluate((block) => {
-    const size = (selector: string): number => {
+  // The block is a small label over a large figure: the figure is set in `cifra-l` (38px on a
+  // 1.05 line, tracked at -0.04em), and larger than its label.
+  const type = await page.locator('.ficha-deuda').evaluate((block) => {
+    const read = (selector: string): CSSStyleDeclaration => {
       const node = block.querySelector(selector)
       if (node === null) throw new Error(`no ${selector}`)
-      return parseFloat(getComputedStyle(node).fontSize)
+      return getComputedStyle(node)
     }
-    return { label: size('.ficha-deuda__rotulo'), figure: size('.monto-deuda') }
+    const figure = read('.monto-deuda')
+    return {
+      label: parseFloat(read('.ficha-deuda__rotulo').fontSize),
+      fontSize: parseFloat(figure.fontSize),
+      lineHeight: parseFloat(figure.lineHeight),
+      letterSpacing: parseFloat(figure.letterSpacing),
+    }
   })
-  expect(sizes.figure).toBeGreaterThan(sizes.label)
+  expect(Math.abs(type.fontSize - 38)).toBeLessThan(0.01)
+  expect(Math.abs(type.lineHeight - 39.9)).toBeLessThan(0.01)
+  expect(Math.abs(type.letterSpacing - -1.52)).toBeLessThan(0.01)
+  expect(type.fontSize).toBeGreaterThan(type.label)
 
   // Paid in full through Registrar cobro.
   await page.getByRole('link', { name: 'Record payment' }).click()
