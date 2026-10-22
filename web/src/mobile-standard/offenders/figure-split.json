@@ -136,15 +136,6 @@
     ]
   },
   {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:Owes you $ #.#",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "Clientes",
     "rule": "figure-split",
     "target": "span:$ #.#",
@@ -460,15 +451,6 @@
     "target": "span:Own use $ #.# and # g without cost[2]",
     "sizes": [
       "375x812"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "figure-split",
-    "target": "span:Owes you $ #.#",
-    "issue": 46,
-    "sizes": [
-      "246x437"
     ]
   },
   {

@@ -49,7 +49,11 @@
     "screen": "Clientes",
     "rule": "chrome-at-load",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
   },
   {
     "screen": "ClientesBusqueda",
