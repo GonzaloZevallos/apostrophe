@@ -133,6 +133,34 @@ describe('on a computer', () => {
 })
 
 describe('on a phone', () => {
+  test('Record payment is a modal dialog named by its title, with Close on top', async () => {
+    renderApp([{ pathname: PAYMENT }], 'phone')
+
+    const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'New sale' })).toBeNull()
+  })
+
+  test('focus goes to the title and Escape leaves like Close does', async () => {
+    const router = renderApp([{ pathname: PAYMENT }], 'phone')
+    const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
+
+    await waitFor(() => expect(dialog.querySelector('.panel__titulo')).toHaveFocus())
+    fireEvent.keyDown(document, { key: 'Escape' })
+    await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+  })
+
+  test('with something typed, Escape asks first and does not leave', async () => {
+    const router = renderApp([{ pathname: PAYMENT }], 'phone')
+    await screen.findByRole('dialog', { name: 'Record payment' })
+    await userEvent.click(await screen.findByLabelText('Cash'))
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(PAYMENT)
+  })
+
   test('the card alone is behind the form: no list beside it', async () => {
     renderApp([{ pathname: PAYMENT }], 'phone')
 
