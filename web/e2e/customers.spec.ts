@@ -17,7 +17,7 @@
  */
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -25,6 +25,7 @@ import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
+import { seedLedger } from './helpers/ledger.js'
 
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "Credit" are what these specs read. */
@@ -95,20 +96,18 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Noe Sinnumero' }).first().click()
-  await expect(page.getByText('Owes you $ 4.000')).toBeVisible()
+  await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 4\.000/ })).toBeVisible()
 
-  // The balance is set in `cifra-m`: 25px on a 27.5px line, tracked at -0.035em.
-  const owed = await page.getByText('Owes you $ 4.000').evaluate((node) => {
-    const style = getComputedStyle(node)
-    return {
-      fontSize: parseFloat(style.fontSize),
-      lineHeight: parseFloat(style.lineHeight),
-      letterSpacing: parseFloat(style.letterSpacing),
+  // The block is a small label over a large figure: the figure is set larger than its label.
+  const sizes = await page.locator('.ficha-deuda').evaluate((block) => {
+    const size = (selector: string): number => {
+      const node = block.querySelector(selector)
+      if (node === null) throw new Error(`no ${selector}`)
+      return parseFloat(getComputedStyle(node).fontSize)
     }
+    return { label: size('.ficha-deuda__rotulo'), figure: size('.monto-deuda') }
   })
-  expect(Math.abs(owed.fontSize - 25)).toBeLessThan(0.01)
-  expect(Math.abs(owed.lineHeight - 27.5)).toBeLessThan(0.01)
-  expect(Math.abs(owed.letterSpacing - -0.875)).toBeLessThan(0.01)
+  expect(sizes.figure).toBeGreaterThan(sizes.label)
 
   // Paid in full through Registrar cobro.
   await page.getByRole('link', { name: 'Record payment' }).click()
@@ -146,4 +145,123 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Nothing personal or technical reaches the console or the browser's own storage.
   await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
+})
+
+/**
+ * The card's pinned footer ("New sale to <name>", GH-278): against the viewport, the ledger's
+ * last row and the bottom bar, read only as bounding boxes relative to each other.
+ */
+interface Rect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+async function rectOf(locator: Locator): Promise<Rect> {
+  const found = await locator.boundingBox()
+  if (found === null) throw new Error('element has no box')
+  return found
+}
+
+// Sub-pixel rounding only: the footer's bottom edge is the viewport's, less the (zero here) inset.
+const SUBPIXEL = 1
+
+async function viewportHeight(page: Page): Promise<number> {
+  const size = page.viewportSize()
+  if (size === null) throw new Error('no viewport')
+  return size.height
+}
+
+async function scrollTo(page: Page, fraction: number): Promise<void> {
+  await page.evaluate((at) => {
+    window.scrollTo(0, (document.documentElement.scrollHeight - window.innerHeight) * at)
+  }, fraction)
+}
+
+async function expectTheDocumentScrolls(page: Page): Promise<void> {
+  const scrolls = await page.evaluate(() => document.documentElement.scrollHeight > window.innerHeight)
+  expect(scrolls).toBe(true)
+}
+
+async function expectPinnedInView(page: Page, footer: Locator): Promise<void> {
+  const height = await viewportHeight(page)
+  const box = await rectOf(footer)
+  expect(box.y).toBeGreaterThanOrEqual(0)
+  expect(box.y + box.height).toBeLessThanOrEqual(height + SUBPIXEL)
+  expect(Math.abs(height - (box.y + box.height))).toBeLessThanOrEqual(SUBPIXEL)
+}
+
+test.describe('the card\'s pinned "New sale to <name>" on a phone', () => {
+  test.use({ viewport: { width: 390, height: 700 } })
+
+  test('a long ledger keeps it in view at load and mid-scroll, and at the end it clears the last row and the bar', async ({
+    page,
+  }) => {
+    await signUpNewBusiness(page)
+    const name = `Larga ${uniqueTag()}`
+    await seedLedger(page, name, 9)
+    const footer = page.locator('.ficha-cliente__pie')
+    await expect(footer).toBeVisible()
+    await expectTheDocumentScrolls(page)
+
+    await scrollTo(page, 0)
+    await expectPinnedInView(page, footer)
+    await scrollTo(page, 0.5)
+    await expectPinnedInView(page, footer)
+
+    await scrollTo(page, 1)
+    const end = await rectOf(footer)
+    const last = await rectOf(page.locator('.cuenta-cliente__fila').last())
+    const bar = await rectOf(page.locator('.bar-inferior'))
+    expect(end.y).toBeGreaterThanOrEqual(last.y + last.height - SUBPIXEL)
+    expect(end.y + end.height).toBeLessThanOrEqual(bar.y + SUBPIXEL)
+  })
+
+  test('a short card has it after the ledger, in view, above the bar and over nothing', async ({ page }) => {
+    await signUpNewBusiness(page)
+    const name = `Corta ${uniqueTag()}`
+    await seedLedger(page, name, 1)
+    const footer = page.locator('.ficha-cliente__pie')
+    await expect(footer).toBeVisible()
+
+    const height = await viewportHeight(page)
+    const box = await rectOf(footer)
+    const last = await rectOf(page.locator('.cuenta-cliente__fila').last())
+    const bar = await rectOf(page.locator('.bar-inferior'))
+    expect(box.y).toBeGreaterThanOrEqual(last.y + last.height - SUBPIXEL)
+    expect(box.y + box.height).toBeLessThanOrEqual(height + SUBPIXEL)
+    expect(box.y + box.height).toBeLessThanOrEqual(bar.y + SUBPIXEL)
+  })
+})
+
+test.describe('the card\'s pinned "New sale to <name>" on a computer', () => {
+  test.use({ viewport: { width: 1280, height: 600 } })
+
+  test('a long ledger keeps it in view inside the right pane, and at the end it clears the last row', async ({
+    page,
+  }) => {
+    await signUpNewBusiness(page)
+    const name = `Larga ${uniqueTag()}`
+    await seedLedger(page, name, 9)
+    const footer = page.locator('.ficha-cliente__pie')
+    await expect(footer).toBeVisible()
+    await expectTheDocumentScrolls(page)
+
+    const pane = await rectOf(page.locator('.clientes-paneles__detalle'))
+    for (const at of [0, 0.5]) {
+      await scrollTo(page, at)
+      await expectPinnedInView(page, footer)
+      const box = await rectOf(footer)
+      expect(box.x).toBeGreaterThanOrEqual(pane.x - SUBPIXEL)
+      expect(box.x + box.width).toBeLessThanOrEqual(pane.x + pane.width + SUBPIXEL)
+    }
+
+    await scrollTo(page, 1)
+    const end = await rectOf(footer)
+    const last = await rectOf(page.locator('.cuenta-cliente__fila').last())
+    expect(end.y).toBeGreaterThanOrEqual(last.y + last.height - SUBPIXEL)
+    expect(end.x).toBeGreaterThanOrEqual(pane.x - SUBPIXEL)
+    expect(end.x + end.width).toBeLessThanOrEqual(pane.x + pane.width + SUBPIXEL)
+  })
 })

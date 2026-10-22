@@ -90,7 +90,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // The card shows the debt, straight from the API.
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await expect(page.getByText('Owes you $ 5.000')).toBeVisible()
+  await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 5\.000/ })).toBeVisible()
   await expect(page.getByText(`since ${today}`, { exact: true })).toBeVisible()
   // Clientes' own header already counts her (checked again, with the figure, below).
 
@@ -123,7 +123,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await expect(page.getByText('Owes you $ 8.000')).toBeVisible()
+  await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
 
   // --- A partial payment, by transfer: the preview names what is left before
   // saving, and the toast after saving carries the same figure (PRD metric 2). ---
@@ -134,7 +134,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('They still owe $ 5.000')).toBeVisible()
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Payment saved · still owing $ 5.000')).toBeVisible()
-  await expect(page.getByText('Owes you $ 5.000')).toBeVisible()
+  await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 5\.000/ })).toBeVisible()
 
   // --- Delete payment: confirmed first, then the debt it had settled returns. ---
   const transferRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'transfer' })
@@ -145,7 +145,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   ).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Payment deleted')).toBeVisible()
-  await expect(page.getByText('Owes you $ 8.000')).toBeVisible()
+  await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
 
   // --- Te deben: opened from the Clientes header, lists her with the same figure,
   // and the total/count head the view. ---
@@ -155,7 +155,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(owing.getByText('1 sale owing')).toBeVisible()
   await owing.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Owes you $ 8.000')).toBeVisible()
+  await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
 
   // --- Deleting a sale names the grams returning to stock (sales.md, left over
   // from #20), never the debt or the credit it leaves. ---
