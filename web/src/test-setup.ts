@@ -10,4 +10,4 @@ configure({ asyncUtilTimeout: 10_000 })
 
 // jsdom has no scrolling: it prints "Not implemented" for `window.scrollTo`, which the screens
 // call to come back to their place after Record payment. A test that cares spies on it.
-window.scrollTo = () => undefined
+if (typeof window !== 'undefined') window.scrollTo = () => undefined
