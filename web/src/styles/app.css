@@ -5043,6 +5043,13 @@ body {
   padding-right: 0;
 }
 
+/* The background is only what the sheet covers: it never makes the page scroll sideways. */
+.cobro-paneles--solo > [inert] {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 .cobro__cliente {
   font-size: 14px;
   color: var(--tinta2);

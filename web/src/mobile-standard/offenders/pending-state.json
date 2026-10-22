@@ -1,11 +1,5 @@
 [
   {
-    "screen": "CobroDesdeClientes",
-    "rule": "pending-state",
-    "target": "button:Save",
-    "issue": 46
-  },
-  {
     "screen": "Entrar",
     "rule": "pending-state",
     "target": "button:Sign in",
