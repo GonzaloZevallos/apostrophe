@@ -5047,7 +5047,7 @@ body {
  * the page's: it is a hidden layer the size of the screen, neither seen nor reached. */
 .cobro-paneles--solo > [inert] {
   position: fixed;
-  inset: 0;
+  inset: var(--inset-arriba) var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
   visibility: hidden;
   overflow: hidden;
 }
