@@ -2,7 +2,7 @@
  * "Registrar cobro" (`Cobro`, `payments.md`): the form, drawn inside `CobroFrame` by its host
  * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "All: $ X"
  * fills the amount with the customer's own `balance` (never typed in by the seller for that
- * case); the date defaults to today; Efectivo · Transferencia is required. The host owns how it
+ * case); the date defaults to today; Cash · Transfer is required. The host owns how it
  * is left (the leave guard, Escape, the backdrop, where "Cerrar" goes): this form only says
  * through `onDone`, `onCancel`, `onGone`, `onDirtyChange` and `onSendingChange` what happened.
  *
@@ -20,7 +20,7 @@
  * through `refusals.ts`'s contract-backed `RefusalCode`.
  */
 
-import { type FormEvent, type RefObject, useEffect, useState } from 'react'
+import { type FormEvent, type RefObject, useEffect, useId, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
@@ -32,11 +32,12 @@ import {
   recordPayment,
 } from '../../api/payments'
 import Boton from '../../components/Boton'
+import SegmentedChoice from '../../components/SegmentedChoice'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
-import { formatDateShort } from '../../format/dates'
+import { chipDate, formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
-import { parseMoney } from '../../format/parse'
+import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENTS_TEXT } from '../../copy/payments'
@@ -105,7 +106,8 @@ export default function Cobro({
   onSendingChange,
 }: CobroProps) {
   const balance = customer.balance
-  const [amount, setAmount] = useState(String(balance))
+  // The number the API receives: the field's text is only how it is shown (`formatMoney`).
+  const [amount, setAmount] = useState<number | null>(balance)
   const [date, setDate] = useState(today)
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
@@ -113,14 +115,14 @@ export default function Cobro({
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
   const flash = useFlash()
+  const dateTextId = useId()
+  const methodErrorId = useId()
 
   // Touched means any of the three fields differs from what the form opened with.
-  const dirty = amount !== String(balance) || date !== today || method !== null
+  const dirty = amount !== balance || date !== today || method !== null
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
 
-  const parsedAmount = parseMoney(amount)
-
-  const previewAmount = parsedAmount.ok ? parsedAmount.value : null
+  const previewAmount = amount !== null && Number.isSafeInteger(amount) && amount > 0 ? amount : null
 
   // Debounced 150 ms behind the amount/date the seller is typing (same delay as
   // `Clientes`' search box): the preview's own query key only moves once typing
@@ -153,7 +155,7 @@ export default function Cobro({
     setAmountError(null)
     setMethodError(null)
     setOffline(false)
-    if (!parsedAmount.ok) {
+    if (previewAmount === null) {
       setAmountError(PAYMENTS_TEXT.enterValidAmount)
       return
     }
@@ -162,7 +164,7 @@ export default function Cobro({
       return
     }
     try {
-      const recorded = await record.mutateAsync({ paid_on: date, amount: parsedAmount.value, method })
+      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, method })
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
@@ -205,13 +207,16 @@ export default function Cobro({
               className="campo__input cobro__monto"
               type="text"
               inputMode="numeric"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              value={amount === null ? '' : formatMoney(amount)}
+              onChange={(event) => {
+                const next = readMoneyInput(event.target.value)
+                if (next === null || Number.isSafeInteger(next)) setAmount(next)
+              }}
               required
             />
           </label>
           <div className="cobro__todo">
-            <Boton variant="link" onClick={() => setAmount(String(balance))}>
+            <Boton variant="link" onClick={() => setAmount(balance)}>
               {PAYMENTS_TEXT.all}{formatMoney(balance)}
             </Boton>
           </div>
@@ -221,46 +226,43 @@ export default function Cobro({
             </span>
           )}
 
-          <label className="campo">
-            <span className="campo__rotulo">{COMMON_TEXT.date}</span>
+          <div className="fecha-fila">
+            <span className="fecha-fila__rotulo">{COMMON_TEXT.date}</span>
+            <span id={dateTextId} className="fecha-fila__valor">
+              {date === '' ? '' : chipDate(date, today)}
+            </span>
             <input
-              className="campo__input"
+              className="fecha-fila__input"
               type="date"
+              aria-label={COMMON_TEXT.date}
+              aria-describedby={dateTextId}
               value={date}
               max={today}
               onChange={(event) => setDate(event.target.value)}
               required
             />
-          </label>
+          </div>
 
-          <fieldset className="campo cobro__metodo">
-            <legend className="campo__rotulo">{PAYMENTS_TEXT.method}</legend>
-            <label>
-              <input
-                type="radio"
-                name="cobro-method"
-                checked={method === 'cash'}
-                onChange={() => setMethod('cash')}
-              />
-              {COMMON_TEXT.cashMethod}
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="cobro-method"
-                checked={method === 'transfer'}
-                onChange={() => setMethod('transfer')}
-              />
-              {COMMON_TEXT.transfer}
-            </label>
+          <div className="cobro__metodo">
+            <SegmentedChoice
+              options={[
+                { value: 'cash', label: COMMON_TEXT.cashMethod },
+                { value: 'transfer', label: COMMON_TEXT.transfer },
+              ]}
+              value={method}
+              onChange={setMethod}
+              ariaLabel={PAYMENTS_TEXT.method}
+              required
+              describedBy={methodError !== null ? methodErrorId : undefined}
+            />
             {methodError !== null && (
-              <span className="campo__error" role="alert">
+              <span id={methodErrorId} className="campo__error" role="alert">
                 {methodError}
               </span>
             )}
-          </fieldset>
+          </div>
 
-          {parsedAmount.ok && preview.data !== undefined && (
+          {previewAmount !== null && preview.data !== undefined && (
             <div className="campo cobro__resumen">
               <span className="campo__rotulo">{PAYMENTS_TEXT.takenFromOldestDebt}</span>
               {preview.data.applied_to.map((split) => (

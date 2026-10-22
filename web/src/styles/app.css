@@ -5069,39 +5069,54 @@ body {
   text-decoration: none;
 }
 
-.cobro__metodo {
-  display: flex;
-  flex-direction: row;
-  gap: var(--espacio-xs);
-  border: 0;
-  padding: var(--espacio-xs);
-  margin: 0;
-  background: var(--superficie);
-  border-radius: var(--radio-pildora);
-}
-
-.cobro__metodo > legend {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
-
-.cobro__metodo > label {
-  flex: 1;
+/* The date row (`Cobro.dc.html`): "Date" on the left, "Today 05/10" on the right. The native
+ * date input is stretched over the whole row, transparent (the same technique as
+ * `.fecha-pildora`), so a tap anywhere opens the picker and the row is the touch target. */
+.fecha-fila {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  border-bottom: 1px solid var(--linea);
+  font-size: 16px;
+}
+
+.fecha-fila__valor {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.fecha-fila__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */
+.cobro__metodo {
+  display: flex;
+  flex-direction: column;
   gap: var(--espacio-xs);
-  padding: var(--espacio-md) 0;
-  border-radius: var(--radio-pildora);
+}
+
+.cobro__metodo > .selector-pago {
+  background: var(--superficie);
+}
+
+.cobro__metodo .selector-pago__opcion {
+  min-height: var(--alto-tocable);
+  padding: 0;
   font-size: 15px;
 }
 
-.cobro__metodo > label:has(input:checked) {
+.cobro__metodo .selector-pago__opcion--activa {
   background: var(--papel);
-  font-weight: 600;
 }
 
 .cobro__resumen {

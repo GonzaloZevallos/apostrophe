@@ -569,7 +569,7 @@ test('registering a payment shows "Payment saved · still owing $ X" when someth
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Amount'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Amount'), '5000')
-  await userEvent.click(within(sheet as HTMLElement).getByLabelText('Cash'))
+  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   // `payment.json`'s own `after.balance` (plan, invariants: "used by the front's
@@ -597,7 +597,7 @@ test('"All" fills the amount with the balance, and the debounced preview shows t
   const within_ = within(sheet as HTMLElement)
 
   await userEvent.click(within_.getByRole('button', { name: 'All: $ 11.000' }))
-  expect(within_.getByLabelText('Amount')).toHaveValue('11000')
+  expect(within_.getByLabelText('Amount')).toHaveValue('$ 11.000')
 
   expect(await within_.findByText('Taken from the oldest debt')).toBeInTheDocument()
   expect(await within_.findByText('$ 11.000 to the sale of 14/09')).toBeInTheDocument()
@@ -647,7 +647,7 @@ test('registering a payment that settles everything shows the plain "Payment sav
   const sheet = (await screen.findByRole('button', { name: 'Save' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'All: $ 11.000' }))
-  await userEvent.click(within(sheet as HTMLElement).getByLabelText('Cash'))
+  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Payment saved')).toBeInTheDocument()
@@ -765,11 +765,11 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Amount'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Amount'), '999000')
-  await userEvent.click(within(sheet as HTMLElement).getByLabelText('Cash'))
+  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('The amount is more than they owe you.')).toBeInTheDocument()
-  expect(within(sheet as HTMLElement).getByLabelText('Amount')).toHaveValue('999000')
+  expect(within(sheet as HTMLElement).getByLabelText('Amount')).toHaveValue('$ 999.000')
 })
 
 const OWING_FETCHES = {
@@ -803,7 +803,7 @@ test('an untouched sheet leaves at once on history back', async () => {
 test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
   api.mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
-  await userEvent.click(await screen.findByLabelText('Cash'))
+  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
   await act(() => router.navigate(-1))
 
   expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
@@ -815,7 +815,7 @@ test('a touched sheet asks before history back leaves, "No" keeps what was typed
   await waitFor(() => expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument())
   // A regression check that "No" did not navigate, not a sync point.
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
-  expect(await screen.findByLabelText('Cash')).toBeChecked()
+  expect(await screen.findByRole('radio', { name: 'Cash' })).toBeChecked()
 
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
@@ -833,7 +833,7 @@ test('after a save the sheet is not in history: back from the card goes to what 
   await router.navigate(CUSTOMERS)
   await router.navigate(pathTo(CUSTOMER, { id: 1 }), { state: inAppState({ pathname: CUSTOMERS }) })
   await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))
-  await userEvent.click(await screen.findByLabelText('Cash'))
+  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
@@ -896,7 +896,7 @@ function renderGone(entries: HistoryEntry[]) {
 }
 
 async function saveTheGonePayment() {
-  await userEvent.click(await screen.findByLabelText('Cash'))
+  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 }
 
@@ -944,7 +944,7 @@ test('a gone cobro on a direct link replaces the sheet with Clientes and shows t
 test('after a reload of the sheet, the gone exit still goes back once', async () => {
   fakeGonePayment()
   const { router, view, app } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
-  await screen.findByLabelText('Cash')
+  await screen.findByRole('radio', { name: 'Cash' })
   view.unmount()
   render(app)
 
@@ -959,7 +959,7 @@ test('a resize across 900 px between opening and leaving does not change where t
   fakeGonePayment()
   stubViewport('phone')
   const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
-  await screen.findByLabelText('Cash')
+  await screen.findByRole('radio', { name: 'Cash' })
   stubViewport('computer')
 
   await saveTheGonePayment()

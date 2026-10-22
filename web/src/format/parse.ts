@@ -26,6 +26,17 @@ export function parseMoney(input: string): ParseResult<number> {
   return { ok: true, value }
 }
 
+/** What a person typed into the amount field, read leniently as whole pesos: the one place
+ * typed money text becomes a number. Everything from the first comma on is cents and goes;
+ * with no comma, a last dot followed by one or two digits is cents too (a dot followed by
+ * three is a thousands separator). Then only digits stay. No digit left gives `null`. */
+export function readMoneyInput(text: string): number | null {
+  const commaAt = text.indexOf(',')
+  const whole = commaAt === -1 ? text.replace(/\.\d{1,2}$/, '') : text.slice(0, commaAt)
+  const digits = whole.replace(/\D/g, '')
+  return digits === '' ? null : Number(digits)
+}
+
 /** Grams with a comma or a dot, at most two decimals. Returned as the decimal string
  * the API takes, never as a float the front goes on to compute with. */
 export function parseGrams(input: string): ParseResult<string> {
