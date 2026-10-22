@@ -27,7 +27,7 @@ dimensions` (the page got shorter or taller, so no pixel count exists); the othe
 | Clientes, ClientesOscuro | different dimensions | intended: header, avatars, chevrons (this task) |
 | ClientesCompu, ClientesCompuOscuro | different dimensions (sheet 1083 -> 1058 px) | intended: header, avatars, chevrons, ledger, pinned footer |
 | ClienteFicha, ClienteFichaOscuro | different dimensions | intended: label over figure, ledger, pinned footer |
-| CobroCompu, CobroCompuOscuro | different dimensions (sheet 1052 -> 1027 px) | not one of the six: Registrar cobro is a modal over the Clientes panes, and those panes behind it are the ones that changed. Its sheet shrinks by 25 px, exactly as ClientesCompu's does (1083 -> 1058), which is the header-row change in the left pane. The modal itself is not touched by this task. Not defective: no follow-up |
+| CobroCompu, CobroCompuOscuro | different dimensions (sheet 1052 -> 1027 px) | not one of the six, judged by eye on the CobroCompu before and after sheets (the dark twin shares its structure): the modal (title, close icon, amount, "All" chip, date, Cash/Transfer, split box, Save) is identical on both sides at the same position and size. What changed is the Clientes list pane behind it: the title row carries "+ New customer" in place of the separate button and the "4 customers" line, rows carry avatars, and the card pane shows the label-over-figure block, the ledger rows and the footer "New sale to Nico Parra" (the old footer sat under the ledger, the new one is pinned at the pane's foot). That is the 25 px shorter sheet, the same delta as ClientesCompu. A consequence of this task's own intended changes, behind the dimmed overlay: not defective, no follow-up. Differences from the drawing are the ones already listed for Customers (header word, wording, brand) |
 
 No other row differs: the 149 remaining `built` lines, among them the Cobro phone rows,
 NuevaVentaCliente, ClienteNuevo, ClienteEditar and the shell screens, are AE 0.
@@ -69,9 +69,12 @@ Every one has one verdict.
 
 ## Phone check (mobile project)
 
-`COMPARE_MOBILE=1` and `npm --prefix web run e2e -- --project=mobile` were **not run** in this
-subtask (turn limit reached after the two whole-registry captures). What `compare.sh` printed is
-attached instead: the known-offender counts on each side.
+`npm --prefix web run e2e -- --project=mobile` (after `npx vite build`, `--workers=4`), run on head
+`359b6699`'s product code (`d06039d0`): **33 passed (7.6 m)**, no failure. That includes every
+`phone standard at <size>, claro/oscuro` cell (430x932 and 246x437 seen in the output) and the
+checker, walk and getting-in tests. So no offender list has a stale entry (an entry whose cell now
+passes) and no new offender exists; what the lists hold is what `compare.sh` printed, attached
+below as counts on each side.
 
 | | Base | Head |
 | --- | --- | --- |
