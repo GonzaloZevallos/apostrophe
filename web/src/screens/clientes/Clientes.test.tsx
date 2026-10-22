@@ -12,7 +12,7 @@
  * search list's own.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -579,6 +579,27 @@ test('the header holds the title and "New customer" with its icon, and no count 
   expect(nuevo).toHaveTextContent('New customer')
   expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(screen.queryByText(/^\d+ customers?$/)).not.toBeInTheDocument()
+})
+
+test('tapping "New customer" opens the customer form', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture])))
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[CUSTOMERS]}>
+        <Routes>
+          <Route element={<ClientesLayout />}>
+            <Route path={CUSTOMERS} element={<Clientes />} />
+          </Route>
+          <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+
+  await userEvent.click(await screen.findByRole('link', { name: 'New customer' }))
+
+  expect(await screen.findByText('customer form')).toBeInTheDocument()
 })
 
 test('the two empty states are the registered strings, mounted and within their limit', async () => {
