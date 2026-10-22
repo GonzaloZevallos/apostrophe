@@ -5111,6 +5111,9 @@ body {
 
 .cobro__metodo .selector-pago__opcion {
   min-height: var(--alto-tocable);
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
   padding: 0;
   font-size: 15px;
 }

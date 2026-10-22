@@ -196,10 +196,10 @@ describe('the form as drawn', () => {
     return router
   }
 
-  function postedBody(path: string): unknown {
+  function postedBody(request: string): unknown {
     const call = vi
       .mocked(fetch)
-      .mock.calls.find(([url, init]) => url === path && init?.method === 'POST')
+      .mock.calls.find(([url, init]) => `${init?.method ?? 'GET'} ${url}` === request)
     return call === undefined ? undefined : JSON.parse(String(call[1]?.body))
   }
 
@@ -217,8 +217,8 @@ describe('the form as drawn', () => {
 
     await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await waitFor(() => expect(postedBody('/customers/1/payments')).toBeDefined())
-    expect(postedBody('/customers/1/payments')).toEqual({ paid_on: '2026-10-03', amount: 5000, method: 'cash' })
+    await waitFor(() => expect(postedBody('POST /customers/1/payments')).toBeDefined())
+    expect(postedBody('POST /customers/1/payments')).toEqual({ paid_on: '2026-10-03', amount: 5000, method: 'cash' })
   })
 
   test('a zero amount is refused on save, an emptied one shows empty, and "All" brings the balance back', async () => {
@@ -231,7 +231,7 @@ describe('the form as drawn', () => {
     await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Enter a valid amount')
-    expect(postedBody('/customers/1/payments')).toBeUndefined()
+    expect(postedBody('POST /customers/1/payments')).toBeUndefined()
 
     await userEvent.click(screen.getByRole('button', { name: 'All: $ 11.000' }))
     expect(amount).toHaveValue('$ 11.000')
@@ -278,6 +278,6 @@ describe('the form as drawn', () => {
     const alert = await screen.findByRole('alert')
     expect(group).toHaveAccessibleDescription(alert.textContent ?? '')
     expect(group.getAttribute('aria-describedby')).toBe(alert.id)
-    expect(postedBody('/customers/1/payments')).toBeUndefined()
+    expect(postedBody('POST /customers/1/payments')).toBeUndefined()
   })
 })
