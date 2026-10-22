@@ -138,61 +138,7 @@
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
-    "target": "span:$ #.#[1]",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:$ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:$ #.#[3]",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
     "target": "span:Owes you $ #.#",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:balance $ #.#[1]",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:balance $ #.#[2]",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "figure-split",
-    "target": "span:balance $ #.#[3]",
     "issue": 46,
     "sizes": [
       "246x437"
@@ -514,6 +460,24 @@
     "target": "span:Own use $ #.# and # g without cost[2]",
     "sizes": [
       "375x812"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:Owes you $ #.#",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:Delete the payment of $ #.# (cash) from #/#?",
+    "issue": 46,
+    "sizes": [
+      "246x437"
     ]
   }
 ]
