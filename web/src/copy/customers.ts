@@ -22,7 +22,7 @@ export const LONG_REFUSALS: readonly string[] = []
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const CUSTOMERS_TEXT = {
   paymentDeleted: 'Payment deleted',
-  owesYou: 'Owes you ',
+  owesYou: 'Owes you',
   since: 'since ',
   credit: 'Credit ',
   creditLabel: 'Credit',

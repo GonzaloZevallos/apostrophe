@@ -5229,6 +5229,49 @@ body {
   margin-top: var(--espacio-md);
 }
 
+/* The label sits right over its figure: a small label, then the large figure. */
+.ficha-deuda__rotulo {
+  display: block;
+}
+
+/* A credit is not a debt: no amber surface, the figure takes the neutral/blue accent. */
+.ficha-deuda--credito {
+  background: none;
+  padding: 0;
+}
+
+/* "Nueva venta a <name>" pinned at the card's foot (`ClienteFicha.dc.html`, `ClientesCompu.dc.html`):
+ * the last child of the card's column, at its end when the card is short and stuck to the
+ * bottom of the viewport (above the in-flow bar) while the long ledger scrolls. The document
+ * scrolls, so no ancestor takes an overflow. */
+.ficha-cliente__pie {
+  margin-top: auto;
+  position: sticky;
+  bottom: var(--inset-abajo);
+  background: var(--papel);
+  padding: var(--espacio-md) 0;
+}
+
+.ficha-cliente__pie > .boton {
+  max-width: 100%;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.ficha-cliente__pie-texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 900px) {
+  .ficha-cliente__pie > .boton {
+    width: fit-content;
+    padding: 0 var(--espacio-xxl);
+  }
+}
+
 /* The dialog's title takes focus when the modal opens so a screen reader reads it; it is
  * not a control, so it draws no ring. */
 .gasto-form__titulo:focus {

@@ -182,7 +182,8 @@ export default function ClienteFicha() {
 
         {data.standing === 'owes' && (
           <div className="ficha-deuda">
-            <span className="cifra-m monto-deuda">{CUSTOMERS_TEXT.owesYou}{formatMoney(data.balance)}</span>
+            <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.owesYou}</span>
+            <span className="cifra-l monto-deuda">{formatMoney(data.balance)}</span>
             {data.owing_since !== null && (
               <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
             )}
@@ -194,8 +195,9 @@ export default function ClienteFicha() {
           </div>
         )}
         {data.standing === 'credit' && (
-          <div className="campo">
-            <span className="cifra-m monto-credito">{CUSTOMERS_TEXT.credit}{formatMoneyMagnitude(data.balance)}</span>
+          <div className="ficha-deuda ficha-deuda--credito">
+            <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.creditLabel}</span>
+            <span className="cifra-l monto-credito">{formatMoneyMagnitude(data.balance)}</span>
           </div>
         )}
 
@@ -251,9 +253,9 @@ export default function ClienteFicha() {
           })}
         </section>
 
-        <div className="clientes__accion">
+        <div className="ficha-cliente__pie">
           <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">
-            {CUSTOMERS_TEXT.newSaleTo}{data.name}
+            <span className="ficha-cliente__pie-texto">{CUSTOMERS_TEXT.newSaleTo}{data.name}</span>
           </BotonLink>
         </div>
       </div>
