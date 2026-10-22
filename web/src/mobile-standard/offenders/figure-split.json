@@ -322,15 +322,6 @@
   {
     "screen": "InicioChecklist",
     "rule": "figure-split",
-    "target": "span:# sales · average $ #.#.# · # g",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "figure-split",
     "target": "span:$ #.#",
     "issue": 45,
     "sizes": [
@@ -347,15 +338,6 @@
     "screen": "InicioHoy",
     "rule": "figure-split",
     "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "figure-split",
-    "target": "span:# sales · average $ #.#.# · # g",
     "issue": 45,
     "sizes": [
       "246x437"
