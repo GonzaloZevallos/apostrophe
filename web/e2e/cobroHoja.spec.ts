@@ -134,3 +134,100 @@ for (const viewport of VIEWPORTS) {
     }
   })
 }
+
+// Back from Record payment the seller is at their place: the same scroll offset and focus on the
+// control they used, or, when a full payment took the row away, the "Owed to you" block.
+
+/** Gives the business `count` more customers, each owing a gram of Rosa, through the session's own requests. */
+async function owingCustomers(page: Page, count: number): Promise<void> {
+  const me: { today: string } = await (await page.request.get('/auth/me')).json()
+  const varieties: { id: number; name: string }[] = await (await page.request.get(`/varieties?on=${me.today}`)).json()
+  const rosa = varieties.find((variety) => variety.name === 'Rosa')
+  if (rosa === undefined) throw new Error('Rosa missing from GET /varieties')
+  for (let index = 1; index <= count; index += 1) {
+    const created = await page.request.post('/customers', {
+      data: { name: `Zeta ${String(index).padStart(2, '0')}`, phone: null, vip: false },
+    })
+    expect(created.ok()).toBe(true)
+    const customer: { id: number } = await created.json()
+    const sold = await page.request.post('/sales', {
+      data: {
+        customer_id: customer.id,
+        payment: 'owing',
+        lines: [{ variety_id: rosa.id, grams: '1', gift: false, special_price: null }],
+      },
+    })
+    expect(sold.ok()).toBe(true)
+  }
+}
+
+const scrollY = (page: Page): Promise<number> => page.evaluate(() => window.scrollY)
+
+/** The control the seller taps on the origin; on Customers, the one in the A–Z section, far down a long page. */
+function openerOn(page: Page, origin: Origin) {
+  if (origin === 'customers') {
+    return page.getByRole('region', { name: 'Everyone · A–Z' }).getByRole('link', { name: OPENER.customers })
+  }
+  return page.getByRole('link', { name: OPENER[origin] }).first()
+}
+
+async function goToOrigin(page: Page, origin: Origin): Promise<void> {
+  if (origin === 'card') {
+    await page.goto(CUSTOMERS)
+    await page.getByRole('link', { name: /Carla Cobrar/ }).first().click()
+    await expectPath(page, CUSTOMER)
+  } else {
+    await page.goto(ORIGIN_PATH[origin])
+  }
+}
+
+for (const viewport of VIEWPORTS) {
+  test.describe(`Back from Record payment on a ${viewport.name}`, () => {
+    test.use({ viewport: { width: viewport.width, height: viewport.height } })
+
+    for (const origin of ORIGINS) {
+      for (const how of ['close', 'partial', 'full'] as const) {
+        test(`from ${origin}, ${how}: the same offset and focus where the seller was`, async ({ page }) => {
+          test.setTimeout(180_000)
+          await makeDebtor(page)
+          if (origin === 'customers') await owingCustomers(page, 30)
+          await goToOrigin(page, origin)
+
+          const opener = openerOn(page, origin)
+          await expect(opener).toBeVisible()
+          await opener.scrollIntoViewIfNeeded()
+          const before = await scrollY(page)
+          if (origin === 'customers') expect(before).toBeGreaterThan(500)
+          await opener.click()
+          await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
+
+          if (how === 'close') {
+            await page.getByRole('button', { name: 'Close' }).click()
+          } else {
+            await page.getByLabel('Amount').fill(how === 'partial' ? '2000' : '5000')
+            await page.getByRole('radio', { name: 'Cash' }).check()
+            await page.getByRole('button', { name: 'Save' }).click()
+          }
+          await expectPath(page, ORIGIN_PATH[origin])
+          await expect(page.getByRole('dialog')).toHaveCount(0)
+
+          await expect.poll(async () => Math.abs((await scrollY(page)) - before)).toBeLessThanOrEqual(2)
+          if (how !== 'full') {
+            await expect(openerOn(page, origin)).toBeFocused()
+          } else if (origin === 'customers') {
+            // Thirty more customers still owe, so the block stays and its heading takes focus.
+            await expect(page.locator(':focus')).toHaveText('Owed to you')
+            await expect(page.getByRole('link', { name: OPENER.customers })).toHaveCount(0)
+            await expect(page.getByRole('link', { name: /^Collect from Zeta/ })).toHaveCount(60)
+          } else if (origin === 'home') {
+            await expect(page.locator(':focus')).toHaveText('Nobody owes you')
+          } else {
+            await expect(page.locator(':focus')).toHaveText('Carla Cobrar')
+          }
+          // Moving through the page afterwards finds it where it was left.
+          await expect.poll(async () => Math.abs((await scrollY(page)) - before)).toBeLessThanOrEqual(2)
+        })
+      }
+    }
+  })
+}
