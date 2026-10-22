@@ -10,7 +10,7 @@ This is the same "run my business from my phone" job as every other capability. 
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "Collect" on every debtor row of Customers and Home, which opens Record payment with the customer chosen in at most 2 taps.)
 
-**When** a customer pays me while I'm chatting with them on my phone, **I want** to open Record payment from their card or debtor row, record the payment and be back on that customer straight away, **so I** see their balance drop without losing my place. (GH-46 follow-up: on the phone Record payment is a sheet over the screen it was opened from, never a page of its own.)
+**When** a customer pays me while I'm chatting with them on my phone, **I want** to open Record payment from their card or debtor row, record the payment and be back on that customer straight away, **so I** see their balance drop without losing my place. (GH-46 follow-up: on the phone Record payment is a sheet over the screen it was opened from, never a page of its own, and that screen keeps its scroll position.)
 
 Success criteria:
 
@@ -29,7 +29,7 @@ Success criteria:
 6. **Payment dates are kept**: a payment keeps its own date and method, so Cash (#7) counts money on the day it came in, never on the sale's date.
 7. **Businesses never mix, nothing leaks**: a payment belongs to one customer of its own business (ADR-0004). Another business's customer or payment is gone (404). No amount or name goes to an error, a log, the console or browser storage (ADR-0005).
 8. **No curl, and the browser computes nothing**: everything is done from the phone. Every balance, owing since and settlement shown comes from the API.
-9. **Never lose your place**: on the phone, Record payment opens as a sheet over the screen it was opened from (the customer's card, Customers or Home) and closes with "Close". Saving or closing lands the seller back on that screen, with the balance already lower after a save. On the computer it is a modal. The product docs, the drawing and the built app agree on this.
+9. **Never lose your place**: on the phone, Record payment opens as a sheet over the screen it was opened from (the customer's card, Customers or Home) and closes with "Close". Saving or closing lands the seller back on that screen, at the scroll position it had, with the balance already lower after a save. On the computer it is a modal. The product docs, the drawing and the built app agree on this.
 
 ## Behaviour
 
@@ -113,6 +113,11 @@ Success criteria:
   - On the computer it is a modal over the same screen.
   - No bar and no "+ New sale". "Close", with a confirmation when leaving with something typed.
   - Saving or "Close" lands the seller back on the screen it was opened from.
+- **Back where you were**: on closing, by "Close" or by saving, the screen underneath is at the scroll position it had when "Collect" or "Record payment" was tapped, on the phone and on the computer.
+  - The refresh after saving updates rows in place and never resets the scroll.
+  - Focus returns to the "Collect" (or "Record payment") that was tapped.
+  - When the payment settles the whole balance and the customer's row leaves "Owed to you", the list stays at the same offset and the rows close up; nothing jumps to the top. Focus goes to the "Owed to you" heading, or to "Nobody owes you" when the section is now empty.
+  - This holds for this flow only; scroll restoration elsewhere in the app is not part of payments.
 - **The sheet**:
   - "All: $ X" fills the amount with the whole balance in one tap;
   - the date comes filled with today;
@@ -175,6 +180,7 @@ Success criteria:
   - "Close" returns to that same screen;
   - a save returns there with the balance read lower;
   - at a computer viewport, the same entry points open a modal.
+- **Place kept (criterion 9)**: an end-to-end run scrolls Customers and Home so the tapped debtor row is below the first screenful, then opens Record payment and closes it, once by "Close" and once by a partial save. Each time the scroll offset is unchanged and focus is on the tapped "Collect". After a save that settles the whole balance, the offset is unchanged and focus is on the "Owed to you" heading (or "Nobody owes you").
 - **Design agreement (criterion 9)**: the design capture of Record payment on the phone shows the drawing and the built app both as a sheet. The evidence note leaves no open difference.
 
 ## Out of scope
@@ -186,5 +192,6 @@ Success criteria:
 - A separate Owed to you screen.
 - Record payment as a full page on the phone.
 - A screens-registry key or check telling a sheet from a page.
+- Scroll restoration anywhere other than closing Record payment.
 - Cash and profit: the results capability (#7).
 - Live updates between partners.
