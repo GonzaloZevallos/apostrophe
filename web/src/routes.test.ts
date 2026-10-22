@@ -664,16 +664,27 @@ describe("the screen Record payment was opened from", () => {
     expect(peekPaymentReturn()).toBeNull();
   });
 
-  test("only the link helper sets the hand-off", () => {
+  test("the guard flags a source that sets the hand-off, aliased or not, and passes the helper and the module", () => {
+    const direct = { path: "src/screens/X.tsx", content: "setPaymentReturn(7, 0)" };
+    const aliased = {
+      path: "src/screens/Y.tsx",
+      content: "import { setPaymentReturn as remember } from '../paymentReturn'\nremember(7, 0)",
+    };
+    const helper = { path: "src/routes.ts", content: "setPaymentReturn(Number(id), 0)" };
+    const reader = { path: "src/screens/Z.tsx", content: "import { peekPaymentReturn } from '../paymentReturn'" };
+
+    expect(findHandOffSetters([direct, aliased, helper, reader])).toEqual(["src/screens/X.tsx", "src/screens/Y.tsx"]);
+  });
+
+  test("the real front sources set the hand-off only through the link helper", () => {
     const modules = import.meta.glob<string>(["/src/**/*.{ts,tsx}", "!/src/**/*.test.{ts,tsx}"], {
       query: "?raw",
       import: "default",
       eager: true,
     });
-    const setters = Object.entries(modules)
-      .filter(([, content]) => content.includes("setPaymentReturn("))
-      .map(([path]) => path);
-    expect(setters.sort()).toEqual(["/src/paymentReturn.ts", "/src/routes.ts"]);
+    const files = Object.entries(modules).map(([path, content]) => ({ path: path.replace(/^\//, ""), content }));
+    expect(files.length).toBeGreaterThan(50);
+    expect(findHandOffSetters(files)).toEqual([]);
   });
 });
 
@@ -735,6 +746,14 @@ function withoutComments(content: string): string[] {
 }
 
 /** Files that write a front path as a string literal instead of a constant of `routes.ts`. */
+/** The sources, other than the hand-off module and the link helper, that name the setter (an alias still names it in its import). */
+function findHandOffSetters(files: Source[]): string[] {
+  return files
+    .filter((file) => file.path !== "src/paymentReturn.ts" && file.path !== "src/routes.ts")
+    .filter((file) => /\bsetPaymentReturn\b/.test(file.content))
+    .map((file) => file.path);
+}
+
 function findPathLiterals(files: Source[]): string[] {
   return (
     files

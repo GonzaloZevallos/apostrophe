@@ -5306,7 +5306,8 @@ body {
   color: var(--tinta2);
 }
 
-/* The place focus returns to after Record payment is a heading or a line, not a control: it takes no ring. */
-[data-place]:focus {
+/* The place focus returns to after Record payment is a heading or a line, not a control: it takes no
+ * ring. A real link that carries the marker keeps its own ring. */
+[data-place]:not(a):focus {
   outline: none;
 }
