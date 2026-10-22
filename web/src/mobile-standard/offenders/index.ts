@@ -1,8 +1,10 @@
 /**
  * The known offenders: one JSON file per rule (`offenders/<rule>.json`), each entry
- * `{screen, rule, target, issue, sizes?, themes?}`. The list can only shrink: every
- * entry names the open area issue that removes it, a cell it lists must still fail, and
- * a failure it does not list fails the run (`diffOffenders`).
+ * `{screen, rule, target, issue, sizes?, themes?}`. The lists never grow, except when a
+ * screen becomes reachable and trades its `unreachable` coverage for its real cells in
+ * the same change (the rule is in `docs/product/gate.md`). Every entry names the open
+ * area issue that removes it, a cell it lists must still fail, and a failure it does not
+ * list fails the run (`diffOffenders`).
  *
  * `FILES` takes one static JSON import per rule, so a rule without a file is a `tsc`
  * error (`Record<Rule, unknown>`), and nothing here needs a glob or `node:`.

@@ -75,22 +75,73 @@ The mobile standard keeps offender lists under `web/src/mobile-standard/offender
 
 This file is the one place the rule is written. CODING_STANDARDS.md §10 and its twin in `docs/product/design-system/README.md` name the trade in one sentence and point here.
 
-- **No growth (invariant 9).** The offender lists never grow, with one exception: the trade below.
-- **The trade.** In the same change, a screen's `unreachable` entry is removed and its real cells are added to whichever offender lists they belong in.
-  - Every added cell names the same screen as the removed entry's `screen`.
-  - Only those cells count toward the trade.
-- **Matched by screen, not by issue.** Whether a trade is valid depends only on the screen name. A traded cell must name an issue, and it may name either:
+- **No growth (invariant 9).** The offender lists never grow, except by the trade below. It was first written as invariant 9 of the GH-271 plan.
+- **The trade, per cell.** An offender cell (screen, size, theme) may be added only when the same change removes that screen's `unreachable` coverage at that size and theme. The real cells go in whichever offender lists they belong in.
+  - Every added cell names the same screen as the removed entry's `screen`. Only those cells count toward the trade.
+  - Partial reach: an entry that only narrows its `sizes` or `themes` trades only the cells it lost. `VentaAsignarCliente` is listed as unreachable at 246x437 only, for example.
+  - A `*Texto130` screen is its own screen name and trades on its own.
+  - One change may carry several trades.
+- **Matched by screen, not by issue.** Whether a trade is valid depends only on the screen name. A traded cell must name an issue from `AREA_ISSUES`, and it may name either:
   - the removed `unreachable` entry's issue, or
-  - the issue already tracking that screen's existing offender cells.
+  - the issue the same screen's existing offender entries carry.
+  - A screen with no existing entries uses the removed entry's issue. If its existing entries span two issues, the reviewer accepts either.
   - CobroDesdeInicio's cells carry #46, while its removed entry carried #45. Both are valid.
 - **Not a trade.** Any other growth breaks invariant 9:
   - cells for a screen whose `unreachable` entry stays;
-  - cells naming a different screen from the one whose entry was removed.
+  - cells naming a different screen from the one whose entry was removed;
+  - cells at a size or theme the removed entry did not cover.
 - **No cap.** A reachable screen brings all its real cells, however many.
-- **No offending cells.** A screen that becomes reachable with no offending cells just loses its `unreachable` entry.
+- **No offending cells.** A screen that becomes reachable with no offending cells just loses its `unreachable` coverage. Nothing is added.
 - **Tracked like any other offender.** Traded cells are tracked like any other offender from then on. They are never hidden, never marked exempt, and never read as a regression.
 - **Readable from the files.** The trade can be checked from the before and after offender files alone, by screen name, without the Developer's evidence notes.
-- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable. The CobroDesdeInicio exception of GH-271 is retired in favour of this rule.
+- **Enforcement is by review only.** `diffOffenders` already makes the two halves land together: once the screen is reachable, its `unreachable` cells turn `fixedButListed`, and its real cells are `unlisted` until they are listed. Neither half goes green without the other. Checking that the added cells name the removed screen would need the base revision, which means git inside vitest, against ADR-0038 and ADR-0041. So the reviewer matches screen names in the offender-file diff. Listing an unrelated new failure to get green is caught only in review, as before.
+- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable. The rule accepts CobroDesdeInicio (its removed `unreachable` entry at 246x437, #45, traded for seven 246x437 cells on #46) with none, and the exception recorded on GH-271 is retired.
+
+#### Worked examples
+
+Each shows the offender files before and after one change, and the verdict.
+
+**1. Valid trade: passes.** `Cuenta` becomes reachable and has one failing cell.
+
+```diff
+ unreachable.json
+-  { "screen": "Cuenta", "rule": "unreachable", "target": "", "issue": 45 }
+ touch-target.json
++  { "screen": "Cuenta", "rule": "touch-target", "target": "button:Save", "issue": 45 }
+```
+
+The added cell names the screen of the removed entry, and names an issue.
+
+**2. Entry kept, cells added: fails.** `Cuenta` gains a cell, but its `unreachable` entry stays.
+
+```diff
+ unreachable.json
+   { "screen": "Cuenta", "rule": "unreachable", "target": "", "issue": 45 }
+ touch-target.json
++  { "screen": "Cuenta", "rule": "touch-target", "target": "button:Save", "issue": 45 }
+```
+
+Nothing was traded for the new cell, so the list grew.
+
+**3. Cells naming another screen: fail.** `Cuenta` loses its entry, but the added cell names `Perfil`.
+
+```diff
+ unreachable.json
+-  { "screen": "Cuenta", "rule": "unreachable", "target": "", "issue": 45 }
+ touch-target.json
++  { "screen": "Perfil", "rule": "touch-target", "target": "button:Save", "issue": 45 }
+```
+
+The cell does not name the removed entry's screen, so it is not part of the trade.
+
+**4. Reachable with no cells: passes.** `Cuenta` becomes reachable and nothing fails.
+
+```diff
+ unreachable.json
+-  { "screen": "Cuenta", "rule": "unreachable", "target": "", "issue": 45 }
+```
+
+Only the entry leaves. Nothing is added.
 
 ## Metrics
 
