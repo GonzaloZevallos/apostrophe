@@ -201,6 +201,84 @@
     "issue": 46
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Owed to you",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Owed to you",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
     "screen": "Clientes",
     "rule": "touch-target",
     "target": "link:Home",

@@ -2078,6 +2078,60 @@
     "issue": 45
   },
   {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "button:Today",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "button:Month",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "button:Week",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45
+  },
+  {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "button:Month",
@@ -2127,6 +2181,60 @@
   },
   {
     "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "button:Today",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "button:Month",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "button:Week",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45
+  },
+  {
+    "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "navigation:Navigation",
     "issue": 45

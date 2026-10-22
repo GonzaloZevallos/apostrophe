@@ -4,15 +4,17 @@ state the design's screens show has to exist after seeding."""
 
 import importlib.util
 import os
+import sqlite3
 import sys
 import threading
 import time
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+import openpyxl
 import pytest
 import uvicorn
 from fastapi.testclient import TestClient
@@ -293,3 +295,204 @@ def test_the_ended_and_the_onboarding_accounts_share_no_name() -> None:
 
     assert sample_app.ENDED_ONBOARDING_ACCOUNTS
     assert set(sample_app.ENDED_ONBOARDING_ACCOUNTS).isdisjoint(sample_app.ONBOARDING_ACCOUNTS)
+
+
+COUNT_ROWS = {
+    "onboarding": "SELECT COUNT(*) FROM onboarding WHERE business_id = ?",
+    "first_run": "SELECT COUNT(*) FROM first_run WHERE business_id = ?",
+}
+
+
+def rows_of(db_path: Path, table: str, business_id: int) -> int:
+    with closing(sqlite3.connect(db_path, timeout=30)) as conn:
+        found: int = conn.execute(COUNT_ROWS[table], (business_id,)).fetchone()[0]
+    return found
+
+
+def test_the_checklist_account_is_a_business_with_no_onboarding_and_one_priced_variety(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "sample.db"
+    with running_sample(tmp_path) as (sample_app, env, base):
+        account = sample_app.pre_onboarding_account(env, base, TODAY, db_path)
+
+        api = sign_in(sample_app, base, account.email, account.password)
+        shown = api.call("GET", "/first-run")
+        assert shown["kind"] == "checklist"
+        assert [(step["step"], step["done"]) for step in shown["checklist"]] == [
+            ("priced_variety", True),
+            ("stock_entry", False),
+            ("published", False),
+            ("second_user", False),
+        ]
+        assert shown["import_notice"] is False
+        business = sample_app.business_id_of(db_path, account.email)
+        assert rows_of(db_path, "onboarding", business) == 0
+        assert rows_of(db_path, "first_run", business) == 0
+        assert len(api.call("GET", "/varieties")) == 1
+
+
+def test_the_imported_account_is_a_business_the_real_import_loaded(tmp_path: Path) -> None:
+    db_path = tmp_path / "sample.db"
+    with running_sample(tmp_path) as (sample_app, env, base):
+        account = sample_app.imported_account(env, base, TODAY, db_path)
+
+        api = sign_in(sample_app, base, account.email, account.password)
+        shown = api.call("GET", "/first-run")
+        assert shown["kind"] == "none"
+        assert shown["checklist"] == []
+        assert shown["import_notice"] is True
+        assert api.call("GET", "/onboarding-progress")["over"] is True
+        assert len(api.call("GET", "/varieties")) == 1
+        business = sample_app.business_id_of(db_path, account.email)
+        with closing(sqlite3.connect(db_path, timeout=30)) as conn:
+            stamps = conn.execute(
+                "SELECT imported_at, import_notice_over_at, checklist_gone_at"
+                " FROM first_run WHERE business_id = ?",
+                (business,),
+            ).fetchall()
+        assert len(stamps) == 1
+        imported_at, notice_over_at, checklist_gone_at = stamps[0]
+        assert imported_at is not None
+        assert notice_over_at is None
+        assert checklist_gone_at is None
+
+
+def test_the_sample_refuses_a_dotenv_that_would_send_the_import_to_another_database(
+    tmp_path: Path,
+) -> None:
+    sample_app = load_script()
+    dotenv = tmp_path / ".env"
+
+    sample_app.refuse_database_override(dotenv)
+    dotenv.write_text("APOSTROPHE_SECRET_KEY=a\nAPOSTROPHE_PUBLIC_URL=b\n", encoding="utf-8")
+    sample_app.refuse_database_override(dotenv)
+
+    for line in (
+        "APOSTROPHE_DATABASE_URL=sqlite:///mine.db",
+        "export APOSTROPHE_DATABASE_URL = sqlite:///mine.db",
+    ):
+        dotenv.write_text(f"APOSTROPHE_SECRET_KEY=a\n{line}\n", encoding="utf-8")
+        with pytest.raises(SystemExit) as refused:
+            sample_app.refuse_database_override(dotenv)
+        assert "mine.db" not in str(refused.value)
+        assert "APOSTROPHE_DATABASE_URL" in str(refused.value)
+
+
+def test_expect_first_run_stops_the_sample_on_any_other_answer_without_naming_data() -> None:
+    sample_app = load_script()
+
+    class Answers:
+        def __init__(self, answer: dict[str, Any]) -> None:
+            self.answer = answer
+
+        def call(self, method: str, path: str, body: object | None = None) -> Any:
+            assert (method, path) == ("GET", "/first-run")
+            return self.answer
+
+    def step(name: str, done: bool) -> dict[str, Any]:
+        return {"step": name, "required": True, "done": done}
+
+    both: dict[str, Any] = {
+        "kind": "checklist",
+        "import_notice": False,
+        "checklist": [step("a", True), step("b", False)],
+    }
+    wanted = (("a", True), ("b", False))
+    sample_app.expect_first_run(
+        Answers(both), "checklist", account="pre_onboarding", steps=wanted, import_notice=False
+    )
+    none = {"kind": "none", "import_notice": True, "checklist": []}
+    sample_app.expect_first_run(Answers(none), "none", account="imported", import_notice=True)
+
+    wrong: dict[str, tuple[dict[str, Any], str]] = {
+        "kind": ({**both, "kind": "none"}, "kind"),
+        "step flipped": ({**both, "checklist": [step("a", True), step("b", True)]}, "step b"),
+        "step missing": ({**both, "checklist": [step("a", True)]}, "step b"),
+        "step extra": ({**both, "checklist": [*both["checklist"], step("c", False)]}, "steps"),
+        "notice": ({**both, "import_notice": True}, "import_notice"),
+    }
+    for answer, check in wrong.values():
+        with pytest.raises(SystemExit) as refused:
+            sample_app.expect_first_run(
+                Answers(answer),
+                "checklist",
+                account="pre_onboarding",
+                steps=wanted,
+                import_notice=False,
+            )
+        assert str(refused.value) == (
+            f"sample-app: the pre_onboarding account's first run is wrong: {check}"
+        )
+    with pytest.raises(SystemExit) as refused:
+        sample_app.expect_first_run(
+            Answers(both), "checklist", account="pre_onboarding", import_notice=False
+        )
+    assert str(refused.value).endswith("steps")
+
+
+def test_no_account_name_has_two_kinds_and_the_capture_accounts_are_declared() -> None:
+    sample_app = load_script()
+    groups = (
+        sample_app.ONBOARDING_ACCOUNTS,
+        sample_app.ENDED_ONBOARDING_ACCOUNTS,
+        sample_app.PRE_ONBOARDING_ACCOUNTS,
+        sample_app.IMPORTED_ACCOUNTS,
+    )
+
+    assert sample_app.PRE_ONBOARDING_ACCOUNTS == ("checklist",)
+    assert sample_app.IMPORTED_ACCOUNTS == ("importada",)
+    names = [name for group in groups for name in group]
+    assert len(names) == len(set(names))
+
+
+def test_run_import_stops_the_sample_on_a_failed_import_and_on_a_reported_problem(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "sample.db"
+    with running_sample(tmp_path) as (sample_app, env, base):
+        account, _ = sample_app.accept_new_business(env, base, "importada")
+        business = sample_app.business_id_of(db_path, account.email)
+        good = tmp_path / "good.xlsx"
+        sample_app.load_import_workbook().build(good, TODAY)
+
+        # A business the import does not know: the command exits non-zero.
+        with pytest.raises(SystemExit) as failed:
+            sample_app.run_import(env, business + 100, good, dry_run=True)
+        assert str(failed.value) == "sample-app: the import dry run failed"
+
+        # A stock entry with an origin the import does not know: the dry run exits 0 but
+        # reports a blocking problem, and the sample stops on the report's heading.
+        unknown_origin = tmp_path / "unknown-origin.xlsx"
+        workbook = openpyxl.load_workbook(good)
+        workbook["Entradas"]["D2"] = "Regalo"
+        workbook.save(unknown_origin)
+        with pytest.raises(SystemExit) as reported:
+            sample_app.run_import(env, business, unknown_origin, dry_run=True)
+        assert str(reported.value) == "sample-app: the import dry run reported a problem"
+
+        # Nothing was written by either refusal, and the good workbook still imports.
+        sample_app.run_import(env, business, good, dry_run=True)
+        assert rows_of(db_path, "first_run", business) == 0
+
+
+def test_the_direct_row_write_is_refused_for_a_business_it_must_not_touch(tmp_path: Path) -> None:
+    db_path = tmp_path / "sample.db"
+    message = "sample-app: the checklist account's Onboarding row was not removed"
+    with running_sample(tmp_path) as (sample_app, env, base):
+        checklist = sample_app.pre_onboarding_account(env, base, TODAY, db_path)
+        imported = sample_app.imported_account(env, base, TODAY, db_path)
+
+        # No Onboarding row left to delete: the delete removes zero rows.
+        gone = sample_app.business_id_of(db_path, checklist.email)
+        with pytest.raises(SystemExit) as nothing:
+            sample_app.drop_onboarding_row(db_path, gone)
+        assert str(nothing.value) == message
+
+        # A business with a first_run row is refused before anything is deleted.
+        stamped = sample_app.business_id_of(db_path, imported.email)
+        assert rows_of(db_path, "onboarding", stamped) == 1
+        with pytest.raises(SystemExit) as stamped_refusal:
+            sample_app.drop_onboarding_row(db_path, stamped)
+        assert str(stamped_refusal.value) == message
+        assert rows_of(db_path, "onboarding", stamped) == 1
