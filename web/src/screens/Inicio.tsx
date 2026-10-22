@@ -35,7 +35,7 @@ import { firstRunQuery } from '../api/firstRun'
 import { onboardingProgressQuery } from '../api/onboarding'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
-import { getPanel, type PanelTab } from '../api/panel'
+import { panelQuery, type PanelTab } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
@@ -58,14 +58,7 @@ export default function Inicio() {
   const me = useOutletContext<Me>()
   const [tab, setTab] = useState<PanelTab>('today')
 
-  const panelQuery = useQuery({
-    queryKey: keys.panel(),
-    queryFn: getPanel,
-    gcTime: 0,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  })
+  const panelRead = useQuery(panelQuery)
 
   const pinnedCatalog = useQuery({
     queryKey: keys.pinnedCatalogStatus(),
@@ -80,7 +73,7 @@ export default function Inicio() {
     onboarding: onboardingQuery.data,
     pinOutOfDate,
   })
-  const failed = [panelQuery, onboardingQuery].find((query) => query.isError)
+  const failed = [panelRead, onboardingQuery].find((query) => query.isError)
 
   return (
     <main className="pantalla">
@@ -122,8 +115,8 @@ export default function Inicio() {
         {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
         {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}
 
-        {panelQuery.data !== undefined && (
-          <InicioPanel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
+        {panelRead.data !== undefined && (
+          <InicioPanel panel={panelRead.data} tab={tab} onTab={setTab} today={me.today} />
         )}
       </div>
     </main>
