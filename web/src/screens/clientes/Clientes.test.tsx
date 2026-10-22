@@ -12,7 +12,7 @@
  * search list's own.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -218,7 +218,9 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   )
   renderClientes()
 
-  expect(await screen.findByText('2 customers')).toBeInTheDocument()
+  // Reversed assertion (GH-278): the header no longer carries an "N customers" count line.
+  expect(await screen.findByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
+  expect(screen.queryByText(/^\d+ customers?$/)).not.toBeInTheDocument()
   expect(screen.queryByText(/ owe you \$/)).not.toBeInTheDocument()
   const section = await screen.findByRole('region', { name: 'Owed to you' })
   const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
@@ -590,6 +592,42 @@ test('every action on the list and in Te deben is icon + text, and Cobrar keeps 
   const nuevo = screen.getByRole('link', { name: 'New customer' })
   expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expectIconAndTextRule(document.body, RULE)
+})
+
+test('the header holds the title and "New customer" with its icon, and no count line', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, debtorsFixture)),
+  )
+  renderClientes()
+
+  const nuevo = await screen.findByRole('link', { name: 'New customer' })
+  const header = nuevo.closest('.clientes__encabezado')
+  expect(header).not.toBeNull()
+  expect(within(header as HTMLElement).getByText('Customers')).toBeInTheDocument()
+  expect(nuevo).toHaveTextContent('New customer')
+  expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.queryByText(/^\d+ customers?$/)).not.toBeInTheDocument()
+})
+
+test('tapping "New customer" opens the customer form', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture])))
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[CUSTOMERS]}>
+        <Routes>
+          <Route element={<ClientesLayout />}>
+            <Route path={CUSTOMERS} element={<Clientes />} />
+          </Route>
+          <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+
+  await userEvent.click(await screen.findByRole('link', { name: 'New customer' }))
+
+  expect(await screen.findByText('customer form')).toBeInTheDocument()
 })
 
 test('the two empty states are the registered strings, mounted and within their limit', async () => {

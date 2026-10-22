@@ -37,8 +37,6 @@ export const CUSTOMERS_TEXT = {
   owesYouSince: 'owes you since ',
   saveAndUse: 'Save and use',
   discardTheCustomer: 'Discard the customer?',
-  oneCustomer: '1 customer',
-  customerCount: (count: string | number) => `${count} customers`,
   paidInCash: 'Paid in cash',
   paidByTransfer: 'Paid by transfer',
   leftOwing: 'Left owing',
