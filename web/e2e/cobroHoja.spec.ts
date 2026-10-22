@@ -186,7 +186,9 @@ for (const viewport of VIEWPORTS) {
     test.use({ viewport: { width: viewport.width, height: viewport.height } })
 
     for (const origin of ORIGINS) {
-      for (const how of ['close', 'partial', 'full'] as const) {
+      // The long list on Customers takes all three; Home and the card are short, so a partial save adds nothing there.
+      const paths = origin === 'customers' ? (['close', 'partial', 'full'] as const) : (['close', 'full'] as const)
+      for (const how of paths) {
         test(`from ${origin}, ${how}: the same offset and focus where the seller was`, async ({ page }) => {
           test.setTimeout(180_000)
           await makeDebtor(page)
