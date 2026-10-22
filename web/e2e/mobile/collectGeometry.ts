@@ -33,9 +33,6 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
   const squash = (text: string | null): string => (text ?? '').replace(/\s+/g, ' ').trim()
   const visible = (element: Element): boolean => {
     const rect = element.getBoundingClientRect()
-    // What sits behind a sheet (Registrar cobro's background) is inert: it is not measured
-    // as a screen of its own, since nothing in it can be reached or read.
-    if (element.closest('[inert]') !== null) return false
     return rect.width > 1 && rect.height > 1 && element.checkVisibility({ checkVisibilityCSS: true })
   }
   const all = (selector: string): Element[] => Array.from(document.querySelectorAll(selector)).filter(visible)
@@ -191,7 +188,7 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
   const FIGURE = /[−-]?\$\s?\d[\d.]*|^[−-]?\$$/g
   for (const node of textNodes()) {
     const parent = node.parentElement
-    if (parent === null || parent.closest('[inert]') !== null) continue
+    if (parent === null) continue
     for (const match of node.data.matchAll(FIGURE)) {
       const range = document.createRange()
       range.setStart(node, match.index)

@@ -5043,8 +5043,10 @@ body {
   padding-right: 0;
 }
 
-/* The background is only what the sheet covers: it never makes the page scroll sideways. */
+/* On a phone the sheet covers the background whole, so it is not drawn: it keeps its
+ * height (the page's scroll offset under the sheet) but is neither seen nor reached. */
 .cobro-paneles--solo > [inert] {
+  visibility: hidden;
   min-width: 0;
   max-width: 100%;
   overflow-x: clip;

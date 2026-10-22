@@ -86,26 +86,23 @@ test("a click at the position of a list row never opens that customer: it lands 
   await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
-const BEHIND = {
-  customers: { selector: '.cobro-paneles__lista', link: 'Collect from Carla Cobrar' },
-  card: { selector: '.cobro-paneles__detalle', link: 'Record payment' },
-  home: { selector: '.cobro-paneles__inicio', link: 'Collect from Carla Cobrar' },
+const BEHIND_LINK = {
+  customers: 'Collect from Carla Cobrar',
+  card: 'Record payment',
+  home: 'Collect from Carla Cobrar',
 } as const
 
 for (const origin of ['customers', 'home', 'card'] as const) {
   test(`opened from ${origin}, that screen sits behind the dialog and Tab never reaches it`, async ({ page }) => {
     await openCobroModal(page, origin)
-    const behind = page.locator(BEHIND[origin].selector)
+    const link = page.getByRole('link', { name: BEHIND_LINK[origin], includeHidden: true }).first()
+    const behind = link.locator('xpath=ancestor::*[@inert]').first()
 
+    await expect(link).toBeAttached()
     await expect(behind).toHaveAttribute('aria-hidden', 'true')
-    await expect(behind).toHaveAttribute('inert', '')
-    await expect(behind.getByRole('link', { name: BEHIND[origin].link, includeHidden: true }).first()).toBeAttached()
     for (let press = 0; press < 20; press++) {
       await page.keyboard.press('Tab')
-      const inside = await page.evaluate(
-        (selector) => document.activeElement?.closest(selector) !== null,
-        BEHIND[origin].selector,
-      )
+      const inside = await page.evaluate(() => document.activeElement?.closest('[inert]') !== null)
       expect(inside).toBe(false)
     }
   })

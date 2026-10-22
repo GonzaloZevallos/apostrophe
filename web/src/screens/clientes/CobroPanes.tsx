@@ -8,7 +8,8 @@
  *   - `card`: the list and that customer's card on a computer, the card alone on a phone;
  *   - `home`: Home's presentational background (`InicioFondo`).
  * The wrapper and its children keep one place each on both viewports (a pane that is not
- * drawn is `false`, not a different element), so a resize across 900 px never remounts the
+ * drawn is `false`, not a different element), and the host comes first (it is the page's
+ * first `main`, and the first thing Tab meets), so a resize across 900 px never remounts the
  * host and what was typed is kept. The background never exits or navigates: the host owns
  * gone, error and network alone.
  */
@@ -29,6 +30,7 @@ export default function CobroPanes() {
   const detail = underneath === 'card' || (underneath === 'customers' && computer)
   return (
     <div className={computer ? 'cobro-paneles' : 'cobro-paneles cobro-paneles--solo'}>
+      <Outlet context={me} />
       {list && (
         <div className="cobro-paneles__lista" inert aria-hidden="true">
           <Clientes />
@@ -44,7 +46,6 @@ export default function CobroPanes() {
           <InicioFondo />
         </div>
       )}
-      <Outlet context={me} />
     </div>
   )
 }

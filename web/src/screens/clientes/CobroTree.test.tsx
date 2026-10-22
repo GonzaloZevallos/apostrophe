@@ -133,11 +133,12 @@ describe('on a computer', () => {
 })
 
 describe('on a phone', () => {
-  test('the form stands alone in its host: no side panes, and the card behind it', async () => {
+  test('the card alone is behind the form: no list beside it', async () => {
     renderApp([{ pathname: PAYMENT }], 'phone')
 
     expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
-    expect(document.querySelector('.cobro-paneles__lista')).toBeNull()
+    await waitFor(() => expect(behindLink('Record payment')).not.toBeNull())
+    expect(behindLink('Collect from Ana Pérez')).toBeNull()
     expect(behind()).toHaveLength(1)
   })
 })
@@ -165,7 +166,7 @@ describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment,
 
     expect(behindLink('Collect from Ana Pérez')).not.toBeNull()
     expect(behind().some((element) => element.textContent?.includes('Customers') === true)).toBe(true)
-    expect(document.querySelector('.cobro-paneles__detalle')?.childElementCount ?? 0).toBe(0)
+    expect(behindLink('Record payment')).toBeNull()
     expect(screen.queryByRole('heading', { name: 'Ana Pérez' })).toBeNull()
   })
 
@@ -207,14 +208,20 @@ describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment,
     await waitFor(() => expect(behindLink('Record payment')).not.toBeNull())
   })
 
-  test('a customer that is gone: the host says so and the background does not navigate', async () => {
-    const router = renderApp([{ pathname: PAYMENT, state: { underneath: 'customers' } }], viewport, {
+  test.each<[PaymentUnderneath, string]>([
+    ['customers', 'Collect from Ana Pérez'],
+    ['card', 'Record payment'],
+  ])('a customer that is gone, opened from %s: the host says so and the background does not navigate', async (underneath, link) => {
+    const router = renderApp([{ pathname: PAYMENT, state: { underneath } }], viewport, {
       'GET /customers/1': () => jsonResponse(404, { code: 'customer.not_found' }),
+      'GET /customers/1/account': () => jsonResponse(404, { code: 'customer.not_found' }),
     })
 
-    expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-    await waitFor(() => expect(behindLink('Collect from Ana Pérez')).not.toBeNull())
+    expect(await screen.findByText('That is gone.', { selector: ':not([inert] *)' })).toBeInTheDocument()
+    await waitFor(() => expect(behind().length).toBeGreaterThan(0))
     expect(router.state.location.pathname).toBe(PAYMENT)
+    expect(screen.getByRole('link', { name: 'Back to Customers' })).toBeInTheDocument()
+    if (underneath === 'customers') expect(behindLink(link)).not.toBeNull()
   })
 })
 
