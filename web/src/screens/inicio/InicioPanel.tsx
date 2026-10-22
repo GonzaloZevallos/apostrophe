@@ -16,6 +16,7 @@
  */
 
 import { CUSTOMER, CUSTOMERS, VARIETY, paymentLink, pathTo } from '../../routes'
+import { OWED_PLACE } from '../../components/useReturnToPlace'
 import InAppLink from '../../components/InAppLink'
 import BotonLink from '../../components/BotonLink'
 import MarcaEstado from '../../components/MarcaEstado'
@@ -124,14 +125,14 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
     return (
       <div className="bloque-deben">
         <span className="rotulo">{COMMON_TEXT.owedToYou}</span>
-        <span className="pie">{NOBODY_OWES}</span>
+        <span className="pie" tabIndex={-1} data-place={OWED_PLACE}>{NOBODY_OWES}</span>
       </div>
     )
   }
 
   return (
     <div className="bloque-deben">
-      <InAppLink to={CUSTOMERS} className="bloque-deben__titulo">
+      <InAppLink to={CUSTOMERS} className="bloque-deben__titulo" data-place={OWED_PLACE}>
         {COMMON_TEXT.owedToYou}
       </InAppLink>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>

@@ -26,10 +26,11 @@
  */
 
 import { CATALOG, SETTINGS } from '../routes'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import InAppLink from '../components/InAppLink'
+import { owedPlace, useReturnToPlace } from '../components/useReturnToPlace'
 import { get, NetworkError } from '../api/client'
 import { firstRunQuery } from '../api/firstRun'
 import { onboardingProgressQuery } from '../api/onboarding'
@@ -73,10 +74,12 @@ export default function Inicio() {
     onboarding: onboardingQuery.data,
     pinOutOfDate,
   })
+  const root = useRef<HTMLElement>(null)
+  useReturnToPlace({ root, ready: panelRead.data !== undefined && !panelRead.isFetching, fallback: owedPlace })
   const failed = [panelRead, onboardingQuery].find((query) => query.isError)
 
   return (
-    <main className="pantalla">
+    <main className="pantalla" ref={root}>
       <div className="cuerpo">
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">

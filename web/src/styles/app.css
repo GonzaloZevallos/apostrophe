@@ -5305,3 +5305,8 @@ body {
   font-size: 13px;
   color: var(--tinta2);
 }
+
+/* The place focus returns to after Record payment is a heading or a line, not a control: it takes no ring. */
+[data-place]:focus {
+  outline: none;
+}

@@ -6,6 +6,7 @@ import { matchRoutes, type RouteObject } from "react-router";
 import { describe, expect, test } from "vitest";
 import screensJson from "../../scripts/design/screens.json";
 import { router } from "./router";
+import { consumePaymentReturn, peekPaymentReturn } from "./paymentReturn";
 import * as routes from "./routes";
 import {
   isPublicPath,
@@ -634,8 +635,45 @@ describe("the screen Record payment was opened from", () => {
   });
 
   test("the link helper builds the payment path and writes only the closed screen name", () => {
-    expect(paymentLink(7, "home")).toEqual({ to: "/customers/7/payment", state: { underneath: "home" } });
+    expect(paymentLink(7, "home")).toMatchObject({ to: "/customers/7/payment", state: { underneath: "home" } });
     expect(readPaymentUnderneath(paymentLink(7, "customers").state)).toBe("customers");
+  });
+
+  const plainClick = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false };
+
+  test("following the link leaves the customer and the scroll offset for the origin, in memory", () => {
+    consumePaymentReturn();
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 640 });
+
+    paymentLink("7", "customers").onClick(plainClick);
+
+    expect(consumePaymentReturn()).toEqual({ customerId: 7, scrollY: 640 });
+    Reflect.deleteProperty(window, "scrollY");
+  });
+
+  test.each([
+    ["a click that opens a new tab", { ...plainClick, ctrlKey: true }],
+    ["a click with Shift", { ...plainClick, shiftKey: true }],
+    ["a click with the meta key", { ...plainClick, metaKey: true }],
+    ["a middle click", { ...plainClick, button: 1 }],
+  ])("%s leaves nothing behind", (_label, click) => {
+    consumePaymentReturn();
+
+    paymentLink(7, "home").onClick(click);
+
+    expect(peekPaymentReturn()).toBeNull();
+  });
+
+  test("only the link helper sets the hand-off", () => {
+    const modules = import.meta.glob<string>(["/src/**/*.{ts,tsx}", "!/src/**/*.test.{ts,tsx}"], {
+      query: "?raw",
+      import: "default",
+      eager: true,
+    });
+    const setters = Object.entries(modules)
+      .filter(([, content]) => content.includes("setPaymentReturn("))
+      .map(([path]) => path);
+    expect(setters.sort()).toEqual(["/src/paymentReturn.ts", "/src/routes.ts"]);
   });
 });
 

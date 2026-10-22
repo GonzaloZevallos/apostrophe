@@ -8,19 +8,16 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { keys } from '../../api/keys'
-import { getDebtors } from '../../api/payments'
+import { debtorsQuery } from '../../api/payments'
 import { salesOwingCount } from '../../format/counts'
 import { formatMoney } from '../../format/money'
+import { OWED_PLACE } from '../../components/useReturnToPlace'
 import ClienteFila from './ClienteFila'
 import { NOBODY_OWES } from '../../copy/customers'
 import { COMMON_TEXT } from '../../copy/common'
 
 export default function TeDeben() {
-  const { data } = useQuery({
-    queryKey: keys.debtors(),
-    queryFn: () => getDebtors(),
-  })
+  const { data } = useQuery(debtorsQuery)
 
   // Nothing while it loads or when it fails: Clientes' own list already shows its loading and
   // its errors.
@@ -29,12 +26,14 @@ export default function TeDeben() {
   return (
     <section aria-label={COMMON_TEXT.owedToYou}>
       <div className="campo__rotulo clientes__seccion-cabecera">
-        <span>{COMMON_TEXT.owedToYou}</span>
+        <span tabIndex={data.debtors.length > 0 ? -1 : undefined} data-place={data.debtors.length > 0 ? OWED_PLACE : undefined}>
+          {COMMON_TEXT.owedToYou}
+        </span>
         {data.debtors.length > 0 && <span>{salesOwingCount(data.sales_owing_count)}</span>}
       </div>
 
       {data.debtors.length === 0 ? (
-        <span className="encabezado__titulo" data-copy="emptyTitle">
+        <span className="encabezado__titulo" data-copy="emptyTitle" tabIndex={-1} data-place={OWED_PLACE}>
           {NOBODY_OWES}
         </span>
       ) : (
