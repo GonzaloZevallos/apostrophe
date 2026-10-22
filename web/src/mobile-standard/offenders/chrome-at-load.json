@@ -38,12 +38,6 @@
   {
     "screen": "Clientes",
     "rule": "chrome-at-load",
-    "target": "link:New sale",
-    "issue": 59
-  },
-  {
-    "screen": "Clientes",
-    "rule": "chrome-at-load",
     "target": "navigation:Navigation",
     "issue": 59
   },
