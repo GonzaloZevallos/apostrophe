@@ -158,6 +158,13 @@ test('with Clientes VIP off the form has no VIP field', async () => {
 
   expect(await screen.findByLabelText('Name')).toBeInTheDocument()
   expect(screen.queryByRole('switch', { name: 'VIP' })).not.toBeInTheDocument()
+})
+
+test('with Clientes VIP off the form shows no VIP caption either', async () => {
+  api = stubFetchWithSettings(false)
+  renderForm(CUSTOMER_NEW)
+
+  expect(await screen.findByLabelText('Name')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
