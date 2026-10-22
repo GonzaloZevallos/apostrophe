@@ -100,10 +100,10 @@ export const keys = {
   // fetches on open, so this key is never invalidated by a write elsewhere either.
   analysis: (month: string) => ['analysis', month] as const,
   // Inicio's own panel (plan, "Front": "gcTime: 0, staleTime: Infinity and no
-  // refetch on focus or reconnect"), frozen at the call site the same way
-  // `catalog` is: nothing ever invalidates it, so it sits outside the
-  // `Resource`/`PREFIX` system — the current mount's own fetch is always the
-  // answer shown, never a write elsewhere in the app replaying a stale one.
+  // refetch on focus or reconnect"), frozen in `api/panel.ts` (`panelQuery`) the same
+  // way `catalog` is: never refetched while Home shows it, so it sits outside the
+  // `Resource`/`PREFIX` system and nothing invalidates it. A payments write drops it
+  // (`DROPS_PANEL`) so the next mount fetches its own answer, never a stale one.
   panel: () => ['panel'] as const,
   // The Onboarding's one read (`api/onboarding.ts`), frozen the same way and for the same
   // reason: outside the `Resource`/`PREFIX` system, set by its own writes.
@@ -129,6 +129,13 @@ const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
   stock: ['catalog'],
   varieties: ['catalog'],
 }
+
+// The writes that change what Home's panel shows (its Te deben block): a payment. The panel
+// is frozen and never refetched while Home shows it, so such a write drops the cached answer
+// instead, and the next Home mount, a background under Record payment included, fetches its
+// own. Only the payment write itself: a sale reaches `payments` through `CROSS_INVALIDATES`
+// but does not drop the panel.
+const DROPS_PANEL: readonly Resource[] = ['payments']
 
 // The writes that can change what `GET /first-run` answers (ADR-0046): a variety or a price
 // entry (`varieties`), a stock entry (`stock`) and Publicar (`pinnedCatalog`). Each also
@@ -161,6 +168,9 @@ export function invalidateResource(
       queryKey: [PREFIX[affected]],
       refetchType: options?.refetchType,
     })
+  }
+  if (DROPS_PANEL.includes(resource)) {
+    queryClient.removeQueries({ queryKey: keys.panel() })
   }
   if (FIRST_RUN_WRITES.includes(resource)) {
     queryClient.invalidateQueries({ queryKey: keys.firstRun(), refetchType: options?.refetchType })
