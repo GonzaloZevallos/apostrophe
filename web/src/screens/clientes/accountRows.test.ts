@@ -126,3 +126,12 @@ test('a credit row reads "Payment · method" over "Credit", with the leftover am
   expect(view.sub).toBe('Credit')
   expect(view.own).toBe('$ 3.000')
 })
+
+test.each(['owes', 'settled', 'credit'] as const)('payment and credit rows say the same title, sub and own under a %s standing', (standing) => {
+  const payment = ledgerRowView({ ...paymentRow(8, 1), standing })
+  expect([payment.title, payment.sub, payment.own]).toEqual(['Payment · cash', 'On account of the sale of 01/10', '$ 5.000'])
+  const credit = ledgerRowView({ ...creditRow(8), standing })
+  expect([credit.title, credit.sub, credit.own]).toEqual(['Payment · cash', 'Credit', '$ 3.000'])
+  const sale = ledgerRowView(saleWith('owing', standing, 5000))
+  expect([sale.title, sale.sub, sale.own]).toEqual(['Sale', 'Left owing', '$ 5.000'])
+})

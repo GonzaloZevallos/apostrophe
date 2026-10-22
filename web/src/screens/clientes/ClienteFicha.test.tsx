@@ -314,8 +314,9 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   const inAccount = within(account as HTMLElement)
   // The joined "Payment · cash · On account of …" line is now two lines: the
   // title, and the sub-line under it.
-  expect(inAccount.getAllByText('Payment · cash').length).toBeGreaterThan(0)
-  expect(inAccount.getAllByText('On account of the sale of 14/09').length).toBeGreaterThan(0)
+  expect(inAccount.getByText('Payment · cash')).toBeInTheDocument()
+  expect(inAccount.getAllByText('Payment · transfer')).toHaveLength(2)
+  expect(inAccount.getAllByText('On account of the sale of 14/09')).toHaveLength(2)
   expect(inAccount.getByText('Credit')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Account · running balance' })).toBeInTheDocument()
 
@@ -362,6 +363,8 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   expect(saleFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('Left owing')
   expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · cash')
   expect(firstPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
   expect(creditFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
   expect(creditFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent(/^Credit$/)
 

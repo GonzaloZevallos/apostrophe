@@ -2612,66 +2612,6 @@ body {
 }
 
 .marca-estado {
-  flex: none;
-  gap: var(--espacio-sm);
-  white-space: nowrap;
-}
-
-.fila-stock__pie .marca-estado__forma {
-  flex: none;
-}
-
-.fila-stock__detalle {
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-/* Payments and balances (plan, "Front"): a debt is always amber, a credit always
-   the neutral/blue accent — never green or red (design README's accessibility
-   rule), and never told by color alone: every amber or blue figure here sits next
-   to its own text ("te debe desde dd/mm", "A favor $ X"). */
-.monto-deuda {
-  color: var(--deuda);
-}
-
-.monto-credito {
-  color: var(--acento);
-}
-
-.cuenta-cliente {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cuenta-cliente__fila {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--deuda-linea);
-}
-
-.cuenta-cliente__fecha {
-  color: var(--tinta2);
-  font-size: 13px;
-}
-
-/* A figure never breaks between "$" and its number: when the row is short of room the
- * whole figure drops to the next line. From 300 px up; the 246 px cell (a 320 px phone with
- * text at 130%) keeps its listed overflow under #46, which the phone check holds. */
-@media (min-width: 300px) {
-  .cuenta-cliente__fila {
-    flex-wrap: wrap;
-  }
-
-  .cuenta-cliente__monto,
-  .cuenta-cliente__saldo {
-    white-space: nowrap;
-  }
-}
-
-.marca-estado {
   display: inline-flex;
   align-items: center;
 }

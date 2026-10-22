@@ -1455,32 +1455,5 @@
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
   }
 ]
