@@ -162,12 +162,6 @@
     "issue": 47
   },
   {
-    "screen": "ClienteEditar",
-    "rule": "touch-target",
-    "target": "checkbox:VIP",
-    "issue": 46
-  },
-  {
     "screen": "ClienteFicha",
     "rule": "touch-target",
     "target": "link:Home",
@@ -193,12 +187,6 @@
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "touch-target",
-    "target": "checkbox:VIP",
-    "issue": 46
   },
   {
     "screen": "InicioChecklist",
@@ -869,12 +857,6 @@
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-target",
     "target": "button:No customer",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-target",
-    "target": "checkbox:VIP",
     "issue": 78
   },
   {
