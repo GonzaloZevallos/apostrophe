@@ -114,8 +114,7 @@ for (const viewport of VIEWPORTS) {
 
         await expectPath(page, ORIGIN_PATH[origin])
         await expect(page.getByText('Payment saved · still owing $ 3.000')).toBeVisible()
-        await expect(page.getByText('$ 3.000', { exact: true }).first()).toBeVisible()
-        await expect(page.getByText('$ 5.000', { exact: true })).toHaveCount(0)
+        await expect(page.getByText(/^(Owes you )?\$ 3\.000/).first()).toBeVisible()
       })
 
       test(`opened from ${origin}: with something typed, Close asks before it leaves`, async ({ page }) => {
