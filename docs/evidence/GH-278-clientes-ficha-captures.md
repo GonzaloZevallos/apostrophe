@@ -120,9 +120,47 @@ Nothing is loosened; each is a lookup that follows a split or an assertion that 
 
 ## Integration: invariant 12 at 246x437
 
-The integrated offender lists hold 14 more (entry, size) cells than `4e9751e2` (1678 to 1692): CobroBorrar's
-Delete payment step is reachable at 246x437 now that ClienteFicha no longer overflows there, so its
-`unreachable` entry goes and its shell offenders (Home, Sales, More touch targets, text size, touch action,
-chrome and one figure-split) are listed against #46. Without the new entries the 246x437 run fails on unlisted
-CobroBorrar offenders; with the base lists it fails on the stale `unreachable` entry (`fixedButListed`; see
-`69f70080`). The shell's bar and text at 246 px belong to #59. Every other rule only shrinks.
+Command, run on head `9dffab3f`'s product code, three times with different offender lists (the lists were
+swapped for runs A and B and restored after):
+`cd web && npm run e2e -- --project=mobile -g "246x437, claro"` (vite build, then the setup test and the
+246x437 claro cell; about 3.6 m each).
+
+Why the lists grow there: ClienteFicha used to overflow horizontally at 246 px, so CobroBorrar (the Delete
+payment step) could not be reached and the base listed one `unreachable` entry for it. The ledger fix removes
+the overflow, so the step is reachable and measured for the first time. Its offenders are the shell's (bottom
+bar links, text size, touch action), the ones every other screen already lists at 246 px (#59).
+
+**A. Base lists (`git checkout 4e9751e2 -- web/src/mobile-standard/offenders/`): exit 1**, `1 failed, 1 passed`:
+
+```
+[mobile] › e2e/mobile.spec.ts:38:5 › phone standard at 246x437, claro
+  expect(diffOffenders(own, actual)).toEqual({ unlisted: [], fixedButListed: [] })
+  - Expected  -   2
+  + Received  + 231
+  "fixedButListed": Array [   // 10 entries, all now passing
+    { "rule": "unreachable", "screen": "CobroBorrar", "size": "246x437", "target": "", "theme": "claro" }
+    { "rule": "h-scroll", "screen": "ClienteFicha", ... }        plus 8 ClienteFicha/Clientes figure-split and
+                                                                 data-while-loading entries
+  "unlisted": Array [         // 21 entries, all "screen": "CobroBorrar", "size": "246x437"
+    chrome-at-load 1, chrome-mid-scroll 1, figure-split 1, text-size 5, touch-action 10, touch-target 3
+```
+
+**B. Shipped lists minus every CobroBorrar `246x437` size (21 entries touched): exit 1**, `1 failed, 1 passed`:
+
+```
+[mobile] › e2e/mobile.spec.ts:38:5 › phone standard at 246x437, claro
+  - Expected  -   1
+  + Received  + 149
+  "fixedButListed": Array [],
+  "unlisted": Array [         // 21 entries, all "screen": "CobroBorrar"
+    chrome-at-load 1, chrome-mid-scroll 1, figure-split 1, text-size 5, touch-action 10, touch-target 3
+```
+
+**C. Shipped lists (HEAD): exit 0**, `2 passed (3.7m)`.
+
+Net count, in the check's own unit (entry x size x theme, an entry with no `sizes` or `themes` meaning all
+4 sizes and both themes; it reproduces `compare.sh`'s 10826 to 10830): **+4 cells**. Per rule: chrome-at-load
+-6, chrome-mid-scroll -2, data-while-loading -8, figure-split -12, h-scroll -2, unreachable -2,
+text-size +10, touch-action +20, touch-target +6. The growth (+36) is CobroBorrar at 246x437, both themes
+(21 claro entries counted in run A, plus the oscuro twins; the rest of the +4 is the shrinkage listed above).
+An earlier note here gave "+14"; that counted an entry once per size and ignored themes, and is withdrawn.
