@@ -146,7 +146,7 @@ describe('on a phone', () => {
     const router = renderApp([{ pathname: PAYMENT }], 'phone')
     const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
 
-    await waitFor(() => expect(dialog.querySelector('.panel__titulo')).toHaveFocus())
+    await waitFor(() => expect(within(dialog).getByText('Record payment')).toHaveFocus())
     fireEvent.keyDown(document, { key: 'Escape' })
     await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
   })

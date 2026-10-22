@@ -5164,7 +5164,8 @@ body {
   padding: var(--espacio-lg);
 }
 
-.cobro-modal .panel__titulo:focus {
+.cobro-modal .panel__titulo:focus,
+.cobro-hoja .panel__titulo:focus {
   outline: none;
 }
 
