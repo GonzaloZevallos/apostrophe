@@ -3845,6 +3845,12 @@ body {
   min-width: 0;
 }
 
+/* Te deben in the computer's left pane: the total at a row's size, as the compact block of
+ * `ClientesCompu.dc.html` has it. The phone keeps the large figure. */
+.clientes-paneles__lista .ventas__resumen .cifra-xl {
+  font-size: 17px;
+}
+
 .variedades-paneles__lista .variedad-fila {
   padding: var(--espacio-md) 10px;
   border-bottom: 0;
