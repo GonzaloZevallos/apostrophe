@@ -161,6 +161,37 @@ async function owingCustomers(page: Page, count: number): Promise<void> {
   }
 }
 
+/** Gives the business `count` more varieties, so Home's "What you have left" is long enough to scroll on a computer. */
+async function moreVarieties(page: Page, count: number): Promise<void> {
+  for (let index = 1; index <= count; index += 1) {
+    const created = await page.request.post('/varieties', { data: { name: `Tulipan ${String(index).padStart(2, '0')}` } })
+    expect(created.ok()).toBe(true)
+  }
+}
+
+/** Gives Carla `count` more sales on credit, so her card is long enough to scroll on a computer. */
+async function moreSalesFor(page: Page, name: string, count: number): Promise<void> {
+  const me: { today: string } = await (await page.request.get('/auth/me')).json()
+  const varieties: { id: number; name: string }[] = await (await page.request.get(`/varieties?on=${me.today}`)).json()
+  const rosa = varieties.find((variety) => variety.name === 'Rosa')
+  if (rosa === undefined) throw new Error('Rosa missing from GET /varieties')
+  const found: { id: number; name: string }[] = await (
+    await page.request.get(`/customers?q=${encodeURIComponent(name)}`)
+  ).json()
+  const customer = found.find((one) => one.name === name)
+  if (customer === undefined) throw new Error(`${name} missing from GET /customers`)
+  for (let index = 0; index < count; index += 1) {
+    const sold = await page.request.post('/sales', {
+      data: {
+        customer_id: customer.id,
+        payment: 'owing',
+        lines: [{ variety_id: rosa.id, grams: '1', gift: false, special_price: null }],
+      },
+    })
+    expect(sold.ok()).toBe(true)
+  }
+}
+
 const scrollY = (page: Page): Promise<number> => page.evaluate(() => window.scrollY)
 
 /** The control the seller taps on the origin; on Customers, the one in the A–Z section, far down a long page. */
@@ -186,27 +217,34 @@ for (const viewport of VIEWPORTS) {
     test.use({ viewport: { width: viewport.width, height: viewport.height } })
 
     for (const origin of ORIGINS) {
-      // The long list on Customers takes all three; Home and the card are short, so a partial save adds nothing there.
-      const paths = origin === 'customers' ? (['close', 'partial', 'full'] as const) : (['close', 'full'] as const)
-      for (const how of paths) {
+      for (const how of ['close', 'partial', 'full'] as const) {
         test(`from ${origin}, ${how}: the same offset and focus where the seller was`, async ({ page }) => {
           test.setTimeout(180_000)
           await makeDebtor(page)
-          if (origin === 'customers') await owingCustomers(page, 12)
+          // Each page is made long enough to scroll, so the offset restored is a real one.
+          if (origin === 'card') await moreSalesFor(page, 'Carla Cobrar', 8)
+          else await owingCustomers(page, 12)
+          if (origin === 'home') await moreVarieties(page, 12)
           await goToOrigin(page, origin)
 
           const opener = openerOn(page, origin)
           await expect(opener).toBeVisible()
-          await opener.scrollIntoViewIfNeeded()
+          if (origin === 'customers') {
+            await opener.scrollIntoViewIfNeeded()
+          } else {
+            // Home and the card keep the control near the top; scroll so it sits 100 px below it, or as far as the page goes.
+            await opener.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 100))
+            await expect(opener).toBeInViewport()
+          }
           const before = await scrollY(page)
-          if (origin === 'customers') expect(before).toBeGreaterThan(500)
+          expect(before).toBeGreaterThan(origin === 'customers' ? 500 : 50)
           await opener.click()
           await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
 
           if (how === 'close') {
             await page.getByRole('button', { name: 'Close' }).click()
           } else {
-            await page.getByLabel('Amount').fill(how === 'partial' ? '2000' : '5000')
+            await page.getByLabel('Amount').fill(how === 'partial' ? '2000' : origin === 'card' ? '13000' : '5000')
             await page.getByRole('radio', { name: 'Cash' }).check()
             await page.getByRole('button', { name: 'Save' }).click()
           }
@@ -222,7 +260,9 @@ for (const viewport of VIEWPORTS) {
             await expect(page.getByRole('link', { name: OPENER.customers })).toHaveCount(0)
             await expect(page.getByRole('link', { name: /^Collect from Zeta/ })).toHaveCount(24)
           } else if (origin === 'home') {
-            await expect(page.locator(':focus')).toHaveText('Nobody owes you')
+            // Twelve customers still owe: the block stays, with its heading focused and Carla gone from it.
+            await expect(page.locator(':focus')).toHaveText('Owed to you')
+            await expect(page.getByRole('link', { name: OPENER.home })).toHaveCount(0)
           } else {
             await expect(page.locator(':focus')).toHaveText('Carla Cobrar')
           }

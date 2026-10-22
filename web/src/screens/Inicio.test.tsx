@@ -919,3 +919,31 @@ test('with no hand-off Home moves nothing and focuses nothing', async () => {
   expect(collect).not.toHaveFocus()
   expect(scrollTo).not.toHaveBeenCalled()
 })
+
+test('Home applies the offset only after the notice above the panel has answered, never against a shorter page', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  let answerFirstRun: (response: Response) => void = () => undefined
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/first-run')) return new Promise<Response>((resolve) => (answerFirstRun = resolve))
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, NOT_OFFERED))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, PANEL))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  renderInicio()
+
+  const collect = await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(scrollTo).not.toHaveBeenCalled()
+  expect(collect).not.toHaveFocus()
+
+  answerFirstRun(jsonResponse(200, CHECKLIST))
+
+  await waitFor(() => expect(collect).toHaveFocus())
+  expect(scrollTo).toHaveBeenCalled()
+})

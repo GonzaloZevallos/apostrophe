@@ -75,7 +75,14 @@ export default function Inicio() {
     pinOutOfDate,
   })
   const root = useRef<HTMLElement>(null)
-  useReturnToPlace({ root, ready: panelRead.data !== undefined && !panelRead.isFetching, fallback: owedPlace })
+  // The notices above the panel make the page taller once they answer (pending, not failed: a
+  // failure draws none), so the place is applied after them, never against a shorter page.
+  const settled = !pinnedCatalog.isPending && !onboardingQuery.isPending && !firstRun.isPending
+  useReturnToPlace({
+    root,
+    ready: panelRead.data !== undefined && !panelRead.isFetching && settled,
+    fallback: owedPlace,
+  })
   const failed = [panelRead, onboardingQuery].find((query) => query.isError)
 
   return (
