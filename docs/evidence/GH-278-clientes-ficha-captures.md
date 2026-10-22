@@ -164,3 +164,5 @@ Net count, in the check's own unit (entry x size x theme, an entry with no `size
 text-size +10, touch-action +20, touch-target +6. The growth (+36) is CobroBorrar at 246x437, both themes
 (21 claro entries counted in run A, plus the oscuro twins; the rest of the +4 is the shrinkage listed above).
 An earlier note here gave "+14"; that counted an entry once per size and ignored themes, and is withdrawn.
+
+Checked again on resume at `462e07c8`: clean tree, no conflict markers; the offender lists are the ones run C passed with.
