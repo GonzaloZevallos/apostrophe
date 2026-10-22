@@ -10,7 +10,7 @@
  * (ADR-0004).
  */
 
-import { CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_PAYMENT, SALE_NEW, pathTo } from '../../routes'
+import { CUSTOMERS, CUSTOMER_EDIT, SALE_NEW, paymentLink, pathTo } from '../../routes'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useParams } from 'react-router'
@@ -221,7 +221,7 @@ export default function ClienteFicha() {
               <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
             )}
             <div className="clientes__accion">
-              <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
+              <BotonLink {...paymentLink(customerId, 'card')} icon="cobro">
                 {COMMON_TEXT.recordPayment}
               </BotonLink>
             </div>

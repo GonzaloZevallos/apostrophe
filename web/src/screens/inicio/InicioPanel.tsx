@@ -15,7 +15,7 @@
  * mount.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, VARIETY, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMERS, VARIETY, paymentLink, pathTo } from '../../routes'
 import InAppLink from '../../components/InAppLink'
 import BotonLink from '../../components/BotonLink'
 import MarcaEstado from '../../components/MarcaEstado'
@@ -148,7 +148,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
           </InAppLink>
           <BotonLink
             icon="cobro"
-            to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
+            {...paymentLink(row.customer_id, 'home')}
             ariaLabel={COMMON_TEXT.collectFrom(row.name)}
           >
             {COMMON_TEXT.collect}

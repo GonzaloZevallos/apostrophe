@@ -430,9 +430,11 @@ test('"Collect from X" opens Registrar cobro for that customer as an in-app entr
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
 
   expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
-  expect(screen.getByText(new RegExp(`^${customerFixture.name}`))).toBeInTheDocument()
+  // The form names the customer; the list behind it, inert, names them too.
+  const named = screen.getAllByText(new RegExp(`^${customerFixture.name}`))
+  expect(named.some((element) => element.closest('[inert]') === null)).toBe(true)
   expect(router.state.location.pathname).toBe(ANA_PAYMENT)
-  expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
+  expect(router.state.location.state).toEqual({ ...inAppState({ pathname: CUSTOMERS }), underneath: 'customers' })
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })

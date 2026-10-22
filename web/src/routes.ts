@@ -168,6 +168,34 @@ export function pathTo(template: string, params: Readonly<Record<string, string 
   })
 }
 
+/** The screen Record payment was opened from, which is what sits behind it (ADR-0044). */
+export type PaymentUnderneath = 'home' | 'customers' | 'card'
+
+const PAYMENT_UNDERNEATH: readonly PaymentUnderneath[] = ['home', 'customers', 'card']
+
+function isPaymentUnderneath(value: unknown): value is PaymentUnderneath {
+  return PAYMENT_UNDERNEATH.some((known) => known === value)
+}
+
+/**
+ * The only reader of `location.state.underneath`. Anything outside the closed set (an
+ * unknown name, a direct link, a reload with no state) gives the customer's card.
+ */
+export function readPaymentUnderneath(state: unknown): PaymentUnderneath {
+  if (typeof state === 'object' && state !== null && 'underneath' in state && isPaymentUnderneath(state.underneath)) {
+    return state.underneath
+  }
+  return 'card'
+}
+
+/**
+ * The link to Record payment for a customer, from the screen it is opened from: the only
+ * writer of `underneath`. The state is a closed screen name, never a record (§9).
+ */
+export function paymentLink(customerId: number | string, underneath: PaymentUnderneath): { to: string; state: { underneath: PaymentUnderneath } } {
+  return { to: pathTo(CUSTOMER_PAYMENT, { id: customerId }), state: { underneath } }
+}
+
 /** The path as a route-table segment (`'/more'` → `'more'`). */
 export function relative(path: string): string {
   return path.replace(/^\//, '')

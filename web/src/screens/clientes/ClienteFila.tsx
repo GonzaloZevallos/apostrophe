@@ -8,7 +8,7 @@
  * card.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, pathTo } from '../../routes'
+import { CUSTOMER, paymentLink, pathTo } from '../../routes'
 import BotonLink from '../../components/BotonLink'
 import PaneRowLink from '../../components/PaneRowLink'
 import type { Standing } from '../../api/payments'
@@ -58,7 +58,7 @@ export default function ClienteFila({ id, name, phone = null, vip = false, balan
         {standing === 'credit' && <span className="monto-credito">{CUSTOMERS_TEXT.credit}{formatMoneyMagnitude(balance)}</span>}
       </PaneRowLink>
       {standing === 'owes' && (
-        <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id })} icon="cobro" ariaLabel={COMMON_TEXT.collectFrom(name)}>
+        <BotonLink {...paymentLink(id, 'customers')} icon="cobro" ariaLabel={COMMON_TEXT.collectFrom(name)}>
           {COMMON_TEXT.collect}
         </BotonLink>
       )}

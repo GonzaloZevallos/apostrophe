@@ -12,7 +12,9 @@ import {
   OUTSIDE,
   parentOf,
   pathTo,
+  paymentLink,
   placeOf,
+  readPaymentUnderneath,
   SCREENS,
   screenOf,
   type Kind,
@@ -611,6 +613,29 @@ describe("the screens whose back names the record", () => {
     );
     expect(marked.sort()).toEqual(["variety", "variety-entries", "variety-prices"]);
     for (const id of marked) expect(screenOf(id).kind).toBe("card");
+  });
+});
+
+describe("the screen Record payment was opened from", () => {
+  test.each(["home", "customers", "card"])("%s is read back as itself", (underneath) => {
+    expect(readPaymentUnderneath({ underneath })).toBe(underneath);
+  });
+
+  test.each([
+    ["an unknown screen name", { underneath: "sales" }],
+    ["an object", { underneath: { name: "home" } }],
+    ["a number", { underneath: 3 }],
+    ["a state without it", { inApp: true }],
+    ["a bare string", "home"],
+    ["null", null],
+    ["undefined", undefined],
+  ])("%s gives the customer's card", (_label, state) => {
+    expect(readPaymentUnderneath(state)).toBe("card");
+  });
+
+  test("the link helper builds the payment path and writes only the closed screen name", () => {
+    expect(paymentLink(7, "home")).toEqual({ to: "/customers/7/payment", state: { underneath: "home" } });
+    expect(readPaymentUnderneath(paymentLink(7, "customers").state)).toBe("customers");
   });
 });
 
