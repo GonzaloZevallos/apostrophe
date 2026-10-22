@@ -1060,6 +1060,11 @@ body {
   font-weight: 600;
 }
 
+/* A pressed row fills with --superficie, the avatar's own fill: the circle takes --papel then. */
+.lista-clientes__fila:active > .avatar {
+  background: var(--papel);
+}
+
 /* At 130 % zoom (246 CSS px) the avatar's 48 px would squeeze the name into a column of
  * letters and make every row taller; it is decoration, so the row drops it there. */
 @media (max-width: 299px) {
