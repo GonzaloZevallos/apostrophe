@@ -116,7 +116,7 @@ for (const viewport of VIEWPORTS) {
 
     // "All" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'All: $ 5.000' }).click()
-    await expect(page.getByLabel('Amount')).toHaveValue('5000')
+    await expect(page.getByLabel('Amount')).toHaveValue('$ 5.000')
     await page.getByRole('radio', { name: 'Cash' }).check()
     await page.getByRole('button', { name: 'Save' }).click()
     await expectPath(page, CUSTOMERS)

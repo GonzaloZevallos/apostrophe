@@ -49,7 +49,11 @@
     "screen": "Clientes",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
   },
   {
     "screen": "ClientesBusqueda",
@@ -65,7 +69,8 @@
     "sizes": [
       "320x568",
       "375x812",
-      "430x932"
+      "430x932",
+      "246x437"
     ]
   },
   {

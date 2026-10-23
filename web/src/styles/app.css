@@ -182,6 +182,61 @@ body {
   color: var(--deuda);
 }
 
+/* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
+ * the focused field. Only `CustomerFields` carries the class; the outline stays (made
+ * transparent, so forced-colors still draws it) and is never removed. */
+.campo__input--enfoque:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 2px var(--tinta);
+}
+
+/* The customer form's second row: Phone takes the rest, VIP a fixed cell. */
+.cliente-fila {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.cliente-fila__telefono {
+  flex: 1;
+  min-width: 0;
+}
+
+.cliente-fila__telefono .campo__input {
+  font-size: 16px;
+}
+
+.cliente-fila__vip {
+  flex: none;
+  width: 104px;
+}
+
+/* The VIP pill: the state word and a smaller track inside a rounded surface. */
+.cliente-fila__vip .opcion-interruptor {
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs) 0 var(--espacio-md);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  font-size: 16px;
+  color: var(--tinta2);
+}
+
+.cliente-fila__vip .opcion-interruptor__pista {
+  width: 40px;
+  height: 24px;
+  padding: 0;
+}
+
+.cliente-fila__vip .opcion-interruptor__pulgar {
+  width: 16px;
+  height: 16px;
+  margin: 0 2px;
+}
+
+.cliente-fila__vip .opcion-interruptor__input:checked + .opcion-interruptor__pista .opcion-interruptor__pulgar {
+  transform: translateX(16px);
+}
+
 .boton {
   display: flex;
   align-items: center;
@@ -1043,6 +1098,39 @@ body {
 
 .cobrar--acento {
   background: var(--acento);
+}
+
+/* A person's initials in a circle (`ClientesCompu.dc.html`): --superficie fill, --papel on a
+ * selected row; no colour of its own, so the text takes the row's --tinta. */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* A pressed row fills with --superficie, the avatar's own fill: the circle takes --papel then. */
+.lista-clientes__fila:active > .avatar {
+  background: var(--papel);
+}
+
+/* At 130 % zoom (246 CSS px) the avatar's 48 px would squeeze the name into a column of
+ * letters and make every row taller; it is decoration, so the row drops it there. */
+@media (max-width: 299px) {
+  .lista-clientes__fila > .avatar {
+    display: none;
+  }
+}
+
+.lista-clientes__fila > svg {
+  flex-shrink: 0;
+  color: var(--tenue);
 }
 
 .lista-clientes__fila {
@@ -2501,34 +2589,86 @@ body {
 .cuenta-cliente {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+}
+
+.cuenta-cliente__encabezado {
+  margin: 0;
+  padding: 18px 0 6px;
 }
 
 .cuenta-cliente__fila {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+  column-gap: 12px;
+  row-gap: 4px;
+  padding: 13px 0;
   border-bottom: 1px solid var(--deuda-linea);
 }
 
+.cuenta-cliente__fila:last-child {
+  border-bottom: 0;
+}
+
 .cuenta-cliente__fecha {
+  flex: none;
+  width: 42px;
+  color: var(--tinta2);
+  font-size: 13px;
+}
+
+/* The title over its sub-line takes what is left and shrinks; the title ellipsizes. */
+.cuenta-cliente__texto {
+  flex: 1 1 8rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cuenta-cliente__titulo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.cuenta-cliente__sub {
   color: var(--tinta2);
   font-size: 13px;
 }
 
 /* A figure never breaks between "$" and its number: when the row is short of room the
- * whole figure drops to the next line. From 300 px up; the 246 px cell (a 320 px phone with
- * text at 130%) keeps its listed overflow under #46, which the phone check holds. */
-@media (min-width: 300px) {
-  .cuenta-cliente__fila {
-    flex-wrap: wrap;
-  }
+ * whole block drops to the next line, aligned to the right. */
+.cuenta-cliente__cifras {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
 
-  .cuenta-cliente__monto,
-  .cuenta-cliente__saldo {
-    white-space: nowrap;
-  }
+.cuenta-cliente__monto {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cuenta-cliente__saldo {
+  color: var(--tinta2);
+  font-size: 12px;
+}
+
+/* Amber and the blue accent only on the balance line, by its tone; the muted ink of
+ * the plain balance is for a settled one. */
+.cuenta-cliente__saldo.monto-deuda {
+  color: var(--deuda);
+}
+
+.cuenta-cliente__saldo.monto-credito {
+  color: var(--acento);
 }
 
 .marca-estado {
@@ -4516,6 +4656,26 @@ body {
   text-decoration: none;
 }
 
+/* Clientes' header (Clientes.dc.html): the title on the left, "New customer" (icon + word) at
+ * the end of the same row. Tokens only. */
+.clientes__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--espacio-md);
+}
+
+.clientes__encabezado > .boton {
+  width: auto;
+  height: auto;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  font-size: 14px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
 /* "Editar" on a customer's card keeps its plain accent link look: no underline. */
 .ficha-cliente__encabezado .boton--enlace {
   box-shadow: none;
@@ -5161,39 +5321,71 @@ body {
   text-decoration: none;
 }
 
-.cobro__metodo {
-  display: flex;
-  flex-direction: row;
-  gap: var(--espacio-xs);
-  border: 0;
-  padding: var(--espacio-xs);
-  margin: 0;
-  background: var(--superficie);
-  border-radius: var(--radio-pildora);
-}
-
-.cobro__metodo > legend {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
-
-.cobro__metodo > label {
-  flex: 1;
+/* The date row (`Cobro.dc.html`): "Date" on the left, "Today 05/10" on the right. The native
+ * date input is stretched over the whole row, transparent (the same technique as
+ * `.fecha-pildora`), so a tap anywhere opens the picker and the row is the touch target. */
+.fecha-fila {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  border-bottom: 1px solid var(--linea);
+  font-size: 16px;
+}
+
+.fecha-fila__valor {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+/* The native input is stretched over the row and painted invisible by its text fill, not by
+ * `opacity: 0`: its `color` stays a real token, so the contrast check still reads a readable
+ * value, and it stays a visible, 44 px-tall control to assistive technology. */
+.fecha-fila__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  -webkit-text-fill-color: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.fecha-fila__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+/* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */
+.cobro__metodo {
+  display: flex;
+  flex-direction: column;
   gap: var(--espacio-xs);
-  padding: var(--espacio-md) 0;
-  border-radius: var(--radio-pildora);
+}
+
+.cobro__metodo > .selector-pago {
+  background: var(--superficie);
+}
+
+.cobro__metodo .selector-pago__opcion {
+  min-height: var(--alto-tocable);
+  touch-action: manipulation;
+  padding: 0;
   font-size: 15px;
 }
 
-.cobro__metodo > label:has(input:checked) {
+.cobro__metodo .selector-pago__opcion--activa {
   background: var(--papel);
-  font-weight: 600;
 }
 
 .cobro__resumen {
@@ -5220,6 +5412,49 @@ body {
 
 .ficha-deuda > .clientes__accion {
   margin-top: var(--espacio-md);
+}
+
+/* The label sits right over its figure: a small label, then the large figure. */
+.ficha-deuda__rotulo {
+  display: block;
+}
+
+/* A credit is not a debt: no amber surface, the figure takes the neutral/blue accent. */
+.ficha-deuda--credito {
+  background: none;
+  padding: 0;
+}
+
+/* "Nueva venta a <name>" pinned at the card's foot (`ClienteFicha.dc.html`, `ClientesCompu.dc.html`):
+ * the last child of the card's column, at its end when the card is short and stuck to the
+ * bottom of the viewport (above the in-flow bar) while the long ledger scrolls. The document
+ * scrolls, so no ancestor takes an overflow. */
+.ficha-cliente__pie {
+  margin-top: auto;
+  position: sticky;
+  bottom: var(--inset-abajo);
+  background: var(--papel);
+  padding: var(--espacio-md) 0;
+}
+
+.ficha-cliente__pie > .boton {
+  max-width: 100%;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.ficha-cliente__pie-texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 900px) {
+  .ficha-cliente__pie > .boton {
+    width: fit-content;
+    padding: 0 var(--espacio-xxl);
+  }
 }
 
 /* The dialog's title takes focus when the modal opens so a screen reader reads it; it is

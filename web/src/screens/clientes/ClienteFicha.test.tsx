@@ -183,6 +183,37 @@ test('a customer with no phone shows no phone element, no dash, no empty label',
   expect(screen.queryByText('Sin teléfono')).not.toBeInTheDocument()
 })
 
+test('"New sale to <name>" sits in the card\'s pinned footer, the last thing in the card, and the card has no "+ New sale"', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
+      'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  renderFicha('3')
+
+  const link = await screen.findByRole('link', { name: 'New sale to Fer' })
+  const footer = link.closest('.ficha-cliente__pie') as HTMLElement
+  expect(footer).not.toBeNull()
+  expect(footer.parentElement?.lastElementChild).toBe(footer)
+  expect(within(footer).getAllByRole('link')).toHaveLength(1)
+  expect(screen.queryByRole('link', { name: /^New sale$/ })).not.toBeInTheDocument()
+})
+
+test('a customer who owes nothing shows no label-over-figure block', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
+      'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  renderFicha('3')
+
+  await screen.findByRole('link', { name: 'New sale to Fer' })
+  expect(screen.queryByText('Owes you')).not.toBeInTheDocument()
+  expect(screen.queryByText('Credit')).not.toBeInTheDocument()
+})
+
 test('"Nueva venta a <name>" opens the sale form with this customer chosen, by id alone', async () => {
   api.mockImplementation(
     dispatchFetch({
@@ -266,8 +297,14 @@ test('a customer who owes shows "Te debe" since the oldest debt, Registrar cobro
   )
   renderFicha('1')
 
-  expect(await screen.findByText('Owes you $ 11.000')).toBeInTheDocument()
-  expect(screen.getByText('since 14/09')).toBeInTheDocument()
+  // The block is a small label over a large figure: two texts now, not one joined line.
+  const label = await screen.findByText('Owes you')
+  const block = label.parentElement as HTMLElement
+  const figure = within(block).getByText('$ 11.000')
+  expect(label.compareDocumentPosition(figure) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(figure).toHaveClass('monto-deuda')
+  expect(label).not.toHaveClass('monto-deuda')
+  expect(within(block).getByText('since 14/09')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Record payment' })).toBeInTheDocument()
   expect(await screen.findByText('Left owing')).toBeInTheDocument()
 })
@@ -291,7 +328,11 @@ test('a customer in credit shows "Credit", never "Te debe", and no Registrar cob
   )
   renderFicha('2')
 
-  expect(await screen.findByText('Credit $ 2.000')).toBeInTheDocument()
+  const label = await screen.findByText('Credit', { selector: '.ficha-deuda__rotulo' })
+  const figure = within(label.parentElement as HTMLElement).getByText('$ 2.000')
+  expect(label.compareDocumentPosition(figure) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(figure).toHaveClass('monto-credito')
+  expect(figure).not.toHaveClass('monto-deuda')
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Record payment' })).not.toBeInTheDocument()
 })
@@ -314,8 +355,13 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   const account = document.querySelector('.cuenta-cliente')
   expect(account).not.toBeNull()
   const inAccount = within(account as HTMLElement)
-  expect(inAccount.getByText('Payment · cash · On account of the sale of 14/09')).toBeInTheDocument()
+  // The joined "Payment · cash · On account of …" line is now two lines: the
+  // title, and the sub-line under it.
+  expect(inAccount.getByText('Payment · cash')).toBeInTheDocument()
+  expect(inAccount.getAllByText('Payment · transfer')).toHaveLength(2)
+  expect(inAccount.getAllByText('On account of the sale of 14/09')).toHaveLength(2)
   expect(inAccount.getByText('Credit')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Account · running balance' })).toBeInTheDocument()
 
   // Each row shows its own figure (`.cuenta-cliente__monto`) next to the running
   // balance it left (`.cuenta-cliente__saldo`) — plan, "On screen": "with the
@@ -354,6 +400,28 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   // `standing`, never a comparison on the number itself.
   expect(creditFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 2.000')
   expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('Credit $ 2.000')
+
+  // Title over sub-line on the left, the sale naming no variety and no grams.
+  expect(saleFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Sale')
+  expect(saleFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('Left owing')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · cash')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
+  expect(creditFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(creditFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent(/^Credit$/)
+
+  // Amber marks only what is owed: the owed balance and the settled one are not
+  // amber-by-credit; the credit figure is the blue treatment, never amber.
+  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-deuda')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-deuda')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-deuda')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-credito')
+  expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-credito')
+  expect(creditFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-deuda')
+  for (const fila of filas) {
+    expect(fila.querySelector('.cuenta-cliente__monto')).not.toHaveClass('monto-deuda')
+  }
 })
 
 test('Delete payment asks before deleting, then shows "Payment deleted" and refreshes the account', async () => {
@@ -571,7 +639,7 @@ test('registering a payment shows "Payment saved · still owing $ X" when someth
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Amount'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Amount'), '5000')
-  await userEvent.click(within(sheet as HTMLElement).getByLabelText('Cash'))
+  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   // `payment.json`'s own `after.balance` (plan, invariants: "used by the front's
@@ -599,7 +667,7 @@ test('"All" fills the amount with the balance, and the debounced preview shows t
   const within_ = within(sheet as HTMLElement)
 
   await userEvent.click(within_.getByRole('button', { name: 'All: $ 11.000' }))
-  expect(within_.getByLabelText('Amount')).toHaveValue('11000')
+  expect(within_.getByLabelText('Amount')).toHaveValue('$ 11.000')
 
   expect(await within_.findByText('Taken from the oldest debt')).toBeInTheDocument()
   expect(await within_.findByText('$ 11.000 to the sale of 14/09')).toBeInTheDocument()
@@ -649,7 +717,7 @@ test('registering a payment that settles everything shows the plain "Payment sav
   const sheet = (await screen.findByRole('button', { name: 'Save' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'All: $ 11.000' }))
-  await userEvent.click(within(sheet as HTMLElement).getByLabelText('Cash'))
+  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Payment saved')).toBeInTheDocument()
@@ -767,11 +835,11 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Amount'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Amount'), '999000')
-  await userEvent.click(within(sheet as HTMLElement).getByLabelText('Cash'))
+  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('The amount is more than they owe you.')).toBeInTheDocument()
-  expect(within(sheet as HTMLElement).getByLabelText('Amount')).toHaveValue('999000')
+  expect(within(sheet as HTMLElement).getByLabelText('Amount')).toHaveValue('$ 999.000')
 })
 
 const OWING_FETCHES = {
@@ -805,7 +873,7 @@ test('an untouched sheet leaves at once on history back', async () => {
 test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
   api.mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
-  await userEvent.click(await screen.findByLabelText('Cash'))
+  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
   await act(() => router.navigate(-1))
 
   expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
@@ -817,7 +885,7 @@ test('a touched sheet asks before history back leaves, "No" keeps what was typed
   await waitFor(() => expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument())
   // A regression check that "No" did not navigate, not a sync point.
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
-  expect(await screen.findByLabelText('Cash')).toBeChecked()
+  expect(await screen.findByRole('radio', { name: 'Cash' })).toBeChecked()
 
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
@@ -835,7 +903,7 @@ test('after a save the sheet is not in history: back from the card goes to what 
   await router.navigate(CUSTOMERS)
   await router.navigate(pathTo(CUSTOMER, { id: 1 }), { state: inAppState({ pathname: CUSTOMERS }) })
   await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))
-  await userEvent.click(await screen.findByLabelText('Cash'))
+  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
@@ -898,7 +966,7 @@ function renderGone(entries: HistoryEntry[]) {
 }
 
 async function saveTheGonePayment() {
-  await userEvent.click(await screen.findByLabelText('Cash'))
+  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 }
 
@@ -946,7 +1014,7 @@ test('a gone cobro on a direct link replaces the sheet with Clientes and shows t
 test('after a reload of the sheet, the gone exit still goes back once', async () => {
   fakeGonePayment()
   const { router, view, app } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
-  await screen.findByLabelText('Cash')
+  await screen.findByRole('radio', { name: 'Cash' })
   view.unmount()
   render(app)
 
@@ -961,7 +1029,7 @@ test('a resize across 900 px between opening and leaving does not change where t
   fakeGonePayment()
   stubViewport('phone')
   const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
-  await screen.findByLabelText('Cash')
+  await screen.findByRole('radio', { name: 'Cash' })
   stubViewport('computer')
 
   await saveTheGonePayment()

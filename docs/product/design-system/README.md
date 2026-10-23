@@ -122,7 +122,7 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--boton-texto` | par | `--boton` | 15,97 | 15,80 |  |
 | `--critico-texto` | par | `--critico` | 12,59 | 11,13 |  |
 | `--nav-inactivo` | par | `--papel` | 4,69 | 4,97 | `.bar-inferior__item` |
-| `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg` |
+| `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg`, `.lista-clientes__fila > svg` |
 <!-- contraste:fin -->
 
 ## En el celular
@@ -227,7 +227,9 @@ chequeo. Un paso que no llega a su pantalla se informa como `unreachable`, nunca
 pantalla, una regla, un elemento y un issue (uno de área del mapa fijo #45-#49, #59, #60,
 #78), con `sizes` y `themes` opcionales. Sólo puede achicarse: la corrida falla ante un
 infractor nuevo, ante una entrada cuya celda ya pasa y ante una entrada sin número de issue
-válido. No consulta ninguna red; quien revisa comprueba que el número sea un issue de área
+válido. La única excepción es el canje: una pantalla que pasa a ser alcanzable cambia su
+entrada `unreachable` por sus celdas reales en el mismo cambio (la regla está en
+`docs/product/gate.md`). No consulta ninguna red; quien revisa comprueba que el número sea un issue de área
 real y abierto. Un issue de área no está terminado mientras sus pantallas sigan en la lista.
 Vale sólo para el dato y la fecha fijos (ADR-0048); cambiar cualquiera de los dos es
 cambiar las listas, en el mismo diff.

@@ -12,7 +12,7 @@
  * search list's own.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -218,7 +218,9 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   )
   renderClientes()
 
-  expect(await screen.findByText('2 customers')).toBeInTheDocument()
+  // Reversed assertion (GH-278): the header no longer carries an "N customers" count line.
+  expect(await screen.findByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
+  expect(screen.queryByText(/^\d+ customers?$/)).not.toBeInTheDocument()
   expect(screen.queryByText(/ owe you \$/)).not.toBeInTheDocument()
   const section = await screen.findByRole('region', { name: 'Owed to you' })
   const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
@@ -227,7 +229,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
     within(section).getByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`),
   ).toBeInTheDocument()
   expect(within(section).getAllByRole('link').map((link) => link.textContent)).toEqual([
-    'Ana Pérez$ 15.000owes you since 14/09',
+    'APAna Pérez$ 15.000owes you since 14/09',
     'Collect',
   ])
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
@@ -364,6 +366,34 @@ test('a customer who owes shows the amber mark; one in credit shows the blue "Cr
 
   expect(await screen.findByText('owes you since 14/09')).toBeInTheDocument()
   expect(screen.getByText('Credit $ 2.000')).toBeInTheDocument()
+})
+
+test('every row has a decorative initials avatar; only the rows that owe nothing end in a chevron', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() =>
+      jsonResponse(200, [
+        { id: 1, name: 'Ana Pérez', phone: '+5491100000001', vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+        { id: 2, name: 'Lu Fernández', phone: '+5491100000002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
+        { id: 3, name: 'Mica Solano', phone: '+5491100000003', vip: false, balance: 0, owing_since: null, standing: 'settled' },
+      ]),
+    ),
+  )
+  renderClientes()
+
+  const ana = await screen.findByRole('link', { name: /^Ana Pérez/ })
+  const lu = screen.getByRole('link', { name: /^Lu Fernández/ })
+  const mica = screen.getByRole('link', { name: /^Mica Solano/ })
+  const avatars = (row: HTMLElement) => Array.from(row.querySelectorAll('.avatar'))
+  expect(avatars(ana).map((a) => a.textContent)).toEqual(['AP'])
+  expect(avatars(lu).map((a) => a.textContent)).toEqual(['LF'])
+  expect(avatars(mica).map((a) => a.textContent)).toEqual(['MS'])
+  for (const row of [ana, lu, mica]) expect(avatars(row)[0]).toHaveAttribute('aria-hidden', 'true')
+  expect(ana).not.toHaveAccessibleName(/^AP/)
+  expect(ana.querySelector('svg')).toBeNull()
+  expect(lu.lastElementChild?.tagName.toLowerCase()).toBe('svg')
+  expect(mica.lastElementChild?.tagName.toLowerCase()).toBe('svg')
+  expect(screen.getByRole('link', { name: 'Collect from Ana Pérez' })).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Collect from Lu Fernández' })).toBeNull()
 })
 
 // Opening a customer or a payment from the list (navigation.md, "In-app entries").
@@ -564,6 +594,42 @@ test('every action on the list and in Te deben is icon + text, and Cobrar keeps 
   const nuevo = screen.getByRole('link', { name: 'New customer' })
   expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expectIconAndTextRule(document.body, RULE)
+})
+
+test('the header holds the title and "New customer" with its icon, and no count line', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, debtorsFixture)),
+  )
+  renderClientes()
+
+  const nuevo = await screen.findByRole('link', { name: 'New customer' })
+  const header = nuevo.closest('.clientes__encabezado')
+  expect(header).not.toBeNull()
+  expect(within(header as HTMLElement).getByText('Customers')).toBeInTheDocument()
+  expect(nuevo).toHaveTextContent('New customer')
+  expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.queryByText(/^\d+ customers?$/)).not.toBeInTheDocument()
+})
+
+test('tapping "New customer" opens the customer form', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture])))
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[CUSTOMERS]}>
+        <Routes>
+          <Route element={<ClientesLayout />}>
+            <Route path={CUSTOMERS} element={<Clientes />} />
+          </Route>
+          <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+
+  await userEvent.click(await screen.findByRole('link', { name: 'New customer' }))
+
+  expect(await screen.findByText('customer form')).toBeInTheDocument()
 })
 
 test('the two empty states are the registered strings, mounted and within their limit', async () => {

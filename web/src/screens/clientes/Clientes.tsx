@@ -36,9 +36,6 @@ import { COMMON_TEXT } from '../../copy/common'
 export const SEARCH_LABEL = CUSTOMERS_TEXT.searchCustomer
 export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
 export const SEARCHING = CUSTOMERS_TEXT.searching
-/** "1 customer" or "n customers": the plural is two keys. */
-const customerCountLine = (count: number): string =>
-  count === 1 ? CUSTOMERS_TEXT.oneCustomer : CUSTOMERS_TEXT.customerCount(count)
 
 /** Where focus lands when the customer's "Collect" is gone: the "Owed to you" block, or the search while it filters. */
 function owedOrSearch(root: HTMLElement): HTMLElement | null {
@@ -65,14 +62,6 @@ export default function Clientes() {
     placeholderData: keepPreviousData,
   })
 
-  // The header's own count comes from the unfiltered list (plan, "Front": "N
-  // comes from the unfiltered list"), never from whatever the search box
-  // currently narrows the rows below down to.
-  const total = useQuery({
-    queryKey: keys.customers(''),
-    queryFn: () => listCustomers(''),
-  })
-
   const customers = data ?? []
 
   // Back from Record payment the list returns to its place (PM option a). Beside a customer's
@@ -90,11 +79,11 @@ export default function Clientes() {
   return (
     <main className="pantalla" ref={root}>
       <div className="cuerpo">
-        <div>
+        <div className="clientes__encabezado">
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
-        </div>
-        <div className="campo__rotulo">
-          <span>{customerCountLine(total.data?.length ?? 0)}</span>
+          <BotonLink to={CUSTOMER_NEW} variant="secondary" icon="agregar">
+            {COMMON_TEXT.newCustomer}
+          </BotonLink>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">
@@ -107,11 +96,6 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <div className="clientes__accion">
-          <BotonLink to={CUSTOMER_NEW} icon="personaMas">
-            {COMMON_TEXT.newCustomer}
-          </BotonLink>
-        </div>
         {query === '' && <TeDeben />}
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}

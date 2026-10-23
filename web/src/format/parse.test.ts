@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { parseGrams, parseMoney, parseSignedGrams } from './parse'
+import { parseGrams, parseMoney, parseSignedGrams, readMoneyInput } from './parse'
 
 describe('parseMoney', () => {
   test('reads whole pesos with a dot as the thousands separator', () => {
@@ -71,5 +71,39 @@ describe('parseSignedGrams', () => {
 
   test('rejects more than two decimals', () => {
     expect(parseSignedGrams('-3,555')).toEqual({ ok: false })
+  })
+})
+
+describe('readMoneyInput', () => {
+  test.each([
+    ['1000.50', 1000],
+    ['15.5', 15],
+    ['$ 1.000,50', 1000],
+    ['1.000', 1000],
+    ['1.234.567', 1234567],
+    ['$ 20.000', 20000],
+    ['0', 0],
+  ])('reads %j as %j whole pesos', (text, expected) => {
+    expect(readMoneyInput(text)).toBe(expected)
+  })
+
+  test.each([[''], ['$ '], ['abc'], [',50']])('reads %j as nothing', (text) => {
+    expect(readMoneyInput(text)).toBeNull()
+  })
+})
+
+describe('readMoneyInput after a deletion', () => {
+  test('one Backspace on the shown "$ 20.000" keeps the dots as thousands: 2000, not 20', () => {
+    expect(readMoneyInput('$ 20.00', 'delete')).toBe(2000)
+    expect(readMoneyInput('$ 2.000', 'delete')).toBe(2000)
+  })
+
+  test('a deletion still drops everything from a comma on, and reads no digits as nothing', () => {
+    expect(readMoneyInput('$ 1.000,5', 'delete')).toBe(1000)
+    expect(readMoneyInput('$ ', 'delete')).toBeNull()
+  })
+
+  test('typed or pasted text keeps the cents rule', () => {
+    expect(readMoneyInput('$ 20.00')).toBe(20)
   })
 })

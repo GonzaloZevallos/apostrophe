@@ -1,11 +1,5 @@
 [
   {
-    "screen": "Clientes",
-    "rule": "data-while-loading",
-    "target": "span:# customers",
-    "issue": 46
-  },
-  {
     "screen": "Gastos",
     "rule": "data-while-loading",
     "target": "span:September #",

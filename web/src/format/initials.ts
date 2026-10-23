@@ -1,4 +1,4 @@
-/** The business's initials, the avatar's letters (`InicioCompu.dc.html`: "La Huerta" → "LH"). */
+/** A name's initials: the first character of its first two words, upper-cased ("La Huerta" → "LH"). */
 export function initialsOf(name: string): string {
   return name
     .split(/\s+/)
