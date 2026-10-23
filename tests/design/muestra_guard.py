@@ -717,6 +717,26 @@ def _in_spanish(part: str) -> str:
     return part
 
 
+def spanish_label_problems(name: str, screen: Screen) -> list[str]:
+    """A drawn part still in Spanish: the Analysis drawings show the app's English (GH-333)."""
+    spanish = {value for value in _ANALYSIS_WORDS.values()}
+    spanish |= {f"{month} 2026" for month in _ANALYSIS_MONTHS.values()}
+    shapes = (
+        re.compile(r"\by \d+(?:,\d+)? g sin costo\b"),
+        re.compile(r"^\d+(?:,\d+)? g regalado$"),
+        re.compile(r"^\d+% del mes$"),
+        re.compile(r"^margen (?:promedio\b|\d+%$)"),
+        re.compile(r"^costo \$"),
+        re.compile(r"^(?:Mejor semana|Esta): "),
+        re.compile(r"^(?:Octubre|Septiembre|Agosto) \d{4}$"),
+    )
+    return [
+        _problem(name, f"'{part}' is a Spanish product label; the drawing shows the app's English")
+        for part in screen.parts
+        if part in spanish or any(shape.search(part) for shape in shapes)
+    ]
+
+
 def in_spanish(screen: Screen) -> Screen:
     return Screen(
         parts=tuple(_in_spanish(part) for part in screen.parts),

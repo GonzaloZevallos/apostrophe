@@ -7,7 +7,14 @@ from pathlib import Path
 import pytest
 
 from tests.design.muestra_families import FAMILIES, OTRAS, Family
-from tests.design.muestra_guard import CHECKS, Muestra, check_screen, parse_muestra
+from tests.design.muestra_guard import (
+    CHECKS,
+    Muestra,
+    check_screen,
+    parse_muestra,
+    read_screen,
+    spanish_label_problems,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 DESIGN = ROOT / "docs" / "product" / "design-system"
@@ -50,6 +57,8 @@ def test_each_listed_screen_agrees_with_muestra(family: Family) -> None:
     for screen in family.screens:
         page = (SCREENS / screen).read_text(encoding="utf-8")
         problems += check_screen(family.name, screen, page, muestra, family.denylist)
+        if family.name == "analisis":
+            problems += spanish_label_problems(screen, read_screen(page))
 
     assert problems == []
 
@@ -94,6 +103,36 @@ def test_the_analisis_guard_rejects_a_screen_that_drifts(
     )
 
     assert problems != [], what
+
+
+ANALISIS_SPANISH = (
+    ("a cost line", "Stock shortfall", "Faltante de stock"),
+    ("a best week", "Best week", "Mejor semana"),
+    ("the grams given away", " g given away", " g regalado"),
+    ("the pending note", "and 1 g without cost", "y 1 g sin costo"),
+    ("the month heading", "October 2026", "Octubre 2026"),
+    (
+        "the grouped heading",
+        "Moved since your first record, not the money you have in cash",
+        "Desde el primer registro",
+    ),
+)
+
+
+@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+@pytest.mark.parametrize(
+    ("what", "english", "spanish"), ANALISIS_SPANISH, ids=lambda v: str(v)[:24]
+)
+def test_the_analisis_guard_rejects_a_spanish_product_label(
+    screen: str, what: str, english: str, spanish: str
+) -> None:
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+    assert english in page, what
+
+    assert spanish_label_problems(screen, read_screen(page)) == []
+    left_spanish = page.replace(english, spanish)
+
+    assert spanish_label_problems(screen, read_screen(left_spanish)) != [], what
 
 
 @pytest.mark.parametrize("screen", ANALISIS_SCREENS)

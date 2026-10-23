@@ -144,8 +144,12 @@ def running_sample(tmp_path: Path) -> Iterator[tuple[ModuleType, dict[str, str],
         "APOSTROPHE_PUBLIC_URL": base,
     }
     app = create_app(
-        Settings("sample-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
-        telegram=FakeTelegram(), clock=MovableClock(NOW), upkeep_ticker=False,
+        Settings("sample-secret", url),
+        engine=make_engine(url),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        clock=MovableClock(NOW),
+        upkeep_ticker=False,
     )
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="error"))
     thread = threading.Thread(target=server.run, daemon=True)
