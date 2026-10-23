@@ -50,6 +50,19 @@ Success criteria:
 4. A reviewer can check it from the registry diff and the offender-file diff alone, by screen name.
 5. No one-off exception is recorded for a new row. InicioChecklist and InicioImportado are accepted by this rule, with none.
 
+### A fix renumbers an untouched offender
+
+**When** a change fixes some failing nodes on a screen and an untouched failing node with the same masked text changes its target ordinal as a result, **I want** (as the Developer making that change, or the reviewer approving it) a written rule that lets the same change replace the old key with the new one, **so that** fixing offenders is never blocked or escalated because a node nobody touched was renamed by the count.
+
+Before this (GH-297 part 1), a target's ordinal (for example `span:$ #.#.#[2]`) counted only the failing nodes on the screen with the same masked text, in page order. Fixing some of them on Analysis could renumber an untouched by-variety amount, and the old and new keys read as a removed entry plus an added one, which the rules did not cover.
+
+Success criteria:
+
+1. A renumbered target is replaced in the same change that caused it. It is not growth and needs no exception.
+2. The replacement is allowed only when the renumbering comes from a fix in that change, and only for the same cell under a new ordinal.
+3. The lists still never grow in failing cells. For that screen, rule and masked text, there are never more entries after the change than before.
+4. A reviewer can check it from the offender-file diff, and the node's being untouched from the code diff, without the Developer's evidence notes.
+
 ## Behaviour
 
 ### Time in tests
@@ -87,7 +100,7 @@ The mobile standard keeps offender lists under `web/src/mobile-standard/offender
 - `unreachable.json` lists screens the mobile walk cannot reach yet.
 - The other lists, such as `touch-target.json` and `touch-action.json`, list the real cells that fall short of a rule.
 
-This file is the one place the rule is written. The other live texts name the two allowed kinds of growth (the trade and a new registry row) in one sentence and point here: CODING_STANDARDS.md §10, its twin in `docs/product/design-system/README.md`, item 39 of `docs/product/accounts.md`, and the header of `web/src/mobile-standard/offenders/index.ts`.
+This file is the one place the rule is written. The other live texts name the two allowed kinds of growth (the trade and a new registry row) in one sentence and point here: CODING_STANDARDS.md §10, its twin in `docs/product/design-system/README.md`, item 39 of `docs/product/accounts.md`, and the header of `web/src/mobile-standard/offenders/index.ts`. A renumbered target, below, is not growth, so those texts do not need to name it.
 
 - **No growth (invariant 9).** The offender lists never grow, except by the trade or by a new registry row, both below. It was first written as invariant 9 of the GH-271 plan.
 
@@ -116,18 +129,30 @@ This file is the one place the rule is written. The other live texts name the tw
 - **Same change only.** Cells for a row that already existed before the change are never this kind of growth, even when that row was added only recently.
 - **On record.** InicioChecklist and InicioImportado, the phone rows added by GH-274, brought their real cells in `touch-action.json` in that change. Each entry carries its reason. They are this rule's first case and need no exception.
 
-#### Common to both
+#### A renumbered target
+
+A target's ordinal (`[n]`) counts only the failing nodes on the screen with the same masked text, in page order. When a change fixes some of them, an untouched one can change key with no change to itself. That is the same cell under a new name, not growth.
+
+- **Replaced in the same change.** The change removes the old key and adds the new one when all of these hold:
+  1. **Same entry otherwise.** The added and removed entries have the same `screen`, `rule`, sizes, themes and issue. Their `target` differs only in its trailing ordinal: a different number, or the ordinal added or dropped.
+  2. **A fix caused it.** The same change also removes at least one entry on that screen with the same rule and the same masked text, a node it fixed.
+  3. **No net growth.** For that screen, rule and masked text, there are no more entries after the change than before.
+  4. **The node is untouched.** The renumbered node's own markup is not in the change's code diff.
+- **Otherwise it is growth.** A key change that fails any of these is an added entry like any other. It is fixed in the same change or escalated, never listed.
+- **On record.** GH-297 part 1 (Analysis) is the first case: by-variety amounts left untouched could renumber when the summary strip, cost rows and "since the first record" block stopped failing. Those swaps keep #48 and are listed in the change's moved targets as `old key → new key`.
+
+#### Common to all three
 
 - **Not allowed.** Any other growth breaks invariant 9:
   - cells for a screen whose `unreachable` entry stays;
-  - cells for a row already in the registry before the change;
+  - cells for a row already in the registry before the change, except a renumbered target as above;
   - cells naming a different screen from the one whose entry was removed or whose row was added;
   - cells at a size or theme that the removed entry or the new row does not cover.
 - **No cap.** A reachable screen or a new row brings all its real cells, however many.
-- **Tracked like any other offender.** Added cells are tracked like any other offender from then on. They are never hidden, never marked exempt, and never read as a regression.
-- **Readable from the files.** Growth can be checked by screen name from the before and after offender files, plus the screens registry diff for a new row. The Developer's evidence notes are not needed.
-- **Enforcement is by review only.** `diffOffenders` already makes listing and walking land together. A reachable screen's or a new row's real cells are `unlisted` until they are listed, and a reachable screen's `unreachable` cells turn `fixedButListed`. Checking that the added cells name the removed or added screen would need the base revision, which means git inside vitest, against ADR-0038 and ADR-0041. So the reviewer matches screen names across the diffs. Listing an unrelated new failure to get green is caught only in review, as before.
-- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable or a row being added. The rules accept CobroDesdeInicio (its removed `unreachable` entry at 246x437, #45, traded for seven 246x437 cells on #46) and InicioChecklist and InicioImportado (GH-274) with none. The exception recorded on GH-271 is retired.
+- **Tracked like any other offender.** Added cells and renumbered targets are tracked like any other offender from then on. They are never hidden, never marked exempt, and never read as a regression.
+- **Readable from the files.** Growth and renumbering can be checked by screen name from the before and after offender files, plus the screens registry diff for a new row and the code diff for an untouched renumbered node. The Developer's evidence notes are not needed.
+- **Enforcement is by review only.** `diffOffenders` already makes listing and walking land together. A reachable screen's or a new row's real cells are `unlisted` until they are listed, and a reachable screen's `unreachable` cells turn `fixedButListed`. A renumbered target shows as its new key `unlisted` and its old key `fixedButListed` until the swap is made. Checking that the added cells name the removed or added screen, or are a valid renumbering, would need the base revision, which means git inside vitest, against ADR-0038 and ADR-0041. So the reviewer matches screen names and keys across the diffs. Listing an unrelated new failure to get green is caught only in review, as before.
+- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable, a row being added or a target renumbered. The rules accept CobroDesdeInicio (its removed `unreachable` entry at 246x437, #45, traded for seven 246x437 cells on #46) and InicioChecklist and InicioImportado (GH-274) with none. The exception recorded on GH-271 is retired.
 
 #### Worked examples
 
@@ -207,6 +232,27 @@ The row was there before the change, so the new cell is a regression to fix, not
 
 The `InicioImportado` cell is valid. The `Perfil` cell breaks invariant 9.
 
+**8. Renumbered after a fix: passes.** The change fixes the first `Analisis` amount with masked text `$ #.#.#`. The untouched second one moves from `[2]` to `[1]`.
+
+```diff
+ figure-split.json
+-  { "screen": "Analisis", "rule": "figure-split", "target": "span:$ #.#.#[1]", "issue": 48 }
+-  { "screen": "Analisis", "rule": "figure-split", "target": "span:$ #.#.#[2]", "issue": 48 }
++  { "screen": "Analisis", "rule": "figure-split", "target": "span:$ #.#.#[1]", "issue": 48 }
+```
+
+One node was fixed and the other kept its cell under a new ordinal. The entries for that masked text went from two to one, and the renumbered node's markup is not in the code diff.
+
+**9. Renumbered with nothing fixed: fails.** No `Analisis` entry with masked text `$ #.#.#` is fixed, yet a key moves.
+
+```diff
+ figure-split.json
+-  { "screen": "Analisis", "rule": "figure-split", "target": "span:$ #.#.#[2]", "issue": 48 }
++  { "screen": "Analisis", "rule": "figure-split", "target": "span:$ #.#.#[3]", "issue": 48 }
+```
+
+Nothing with that masked text was fixed, so the shift means a new failing node appeared before it. That is a regression to fix, not a renumbering.
+
 ## Metrics
 
 There is no telemetry. These are read from the task's evidence and from review.
@@ -229,7 +275,11 @@ There is no telemetry. These are read from the task's evidence and from review.
   - cells naming another screen alongside a new row fail.
 - **Nothing hidden (new-row job, criterion 2):** every real cell of InicioChecklist and InicioImportado is in the offender lists, each naming an issue and carrying its reason.
 - **Self-evident new row (new-row job, criterion 4):** the reviewer confirms the growth from the registry diff and the offender-file diff alone. Compared with GH-274's base, the lists grow by exactly the entries for InicioChecklist and InicioImportado, and remove none.
-- **No one-off exceptions (both offender jobs):** no per-task exception for a screen becoming reachable or a row being added remains, CobroDesdeInicio's and GH-274's included.
+- **Renumbering recognised (renumber job, criteria 1 to 3):** two cases are shown, each with the expected verdict:
+  - a renumbering after a fix passes;
+  - a renumbering with nothing fixed fails.
+- **Self-evident renumbering (renumber job, criterion 4):** for each swapped key, the reviewer confirms from the offender-file diff that a same-text entry was removed and the count did not grow, and from the code diff that the node was untouched.
+- **No one-off exceptions (all offender jobs):** no per-task exception for a screen becoming reachable, a row being added or a target renumbered remains, CobroDesdeInicio's and GH-274's included.
 - **Twins aligned:** CODING_STANDARDS.md §10, the design-system README, item 39 of accounts.md and the header of `offenders/index.ts` each name both allowed kinds of growth in one sentence and point here.
 
 ## Out of scope
@@ -240,5 +290,6 @@ There is no telemetry. These are read from the task's evidence and from review.
 - Timing assertions of any kind (ADR-0038).
 - A cap on how many cells a reachable screen or a new row may bring.
 - Changing the touch-target or touch-action standard itself, or fixing the cells that become visible.
+- Changing how a target's ordinal is computed: the renumbering rule accepts the ordinal as it is.
 - Letting offender lists grow in any case other than the trade or a new registry row.
 - Translating `docs/product/design-system/README.md`.
