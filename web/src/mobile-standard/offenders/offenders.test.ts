@@ -80,6 +80,27 @@ describe('parseOffenders', () => {
     expect(parseOffenders(filesWith('h-scroll', [entry({ rule: 'h-scroll', target: '', issue: 59 })]))).toHaveLength(8)
   })
 
+  test('an entry may carry a reason, and every cell it expands to keeps it', () => {
+    const cells = parseOffenders(filesWith('touch-target', [entry({ reason: 'the button measures 40x30' })]))
+    expect(cells).toHaveLength(8)
+    expect(cells.every((cell) => cell.reason === 'the button measures 40x30')).toBe(true)
+    expect(parseOffenders(filesWith('touch-target', [entry()]))[0]).not.toHaveProperty('reason')
+  })
+
+  test('refuses a reason that is empty, blank or not a string', () => {
+    for (const reason of ['', '   ', 7, null, ['x']]) {
+      expect(() => parseOffenders(filesWith('touch-target', [entry({ reason })]))).toThrow(
+        /touch-target\.json #0: reason is not a non-empty string/,
+      )
+    }
+  })
+
+  test('refuses a key outside the entry’s own', () => {
+    expect(() => parseOffenders(filesWith('touch-target', [entry({ note: 'x' })]))).toThrow(
+      /touch-target\.json #0: unknown key note/,
+    )
+  })
+
   test('refuses two entries that expand to the same cell', () => {
     expect(() =>
       parseOffenders(filesWith('touch-target', [entry(), entry({ sizes: ['320x568'] })])),
@@ -147,4 +168,39 @@ describe('the offender files', () => {
   test('the table holds one entry per rule', () => {
     expect(Object.keys(FILES).sort()).toEqual([...RULES].sort())
   })
+})
+
+/**
+ * The rows new to the screens registry whose real cells came in with the change that added
+ * them (`docs/product/gate.md`, "A new registry row brings its cells"). Each states the
+ * fault its entries observed. When an area issue removes a screen's last entry, its name goes.
+ */
+const NEW_ROW_SCREENS = ['InicioChecklist', 'InicioImportado']
+
+/** The cells of `screen` that state no fault. */
+function withoutReason(offenders: readonly Offender[], screen: string): Offender[] {
+  return offenders.filter(
+    (offender) => offender.screen === screen && (offender.reason === undefined || offender.reason.trim() === ''),
+  )
+}
+
+describe('the offenders of a row new to the registry', () => {
+  test('the check names the cells that state no fault', () => {
+    const stated: Offender = { ...violation({ screen: 'InicioChecklist' }), issue: 45, reason: 'measures 40x30' }
+    const silent: Offender = { ...stated, target: 'button:Other' }
+    delete silent.reason
+    const blank: Offender = { ...stated, target: 'button:Blank', reason: '  ' }
+    expect(withoutReason([stated, silent, blank], 'InicioChecklist')).toEqual([silent, blank])
+    expect(withoutReason([silent], 'InicioImportado')).toEqual([])
+  })
+
+  for (const screen of NEW_ROW_SCREENS) {
+    test(`${screen} is listed`, () => {
+      expect(OFFENDERS.some((offender) => offender.screen === screen)).toBe(true)
+    })
+
+    test(`every ${screen} entry states the fault the check observed`, () => {
+      expect(withoutReason(OFFENDERS, screen)).toEqual([])
+    })
+  }
 })

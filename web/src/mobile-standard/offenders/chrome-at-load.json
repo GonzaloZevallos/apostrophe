@@ -230,13 +230,15 @@
     "screen": "InicioChecklist",
     "rule": "chrome-at-load",
     "target": "link:New sale",
-    "issue": 59
+    "issue": 59,
+    "reason": "the New sale link's box leaves the viewport with the page scrolled to the top"
   },
   {
     "screen": "InicioChecklist",
     "rule": "chrome-at-load",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled to the top"
   },
   {
     "screen": "InicioHoy",
@@ -254,13 +256,15 @@
     "screen": "InicioImportado",
     "rule": "chrome-at-load",
     "target": "link:New sale",
-    "issue": 59
+    "issue": 59,
+    "reason": "the New sale link's box leaves the viewport with the page scrolled to the top"
   },
   {
     "screen": "InicioImportado",
     "rule": "chrome-at-load",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled to the top"
   },
   {
     "screen": "InicioPrimeraVez",

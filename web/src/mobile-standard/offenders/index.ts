@@ -1,8 +1,8 @@
 /**
  * The known offenders: one JSON file per rule (`offenders/<rule>.json`), each entry
- * `{screen, rule, target, issue, sizes?, themes?}`. The lists never grow, except when a
- * screen becomes reachable and trades its `unreachable` coverage for its real cells in
- * the same change (the rule is in `docs/product/gate.md`). Every entry names the open
+ * `{screen, rule, target, issue, sizes?, themes?, reason?}`. The lists only shrink,
+ * except by a trade or by the real cells of a row new to the screens registry (the
+ * conditions are in `docs/product/gate.md`). Every entry names the open
  * area issue that removes it, a cell it lists must still fail, and a failure it does not
  * list fails the run (`diffOffenders`).
  *
@@ -81,7 +81,11 @@ export const AREA_ISSUES: readonly number[] = [45, 46, 47, 48, 49, 59, 60, 78]
 
 export interface Offender extends Violation {
   issue: number
+  /** The fault the check observed for this rule and target, when the entry states it. */
+  reason?: string
 }
+
+const ENTRY_KEYS: readonly string[] = ['screen', 'rule', 'target', 'issue', 'sizes', 'themes', 'reason']
 
 function asRecord(value: unknown, what: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -108,6 +112,9 @@ function subset<T>(
 
 function parseEntry(raw: unknown, file: Rule, where: string): Offender[] {
   const entry = asRecord(raw, where)
+  for (const key of Object.keys(entry)) {
+    if (!ENTRY_KEYS.includes(key)) throw new Error(`${where}: unknown key ${key}`)
+  }
   const screen = entry['screen']
   if (typeof screen !== 'string' || !SCREEN_NAMES.has(screen)) {
     throw new Error(`${where}: unknown screen`)
@@ -128,7 +135,21 @@ function parseEntry(raw: unknown, file: Rule, where: string): Offender[] {
   if (!AREA_ISSUES.includes(issue)) throw new Error(`${where}: issue #${issue} is not in the area map`)
   const sizes = subset<Size>(entry['sizes'], SIZES, isSize, `${where}: sizes`)
   const themes = subset<Theme>(entry['themes'], THEMES, isTheme, `${where}: themes`)
-  return sizes.flatMap((size) => themes.map((theme) => ({ screen, size, theme, rule, target, issue })))
+  const reason = entry['reason']
+  if (reason !== undefined && (typeof reason !== 'string' || reason.trim() === '')) {
+    throw new Error(`${where}: reason is not a non-empty string`)
+  }
+  return sizes.flatMap((size) =>
+    themes.map((theme) => ({
+      screen,
+      size,
+      theme,
+      rule,
+      target,
+      issue,
+      ...(reason === undefined ? {} : { reason }),
+    })),
+  )
 }
 
 /** Every entry of every rule's file, expanded into one offender per cell. */
