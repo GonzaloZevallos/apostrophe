@@ -405,14 +405,23 @@ describe('the Onboarding rows of the real screens.json', () => {
 describe('the 130 % rows of the real screens.json', () => {
   type Row = { screen: string; design?: string; viewport?: number[]; text_scale?: number }
   const rows = screens.screens as Row[]
-  // GH-272 follow-up: the only Home rows that carry the text scale, named, at 960x920.
-  const HOME_TEXTO130 = ['InicioHoyCompu960Texto130', 'InicioCompu960Texto130', 'InicioMesCompu960Texto130']
+  // GH-272 follow-up: the only Home rows that carry the text scale, each named with its width
+  // (960x920, and 1280x920 once the 960 set at 130 % had shown a break).
+  const HOME_WIDTH: Record<string, number> = {
+    InicioHoyCompu960Texto130: 960,
+    InicioCompu960Texto130: 960,
+    InicioMesCompu960Texto130: 960,
+    InicioHoyCompuTexto130: 1280,
+    InicioCompuTexto130: 1280,
+    InicioMesCompuTexto130: 1280,
+  }
+  const HOME_TEXTO130 = Object.keys(HOME_WIDTH)
   const isOnboardingNarrow = (row: Row): boolean =>
     /^Onboarding/.test(row.design ?? row.screen) && row.viewport?.[0] === 320 && row.viewport[1] === 844
   const isNamedHome = (row: Row): boolean =>
-    HOME_TEXTO130.includes(row.screen) && row.viewport?.[0] === 960 && row.viewport[1] === 920
+    HOME_TEXTO130.includes(row.screen) && row.viewport?.[0] === HOME_WIDTH[row.screen] && row.viewport[1] === 920
 
-  it('accepts a 130 % row only as a 320x844 Onboarding row or one of the three named Home rows at 960x920', () => {
+  it('accepts a 130 % row only as a 320x844 Onboarding row or one of the six named Home rows at their own width x 920', () => {
     const scaled = rows.filter((row) => row.text_scale !== undefined)
     expect(scaled.length).toBeGreaterThan(HOME_TEXTO130.length)
     for (const row of scaled) {
@@ -425,6 +434,9 @@ describe('the 130 % rows of the real screens.json', () => {
   it('refuses the classifier on a Home row by any other name or width', () => {
     const other: Row[] = [
       { screen: 'InicioHoyCompu960Texto130', viewport: [1280, 920], text_scale: TEXT_SCALE },
+      { screen: 'InicioHoyCompuTexto130', viewport: [960, 920], text_scale: TEXT_SCALE },
+      { screen: 'InicioCompuTexto130', viewport: [1280, 844], text_scale: TEXT_SCALE },
+      { screen: 'InicioTexto130', viewport: [1280, 920], text_scale: TEXT_SCALE },
       { screen: 'InicioHoyCompu960Texto130', viewport: [960, 844], text_scale: TEXT_SCALE },
       { screen: 'InicioTexto130', viewport: [960, 920], text_scale: TEXT_SCALE },
       { screen: 'InicioHoyTexto130', viewport: [320, 844], text_scale: TEXT_SCALE },
@@ -544,6 +556,9 @@ describe('the Inicio rows of the real screens.json', () => {
     ['InicioHoyCompu960Texto130', HOY_PHONE, [960, 920], [], TEXT_SCALE],
     ['InicioCompu960Texto130', SEMANA_COMPU, [960, 920], ['Week'], TEXT_SCALE],
     ['InicioMesCompu960Texto130', SEMANA_COMPU, [960, 920], ['Month'], TEXT_SCALE],
+    ['InicioHoyCompuTexto130', HOY_PHONE, [1280, 920], [], TEXT_SCALE],
+    ['InicioCompuTexto130', SEMANA_COMPU, [1280, 920], ['Week'], TEXT_SCALE],
+    ['InicioMesCompuTexto130', SEMANA_COMPU, [1280, 920], ['Month'], TEXT_SCALE],
   ]
 
   it.each(HOME_EVIDENCE)('pins %s: design, section, clicks, viewport and text_scale', (name, section, viewport, taps, scale) => {
