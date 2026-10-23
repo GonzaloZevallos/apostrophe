@@ -165,7 +165,12 @@ export default function Gastos() {
       ? []
       : view.data.categories
           .flatMap((category) => category.expenses.map((expense) => ({ expense, categoryName: category.name })))
-          .sort((a, b) => b.expense.spent_on.localeCompare(a.expense.spent_on) || b.expense.id - a.expense.id)
+          // ISO dates (YYYY-MM-DD) order as text; `<` and `>` do not read the device locale.
+          .sort((a, b) => {
+            if (b.expense.spent_on < a.expense.spent_on) return -1
+            if (b.expense.spent_on > a.expense.spent_on) return 1
+            return b.expense.id - a.expense.id
+          })
 
   return (
     <main className="pantalla">
