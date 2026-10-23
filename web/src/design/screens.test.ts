@@ -496,7 +496,10 @@ describe('the Inicio rows of the real screens.json', () => {
       tema: 'oscuro',
       viewport: [1280, 920],
     })
-    // GH-274: the original `toBeUndefined()` cannot hold, the brief crops this row to the new Hoy caption.
+    // GH-274, deliberate: the original `toBeUndefined()` cannot hold, the brief crops this row to the new Hoy
+    // caption. It fails when the row loses its crop (`section` undefined), so the capture shows both
+    // computer frames again. It is redundant with the `toMatchObject` above, which fails the same way; it
+    // stays so the change reads at the line where `toBeUndefined()` stood.
     expect(row('InicioHoyCompuOscuro').section).toBe(HOY_PHONE)
   })
 
@@ -1002,7 +1005,9 @@ describe('assertSelectedAccounts', () => {
       ...Object.fromEntries(open.map((name) => [name, 'open' as const])),
       ...Object.fromEntries(ended.map((name) => [name, 'ended' as const])),
     }
-    // GH-274: the original two-kind map cannot hold, the registry now names two more accounts.
+    // GH-274, deliberate: the original two-kind map cannot hold, the registry now names two more accounts.
+    // `assertSelectedAccounts` throws, and this fails, when a registry row names an account the sample
+    // declares under none of the four kinds.
     const all: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported'> = {
       ...real,
       ...Object.fromEntries(namesOf('PRE_ONBOARDING_ACCOUNTS').map((name) => [name, 'pre_onboarding' as const])),
