@@ -595,7 +595,9 @@ def progress_answer(**changes: Any) -> dict[str, Any]:
         "over": False,
         "count": 1,
         "resume": "stock",
-        "steps": [{"step": slug, "state": state} for slug, state in zip(STEP_SLUGS, states, strict=True)],
+        "steps": [
+            {"step": slug, "state": state} for slug, state in zip(STEP_SLUGS, states, strict=True)
+        ],
     }
     return {**answer, **changes}
 
