@@ -263,6 +263,30 @@
     "issue": 59
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "chrome-at-load",
+    "target": "link:New sale",
+    "issue": 59
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navigation",
+    "issue": 59
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "chrome-at-load",
+    "target": "link:New sale",
+    "issue": 59
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navigation",
+    "issue": 59
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "chrome-at-load",
     "target": "link:New sale",

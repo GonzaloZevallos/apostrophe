@@ -60,6 +60,18 @@
     "issue": 45
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "aria-busy",
     "target": "",

@@ -119,6 +119,28 @@
     ]
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 45,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 45,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "h-scroll",
     "target": "",

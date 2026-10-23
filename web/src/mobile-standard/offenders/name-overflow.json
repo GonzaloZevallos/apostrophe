@@ -215,6 +215,18 @@
     "issue": 45
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "name-overflow",
     "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",

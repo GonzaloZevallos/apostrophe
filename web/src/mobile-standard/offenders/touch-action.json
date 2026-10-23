@@ -2250,6 +2250,114 @@
     "issue": 45
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "button:Month",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "button:Today",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "button:Week",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "button:Month",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "button:Today",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "button:Week",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "button:Month",
