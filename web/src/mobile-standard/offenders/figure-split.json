@@ -263,13 +263,15 @@
     "issue": 45,
     "sizes": [
       "246x437"
-    ]
+    ],
+    "reason": "the figure \"$ #.#\" breaks over more than one line"
   },
   {
     "screen": "InicioChecklist",
     "rule": "figure-split",
     "target": "span:$ #.#.#.#",
-    "issue": 45
+    "issue": 45,
+    "reason": "the figure \"$ #.#.#.#\" breaks over more than one line"
   },
   {
     "screen": "InicioHoy",
@@ -287,13 +289,15 @@
     "issue": 45,
     "sizes": [
       "246x437"
-    ]
+    ],
+    "reason": "the figure \"$ #.#\" breaks over more than one line"
   },
   {
     "screen": "InicioImportado",
     "rule": "figure-split",
     "target": "span:$ #.#.#.#",
-    "issue": 45
+    "issue": 45,
+    "reason": "the figure \"$ #.#.#.#\" breaks over more than one line"
   },
   {
     "screen": "InicioHoy",

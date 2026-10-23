@@ -603,31 +603,36 @@
     "screen": "InicioChecklist",
     "rule": "text-size",
     "target": "span:Customers",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"Customers\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioChecklist",
     "rule": "text-size",
     "target": "span:Home",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"Home\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioChecklist",
     "rule": "text-size",
     "target": "span:More",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"More\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioChecklist",
     "rule": "text-size",
     "target": "span:Varieties",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"Varieties\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioChecklist",
     "rule": "text-size",
     "target": "span:Sales",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"Sales\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioHoy",
@@ -663,31 +668,36 @@
     "screen": "InicioImportado",
     "rule": "text-size",
     "target": "span:Customers",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"Customers\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioImportado",
     "rule": "text-size",
     "target": "span:Home",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"Home\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioImportado",
     "rule": "text-size",
     "target": "span:More",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"More\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioImportado",
     "rule": "text-size",
     "target": "span:Varieties",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"Varieties\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioImportado",
     "rule": "text-size",
     "target": "span:Sales",
-    "issue": 45
+    "issue": 45,
+    "reason": "the text of the \"Sales\" label is drawn below the 12px minimum font size"
   },
   {
     "screen": "InicioPrimeraVez",

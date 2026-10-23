@@ -169,3 +169,38 @@ describe('the offender files', () => {
     expect(Object.keys(FILES).sort()).toEqual([...RULES].sort())
   })
 })
+
+/**
+ * The rows new to the screens registry whose real cells came in with the change that added
+ * them (`docs/product/gate.md`, "A new registry row brings its cells"). Each states the
+ * fault its entries observed. When an area issue removes a screen's last entry, its name goes.
+ */
+const NEW_ROW_SCREENS = ['InicioChecklist', 'InicioImportado']
+
+/** The cells of `screen` that state no fault. */
+function withoutReason(offenders: readonly Offender[], screen: string): Offender[] {
+  return offenders.filter(
+    (offender) => offender.screen === screen && (offender.reason === undefined || offender.reason.trim() === ''),
+  )
+}
+
+describe('the offenders of a row new to the registry', () => {
+  test('the check names the cells that state no fault', () => {
+    const stated: Offender = { ...violation({ screen: 'InicioChecklist' }), issue: 45, reason: 'measures 40x30' }
+    const silent: Offender = { ...stated, target: 'button:Other' }
+    delete silent.reason
+    const blank: Offender = { ...stated, target: 'button:Blank', reason: '  ' }
+    expect(withoutReason([stated, silent, blank], 'InicioChecklist')).toEqual([silent, blank])
+    expect(withoutReason([silent], 'InicioImportado')).toEqual([])
+  })
+
+  for (const screen of NEW_ROW_SCREENS) {
+    test(`${screen} is listed`, () => {
+      expect(OFFENDERS.some((offender) => offender.screen === screen)).toBe(true)
+    })
+
+    test(`every ${screen} entry states the fault the check observed`, () => {
+      expect(withoutReason(OFFENDERS, screen)).toEqual([])
+    })
+  }
+})
