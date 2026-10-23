@@ -227,7 +227,9 @@ chequeo. Un paso que no llega a su pantalla se informa como `unreachable`, nunca
 pantalla, una regla, un elemento y un issue (uno de área del mapa fijo #45-#49, #59, #60,
 #78), con `sizes` y `themes` opcionales. Sólo puede achicarse: la corrida falla ante un
 infractor nuevo, ante una entrada cuya celda ya pasa y ante una entrada sin número de issue
-válido. No consulta ninguna red; quien revisa comprueba que el número sea un issue de área
+válido. La única excepción es el canje: una pantalla que pasa a ser alcanzable cambia su
+entrada `unreachable` por sus celdas reales en el mismo cambio (la regla está en
+`docs/product/gate.md`). No consulta ninguna red; quien revisa comprueba que el número sea un issue de área
 real y abierto. Un issue de área no está terminado mientras sus pantallas sigan en la lista.
 Vale sólo para el dato y la fecha fijos (ADR-0048); cambiar cualquiera de los dos es
 cambiar las listas, en el mismo diff.

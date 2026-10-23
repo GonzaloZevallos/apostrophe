@@ -210,7 +210,9 @@ step that cannot reach its screen is reported as `unreachable`, never skipped.
 `web/src/mobile-standard/offenders/<rule>.json`, one file per rule, each entry one screen,
 rule, target and issue (an area issue from the fixed map #45-#49, #59, #60, #78), with
 optional `sizes` and `themes`. It can only shrink: the run fails on a new offender, on an
-entry whose cell now passes, and on an entry with no valid issue number. There is no
+entry whose cell now passes, and on an entry with no valid issue number. The one exception
+is the trade: a screen that becomes reachable swaps its `unreachable` entry for its real
+cells in the same change (the rule is in `docs/product/gate.md`). There is no
 network lookup; review checks that the number is a real, open area issue. An area issue is
 not done while its own screens are still on the list. The list is valid only against the
 pinned fixture and date (ADR-0048); a change to either is a change to the lists, in the
