@@ -5026,26 +5026,41 @@ body {
   }
 }
 
-/* Registrar cobro as a sheet on a phone (`Cobro.dc.html`): the host is a full-screen layer over
- * the screen it was opened from, which sits hidden behind it. "Close" is on top, as the form
- * draws it, and Save stays at the bottom, within thumb reach, while the form scrolls under it.
- * The sheet scrolls by itself, and the page behind is held still while it is open. */
+/* Registrar cobro as a sheet on a phone (`Cobro.dc.html`): the host is a layer anchored to the
+ * bottom, rounded at the top, with the screen it was opened from showing above its edge, faded
+ * and inert. "Close" is on top, under a grab handle, and Save stays at the bottom, within thumb
+ * reach, while the form scrolls under it. The sheet scrolls by itself, and the page behind is
+ * held still while it is open. */
 @media (max-width: 899.98px) {
   html:has(.cobro-hoja) {
     overflow: hidden;
   }
 
   /* Under `.disposicion` so it is not beaten by `.disposicion .pantalla { padding: 0 }`: the
-   * sheet leaves the flow, so it owns the four insets itself. */
+   * sheet leaves the flow, so it owns the side and bottom insets itself. */
   .disposicion .cobro-hoja {
     position: fixed;
-    inset: 0;
-    padding: var(--inset-arriba) var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
+    inset: auto 0 0 0;
+    padding: 0 var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
     z-index: 20;
+    box-sizing: border-box;
     min-height: 0;
-    height: 100dvh;
+    height: calc(100dvh - var(--inset-arriba) - var(--asoma-fondo-hoja));
+    max-height: calc(100dvh - var(--inset-arriba) - var(--asoma-fondo-hoja));
     overflow-y: auto;
     overscroll-behavior: contain;
+    background: var(--papel);
+    border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
+    box-shadow: 0 -1px 0 var(--linea);
+  }
+
+  .cobro-hoja__asa {
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: var(--espacio-md) auto 0;
+    border-radius: var(--radio-pildora);
+    background: var(--linea);
   }
 
   .disposicion .cobro-hoja > .cuerpo > .formulario {
@@ -5097,13 +5112,12 @@ body {
   padding-right: 0;
 }
 
-/* On a phone the sheet covers the background whole, so it is not drawn and takes no room of
- * the page's: it is a hidden layer the size of the screen, neither seen nor reached. */
+/* On a phone the sheet leaves the top of the screen it was opened from showing above its edge,
+ * faded as `Cobro.dc.html` draws it; it is neither reached nor read (inert, hidden from
+ * assistive technology) and takes no pointer. */
 .cobro-paneles--solo > [inert] {
-  position: fixed;
-  inset: var(--inset-arriba) var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
-  visibility: hidden;
-  overflow: hidden;
+  opacity: var(--opacidad-fondo-hoja);
+  pointer-events: none;
 }
 
 .cobro__cliente {

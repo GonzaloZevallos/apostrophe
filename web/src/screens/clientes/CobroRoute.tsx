@@ -2,7 +2,7 @@
  * `CobroRoute`: the host of Registrar cobro on its own route, `/customers/{id}/payment`. On a
  * computer the frame is a modal over the screen it was opened from (`CobroCompu.dc.html`,
  * ADR-0044: drawn by its own route, so a direct link or a reload opens it with the customer
- * chosen); on a phone it is a full-screen sheet over that screen (`Cobro.dc.html`), a dialog
+ * chosen); on a phone it is a bottom sheet over that screen (`Cobro.dc.html`), a dialog
  * on both. The host owns the queries, the gone, error and loading
  * states, the leave guard and where the form goes: "Cerrar", Escape, the backdrop and a save
  * all end in one `leave`, which goes back by history or, with none (a direct link), to

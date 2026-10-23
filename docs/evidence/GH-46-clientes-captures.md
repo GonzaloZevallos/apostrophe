@@ -106,10 +106,11 @@ width, no notes in `index.json`).
 - **E3, Cobro (phone, CobroOscuro) and CobroCompu: fixed.** On the phone, Record payment is now a
   `role="dialog"` sheet with `aria-modal`, "Close" on top, no bar and no "+ New sale", over the
   screen it was opened from (inert and `aria-hidden`); on a computer it is the same host as a
-  modal. Retaken Cobro: the built side is the sheet, drawn full screen, so it does not show the
-  drawing's faded card above the sheet's rounded top; accepted, reason: the plan chose a
-  full-screen sheet, which keeps Save reachable over a long breakdown, and the origin stays
-  mounted underneath. Retaken CobroCompu: the modal over the Customers panes, with the card behind
+  modal. Retaken Cobro (GH-281, after the PM's return): the built side is a sheet anchored to the
+  bottom, rounded at the top (28 px, `--radio-hoja`) with a grab handle above "Close", and the screen
+  it was opened from showing above its edge at the drawing's faded opacity (`--opacidad-fondo-hoja`),
+  inert and `aria-hidden`; inside the sheet's max height the body scrolls and Save stays reachable
+  (a phone e2e cell saves a full payment over nine sales). No full-screen verdict remains. Retaken CobroCompu: the modal over the Customers panes, with the card behind
   it when opened from the card. The comparisons for Cobro, CobroCompu and ClienteFicha were read
   side by side.
 

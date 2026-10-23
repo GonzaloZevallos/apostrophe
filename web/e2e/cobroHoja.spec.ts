@@ -90,6 +90,16 @@ for (const viewport of VIEWPORTS) {
         if (viewport.name === 'phone') {
           await expect(page.getByRole('navigation')).toHaveCount(0)
           await expect(page.getByRole('link', { name: 'New sale' })).toHaveCount(0)
+          // A sheet, not a page: it is anchored to the bottom and leaves the top of the screen it
+          // was opened from showing above its edge, and Save is within reach inside it.
+          const box = await dialog.boundingBox()
+          if (box === null) throw new Error('the dialog has no box')
+          expect(box.y).toBeGreaterThan(40)
+          expect(box.y).toBeLessThan(200)
+          expect(Math.round(box.y + box.height)).toBeLessThanOrEqual(viewport.height)
+          await expect(dialog.getByRole('button', { name: 'Save' })).toBeInViewport()
+        } else {
+          await expect(dialog.getByRole('button', { name: 'Save' })).toBeVisible()
         }
       })
 
@@ -280,3 +290,27 @@ for (const viewport of VIEWPORTS) {
     }
   })
 }
+
+// A long breakdown makes the phone's sheet taller than its max height: its body scrolls, so Save is
+// still reachable and a payment that settles nine sales goes through.
+test.describe('Record payment on a phone over a long breakdown', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('a full payment against a customer with nine sales owing is saved', async ({ page }) => {
+    test.setTimeout(300_000)
+    await makeDebtor(page)
+    await moreSalesFor(page, 'Carla Cobrar', 8)
+    await openFrom(page, 'card')
+
+    await page.getByLabel('Amount').fill('13000')
+    await page.getByRole('radio', { name: 'Cash' }).check()
+    const save = page.getByRole('button', { name: 'Save' })
+    await save.scrollIntoViewIfNeeded()
+    await expect(save).toBeInViewport()
+    await save.click()
+
+    await expectPath(page, CUSTOMER)
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(page.getByText(/Payment saved/)).toBeVisible()
+  })
+})
