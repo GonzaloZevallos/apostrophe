@@ -5003,7 +5003,24 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  column-gap: var(--espacio-xxl);
+  /* Each link carries `--espacio-sm` of padding on both sides, so the visible gap
+   * between the words stays near the design's. */
+  column-gap: var(--espacio-sm);
+}
+
+/* "Skip" and "Skip the rest": text links with a touch target of at least 44 px. */
+.onboarding__saltar-fila .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alto-tocable);
+  min-width: var(--alto-tocable);
+  padding: 0 var(--espacio-sm);
+  /* The 1 px underline is a box-shadow at the box's bottom edge, which a 44 px box
+   * would draw far under the text; the underline moves onto the text. */
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .onboarding__pista {
