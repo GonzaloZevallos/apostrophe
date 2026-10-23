@@ -127,6 +127,19 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText(/^(Owes you )?\$ 3\.000/).first()).toBeVisible()
       })
 
+      test(`opened from ${origin}: paying the whole debt with "All" saves and returns to that screen`, async ({ page }) => {
+        await makeDebtor(page)
+        await openFrom(page, origin)
+
+        await page.getByRole('button', { name: 'All: $ 5.000' }).click()
+        await page.getByRole('radio', { name: 'Transfer' }).check()
+        await page.getByRole('button', { name: 'Save' }).click()
+
+        await expectPath(page, ORIGIN_PATH[origin])
+        await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
+        await expect(page.getByRole('dialog')).toHaveCount(0)
+      })
+
       test(`opened from ${origin}: with something typed, Close asks before it leaves`, async ({ page }) => {
         await makeDebtor(page)
         await openFrom(page, origin)
