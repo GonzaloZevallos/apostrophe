@@ -949,6 +949,17 @@ describe('assertSelectedAccounts', () => {
     ]
     expect(missing(broken)).toEqual(['InicioPrimeraVez', 'InicioOnboardingEnCurso'])
   })
+
+  it('draws each Onboarding frame from its own block: the dark rows from the "· tema oscuro" one, the others not', () => {
+    const rows = screens.screens as { screen: string; section?: string; tema?: string }[]
+    for (const key of ['InicioOnboardingEnCurso', 'InicioOnboardingCompleto']) {
+      for (const suffix of ['', 'Compu', 'Oscuro']) {
+        const row = rows.find((s) => s.screen === key + suffix)
+        expect(row?.section?.endsWith('· tema oscuro'), key + suffix).toBe(suffix === 'Oscuro')
+        expect(row?.tema === 'oscuro', key + suffix).toBe(suffix === 'Oscuro')
+      }
+    }
+  })
 })
 
 describe('assertAccountKinds', () => {
