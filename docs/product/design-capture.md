@@ -55,6 +55,12 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - It refines the first job above ("every row reaches its screen") and results.md criterion 12 ("Looks as designed"); it is not a new product job and adds no product behaviour.
 - Before it (GH-45's evidence, docs/evidence/GH-45-inicio-captures.md): no drawing showed the first-run checklist or the after-import notice and no capture could reach a business that shows them, so a reviewer judged them by hand if at all; `InicioHoyCompu` and `InicioHoyCompuOscuro` compared against the whole `InicioCompu` file, Semana included.
 
+**When** I am asked to accept GH-272's Home restyle, **I want** to see how Home measures against its design on every Home variant (light and dark, phone and computer), and how it holds at 960 px, 1280 px and 960 px with text at 130 %, **so I can** approve it knowing the seller's Home looks as designed, instead of trusting that it was built right.
+
+- Its protagonist is the PM, who reviews and approves GH-272. The seller gets no new behaviour; their Home (the Panel, tabs Today, Week and Month) on their devices and with enlarged text is what is protected. A later change that must not break Home's look can reuse the same evidence.
+- It refines results.md criterion 12 ("Looks as designed") and the Analysis and Onboarding evidence jobs above; it is not a new product job and adds no product behaviour.
+- Before it (GH-272's follow-up): GH-272 was approved with invariant 12 resting on construction alone. There was no `ae.mjs` after-run, no list of InicioCompu/InicioCompuOscuro AE lines and no screenshots at 960 px, 1280 px or 130 % text, so the Coverage block marked it "Not touched" and an `important` finding stayed open at `web/src/styles/app.css:3098`.
+
 Success criteria:
 
 1. **One green run.** One `--strict` call over Inicio* and the Onboarding block exits 0.
@@ -114,6 +120,14 @@ Success criteria, Inicio's first-run and Hoy evidence (GH-45 follow-up) (numbere
 2. **Hoy is compared as Hoy.** `InicioHoyCompu` and `InicioHoyCompuOscuro` crop to a section holding only Hoy, never one that also draws Semana.
 3. **Whole registry green, nothing a seller sees changes.** One whole-registry `--strict` run with no `--only` exits 0, with no row removed, skipped or excused. No capability doc's rule, screen, route or app copy changes. The only edited tests are the two registry tests within their declared seams and `tests/design/test_sample_app.py`, this plan's own declared seam, extended only; every other test passes unedited.
 4. **Docs win.** Wherever a drawing and the docs disagree on wording or on what is shown (navigation.md for the checklist and the after-import notice, results.md for Inicio's order), the docs win, the drawing is the defect, and the PR lists every difference.
+
+Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on their own; Metrics cites them as "Home criterion N"):
+
+1. **Exact match on five screens.** Inicio, InicioOscuro, InicioHoy, InicioHoyCompu and InicioHoyCompuOscuro each show exact AE 0, design side and built side, in an `ae.mjs` output attached to the PR. "Near zero" does not pass; a missing side, a one-sided `null` or an unreadable capture is a failure, never AE 0.
+2. **Every InicioCompu line accounted for.** Every AE line of InicioCompu and InicioCompuOscuro is listed with its screen and side, each at 0 or with a one-line reason the PM accepted on the PR, saying the difference is intended by GH-272 or comes from the design file itself. A reason naming no cause ("rendering noise") is not accepted; a line without an accepted reason is a mismatch.
+3. **Home holds at every width.** Screenshots of Home's computer layout, light theme, Today, Week and Month tabs, are attached at 960 px, 1280 px and 960 px with 130 % text. In each, nothing is clipped, overlapping, truncated mid-word or unreachable, and every figure and control can still be read and used.
+4. **Invariant 12 covered.** The Coverage block carries a one-line result for invariant 12, moved from "Not touched" to covered and pointing at the PR evidence, and the finding at `web/src/styles/app.css:3098` is closed from it.
+5. **Nothing loosened, nothing new a seller sees.** No design file is edited; any fix brings the build to the design within what GH-272 restyled on Home and changes no copy, behaviour, figure or route; no capture step joins the gate.
 
 ## Behaviour
 
@@ -254,6 +268,7 @@ Success criteria, Inicio's first-run and Hoy evidence (GH-45 follow-up) (numbere
 - For a change that gives a row its own section: the corrected row's capture judged by eye, its before/after under ADR-0042 with every non-zero difference listed (a caption edit's design-side differences as intended), and the audit of the rows of its family.
 - For the change that settles capture at rest (GH-261's follow-up): five whole-registry `--strict` runs per commit, base and head, on the loaded shared machine on one Argentina day, with the `ae.mjs` outputs comparing run 1 with runs 2 to 5 on each side and base with head; the VariedadesCompu captures, and those of every row with an animated element or a control that waits on a refresh, judged by eye against the sample's stored data in light and dark where the registry has both, with the switch's resting state stated (enabled, on or off as the stored threshold gives it); one deliberately unsettled row shown failing under `--strict`; and the closing record marking GH-261's finding resolved and correcting its cause to a background refresh with the control disabled.
 - For Inicio's first-run and Hoy evidence: one whole-registry `--strict` output with no `--only`, exit 0; the six first-run captures and the two Hoy computer captures, judged by eye; every drawing-versus-docs difference listed with its screen.
+- For the Home restyle's evidence (GH-272 follow-up): see that section below.
 
 ### The Onboarding restyle's evidence (GH-164 follow-up)
 
@@ -284,6 +299,20 @@ Success criteria, Inicio's first-run and Hoy evidence (GH-45 follow-up) (numbere
 - If nothing differs, `ae.mjs` exits 0 and the PR says so.
 - Captures taken on the loaded shared machine are submitted as they are, with no note about load, no "unsatisfiable" entry and no exception.
 - **Load-independence proof (once, for the change that settled it, GH-150's follow-up)**: the change's base and head are each captured twice, once under foreign load (at least one other worktree's checks running) and once idle (no other check, agent or worktree run, recorded as ADR-0041 records it), all by the head's own `comparisons.mjs`, from one install, on the same Argentina day (ADR-0042). For each commit, `ae.mjs` compares the loaded run with the idle run. It is never repeated as a recurring check or a gate step.
+
+### The Home restyle's evidence (GH-272 follow-up) (Home criteria 1–5)
+
+- **Screens**: Home only, seven registry rows: Inicio, InicioOscuro, InicioHoy, InicioHoyCompu, InicioHoyCompuOscuro, InicioCompu and InicioCompuOscuro. Other screens GH-272 touched get their own follow-up if they carry their own finding.
+- **Before and after**: "after" is the merging head; "before" is that head with only GH-272's change undone, the undo diff in the PR. If undoing it alone changes more than GH-272 did, the PR says so and lists the extra differences for the PM; nothing more is undone. Both sides come from head's `comparisons.mjs --strict`, one install, one Argentina day, fonts pinned (ADR-0042); `ae.mjs` compares the raw captures, design side and built side, never the composed sheet. Each capture is also judged by eye against its design file.
+- **The five exact screens**: Inicio, InicioOscuro, InicioHoy, InicioHoyCompu and InicioHoyCompuOscuro must show exact AE 0 on both sides. "Near zero" does not pass, and a missing side, a one-sided `null` or an unreadable capture is a failure.
+- **The two listed screens**: every AE line of InicioCompu and InicioCompuOscuro is listed with its screen and side, each at 0 or carrying a one-line reason next to it. A reason is acceptable only when it says the difference is intended by GH-272 or comes from the design file itself; the PM decides on the PR whether it is accepted. A reason that names no cause ("rendering noise") is refused; a line with no accepted reason is a mismatch.
+- **The width and text-size sets**: screenshots of Home's computer layout, light theme, showing the Today, Week and Month tabs, at 960 px, at 1280 px and at 960 px with text at 130 %. Nothing on Home is clipped, overlapping, truncated mid-word or unreachable, and every figure and control of the three tabs can still be read and used. 1280 px at 130 % is captured only if the 960 px / 130 % set shows a break, to confirm the fix holds at the wider width. Any mechanism for the widths or the 130 % text lives in `scripts/design/` only, as registry rows with the two registry tests as seams, never in product code.
+- **When the evidence fails** (an AE above 0 on one of the five screens, a listed line without an accepted reason, a break at 130 % text): the build is fixed toward the design, limited to what GH-272 restyled on Home, never changing copy, behaviour, figures or routes; then both sides are captured again from the fixed head and compared again, and the affected sets are retaken.
+- **The design file is never edited here.** If AE 0 can only be reached by changing the design, or holding at 130 % means departing from it, the difference is listed with what looks wrong and goes to the PM before either side changes.
+- **Where and how long**: the PR carries the `ae.mjs` output, the InicioCompu/InicioCompuOscuro line list with reasons, the screenshot sets, the head SHA, the undo diff and the installed `@fontsource/plus-jakarta-sans` version. A set is valid only for the SHA it was taken on; a later commit touching Home's styles or drawings, or any merge of master, makes it stale (stale counts as missing), and it is retaken.
+- **Closing**: the plan's Coverage block carries a one-line result for invariant 12, moved from "Not touched" to covered and pointing at the PR evidence; the finding at `web/src/styles/app.css:3098` is closed from that line.
+- **Everything matches**: the PR says so with the evidence; that is a valid outcome.
+- Assumed: before this follow-up Home had no check of its look beyond the construction argument and the reviewer's trust.
 
 ## Metrics
 
@@ -332,6 +361,12 @@ No telemetry; read from the PR evidence and from tests.
 - **Whole registry green (First-run criterion 3)**: the PR holds one whole-registry `--strict` output, no `--only`, exit 0, and the installed fontsource version; every suite passes; the diff touches only `scripts/design/`, `pantallas/`, the two registry tests, `tests/design/test_sample_app.py` (new cases only, every existing assertion kept), the ADR-0042 amendment and this file; the plan's Seams line names the three tests; no step is added to `.agentic/stack.yaml`, CI or the gate.
 - **Docs win (First-run criterion 4)**: every drawing-versus-docs difference is listed in the PR with its screen: 0 unlisted.
 - **First-run business measure**: spec-scope findings for missing first-run or Hoy design evidence on a merging head: goal 0.
+- **Exact match (Home criterion 1)**: the attached `ae.mjs` output shows AE 0 on both sides of Inicio, InicioOscuro, InicioHoy, InicioHoyCompu and InicioHoyCompuOscuro: 10 lines at 0, 0 missing sides, 0 one-sided `null`; the recorded SHA equals the merging head; the undo diff and the fontsource version are present.
+- **Lines accounted for (Home criterion 2)**: every InicioCompu and InicioCompuOscuro line is listed with its side; 0 non-zero lines without a PM-accepted reason on the PR; 0 reasons that name no cause.
+- **Holds at every width (Home criterion 3)**: the 960 px, 1280 px and 960 px / 130 % sets are attached, each with Today, Week and Month; 0 clipped, overlapping, mid-word truncated or unreachable items, judged by eye; a 1280 px / 130 % set is present only when the 960 px / 130 % set showed a break.
+- **Invariant 12 covered (Home criterion 4)**: the Coverage block line for invariant 12 reads covered and points at the PR evidence; the `web/src/styles/app.css:3098` finding is closed.
+- **Nothing loosened (Home criterion 5)**: read from the diff: no design file under `pantallas/` edited; any fix is under what GH-272 restyled on Home and touches no copy module entry, route or figure; every suite passes; no step added to `.agentic/stack.yaml`, CI or the gate.
+- **Home business measure**: spec-scope findings for missing Home design evidence on a merging head: goal 0 (GH-272 had 1).
 
 ## Out of scope
 
@@ -367,4 +402,5 @@ No telemetry; read from the PR evidence and from tests.
 - A computer-dark row for a first-run element.
 - A caption or any copy change on the built Inicio screen to name the Hoy crop: that is a product copy question for the PM.
 - Creating a capture account through product code, a product route or the `muestra.md` seed.
-- Any change to what a seller sees on Inicio, the first-run elements included.
+- Any change to what a seller sees on Inicio, the first-run elements included, beyond a GH-272 follow-up fix that brings the build back to its design.
+- In GH-272's follow-up: other screens GH-272 touched; any edit to a design file; new Home behaviour, figures or copy; dark screenshot sets at 960 px, 1280 px or 130 %; a 1280 px / 130 % set when 960 px / 130 % shows no break.
