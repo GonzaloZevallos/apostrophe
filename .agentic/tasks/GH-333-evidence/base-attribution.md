@@ -1,34 +1,71 @@
 # Base attribution of the 18 `Analisis` figure-split entries and the h-scroll entry
 
-Source: `web/src/mobile-standard/offenders/figure-split.json` and `h-scroll.json` on the base, whose
-`mobile` run passed (34 passed, so each entry matches a real failing node; see
-`base-mobile-targets.json`).
+Read from the base DOM, node by node. A throwaway Playwright spec (not committed) ran, at the four
+sizes (246x437, 320x568, 375x812, 430x932), the geometry collector copied verbatim from
+`web/e2e/mobile/collectGeometry.ts` plus, for each failing node, its element chain, its text and its
+document order. At every size the figure-split and h-scroll set it found equals the listed offenders
+exactly. The raw nodes are in `base-dom-nodes.json` (`region`, `domOrder` = index in document order
+among all elements, `chain`, `text`; `overflowingElements` for the h-scroll).
 
-**Limit of this file.** The region of each entry is inferred from its masked target and from the
-base markup in `web/src/screens/Analisis.tsx`; the live DOM was NOT read node by node. Entries whose
-masked text matches more than one region are marked "ambiguous" and must be settled by the
-`verify-offenders` subtask from its after-run diff (the same rule applies there: a shift not
-predicted here is checked against the four renumbering conditions of `docs/product/gate.md`).
+Regions: **hero** (`span.cifra-xl`), **strip** (`span.pie` withdrawal `CostLine`s under the hero, in an
+unnamed `div` in `div.cuerpo`), **history** (the "since your first record" block), **by-variety**
+(`analisis__variedad-*`, left alone), **ExpenseBreakdownView** (`gastos__categoria-subtotal`, left
+alone). No week/month card, table or cost-row node fails in the sample at any size. Entries with no
+`sizes` apply to all four.
 
-A target `span:<label> $ #.#` is a `CostLine` span (label and amount in one text node), which is in scope
-whichever region it sits in: strip withdrawal lines (`className="pie"`, :269), week/month cost rows
-(`RowCostLines`, :382/:446/:154) or history block (`WithdrawalLines`, :516).
+## The 18 figure-split entries
 
-| entry (sizes) | region | in scope |
-|---|---|---|
-| `span:$ #.#` (320, 375, 430) | hero amount, `cifra-xl` (:260); no ordinal, so the only node with this text | yes |
-| `span:$ #.#.#.#[1]`, `[2]`, `[3]` (all sizes), `[4]` (320, 246) | ambiguous: amount-first spans with 4 digit runs; history-block bare spans (:509-515) and card/table figures both start with "$ " | ambiguous |
-| `span:$ #.#.#[1]`, `[2]` (all sizes) | ambiguous: history sales span (:509) / expense-breakdown subtotals (`gastos__categoria-subtotal`, left alone) / by-variety amounts | ambiguous |
-| `span:$ #.#[1]`, `[2]` (246) | ambiguous: bare amount spans at 246 (history block, by-variety header `analisis__variedad-ventas`) | ambiguous |
-| `span:Own use $ #.# and # g without cost` (246) | `CostLine` (strip, :269) | yes |
-| `span:Stock shortfall $ #.#` (320) | `CostLine`: strip (:269) | yes |
-| `span:Promotion $ #.#[1]`, `[2]` (320, 246) | `CostLine`: strip (:269) and a week/month row or history block | yes |
-| `span:expenses $ #.#.#.#` (320, 375, 430) | week/month card span `ANALYSIS_TEXT.gastos` (:384), left as it is (plan: coexisting shape) | NO, stays |
-| `span:Stock shortfall $ #.#[1]`, `[2]` (375, 246) | `CostLine`: strip / week-month rows / history block | yes |
-| `span:Own use $ #.# and # g without cost[1]`, `[2]` (375) | `CostLine`: strip / week-month rows / history block | yes |
-| h-scroll `Analisis` (page rule, no target) | whole page overflows horizontally at some size; deleted only if its cell passes after step 2 | decided by the after-run |
+| # | target | sizes | region (document order) |
+|---|---|---|---|
+| 0 | `span:$ #.#` | 320, 375, 430 | ExpenseBreakdownView `categoria-subtotal` (470); left alone |
+| 1 | `span:$ #.#.#.#[1]` | all | hero `cifra-xl` (65), all four sizes; in scope |
+| 2 | `span:$ #.#.#.#[2]` | all | 246, 320: history block (449); 375, 430: ExpenseBreakdownView (460, left alone) |
+| 3 | `span:$ #.#.#.#[3]` | all | 246, 320: ExpenseBreakdownView (460); 375, 430: ExpenseBreakdownView (475); left alone |
+| 4 | `span:$ #.#.#.#[4]` | 320, 246 | ExpenseBreakdownView (475); left alone |
+| 5 | `span:$ #.#.#[1]` | all | by-variety `variedad-ventas` (78); left alone |
+| 6 | `span:$ #.#.#[2]` | all | ExpenseBreakdownView (485); left alone |
+| 7 | `span:$ #.#[1]` | 246 | by-variety `variedad-ventas` (88); left alone |
+| 8 | `span:$ #.#[2]` | 246 | ExpenseBreakdownView (470); left alone |
+| 9 | `span:Own use $ #.# and # g without cost` | 246 | strip `CostLine` (69); in scope |
+| 10 | `span:Stock shortfall $ #.#` | 320 | strip `CostLine` (67); in scope |
+| 11 | `span:Promotion $ #.#[1]` | 320, 246 | strip `CostLine` (68); in scope |
+| 12 | `span:Promotion $ #.#[2]` | 320, 246 | history block (454); in scope |
+| 13 | `span:expenses $ #.#.#.#` | 320, 375, 430 | history block (450); in scope (it is the history block's own "expenses" span, not a week/month card) |
+| 55 | `span:Stock shortfall $ #.#[1]` | 375, 246 | strip `CostLine` (67); in scope |
+| 56 | `span:Stock shortfall $ #.#[2]` | 375, 246 | history block (453); in scope |
+| 57 | `span:Own use $ #.# and # g without cost[1]` | 375 | strip `CostLine` (69); in scope |
+| 58 | `span:Own use $ #.# and # g without cost[2]` | 375 | history block (455); in scope |
 
-By-variety rows (`analisis__variedad-*`, the table cells) carry no `CostLine`; any entry that falls
-there is the PM's round-2 "remaining, out of scope (#48)". Any of them whose key shifts because an
-in-scope node before it in document order is fixed is a renumbered target (gate.md, PM round 3);
-the ordinal-bearing, ambiguous rows above are the candidates: `$ #.#.#.#`, `$ #.#.#`, `$ #.#`.
+Entry 0 is the ExpenseBreakdownView subtotal, not the hero: the hero's text is `$ #.#.#.#` (entry 1).
+Entries 2 differs by size as shown; this is the only entry with two regions.
+
+## The h-scroll entry
+
+`h-scroll` `Analisis` (page rule, no target): the document is 569 px wide at every size. The elements
+past the viewport (`overflowingElements`) include, at all four sizes, `analisis__variedad-nombre` /
+`analisis__variedad-ventas` (right 453 / 567) and `gastos__categoria-nombre` / `gastos__categoria-subtotal`
+(right 439 / 569), all in left-alone regions. At 246 and 320 the hero `span.cifra-xl` (right 369) and at
+246, 320 and 375 the strip `span.pie` (right 409) overflow too. Region: whole page, with left-alone
+causes; so it does not clear once the hero, strip and history are fixed and the entry stays.
+
+## Item 6: keys of left-alone entries after the in-scope nodes are fixed
+
+A left-alone node's ordinal counts the failing nodes with the same masked target before it in document
+order. Only `$ #.#.#.#` is shared between an in-scope node (hero 65, history 449 at 246/320) and
+left-alone nodes (ExpenseBreakdownView 460, 475). No other left-alone entry has an in-scope node with its
+masked text before it: `$ #.#.#`, `$ #.#` (the by-variety and ExpenseBreakdownView nodes) and `$ #.#.#.#`
+are the only amount-first texts; the labelled `CostLine` and `expenses $` texts have no left-alone node.
+
+| size | node (document order) | key at base | key after the fix |
+|---|---|---|---|
+| 246, 320 | ExpenseBreakdownView subtotal (460) | `$ #.#.#.#[3]` | `$ #.#.#.#[1]` |
+| 246, 320 | ExpenseBreakdownView subtotal (475) | `$ #.#.#.#[4]` | `$ #.#.#.#[2]` |
+| 375, 430 | ExpenseBreakdownView subtotal (460) | `$ #.#.#.#[2]` | `$ #.#.#.#[1]` |
+| 375, 430 | ExpenseBreakdownView subtotal (475) | `$ #.#.#.#[3]` | `$ #.#.#.#[2]` |
+| all | by-variety (78), `$ #.#.#[1]`; ExpenseBreakdownView (485), `$ #.#.#[2]`; `$ #.#` (470; 246: `[2]`, by-variety 88 `[1]`) | unchanged | unchanged |
+
+Consequence for the offender file: after the fix the keys `$ #.#.#.#[1]` and `[2]` are still failing
+nodes at all four sizes (the ExpenseBreakdownView ones), so entries 1 and 2 stay as they are and need no
+added entry; entries 3 and 4 have no node left and are deleted. No renumbered target has to be added.
+This holds only if the hero and history nodes pass (no failing `$ #.#.#.#` before the ExpenseBreakdownView
+ones); a hero or history node that still fails keeps its ordinal and shifts nothing.
