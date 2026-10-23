@@ -80,6 +80,27 @@ describe('parseOffenders', () => {
     expect(parseOffenders(filesWith('h-scroll', [entry({ rule: 'h-scroll', target: '', issue: 59 })]))).toHaveLength(8)
   })
 
+  test('an entry may carry a reason, and every cell it expands to keeps it', () => {
+    const cells = parseOffenders(filesWith('touch-target', [entry({ reason: 'the button measures 40x30' })]))
+    expect(cells).toHaveLength(8)
+    expect(cells.every((cell) => cell.reason === 'the button measures 40x30')).toBe(true)
+    expect(parseOffenders(filesWith('touch-target', [entry()]))[0]).not.toHaveProperty('reason')
+  })
+
+  test('refuses a reason that is empty, blank or not a string', () => {
+    for (const reason of ['', '   ', 7, null, ['x']]) {
+      expect(() => parseOffenders(filesWith('touch-target', [entry({ reason })]))).toThrow(
+        /touch-target\.json #0: reason is not a non-empty string/,
+      )
+    }
+  })
+
+  test('refuses a key outside the entry’s own', () => {
+    expect(() => parseOffenders(filesWith('touch-target', [entry({ note: 'x' })]))).toThrow(
+      /touch-target\.json #0: unknown key note/,
+    )
+  })
+
   test('refuses two entries that expand to the same cell', () => {
     expect(() =>
       parseOffenders(filesWith('touch-target', [entry(), entry({ sizes: ['320x568'] })])),
