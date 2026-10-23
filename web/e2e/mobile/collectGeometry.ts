@@ -252,6 +252,7 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
 
   // --- gestures ----------------------------------------------------------------------
   for (const element of all('button, [role=button], [role=tab], nav.bar-inferior, nav.bar-inferior a')) {
+    if (element.closest('[inert]') !== null) continue
     const style = getComputedStyle(element)
     if (style.userSelect !== 'none') add('user-select', element)
     if (style.touchAction !== 'manipulation') add('touch-action', element)

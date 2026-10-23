@@ -342,6 +342,16 @@ test.describe('the colour, loading and shift checkers', () => {
     expect(found.filter((v) => v.rule === 'contrast-unprovable').map((v) => v.target)).toEqual(['p:Sobre un degradado'])
   })
 
+  test('a faint text under an inert layer is not reported, the same faint text outside it is', async ({ browser }) => {
+    const found = await onPage(
+      browser,
+      `<style>:root{--papel:#fcfbf8}</style><div inert><p style="color:#bbb;font-size:16px">Gris tapado</p></div>
+       <p style="color:#bbb;font-size:16px">Gris a la vista</p>`,
+      'loaded',
+    )
+    expect(found.filter((v) => v.rule === 'contrast').map((v) => v.target)).toEqual(['p:Gris a la vista'])
+  })
+
   test('a disabled control keeps its label out of the ratio, its reason does not', async ({ browser }) => {
     const found = await onPage(
       browser,
