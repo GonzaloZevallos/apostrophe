@@ -8,8 +8,16 @@ are a spreadsheet of sales, stock entries, expenses and prices, with formulas fo
 debts and stock. It breaks in ways that cost money: settling a debt overwrites it, so there
 is no payment date and no partial payment; a customer is free text, so one person becomes
 two debtors; an order of two varieties is two rows; and profit drops the week flower is
-bought. This product replaces the spreadsheet with an app each seller uses from a phone or
-a computer, one installation keeping every business apart.
+bought. This product replaces the spreadsheet with an app each seller uses, one installation
+keeping every business apart.
+
+The person it is built for is the owner of a small business, working from the phone with
+little time. The computer is supported but secondary: it keeps every capability and gets no
+dedicated polish, and the designs that already exist for it stay as they are (ADR-0044's
+price-form modal included).
+
+Priority: the flow working on the phone ships before polish, and the computer never wins a
+trade against the phone (DESIGN_STANDARDS.md).
 
 ## Jobs
 
