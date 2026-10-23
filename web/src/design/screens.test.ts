@@ -577,7 +577,7 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(r.tema).toBeUndefined()
   })
 
-  it('puts the seven evidence rows right after InicioCompuOscuro, in that order', () => {
+  it('puts the ten evidence rows right after InicioCompuOscuro, in that order', () => {
     const names = rows.map((r) => r.screen)
     const at = names.indexOf('InicioCompuOscuro')
     expect(names.slice(at + 1, at + 1 + HOME_EVIDENCE.length)).toEqual(HOME_EVIDENCE.map(([name]) => name))

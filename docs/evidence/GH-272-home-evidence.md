@@ -16,7 +16,21 @@ Review evidence only; judged by eye; valid only for the SHA below. No capture st
 
 **Extra difference for the PM (not #272's change):** to keep the later translation, the undone inline nodes use the same `copy/` keys the head's `PeriodFigures.tsx` uses for the same strings (`INICIO_TEXT.vendisteHoy/EstaSemana/EsteMes`, `n0Promedio12`, `regalaste`, `pendingCostNote`, `COMMON_TEXT.expenses/flowerPurchases/profit/cash`, `SHORTFALL_LABEL`, `PROMOTION_LABEL`, `OWN_USE_LABEL`, `COST_OF_GOODS_LABEL`). Without it "before" would show Spanish words that the head does not, and every Home screen would differ by text, not by #272. Nothing else was undone.
 
+`git apply --stat undo.diff` (head to before; the paths are the diff's own):
+
+```
+ InicioPanel.tsx          |  92 ++++++++++
+ PeriodFigures.tsx        | 184 ----------------
+ PeriodFigures.test.tsx   | 152 -----------------
+ app.css                  | 149 ----------------
+ 4 files changed, 89 insertions(+), 488 deletions(-)
+```
+
+`PeriodFigures.test.tsx` is #272's test, not a product file; it goes with `PeriodFigures.tsx` so nothing imports a deleted module.
+
 ## ae.mjs, before to after (`ae.txt`)
+
+The raw lines in `ae.txt` read `<screen> built` and `<screen> design`; each is before→after, built or before→after, design, as the table labels it.
 
 | Screen and side | Line | Verdict |
 | --- | --- | --- |
@@ -45,7 +59,3 @@ Images (not committed; the PR attaches them) are the built captures `<row>.built
 | 1280 px, text at 130 % (confirmation, requirement 6) | InicioHoyCompuTexto130, InicioCompuTexto130, InicioMesCompuTexto130 | Month and Week: two-column grid, figures inside their cards; Today as the 960 px one at 130 % |
 
 "130 %" is the registry's text-only scale (`textScale.mjs`): the CSS viewport keeps its width, so the computer layout is the one captured.
-
-### Discovery, SHA `38f604e3` (superseded, not final evidence)
-
-The 960 px set at 130 % **broke**: four figures (`$ 156.000`, `$ 150.000`, `$ 236.500`, `$ 144.500` on Week and Month) spilled 10 to 20 CSS px past their card's right edge, because the card's column stayed at 140 px while the text grew by 130 %. The five screens and both InicioCompu lines were the same as above. The fix (`1df627c2`): `.panel-cifras` columns keep their least width in `em` (`minmax(min(8.75em, 100%), 1fr)`, 140 px at 16 px, so the 100 % layout is unchanged: the five screens still show AE 0), so a card is 1.3 times as wide at 130 %. No copy, figure, route or behaviour changed; no design file touched.
