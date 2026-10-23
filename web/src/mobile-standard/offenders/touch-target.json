@@ -192,7 +192,8 @@
     "screen": "InicioChecklist",
     "rule": "touch-target",
     "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45
+    "issue": 45,
+    "reason": "the business-name settings link measures under 44px in width or height"
   },
   {
     "screen": "InicioChecklist",
@@ -201,7 +202,8 @@
     "issue": 45,
     "sizes": [
       "246x437"
-    ]
+    ],
+    "reason": "the \"Home\" link measures under 44px in width or height"
   },
   {
     "screen": "InicioChecklist",
@@ -210,13 +212,15 @@
     "issue": 45,
     "sizes": [
       "246x437"
-    ]
+    ],
+    "reason": "the \"More\" link measures under 44px in width or height"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-target",
     "target": "link:Owed to you",
-    "issue": 45
+    "issue": 45,
+    "reason": "the \"Owed to you\" link measures under 44px in width or height"
   },
   {
     "screen": "InicioChecklist",
@@ -225,13 +229,15 @@
     "issue": 45,
     "sizes": [
       "246x437"
-    ]
+    ],
+    "reason": "the \"Sales\" link measures under 44px in width or height"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-target",
     "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45
+    "issue": 45,
+    "reason": "the business-name settings link measures under 44px in width or height"
   },
   {
     "screen": "InicioImportado",
@@ -240,7 +246,8 @@
     "issue": 45,
     "sizes": [
       "246x437"
-    ]
+    ],
+    "reason": "the \"Home\" link measures under 44px in width or height"
   },
   {
     "screen": "InicioImportado",
@@ -249,13 +256,15 @@
     "issue": 45,
     "sizes": [
       "246x437"
-    ]
+    ],
+    "reason": "the \"More\" link measures under 44px in width or height"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-target",
     "target": "link:Owed to you",
-    "issue": 45
+    "issue": 45,
+    "reason": "the \"Owed to you\" link measures under 44px in width or height"
   },
   {
     "screen": "InicioImportado",
@@ -264,7 +273,8 @@
     "issue": 45,
     "sizes": [
       "246x437"
-    ]
+    ],
+    "reason": "the \"Sales\" link measures under 44px in width or height"
   },
   {
     "screen": "Clientes",

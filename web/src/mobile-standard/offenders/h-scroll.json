@@ -94,7 +94,8 @@
       "320x568",
       "375x812",
       "246x437"
-    ]
+    ],
+    "reason": "the page scrolls sideways: its scroll width is wider than the viewport"
   },
   {
     "screen": "InicioHoy",
@@ -116,7 +117,8 @@
       "320x568",
       "375x812",
       "246x437"
-    ]
+    ],
+    "reason": "the page scrolls sideways: its scroll width is wider than the viewport"
   },
   {
     "screen": "InicioOnboardingCompleto",

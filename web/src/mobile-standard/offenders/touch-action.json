@@ -2091,55 +2091,64 @@
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "button:Today",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the button \"Today\" is not manipulation"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "button:Month",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the button \"Month\" is not manipulation"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "button:Week",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the button \"Week\" is not manipulation"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Home\" is not manipulation"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"More\" is not manipulation"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation"
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation"
   },
   {
     "screen": "InicioHoy",
@@ -2199,55 +2208,64 @@
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "button:Today",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the button \"Today\" is not manipulation"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "button:Month",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the button \"Month\" is not manipulation"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "button:Week",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the button \"Week\" is not manipulation"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Home\" is not manipulation"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"More\" is not manipulation"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation"
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation"
   },
   {
     "screen": "InicioOnboardingCompleto",

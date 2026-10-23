@@ -183,7 +183,7 @@ Success criteria, the phone standard:
 39. **The list of known offenders can only shrink.**
     - Each expected failure names the issue that removes it.
     - A new offender fails the run, and so does a fixed one left on the list.
-    - The one exception is the trade: a screen that becomes reachable swaps its `unreachable` entry for its real cells in the same change (the rule is in `docs/product/gate.md`).
+    - It grows only by a trade, or by the real cells of a row new to the screens registry (the conditions are in `docs/product/gate.md`).
 40. **Every area PR shows it.** Each area issue's PR (#45–#49, #59, #60, #78) and `scripts/design/compare.sh` attach the check's result. An area issue is not done while its own screens are still on the offender list.
 41. **Nothing regresses for the seller.**
     - A sale, a payment, a stock entry and an expense are each still recorded from the phone in under 60 s.

@@ -460,3 +460,7 @@ _Avoid_: locale, i18n, translation, Rioplatense
 **Copy module**:
 The one keyed place that holds every text the front shows, accessible names included. No screen holds a text of its own, so a rewording or an added language is a change there only.
 _Avoid_: messages file, strings, translations, dictionary
+
+**Mobile check**:
+The Gate check that walks the screens registry's phone rows and fails on any mobile-standard offence not listed in the offender lists. The lists grow only by a trade, or by the real cells of a row new to the screens registry (the conditions are in `docs/product/gate.md`).
+_Avoid_: mobile test, phone audit, lint, allowlist

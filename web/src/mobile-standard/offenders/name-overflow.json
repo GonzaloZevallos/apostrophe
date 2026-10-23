@@ -200,7 +200,8 @@
     "screen": "InicioChecklist",
     "rule": "name-overflow",
     "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45
+    "issue": 45,
+    "reason": "the business name, a word of 30 characters or more, is not cut with an ellipsis and runs wider than the viewport or its container"
   },
   {
     "screen": "InicioHoy",
@@ -212,7 +213,8 @@
     "screen": "InicioImportado",
     "rule": "name-overflow",
     "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45
+    "issue": 45,
+    "reason": "the business name, a word of 30 characters or more, is not cut with an ellipsis and runs wider than the viewport or its container"
   },
   {
     "screen": "InicioOnboardingCompleto",

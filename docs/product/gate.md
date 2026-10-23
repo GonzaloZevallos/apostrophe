@@ -33,8 +33,22 @@ Success criteria:
 
 1. When a screen becomes reachable, its `unreachable` entry is removed and its real cells are added to the offender lists in the same change.
 2. The new cells are recorded and tracked like any other offender. They are never hidden, and never read as a regression.
-3. The exception covers only that screen. The only growth allowed is the cells of the screen whose `unreachable` entry is removed in that same change. Any other growth still breaks invariant 9.
+3. The exception covers only that screen. The only growth allowed by the trade is the cells of the screen whose `unreachable` entry is removed in that same change.
 4. A reviewer can check the trade from the offender files and the change alone, without reading the Developer's evidence notes.
+
+### A new registry row brings its cells
+
+**When** a change adds a row to the screens registry that the mobile walk always walks, **I want** (as the Developer making that change, or the reviewer approving it) a written rule that lets that row bring all its real offender cells in the same change, **so that** a rule written for a change says what truly holds, the change can be approved, and later changes can be reviewed without arguing the same contradiction again.
+
+Before this (GH-305, a follow-up of GH-274), the only allowed growth was the trade. GH-274 added the phone rows InicioChecklist and InicioImportado. They were never listed as unreachable, so their real cells (56 entries) could not be a trade, and the plan's invariant could not hold as written. The finding stayed open on GH-274's approved head.
+
+Success criteria:
+
+1. A row new to the screens registry brings all its real offender cells in the change that adds it. If the walk cannot reach it yet, it brings its `unreachable` coverage instead.
+2. Those cells are tracked like any other offender. They are never hidden, and never read as a regression.
+3. The growth covers only the new row's screen, at the sizes and themes that row covers, in the change that adds it. Any other growth still breaks invariant 9.
+4. A reviewer can check it from the registry diff and the offender-file diff alone, by screen name.
+5. No one-off exception is recorded for a new row. InicioChecklist and InicioImportado are accepted by this rule, with none.
 
 ## Behaviour
 
@@ -71,14 +85,17 @@ Success criteria:
 The mobile standard keeps offender lists under `web/src/mobile-standard/offenders/`:
 
 - `unreachable.json` lists screens the mobile walk cannot reach yet.
-- The other lists, such as `touch-target.json`, list the real cells that fall short of a rule.
+- The other lists, such as `touch-target.json` and `touch-action.json`, list the real cells that fall short of a rule.
 
-This file is the one place the rule is written. The other live texts name the trade in one sentence and point here: CODING_STANDARDS.md §10, its twin in `docs/product/design-system/README.md`, item 39 of `docs/product/accounts.md`, and the header of `web/src/mobile-standard/offenders/index.ts`.
+This file is the one place the rule is written. The other live texts name the two allowed kinds of growth (the trade and a new registry row) in one sentence and point here: CODING_STANDARDS.md §10, its twin in `docs/product/design-system/README.md`, item 39 of `docs/product/accounts.md`, and the header of `web/src/mobile-standard/offenders/index.ts`.
 
-- **No growth (invariant 9).** The offender lists never grow, except by the trade below. It was first written as invariant 9 of the GH-271 plan.
-- **The trade, per cell.** An offender cell (screen, size, theme) may be added only when the same change removes that screen's `unreachable` coverage at that size and theme. The real cells go in whichever offender lists they belong in.
+- **No growth (invariant 9).** The offender lists never grow, except by the trade or by a new registry row, both below. It was first written as invariant 9 of the GH-271 plan.
+
+#### The trade
+
+- **Per cell.** An offender cell (screen, size, theme) may be added only when the same change removes that screen's `unreachable` coverage at that size and theme. The real cells go in whichever offender lists they belong in.
   - Every added cell names the same screen as the removed entry's `screen`. Only those cells count toward the trade.
-  - Partial reach: an entry that only narrows its `sizes` or `themes` trades only the cells it lost. `VentaAsignarCliente` is listed as unreachable at 246x437 only, for example.
+  - Partial reach: an entry that only narrows its `sizes` or `themes` trades only the cells it lost. For example, `VentaAsignarCliente` is listed as unreachable at 246x437 only.
   - A `*Texto130` screen is its own screen name and trades on its own.
   - One change may carry several trades.
 - **Matched by screen, not by issue.** Whether a trade is valid depends only on the screen name. A traded cell must name an issue from `AREA_ISSUES`, and it may name either:
@@ -86,20 +103,35 @@ This file is the one place the rule is written. The other live texts name the tr
   - the issue the same screen's existing offender entries carry.
   - A screen with no existing entries uses the removed entry's issue. If its existing entries span two issues, the reviewer accepts either.
   - CobroDesdeInicio's cells carry #46, while its removed entry carried #45. Both are valid.
-- **Not a trade.** Any other growth breaks invariant 9:
-  - cells for a screen whose `unreachable` entry stays;
-  - cells naming a different screen from the one whose entry was removed;
-  - cells at a size or theme the removed entry did not cover.
-- **No cap.** A reachable screen brings all its real cells, however many.
 - **No offending cells.** A screen that becomes reachable with no offending cells just loses its `unreachable` coverage. Nothing is added.
-- **Tracked like any other offender.** Traded cells are tracked like any other offender from then on. They are never hidden, never marked exempt, and never read as a regression.
-- **Readable from the files.** The trade can be checked from the before and after offender files alone, by screen name, without the Developer's evidence notes.
-- **Enforcement is by review only.** `diffOffenders` already makes the two halves land together: once the screen is reachable, its `unreachable` cells turn `fixedButListed`, and its real cells are `unlisted` until they are listed. Neither half goes green without the other. Checking that the added cells name the removed screen would need the base revision, which means git inside vitest, against ADR-0038 and ADR-0041. So the reviewer matches screen names in the offender-file diff. Listing an unrelated new failure to get green is caught only in review, as before.
-- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable. The rule accepts CobroDesdeInicio (its removed `unreachable` entry at 246x437, #45, traded for seven 246x437 cells on #46) with none, and the exception recorded on GH-271 is retired.
+
+#### A new registry row
+
+- **Per cell.** An offender cell (screen, size, theme) may be added when the same change adds that screen's row to the screens registry at that size and theme. The row was not in the registry before the change. The real cells go in whichever offender lists they belong in.
+  - Every added cell names the new row's screen. Only those cells count.
+  - A `*Texto130` screen is its own screen name and counts on its own.
+  - One change may add several rows.
+- **Unreachable new row.** If the walk cannot reach the new row yet, the same change lists it in `unreachable.json` at the sizes and themes it cannot reach. Its real cells come later, through the trade.
+- **Issue.** Each added cell names an issue from `AREA_ISSUES`.
+- **Same change only.** Cells for a row that already existed before the change are never this kind of growth, even when that row was added only recently.
+- **On record.** InicioChecklist and InicioImportado, the phone rows added by GH-274, brought their real cells in `touch-action.json` in that change. Each entry carries its reason. They are this rule's first case and need no exception.
+
+#### Common to both
+
+- **Not allowed.** Any other growth breaks invariant 9:
+  - cells for a screen whose `unreachable` entry stays;
+  - cells for a row already in the registry before the change;
+  - cells naming a different screen from the one whose entry was removed or whose row was added;
+  - cells at a size or theme that the removed entry or the new row does not cover.
+- **No cap.** A reachable screen or a new row brings all its real cells, however many.
+- **Tracked like any other offender.** Added cells are tracked like any other offender from then on. They are never hidden, never marked exempt, and never read as a regression.
+- **Readable from the files.** Growth can be checked by screen name from the before and after offender files, plus the screens registry diff for a new row. The Developer's evidence notes are not needed.
+- **Enforcement is by review only.** `diffOffenders` already makes listing and walking land together. A reachable screen's or a new row's real cells are `unlisted` until they are listed, and a reachable screen's `unreachable` cells turn `fixedButListed`. Checking that the added cells name the removed or added screen would need the base revision, which means git inside vitest, against ADR-0038 and ADR-0041. So the reviewer matches screen names across the diffs. Listing an unrelated new failure to get green is caught only in review, as before.
+- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable or a row being added. The rules accept CobroDesdeInicio (its removed `unreachable` entry at 246x437, #45, traded for seven 246x437 cells on #46) and InicioChecklist and InicioImportado (GH-274) with none. The exception recorded on GH-271 is retired.
 
 #### Worked examples
 
-Each shows the offender files before and after one change, and the verdict.
+Each shows the offender files, and where it matters the screens registry, before and after one change, and the verdict.
 
 **1. Valid trade: passes.** `Cuenta` becomes reachable and has one failing cell.
 
@@ -143,6 +175,38 @@ The cell does not name the removed entry's screen, so it is not part of the trad
 
 Only the entry leaves. Nothing is added.
 
+**5. New row with its cells: passes.** The change adds the phone row `InicioChecklist`, and it has failing cells.
+
+```diff
+ screens registry
++  InicioChecklist (phone)
+ touch-action.json
++  { "screen": "InicioChecklist", "rule": "touch-action", "target": "…", "issue": 46 }
+```
+
+The added cells name only the row added in the same change, and name an issue.
+
+**6. Cells for an existing row: fail.** No row is added, and a cell for `InicioHoy`, already in the registry, is added.
+
+```diff
+ touch-action.json
++  { "screen": "InicioHoy", "rule": "touch-action", "target": "…", "issue": 46 }
+```
+
+The row was there before the change, so the new cell is a regression to fix, not a growth to list.
+
+**7. New row, cells naming another screen: fail.** The change adds `InicioImportado`, but a cell for `Perfil` is also added.
+
+```diff
+ screens registry
++  InicioImportado (phone)
+ touch-action.json
++  { "screen": "InicioImportado", "rule": "touch-action", "target": "…", "issue": 46 }
++  { "screen": "Perfil", "rule": "touch-action", "target": "…", "issue": 46 }
+```
+
+The `InicioImportado` cell is valid. The `Perfil` cell breaks invariant 9.
+
 ## Metrics
 
 There is no telemetry. These are read from the task's evidence and from review.
@@ -152,14 +216,21 @@ There is no telemetry. These are read from the task's evidence and from review.
 - **No behaviour change (time job, criterion 3):** the gate passes, and every edited test keeps its product assertions. Checked in review.
 - **Gate stays fast (time job, criterion 4):** no new waiting and no elapsed-time assertions. Checked in review against ADR-0038 and ADR-0041.
 - **Staying fixed:** the flagging mechanism is shown catching a deliberately added real-clock-dependent test.
-- **Trade recognised (offender job, criteria 1 and 3):** four cases are shown, each with the expected verdict:
+- **Trade recognised (trade job, criteria 1 and 3):** four cases are shown, each with the expected verdict:
   - a valid trade passes;
   - an entry kept plus cells added fails;
   - cells naming another screen fail;
   - a screen made reachable with no cells passes.
-- **Nothing hidden (offender job, criterion 2):** after a trade, every cell of the newly reachable screen is in the offender lists, each naming an issue.
-- **No one-off exceptions (offender job, criterion 3):** no per-task exception for a screen becoming reachable remains, CobroDesdeInicio's included.
-- **Self-evident trade (offender job, criterion 4):** the reviewer confirms the trade from the offender-file diff alone.
+- **Nothing hidden (trade job, criterion 2):** after a trade, every cell of the newly reachable screen is in the offender lists, each naming an issue.
+- **Self-evident trade (trade job, criterion 4):** the reviewer confirms the trade from the offender-file diff alone.
+- **New row recognised (new-row job, criteria 1 and 3):** three cases are shown, each with the expected verdict:
+  - a new row with its cells passes;
+  - cells for an existing row fail;
+  - cells naming another screen alongside a new row fail.
+- **Nothing hidden (new-row job, criterion 2):** every real cell of InicioChecklist and InicioImportado is in the offender lists, each naming an issue and carrying its reason.
+- **Self-evident new row (new-row job, criterion 4):** the reviewer confirms the growth from the registry diff and the offender-file diff alone. Compared with GH-274's base, the lists grow by exactly the entries for InicioChecklist and InicioImportado, and remove none.
+- **No one-off exceptions (both offender jobs):** no per-task exception for a screen becoming reachable or a row being added remains, CobroDesdeInicio's and GH-274's included.
+- **Twins aligned:** CODING_STANDARDS.md §10, the design-system README, item 39 of accounts.md and the header of `offenders/index.ts` each name both allowed kinds of growth in one sentence and point here.
 
 ## Out of scope
 
@@ -167,7 +238,7 @@ There is no telemetry. These are read from the task's evidence and from review.
 - Production code that legitimately reads the real clock.
 - Repeating the shifted-date runs on every gate run.
 - Timing assertions of any kind (ADR-0038).
-- A cap on how many cells a reachable screen may bring.
-- Changing the touch-target standard itself, or fixing the cells that become visible.
-- Letting offender lists grow in any case other than the trade.
+- A cap on how many cells a reachable screen or a new row may bring.
+- Changing the touch-target or touch-action standard itself, or fixing the cells that become visible.
+- Letting offender lists grow in any case other than the trade or a new registry row.
 - Translating `docs/product/design-system/README.md`.
