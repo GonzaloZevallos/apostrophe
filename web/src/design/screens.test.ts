@@ -419,7 +419,7 @@ describe('the 130 % rows of the real screens.json', () => {
   const isOnboardingNarrow = (row: Row): boolean =>
     /^Onboarding/.test(row.design ?? row.screen) && row.viewport?.[0] === 320 && row.viewport[1] === 844
   const isNamedHome = (row: Row): boolean =>
-    HOME_TEXTO130.includes(row.screen) && row.viewport?.[0] === HOME_WIDTH[row.screen] && row.viewport[1] === 920
+    HOME_TEXTO130.includes(row.screen) && row.viewport?.[0] === HOME_WIDTH[row.screen] && row.viewport?.[1] === 920
 
   it('accepts a 130 % row only as a 320x844 Onboarding row or one of the six named Home rows at their own width x 920', () => {
     const scaled = rows.filter((row) => row.text_scale !== undefined)
