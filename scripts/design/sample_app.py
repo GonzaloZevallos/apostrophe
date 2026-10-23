@@ -11,7 +11,7 @@ runs this in the background waits for that file, then reads the address and the 
 
     {"url": ..., "email": ..., "password": ..., "ids": {...},
      "accounts": {"<name>": {"email": ..., "password": ...}},
-     "account_kinds": {"<name>": "open" | "ended" | "pre_onboarding" | "imported"}}
+     "account_kinds": {"<name>": "open" | "ended" | "pre_onboarding" | "imported" | "onboarding"}}
 
 The top-level `email`, `password` and `ids` are La Huerta's. `accounts` is always present
 (`{}` when both account tuples are empty): one extra business per name, seeded like La
@@ -20,12 +20,16 @@ ends the Onboarding ("Listo") can be reached once per business in one run. An `e
 account (`ENDED_ONBOARDING_ACCOUNTS`) has its Onboarding ended over HTTP, through
 `skip-rest`, after it is seeded, for the screens whose frames do not draw the Onboarding's
 notice. A `pre_onboarding` account (`PRE_ONBOARDING_ACCOUNTS`) is a business with no
-Onboarding row and one priced variety, which shows the first-run checklist; an `imported` account
-(`IMPORTED_ACCOUNTS`) is one the real `scripts/import-spreadsheet.sh` loaded, which shows the
-after-import notice. Both are read-only for the screens that name them, and each checks its own
-`/first-run` answer and stops the sample if it differs. `account_kinds` has exactly the keys of
-`accounts`. An account carries no `ids`:
-the ids are La Huerta's.
+Onboarding row, which shows the first-run checklist (`checklist` has one priced variety,
+`primera_vez` has nothing priced); an `imported` account (`IMPORTED_ACCOUNTS`) is one the real
+`scripts/import-spreadsheet.sh` loaded, which shows the after-import notice; an `onboarding`
+account (`ONBOARDING_FRAME_ACCOUNTS`) is a business whose Onboarding is open at a fixed point
+(`en_curso`: one step done; `completo`: every step answered, not yet ended), seeded over HTTP
+alone and never ended. All three kinds are read-only for the screens that name them, and each
+checks its own `/first-run` answer (the `onboarding` ones also `/onboarding-progress`) and stops
+the sample if it differs. `account_kinds` has exactly the keys of `accounts`, and its values are
+the kinds of `ACCOUNT_KINDS`, the same list as `account_kinds` in `screens.json`. An account
+carries no `ids`: the ids are La Huerta's.
 The data goes in over HTTP, never through the front: the front is what this app exists
 to compare, so a redesigned screen must never break the seeding. Never touches the
 human's own `apostrophe.db` or `.env`.
@@ -73,16 +77,28 @@ ONBOARDING_ACCOUNTS = (
 # One extra business per capture that must NOT show the Onboarding's notice: its Onboarding
 # is ended, always through `POST /onboarding-progress/skip-rest` and never by writing a row.
 # A screen reads one of these only when its frames do not draw the notice (`Inicio*`).
-ENDED_ONBOARDING_ACCOUNTS = (
-    "inicio",
-)
+ENDED_ONBOARDING_ACCOUNTS = ("inicio",)
 # The business of the first-run checklist (GH-274): it has no Onboarding row, as a business
 # that existed before the Onboarding (docs/adr/0036, docs/adr/0046). Read-only for every
 # screen that names it, and no "Listo" row ever does.
-PRE_ONBOARDING_ACCOUNTS = ("checklist",)
+# `checklist` has one priced variety; `primera_vez` (GH-303) has nothing priced.
+PRE_ONBOARDING_ACCOUNTS = ("checklist", "primera_vez")
 # The business the real spreadsheet import loaded (GH-274): `first_run.imported_at` is
 # stamped by `scripts/import-spreadsheet.sh` and by nothing else. Read-only as well.
 IMPORTED_ACCOUNTS = ("importada",)
+# The two frames of the Onboarding the drawings hold (GH-303): `en_curso` has one step done,
+# `completo` has every step answered and its Onboarding not yet ended. Both come over HTTP
+# alone, never through `advance` or `skip-rest`, and are read-only like the kinds above.
+ONBOARDING_FRAME_ACCOUNTS = ("en_curso", "completo")
+# Every kind the sample can write and the account names of each: `account_kinds` of
+# `sample.json` is built from it, and `account_kinds` of `screens.json` must be the same set.
+ACCOUNT_KINDS = {
+    "open": ONBOARDING_ACCOUNTS,
+    "ended": ENDED_ONBOARDING_ACCOUNTS,
+    "pre_onboarding": PRE_ONBOARDING_ACCOUNTS,
+    "imported": IMPORTED_ACCOUNTS,
+    "onboarding": ONBOARDING_FRAME_ACCOUNTS,
+}
 
 
 class Api(Protocol):
@@ -553,6 +569,9 @@ def accept_new_business(env: dict[str, str], base: str, name: str) -> tuple[Acco
     return account, api
 
 
+DROP_REFUSED = "sample-app: the pre_onboarding account's Onboarding row was not removed"
+
+
 def drop_onboarding_row(db_path: Path, business: int) -> None:
     """The one row the design tooling writes directly: deletes `business`'s `onboarding`
     row, so it has the stored shape of a business from before the Onboarding. Stops the
@@ -564,30 +583,16 @@ def drop_onboarding_row(db_path: Path, business: int) -> None:
             "SELECT COUNT(*) FROM first_run WHERE business_id = ?", (business,)
         ).fetchone()[0]
         if stamped != 0:
-            raise SystemExit("sample-app: the checklist account's Onboarding row was not removed")
+            raise SystemExit(DROP_REFUSED)
         with conn:
             dropped = conn.execute("DELETE FROM onboarding WHERE business_id = ?", (business,))
     if dropped.rowcount != 1:
-        raise SystemExit("sample-app: the checklist account's Onboarding row was not removed")
+        raise SystemExit(DROP_REFUSED)
 
 
-def pre_onboarding_account(
-    env: dict[str, str], base: str, today: date, db_path: Path
-) -> Account:
-    """The `PRE_ONBOARDING_ACCOUNTS` business: the first-run checklist with step 1 done.
-
-    It is opened by the operator's invitation like any other, and then its `onboarding` row
-    is deleted before anything reads the business. That is the only row the design tooling
-    writes directly, and it is the stored shape of a business from before the Onboarding:
-    no route can make it, since the Onboarding was never backfilled (docs/adr/0036) and the
-    `first_run` row is created by its first stamp (docs/adr/0046). Everything else comes
-    over HTTP: one variety, priced from `today`, and nothing more (no stock entry, no
-    publication, no second user), so exactly the first step is done."""
-    (name,) = PRE_ONBOARDING_ACCOUNTS
-    account, api = accept_new_business(env, base, name)
-    business = business_id_of(db_path, account.email)
-    drop_onboarding_row(db_path, business)
-    api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
+def price_first_variety(api: Api, today: date) -> None:
+    """One variety, priced from `today`: the first step of the Onboarding and of the
+    checklist, and nothing else."""
     made: int = api.call("POST", "/varieties", {"name": "Primera variedad"})["id"]
     api.call(
         "POST",
@@ -599,17 +604,123 @@ def pre_onboarding_account(
             "bulk_minimum": None,
         },
     )
+
+
+def pre_onboarding_account(
+    env: dict[str, str], base: str, today: date, db_path: Path, name: str, *, priced: bool
+) -> Account:
+    """A `PRE_ONBOARDING_ACCOUNTS` business: the first-run checklist.
+
+    It is opened by the operator's invitation like any other, and then its `onboarding` row
+    is deleted before anything reads the business. That is the only row the design tooling
+    writes directly, and it is the stored shape of a business from before the Onboarding:
+    no route can make it, since the Onboarding was never backfilled (docs/adr/0036) and the
+    `first_run` row is created by its first stamp (docs/adr/0046). Everything else comes
+    over HTTP: with `priced`, one variety priced from `today` (so exactly the first step is
+    done), and never a stock entry, a publication or a second user."""
+    account, api = accept_new_business(env, base, name)
+    business = business_id_of(db_path, account.email)
+    drop_onboarding_row(db_path, business)
+    api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
+    if priced:
+        price_first_variety(api, today)
     expect_first_run(
         api,
         "checklist",
         account="pre_onboarding",
         steps=(
-            ("priced_variety", True),
+            ("priced_variety", priced),
             ("stock_entry", False),
             ("published", False),
             ("second_user", False),
         ),
         import_notice=False,
+    )
+    return account
+
+
+OPTIONAL_STEPS = ("header_footer", "bot", "partner", "categories")
+STEP_ORDER = ("variety", "stock", *OPTIONAL_STEPS)
+
+
+def expect_onboarding_progress(
+    api: Api,
+    *,
+    account: str,
+    steps: tuple[tuple[str, str], ...],
+    count: int,
+    resume: str,
+    over: bool,
+) -> None:
+    """Checks `GET /onboarding-progress` against the answer the account being built exists
+    to produce, and stops the sample if it differs. `steps` is every step in order, each with
+    its state. The message names the account's kind (`account`, as in `account_kinds`) and the
+    check that failed, a step by its slug, and never an answer's data."""
+    shown = api.call("GET", "/onboarding-progress")
+    got = tuple((item.get("step"), item.get("state")) for item in shown.get("steps", ()))
+
+    def stop(check: str) -> SystemExit:
+        return SystemExit(f"sample-app: the {account} account's progress is wrong: {check}")
+
+    if shown.get("offered") is not True:
+        raise stop("offered")
+    if shown.get("over") is not over:
+        raise stop("over")
+    if shown.get("resume") != resume:
+        raise stop("resume")
+    if shown.get("count") != count:
+        raise stop("count")
+    for index, (name, state) in enumerate(steps):
+        if index >= len(got) or got[index] != (name, state):
+            raise stop(f"step {name}")
+    if len(got) != len(steps):
+        raise stop("steps")
+
+
+def onboarding_frame_account(env: dict[str, str], base: str, today: date, name: str) -> Account:
+    """An `ONBOARDING_FRAME_ACCOUNTS` business: opened by the operator's invitation, signed
+    in, and brought to its frame over HTTP alone (no row is written, and neither `advance` nor
+    `skip-rest` is ever called, so its Onboarding stays open).
+
+    `en_curso`: one variety priced from `today`, nothing else. `completo`: that, an opening-
+    stock entry, and the four optional steps passed as `skipped` (the notice draws a skipped
+    segment filled like a done one: `StepIndicator`). Each checks `/first-run` and
+    `/onboarding-progress` before returning."""
+    account, api = accept_new_business(env, base, name)
+    api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
+    price_first_variety(api, today)
+    if name == "completo":
+        # The passes come before the stock entry: a pass that finds both required facts met
+        # and every optional step settled ends the Onboarding (`use_cases._settle`), and this
+        # account must stay open.
+        for step in OPTIONAL_STEPS:
+            api.call("POST", "/onboarding-progress/passes", {"step": step, "as": "skipped"})
+        (variety,) = api.call("GET", "/varieties")
+        api.call(
+            "POST",
+            "/stock/entries",
+            {
+                "date": today.isoformat(),
+                "variety_id": variety["id"],
+                "origin": "opening_stock",
+                "grams": "25",
+                "total_cost": None,
+                "note": None,
+            },
+        )
+        states = ("done", "done", *("skipped",) * len(OPTIONAL_STEPS))
+        count, resume = 6, "finish"
+    else:
+        states = ("done", *("pending",) * (len(STEP_ORDER) - 1))
+        count, resume = 1, "stock"
+    expect_first_run(api, "onboarding", account="onboarding", import_notice=False)
+    expect_onboarding_progress(
+        api,
+        account="onboarding",
+        steps=tuple(zip(STEP_ORDER, states, strict=True)),
+        count=count,
+        resume=resume,
+        over=False,
     )
     return account
 
@@ -758,12 +869,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--port", type=int, default=0, help="default: a free one")
     parser.add_argument("--dir", type=Path, default=None, help="default: a new temp dir")
     args = parser.parse_args(argv)
-    names = (
-        ONBOARDING_ACCOUNTS,
-        ENDED_ONBOARDING_ACCOUNTS,
-        PRE_ONBOARDING_ACCOUNTS,
-        IMPORTED_ACCOUNTS,
-    )
+    names = tuple(ACCOUNT_KINDS.values())
     if len({name for group in names for name in group}) != sum(len(group) for group in names):
         raise SystemExit("sample-app: an account has more than one kind")
 
@@ -828,11 +934,19 @@ def main(argv: list[str] | None = None) -> int:
         open_accounts = onboarding_accounts(env, base, today)
         ended_accounts = ended_onboarding_accounts(env, base, today)
         db_path = workdir / "sample.db"
-        (checklist_name,) = PRE_ONBOARDING_ACCOUNTS
         (imported_name,) = IMPORTED_ACCOUNTS
         capture_accounts = {
-            checklist_name: pre_onboarding_account(env, base, today, db_path),
+            **{
+                name: pre_onboarding_account(
+                    env, base, today, db_path, name, priced=name == "checklist"
+                )
+                for name in PRE_ONBOARDING_ACCOUNTS
+            },
             imported_name: imported_account(env, base, today, db_path),
+            **{
+                name: onboarding_frame_account(env, base, today, name)
+                for name in ONBOARDING_FRAME_ACCOUNTS
+            },
         }
     except BaseException:
         server.terminate()
@@ -848,10 +962,10 @@ def main(argv: list[str] | None = None) -> int:
         "ids": {**asdict(sample), **links},
         "accounts": {name: asdict(account) for name, account in accounts.items()},
         "account_kinds": {
-            **dict.fromkeys(open_accounts, "open"),
-            **dict.fromkeys(ended_accounts, "ended"),
-            checklist_name: "pre_onboarding",
-            imported_name: "imported",
+            name: kind
+            for kind, group in ACCOUNT_KINDS.items()
+            for name in group
+            if name in accounts
         },
     }
     (workdir / "sample.json").write_text(json.dumps(facts, indent=2), encoding="utf-8")

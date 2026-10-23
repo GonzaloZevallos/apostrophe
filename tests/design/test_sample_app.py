@@ -3,6 +3,7 @@ through the front it exists to compare, so a redesigned screen cannot break it. 
 state the design's screens show has to exist after seeding."""
 
 import importlib.util
+import json
 import os
 import sqlite3
 import sys
@@ -144,8 +145,12 @@ def running_sample(tmp_path: Path) -> Iterator[tuple[ModuleType, dict[str, str],
         "APOSTROPHE_PUBLIC_URL": base,
     }
     app = create_app(
-        Settings("sample-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
-        telegram=FakeTelegram(), clock=MovableClock(NOW), upkeep_ticker=False,
+        Settings("sample-secret", url),
+        engine=make_engine(url),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        clock=MovableClock(NOW),
+        upkeep_ticker=False,
     )
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="error"))
     thread = threading.Thread(target=server.run, daemon=True)
@@ -314,7 +319,9 @@ def test_the_checklist_account_is_a_business_with_no_onboarding_and_one_priced_v
 ) -> None:
     db_path = tmp_path / "sample.db"
     with running_sample(tmp_path) as (sample_app, env, base):
-        account = sample_app.pre_onboarding_account(env, base, TODAY, db_path)
+        account = sample_app.pre_onboarding_account(
+            env, base, TODAY, db_path, "checklist", priced=True
+        )
 
         api = sign_in(sample_app, base, account.email, account.password)
         shown = api.call("GET", "/first-run")
@@ -438,9 +445,11 @@ def test_no_account_name_has_two_kinds_and_the_capture_accounts_are_declared() -
         sample_app.ENDED_ONBOARDING_ACCOUNTS,
         sample_app.PRE_ONBOARDING_ACCOUNTS,
         sample_app.IMPORTED_ACCOUNTS,
+        sample_app.ONBOARDING_FRAME_ACCOUNTS,
     )
 
-    assert sample_app.PRE_ONBOARDING_ACCOUNTS == ("checklist",)
+    assert sample_app.PRE_ONBOARDING_ACCOUNTS == ("checklist", "primera_vez")
+    assert sample_app.ONBOARDING_FRAME_ACCOUNTS == ("en_curso", "completo")
     assert sample_app.IMPORTED_ACCOUNTS == ("importada",)
     names = [name for group in groups for name in group]
     assert len(names) == len(set(names))
@@ -478,9 +487,11 @@ def test_run_import_stops_the_sample_on_a_failed_import_and_on_a_reported_proble
 
 def test_the_direct_row_write_is_refused_for_a_business_it_must_not_touch(tmp_path: Path) -> None:
     db_path = tmp_path / "sample.db"
-    message = "sample-app: the checklist account's Onboarding row was not removed"
+    message = "sample-app: the pre_onboarding account's Onboarding row was not removed"
     with running_sample(tmp_path) as (sample_app, env, base):
-        checklist = sample_app.pre_onboarding_account(env, base, TODAY, db_path)
+        checklist = sample_app.pre_onboarding_account(
+            env, base, TODAY, db_path, "checklist", priced=True
+        )
         imported = sample_app.imported_account(env, base, TODAY, db_path)
 
         # No Onboarding row left to delete: the delete removes zero rows.
@@ -496,3 +507,161 @@ def test_the_direct_row_write_is_refused_for_a_business_it_must_not_touch(tmp_pa
             sample_app.drop_onboarding_row(db_path, stamped)
         assert str(stamped_refusal.value) == message
         assert rows_of(db_path, "onboarding", stamped) == 1
+
+
+def test_primera_vez_is_a_business_with_no_onboarding_and_nothing_priced(tmp_path: Path) -> None:
+    db_path = tmp_path / "sample.db"
+    with running_sample(tmp_path) as (sample_app, env, base):
+        account = sample_app.pre_onboarding_account(
+            env, base, TODAY, db_path, "primera_vez", priced=False
+        )
+
+        api = sign_in(sample_app, base, account.email, account.password)
+        shown = api.call("GET", "/first-run")
+        assert shown["kind"] == "checklist"
+        assert [(step["step"], step["done"]) for step in shown["checklist"]] == [
+            ("priced_variety", False),
+            ("stock_entry", False),
+            ("published", False),
+            ("second_user", False),
+        ]
+        assert shown["import_notice"] is False
+        business = sample_app.business_id_of(db_path, account.email)
+        assert rows_of(db_path, "onboarding", business) == 0
+        assert rows_of(db_path, "first_run", business) == 0
+        assert api.call("GET", "/varieties") == []
+
+
+def test_the_en_curso_account_is_an_onboarding_with_one_step_done(tmp_path: Path) -> None:
+    with running_sample(tmp_path) as (sample_app, env, base):
+        account = sample_app.onboarding_frame_account(env, base, TODAY, "en_curso")
+
+        api = sign_in(sample_app, base, account.email, account.password)
+        shown = api.call("GET", "/first-run")
+        assert (shown["kind"], shown["checklist"], shown["import_notice"]) == (
+            "onboarding",
+            [],
+            False,
+        )
+        progress = api.call("GET", "/onboarding-progress")
+        assert progress["offered"] is True
+        assert progress["over"] is False
+        assert (progress["count"], progress["resume"]) == (1, "stock")
+        assert [(item["step"], item["state"]) for item in progress["steps"]] == [
+            ("variety", "done"),
+            ("stock", "pending"),
+            ("header_footer", "pending"),
+            ("bot", "pending"),
+            ("partner", "pending"),
+            ("categories", "pending"),
+        ]
+        assert len(api.call("GET", "/varieties")) == 1
+
+
+def test_the_completo_account_has_every_step_answered_and_its_onboarding_still_open(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "sample.db"
+    with running_sample(tmp_path) as (sample_app, env, base):
+        account = sample_app.onboarding_frame_account(env, base, TODAY, "completo")
+
+        api = sign_in(sample_app, base, account.email, account.password)
+        assert api.call("GET", "/first-run")["kind"] == "onboarding"
+        progress = api.call("GET", "/onboarding-progress")
+        assert (progress["count"], progress["resume"], progress["over"]) == (6, "finish", False)
+        assert progress["can_skip_rest"] is True
+        assert [(item["step"], item["state"]) for item in progress["steps"]] == [
+            ("variety", "done"),
+            ("stock", "done"),
+            ("header_footer", "skipped"),
+            ("bot", "skipped"),
+            ("partner", "skipped"),
+            ("categories", "skipped"),
+        ]
+        # Nothing wrote the database directly: the business keeps its own Onboarding row.
+        business = sample_app.business_id_of(db_path, account.email)
+        assert rows_of(db_path, "onboarding", business) == 1
+        assert rows_of(db_path, "first_run", business) == 0
+
+
+STEP_SLUGS = ("variety", "stock", "header_footer", "bot", "partner", "categories")
+
+
+def progress_answer(**changes: Any) -> dict[str, Any]:
+    """The `GET /onboarding-progress` answer of the `en_curso` account, then changed."""
+    states = ("done", "pending", "pending", "pending", "pending", "pending")
+    answer: dict[str, Any] = {
+        "offered": True,
+        "over": False,
+        "count": 1,
+        "resume": "stock",
+        "steps": [{"step": slug, "state": state} for slug, state in zip(STEP_SLUGS, states, strict=True)],
+    }
+    return {**answer, **changes}
+
+
+def test_expect_onboarding_progress_stops_the_sample_on_any_other_answer_without_naming_data() -> (
+    None
+):
+    sample_app = load_script()
+
+    class Answers:
+        def __init__(self, answer: dict[str, Any]) -> None:
+            self.answer = answer
+
+        def call(self, method: str, path: str, body: object | None = None) -> Any:
+            assert (method, path) == ("GET", "/onboarding-progress")
+            return self.answer
+
+    wanted = (
+        ("variety", "done"),
+        ("stock", "pending"),
+        ("header_footer", "pending"),
+        ("bot", "pending"),
+        ("partner", "pending"),
+        ("categories", "pending"),
+    )
+
+    def check(answer: dict[str, Any]) -> None:
+        sample_app.expect_onboarding_progress(
+            Answers(answer), account="onboarding", steps=wanted, count=1, resume="stock", over=False
+        )
+
+    check(progress_answer())
+
+    steps = progress_answer()["steps"]
+    wrong: dict[str, tuple[dict[str, Any], str]] = {
+        "offered": (progress_answer(offered=False), "offered"),
+        "over": (progress_answer(over=True), "over"),
+        "resume": (progress_answer(resume="bot"), "resume"),
+        "count": (progress_answer(count=2), "count"),
+        "step flipped": (
+            progress_answer(steps=[*steps[:1], {"step": "stock", "state": "done"}, *steps[2:]]),
+            "step stock",
+        ),
+        "step missing": (progress_answer(steps=steps[:5]), "step categories"),
+        "step extra": (
+            progress_answer(steps=[*steps, {"step": "extra", "state": "pending"}]),
+            "steps",
+        ),
+        "step renamed": (
+            progress_answer(steps=[{"step": "mystery", "state": "done"}, *steps[1:]]),
+            "step variety",
+        ),
+    }
+    for answer, failed in wrong.values():
+        with pytest.raises(SystemExit) as refused:
+            check(answer)
+        assert str(refused.value) == (
+            f"sample-app: the onboarding account's progress is wrong: {failed}"
+        )
+
+
+def test_the_kinds_the_sample_can_write_are_the_account_kinds_of_screens_json() -> None:
+    sample_app = load_script()
+    registry = json.loads((SCRIPT.parent / "screens.json").read_text(encoding="utf-8"))
+
+    assert set(registry["account_kinds"]) == set(sample_app.ACCOUNT_KINDS)
+    assert len(registry["account_kinds"]) == len(set(registry["account_kinds"]))
+    # Every kind is written for at least one account name, and no name has two kinds.
+    assert all(sample_app.ACCOUNT_KINDS.values())

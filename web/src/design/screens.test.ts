@@ -908,10 +908,11 @@ describe('assertSelectedAccounts', () => {
       ...Object.fromEntries(ended.map((name) => [name, 'ended' as const])),
     }
     // GH-274: the original two-kind map cannot hold, the registry now names two more accounts.
-    const all: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported'> = {
+    const all: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported' | 'onboarding'> = {
       ...real,
       ...Object.fromEntries(namesOf('PRE_ONBOARDING_ACCOUNTS').map((name) => [name, 'pre_onboarding' as const])),
       ...Object.fromEntries(namesOf('IMPORTED_ACCOUNTS').map((name) => [name, 'imported' as const])),
+      ...Object.fromEntries(namesOf('ONBOARDING_FRAME_ACCOUNTS').map((name) => [name, 'onboarding' as const])),
     }
     expect(() => assertSelectedAccounts(screens.screens, all)).not.toThrow()
   })
@@ -1004,7 +1005,7 @@ describe('the customer dark twins of the real screens.json', () => {
   })
 })
 
-describe.each(['pre_onboarding', 'imported'] as const)('the %s account kind (GH-274)', (kind) => {
+describe.each(['pre_onboarding', 'imported', 'onboarding'] as const)('the %s account kind (GH-274, GH-303)', (kind) => {
   const accounts = { listo: {}, inicio: {}, capture: {} }
   const kinds = { listo: 'open', inicio: 'ended', capture: kind } as const
 
@@ -1064,8 +1065,15 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
   }
 
   it('declares the checklist and the imported accounts, apart from every other kind', () => {
-    const groups = ['ONBOARDING_ACCOUNTS', 'ENDED_ONBOARDING_ACCOUNTS', 'PRE_ONBOARDING_ACCOUNTS', 'IMPORTED_ACCOUNTS']
-    expect(namesOf('PRE_ONBOARDING_ACCOUNTS')).toEqual(['checklist'])
+    const groups = [
+      'ONBOARDING_ACCOUNTS',
+      'ENDED_ONBOARDING_ACCOUNTS',
+      'PRE_ONBOARDING_ACCOUNTS',
+      'IMPORTED_ACCOUNTS',
+      'ONBOARDING_FRAME_ACCOUNTS',
+    ]
+    expect(namesOf('PRE_ONBOARDING_ACCOUNTS')).toEqual(['checklist', 'primera_vez'])
+    expect(namesOf('ONBOARDING_FRAME_ACCOUNTS')).toEqual(['en_curso', 'completo'])
     expect(namesOf('IMPORTED_ACCOUNTS')).toEqual(['importada'])
     const all = groups.flatMap(namesOf)
     expect(new Set(all).size).toBe(all.length)
