@@ -462,5 +462,5 @@ The one keyed place that holds every text the front shows, accessible names incl
 _Avoid_: messages file, strings, translations, dictionary
 
 **Mobile check**:
-The Gate check that walks the screens registry's phone rows and fails on any mobile-standard offence not listed in the offender lists. The lists grow only by a trade (a screen leaving unreachable brings its real cells) or by a row new to the registry bringing its real cells in the change that adds it, never to hide a regression.
+The Gate check that walks the screens registry's phone rows and fails on any mobile-standard offence not listed in the offender lists. The lists grow only by a trade, or by the real cells of a row new to the screens registry (the conditions are in `docs/product/gate.md`).
 _Avoid_: mobile test, phone audit, lint, allowlist

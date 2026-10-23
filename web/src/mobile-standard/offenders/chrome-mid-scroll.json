@@ -192,7 +192,7 @@
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
     "issue": 59,
-    "reason": "the New sale button's box leaves the viewport with the page scrolled halfway"
+    "reason": "the New sale link's box leaves the viewport with the page scrolled halfway"
   },
   {
     "screen": "InicioChecklist",
@@ -218,7 +218,7 @@
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
     "issue": 59,
-    "reason": "the New sale button's box leaves the viewport with the page scrolled halfway"
+    "reason": "the New sale link's box leaves the viewport with the page scrolled halfway"
   },
   {
     "screen": "InicioImportado",
