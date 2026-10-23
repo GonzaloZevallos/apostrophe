@@ -434,11 +434,11 @@ The longer how-or-why behind a shortened line, one tap away on an "i" at the end
 _Avoid_: tooltip, popover, help modal, info sheet, details
 
 **Icon and text rule**:
-The one written rule for how every screen labels its entries, actions and notices: a closed list of icon-only actions, a closed list of text-only controls, icon + text for everything else, the length limits of always-visible text, and what may move behind More info. It decides how things are labelled, never what they do. In the app: no word of its own.
+The one written rule for how every screen labels its entries, actions and notices. It decides how things are labelled, never what they do. Its full text lives in DESIGN_STANDARDS.md. In the app: no word of its own.
 _Avoid_: style guide, UI guidelines, icon policy
 
 **Attention icon**:
-The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed; the sentence still carries the state. Informational lines never carry it. In the app: no word of its own.
+The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed. Its full rule lives in DESIGN_STANDARDS.md. In the app: no word of its own.
 _Avoid_: warning icon, alert icon, badge, error icon
 
 **Gate**:
@@ -446,11 +446,11 @@ The checks every change must pass before it merges: pytest, vitest and e2e. A re
 _Avoid_: pipeline, build, test run
 
 **Tappable notice**:
-A notice the seller taps to open what it points to, such as Home's "Go on to the setup". It keeps its designed card (no row spacing or divider), its sentence carries the meaning and is its accessible name, and its chevron is decorative. It is neither an action row nor a control of the icon and text rule's closed lists.
+A notice the seller taps to open what it points to, such as Home's "Go on to the setup". Its sentence carries the meaning and is its accessible name. Its full rule lives in DESIGN_STANDARDS.md.
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-The side-by-side capture of a screen's design file and the built app, taken from the screens registry with pinned fonts, attached to a PR as review evidence and judged by eye. A registry row reaches its screen the way a seller does and captures its named section whole, only once the screen is at rest: no animated change running, no request pending and no control still disabled or busy while it waits; a screen that never comes to rest fails its row. Its result never depends on how loaded the machine is, and it is never a step of the gate.
+The side-by-side capture of a screen's design file and the built app, attached to a PR as review evidence and judged by eye against Drawing as guide. It is never a step of the gate. Its full rule lives in DESIGN_STANDARDS.md.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
 
 **Product language**:
@@ -462,5 +462,13 @@ The one keyed place that holds every text the front shows, accessible names incl
 _Avoid_: messages file, strings, translations, dictionary
 
 **Mobile check**:
-The Gate check that walks the screens registry's phone rows and fails on any mobile-standard offence not listed in the offender lists. The lists grow only by a trade, or by the real cells of a row new to the screens registry (the conditions are in `docs/product/gate.md`).
+The Gate check that walks the screens registry's phone rows and fails on any offence against the mobile standard that the offender lists do not name. The mobile standard lives in DESIGN_STANDARDS.md. The check, its lists and their growth conditions stay in docs/product/mobile-check.md and docs/product/gate.md.
 _Avoid_: mobile test, phone audit, lint, allowlist
+
+**Drawing as guide**:
+A difference from the drawing is a finding only when the owner, on the phone, would read or do something differently. The written product definition and the ADRs win over the drawing. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
+_Avoid_: exact spec, pixel-perfect, design fidelity, mockup diff
+
+**Phone first**:
+When a choice is needed, the flow working on the phone ships first. Polish is a later task the owner or PM chooses to schedule. The computer keeps every capability but gets no dedicated polish. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
+_Avoid_: mobile-only, responsive, mobile first, polish pass
