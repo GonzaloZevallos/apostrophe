@@ -68,10 +68,10 @@ def test_the_ventas_family_rejects_a_screen_that_kept_the_old_figures() -> None:
 
 ANALISIS_SCREENS = ("Analisis.dc.html", "AnalisisCompu.dc.html")
 ANALISIS_STALE = (
-    ("the old month", "Octubre 2026", "Septiembre 2026"),
+    ("the old month", "October 2026", "September 2026"),
     ("the old month total", "$ 369.000", "$ 2.684.000"),
-    ("a line muestra.md has, dropped", "Faltante de stock", "Faltante"),
-    ("a stale pending note", "y 1 g sin costo", "incluye costo pendiente"),
+    ("a line muestra.md has, dropped", "Stock shortfall", "Shortfall"),
+    ("a stale pending note", "and 1 g without cost", "includes pending cost"),
     ("a week that muestra.md lacks", "24/08", "11/08"),
     ("an old category", "Envíos", "Envíos y traslados"),
 )
@@ -99,10 +99,10 @@ def test_the_analisis_guard_rejects_a_screen_that_drifts(
 @pytest.mark.parametrize("screen", ANALISIS_SCREENS)
 def test_the_analisis_guard_still_requires_the_other_cost_lines_on_the_rows(screen: str) -> None:
     page = (SCREENS / screen).read_text(encoding="utf-8")
-    # Every Consumo propio the screen draws, rows included, loses its label.
-    drawn = "<span>Consumo propio</span>"
+    # Every Own use the screen draws, rows included, loses its label.
+    drawn = "<span>Own use</span>"
     assert drawn in page
-    broken = page.replace(drawn, "<span>Consumo</span>")
+    broken = page.replace(drawn, "<span>Consumption</span>")
 
     problems = check_screen("analisis", screen, broken, real_muestra(), ())
 
@@ -114,12 +114,12 @@ def test_the_analisis_guard_requires_faltante_in_the_since_the_first_record_bloc
     screen: str,
 ) -> None:
     page = (SCREENS / screen).read_text(encoding="utf-8")
-    label = "Faltante de stock</span>"
+    label = "Stock shortfall</span>"
     # The header draws it first, then the current week's and month's rows; the last one is
     # the since-the-first-record block's.
     assert page.count(label) == 4
     head, last = page.rsplit(label, 1)
-    broken = head + "Faltante</span>" + last
+    broken = head + "Shortfall</span>" + last
 
     problems = check_screen("analisis", screen, broken, real_muestra(), ())
 
@@ -133,7 +133,7 @@ def test_the_analisis_guard_requires_faltante_on_the_current_week_and_month_rows
 ) -> None:
     page = (SCREENS / screen).read_text(encoding="utf-8")
     bold = '<span style="color: #231E18; font-weight: 600">'
-    after = f"{cost}</span><span>Faltante de stock</span>{bold}$ 10.000</span>"
+    after = f"{cost}</span><span>Stock shortfall</span>{bold}$ 10.000</span>"
     assert page.count(after) == 1
     gone = page.replace(after, f"{cost}</span>")
     wrong = page.replace(after, after.replace("$ 10.000", "$ 9.000"))
