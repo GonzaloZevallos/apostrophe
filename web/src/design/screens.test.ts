@@ -402,6 +402,43 @@ describe('the Onboarding rows of the real screens.json', () => {
   })
 })
 
+describe('the 130 % rows of the real screens.json', () => {
+  type Row = { screen: string; design?: string; viewport?: number[]; text_scale?: number }
+  const rows = screens.screens as Row[]
+  // GH-272 follow-up: the only Home rows that carry the text scale, named, at 960x920.
+  const HOME_TEXTO130 = ['InicioHoyCompu960Texto130', 'InicioCompu960Texto130', 'InicioMesCompu960Texto130']
+  const isOnboardingNarrow = (row: Row): boolean =>
+    /^Onboarding/.test(row.design ?? row.screen) && row.viewport?.[0] === 320 && row.viewport[1] === 844
+  const isNamedHome = (row: Row): boolean =>
+    HOME_TEXTO130.includes(row.screen) && row.viewport?.[0] === 960 && row.viewport[1] === 920
+
+  it('accepts a 130 % row only as a 320x844 Onboarding row or one of the three named Home rows at 960x920', () => {
+    const scaled = rows.filter((row) => row.text_scale !== undefined)
+    expect(scaled.length).toBeGreaterThan(HOME_TEXTO130.length)
+    for (const row of scaled) {
+      expect(row.text_scale, row.screen).toBe(TEXT_SCALE)
+      expect(isOnboardingNarrow(row) || isNamedHome(row), row.screen).toBe(true)
+    }
+    expect(scaled.filter(isNamedHome).map((row) => row.screen)).toEqual(HOME_TEXTO130)
+  })
+
+  it('refuses the classifier on a Home row by any other name or width', () => {
+    const other: Row[] = [
+      { screen: 'InicioHoyCompu960Texto130', viewport: [1280, 920], text_scale: TEXT_SCALE },
+      { screen: 'InicioHoyCompu960Texto130', viewport: [960, 844], text_scale: TEXT_SCALE },
+      { screen: 'InicioTexto130', viewport: [960, 920], text_scale: TEXT_SCALE },
+      { screen: 'InicioHoyTexto130', viewport: [320, 844], text_scale: TEXT_SCALE },
+    ]
+    for (const row of other) expect(isOnboardingNarrow(row) || isNamedHome(row), row.screen).toBe(false)
+  })
+
+  it('gives every Home row that carries text_scale a viewport at least 900 px wide', () => {
+    const home = rows.filter((row) => /^Inicio/.test(row.design ?? row.screen) && row.text_scale !== undefined)
+    expect(home.map((row) => row.screen)).toEqual(HOME_TEXTO130)
+    for (const row of home) expect(row.viewport?.[0] ?? 0, row.screen).toBeGreaterThanOrEqual(900)
+  })
+})
+
 describe('the Inicio rows of the real screens.json', () => {
   type Row = {
     screen: string
@@ -410,6 +447,10 @@ describe('the Inicio rows of the real screens.json', () => {
     tema?: string
     viewport?: number[]
     steps?: Record<string, unknown>[]
+    text_scale?: number
+    account?: string
+    route?: string
+    path?: string
   }
   const rows = screens.screens as Row[]
   const row = (name: string): Row => {
@@ -491,6 +532,44 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(dark.tema).toBe('oscuro')
     expect(dark.section).toBe(SEMANA_COMPU)
     expect(clicks(dark)).toEqual(['Week'])
+  })
+
+  // GH-272 follow-up: Home's evidence rows. Screenshots judged by eye, never fed to ae.mjs.
+  // Month has no drawing of its own, so it reuses the Week block, which says Ganancia and Caja show "in Mes".
+  const HOME_EVIDENCE: [string, string, number[], string[], number | undefined][] = [
+    ['InicioMesCompu', SEMANA_COMPU, [1280, 920], ['Month'], undefined],
+    ['InicioHoyCompu960', HOY_PHONE, [960, 920], [], undefined],
+    ['InicioCompu960', SEMANA_COMPU, [960, 920], ['Week'], undefined],
+    ['InicioMesCompu960', SEMANA_COMPU, [960, 920], ['Month'], undefined],
+    ['InicioHoyCompu960Texto130', HOY_PHONE, [960, 920], [], TEXT_SCALE],
+    ['InicioCompu960Texto130', SEMANA_COMPU, [960, 920], ['Week'], TEXT_SCALE],
+    ['InicioMesCompu960Texto130', SEMANA_COMPU, [960, 920], ['Month'], TEXT_SCALE],
+  ]
+
+  it.each(HOME_EVIDENCE)('pins %s: design, section, clicks, viewport and text_scale', (name, section, viewport, taps, scale) => {
+    const r = row(name)
+    expect(r).toMatchObject({
+      account: 'inicio',
+      route: '/',
+      path: '/',
+      design: 'InicioCompu',
+      section,
+      viewport,
+    })
+    expect(clicks(r)).toEqual(taps)
+    expect(r.text_scale).toBe(scale)
+    expect(r.tema).toBeUndefined()
+  })
+
+  it('puts the seven evidence rows right after InicioCompuOscuro, in that order', () => {
+    const names = rows.map((r) => r.screen)
+    const at = names.indexOf('InicioCompuOscuro')
+    expect(names.slice(at + 1, at + 1 + HOME_EVIDENCE.length)).toEqual(HOME_EVIDENCE.map(([name]) => name))
+  })
+
+  it('explains in the registry note that the evidence rows are screenshots, never compared by ae.mjs', () => {
+    expect(screens._).toMatch(/GH-272 follow-up/)
+    expect(screens._).toMatch(/never compared by ae\.mjs/)
   })
 
   it('refuses a section that Compu draws more than once, the reason InicioHoyCompu has none', () => {
