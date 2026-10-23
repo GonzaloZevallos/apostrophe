@@ -497,3 +497,19 @@ test('if the categories cannot load, the edit overlay still has "Close"', async 
 
   expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument()
 })
+
+test('the Latest section lists the newest date first and, on the same date, the higher id first', async () => {
+  // Fed in the category order the store answers (Otros, then Packaging), which is not the Latest order.
+  const latestRows: Row[] = [
+    { id: 1, spent_on: '2026-10-01', category_id: 2, amount: 4500, detail: 'Bolsas' },
+    { id: 2, spent_on: '2026-10-02', category_id: 2, amount: 1500, detail: 'Cinta' },
+    { id: 3, spent_on: '2026-10-02', category_id: 1, amount: 700, detail: 'Varios' },
+  ]
+  renderExpenses([EXPENSES], store([...latestRows]))
+
+  const section = (await screen.findByText('Latest')).parentElement as HTMLElement
+  const details = within(section)
+    .getAllByRole('button')
+    .map((row) => row.querySelector('.fila-gasto__texto')?.textContent)
+  expect(details).toEqual(['Varios', 'Cinta', 'Bolsas'])
+})
