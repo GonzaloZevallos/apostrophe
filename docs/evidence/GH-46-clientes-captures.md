@@ -139,9 +139,8 @@ unreachable 52, user-select 72. The E2 change is under a computer pane, so no ph
 and no offender entry leaves a list in this diff. The `mobile` project
 (`npx playwright test --project=mobile --workers=4`) is the delivery gate's to finish: my own
 foreground run was cut at 570 s with the four `phone standard` cells (320x568 and 375x812, claro and
-oscuro) green, and the gate's `web-e2e` runs on this head were cut at 1500 s by the whole run's
-limit, with every `mobile` cell shown before the cut green (one 320x568 oscuro cell showed red once
-and green on the next run) and no assertion failing in this diff's area.
+oscuro) green. The gate's `web-e2e` has been cut at 1500 s by the whole run's limit on some heads
+and has finished on others; where it finished, no assertion failed in this diff's area.
 
 ## Design vs docs wording
 

@@ -1085,3 +1085,30 @@ test('with no hand-off the card moves nothing and focuses nothing', async () => 
   expect(record).not.toHaveFocus()
   expect(scrollTo).not.toHaveBeenCalled()
 })
+
+test('the card takes its place only once its account has answered, so a short page does not clamp the offset', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  Object.defineProperty(window, 'scrollY', { configurable: true, value: 210 })
+  paymentLink(1, 'card').onClick(PLAIN_CLICK)
+  let answer: (response: Response) => void = () => undefined
+  const held = new Promise<Response>((resolve) => {
+    answer = resolve
+  })
+  const customer = dispatchFetch({ 'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER) })
+  api.mockImplementation((input, init) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    return url === '/customers/1/account' ? held : customer(input, init)
+  })
+  renderFicha('1')
+
+  const record = await screen.findByRole('link', { name: 'Record payment' })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(scrollTo).not.toHaveBeenCalled()
+  expect(record).not.toHaveFocus()
+
+  answer(jsonResponse(200, OWING_ACCOUNT))
+
+  await waitFor(() => expect(record).toHaveFocus())
+  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 210 }))
+  Reflect.deleteProperty(window, 'scrollY')
+})

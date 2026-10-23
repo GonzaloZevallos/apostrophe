@@ -112,8 +112,7 @@ for (const viewport of VIEWPORTS) {
     await owing.getByRole('link', { name: 'Collect from Carla Deudora' }).click()
     await expectPath(page, CUSTOMER_PAYMENT)
     await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
-    await expect(page.locator('.cobro__cliente')).toContainText('Carla Deudora')
-    await expect(page.locator('.cobro__cliente')).toContainText('owes you $ 5.000')
+    await expect(page.getByRole('dialog', { name: 'Record payment' }).getByText(/Carla Deudora · owes you \$ 5\.000/)).toBeVisible()
 
     // "All" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'All: $ 5.000' }).click()

@@ -5120,6 +5120,8 @@ body {
 .cobro-paneles--solo > [inert] {
   opacity: var(--opacidad-fondo-hoja);
   pointer-events: none;
+  /* What overflows the screen's width under the sheet is clipped, so it cannot widen the page. */
+  overflow-x: clip;
 }
 
 .cobro__cliente {

@@ -131,15 +131,23 @@ export default function ClienteFicha() {
     queryFn: () => getCustomer(customerId),
   })
 
-  // Back from Record payment the card returns to its place (PM option a): "Record payment" gets
-  // focus, or the card's heading when the balance is paid and the control is gone.
-  const root = useRef<HTMLElement>(null)
-  useReturnToPlace({ root, ready: data !== undefined && !isFetching, customerId, fallback: cardHeading })
-
   const account = useQuery({
     queryKey: keys.customerAccount(customerId),
     queryFn: () => getAccount(customerId),
     enabled: data !== undefined,
+  })
+
+  // Back from Record payment the card returns to its place (PM option a): "Record payment" gets
+  // focus, or the card's heading when the balance is paid and the control is gone. The place is
+  // taken up once the account has answered too: it is the long part of the card, and a page still
+  // short of it would clamp the offset.
+  const root = useRef<HTMLElement>(null)
+  const accountAnswered = account.isError || (account.data !== undefined && !account.isFetching)
+  useReturnToPlace({
+    root,
+    ready: data !== undefined && !isFetching && accountAnswered,
+    customerId,
+    fallback: cardHeading,
   })
 
   const removePayment = useMutation({

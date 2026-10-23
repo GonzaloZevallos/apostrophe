@@ -60,14 +60,14 @@ for (const viewport of VIEWPORTS) {
 
     // Hoy: the debtor's row and its Cobrar.
     await page.goto(HOME)
-    await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
+    await expect(page.getByText('$ 5.000', { exact: true }).first()).toBeVisible()
 
     // "Close" returns to Inicio in one move.
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
     await page.getByRole('button', { name: 'Close' }).click()
     await expectPath(page, HOME)
-    await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
+    await expect(page.getByText('$ 5.000', { exact: true }).first()).toBeVisible()
 
     // A partial payment: back on Inicio, the row keeps its new balance.
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()

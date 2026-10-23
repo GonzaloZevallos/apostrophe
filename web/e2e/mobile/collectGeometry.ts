@@ -33,7 +33,8 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
   const squash = (text: string | null): string => (text ?? '').replace(/\s+/g, ' ').trim()
   const visible = (element: Element): boolean => {
     const rect = element.getBoundingClientRect()
-    return rect.width > 1 && rect.height > 1 && element.checkVisibility({ checkVisibilityCSS: true })
+    // An inert layer (the screen under Record payment's phone sheet) is another screen's, measured on its own cell.
+    return rect.width > 1 && rect.height > 1 && element.checkVisibility({ checkVisibilityCSS: true }) && element.closest('[inert]') === null
   }
   const all = (selector: string): Element[] => Array.from(document.querySelectorAll(selector)).filter(visible)
 
