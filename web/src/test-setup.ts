@@ -7,3 +7,7 @@ import { configure } from '@testing-library/react'
 // longest passing test measured under load. A call site sets its own timeout only to
 // make it longer than this, with a comment saying why, never shorter.
 configure({ asyncUtilTimeout: 10_000 })
+
+// jsdom has no scrolling: it prints "Not implemented" for `window.scrollTo`, which the screens
+// call to come back to their place after Record payment. A test that cares spies on it.
+if (typeof window !== 'undefined') window.scrollTo = () => undefined

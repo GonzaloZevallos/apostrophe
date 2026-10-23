@@ -114,6 +114,28 @@ describe('invalidateResource', () => {
     expect(isInvalidated(queryClient, keys.sales('2026-10-01', '2026-10-31'))).toBe(true)
   })
 
+  test('a payment leaves no cached panel for the next Home mount to reuse', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.panel(), { debts: { total_owed: 5000 } })
+
+    invalidateResource(queryClient, 'payments')
+
+    expect(queryClient.getQueryData(keys.panel())).toBeUndefined()
+    expect(queryClient.getQueryState(keys.panel())).toBeUndefined()
+  })
+
+  test.each(['customers', 'sales', 'stock', 'expenses'] as const)(
+    'a %s write leaves the cached panel alone',
+    (resource) => {
+      const queryClient = clientWithData()
+      queryClient.setQueryData(keys.panel(), { debts: { total_owed: 5000 } })
+
+      invalidateResource(queryClient, resource)
+
+      expect(queryClient.getQueryData(keys.panel())).toEqual({ debts: { total_owed: 5000 } })
+    },
+  )
+
   test('a sale also refreshes its customer\'s balance and "Owed to you"', () => {
     const queryClient = clientWithData()
     queryClient.setQueryData(keys.debtors(), { total_owed: 0 })

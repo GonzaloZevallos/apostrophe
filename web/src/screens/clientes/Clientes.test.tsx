@@ -460,9 +460,11 @@ test('"Collect from X" opens Registrar cobro for that customer as an in-app entr
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
 
   expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
-  expect(screen.getByText(new RegExp(`^${customerFixture.name}`))).toBeInTheDocument()
+  // The form names the customer; the list behind it, inert, names them too.
+  const named = screen.getAllByText(new RegExp(`^${customerFixture.name}`))
+  expect(named.some((element) => element.closest('[inert]') === null)).toBe(true)
   expect(router.state.location.pathname).toBe(ANA_PAYMENT)
-  expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
+  expect(router.state.location.state).toEqual({ ...inAppState({ pathname: CUSTOMERS }), underneath: 'customers' })
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
@@ -669,4 +671,55 @@ test('on a phone, a customer\'s card is alone, with no list behind it', async ()
 
   expect(await screen.findByText('Record payment')).toBeInTheDocument()
   expect(screen.queryByRole('region', { name: 'Everyone · A–Z' })).not.toBeInTheDocument()
+})
+
+// Back from Record payment the list is at its place (PM option a): the hand-off the link left
+// is applied once the data has rendered, then taken.
+test('after Close the list focuses that customer\'s "Collect" and scrolls to the offset it was at', async () => {
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  Object.defineProperty(window, 'scrollY', { configurable: true, value: 480 })
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  await screen.findByRole('button', { name: 'Save' })
+  scrollTo.mockClear()
+  await act(() => router.navigate(-1))
+
+  const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
+  await waitFor(() => expect(collect).toHaveFocus())
+  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 480 }))
+  Reflect.deleteProperty(window, 'scrollY')
+})
+
+test('when the customer owes nothing any more the list focuses the "Owed to you" block instead', async () => {
+  let paid = false
+  vi.mocked(fetch).mockImplementation((input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (paid && url === '/payments/debtors') return Promise.resolve(jsonResponse(200, EMPTY_DEBTORS))
+    if (paid && url === '/customers') return Promise.resolve(jsonResponse(200, [{ ...customerFixture, balance: 0, owing_since: null, standing: 'settled' }]))
+    return fetchApp(input)
+  })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  await screen.findByRole('button', { name: 'Save' })
+  paid = true
+  await act(() => router.navigate(-1))
+
+  const nobody = await screen.findByText(NOBODY_OWES)
+  await waitFor(() => expect(nobody).toHaveFocus())
+})
+
+test('with no hand-off the list moves nothing and focuses nothing', async () => {
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  renderApp()
+
+  const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  expect(collect).not.toHaveFocus()
+  expect(scrollTo).not.toHaveBeenCalled()
 })

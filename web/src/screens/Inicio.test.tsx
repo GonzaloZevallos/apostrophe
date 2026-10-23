@@ -16,6 +16,7 @@ import {
   ONBOARDING_DONE,
   ONBOARDING_STOCK,
   SETTINGS,
+  paymentLink,
 } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
@@ -28,6 +29,7 @@ import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import { LIMITS } from '../copy/limits'
 import { chooseTheme } from '../theme'
+import { consumePaymentReturn } from '../paymentReturn'
 import { invalidateResource } from '../api/keys'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import type { OnboardingProgress } from '../api/onboarding'
@@ -161,6 +163,7 @@ afterEach(() => {
   calls.length = 0
   firstRunCalls.length = 0
   advanced = null
+  consumePaymentReturn()
 })
 
 test('the business avatar at the top opens Configuración in one tap, carrying inApp', async () => {
@@ -865,4 +868,82 @@ test('a stock write elsewhere makes the next read of /first-run, and the checkli
   invalidateResource(client, 'stock')
 
   await waitFor(() => expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument())
+})
+
+// Back from Record payment, Home is at its place (PM option a): the hand-off the link left is
+// applied once the panel has rendered, then taken.
+const PLAIN_CLICK = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false }
+
+test('after Close Home focuses that customer\'s "Collect" and scrolls to the offset it was at', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  Object.defineProperty(window, 'scrollY', { configurable: true, value: 320 })
+  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  stubFetch(PANEL)
+  renderInicio()
+
+  const collect = await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
+
+  await waitFor(() => expect(collect).toHaveFocus())
+  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 320 }))
+  Reflect.deleteProperty(window, 'scrollY')
+})
+
+test('when that customer\'s row is gone Home focuses the "Owed to you" heading', async () => {
+  paymentLink(99, 'home').onClick(PLAIN_CLICK)
+  stubFetch(PANEL)
+  renderInicio()
+
+  const heading = await screen.findByRole('link', { name: 'Owed to you' })
+
+  await waitFor(() => expect(heading).toHaveFocus())
+})
+
+test('when nobody owes any more Home focuses the "Nobody owes you" line', async () => {
+  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  stubFetch({ ...PANEL, debts: { total_owed: 0, sales_owing_count: 0, oldest: null, teaser: [] } })
+  renderInicio()
+
+  const line = await screen.findByText('Nobody owes you')
+
+  await waitFor(() => expect(line).toHaveFocus())
+})
+
+test('with no hand-off Home moves nothing and focuses nothing', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  stubFetch(PANEL)
+  renderInicio()
+
+  const collect = await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  expect(collect).not.toHaveFocus()
+  expect(scrollTo).not.toHaveBeenCalled()
+})
+
+test('Home applies the offset only after the notice above the panel has answered, never against a shorter page', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  let answerFirstRun: (response: Response) => void = () => undefined
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/first-run')) return new Promise<Response>((resolve) => (answerFirstRun = resolve))
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, NOT_OFFERED))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, PANEL))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  renderInicio()
+
+  const collect = await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(scrollTo).not.toHaveBeenCalled()
+  expect(collect).not.toHaveFocus()
+
+  answerFirstRun(jsonResponse(200, CHECKLIST))
+
+  await waitFor(() => expect(collect).toHaveFocus())
+  expect(scrollTo).toHaveBeenCalled()
 })

@@ -1,8 +1,9 @@
 /**
  * `CobroRoute`: the host of Registrar cobro on its own route, `/customers/{id}/payment`. On a
- * computer the frame is a modal over Clientes (`CobroCompu.dc.html`, ADR-0044: drawn by its own
- * route, so a direct link or a reload opens it with the customer chosen); on a phone it is a
- * full form screen (`Cobro.dc.html`). The host owns the queries, the gone, error and loading
+ * computer the frame is a modal over the screen it was opened from (`CobroCompu.dc.html`,
+ * ADR-0044: drawn by its own route, so a direct link or a reload opens it with the customer
+ * chosen); on a phone it is a bottom sheet over that screen (`Cobro.dc.html`), a dialog
+ * on both. The host owns the queries, the gone, error and loading
  * states, the leave guard and where the form goes: "Cerrar", Escape, the backdrop and a save
  * all end in one `leave`, which goes back by history or, with none (a direct link), to
  * Clientes. The three closing gestures do nothing while the save is in flight or while the
@@ -44,7 +45,7 @@ export default function CobroRoute() {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const me = useOutletContext<Me>()
-  const dialog = useViewport() === 'computer'
+  const computer = useViewport() === 'computer'
   const back = useBackOr(CUSTOMERS)
   const goneExit = useGoneExit('customer-payment', { id: customerId })
   const [dirty, setDirty] = useState(false)
@@ -77,22 +78,21 @@ export default function CobroRoute() {
   }
 
   useEffect(() => {
-    if (!dialog) return
     function onKeyDown(event: KeyboardEvent): void {
       if (event.key !== 'Escape' || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return
       leave()
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [dialog, leave])
+  }, [leave])
 
   const ready = data !== undefined
   const focusedTitle = useRef(false)
   useEffect(() => {
-    if (!dialog || !ready || focusedTitle.current) return
+    if (!ready || focusedTitle.current) return
     focusedTitle.current = true
     titleRef.current?.focus()
-  }, [dialog, ready])
+  }, [ready])
 
   const focusBeforeAsking = useRef<Element | null>(null)
   const wasBlocked = useRef(false)
@@ -116,15 +116,15 @@ export default function CobroRoute() {
       ) : (
         <ErrorGenerico />
       )
-    return <CobroFrame dialog={dialog} label={LABEL} onBackdrop={leave} form={state} />
+    return <CobroFrame computer={computer} label={LABEL} onBackdrop={leave} form={state} />
   }
   if (data === undefined) {
-    return <CobroFrame dialog={dialog} label={LABEL} onBackdrop={leave} form={<Loading />} />
+    return <CobroFrame computer={computer} label={LABEL} onBackdrop={leave} form={<Loading />} />
   }
 
   return (
     <CobroFrame
-      dialog={dialog}
+      computer={computer}
       titleId={titleId}
       onBackdrop={leave}
       form={

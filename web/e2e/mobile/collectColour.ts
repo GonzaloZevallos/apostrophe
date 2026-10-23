@@ -5,7 +5,8 @@
  * product of the opacity of its element and its ancestors) and whether a
  * `background-image` sits in that chain. The arithmetic is `contrast.ts`'s, on the Node
  * side (`judgeContrast`); the page only reads. Exempt: a disabled control's own label
- * (its reason text is not), svg and options.
+ * (its reason text is not), svg, options and an `inert` subtree (the faded screen under Record
+ * payment's phone sheet: neither read nor reached, as `Cobro.dc.html` draws it).
  */
 
 import type { ColourFacts, ColourSample, Layer } from '../../src/mobile-standard/contrast.ts'
@@ -50,7 +51,7 @@ export function probeColour(): ColourFacts {
 
   const disabled = (element: Element): boolean => element.closest(':disabled, [aria-disabled="true"]') !== null
   const skipped = (element: Element): boolean =>
-    element.closest('svg, option, script, style, noscript') !== null || !phone.visible(element)
+    element.closest('svg, option, script, style, noscript, [inert]') !== null || !phone.visible(element)
 
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
   for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {

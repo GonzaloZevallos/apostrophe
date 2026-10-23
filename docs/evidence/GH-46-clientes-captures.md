@@ -1,12 +1,12 @@
 # GH-46 evidence: Clientes, the card, Registrar cobro and Nuevo cliente, before and after
 
 Method: ADR-0042 (GH-219 amendment). Images are attached to the PR, never committed. This note
-changes no product code.
+changed no product code for GH-46; the GH-281 follow-up changes one CSS rule (E2 below).
 
 | Item | Value |
 | --- | --- |
 | Base (task base: `git merge-base HEAD origin/master`) | `e08228dd44cd0fbb632ac0dc4d90931daffd07dd` |
-| Head | `1ad2bc226d7255081cbfa6948e2a74c7f84ad44a` |
+| Head | `1ad2bc226d7255081cbfa6948e2a74c7f84ad44a` (GH-46; the GH-281 follow-up retakes are noted under the verdicts) |
 | Overlay (head's `scripts/design/` over the base's `app/` and `web/`) | `sample_app.py` 14 +-, `screens.json` 5 +; 2 files, 11 insertions, 8 deletions, equal to `git diff --stat <base>..<head> -- scripts/design` |
 | Design docs | `docs/product/design-system` identical on both sides (`diff -rq`) |
 | `@fontsource/plus-jakarta-sans` | 5.3.0, one install (`web/node_modules`) shared by both sides |
@@ -27,7 +27,7 @@ lines 14 are non-zero, all on the screens of this task; the other 142 are AE 0.
 | Clientes, ClientesOscuro | different dimensions | intended: Te deben on top, header without debt figure, two sections (B) |
 | ClientesCompu, ClientesCompuOscuro | different dimensions | intended: two panes, the card on the right (B) |
 | ClienteFicha (461731), ClienteFichaOscuro (463365) | AE | intended: Te debe block with Registrar cobro, "Canal" row gone, "Nueva venta a <name>" (C1a, C2) |
-| Cobro (931838), CobroOscuro (931933) | AE | intended: its own page, not a sheet over the card (C2) |
+| Cobro (931838), CobroOscuro (931933) | AE | GH-46 head: its own page (C2); since GH-281 a sheet (E3 below) |
 | CobroCompu, CobroCompuOscuro | different dimensions | intended: modal over Clientes (C2) |
 | ClienteNuevo, ClienteEditar (156453) | AE | intended: Canal fieldset removed (C1a) |
 | ClienteNuevoCompu, ClienteEditarCompu (455733) | AE | intended: same |
@@ -48,8 +48,8 @@ dd/mm", "Cobrar" on each debtor row, Registrar cobro in the card's Te debe block
 Nico Parra", Cobro as a modal on a computer, no Canal anywhere.
 
 Every difference below has exactly one verdict. "Pre-existing" ones are in the before capture
-(the base `e08228dd`) and are filed and linked. Three introduced by this task fit none of the three
-verdicts and are escalated (E1 to E3), not hidden.
+(the base `e08228dd`) and are filed and linked. Three that fit none of the three
+verdicts (E1 to E3) carry their own verdict below.
 
 ### Intended (introduced by this task)
 
@@ -80,21 +80,67 @@ verdicts and are escalated (E1 to E3), not hidden.
 | Cobro: digits as typed, native date input ("10/17/2026" against "Hoy 05/10"), radios against a segmented control, "Monto" against "Cuánto te pagó", and "Guardar" against "Guardá el cobro" (payments.md names no save label, so the drawing wins and the built wording differs) | #279 |
 | Nuevo cliente form: Teléfono before Nombre, VIP as a bare checkbox, no focus ring on the first field; the "Elegir cliente" sheet lists everyone and opens the form from a button, where the drawing searches and shows the form inline | #279 |
 
-### Introduced by this task and fitting none of the three: escalated to the Tech Lead
+### Verdicts on E1 to E3 (GH-281 follow-up)
 
-- **E1, ClienteFicha (phone, dark twin, and the compu card).** The Te debe block sits above the
-  phone and VIP rows. The drawing and customers.md (:106-109, phone and VIP first, then "Te debe")
-  put it below. Introduced by C2. It is a JSX order change, not CSS only, so it was not fixed
-  here.
-- **E2, ClientesCompu and ClientesCompuOscuro.** The Te deben section in the left pane keeps the
-  phone's large total and a count line over taller rows; the compu drawing is one compact line
-  ("Te deben · $ 32.000 · 2 ventas debiendo") over compact rows. The docs fix only the content,
-  not the size. A CSS-only candidate that was not fixed: a fix retakes both sides (about 25
-  minutes for the whole registry) and changes the rows the phone shares.
-- **E3, Cobro (phone, CobroOscuro).** The built Cobro is a full page; the drawing is a sheet over
-  the faded card, and payments.md calls it "A sheet". The plan chose a form screen on the phone
-  and a modal on a computer; chrome (no bar, close, leave-confirmation) is the same. A sheet
-  needs a structural change, so it was not fixed here.
+Each note ends with one verdict. Captures retaken on the GH-281 head with
+`scripts/design/compare.sh --only ClientesCompu,ClientesCompuOscuro,Clientes` and
+`--only ClientesCompu,Cobro,CobroCompu,ClienteFicha` (design and built side by side, the same
+width, no notes in `index.json`).
+
+- **E1, ClienteFicha (phone, dark twin, and the compu card): filed (#314), pre-existing.** The note
+  said C2 introduced the Te debe block's place above the phone and VIP rows. It did not: the base
+  card already put the block there. Only Registrar cobro's move into the block came with GH-46.
+  The order difference (the drawing and customers.md put phone and VIP first, then "Te debe") is
+  a JSX order change, not CSS, and existed before GH-46. Filed as "Customer card: 'Owed to you'
+  block order differs from the design", area #46: [#314](https://github.com/GonzaloZevallos/apostrophe/issues/314) (no
+  number came with the brief and none existed, so it was filed from here, without the `agentic`
+  label).
+- **E2, ClientesCompu and ClientesCompuOscuro: CSS part fixed; the JSX part filed (#315).**
+  The left pane's Te deben total drew at the phone's large size (`.cifra-xl`); it now draws at a
+  row's size through `.clientes-paneles__lista .ventas__resumen .cifra-xl` in
+  `web/src/styles/app.css`, the only production file changed. Both sides retaken. The same rule
+  reaches the list behind the computer's Record payment modal (`.cobro-paneles__lista`), so both
+  draw the total alike. Needs more than CSS, so filed as
+  [#315](https://github.com/GonzaloZevallos/apostrophe/issues/315): the drawing's one line
+  ("Te deben · $ 32.000 · 2 ventas debiendo") needs the heading, the total and the count in one
+  element, which is JSX. Moving "Cobrar" beside the row was tried and made names wrap in the 360 px
+  pane (reverted); "Cobrar" under every debtor row stays, as the docs' rule (see the intended
+  table above).
+- **E3, Cobro (phone, CobroOscuro) and CobroCompu: fixed.** On the phone, Record payment is now a
+  `role="dialog"` sheet with `aria-modal`, "Close" on top, no bar and no "+ New sale", over the
+  screen it was opened from (inert and `aria-hidden`); on a computer it is the same host as a
+  modal. Retaken Cobro (GH-281, after the PM's return): the built side is a sheet anchored to the
+  bottom, rounded at the top (28 px, `--radio-hoja`) with a grab handle above "Close", and the screen
+  it was opened from showing above its edge at the drawing's faded opacity (`--opacidad-fondo-hoja`),
+  inert and `aria-hidden`; inside the sheet's max height the body scrolls and Save stays reachable
+  (a phone e2e cell saves a full payment over nine sales). No full-screen verdict remains. Retaken CobroCompu: the modal over the Customers panes, with the card behind
+  it when opened from the card. The comparisons for Cobro, CobroCompu and ClienteFicha were read
+  side by side.
+
+### Plan-of-record corrections (GH-281)
+
+- **Invariant 8 of GH-46, exception.** Only `tests/migrations/test_0018_drop_customer_channel.py`
+  writes a customer channel, only by raw SQL into the schema `upgrade` to revision 0017 created, to
+  prove 0018 drops it. No test reads or writes a channel through `app.tables` or a repository, and
+  no other test may cite this exception.
+- **`modalOnComputer` on the Cobro registry row: withdrawn as miscalibrated.** The registry
+  schema has no such key (the price form's row has none) and `registryDisagreements` compares only
+  kind and parent. No registry key or check was added; this capture and the e2e run are the
+  evidence.
+
+### Phone check and offenders
+
+`scripts/design/compare.sh` prints 11222 known offender cells: per issue #45 846, #46 736,
+#47 3002, #48 1300, #49 2012, #59 728, #60 802, #78 1796; per rule aria-busy 224, autocomplete
+1214, blank-while-loading 120, chrome-at-load 382, chrome-mid-scroll 346, contrast 142,
+contrast-unprovable 32, data-while-loading 40, false-empty 8, figure-split 278, h-scroll 186,
+name-overflow 272, pending-state 24, text-size 1540, touch-action 5452, touch-target 838,
+unreachable 52, user-select 72. The E2 change is under a computer pane, so no phone cell changes
+and no offender entry leaves a list in this diff. The `mobile` project
+(`npx playwright test --project=mobile --workers=4`) is the delivery gate's to finish: my own
+foreground run was cut at 570 s with the four `phone standard` cells (320x568 and 375x812, claro and
+oscuro) green. The gate's `web-e2e` has been cut at 1500 s by the whole run's limit on some heads
+and has finished on others; where it finished, no assertion failed in this diff's area.
 
 ## Design vs docs wording
 

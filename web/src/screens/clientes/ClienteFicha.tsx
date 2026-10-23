@@ -10,8 +10,8 @@
  * (ADR-0004).
  */
 
-import { CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_PAYMENT, SALE_NEW, pathTo } from '../../routes'
-import { useState } from 'react'
+import { CUSTOMERS, CUSTOMER_EDIT, SALE_NEW, paymentLink, pathTo } from '../../routes'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useParams } from 'react-router'
 import Boton from '../../components/Boton'
@@ -28,6 +28,7 @@ import {
   getAccount,
 } from '../../api/payments'
 import { GONE_NOTICE, isGone } from '../../api/refusals'
+import { useReturnToPlace } from '../../components/useReturnToPlace'
 
 // `payment.not_found` is not yet in `contract.json` (`isGone` would answer
 // `false` for it): that code's own `kind: "gone"` entry ships with the
@@ -70,6 +71,10 @@ function rowKey(row: AccountRow): string {
   return `credit-${row.payment.id}`
 }
 
+function cardHeading(root: HTMLElement): HTMLElement | null {
+  return root.querySelector<HTMLElement>('[data-place="card-heading"]')
+}
+
 export default function ClienteFicha() {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
@@ -87,7 +92,7 @@ export default function ClienteFicha() {
   const [deletePaymentOffline, setDeletePaymentOffline] = useState(false)
   const [deletePaymentFailed, setDeletePaymentFailed] = useState(false)
 
-  const { data, error, isPending, isError } = useQuery({
+  const { data, error, isPending, isError, isFetching } = useQuery({
     queryKey: keys.customer(customerId),
     queryFn: () => getCustomer(customerId),
   })
@@ -96,6 +101,19 @@ export default function ClienteFicha() {
     queryKey: keys.customerAccount(customerId),
     queryFn: () => getAccount(customerId),
     enabled: data !== undefined,
+  })
+
+  // Back from Record payment the card returns to its place (PM option a): "Record payment" gets
+  // focus, or the card's heading when the balance is paid and the control is gone. The place is
+  // taken up once the account has answered too: it is the long part of the card, and a page still
+  // short of it would clamp the offset.
+  const root = useRef<HTMLElement>(null)
+  const accountAnswered = account.isError || (account.data !== undefined && !account.isFetching)
+  useReturnToPlace({
+    root,
+    ready: data !== undefined && !isFetching && accountAnswered,
+    customerId,
+    fallback: cardHeading,
   })
 
   const removePayment = useMutation({
@@ -164,10 +182,10 @@ export default function ClienteFicha() {
   const deleteIndices = deleteRowIndices(rows)
 
   return (
-    <main className="pantalla">
+    <main className="pantalla" ref={root}>
       <div className="cuerpo">
         <div className="ficha-cliente__encabezado">
-          <span className="encabezado__titulo">{data.name}</span>
+          <span className="encabezado__titulo" tabIndex={-1} data-place="card-heading">{data.name}</span>
           <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
@@ -188,7 +206,7 @@ export default function ClienteFicha() {
               <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
             )}
             <div className="clientes__accion">
-              <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
+              <BotonLink {...paymentLink(customerId, 'card')} icon="cobro">
                 {COMMON_TEXT.recordPayment}
               </BotonLink>
             </div>

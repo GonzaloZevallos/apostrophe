@@ -10,18 +10,20 @@
  * of a misleading "no customers yet" (PRD, "Feedback").
  */
 
-import { CUSTOMER_NEW } from '../../routes'
+import { CUSTOMER, CUSTOMER_NEW } from '../../routes'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useMatch } from 'react-router'
 import BotonLink from '../../components/BotonLink'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
+import { debtorsQuery } from '../../api/payments'
 import { keys } from '../../api/keys'
 import { useIsVipCustomers } from '../../api/pricingSettings'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
 import { useGoneNotice } from '../../components/goneExit'
+import { owedPlace, useReturnToPlace } from '../../components/useReturnToPlace'
 import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
@@ -34,6 +36,11 @@ import { COMMON_TEXT } from '../../copy/common'
 export const SEARCH_LABEL = CUSTOMERS_TEXT.searchCustomer
 export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
 export const SEARCHING = CUSTOMERS_TEXT.searching
+
+/** Where focus lands when the customer's "Collect" is gone: the "Owed to you" block, or the search while it filters. */
+function owedOrSearch(root: HTMLElement): HTMLElement | null {
+  return owedPlace(root) ?? root.querySelector<HTMLElement>('input[type="text"]')
+}
 
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
@@ -49,7 +56,7 @@ export default function Clientes() {
     return () => clearTimeout(id)
   }, [query])
 
-  const { data, isPlaceholderData, isError, error } = useQuery({
+  const { data, isPlaceholderData, isFetching, isError, error } = useQuery({
     queryKey: keys.customers(debounced),
     queryFn: () => listCustomers(debounced),
     placeholderData: keepPreviousData,
@@ -57,8 +64,20 @@ export default function Clientes() {
 
   const customers = data ?? []
 
+  // Back from Record payment the list returns to its place (PM option a). Beside a customer's
+  // card the card is where the seller returns to, so the list leaves it to the card.
+  const debtors = useQuery({ ...debtorsQuery, enabled: query === '' })
+  const root = useRef<HTMLElement>(null)
+  const besideCard = useMatch(CUSTOMER) !== null
+  useReturnToPlace({
+    root,
+    ready: data !== undefined && !isPlaceholderData && !isFetching && !debtors.isFetching,
+    owns: !besideCard,
+    fallback: owedOrSearch,
+  })
+
   return (
-    <main className="pantalla">
+    <main className="pantalla" ref={root}>
       <div className="cuerpo">
         <div className="clientes__encabezado">
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>

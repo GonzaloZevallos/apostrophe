@@ -11,7 +11,9 @@
  * negative.
  */
 
+import { queryOptions } from '@tanstack/react-query'
 import { del, get, post } from './client'
+import { keys } from './keys'
 
 export type PaymentMethod = 'cash' | 'transfer'
 export type Standing = 'owes' | 'credit' | 'settled'
@@ -126,3 +128,9 @@ export function deletePayment(id: string): Promise<void> {
 export function getDebtors(): Promise<Debtors> {
   return get<Debtors>('/payments/debtors')
 }
+
+/** The debtors read as a query: "Te deben" and the list that returns to its place share one cache entry. */
+export const debtorsQuery = queryOptions({
+  queryKey: keys.debtors(),
+  queryFn: () => getDebtors(),
+})

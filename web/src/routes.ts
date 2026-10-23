@@ -1,6 +1,7 @@
 import { SHELL_TEXT } from './copy/shell.ts'
 import { COMMON_TEXT } from './copy/common.ts'
 import { INTEGRATIONS_LINK_WORD } from './copy/pinnedCatalog.ts'
+import { pageScrollY, setPaymentReturn } from './paymentReturn.ts'
 /**
  * The route registry: the one place the front writes a path, and the one place that says
  * what kind of screen each path is. No other file in `web/src` or `web/e2e` carries a route
@@ -166,6 +167,56 @@ export function pathTo(template: string, params: Readonly<Record<string, string 
     if (value === undefined) throw new Error(`pathTo: ${template} needs ${name}`)
     return encodeURIComponent(String(value))
   })
+}
+
+/** The screen Record payment was opened from, which is what sits behind it (ADR-0044). */
+export type PaymentUnderneath = 'home' | 'customers' | 'card'
+
+const PAYMENT_UNDERNEATH: readonly PaymentUnderneath[] = ['home', 'customers', 'card']
+
+function isPaymentUnderneath(value: unknown): value is PaymentUnderneath {
+  return PAYMENT_UNDERNEATH.some((known) => known === value)
+}
+
+/**
+ * The only reader of `location.state.underneath`. Anything outside the closed set (an
+ * unknown name, a direct link, a reload with no state) gives the customer's card.
+ */
+export function readPaymentUnderneath(state: unknown): PaymentUnderneath {
+  if (typeof state === 'object' && state !== null && 'underneath' in state && isPaymentUnderneath(state.underneath)) {
+    return state.underneath
+  }
+  return 'card'
+}
+
+/** The part of a click the helper looks at: a plain click follows the link, a modified one
+ * opens it elsewhere and leaves this page where it is. */
+interface LinkClick {
+  button: number
+  metaKey: boolean
+  ctrlKey: boolean
+  shiftKey: boolean
+  altKey: boolean
+}
+
+/**
+ * The link to Record payment for a customer, from the screen it is opened from: the only
+ * writer of `underneath`, and the only setter of the return-of-place hand-off (the customer
+ * and the scroll offset the seller is at, in memory, `paymentReturn.ts`). The state is a
+ * closed screen name, never a record (§9).
+ */
+export function paymentLink(
+  customerId: number | string,
+  underneath: PaymentUnderneath,
+): { to: string; state: { underneath: PaymentUnderneath }; onClick: (event: LinkClick) => void } {
+  return {
+    to: pathTo(CUSTOMER_PAYMENT, { id: customerId }),
+    state: { underneath },
+    onClick: (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      setPaymentReturn(Number(customerId), pageScrollY())
+    },
+  }
 }
 
 /** The path as a route-table segment (`'/more'` → `'more'`). */

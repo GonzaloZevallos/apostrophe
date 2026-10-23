@@ -9,7 +9,7 @@
  * avatar is decorative, its letters are the name's initials.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, pathTo } from '../../routes'
+import { CUSTOMER, paymentLink, pathTo } from '../../routes'
 import BotonLink from '../../components/BotonLink'
 import Avatar from '../../components/Avatar'
 import Icono from '../../components/Icono'
@@ -72,7 +72,7 @@ export default function ClienteFila({ id, name, phone = null, vip = false, balan
         >
           <FilaContenido {...contenido} />
         </PaneRowLink>
-        <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id })} icon="cobro" ariaLabel={COMMON_TEXT.collectFrom(name)}>
+        <BotonLink {...paymentLink(id, 'customers')} icon="cobro" ariaLabel={COMMON_TEXT.collectFrom(name)}>
           {COMMON_TEXT.collect}
         </BotonLink>
       </div>

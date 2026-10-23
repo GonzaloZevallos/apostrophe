@@ -3985,6 +3985,14 @@ body {
   min-width: 0;
 }
 
+/* Te deben in the computer's left pane: the total at a row's size, as the compact block of
+ * `ClientesCompu.dc.html` has it, and the same list behind the computer's Record payment modal.
+ * The phone keeps the large figure. */
+.clientes-paneles__lista .ventas__resumen .cifra-xl,
+.cobro-paneles:not(.cobro-paneles--solo) > .cobro-paneles__lista .ventas__resumen .cifra-xl {
+  font-size: 17px;
+}
+
 .variedades-paneles__lista .variedad-fila {
   padding: var(--espacio-md) 10px;
   border-bottom: 0;
@@ -5142,6 +5150,20 @@ body {
     opacity: 0.28;
   }
 
+  /* A long breakdown ("Taken from the oldest debt" over many sales) makes the dialog taller than
+   * the screen: the host scrolls it, so Save is always reachable. The scrim is the host's own
+   * background, which stays one screen while the dialog scrolls over it. */
+  .cobro-modal {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: var(--espacio-xl);
+    background: color-mix(in srgb, var(--tinta) 28%, transparent);
+  }
+
+  .cobro-modal::before {
+    content: none;
+  }
+
   .precio-modal > .cuerpo,
   .cobro-modal > .cuerpo {
     position: relative;
@@ -5163,6 +5185,55 @@ body {
     width: 480px;
     max-width: calc(100% - 2 * var(--espacio-xl));
     box-sizing: border-box;
+  }
+}
+
+/* Registrar cobro as a sheet on a phone (`Cobro.dc.html`): the host is a layer anchored to the
+ * bottom, rounded at the top, with the screen it was opened from showing above its edge, faded
+ * and inert. "Close" is on top, under a grab handle, and Save stays at the bottom, within thumb
+ * reach, while the form scrolls under it. The sheet scrolls by itself, and the page behind is
+ * held still while it is open. */
+@media (max-width: 899.98px) {
+  html:has(.cobro-hoja) {
+    overflow: hidden;
+  }
+
+  /* Under `.disposicion` so it is not beaten by `.disposicion .pantalla { padding: 0 }`: the
+   * sheet leaves the flow, so it owns the side and bottom insets itself. */
+  .disposicion .cobro-hoja {
+    position: fixed;
+    inset: auto 0 0 0;
+    padding: 0 var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
+    z-index: 20;
+    box-sizing: border-box;
+    min-height: 0;
+    height: calc(100dvh - var(--inset-arriba) - var(--asoma-fondo-hoja));
+    max-height: calc(100dvh - var(--inset-arriba) - var(--asoma-fondo-hoja));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--papel);
+    border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
+    box-shadow: 0 -1px 0 var(--linea);
+  }
+
+  .cobro-hoja__asa {
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: var(--espacio-md) auto 0;
+    border-radius: var(--radio-pildora);
+    background: var(--linea);
+  }
+
+  .disposicion .cobro-hoja > .cuerpo > .formulario {
+    flex: 1;
+  }
+
+  .disposicion .cobro-hoja > .cuerpo > .formulario > button[type='submit'] {
+    position: sticky;
+    bottom: var(--inset-abajo);
+    margin-top: auto;
+    box-shadow: 0 calc(-1 * var(--espacio-md)) 0 0 var(--papel);
   }
 }
 
@@ -5190,6 +5261,27 @@ body {
 .cobro-paneles__detalle {
   flex: 1;
   min-width: 0;
+}
+
+.cobro-paneles__inicio {
+  flex: 1;
+  min-width: 0;
+}
+
+/* On a phone the background is one pane, with no column rule or gutter of a two-pane layout. */
+.cobro-paneles--solo > .cobro-paneles__lista {
+  border-right: 0;
+  padding-right: 0;
+}
+
+/* On a phone the sheet leaves the top of the screen it was opened from showing above its edge,
+ * faded as `Cobro.dc.html` draws it; it is neither reached nor read (inert, hidden from
+ * assistive technology) and takes no pointer. */
+.cobro-paneles--solo > [inert] {
+  opacity: var(--opacidad-fondo-hoja);
+  pointer-events: none;
+  /* What overflows the screen's width under the sheet is clipped, so it cannot widen the page. */
+  overflow-x: clip;
 }
 
 .cobro__cliente {
@@ -5302,7 +5394,8 @@ body {
   padding: var(--espacio-lg);
 }
 
-.cobro-modal .panel__titulo:focus {
+.cobro-modal .panel__titulo:focus,
+.cobro-hoja .panel__titulo:focus {
   outline: none;
 }
 
@@ -5484,4 +5577,10 @@ body {
   margin: 0;
   font-size: 13px;
   color: var(--tinta2);
+}
+
+/* The place focus returns to after Record payment is a heading or a line, not a control: it takes no
+ * ring. A real link that carries the marker keeps its own ring. */
+[data-place]:not(a):focus {
+  outline: none;
 }

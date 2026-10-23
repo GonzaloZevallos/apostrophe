@@ -33,7 +33,8 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
   const squash = (text: string | null): string => (text ?? '').replace(/\s+/g, ' ').trim()
   const visible = (element: Element): boolean => {
     const rect = element.getBoundingClientRect()
-    return rect.width > 1 && rect.height > 1 && element.checkVisibility({ checkVisibilityCSS: true })
+    // An inert layer (the screen under Record payment's phone sheet) is another screen's, measured on its own cell.
+    return rect.width > 1 && rect.height > 1 && element.checkVisibility({ checkVisibilityCSS: true }) && element.closest('[inert]') === null
   }
   const all = (selector: string): Element[] => Array.from(document.querySelectorAll(selector)).filter(visible)
 
@@ -252,6 +253,7 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
 
   // --- gestures ----------------------------------------------------------------------
   for (const element of all('button, [role=button], [role=tab], nav.bar-inferior, nav.bar-inferior a')) {
+    if (element.closest('[inert]') !== null) continue
     const style = getComputedStyle(element)
     if (style.userSelect !== 'none') add('user-select', element)
     if (style.touchAction !== 'manipulation') add('touch-action', element)

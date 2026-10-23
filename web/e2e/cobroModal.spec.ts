@@ -6,7 +6,7 @@
  */
 
 import type { Page } from '@playwright/test'
-import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
+import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -14,8 +14,10 @@ import { expectPath } from './helpers/url.js'
 
 test.use({ viewport: { width: 1280, height: 800 } })
 
-/** Signs up, sells "Carla Cobrar" a rose on credit and opens "Record payment" from her card. */
-async function openCobroModal(page: Page): Promise<void> {
+type Origin = 'customers' | 'home' | 'card'
+
+/** Signs up, sells "Carla Cobrar" a rose on credit and opens "Record payment" from `origin`. */
+async function openCobroModal(page: Page, origin: Origin = 'customers'): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
@@ -40,11 +42,18 @@ async function openCobroModal(page: Page): Promise<void> {
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
 
-  await page.goto(CUSTOMERS)
-  await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).first().click()
+  if (origin === 'card') {
+    await page.goto(CUSTOMERS)
+    await page.getByRole('link', { name: /Carla Cobrar/ }).first().click()
+    await expectPath(page, CUSTOMER)
+    await page.getByRole('link', { name: 'Record payment' }).click()
+  } else {
+    await page.goto(origin === 'home' ? HOME : CUSTOMERS)
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).first().click()
+  }
   await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
   // The host takes focus to the title once the form is there: its effects have run.
-  await expect(page.locator('.cobro-modal .panel__titulo')).toBeFocused()
+  await expect(page.getByRole('dialog', { name: 'Record payment' }).getByText('Record payment', { exact: true })).toBeFocused()
 }
 
 test('Tab cycled through the dialog never focuses anything in the list, the card or the side rail', async ({ page }) => {
@@ -76,3 +85,25 @@ test("a click at the position of a list row never opens that customer: it lands 
 
   await expect(page.getByRole('dialog')).toHaveCount(0)
 })
+
+const BEHIND_LINK = {
+  customers: 'Collect from Carla Cobrar',
+  card: 'Record payment',
+  home: 'Collect from Carla Cobrar',
+} as const
+
+for (const origin of ['customers', 'home', 'card'] as const) {
+  test(`opened from ${origin}, that screen sits behind the dialog and Tab never reaches it`, async ({ page }) => {
+    await openCobroModal(page, origin)
+    const link = page.getByRole('link', { name: BEHIND_LINK[origin], includeHidden: true }).first()
+    const behind = link.locator('xpath=ancestor::*[@inert]').first()
+
+    await expect(link).toBeAttached()
+    await expect(behind).toHaveAttribute('aria-hidden', 'true')
+    for (let press = 0; press < 20; press++) {
+      await page.keyboard.press('Tab')
+      const inside = await page.evaluate(() => document.activeElement?.closest('[inert]') !== null)
+      expect(inside).toBe(false)
+    }
+  })
+}

@@ -13,8 +13,9 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../../router'
-import { CUSTOMER_PAYMENT, CUSTOMERS, HOME, pathTo } from '../../routes'
-import type { Viewport } from '../../routes'
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, pathTo, readPaymentUnderneath } from '../../routes'
+import type { PaymentUnderneath, Viewport } from '../../routes'
+import panelFixture from '../../api/fixtures/panel.json'
 import { renderWithViewport } from '../../test-viewport'
 import { inAppState } from '../../components/inAppState'
 
@@ -34,6 +35,8 @@ const RECORDED = {
   after: { balance: 6000, owing_since: '2026-09-14', standing: 'owes' },
 }
 const PAYMENT = pathTo(CUSTOMER_PAYMENT, { id: 1 })
+const CARD = pathTo(CUSTOMER, { id: 1 })
+const PANEL = { 'GET /panel': () => jsonResponse(200, panelFixture) }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -130,13 +133,139 @@ describe('on a computer', () => {
 })
 
 describe('on a phone', () => {
-  test('the form is a full screen: no dialog, no pane and nothing inert behind it', async () => {
+  test('Record payment is a modal dialog named by its title, with Close on top', async () => {
+    renderApp([{ pathname: PAYMENT }], 'phone')
+
+    const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'New sale' })).toBeNull()
+  })
+
+  test('focus goes to the title and Escape leaves like Close does', async () => {
+    const router = renderApp([{ pathname: PAYMENT }], 'phone')
+    const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
+
+    await waitFor(() => expect(within(dialog).getByText('Record payment')).toHaveFocus())
+    fireEvent.keyDown(document, { key: 'Escape' })
+    await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+  })
+
+  test('with something typed, Escape asks first and does not leave', async () => {
+    const router = renderApp([{ pathname: PAYMENT }], 'phone')
+    await screen.findByRole('dialog', { name: 'Record payment' })
+    await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(PAYMENT)
+  })
+
+  test('the card alone is behind the form: no list beside it', async () => {
     renderApp([{ pathname: PAYMENT }], 'phone')
 
     expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(document.querySelector('.cobro-paneles__lista')).toBeNull()
-    expect(document.querySelector('[inert]')).toBeNull()
+    await waitFor(() => expect(behindLink('Record payment')).not.toBeNull())
+    expect(behindLink('Collect from Ana Pérez')).toBeNull()
+    expect(behind()).toHaveLength(1)
+  })
+})
+
+/** What sits behind the host: every `inert` element, each also `aria-hidden`. */
+function behind(): HTMLElement[] {
+  const inert = Array.from(document.querySelectorAll<HTMLElement>('[inert]'))
+  for (const element of inert) expect(element).toHaveAttribute('aria-hidden', 'true')
+  return inert
+}
+
+function behindLink(name: string): HTMLElement | null {
+  for (const element of behind()) {
+    const [link] = within(element).queryAllByRole('link', { name, hidden: true })
+    if (link !== undefined) return link
+  }
+  return null
+}
+
+describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment, on a %s', (viewport) => {
+  test('opened from Customers: the live list is behind, inert and aria-hidden', async () => {
+    renderApp([{ pathname: HOME }, { pathname: CUSTOMERS }], viewport)
+    await userEvent.click((await screen.findAllByRole('link', { name: 'Collect from Ana Pérez' }))[0]!)
+    await screen.findByRole('radio', { name: 'Cash' })
+
+    expect(behindLink('Collect from Ana Pérez')).not.toBeNull()
+    expect(behind().some((element) => element.textContent?.includes('Customers') === true)).toBe(true)
+    expect(behindLink('Record payment')).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Ana Pérez' })).toBeNull()
+  })
+
+  test('opened from Home: the Today figures are behind, inert and aria-hidden', async () => {
+    renderApp([{ pathname: HOME }], viewport, PANEL)
+    await userEvent.click(await screen.findByRole('link', { name: 'Collect from Ana Pérez' }))
+    await screen.findByRole('radio', { name: 'Cash' })
+
+    await waitFor(() => expect(behindLink('Collect from Ana Pérez')).not.toBeNull())
+    expect(screen.queryAllByRole('link', { name: 'Collect from Ana Pérez' })).toHaveLength(0)
+  })
+
+  test('opened from the card: the card is behind, and it shows no message of the entry before', async () => {
+    const router = renderApp(
+      [{ pathname: CARD, state: { ...inAppState({ pathname: CUSTOMERS }), toast: 'Customer saved' } }],
+      viewport,
+    )
+    await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))
+    await screen.findByRole('radio', { name: 'Cash' })
+
+    expect(router.state.location.pathname).toBe(PAYMENT)
+    const card = behindLink('Record payment')?.closest('[inert]')
+    expect(card).toBeTruthy()
+    expect(card).toHaveTextContent('Left owing')
+    expect(card).not.toHaveTextContent('Customer saved')
+  })
+
+  test('with no state (a direct link or a reload) the card is behind', async () => {
+    renderApp([{ pathname: PAYMENT }], viewport)
+    await screen.findByRole('radio', { name: 'Cash' })
+
+    await waitFor(() => expect(behindLink('Record payment')).not.toBeNull())
+  })
+
+  test('a state naming a screen outside the set puts the card behind', async () => {
+    renderApp([{ pathname: PAYMENT, state: { underneath: 'sales' } }], viewport)
+    await screen.findByRole('radio', { name: 'Cash' })
+
+    await waitFor(() => expect(behindLink('Record payment')).not.toBeNull())
+  })
+
+  test.each<[PaymentUnderneath, string]>([
+    ['customers', 'Collect from Ana Pérez'],
+    ['card', 'Record payment'],
+  ])('a customer that is gone, opened from %s: the host says so and the background does not navigate', async (underneath, link) => {
+    const router = renderApp([{ pathname: PAYMENT, state: { underneath } }], viewport, {
+      'GET /customers/1': () => jsonResponse(404, { code: 'customer.not_found' }),
+      'GET /customers/1/account': () => jsonResponse(404, { code: 'customer.not_found' }),
+    })
+
+    expect(await screen.findByText('That is gone.', { selector: ':not([inert] *)' })).toBeInTheDocument()
+    await waitFor(() => expect(behind().length).toBeGreaterThan(0))
+    expect(router.state.location.pathname).toBe(PAYMENT)
+    expect(screen.getByRole('link', { name: 'Back to Customers' })).toBeInTheDocument()
+    if (underneath === 'customers') expect(behindLink(link)).not.toBeNull()
+  })
+})
+
+describe('the link each screen follows to Record payment', () => {
+  const cases: [string, PaymentUnderneath, { pathname: string }[], Record<string, () => Response>, string][] = [
+    ['Customers', 'customers', [{ pathname: CUSTOMERS }], {}, 'Collect from Ana Pérez'],
+    ['Home', 'home', [{ pathname: HOME }], PANEL, 'Collect from Ana Pérez'],
+    ['the card', 'card', [{ pathname: CARD }], {}, 'Record payment'],
+  ]
+  test.each(cases)('%s carries its own screen name', async (_screenName, underneath, entries, answers, name) => {
+    const router = renderApp(entries, 'computer', answers)
+    await userEvent.click((await screen.findAllByRole('link', { name }))[0]!)
+
+    expect(router.state.location.pathname).toBe(PAYMENT)
+    expect(readPaymentUnderneath(router.state.location.state)).toBe(underneath)
+    expect(router.state.location.state).toMatchObject({ underneath })
   })
 })
 

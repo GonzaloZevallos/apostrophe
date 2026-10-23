@@ -111,9 +111,8 @@ for (const viewport of VIEWPORTS) {
     // One tap on "Collect from Carla Deudora": Registrar cobro with her chosen.
     await owing.getByRole('link', { name: 'Collect from Carla Deudora' }).click()
     await expectPath(page, CUSTOMER_PAYMENT)
-    await expect(page.locator('.panel__titulo', { hasText: 'Record payment' })).toBeVisible()
-    await expect(page.locator('.cobro__cliente')).toContainText('Carla Deudora')
-    await expect(page.locator('.cobro__cliente')).toContainText('owes you $ 5.000')
+    await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Record payment' }).getByText(/Carla Deudora · owes you \$ 5\.000/)).toBeVisible()
 
     // "All" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'All: $ 5.000' }).click()
@@ -130,7 +129,7 @@ for (const viewport of VIEWPORTS) {
 
     // One move back from Clientes does not land on Registrar cobro again.
     await page.goBack()
-    await expect(page.locator('.panel__titulo', { hasText: 'Record payment' })).toHaveCount(0)
+    await expect(page.getByRole('dialog', { name: 'Record payment' })).toHaveCount(0)
     await page.goto(CUSTOMERS)
 
     // "Close" returns to Clientes in one move, with the balance untouched.

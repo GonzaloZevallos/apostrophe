@@ -63,3 +63,25 @@ constant number of requests, each costing what the variety page already costs
 
 Nothing new is reachable: the card behind reads what Clientes and the card already read. One
 Playwright test (`web/e2e/cobroModal.spec.ts`) proves the panes cannot be reached.
+
+## Amendment (GH-281): the background follows the origin
+
+- What sits behind Registrar cobro is the screen it was opened from, on both viewports. Each
+  entry point (the "Collect" button of a Clientes row, Home's "Collect", the card's "Record
+  payment") follows one link helper in `routes.ts` (`paymentLink`), which writes
+  `location.state.underneath`: `'home' | 'customers' | 'card'`, a closed set of screen names
+  and no record data. `readPaymentUnderneath` is the one reader; it narrows without a cast,
+  and anything outside the set (a direct link, a reload, an unknown value) gives the card.
+- `CobroPanes` draws that screen as the host's sibling, `inert` and `aria-hidden`, in the
+  same tree shape on both viewports so a resize never remounts the host: `customers` is the
+  live list (the detail pane empty on a computer); `card` is the list and the card on a
+  computer and the card alone on a phone; `home` is `InicioFondo`, Home's presentational
+  background (the panel only: no first-run, onboarding or pinned-catalog read, no effect).
+- The background never calls `useGoneExit` or navigates; `CobroRoute` alone owns gone, error
+  and network.
+- The phone is a sheet over that background, with the same host, the same `leave` and
+  `aria-modal` as the computer's dialog.
+- Correction: the Cobro registry row never carried `modalOnComputer` (the registry has no such
+  key and `registryDisagreements` compares only kind and parent). The line above that says it
+  does is withdrawn, and no key or check is added: `Shell` still draws the side rail behind
+  the computer modal, as the built app does today.

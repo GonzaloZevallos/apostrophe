@@ -6,7 +6,9 @@
  * session.
  */
 
+import { queryOptions } from '@tanstack/react-query'
 import { get } from './client'
+import { keys } from './keys'
 import type { VarietyStock } from './stock'
 
 /** A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null` exactly
@@ -75,3 +77,18 @@ export interface PanelAnswer {
 export function getPanel(): Promise<PanelAnswer> {
   return get<PanelAnswer>('/panel')
 }
+
+/**
+ * The panel's one frozen read, shared by `Inicio` and Home's background under Record
+ * payment (plan invariant): `gcTime: 0`, `staleTime: Infinity` and no refetch on focus or
+ * reconnect, so a mount always fetches its own answer and a payments write drops the cached
+ * one (`invalidateResource`), never a stale one replayed.
+ */
+export const panelQuery = queryOptions({
+  queryKey: keys.panel(),
+  queryFn: getPanel,
+  gcTime: 0,
+  staleTime: Infinity,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+})
