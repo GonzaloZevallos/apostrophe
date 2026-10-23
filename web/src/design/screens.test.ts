@@ -917,14 +917,37 @@ describe('assertSelectedAccounts', () => {
     expect(() => assertSelectedAccounts(screens.screens, all)).not.toThrow()
   })
 
-  it('puts the six Inicio rows on an ended account and leaves the notice rows on La Huerta', () => {
+  it('puts the six Inicio rows on an ended account and each first-run frame on its own account', () => {
     const accountOf = (key: string) => (screens.screens.find((s) => s.screen === key) as { account?: string }).account
     for (const key of ['Inicio', 'InicioHoy', 'InicioOscuro', 'InicioCompu', 'InicioHoyCompu', 'InicioHoyCompuOscuro']) {
       expect(accountOf(key), key).toBe('inicio')
     }
-    for (const key of ['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro']) {
-      expect(accountOf(key), key).toBeUndefined()
+    const frames: Record<string, string[]> = {
+      primera_vez: ['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro'],
+      en_curso: ['InicioOnboardingEnCurso', 'InicioOnboardingEnCursoCompu', 'InicioOnboardingEnCursoOscuro'],
+      completo: ['InicioOnboardingCompleto', 'InicioOnboardingCompletoCompu', 'InicioOnboardingCompletoOscuro'],
     }
+    for (const [account, keys] of Object.entries(frames)) {
+      for (const key of keys) expect(accountOf(key), key).toBe(account)
+    }
+  })
+
+  it('names a section and an account on every row drawn against a first-run file, and refuses one that does not', () => {
+    const firstRunRows = (rows: { screen: string; design?: string; section?: string; account?: string }[]) =>
+      rows.filter((s) => ['InicioPrimeraVez', 'InicioPrimeraVezCompu'].includes(s.design ?? s.screen))
+    const missing = (rows: { screen: string; design?: string; section?: string; account?: string }[]) =>
+      firstRunRows(rows)
+        .filter((s) => !s.section || !s.account)
+        .map((s) => s.screen)
+    const rows = screens.screens as { screen: string; design?: string; section?: string; account?: string }[]
+    expect(firstRunRows(rows).map((s) => s.screen)).toHaveLength(9)
+    expect(missing(rows)).toEqual([])
+    // the check itself: a row with no account, or no section, is caught.
+    const broken = [
+      { screen: 'InicioPrimeraVez', section: 'x' },
+      { screen: 'InicioOnboardingEnCurso', design: 'InicioPrimeraVez', account: 'en_curso' },
+    ]
+    expect(missing(broken)).toEqual(['InicioPrimeraVez', 'InicioOnboardingEnCurso'])
   })
 })
 
@@ -1084,7 +1107,10 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
     const named = (account: string) => rows.filter((r) => r.account === account).map((r) => r.screen)
     expect(named('checklist')).toEqual(['InicioChecklist', 'InicioChecklistCompu', 'InicioChecklistOscuro'])
     expect(named('importada')).toEqual(['InicioImportado', 'InicioImportadoCompu', 'InicioImportadoOscuro'])
-    for (const r of rows.filter((x) => x.account === 'checklist' || x.account === 'importada')) {
+    expect(named('primera_vez')).toEqual(['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro'])
+    expect(named('en_curso')).toEqual(['InicioOnboardingEnCurso', 'InicioOnboardingEnCursoCompu', 'InicioOnboardingEnCursoOscuro'])
+    expect(named('completo')).toEqual(['InicioOnboardingCompleto', 'InicioOnboardingCompletoCompu', 'InicioOnboardingCompletoOscuro'])
+    for (const r of rows.filter((x) => ['checklist', 'importada', 'primera_vez', 'en_curso', 'completo'].includes(x.account ?? ''))) {
       expect(typeof r.section, r.screen).toBe('string')
     }
   })
@@ -1100,7 +1126,7 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
   })
 
   it('names none of them on a Listo entry of the real registry', () => {
-    const capture = [...namesOf('PRE_ONBOARDING_ACCOUNTS'), ...namesOf('IMPORTED_ACCOUNTS')]
+    const capture = [...namesOf('PRE_ONBOARDING_ACCOUNTS'), ...namesOf('IMPORTED_ACCOUNTS'), ...namesOf('ONBOARDING_FRAME_ACCOUNTS')]
     const real = Object.fromEntries(capture.map((name) => [name, 'imported' as const]))
     const listo = screens.screens.filter((s) => (s as { design?: string }).design === 'OnboardingListo' || s.screen === 'OnboardingListo')
     expect(listo.length).toBeGreaterThan(0)
