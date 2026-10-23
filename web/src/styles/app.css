@@ -3846,8 +3846,10 @@ body {
 }
 
 /* Te deben in the computer's left pane: the total at a row's size, as the compact block of
- * `ClientesCompu.dc.html` has it. The phone keeps the large figure. */
-.clientes-paneles__lista .ventas__resumen .cifra-xl {
+ * `ClientesCompu.dc.html` has it, and the same list behind the computer's Record payment modal.
+ * The phone keeps the large figure. */
+.clientes-paneles__lista .ventas__resumen .cifra-xl,
+.cobro-paneles:not(.cobro-paneles--solo) > .cobro-paneles__lista .ventas__resumen .cifra-xl {
   font-size: 17px;
 }
 

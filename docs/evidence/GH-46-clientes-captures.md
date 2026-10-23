@@ -6,7 +6,7 @@ changed no product code for GH-46; the GH-281 follow-up changes one CSS rule (E2
 | Item | Value |
 | --- | --- |
 | Base (task base: `git merge-base HEAD origin/master`) | `e08228dd44cd0fbb632ac0dc4d90931daffd07dd` |
-| Head | `1ad2bc226d7255081cbfa6948e2a74c7f84ad44a` |
+| Head | `1ad2bc226d7255081cbfa6948e2a74c7f84ad44a` (GH-46; the GH-281 follow-up retakes are noted under the verdicts) |
 | Overlay (head's `scripts/design/` over the base's `app/` and `web/`) | `sample_app.py` 14 +-, `screens.json` 5 +; 2 files, 11 insertions, 8 deletions, equal to `git diff --stat <base>..<head> -- scripts/design` |
 | Design docs | `docs/product/design-system` identical on both sides (`diff -rq`) |
 | `@fontsource/plus-jakarta-sans` | 5.3.0, one install (`web/node_modules`) shared by both sides |
@@ -87,22 +87,25 @@ Each note ends with one verdict. Captures retaken on the GH-281 head with
 `--only ClientesCompu,Cobro,CobroCompu,ClienteFicha` (design and built side by side, the same
 width, no notes in `index.json`).
 
-- **E1, ClienteFicha (phone, dark twin, and the compu card): filed, pre-existing.** The note
+- **E1, ClienteFicha (phone, dark twin, and the compu card): filed (#314), pre-existing.** The note
   said C2 introduced the Te debe block's place above the phone and VIP rows. It did not: the base
   card already put the block there. Only Registrar cobro's move into the block came with GH-46.
   The order difference (the drawing and customers.md put phone and VIP first, then "Te debe") is
   a JSX order change, not CSS, and existed before GH-46. Filed as "Customer card: 'Owed to you'
-  block order differs from the design", area #46: **issue to be filed** (no number reached this
-  checkout, `gh issue list` finds none). The task is not closed until this row carries the real
-  link.
-- **E2, ClientesCompu and ClientesCompuOscuro: fixed (CSS only), with one difference accepted.**
+  block order differs from the design", area #46: [#314](https://github.com/GonzaloZevallos/apostrophe/issues/314) (no
+  number came with the brief and none existed, so it was filed from here, without the `agentic`
+  label).
+- **E2, ClientesCompu and ClientesCompuOscuro: CSS part fixed; the JSX part filed (#315).**
   The left pane's Te deben total drew at the phone's large size (`.cifra-xl`); it now draws at a
   row's size through `.clientes-paneles__lista .ventas__resumen .cifra-xl` in
-  `web/src/styles/app.css`, the only production file changed. Both sides retaken. Not done: the
-  drawing's one line ("Te deben · $ 32.000 · 2 ventas debiendo") needs the heading, the total and
-  the count in one element, which is JSX, and moving "Cobrar" beside the row made names wrap in the
-  360 px pane (tried, reverted). Accepted, reason: customers.md fixes only the content, which is
-  equal, and "Cobrar" under every debtor row is the docs' rule (see the intended table above).
+  `web/src/styles/app.css`, the only production file changed. Both sides retaken. The same rule
+  reaches the list behind the computer's Record payment modal (`.cobro-paneles__lista`), so both
+  draw the total alike. Needs more than CSS, so filed as
+  [#315](https://github.com/GonzaloZevallos/apostrophe/issues/315): the drawing's one line
+  ("Te deben · $ 32.000 · 2 ventas debiendo") needs the heading, the total and the count in one
+  element, which is JSX. Moving "Cobrar" beside the row was tried and made names wrap in the 360 px
+  pane (reverted); "Cobrar" under every debtor row stays, as the docs' rule (see the intended
+  table above).
 - **E3, Cobro (phone, CobroOscuro) and CobroCompu: fixed.** On the phone, Record payment is now a
   `role="dialog"` sheet with `aria-modal`, "Close" on top, no bar and no "+ New sale", over the
   screen it was opened from (inert and `aria-hidden`); on a computer it is the same host as a
@@ -133,10 +136,11 @@ contrast-unprovable 32, data-while-loading 40, false-empty 8, figure-split 278, 
 name-overflow 272, pending-state 24, text-size 1540, touch-action 5452, touch-target 838,
 unreachable 52, user-select 72. The E2 change is under a computer pane, so no phone cell changes
 and no offender entry leaves a list in this diff. The `mobile` project
-(`npx playwright test --project=mobile --workers=4`) was run once in the foreground with a 570 s
-limit and was cut off by it: the four `phone standard` cells (320x568 and 375x812, claro and
-oscuro) passed at 6.4 to 6.8 minutes each, and the rest of the 33 did not finish. The whole run
-is the delivery gate's.
+(`npx playwright test --project=mobile --workers=4`) is the delivery gate's to finish: my own
+foreground run was cut at 570 s with the four `phone standard` cells (320x568 and 375x812, claro and
+oscuro) green, and the gate's `web-e2e` runs on this head were cut at 1500 s by the whole run's
+limit, with every `mobile` cell shown before the cut green (one 320x568 oscuro cell showed red once
+and green on the next run) and no assertion failing in this diff's area.
 
 ## Design vs docs wording
 
