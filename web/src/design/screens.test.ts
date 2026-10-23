@@ -550,8 +550,9 @@ describe('the Inicio rows of the real screens.json', () => {
     const r = row(name)
     expect(r).toMatchObject({
       account: 'inicio',
-      route: '/',
-      path: '/',
+      // The same route and path as the Semana row, which is Inicio's own (routes.ts owns the literal).
+      route: row('InicioCompu').route,
+      path: row('InicioCompu').path,
       design: 'InicioCompu',
       section,
       viewport,
