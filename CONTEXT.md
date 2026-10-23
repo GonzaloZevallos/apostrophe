@@ -462,7 +462,7 @@ The one keyed place that holds every text the front shows, accessible names incl
 _Avoid_: messages file, strings, translations, dictionary
 
 **Mobile check**:
-The Gate check that walks the screens registry's phone rows and fails on any offence against the mobile standard that the offender lists do not name. The mobile standard lives in DESIGN_STANDARDS.md. The check, its lists and their growth conditions stay in docs/product/mobile-check.md and docs/product/gate.md.
+The Gate check that walks the screens registry's phone rows and fails on any offence against the mobile standard that the offender lists do not name. The mobile standard lives in CODING_STANDARDS.md §10 "Phone", and DESIGN_STANDARDS.md points to it. The check, its lists and their growth conditions are in docs/product/mobile-check.md and docs/product/gate.md.
 _Avoid_: mobile test, phone audit, lint, allowlist
 
 **Drawing as guide**:
