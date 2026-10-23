@@ -1,0 +1,29 @@
+mobile check, known offenders: 11042 cells
+per issue:
+  #45: 846
+  #46: 684
+  #47: 3002
+  #48: 1300
+  #49: 1900
+  #59: 720
+  #60: 802
+  #78: 1788
+per rule:
+  aria-busy: 224
+  autocomplete: 1214
+  blank-while-loading: 120
+  chrome-at-load: 376
+  chrome-mid-scroll: 344
+  contrast: 142
+  contrast-unprovable: 32
+  data-while-loading: 32
+  false-empty: 8
+  figure-split: 266
+  h-scroll: 184
+  name-overflow: 272
+  pending-state: 24
+  text-size: 1550
+  touch-action: 5472
+  touch-target: 660
+  unreachable: 50
+  user-select: 72
