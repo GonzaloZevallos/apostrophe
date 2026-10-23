@@ -862,18 +862,6 @@
   {
     "screen": "OnboardingBot",
     "rule": "touch-target",
-    "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBot",
-    "rule": "touch-target",
-    "target": "button:Skip the rest",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBot",
-    "rule": "touch-target",
     "target": "textbox:Your chat",
     "issue": 49,
     "sizes": [
@@ -883,83 +871,11 @@
   {
     "screen": "OnboardingBotTexto130",
     "rule": "touch-target",
-    "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBotTexto130",
-    "rule": "touch-target",
-    "target": "button:Skip the rest",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBotTexto130",
-    "rule": "touch-target",
     "target": "textbox:Your chat",
     "issue": 49,
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "OnboardingCategorias",
-    "rule": "touch-target",
-    "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingCategoriasTexto130",
-    "rule": "touch-target",
-    "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingMensaje",
-    "rule": "touch-target",
-    "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingMensaje",
-    "rule": "touch-target",
-    "target": "button:Skip the rest",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingMensajeTexto130",
-    "rule": "touch-target",
-    "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingMensajeTexto130",
-    "rule": "touch-target",
-    "target": "button:Skip the rest",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingSocio",
-    "rule": "touch-target",
-    "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingSocio",
-    "rule": "touch-target",
-    "target": "button:Skip the rest",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingSocioTexto130",
-    "rule": "touch-target",
-    "target": "button:Skip",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingSocioTexto130",
-    "rule": "touch-target",
-    "target": "button:Skip the rest",
-    "issue": 49
   },
   {
     "screen": "PrecioConfirmarBorrado",
