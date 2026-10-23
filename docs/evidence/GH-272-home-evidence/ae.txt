@@ -1,0 +1,14 @@
+Inicio built: AE 0
+Inicio design: AE 0
+InicioHoy built: AE 0
+InicioHoy design: AE 0
+InicioOscuro built: AE 0
+InicioOscuro design: AE 0
+InicioCompu built: FAIL different dimensions
+InicioCompu design: AE 0
+InicioHoyCompu built: AE 0
+InicioHoyCompu design: AE 0
+InicioHoyCompuOscuro built: AE 0
+InicioHoyCompuOscuro design: AE 0
+InicioCompuOscuro built: FAIL different dimensions
+InicioCompuOscuro design: AE 0
