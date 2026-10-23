@@ -55,6 +55,11 @@
   --radio-pildora: 999px;
 
   --margen-pantalla: 24px;
+
+  /* Registrar cobro como hoja en el teléfono (`Cobro.dc.html`): la pantalla de origen asoma arriba,
+   * atenuada, en este alto y a esta opacidad. */
+  --asoma-fondo-hoja: 104px;
+  --opacidad-fondo-hoja: 0.35;
   --alto-tocable: 44px;
   --alto-boton: 56px;
 
