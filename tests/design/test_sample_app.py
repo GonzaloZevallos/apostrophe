@@ -595,6 +595,7 @@ def progress_answer(**changes: Any) -> dict[str, Any]:
         "over": False,
         "count": 1,
         "resume": "stock",
+        "can_skip_rest": False,
         "steps": [
             {"step": slug, "state": state} for slug, state in zip(STEP_SLUGS, states, strict=True)
         ],
@@ -626,7 +627,13 @@ def test_expect_onboarding_progress_stops_the_sample_on_any_other_answer_without
 
     def check(answer: dict[str, Any]) -> None:
         sample_app.expect_onboarding_progress(
-            Answers(answer), account="onboarding", steps=wanted, count=1, resume="stock", over=False
+            Answers(answer),
+            account="onboarding",
+            steps=wanted,
+            count=1,
+            resume="stock",
+            over=False,
+            can_skip_rest=False,
         )
 
     check(progress_answer())
@@ -637,6 +644,11 @@ def test_expect_onboarding_progress_stops_the_sample_on_any_other_answer_without
         "over": (progress_answer(over=True), "over"),
         "resume": (progress_answer(resume="bot"), "resume"),
         "count": (progress_answer(count=2), "count"),
+        "can_skip_rest": (progress_answer(can_skip_rest=True), "can_skip_rest"),
+        "can_skip_rest missing": (
+            {k: v for k, v in progress_answer().items() if k != "can_skip_rest"},
+            "can_skip_rest",
+        ),
         "step flipped": (
             progress_answer(steps=[*steps[:1], {"step": "stock", "state": "done"}, *steps[2:]]),
             "step stock",

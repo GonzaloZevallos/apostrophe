@@ -651,6 +651,7 @@ def expect_onboarding_progress(
     count: int,
     resume: str,
     over: bool,
+    can_skip_rest: bool,
 ) -> None:
     """Checks `GET /onboarding-progress` against the answer the account being built exists
     to produce, and stops the sample if it differs. `steps` is every step in order, each with
@@ -670,6 +671,8 @@ def expect_onboarding_progress(
         raise stop("resume")
     if shown.get("count") != count:
         raise stop("count")
+    if shown.get("can_skip_rest") is not can_skip_rest:
+        raise stop("can_skip_rest")
     for index, (name, state) in enumerate(steps):
         if index >= len(got) or got[index] != (name, state):
             raise stop(f"step {name}")
@@ -721,6 +724,7 @@ def onboarding_frame_account(env: dict[str, str], base: str, today: date, name: 
         count=count,
         resume=resume,
         over=False,
+        can_skip_rest=name == "completo",
     )
     return account
 
