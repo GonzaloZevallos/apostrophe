@@ -64,7 +64,7 @@ for (const viewport of VIEWPORTS) {
 
     // "Close" returns to Inicio in one move.
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
-    await expect(page.locator('.panel__titulo', { hasText: 'Record payment' })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
     await page.getByRole('button', { name: 'Close' }).click()
     await expectPath(page, HOME)
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
@@ -92,7 +92,7 @@ for (const viewport of VIEWPORTS) {
 
     // One move: Back from Inicio does not land on Registrar cobro again.
     await page.goBack()
-    await expect(page.locator('.panel__titulo', { hasText: 'Record payment' })).toHaveCount(0)
+    await expect(page.getByRole('dialog', { name: 'Record payment' })).toHaveCount(0)
 
     await expectOnlyTheThemeStored(page)
     expect(consoleMessages).toEqual([])
