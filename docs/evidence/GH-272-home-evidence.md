@@ -31,7 +31,7 @@ Review evidence only; judged by eye; valid only for the SHA below. No capture st
 | InicioCompu, before to after, built | FAIL different dimensions (2560x2460 before, 2560x1840 after) | intended by #272: Semana's and Mes's ten figures stop being stacked list rows and become a grid of cards beside the headline, as the drawing lays them out; the page is 310 CSS px shorter |
 | InicioCompuOscuro, before to after, built | FAIL different dimensions (same sizes) | same, in the dark tokens (same structure) |
 
-The five screens show exact AE 0 on both sides. Both InicioCompu lines are accounted for. The Compu 100 % comparison sheets (design column against built column) were judged by eye: the built page has the grid of cards (two rows of three plus a row of two... three per row at 1280) beside the headline at the drawing's place, the same cards, order and pending notes; differences left are the ones in the existing Home evidence (English copy, the sidebar's brand, dates and figures of the sample).
+The five screens show exact AE 0 on both sides. Both InicioCompu lines are accounted for. The Compu 100 % comparison sheets (design column against built column) were judged by eye: the built page has the grid of cards (three per row at 1280 px) beside the headline at the drawing's place, the same cards, order and pending notes; differences left are the ones in the existing Home evidence (English copy, the sidebar's brand, dates and figures of the sample).
 
 ## By eye, light theme, computer layout
 
