@@ -10,10 +10,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import analysisEmptyFixture from '../api/fixtures/analysis-empty.json'
 import analysisFixture from '../api/fixtures/analysis.json'
+import { ANALYSIS_TEXT } from '../copy/analysis'
+import { formatDateShort, formatMonthLong } from '../format/dates'
+import { rowOf } from './analisis/rowOf'
 import Analisis, {
   BEST_WEEKDAY_MARK,
   BEST_WEEK_MARK,
@@ -23,6 +26,23 @@ import Analisis, {
   NO_HISTORY_LINE,
   SINCE_FIRST_RECORD_LABEL,
 } from './Analisis'
+
+/** The summary strip: the hero group's own container, holding the figures line and the withdrawal rows. */
+function strip(): HTMLElement {
+  return screen.getByRole('group', { name: ANALYSIS_TEXT.vendisteEnElMes }).parentElement as HTMLElement
+}
+
+/** The "since your first record" block: one named row per metric. */
+function history(): HTMLElement {
+  return screen.getByRole('group', { name: SINCE_FIRST_RECORD_LABEL })
+}
+
+/** What a row holds, in document order: its label, then its amount, then its marker. */
+function partsOf(row: HTMLElement): string[] {
+  return Array.from(
+    row.querySelectorAll('.analisis__monto-etiqueta, .analisis__monto-cifra, .analisis__monto-marca'),
+  ).map((node) => (node.textContent ?? '').trim())
+}
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04' }
 
@@ -85,16 +105,20 @@ test('reads the best and worst variety by margin, the best week, the best weekda
   expect(screen.getAllByText(BEST_WEEKDAY_MARK)).toHaveLength(1)
 
   // The month's largest expense category ("Insumos", $ 4.000) is readable on screen.
-  expect(screen.getAllByText('Insumos').length).toBeGreaterThan(0)
-  expect(screen.getByText('$ 4.000')).toBeInTheDocument()
+  const insumos = screen.getAllByText('Insumos')[0]!
+  const category = insumos.closest('.gastos__categoria-cabecera') as HTMLElement
+  expect(within(category).getByText('$ 4.000')).toBeInTheDocument()
 })
 
 test('pending marks show their own N, never a $0 cost', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
 
   // The month header: average margin and stock shortfall each carry their own N.
-  expect(await screen.findByText(/average margin 55% and 2,5 g without cost/)).toBeInTheDocument()
-  expect(screen.getByText(/Stock shortfall \$ 3\.000 and 1 g without cost/)).toBeInTheDocument()
+  expect(await screen.findByText(/average margin/)).toHaveTextContent(
+    '28 g sold · 15 g given away · average margin 55% and 2,5 g without cost',
+  )
+  const shortfall = rowOf(strip(), 'Stock shortfall')
+  expect(shortfall.textContent).toBe('Stock shortfall $ 3.000 and 1 g without cost')
 
   // "Flor B"'s own cost and margin carry the same mark.
   expect(screen.getByText(/cost \$ 9\.000 and 2,5 g without cost/)).toBeInTheDocument()
@@ -247,13 +271,16 @@ test('Promotion and Own use show apart from Stock shortfall, each with only its 
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
 
   // The month header: a promotion with half a pending gram, an own use fully costed.
-  expect(await screen.findByText(/^Promotion \$ 4\.000 and 0,5 g without cost$/)).toBeInTheDocument()
-  expect(screen.getByText(/^Own use \$ 1\.500$/)).toBeInTheDocument()
-  expect(screen.getByText(/Stock shortfall \$ 3\.000 and 1 g without cost/)).toBeInTheDocument()
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+  expect(rowOf(strip(), 'Promotion').textContent).toBe('Promotion $ 4.000 and 0,5 g without cost')
+  expect(rowOf(strip(), 'Own use').textContent).toBe('Own use $ 1.500')
+  expect(rowOf(strip(), 'Stock shortfall').textContent).toBe(
+    'Stock shortfall $ 3.000 and 1 g without cost',
+  )
 
   // The since-the-first-record totals read the same two lines.
-  expect(screen.getByText(/^Promotion \$ 9\.000 and 0,5 g without cost$/)).toBeInTheDocument()
-  expect(screen.getByText(/^Own use \$ 2\.500$/)).toBeInTheDocument()
+  expect(rowOf(history(), 'Promotion').textContent).toBe('Promotion $ 9.000 and 0,5 g without cost')
+  expect(rowOf(history(), 'Own use').textContent).toBe('Own use $ 2.500')
 })
 
 test('a week and a month row show a withdrawal line only when the period has one', async () => {
@@ -263,16 +290,18 @@ test('a week and a month row show a withdrawal line only when the period has one
   // Phone rows: only the fixture's first week (10/8) has a promotion and an own use.
   const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
   expect(weekRows).toHaveLength(8)
-  expect(within(weekRows[0]!).getByText('Promotion $ 1.000')).toBeInTheDocument()
-  expect(within(weekRows[0]!).getByText('Own use $ 500')).toBeInTheDocument()
+  expect(rowOf(weekRows[0]!, 'Promotion').textContent).toBe('Promotion $ 1.000')
+  expect(rowOf(weekRows[0]!, 'Own use').textContent).toBe('Own use $ 500')
   for (const row of weekRows.slice(1)) {
-    expect(within(row).queryByText(/Promotion|Own use/)).not.toBeInTheDocument()
+    expect(within(row).queryByRole('group', { name: /Promotion|Own use/ })).not.toBeInTheDocument()
   }
 
   // The month rows: the same, with the fixture's last month holding no promotion.
   const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
-  expect(within(monthRows[0]!).getByText('Promotion $ 1.000')).toBeInTheDocument()
-  expect(within(monthRows[monthRows.length - 1]!).queryByText(/Promotion/)).not.toBeInTheDocument()
+  expect(rowOf(monthRows[0]!, 'Promotion').textContent).toBe('Promotion $ 1.000')
+  expect(
+    within(monthRows[monthRows.length - 1]!).queryByRole('group', { name: 'Promotion' }),
+  ).not.toBeInTheDocument()
 })
 
 const FIXTURE_FIRST_WEEK = analysisFixture.weeks[0]!
@@ -312,26 +341,56 @@ test('every week and month row shows Cost of goods sold, in the PRD order', asyn
   expect(weekRows).toHaveLength(analysisFixture.weeks.length)
   expect(monthRows).toHaveLength(analysisFixture.months.length)
   for (const row of [...weekRows, ...monthRows]) {
-    expect(within(row).getByText(/^Cost of goods sold \$ [\d.]+$/)).toBeInTheDocument()
+    expect(rowOf(row, 'Cost of goods sold').textContent).toMatch(/^Cost of goods sold \$ [\d.]+$/)
   }
 
-  // Sales, grams, Cost of goods sold, Stock shortfall, Promotion, Own use,
-  // gastos, ganancia, caja.
+  // Cost of goods sold, Stock shortfall, Promotion, Own use: the named rows, in order.
   const first = weekRows[0]!
-  const lines = Array.from(first.querySelectorAll('span'))
-    .map((node) => node.textContent ?? '')
-    .filter((text) => /^(Cost of goods sold|Stock shortfall|Promotion|Own use|expenses|profit|cash)/.test(text))
-    .map((text) => text.replace(/ \$.*$/, ''))
-  expect(lines).toEqual([
-    'Cost of goods sold',
-    'Stock shortfall',
-    'Promotion',
-    'Own use',
-    'expenses',
-    'profit',
-    'cash',
-  ])
-  expect(within(first).getByText(`Cost of goods sold $ ${FIXTURE_FIRST_WEEK.cost_of_goods.amount.toLocaleString('es-AR')}`)).toBeInTheDocument()
+  const names = within(first)
+    .getAllByRole('group')
+    .map((group) => group.querySelector('.analisis__monto-etiqueta')?.textContent)
+  expect(names).toEqual(['Cost of goods sold', 'Stock shortfall', 'Promotion', 'Own use'])
+  const cost = FIXTURE_FIRST_WEEK.cost_of_goods.amount.toLocaleString('es-AR')
+  expect(rowOf(first, 'Cost of goods sold').textContent).toBe(`Cost of goods sold $ ${cost}`)
+})
+
+test('each week and month renders its cost rows in both the card and the table', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const names = [
+    formatDateShort(FIXTURE_FIRST_WEEK.first_day),
+    formatMonthLong(analysisFixture.months[0]!.month),
+  ]
+  for (const name of names) {
+    const copies = screen.getAllByRole('group', { name })
+    expect(copies, 'card and table').toHaveLength(2)
+    for (const copy of copies) {
+      // label, amount, marker: in that order inside each cost row
+      const cost = rowOf(copy, 'Cost of goods sold')
+      expect(partsOf(cost).slice(0, 2)).toEqual(['Cost of goods sold', expect.stringMatching(/^\$ /)])
+      expect(cost.firstElementChild).toHaveClass('analisis__monto-etiqueta')
+      expect(cost.lastElementChild).toHaveClass('analisis__monto-valor')
+    }
+  }
+
+  // The partly pending week carries label, amount, marker, in that order.
+  const pending = pendingRowFixture()
+  expect(pending.weeks[1]!.cost_of_goods.pending_grams).toBe(1.5)
+})
+
+test('a row with an amount and pending grams reads label, amount, marker in that order', async () => {
+  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const name = formatDateShort(analysisFixture.weeks[1]!.first_day)
+  for (const copy of screen.getAllByRole('group', { name })) {
+    const cost = rowOf(copy, 'Cost of goods sold')
+    expect(partsOf(cost)).toEqual(['Cost of goods sold', '$ 7.000', 'and 1,5 g without cost'])
+    expect(cost.textContent).toBe('Cost of goods sold $ 7.000 and 1,5 g without cost')
+    const amount = cost.querySelector('.analisis__monto-cifra')!
+    expect(amount.textContent).toBe('$ 7.000')
+  }
 })
 
 test('Stock shortfall shows on a row only when its shortfall is not null', async () => {
@@ -339,13 +398,15 @@ test('Stock shortfall shows on a row only when its shortfall is not null', async
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
   const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  expect(within(weekRows[0]!).getByText('Stock shortfall $ 2.000')).toBeInTheDocument()
+  expect(rowOf(weekRows[0]!, 'Stock shortfall').textContent).toBe('Stock shortfall $ 2.000')
   for (const row of weekRows.slice(1)) {
-    expect(within(row).queryByText(/Stock shortfall/)).not.toBeInTheDocument()
+    expect(within(row).queryByRole('group', { name: 'Stock shortfall' })).not.toBeInTheDocument()
   }
   const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
-  expect(within(monthRows[0]!).getByText('Stock shortfall $ 2.000')).toBeInTheDocument()
-  expect(within(monthRows.at(-1)!).queryByText(/Stock shortfall/)).not.toBeInTheDocument()
+  expect(rowOf(monthRows[0]!, 'Stock shortfall').textContent).toBe('Stock shortfall $ 2.000')
+  expect(
+    within(monthRows.at(-1)!).queryByRole('group', { name: 'Stock shortfall' }),
+  ).not.toBeInTheDocument()
   expect(FIXTURE_LAST_WEEK.shortfall).toBeNull()
 })
 
@@ -353,12 +414,18 @@ test('a fully pending figure reads only its grams on the header, the since lines
   renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
-  expect(screen.getByText('Stock shortfall 2 g without cost')).toBeInTheDocument()
-  expect(screen.getByText('Promotion 3 g without cost')).toBeInTheDocument()
+  const shortfall = rowOf(strip(), 'Stock shortfall')
+  expect(shortfall.textContent).toBe('Stock shortfall 2 g without cost')
+  // No amount element and no $: the grams alone sit in the marker.
+  expect(shortfall.querySelector('.analisis__monto-cifra')).toBeNull()
+  expect(shortfall.textContent).not.toContain('$')
+  expect(rowOf(history(), 'Promotion').textContent).toBe('Promotion 3 g without cost')
   const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
-  expect(within(monthRows[1]!).getByText('Promotion 4 g without cost')).toBeInTheDocument()
+  expect(rowOf(monthRows[1]!, 'Promotion').textContent).toBe('Promotion 4 g without cost')
   const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  expect(within(weekRows[2]!).getByText('Cost of goods sold 4 g without cost')).toBeInTheDocument()
+  expect(rowOf(weekRows[2]!, 'Cost of goods sold').textContent).toBe(
+    'Cost of goods sold 4 g without cost',
+  )
   expect(screen.queryByText(/\$ 0 y \d+ g without cost/)).not.toBeInTheDocument()
 })
 
@@ -367,10 +434,10 @@ test('a partly pending cost of goods reads its amount and its grams; a real zero
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
   const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  expect(
-    within(weekRows[1]!).getByText('Cost of goods sold $ 7.000 and 1,5 g without cost'),
-  ).toBeInTheDocument()
-  expect(within(weekRows[3]!).getByText('Cost of goods sold $ 0')).toBeInTheDocument()
+  expect(rowOf(weekRows[1]!, 'Cost of goods sold').textContent).toBe(
+    'Cost of goods sold $ 7.000 and 1,5 g without cost',
+  )
+  expect(rowOf(weekRows[3]!, 'Cost of goods sold').textContent).toBe('Cost of goods sold $ 0')
 })
 
 test('the computer tables carry the same cost lines under each row', async () => {
@@ -380,11 +447,105 @@ test('the computer tables carry the same cost lines under each row', async () =>
   const weekTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--semanas')!
   const costRows = weekTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
   expect(costRows).toHaveLength(analysisFixture.weeks.length)
-  expect(within(costRows[2]!).getByText('Cost of goods sold 4 g without cost')).toBeInTheDocument()
-  expect(within(costRows[0]!).getByText('Stock shortfall $ 2.000')).toBeInTheDocument()
+  expect(rowOf(costRows[2]!, 'Cost of goods sold').textContent).toBe(
+    'Cost of goods sold 4 g without cost',
+  )
+  expect(rowOf(costRows[0]!, 'Stock shortfall').textContent).toBe('Stock shortfall $ 2.000')
 
   const monthTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--meses')!
   const monthCostRows = monthTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
   expect(monthCostRows).toHaveLength(analysisFixture.months.length)
-  expect(within(monthCostRows[1]!).getByText('Promotion 4 g without cost')).toBeInTheDocument()
+  expect(rowOf(monthCostRows[1]!, 'Promotion').textContent).toBe('Promotion 4 g without cost')
+})
+
+test('the history block has one named row per metric, in order, each with its amount', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const block = history()
+  const names = within(block)
+    .getAllByRole('group')
+    .map((group) => group.querySelector('.analisis__monto-etiqueta')?.textContent)
+  expect(names).toEqual([
+    'Sales',
+    'Expenses',
+    'Profit',
+    'Cash',
+    'Stock shortfall',
+    'Promotion',
+    'Own use',
+  ])
+  expect(partsOf(rowOf(block, 'Sales'))).toEqual(['Sales', '$ 399.818'])
+  expect(partsOf(rowOf(block, 'Expenses'))).toEqual(['Expenses', '$ 43.300'])
+  // Profit has its own marker (9,5 g pending); Cash has none.
+  expect(partsOf(rowOf(block, 'Profit'))).toEqual(['Profit', '$ 140.000', 'and 9,5 g without cost'])
+  expect(partsOf(rowOf(block, 'Cash'))).toEqual(['Cash', '$ 317.000'])
+  expect(rowOf(block, 'Profit').textContent).toBe('Profit $ 140.000 and 9,5 g without cost')
+})
+
+test('the history marker shows only when pending_grams > 0, and alone when all_pending', async () => {
+  const fixture = {
+    ...analysisFixture,
+    since_first_record: {
+      ...analysisFixture.since_first_record,
+      profit: { amount: 140000, pending_grams: 0 },
+      shortfall: null,
+      promotion: { amount: 0, pending_grams: 3, all_pending: true },
+    },
+  }
+  renderAnalisis(async () => jsonResponse(200, fixture))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const block = history()
+  expect(partsOf(rowOf(block, 'Profit'))).toEqual(['Profit', '$ 140.000'])
+  expect(within(block).queryByRole('group', { name: 'Stock shortfall' })).not.toBeInTheDocument()
+  const promotion = rowOf(block, 'Promotion')
+  expect(promotion.textContent).toBe('Promotion 3 g without cost')
+  expect(partsOf(promotion)).toEqual(['Promotion', '3 g without cost'])
+})
+
+test('the hero is a group named "You sold in the month" holding the amount in one nowrap element', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const hero = screen.getByRole('group', { name: ANALYSIS_TEXT.vendisteEnElMes })
+  const amount = within(hero).getByText('$ 83.818')
+  expect(amount).toHaveClass('cifra-xl')
+  expect(amount).toHaveClass('analisis__monto-cifra')
+})
+
+describe('the strip line of grams and average margin', () => {
+  const line = '28 g sold · 15 g given away'
+  function withMargin(average_margin: { amount: number; percent: number | null; pending_grams: number }) {
+    return { ...analysisFixture, month: { ...analysisFixture.month, average_margin } }
+  }
+
+  test('percent with nothing pending', async () => {
+    renderAnalisis(async () =>
+      jsonResponse(200, withMargin({ amount: 41000, percent: 55, pending_grams: 0 })),
+    )
+    expect(await screen.findByText(/average margin/)).toHaveTextContent(
+      `${line} · average margin 55%`,
+    )
+    expect(screen.getByText(/average margin/).textContent).toBe(`${line} · average margin 55%`)
+  })
+
+  test('percent with pending grams', async () => {
+    renderAnalisis(async () =>
+      jsonResponse(200, withMargin({ amount: 41000, percent: 55, pending_grams: 2.5 })),
+    )
+    const node = await screen.findByText(/average margin/)
+    expect(node.textContent).toBe(`${line} · average margin 55% and 2,5 g without cost`)
+    // Each figure is its own nowrap element.
+    const figures = Array.from(node.querySelectorAll('.analisis__monto-cifra')).map((n) => n.textContent)
+    expect(figures).toEqual(['28 g', '15 g', '55%'])
+  })
+
+  test('percent null with pending grams', async () => {
+    renderAnalisis(async () =>
+      jsonResponse(200, withMargin({ amount: 0, percent: null, pending_grams: 2.5 })),
+    )
+    const node = await screen.findByText(/average margin/)
+    expect(node.textContent).toBe(`${line} · average margin and 2,5 g without cost`)
+  })
 })

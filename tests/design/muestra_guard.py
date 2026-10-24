@@ -659,6 +659,92 @@ def _line_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
     return problems
 
 
+# --- Análisis, drawn in English ---------------------------------------------------------
+# The two Analysis drawings carry the English the built app shows (GH-333), while muestra.md
+# and the checks above keep their Spanish table headings. `in_spanish` puts a drawn part back
+# into the muestra's words before the Analysis checks compare it; a part it does not know is
+# left as drawn, so a label missing or wrong still reads as a problem.
+
+_ANALYSIS_WORDS = {
+    "Analysis": "Análisis",
+    "You sold in the month": "Vendiste en el mes",
+    "Stock shortfall": "Faltante de stock",
+    "Promotion": "Promoción",
+    "Own use": "Consumo propio",
+    "Cost of goods sold": "Costo de lo vendido",
+    "Expenses of the month": "Gastos del mes",
+    "Expenses since the first record": "Gastos desde el primer registro",
+    "Moved since your first record, not the money you have in cash": GROUPED_SECTION,
+    "Flower purchases": "Compras de flores",
+    "Sales": "Ventas",
+    "Expenses": "Gastos",
+    "Profit": "Ganancia",
+    "Cash": "Caja",
+    "Grams": "Gramos",
+    "Mon": "Lun",
+    "Tue": "Mar",
+    "Wed": "Mié",
+    "Thu": "Jue",
+    "Fri": "Vie",
+    "Sat": "Sáb",
+    "Sun": "Dom",
+    "Best week": "Mejor semana",
+    "Your best day is Wednesday.": "Tu mejor día es el miércoles.",
+    "best: Wednesday": "mejor: miércoles",
+}
+_ANALYSIS_MONTHS = {"October": "Octubre", "September": "Septiembre", "August": "Agosto"}
+_ANALYSIS_PHRASES = (
+    (re.compile(r"\band (\d+(?:,\d+)?) g without cost\b"), r"y \1 g sin costo"),
+    (re.compile(r"^(\d+(?:,\d+)?) g sold$"), r"\1 g"),
+    (re.compile(r"^(\d+(?:,\d+)?) g given away$"), r"\1 g regalado"),
+    (re.compile(r"^(\d+)% of the month$"), r"\1% del mes"),
+    (re.compile(r"^average margin\b"), "margen promedio"),
+    (re.compile(r"^cost \$"), "costo $"),
+    (re.compile(r"^margin (\d+%)$"), r"margen \1"),
+    (re.compile(r"^Best week: "), "Mejor semana: "),
+    (re.compile(r"^This one: "), "Esta: "),
+)
+
+
+def _in_spanish(part: str) -> str:
+    if part in _ANALYSIS_WORDS:
+        return _ANALYSIS_WORDS[part]
+    month = re.fullmatch(r"([A-Z][a-z]+) (\d{4})", part)
+    if month and month.group(1) in _ANALYSIS_MONTHS:
+        return f"{_ANALYSIS_MONTHS[month.group(1)]} {month.group(2)}"
+    for pattern, replacement in _ANALYSIS_PHRASES:
+        part = pattern.sub(replacement, part)
+    return part
+
+
+def spanish_label_problems(name: str, screen: Screen) -> list[str]:
+    """A drawn part still in Spanish: the Analysis drawings show the app's English (GH-333)."""
+    spanish = {value for value in _ANALYSIS_WORDS.values()}
+    spanish |= {f"{month} 2026" for month in _ANALYSIS_MONTHS.values()}
+    shapes = (
+        re.compile(r"\by \d+(?:,\d+)? g sin costo\b"),
+        re.compile(r"^\d+(?:,\d+)? g regalado$"),
+        re.compile(r"^\d+% del mes$"),
+        re.compile(r"^margen (?:promedio\b|\d+%$)"),
+        re.compile(r"^costo \$"),
+        re.compile(r"^(?:Mejor semana|Esta): "),
+        re.compile(r"^(?:Octubre|Septiembre|Agosto) \d{4}$"),
+    )
+    return [
+        _problem(name, f"'{part}' is a Spanish product label; the drawing shows the app's English")
+        for part in screen.parts
+        if part in spanish or any(shape.search(part) for shape in shapes)
+    ]
+
+
+def in_spanish(screen: Screen) -> Screen:
+    return Screen(
+        parts=tuple(_in_spanish(part) for part in screen.parts),
+        text=screen.text,
+        tabs=screen.tabs,
+    )
+
+
 # --- Análisis ---------------------------------------------------------------------------
 
 HEADER_LABELS = ("Vendiste en el mes", "Faltante de stock", "Promoción", "Consumo propio")
@@ -967,10 +1053,11 @@ def check_screen(
 ) -> list[str]:
     """Every problem of one screen of `family`, or one problem for what `muestra.md` lacks."""
     screen = read_screen(page)
+    checked = in_spanish(screen) if family == "analisis" else screen
     problems: list[str] = []
     try:
         for check in CHECKS[family]:
-            problems += check(name, screen, muestra)
+            problems += check(name, checked, muestra)
     except MuestraError as error:
         problems.append(_problem(name, str(error)))
     problems += date_problems(name, screen, muestra)

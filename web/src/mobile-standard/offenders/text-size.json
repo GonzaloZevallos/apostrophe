@@ -700,6 +700,66 @@
     "reason": "the text of the \"Sales\" label is drawn below the 12px minimum font size"
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "text-size",
+    "target": "span:Customers",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "text-size",
+    "target": "span:Home",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "text-size",
+    "target": "span:More",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "text-size",
+    "target": "span:Sales",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "text-size",
+    "target": "span:Varieties",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "text-size",
+    "target": "span:Customers",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "text-size",
+    "target": "span:Home",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "text-size",
+    "target": "span:More",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "text-size",
+    "target": "span:Sales",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "text-size",
+    "target": "span:Varieties",
+    "issue": 45
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "text-size",
     "target": "span:Customers",

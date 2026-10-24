@@ -228,6 +228,30 @@
     "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled halfway"
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 59
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 59
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",

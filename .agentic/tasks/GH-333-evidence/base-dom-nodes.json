@@ -1,0 +1,638 @@
+{
+ "note": "Read from the base DOM (claro theme; oscuro lists the same targets) with the geometry collector copied verbatim plus the element chain and DOM order. At every size the targets equal the listed offenders exactly.",
+ "nodes": [
+  {
+   "size": "246x437",
+   "rule": "h-scroll",
+   "target": "",
+   "region": "page (whole document)",
+   "domOrder": -1,
+   "text": "",
+   "chain": []
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "region": "hero",
+   "domOrder": 65,
+   "text": "$ 1.000.497.999",
+   "chain": [
+    "span.cifra-xl",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[1]",
+   "region": "other:span.pie < div < div.cuerpo < main.pantalla",
+   "domOrder": 67,
+   "text": "Stock shortfall $ 10.000",
+   "chain": [
+    "span.pie",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[1]",
+   "region": "other:span.pie < div < div.cuerpo < main.pantalla",
+   "domOrder": 68,
+   "text": "Promotion $ 35.000",
+   "chain": [
+    "span.pie",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost",
+   "region": "other:span.pie < div < div.cuerpo < main.pantalla",
+   "domOrder": 69,
+   "text": "Own use $ 14.000 and 1 g without cost",
+   "chain": [
+    "span.pie",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "region": "by-variety rows",
+   "domOrder": 78,
+   "text": "$ 999.999.999",
+   "chain": [
+    "span.analisis__variedad-ventas",
+    "div.analisis__variedad-cabecera",
+    "div.analisis__variedad"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:$ #.#[1]",
+   "region": "by-variety rows",
+   "domOrder": 88,
+   "text": "$ 256.000",
+   "chain": [
+    "span.analisis__variedad-ventas",
+    "div.analisis__variedad-cabecera",
+    "div.analisis__variedad"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "region": "history block",
+   "domOrder": 449,
+   "text": "$ 1.000.536.999",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[2]",
+   "region": "history block",
+   "domOrder": 453,
+   "text": "Stock shortfall $ 10.000",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[2]",
+   "region": "history block",
+   "domOrder": 454,
+   "text": "Promotion $ 35.000",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 460,
+   "text": "$ 2.000.214.497",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:$ #.#[2]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 470,
+   "text": "$ 264.001",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[4]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 475,
+   "text": "$ 2.000.214.497",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "246x437",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 485,
+   "text": "$ 1.144.001",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "h-scroll",
+   "target": "",
+   "region": "page (whole document)",
+   "domOrder": -1,
+   "text": "",
+   "chain": []
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "region": "hero",
+   "domOrder": 65,
+   "text": "$ 1.000.497.999",
+   "chain": [
+    "span.cifra-xl",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#",
+   "region": "other:span.pie < div < div.cuerpo < main.pantalla",
+   "domOrder": 67,
+   "text": "Stock shortfall $ 10.000",
+   "chain": [
+    "span.pie",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[1]",
+   "region": "other:span.pie < div < div.cuerpo < main.pantalla",
+   "domOrder": 68,
+   "text": "Promotion $ 35.000",
+   "chain": [
+    "span.pie",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "region": "by-variety rows",
+   "domOrder": 78,
+   "text": "$ 999.999.999",
+   "chain": [
+    "span.analisis__variedad-ventas",
+    "div.analisis__variedad-cabecera",
+    "div.analisis__variedad"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "region": "history block",
+   "domOrder": 449,
+   "text": "$ 1.000.536.999",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "region": "history block",
+   "domOrder": 450,
+   "text": "expenses $ 2.000.226.997",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[2]",
+   "region": "history block",
+   "domOrder": 454,
+   "text": "Promotion $ 35.000",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 460,
+   "text": "$ 2.000.214.497",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 470,
+   "text": "$ 264.001",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[4]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 475,
+   "text": "$ 2.000.214.497",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "320x568",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 485,
+   "text": "$ 1.144.001",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "h-scroll",
+   "target": "",
+   "region": "page (whole document)",
+   "domOrder": -1,
+   "text": "",
+   "chain": []
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "region": "hero",
+   "domOrder": 65,
+   "text": "$ 1.000.497.999",
+   "chain": [
+    "span.cifra-xl",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[1]",
+   "region": "other:span.pie < div < div.cuerpo < main.pantalla",
+   "domOrder": 67,
+   "text": "Stock shortfall $ 10.000",
+   "chain": [
+    "span.pie",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost[1]",
+   "region": "other:span.pie < div < div.cuerpo < main.pantalla",
+   "domOrder": 69,
+   "text": "Own use $ 14.000 and 1 g without cost",
+   "chain": [
+    "span.pie",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "region": "by-variety rows",
+   "domOrder": 78,
+   "text": "$ 999.999.999",
+   "chain": [
+    "span.analisis__variedad-ventas",
+    "div.analisis__variedad-cabecera",
+    "div.analisis__variedad"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "region": "history block",
+   "domOrder": 450,
+   "text": "expenses $ 2.000.226.997",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[2]",
+   "region": "history block",
+   "domOrder": 453,
+   "text": "Stock shortfall $ 10.000",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost[2]",
+   "region": "history block",
+   "domOrder": 455,
+   "text": "Own use $ 14.000 and 1 g without cost",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 460,
+   "text": "$ 2.000.214.497",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 470,
+   "text": "$ 264.001",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 475,
+   "text": "$ 2.000.214.497",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "375x812",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 485,
+   "text": "$ 1.144.001",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "430x932",
+   "rule": "h-scroll",
+   "target": "",
+   "region": "page (whole document)",
+   "domOrder": -1,
+   "text": "",
+   "chain": []
+  },
+  {
+   "size": "430x932",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "region": "hero",
+   "domOrder": 65,
+   "text": "$ 1.000.497.999",
+   "chain": [
+    "span.cifra-xl",
+    "div",
+    "div.cuerpo"
+   ]
+  },
+  {
+   "size": "430x932",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "region": "by-variety rows",
+   "domOrder": 78,
+   "text": "$ 999.999.999",
+   "chain": [
+    "span.analisis__variedad-ventas",
+    "div.analisis__variedad-cabecera",
+    "div.analisis__variedad"
+   ]
+  },
+  {
+   "size": "430x932",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "region": "history block",
+   "domOrder": 450,
+   "text": "expenses $ 2.000.226.997",
+   "chain": [
+    "span",
+    "div.analisis__historico",
+    "aside.analisis__aside"
+   ]
+  },
+  {
+   "size": "430x932",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 460,
+   "text": "$ 2.000.214.497",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "430x932",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 470,
+   "text": "$ 264.001",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "430x932",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 475,
+   "text": "$ 2.000.214.497",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  },
+  {
+   "size": "430x932",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "region": "ExpenseBreakdownView",
+   "domOrder": 485,
+   "text": "$ 1.144.001",
+   "chain": [
+    "span.gastos__categoria-subtotal",
+    "div.gastos__categoria-cabecera",
+    "div.analisis__gastos"
+   ]
+  }
+ ],
+ "overflowingElements": {
+  "246x437": {
+   "scrollWidth": 569,
+   "over": [
+    "span.cifra-xl right=369 $ 1.000.497.999",
+    "span.pie right=409 44 g sold · 1 g given away · average mar",
+    "span.analisis__variedad-nombre right=453 Variedad LarguísimoLarguísimoLarguísimoL",
+    "span.analisis__variedad-ventas right=567 $ 999.999.999",
+    "span.gastos__categoria-nombre right=439 Categoría LarguísimoLarguísimoLarguísimo",
+    "span.gastos__categoria-subtotal right=569 $ 2.000.214.497",
+    "span.gastos__categoria-nombre right=439 Categoría LarguísimoLarguísimoLarguísimo",
+    "span.gastos__categoria-subtotal right=569 $ 2.000.214.497"
+   ]
+  },
+  "430x932": {
+   "scrollWidth": 569,
+   "over": [
+    "span.analisis__variedad-nombre right=453 Variedad LarguísimoLarguísimoLarguísimoL",
+    "span.analisis__variedad-ventas right=567 $ 999.999.999",
+    "span.gastos__categoria-nombre right=439 Categoría LarguísimoLarguísimoLarguísimo",
+    "span.gastos__categoria-subtotal right=569 $ 2.000.214.497",
+    "span.gastos__categoria-nombre right=439 Categoría LarguísimoLarguísimoLarguísimo",
+    "span.gastos__categoria-subtotal right=569 $ 2.000.214.497"
+   ]
+  },
+  "375x812": {
+   "scrollWidth": 569,
+   "over": [
+    "span.pie right=409 44 g sold · 1 g given away · average mar",
+    "span.analisis__variedad-nombre right=453 Variedad LarguísimoLarguísimoLarguísimoL",
+    "span.analisis__variedad-ventas right=567 $ 999.999.999",
+    "span.gastos__categoria-nombre right=439 Categoría LarguísimoLarguísimoLarguísimo",
+    "span.gastos__categoria-subtotal right=569 $ 2.000.214.497",
+    "span.gastos__categoria-nombre right=439 Categoría LarguísimoLarguísimoLarguísimo",
+    "span.gastos__categoria-subtotal right=569 $ 2.000.214.497"
+   ]
+  },
+  "320x568": {
+   "scrollWidth": 569,
+   "over": [
+    "span.cifra-xl right=369 $ 1.000.497.999",
+    "span.pie right=409 44 g sold · 1 g given away · average mar",
+    "span.analisis__variedad-nombre right=453 Variedad LarguísimoLarguísimoLarguísimoL",
+    "span.analisis__variedad-ventas right=567 $ 999.999.999",
+    "span.gastos__categoria-nombre right=439 Categoría LarguísimoLarguísimoLarguísimo",
+    "span.gastos__categoria-subtotal right=569 $ 2.000.214.497",
+    "span.gastos__categoria-nombre right=439 Categoría LarguísimoLarguísimoLarguísimo",
+    "span.gastos__categoria-subtotal right=569 $ 2.000.214.497"
+   ]
+  }
+ }
+}

@@ -15,7 +15,7 @@
  * read only, no forms, no toasts (PRD, "Read only").
  */
 
-import { Fragment, useState } from 'react'
+import { Fragment, useId, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
@@ -32,7 +32,8 @@ import { formatDateShort, formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
-import { formatRowCost } from './analisisCost'
+import { amountParts, rowCostParts } from './analisisCost'
+import AmountRow from './analisis/AmountRow'
 import {
   COST_OF_GOODS_LABEL,
   EMPTY_MONTH_LINE,
@@ -78,16 +79,6 @@ function pendingSuffix(grams: number): string {
   return grams > 0 ? ANALYSIS_TEXT.pendingSuffix(formatGrams(grams)) : ''
 }
 
-/** One cost line, "Faltante de stock $ 3.000 y 1 g sin costo": the label and
- * `formatRowCost`, in one node. */
-function CostLine({ label, cost, className }: { label: string; cost: RowCost; className?: string }) {
-  return (
-    <span className={className}>
-      {label} {formatRowCost(cost)}
-    </span>
-  )
-}
-
 /** Faltante de stock, Promoción and Consumo propio (CONTEXT.md), each apart and each
  * with only its own "y N g sin costo" (or only its grams when all of it is pending).
  * `null` when the period has none of that reason's records: nothing is shown. */
@@ -95,18 +86,24 @@ function WithdrawalLines({
   shortfall,
   promotion,
   ownUse,
-  className,
+  variant,
 }: {
   shortfall: RowCost | null
   promotion: RowCost | null
   ownUse: RowCost | null
-  className?: string
+  variant: 'compact' | 'row'
 }) {
   return (
     <>
-      {shortfall !== null && <CostLine className={className} label={SHORTFALL_LABEL} cost={shortfall} />}
-      {promotion !== null && <CostLine className={className} label={PROMOTION_LABEL} cost={promotion} />}
-      {ownUse !== null && <CostLine className={className} label={OWN_USE_LABEL} cost={ownUse} />}
+      {shortfall !== null && (
+        <AmountRow variant={variant} label={SHORTFALL_LABEL} value={rowCostParts(shortfall)} />
+      )}
+      {promotion !== null && (
+        <AmountRow variant={variant} label={PROMOTION_LABEL} value={rowCostParts(promotion)} />
+      )}
+      {ownUse !== null && (
+        <AmountRow variant={variant} label={OWN_USE_LABEL} value={rowCostParts(ownUse)} />
+      )}
     </>
   )
 }
@@ -115,7 +112,6 @@ function WithdrawalLines({
  * vendido always, then Faltante de stock, Promoción and Consumo propio when present. */
 function RowCostLines({
   period,
-  className,
 }: {
   period: {
     cost_of_goods: RowCost
@@ -123,13 +119,16 @@ function RowCostLines({
     promotion: RowCost | null
     own_use: RowCost | null
   }
-  className?: string
 }) {
   return (
     <>
-      <CostLine className={className} label={COST_OF_GOODS_LABEL} cost={period.cost_of_goods} />
+      <AmountRow
+        variant="compact"
+        label={COST_OF_GOODS_LABEL}
+        value={rowCostParts(period.cost_of_goods)}
+      />
       <WithdrawalLines
-        className={className}
+        variant="compact"
         shortfall={period.shortfall}
         promotion={period.promotion}
         ownUse={period.own_use}
@@ -143,14 +142,17 @@ function RowCostLines({
 function CostSubRow({
   period,
   current,
+  labelId,
 }: {
   period: Parameters<typeof RowCostLines>[0]['period']
   current: boolean
+  /** The id of the date cell of the row above: it names this group. */
+  labelId: string
 }) {
   return (
     <tr className={current ? 'analisis__fila-costos analisis__fila-actual' : 'analisis__fila-costos'}>
       <td colSpan={6}>
-        <div className="analisis__costos">
+        <div role="group" aria-labelledby={labelId} className="analisis__costos">
           <RowCostLines period={period} />
         </div>
       </td>
@@ -248,6 +250,9 @@ function AnalisisContenido({
   onMonth: (next: string) => void
 }) {
   const m = data.month
+  const ids = useId()
+  const heroId = `${ids}-hero`
+  const historyLabelId = `${ids}-history`
   const maxWeekSales = Math.max(0, ...data.weeks.map((week) => week.sales))
   const maxWeekdaySales = Math.max(0, ...data.weekdays.map((day) => day.sales))
 
@@ -256,18 +261,35 @@ function AnalisisContenido({
       <MonthNav month={m} onMonth={onMonth} />
 
       <div>
-        <span className="rotulo">{ANALYSIS_TEXT.vendisteEnElMes}</span>
-        <span className="cifra-xl">{formatMoney(m.sales)}</span>
+        <div role="group" aria-labelledby={heroId}>
+          <span id={heroId} className="rotulo">
+            {ANALYSIS_TEXT.vendisteEnElMes}
+          </span>
+          <span className="cifra-xl analisis__monto-cifra">{formatMoney(m.sales)}</span>
+        </div>
         <span className="pie">
-          {formatGrams(m.grams_sold)}{ANALYSIS_TEXT.vendidos}{formatGrams(m.grams_gifted)}{ANALYSIS_TEXT.regalados}
-          {m.average_margin.percent !== null &&
-            ANALYSIS_TEXT.margenPromedio01(m.average_margin.percent, pendingSuffix(m.average_margin.pending_grams))}
-          {m.average_margin.percent === null &&
-            m.average_margin.pending_grams > 0 &&
-            ANALYSIS_TEXT.margenPromedio0(pendingSuffix(m.average_margin.pending_grams))}
+          <span className="analisis__monto-cifra">{formatGrams(m.grams_sold)}</span>
+          {ANALYSIS_TEXT.vendidos}
+          <span className="analisis__monto-cifra">{formatGrams(m.grams_gifted)}</span>
+          {ANALYSIS_TEXT.regalados}
+          {(m.average_margin.percent !== null || m.average_margin.pending_grams > 0) &&
+            ANALYSIS_TEXT.margenPromedio}
+          {m.average_margin.percent !== null && (
+            <>
+              {' '}
+              <span className="analisis__monto-cifra">
+                {ANALYSIS_TEXT.porcentaje(m.average_margin.percent)}
+              </span>
+            </>
+          )}
+          {m.average_margin.pending_grams > 0 && (
+            <span className="analisis__monto-marca">
+              {pendingSuffix(m.average_margin.pending_grams)}
+            </span>
+          )}
         </span>
         <WithdrawalLines
-          className="pie"
+          variant="row"
           shortfall={m.shortfall}
           promotion={m.promotion}
           ownUse={m.own_use}
@@ -373,10 +395,15 @@ function AnalisisContenido({
           <span className="pie">{ANALYSIS_TEXT.semanaASemanaUltimas}</span>
           <div className="analisis__semanas">
             {data.weeks.map((week) => (
-              <div key={week.first_day} className="analisis__semana">
-                <span>{formatDateShort(week.first_day)}</span>
+              <div
+                key={week.first_day}
+                role="group"
+                aria-labelledby={`${ids}-w-${week.first_day}`}
+                className="analisis__semana"
+              >
+                <span id={`${ids}-w-${week.first_day}`}>{formatDateShort(week.first_day)}</span>
                 <Bar value={week.sales} max={maxWeekSales} />
-                <span>{formatMoney(week.sales)}</span>
+                <span className="analisis__monto-cifra">{formatMoney(week.sales)}</span>
                 <span>{formatGrams(week.grams)}</span>
                 <div className="analisis__costos">
                   <RowCostLines period={week} />
@@ -412,7 +439,7 @@ function AnalisisContenido({
                       index === data.weeks.length - 1 ? 'analisis__fila-actual' : undefined
                     }
                   >
-                    <td>{formatDateShort(week.first_day)}</td>
+                    <td id={`${ids}-wt-${week.first_day}`}>{formatDateShort(week.first_day)}</td>
                     <td className="analisis__num">{formatMoney(week.sales)}</td>
                     <td className="analisis__num">{formatGrams(week.grams)}</td>
                     <td className="analisis__num">{formatMoney(week.expenses)}</td>
@@ -425,7 +452,11 @@ function AnalisisContenido({
                     </td>
                     <td className="analisis__num">{formatMoney(week.cash)}</td>
                   </tr>
-                  <CostSubRow period={week} current={index === data.weeks.length - 1} />
+                  <CostSubRow
+                    period={week}
+                    current={index === data.weeks.length - 1}
+                    labelId={`${ids}-wt-${week.first_day}`}
+                  />
                   </Fragment>
                 ))}
               </tbody>
@@ -438,9 +469,14 @@ function AnalisisContenido({
           <span className="pie">{ANALYSIS_TEXT.mesAMesUltimos}</span>
           <div className="analisis__meses">
             {data.months.map((row) => (
-              <div key={row.month} className="analisis__mes-fila">
-                <span>{formatMonthLong(row.month)}</span>
-                <span>{formatMoney(row.sales)}</span>
+              <div
+                key={row.month}
+                role="group"
+                aria-labelledby={`${ids}-m-${row.month}`}
+                className="analisis__mes-fila"
+              >
+                <span id={`${ids}-m-${row.month}`}>{formatMonthLong(row.month)}</span>
+                <span className="analisis__monto-cifra">{formatMoney(row.sales)}</span>
                 <span>{formatGrams(row.grams)}</span>
                 <div className="analisis__costos">
                   <RowCostLines period={row} />
@@ -471,7 +507,7 @@ function AnalisisContenido({
                 {data.months.map((row) => (
                   <Fragment key={row.month}>
                   <tr>
-                    <td>{formatMonthLong(row.month)}</td>
+                    <td id={`${ids}-mt-${row.month}`}>{formatMonthLong(row.month)}</td>
                     <td className="analisis__num">{formatMoney(row.sales)}</td>
                     <td className="analisis__num">{formatGrams(row.grams)}</td>
                     <td className="analisis__num">{formatMoney(row.expenses)}</td>
@@ -481,7 +517,7 @@ function AnalisisContenido({
                     </td>
                     <td className="analisis__num">{formatMoney(row.cash)}</td>
                   </tr>
-                  <CostSubRow period={row} current={false} />
+                  <CostSubRow period={row} current={false} labelId={`${ids}-mt-${row.month}`} />
                   </Fragment>
                 ))}
               </tbody>
@@ -504,16 +540,35 @@ function AnalisisContenido({
           </div>
 
           {data.since_first_record !== null && (
-            <div className="analisis__historico">
-              <span className="pie">{SINCE_FIRST_RECORD_LABEL}</span>
-              <span>{formatMoney(data.since_first_record.sales)}</span>
-              <span>{ANALYSIS_TEXT.gastos}{formatMoney(data.since_first_record.expenses)}</span>
-              <span>
-                {ANALYSIS_TEXT.ganancia}{formatMoney(data.since_first_record.profit.amount)}
-                {pendingSuffix(data.since_first_record.profit.pending_grams)}
+            <div role="group" aria-labelledby={historyLabelId} className="analisis__historico">
+              <span id={historyLabelId} className="pie">
+                {SINCE_FIRST_RECORD_LABEL}
               </span>
-              <span>{ANALYSIS_TEXT.caja}{formatMoney(data.since_first_record.cash)}</span>
+              <AmountRow
+                variant="row"
+                label={COMMON_TEXT.sales}
+                value={amountParts(data.since_first_record.sales, 0)}
+              />
+              <AmountRow
+                variant="row"
+                label={COMMON_TEXT.expenses}
+                value={amountParts(data.since_first_record.expenses, 0)}
+              />
+              <AmountRow
+                variant="row"
+                label={COMMON_TEXT.profit}
+                value={amountParts(
+                  data.since_first_record.profit.amount,
+                  data.since_first_record.profit.pending_grams,
+                )}
+              />
+              <AmountRow
+                variant="row"
+                label={COMMON_TEXT.cash}
+                value={amountParts(data.since_first_record.cash, 0)}
+              />
               <WithdrawalLines
+                variant="row"
                 shortfall={data.since_first_record.shortfall}
                 promotion={data.since_first_record.promotion}
                 ownUse={data.since_first_record.own_use}

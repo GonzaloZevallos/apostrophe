@@ -62,6 +62,18 @@
     "reason": "with the API held, neither the content area nor anything in it carries aria-busy=\"true\""
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "aria-busy",
     "target": "",

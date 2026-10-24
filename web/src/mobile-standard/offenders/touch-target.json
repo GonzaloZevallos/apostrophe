@@ -778,6 +778,84 @@
     "issue": 45
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-target",
+    "target": "link:Owed to you",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-target",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-target",
+    "target": "link:Owed to you",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-target",
+    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
+    "issue": 45
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "touch-target",
     "target": "link:Home",

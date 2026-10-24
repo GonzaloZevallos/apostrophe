@@ -86,3 +86,30 @@ The guards are a ratchet, not a proof (GH-53, landing 1).
   (the import recognises the Spanish sheet).
 - `copy/emptyStates.ts` only references the wordings written in each area's copy file (plus the
   sales line), so each value has one home.
+
+## Amendment (GH-297, part 2): the locale ban
+
+- **A locale stays only as a literal argument.** Number and collation locales (`es-AR`, `es`)
+  are written in the call (`money.ts`, `varietiesByName.ts`); nothing reads the device's.
+- **The ban and its scope.** `web/src/architecture/localeBan.ts` bans, in every non-test
+  `web/src/**/*.ts(x)` file, five forms: any `toLocale*` call; `Intl.DateTimeFormat`;
+  `Intl.RelativeTimeFormat`; `Intl.NumberFormat`, with or without `new`, whose first argument is
+  not a string literal; and `localeCompare` whose second argument, or `Intl.Collator` whose first,
+  is missing or not a string literal. `web/e2e/` (whose specs use `toLocaleString('es-AR')` on
+  purpose) and `scripts/` are outside it. `localeBan.test.ts` checks the fixtures and scans the
+  real tree.
+- **What each form protects.**
+  - Forms 1-3 (`toLocale*`, the date and relative-time formatters): dates and words that would
+    follow the device's language.
+  - Form 4 (the number formatter): the thousands and decimal marks. `$ 11.000` would become
+    `$ 11,000` on a device set to English.
+  - Form 5 (`localeCompare`, `Intl.Collator`): the order a seller sees, which would follow the
+    device instead of staying Argentine.
+- **Not a Spanish-text guard.** The checks on the product's words are `copyLanguage.test.ts`,
+  `tests/architecture/test_no_spanish.py` and `test_no_spanish_output.py`.
+- **Known gaps.**
+  - A name assembled at runtime (`x['to' + 'LocaleString']()`) is not seen.
+  - The other `Intl` members (plural rules and the like) are not banned.
+  - JSX text is not modelled: the scan reads it as code. A misread that leaves a string, a
+    template or a comment open shows through `endsInCode`, which the real-tree test asserts
+    for every file, so it fails closed.
