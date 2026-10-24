@@ -3105,8 +3105,63 @@ body {
 /* The cost lines of a week or month (`Analisis.dc.html`, `AnalisisCompu.dc.html`):
    Costo de lo vendido, Faltante de stock, Promoción and Consumo propio, each in
    words, on a line of their own under the row's figures. */
-.analisis__costos > span {
+/* One labelled amount (`AmountRow`): the label, then a value group holding the amount and
+   its marker. The row wraps and the value group is a wrapping flex too, so at the
+   narrowest width the value group drops under its label as a whole, and then the marker
+   under the amount. Nothing is fitted by font-size, clamp, ellipsis or abbreviation: the
+   amount alone is `white-space: nowrap`, holding its $, its space and every digit. */
+.analisis__monto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-xs) var(--espacio-md);
+}
+
+.analisis__monto-valor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-xs) var(--espacio-sm);
+}
+
+.analisis__monto-cifra {
   white-space: nowrap;
+}
+
+/* The week and month rows (`AnalisisCompu.dc.html`): the size and colour come from the
+   container's rules; the amount is the strong figure. */
+.analisis__monto--compacto .analisis__monto-cifra {
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+/* The summary strip and the history block (`Analisis.dc.html`): the label on the left, the
+   value group on the right, a rule under each row. */
+.analisis__monto--fila {
+  justify-content: space-between;
+  margin: 0 var(--margen-pantalla);
+  padding: var(--espacio-md) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.analisis__monto--fila .analisis__monto-etiqueta {
+  font-size: 16px;
+}
+
+.analisis__monto--fila .analisis__monto-valor {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.analisis__monto--fila .analisis__monto-cifra {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.analisis__monto--fila .analisis__monto-marca {
+  font-size: 13px;
+  color: var(--tinta2);
 }
 
 .analisis__costos {
