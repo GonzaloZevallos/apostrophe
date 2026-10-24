@@ -162,7 +162,7 @@ function assertAccount(s) {
 
 // The entry that reaches the closing screen "Listo" ends its business's Onboarding for
 // good (ADR-0036), so each `open` business can serve one such entry per sample run. Every
-// other kind (`ended`, `pre_onboarding`, `imported`) is read-only: it serves entries that
+// other kind (`ended`, `pre_onboarding`, `imported`, `onboarding`) is read-only: it serves entries that
 // change nothing, which several rows may share, and no Listo entry (ADR-0042, GH-274).
 const LISTO = 'OnboardingListo'
 const DEFAULT_ACCOUNT = 'La Huerta'
@@ -174,7 +174,10 @@ function reachesListo(s) {
   return (s.design ?? s.screen) === LISTO
 }
 
-const KINDS = ['open', 'ended', 'pre_onboarding', 'imported']
+// The kinds are `account_kinds` of screens.json, the one list; a test ties it to the kinds
+// sample_app.py can write.
+/** @type {ReadonlyArray<string>} */
+const KINDS = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'screens.json'), 'utf-8')).account_kinds
 const OPEN = 'open'
 
 // The sample writes each account's kind in `facts.account_kinds`. A refusal names the
@@ -219,7 +222,7 @@ function isOnboardingComputer(name) {
 // capture. The messages are fixed text: they name the screens, never a credential.
 /**
  * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} selected
- * @param {Readonly<Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported'>>} kinds
+ * @param {Readonly<Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported' | 'onboarding'>>} kinds
  * @returns {void}
  */
 export function assertSelectedAccounts(selected, kinds) {

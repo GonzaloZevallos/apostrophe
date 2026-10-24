@@ -217,6 +217,18 @@
     "reason": "the business name, a word of 30 characters or more, is not cut with an ellipsis and runs wider than the viewport or its container"
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "name-overflow",
     "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",

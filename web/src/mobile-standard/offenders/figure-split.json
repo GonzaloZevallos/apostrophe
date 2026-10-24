@@ -306,6 +306,36 @@
     "issue": 45
   },
   {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "figure-split",
+    "target": "span:$ #.#",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#",
+    "issue": 45
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "figure-split",
+    "target": "span:$ #.#",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#",
+    "issue": 45
+  },
+  {
     "screen": "InicioPrimeraVez",
     "rule": "figure-split",
     "target": "span:$ #.#",
