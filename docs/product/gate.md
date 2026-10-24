@@ -40,7 +40,7 @@ Success criteria:
 
 **When** a change adds a row to the screens registry that the mobile walk always walks, **I want** (as the Developer making that change, or the reviewer approving it) a written rule that lets that row bring all its real offender cells in the same change, **so that** a rule written for a change says what truly holds, the change can be approved, and later changes can be reviewed without arguing the same contradiction again.
 
-Before this (GH-305, a follow-up of GH-274), the only allowed growth was the trade. GH-274 added the phone rows `InicioChecklist` (Home with the first-run checklist) and `InicioImportado`. They were never listed as unreachable, so their real cells (56 entries) could not be a trade, and the plan's invariant could not hold as written. The finding stayed open on GH-274's approved head.
+Before this (GH-305, a follow-up of GH-274), the only allowed growth was the trade. GH-274 added the phone rows `InicioChecklist` (Home with the first-run checklist) and `InicioImportado` (Home with the after-import notice). They were never listed as unreachable, so their real cells (56 entries) could not be a trade, and the plan's invariant could not hold as written. The finding stayed open on GH-274's approved head.
 
 Success criteria:
 
