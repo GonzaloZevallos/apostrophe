@@ -18,7 +18,24 @@ def test_a_well_formed_tag_is_a_language(tag: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "tag", ["", "EN", "en_US", "e", "english", "en-", "-en", "en--XA", "en-xa!", " en", "de\n"]
+    "tag",
+    [
+        "",
+        "EN",
+        "en_US",
+        "e",
+        "english",
+        "en-",
+        "-en",
+        "en--XA",
+        "en-xa!",
+        " en",
+        "de\n",
+        "en-xa",
+        "de-at",
+        "zh-hant",
+        "en-Xa",
+    ],
 )
 def test_a_malformed_tag_is_refused(tag: str) -> None:
     with pytest.raises(InvalidLanguageTag):
@@ -55,6 +72,13 @@ def test_a_tag_outside_the_selectable_list_is_refused_with_its_code() -> None:
 def test_the_test_locale_is_refused_even_when_wrongly_listed_as_selectable() -> None:
     with pytest.raises(LanguageNotSelectable):
         BusinessLanguage.parse("en-XA", [ENGLISH, TEST_LOCALE])
+
+
+def test_a_non_canonical_test_locale_is_refused_as_not_selectable() -> None:
+    with pytest.raises(LanguageNotSelectable) as refused:
+        BusinessLanguage.parse("en-xa", [ENGLISH, TEST_LOCALE])
+
+    assert refused.value.code == "business.language_not_selectable"
 
 
 def test_a_malformed_tag_is_refused_as_not_selectable() -> None:
