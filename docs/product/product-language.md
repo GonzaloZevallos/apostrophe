@@ -75,7 +75,7 @@ Success criteria:
 
 ### Spreadsheet import
 
-- It recognises the Spanish sheet exactly as today: tab names, column titles and cell values such as "Compra", "Efectivo", "Pendiente", "Amigo", "Regalo", "Sí"/"No" and the unfinished-row texts.
+- It recognises the Spanish sheet exactly as today: tab names, column titles and cell values such as the sheet's "Compra", "Efectivo", "Pendiente", "Amigo", "Regalo", "Sí"/"No" and the unfinished-row texts.
 - Only the report's own words are English. Sheet texts it quotes stay as the sheet wrote them.
 - Categories match by name as today, so a sheet's Spanish categories are created next to a new business's English defaults. Those defaults can be removed while they have no expenses.
 
