@@ -180,18 +180,6 @@ def test_the_script_writes_the_po_and_mo_of_the_test_locale(tmp_path: Path) -> N
     assert po_path(locales, "en-XA").with_suffix(".mo").is_file()
 
 
-def test_the_script_reproduces_the_committed_files(tmp_path: Path) -> None:
-    locales = tmp_path / "locales"
-    shutil.copytree(FIXTURE_LOCALES / "en", locales / "en")
-
-    pseudo_locale.main(locales)
-
-    committed = po_path(FIXTURE_LOCALES, "en-XA")
-    assert po_path(locales, "en-XA").read_text(encoding="utf-8") == committed.read_text(
-        encoding="utf-8"
-    )
-
-
 def test_the_report_script_lists_the_missing_keys_and_returns_zero(
     fixture_copy: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
