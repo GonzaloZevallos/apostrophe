@@ -60,7 +60,7 @@ Success criteria:
 - **The report**, the same for a dry run and a successful real run:
   - counts per kind of record: varieties, price entries, catalog attributes, stock entries, expense categories, expenses, customers, sales and payments;
   - the count of customers imported without a phone number;
-  - which pricing switches the import turns on (Bulk price, Customers VIP), or that it turns none on;
+  - which pricing switches the import turns on (Bulk price, VIP customers), or that it turns none on;
   - every blocking problem, with its sheet and row;
   - every row left out as unfinished, with the sheet's own text for it (e.g. `Falta pago`);
   - every total mismatch, with the sheet's total and the recomputed one;
@@ -92,7 +92,7 @@ Success criteria:
 
 - **Any export**: an `.xlsx` saved by Excel or exported by Google Sheets reads the same.
   - Titles on row 1 are found whatever size the file declares, including none.
-  - Data rows are read to the last row with data, in the sheet's Ventas, Entradas and Gastos tabs and the price history of its Ajustes tab.
+  - Data rows are read to the last row with data, in the sheet's Ventas tab, its Entradas tab and its Gastos tab and the price history of its Ajustes tab.
   - Fixed cells and ranges (the sheet's Ajustes and Catálogo tabs) are read at their address whatever size the file declares.
 - **Numbers where a whole number or grams are expected**: how the cell stores a number never matters, only its value.
   - In a whole-number field (the sheet's `% índica`, `Costo total`, `Monto`, `Envío cobrado` and `Precio especial (total)` columns, and the list and bulk price), a number with no fractional part is that whole number: `60.0` is 60. A fractional value is still refused by the owner's rule (`60.5` is not a share).
@@ -106,11 +106,11 @@ Success criteria:
   - The problem tells the operator to re-type the cell as text in the sheet (in Google Sheets, starting it with an apostrophe) and run again.
   - The dry run lists every such cell in one pass.
   - Dates in date columns (the sheet's `Fecha` column, the effective date) are read as dates, as always.
-- **The sheet's Ventas, Entradas and Gastos tabs**: column titles are on row 1 and data starts on row 2. Columns are found by their title.
+- **The sheet's Ventas tab, its Entradas tab and its Gastos tab**: column titles are on row 1 and data starts on row 2. Columns are found by their title.
   - **The sheet's Ventas** reads `Fecha`, `Variedad`, `Gramos`, `Pago`, `Cliente`, `Tipo`, `Envío cobrado`, `Precio especial (total)` and `Nota`. It also reads `Total`, only to tell whether a row is finished and to report mismatches.
   - **The sheet's Entradas** reads `Fecha`, `Variedad`, `Gramos`, `Origen`, `Costo total` and `Nota`, plus `Revisar` to tell whether a row is finished.
   - **The sheet's Gastos** reads `Fecha`, `Categoría`, `Monto` and `Detalle`, plus `Revisar` to tell whether a row is finished.
-  - The sheet's other formula columns (`Precio x g`, `Rige desde`, `Precio lista`, `Precio por cantidad`, `Cantidad mínima`, `Orden deuda`, `Día`, `Gramos válidos`, `Costo válido`, `Gramos con costo`) are never read. Nothing from `Total` or `Revisar` is ever stored.
+  - The sheet's other formula columns (`Precio x g`, `Rige desde`, `Precio lista`, `Precio por cantidad`, `Cantidad mínima`, `Orden deuda`, `Día`, `Gramos válidos`, `Costo válido`, `Gramos con costo`) are never read. Nothing from the sheet's `Total` or `Revisar` columns is ever stored.
 - **A missing column**: a required column that can't be found blocks the run. The dry run lists every missing column at once.
 - **Finished and unfinished rows**:
   - **The sheet's Ventas**: a row is finished when its `Total` is a number. Text in `Total` means the row is unfinished: `Falta fecha`, `Falta variedad`, `Faltan gramos`, `Falta pago`, `Falta cliente`, `Sin precio` or any other text. An unfinished row is left out and listed with that text.
@@ -125,7 +125,7 @@ Success criteria:
 - **Varieties and thresholds** (the sheet's Ajustes rows 7–16, thresholds in F7:F16):
   - These rows are the complete list of varieties. Blank rows are skipped.
   - Two rows with the same name under varieties.md's rule (case and spacing ignored) block.
-  - Every variety named anywhere else (the sheet's Catálogo, Entradas, the sheet's Ventas, price history) must match one of them, or the import blocks.
+  - Every variety named anywhere else (the sheet's Catálogo, the sheet's Entradas, the sheet's Ventas, price history) must match one of them, or the import blocks.
   - A blank threshold means none. A threshold that isn't above zero with at most two decimals blocks.
 - **Price history** (the sheet's Ajustes from row 37: variety, effective date, list price, bulk price, bulk minimum):
   - one price entry per row, following varieties.md's rules;
@@ -140,7 +140,7 @@ Success criteria:
   - A variety with no sheet's Catálogo row is shown, with no emoji, share or aroma.
   - B18 and B19 replace the seeded header and footer. A blank cell gives a blank header or footer. More than 500 characters blocks.
 - **The sheet's Entradas** (finished rows only):
-  - the sheet's "Compra" → purchase, "Cosecha" → harvest, "Stock inicial" → opening stock, "Ajuste" → adjustment. Any other origin blocks.
+  - the sheet's "Compra" → purchase, "Cosecha" → harvest, "Stock inicial" → initial stock, "Ajuste" → adjustment. Any other origin blocks.
   - Each row follows stock.md's rules as if recorded today: grams, date, cost per origin and note. A row stock.md would refuse blocks.
 - **The sheet's Gastos and categories** (finished rows of the sheet's Gastos; categories in the sheet's Ajustes A21:A28):
   - Each A21:A28 name is matched to an existing category under expenses.md's name rule. A name with no match is created.
@@ -158,7 +158,7 @@ Success criteria:
 
 - **What the import switches on**:
   - **Bulk price**, when any imported price entry has a bulk price;
-  - **Customers VIP**, when any customer is imported as VIP.
+  - **VIP customers**, when any customer is imported as VIP.
 - **Never off**: the import never turns a switch off. A switch already on stays on.
 - **Priced with the switches it will leave**: every row is priced as if the switches already stood as the import will leave them, so a new business's off switches never change how a sheet row is priced.
 
@@ -188,7 +188,7 @@ A finished row blocks if the product's own rules would refuse it if it were reco
 
 Also blocking:
 
-- a required column that can't be found in the sheet's Ventas, Entradas or the sheet's Gastos;
+- a required column that can't be found in the sheet's Ventas, the sheet's Entradas or the sheet's Gastos;
 - a filled-in row of the sheet's Ventas tab whose `Total` is empty (the file wasn't recalculated);
 - a date in a text cell (see Reading the file);
 - an unknown variety name, or two rows of the sheet's Ajustes tab 7–16 that are the same name;

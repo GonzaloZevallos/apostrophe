@@ -1,6 +1,6 @@
 # Pricing settings
 
-Which pricing rules a business uses: two independent switches, **Bulk price** (bulk pricing) and **Customers VIP** (VIP customers). They are seen and changed only by the business they belong to (ADR-0004), in Settings → Prices (navigation.md).
+Which pricing rules a business uses: two independent switches, **Bulk price** (bulk pricing) and **VIP customers** (VIP pricing). They are seen and changed only by the business they belong to (ADR-0004), in Settings → Prices (navigation.md).
 
 What each rule does is defined by its owner, and every owner follows the switches:
 - how a sale line is priced: sales.md;
@@ -42,7 +42,7 @@ Success criteria:
 
 ### The switches
 
-- **Two per business**, independent of each other: Bulk price and Customers VIP.
+- **Two per business**, independent of each other: Bulk price and VIP customers.
 - **Where they change**: only in Settings → Prices. Any user of the business may change them; there are no roles.
 - **A rule switched off**:
   - it stops applying to new sales and is hidden on every screen that shows it;

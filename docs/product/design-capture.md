@@ -254,7 +254,7 @@ Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on th
 - A last-Onboarding-screen entry naming an account the sample does not write fails the registry test.
 - An entry whose path names placeholders different from its route's fails the registry test.
 - A row whose section matches no element of its drawing, or more than one, fails under `--strict`; it is a defect to fix, never a known failure.
-- A difference between a drawing and the docs is never fixed by changing app copy: the docs win and the difference is listed in the PR.
+- A difference between a drawing and the docs is never fixed by changing app copy; the difference is listed in the PR.
 
 ### Evidence in the PR
 
@@ -359,7 +359,7 @@ No telemetry; read from the PR evidence and from tests.
 - **First-run rows exist (First-run criterion 1)**: `index.json` holds a result for each of the 6 new rows, 0 missing sides and no one-sided `null`; each capture shows its whole section, judged by eye. The checklist captures show at least one "Done" and at least one pending step and never both required steps "Done", judged against navigation.md; the after-import capture shows the notice alone with its icon and dismiss control.
 - **Today compared as Today (First-run criterion 2)**: the Today label occurs exactly once in `InicioCompu.dc.html`; the two Today computer captures show no Week content, judged by eye.
 - **Whole registry green (First-run criterion 3)**: the PR holds one whole-registry `--strict` output, no `--only`, exit 0, and the installed fontsource version; every suite passes; the diff touches only `scripts/design/`, `pantallas/`, the two registry tests, `tests/design/test_sample_app.py` (new cases only, every existing assertion kept), the ADR-0042 amendment and this file; the plan's Seams line names the three tests; no step is added to `.agentic/stack.yaml`, CI or the gate.
-- **Docs win (First-run criterion 4)**: every drawing-versus-docs difference is listed in the PR with its screen: 0 unlisted.
+- **Differences are listed (First-run criterion 4)**: every drawing-versus-docs difference is listed in the PR with its screen: 0 unlisted.
 - **First-run business measure**: spec-scope findings for missing first-run or Today design evidence on a merging head: goal 0.
 - **Exact match (Home criterion 1)**: the attached `ae.mjs` output shows AE 0 on both sides of `Inicio` (Home), `InicioOscuro` (Home, dark theme), `InicioHoy` (Home on the Today tab), `InicioHoyCompu` (Home on the Today tab, computer layout) and `InicioHoyCompuOscuro` (the same, dark theme): 10 lines at 0, 0 missing sides, 0 one-sided `null`; the recorded SHA equals the merging head; the undo diff and the fontsource version are present.
 - **Lines accounted for (Home criterion 2)**: every InicioCompu and InicioCompuOscuro line is listed with its side; 0 non-zero lines without a PM-accepted reason on the PR; 0 reasons that name no cause.

@@ -54,7 +54,7 @@ Success criteria:
    - an expense opens in at most 2 taps (More → "+ Add expense").
 
    On a computer, each takes no more taps than on the phone.
-2. **Every business-wide setting in one place.** Name, users and join links, the pricing rules (Bulk price and Customers VIP), the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Settings and nowhere else. Settings is reachable in at most 2 taps from any tab root: from the business avatar on Home and from More on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Settings groups exist. The Onboarding's steps save these same settings through their owners and are not a second place for them (onboarding.md).
+2. **Every business-wide setting in one place.** Name, users and join links, the pricing rules (Bulk price and VIP customers), the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Settings and nowhere else. Settings is reachable in at most 2 taps from any tab root: from the business avatar on Home and from More on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Settings groups exist. The Onboarding's steps save these same settings through their owners and are not a second place for them (onboarding.md).
 3. **One variety, one page.** A variety's stock and its movements (entries and withdrawals), prices, low-stock warning and catalog attributes are seen and edited from its page. No fact is edited in two places under two names.
 4. **Nothing lost, nothing invented.** Everything a seller could do before stays reachable. The one deliberate exception is the customer channel, which is removed. No navigation entry or screen exists for something not yet built: no "coming soon", no promotions, automations or languages. No link points at a screen that does not exist.
 5. **One rule for chrome and back.** Every screen is one of three kinds: tab root, card or detail, form or sheet. Each kind gets its chrome by the rule. Back follows history, and the parent screen is the fallback.
@@ -105,7 +105,7 @@ Success criteria, reviewing the first run (GH-45 follow-up):
   - **Business**: the business's name (accounts.md). Toast "Business renamed".
   - **Users**: the partners by email, sorted by email, the signed-in one marked "you", and "Invite a partner", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
   - **Prices** (pricing-settings.md), at `/settings/prices`:
-    - the two switches, Bulk price and Customers VIP;
+    - the two switches, Bulk price and VIP customers;
     - "Save the prices", and the toast "Prices saved";
     - the fixed line that past sales keep their price and switching off deletes nothing, and the fixed help line under the VIP switch.
   - **Integrations**: the Telegram bot (pinned-catalog.md):

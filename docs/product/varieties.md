@@ -143,7 +143,7 @@ Success criteria:
   Every amount is above zero.
 - **A VIP price at or above the list price** is refused with its own fixed message and its own refusal code (ADR-0008), which never repeats the amount (ADR-0005).
 - **Rules switched off** (pricing-settings.md):
-  - A price entry recorded while Bulk price is off stores no bulk price or bulk minimum, and one recorded while Customers VIP is off stores no VIP price, whatever the request sends. Nothing is copied forward from an earlier entry.
+  - A price entry recorded while Bulk price is off stores no bulk price or bulk minimum, and one recorded while VIP customers is off stores no VIP price, whatever the request sends. Nothing is copied forward from an earlier entry.
   - Earlier entries keep what they stored.
   - When a rule is switched back on, the current price shows no bulk or VIP line if its entry has none; the seller records a new entry if they want one.
 - One entry per variety per effective date; a second one on the same date is refused.
@@ -312,7 +312,7 @@ Success criteria:
   - **Prices**: the last 3 price entries with "Effective from", newest first, each row with
     its delete action, and "See all" (`/varieties/{low}/prices`) for the full history.
     - Each row shows the list price.
-    - It shows the bulk price and minimum only while Bulk price is on, and the VIP price ("VIP price") only while Customers VIP is on, each only when the entry has one;
+    - It shows the bulk price and minimum only while Bulk price is on, and the VIP price ("VIP price") only while VIP customers is on, each only when the entry has one;
   - **Low stock warning**: the current warning, read-only, with an on/off switch and an
     "Edit" link, and nothing else (no "See all"):
     - it reads "Warn me below 15 g", "Warning: 18,5 g left" or "Warning off";
@@ -416,7 +416,7 @@ Success criteria:
 - **Kind**: a form (navigation.md) on both devices: no bar and no "+ New sale"; "Close"; leaving with something typed asks before discarding, and an untouched form closes at once. Back with no history goes to the variety's page. Only how it is drawn on the computer differs.
 - **Fields**:
   - the effective date and the list price;
-  - the bulk price and bulk minimum only while Bulk price is on, and "VIP price" only while Customers VIP is on, each optional;
+  - the bulk price and bulk minimum only while Bulk price is on, and "VIP price" only while VIP customers is on, each optional;
   - it says nothing about a rule that is switched off.
 - **Amounts in pesos**: the list price, the bulk price and the VIP price each show "$" before the amount. The bulk minimum, in grams, never does. The "$" is text under the design README's contrast rule (ADR-0029), drawn with existing tokens only. These fields are the shared price fields, so the "$" also shows in the Onboarding's step 1 (onboarding.md).
 - **"Effective from", a date chip**:
@@ -478,7 +478,7 @@ Success criteria:
   - A VIP price with no bulk price, and a bulk price with no VIP price, are accepted.
   - No refusal contains the amount.
 - **Switched-off rules store nothing (criterion 15)**: a price entry sent with bulk or VIP values while that rule is off stores none of them; earlier entries' values are unchanged.
-- **Switches on screen (criterion 15)**: front tests show the price form, the Prices section and the full history with no bulk fields while Bulk price is off and no VIP price while Customers VIP is off, and every stored value back once switched on.
+- **Switches on screen (criterion 15)**: front tests show the price form, the Prices section and the full history with no bulk fields while Bulk price is off and no VIP price while VIP customers is off, and every stored value back once switched on.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
   page (with a VIP price when VIP customers is on), renames the variety, deletes a price
   entry, sets a low-stock threshold through "Edit", turns it off and on again through the

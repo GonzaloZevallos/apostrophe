@@ -56,7 +56,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 - **Token**:
   - stored encrypted, keyed from `APOSTROPHE_SECRET_KEY`;
   - once saved, no route returns it and it is never logged;
-  - on screen: "Saved on dd/mm · not shown any more" with **Change**.
+  - on screen: "Saved on dd/mm · not shown again" with **Change**.
 - **Channel chat and own chat**:
   - free text, checked only for "not blank";
   - shown in plain text and editable in place;
@@ -223,7 +223,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 ## Metrics
 
-- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Prices save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Bulk price on a business with a bulk price in force edits the pin; switching only Customers VIP sends nothing, since the text does not change. 100% passing.
+- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Prices save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Bulk price on a business with a bulk price in force edits the pin; switching only VIP customers sends nothing, since the text does not change. 100% passing.
 - **One message per chat (criterion 2)**:
   - one post per channel chat, then edits only: 0 new posts while that message exists;
   - a channel or token change gives exactly one new post, and 0 later calls against the old message;

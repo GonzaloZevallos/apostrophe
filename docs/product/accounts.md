@@ -333,7 +333,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - plain values: ISO 8601 dates, whole pesos, grams as decimals with up to two places;
   - each record names what it refers to (customer, variety, category) as well as its id;
   - it holds every recorded fact as stored:
-    - the business name and its pricing settings (Bulk price and Customers VIP);
+    - the business name and its pricing settings (Bulk price and VIP customers);
     - users (email and joining date);
     - customers (name, phone number, VIP);
     - varieties with their low-stock threshold and catalog attributes;
