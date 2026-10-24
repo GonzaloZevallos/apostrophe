@@ -1,0 +1,2261 @@
+{
+ "note": "Base (untouched master tip) run of `npx playwright test --project=mobile --workers=4`: 34 passed (11.6m). The cell asserts diffOffenders(listed, actual) is empty both ways, so the reported Analisis targets are exactly the listed ones, expanded per size and theme.",
+ "targets": [
+  {
+   "screen": "Analisis",
+   "rule": "h-scroll",
+   "target": "",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "h-scroll",
+   "target": "",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "h-scroll",
+   "target": "",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "h-scroll",
+   "target": "",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "h-scroll",
+   "target": "",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "h-scroll",
+   "target": "",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "h-scroll",
+   "target": "",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "h-scroll",
+   "target": "",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "link:New sale",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "link:New sale",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "link:New sale",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "link:New sale",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "link:New sale",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "link:New sale",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "link:New sale",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "link:New sale",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "navigation:Navigation",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "navigation:Navigation",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "navigation:Navigation",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "navigation:Navigation",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "navigation:Navigation",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "navigation:Navigation",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "navigation:Navigation",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-at-load",
+   "target": "navigation:Navigation",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "link:New sale",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "link:New sale",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "link:New sale",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "link:New sale",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "link:New sale",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "link:New sale",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "link:New sale",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "link:New sale",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "navigation:Navigation",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "navigation:Navigation",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "navigation:Navigation",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "navigation:Navigation",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "navigation:Navigation",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "navigation:Navigation",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "navigation:Navigation",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "chrome-mid-scroll",
+   "target": "navigation:Navigation",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 59
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Next month",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Next month",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Next month",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Next month",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Next month",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Next month",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Next month",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Next month",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Previous month",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Previous month",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Previous month",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Previous month",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Previous month",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Previous month",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Previous month",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "button:Previous month",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "link:Home",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "link:Home",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "link:More",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "link:More",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "link:Sales",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-target",
+   "target": "link:Sales",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Customers",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Customers",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Customers",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Customers",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Customers",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Customers",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Customers",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Customers",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Home",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Home",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Home",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Home",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Home",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Home",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Home",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Home",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:More",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:More",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:More",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:More",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:More",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:More",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:More",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:More",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Sales",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Sales",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Sales",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Sales",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Sales",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Sales",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Sales",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Sales",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Varieties",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Varieties",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Varieties",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Varieties",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Varieties",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Varieties",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Varieties",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "text-size",
+   "target": "span:Varieties",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[1]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[2]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[3]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[4]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[4]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[4]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#.#[4]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[1]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#.#[2]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#[1]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#[1]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#[2]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:$ #.#[2]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[1]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[1]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[1]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[1]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[2]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[2]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[2]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Promotion $ #.#[2]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:expenses $ #.#.#.#",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[1]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[1]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[1]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[1]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[2]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[2]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[2]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Stock shortfall $ #.#[2]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost[1]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost[1]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost[2]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "figure-split",
+   "target": "span:Own use $ #.# and # g without cost[2]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "name-overflow",
+   "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Next month",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Next month",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Next month",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Next month",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Next month",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Next month",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Next month",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Next month",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Previous month",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Previous month",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Previous month",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Previous month",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Previous month",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Previous month",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Previous month",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "button:Previous month",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Customers",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Customers",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Customers",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Customers",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Customers",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Customers",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Customers",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Customers",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Home",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Home",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Home",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Home",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Home",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Home",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Home",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Home",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:More",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:More",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:More",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:More",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:More",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:More",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:More",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:More",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Sales",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Sales",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Sales",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Sales",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Sales",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Sales",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Sales",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Sales",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Varieties",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Varieties",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Varieties",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Varieties",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Varieties",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Varieties",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Varieties",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "link:Varieties",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "navigation:Navigation",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "navigation:Navigation",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "navigation:Navigation",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "navigation:Navigation",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "navigation:Navigation",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "navigation:Navigation",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "navigation:Navigation",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "touch-action",
+   "target": "navigation:Navigation",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "aria-busy",
+   "target": "",
+   "size": "320x568",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "aria-busy",
+   "target": "",
+   "size": "320x568",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "aria-busy",
+   "target": "",
+   "size": "375x812",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "aria-busy",
+   "target": "",
+   "size": "375x812",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "aria-busy",
+   "target": "",
+   "size": "430x932",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "aria-busy",
+   "target": "",
+   "size": "430x932",
+   "theme": "oscuro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "aria-busy",
+   "target": "",
+   "size": "246x437",
+   "theme": "claro",
+   "issue": 48
+  },
+  {
+   "screen": "Analisis",
+   "rule": "aria-busy",
+   "target": "",
+   "size": "246x437",
+   "theme": "oscuro",
+   "issue": 48
+  }
+ ]
+}

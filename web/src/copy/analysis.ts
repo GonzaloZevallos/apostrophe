@@ -30,7 +30,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: PURCHASES_NOTE },
   { kind: 'help', text: NO_BEST_WEEK_LINE },
   // The cost lines on the rows, the month header and "Since the first record"
-  // (`formatRowCost`): each label with its longest form, a fully pending one reading
+  // (`rowCostParts` / `amountParts`): each label with its longest form, a fully pending one reading
   // only its grams.
   ...[COST_OF_GOODS_LABEL, SHORTFALL_LABEL, PROMOTION_LABEL, OWN_USE_LABEL].flatMap(
     (label): LimitedCopy[] => [
@@ -46,8 +46,8 @@ export const ANALYSIS_TEXT = {
   vendisteEnElMes: 'You sold in the month',
   vendidos: ' sold · ',
   regalados: ' given away',
-  margenPromedio01: (percent: string | number, pending_grams: string | number) => ` · average margin ${percent}%${pending_grams}`,
-  margenPromedio0: (pending_grams: string | number) => ` · average margin${pending_grams}`,
+  margenPromedio: ' · average margin',
+  porcentaje: (percent: number | string) => `${percent}%`,
   porVariedad: 'By variety',
   delMes: '% of the month',
   costo: 'cost ',

@@ -280,8 +280,8 @@ describe('assertScreens', () => {
 
   it('refuses a section that occurs more than once in its design file', () => {
     expect(() =>
-      assertScreens([{ screen: 'AnalisisX', design: 'Analisis', section: 'Promoción' }]),
-    ).toThrow(/^AnalisisX: section "Promoción" occurs \d+ times in Analisis\.dc\.html, expected exactly once$/)
+      assertScreens([{ screen: 'AnalisisX', design: 'Analisis', section: 'Promotion' }]),
+    ).toThrow(/^AnalisisX: section "Promotion" occurs \d+ times in Analisis\.dc\.html, expected exactly once$/)
   })
 
   it('refuses a needs that is not a non-empty string', () => {
