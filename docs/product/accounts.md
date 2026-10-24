@@ -386,7 +386,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - The font is self-hosted.
 - **Language and formats**: every word on screen in English (product-language.md, which supersedes the earlier Spanish rule). Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Go to sign in`, the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), the reset screen):
-  - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). The drawings carry the app's English product text; a difference in wording is a defect in the design.
+  - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). The drawings carry the app's English product text.
   - **One centred, phone-width layout** on every viewport, the computer's included; there is no computer-only layout for these screens.
   - **The sign-in screen** (`Entrar`):
     - the labels "Email address" and "Password" and the button "Sign in";

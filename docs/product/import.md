@@ -100,12 +100,12 @@ Success criteria:
 - **Numbers where text is expected**: a number in a text cell is read as its text, and then follows that field's rules like any text. This applies to the names of varieties, customers and categories, the sheet's `Detalle`, `Nota` and `Aroma` columns, the header and footer, and the cells with a fixed set of values (the sheet's `Origen`, `Pago` and `Tipo` columns, the sheet's Catálogo tab's shown column).
   - A whole number reads as its digits, with no decimals and no thousands separator: `100`, `2024`, `1000`.
   - A non-whole number reads with a decimal comma and the fewest decimals that give its exact value, with no thousands separator: `3,5`, `0,25`.
-  - A number is never refused only for being a number where text is expected. A numeric value outside a fixed set (e.g. an `Origen` of `3`) still blocks as unknown.
+  - A number is never refused only for being a number where text is expected. A numeric value outside a fixed set (e.g. a cell of the sheet's `Origen` column holding `3`) still blocks as unknown.
 - **Dates where text is expected**: a date in any of those text cells (e.g. a cell of the sheet's `Nota` column typed as `12/10` that the sheet turned into a date) is never read as text, because the file no longer holds what was typed: the day and month may be swapped by the sheet's locale and a year was added.
   - It blocks, listed with its sheet and row, as a date where text is expected.
   - The problem tells the operator to re-type the cell as text in the sheet (in Google Sheets, starting it with an apostrophe) and run again.
   - The dry run lists every such cell in one pass.
-  - Dates in date columns (`Fecha`, the effective date) are read as dates, as always.
+  - Dates in date columns (the sheet's `Fecha` column, the effective date) are read as dates, as always.
 - **The sheet's Ventas, Entradas and Gastos tabs**: column titles are on row 1 and data starts on row 2. Columns are found by their title.
   - **The sheet's Ventas** reads `Fecha`, `Variedad`, `Gramos`, `Pago`, `Cliente`, `Tipo`, `Envío cobrado`, `Precio especial (total)` and `Nota`. It also reads `Total`, only to tell whether a row is finished and to report mismatches.
   - **The sheet's Entradas** reads `Fecha`, `Variedad`, `Gramos`, `Origen`, `Costo total` and `Nota`, plus `Revisar` to tell whether a row is finished.
@@ -148,7 +148,7 @@ Success criteria:
   - An expense under a category outside A21:A28 blocks.
   - Each row follows expenses.md's rules: a past or present date, a whole-peso amount above $0, and a non-blank detail of up to 200 characters.
 - **The sheet's Ventas** (finished rows only): one sale with one line per row.
-  - **Shipping and note**: shipping charged comes from `Envío cobrado`. The note follows sales.md's rule.
+  - **Shipping and note**: shipping charged comes from the sheet's `Envío cobrado` column. The note follows sales.md's rule.
   - **The sheet's "Pendiente"**: the sale is left owing.
   - **The sheet's "Efectivo" / "Transferencia"**: an on-the-spot payment equal to the recomputed total, with that method, on the row's date.
   - **Any other payment value** blocks.
@@ -166,10 +166,10 @@ Success criteria:
 
 - **`""` or `"Lista"`**: list or bulk, by sales.md's lowest-price rule, from the imported price history on the row's date and the row's grams. Never VIP, even for a customer who is VIP elsewhere.
 - **The sheet's `"Amigo"`**: the VIP rule (sales.md), with the VIP price equal to that day's bulk price. The result is that day's bulk price, or the list price when that day has none, as in the sheet. A tie with the bulk price is stored as VIP.
-  - Any customer with at least one finished the sheet's `"Amigo"` row is imported as VIP.
+  - Any customer with at least one finished `"Amigo"` row of the sheet is imported as VIP.
   - A sheet's `"Amigo"` row with no customer blocks.
 - **The sheet's `"Regalo"`**: a gift. It is charged $0 and its grams still come out of stock. With shipping, the sale's total is the shipping alone, as in the sheet.
-- **Special total** (`Precio especial (total)`): a whole number above $0 makes the line a special price with that total, whatever the type. A sheet's `"Amigo"` row with a special total still makes its customer VIP.
+- **Special total** (the sheet's `Precio especial (total)` column): a whole number above $0 makes the line a special price with that total, whatever the type. A sheet's `"Amigo"` row with a special total still makes its customer VIP.
 - **These block**:
   - a special total on a sheet's `"Regalo"` row;
   - a special-total cell that isn't a whole number above $0 (zero, negative or text).
@@ -189,15 +189,15 @@ A finished row blocks if the product's own rules would refuse it if it were reco
 Also blocking:
 
 - a required column that can't be found in the sheet's Ventas, Entradas or the sheet's Gastos;
-- a filled-in the sheet's Ventas row whose `Total` is empty (the file wasn't recalculated);
+- a filled-in row of the sheet's Ventas tab whose `Total` is empty (the file wasn't recalculated);
 - a date in a text cell (see Reading the file);
-- an unknown variety name, or two the sheet's Ajustes rows 7–16 that are the same name;
+- an unknown variety name, or two rows of the sheet's Ajustes tab 7–16 that are the same name;
 - two price entries for one variety on one date;
 - an unknown origin or payment value;
 - a category outside A21:A28;
-- a bad the sheet's Catálogo value or a bad threshold;
+- a bad value in the sheet's Catálogo tab or a bad threshold;
 - a mapped number that doesn't normalise;
-- the sheet's "Pendiente" with no customer, or `"Amigo"` with no customer;
+- the sheet's "Pendiente" with no customer, or the sheet's `"Amigo"` with no customer;
 - the sheet's `"Regalo"` with a special total;
 - a special total that isn't a whole number above $0.
 
@@ -205,17 +205,17 @@ Rows the sheet marks unfinished are the one exception: they are left out and lis
 
 ### Customers
 
-- **Who becomes a customer**: every name on a finished the sheet's Ventas row, whether or not they ever owed. A name that appears only on unfinished rows creates no customer.
+- **Who becomes a customer**: every name on a finished row of the sheet's Ventas tab, whether or not they ever owed. A name that appears only on unfinished rows creates no customer.
 - **A blank customer cell**: the row becomes a sale without a customer, which is allowed only when nothing stays owed.
 - **Matching names to the mapping**: exact, after trimming and collapsing inner spaces, with no case-folding.
 - **A name with no mapping entry**, or every name when there is no mapping file, is imported without a phone number. It is not a problem and is not listed; the report counts the customers imported without a number.
 - **Numbers**: each mapped number goes through customers.md's normalisation. A number that fails blocks, and the report never repeats it.
 - **One customer per name**: finished rows of the sheet's Ventas whose customer cells are the same after trimming and collapsing inner spaces (exact, case kept) are one customer. An unmapped spelling that differs in any other way is a separate customer; nothing is merged by guess.
 - **Several spellings, one number**: when mapped spellings normalise to the same number, they become one customer, and the report lists them together.
-  - The customer is named after the spelling on their most recent finished the sheet's Ventas row.
+  - The customer is named after the spelling on their most recent finished row of the sheet's Ventas tab.
   - If those rows share a date, the lowest row in the sheet wins.
   - The seller can rename the customer afterwards.
-- **Unused mapping entries**: an entry whose name is on no finished the sheet's Ventas row creates no customer and is reported as unused.
+- **Unused mapping entries**: an entry whose name is on no finished row of the sheet's Ventas tab creates no customer and is reported as unused.
 
 ### Order
 
@@ -240,10 +240,10 @@ From test fixtures, with no telemetry:
 - **Any export (criteria 1, 3)**: a fixture laid out like a Google Sheets export, with no declared size in any worksheet and every number stored as a float, is read in full by the dry run. 100% passing. It holds:
   - whole numbers in `% índica`, prices, costs, amounts, shipping and a special total, all read as whole numbers;
   - decimal grams and a decimal threshold, read to the hundredth;
-  - numbers in text cells (a Detalle, a Nota, a variety, customer and category name made of digits, one of them non-whole), read as `100`-style digits or with a decimal comma.
+  - numbers in text cells (a cell of the sheet's Detalle or Nota column, a variety, customer and category name made of digits, one of them non-whole), read as `100`-style digits or with a decimal comma.
 
   Every column and every row is found, and none of these is reported as a problem. A `60.5` share is still refused.
-- **Dates in text cells (criteria 1, 3)**: the same fixture with a date in a Nota, a Detalle and a name cell reports each one, with its sheet and row, as a date where text is expected, with the fix to re-type it as text. Nothing is read from them, and a real run over that file writes 0 rows. 100% passing.
+- **Dates in text cells (criteria 1, 3)**: the same fixture with a date in a cell of the sheet's Nota column, its Detalle column and a name cell reports each one, with its sheet and row, as a date where text is expected, with the fix to re-type it as text. Nothing is read from them, and a real run over that file writes 0 rows. 100% passing.
 - **Opens where the sheet left off (criterion 2)**: after importing a fixture, these equal its expected figures, with 0 unexplained differences:
   - each variety's current price;
   - the catalog text;
@@ -263,10 +263,10 @@ From test fixtures, with no telemetry:
   - The record never makes a later eligibility check refuse.
   - Business removal exports and deletes it, and it is invisible from another business through the isolation sweep.
 - **Nothing invented (criterion 3)**:
-  - a matrix of every blocking case passes 100%, including a missing column and a filled-in the sheet's Ventas row with an empty Total;
-  - the sheet's Ventas rows with text in Total, and the sheet's Entradas and Gastos rows with text in Revisar, are left out and listed with that text, without blocking;
-  - a name, an `Amigo` or a spelling found only on unfinished rows creates no customer, no VIP and no kept name;
-  - a reference set of total mismatches, with and without shipping and including a `Regalo` with shipping, is reported and never blocks;
+  - a matrix of every blocking case passes 100%, including a missing column and a filled-in row of the sheet's Ventas tab with an empty Total;
+  - the sheet's Ventas rows with text in the sheet's Total column, and the sheet's Entradas and Gastos rows with text in the sheet's Revisar column, are left out and listed with that text, without blocking;
+  - a name, a sheet's `Amigo` or a spelling found only on unfinished rows creates no customer, no VIP and no kept name;
+  - a reference set of total mismatches, with and without shipping and including a sheet's `Regalo` with shipping, is reported and never blocks;
   - merged categories, merged spellings and unused mapping entries all appear in the report.
 - **One business, once (criterion 4)**:
   - an import into a business holding any one of the seven kinds of record is refused with 0 rows written, tested for each kind;

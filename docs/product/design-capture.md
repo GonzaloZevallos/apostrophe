@@ -63,7 +63,7 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 
 Success criteria:
 
-1. **One green run.** One `--strict` call over `Home*` (Home) and the Onboarding block exits 0.
+1. **One green run.** One `--strict` call over `Inicio*` (Home) and the Onboarding block exits 0.
 2. **Reached and whole.** Every Onboarding screen the registry lists, the last Onboarding screen in light and dark included, is reached as onboarding.md defines and captured whole. No crop is clipped, and no row captures a screen other than the one it names.
 3. **Registry, tests and plan agree.** The change needs no recorded exception and no test edited outside a declared seam.
 4. **Nothing a seller sees changes.** onboarding.md, navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
@@ -154,8 +154,8 @@ Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on th
 
 ### Every row reaches its screen
 
-- Every row of the registry, not only `Home*` (Home) and the Onboarding, reaches its screen the way a seller does and captures its named section whole. A whole-registry `--strict` run exits non-zero only when a row truly fails.
-- **`EstadosConfirmar`** reaches Antes de borrar on a sale's detail as a seller does: it opens a sale that exists in the sample and taps "Delete sale". Its capture shows the confirmation whole: the question naming the sale's date, amount and grams that return, and "No, keep it / Yes, delete it" (sales.md).
+- Every row of the registry, not only `Inicio*` (Home) and the Onboarding, reaches its screen the way a seller does and captures its named section whole. A whole-registry `--strict` run exits non-zero only when a row truly fails.
+- **`EstadosConfirmar`** reaches the delete confirmation (the caption `Antes de borrar` in `Estados.dc.html`) on a sale's detail as a seller does: it opens a sale that exists in the sample and taps "Delete sale". Its capture shows the confirmation whole: the question naming the sale's date, amount and grams that return, and "No, keep it / Yes, delete it" (sales.md).
 - **`EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro`** show "No connection" in the computer layout, light and dark. The page's own fonts are in place before the network drops, so going offline never leaves a page font in error. The capture's fonts stay pinned and local (ADR-0042).
 - The applied-check is unchanged and covers every row, offline rows included: a font in error stays a failure, never a pass.
 - A row is made to reach its screen by its steps, the sample data or the capture tooling alone. Never by changing the screen, its copy, the app's own `font-display`, or the applied-check, and never by dropping or excusing the row.
@@ -258,7 +258,7 @@ Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on th
 
 ### Evidence in the PR
 
-- The output of one `--strict` call over `Home*` (Home) and the Onboarding block, exit 0.
+- The output of one `--strict` call over `Inicio*` (Home) and the Onboarding block, exit 0.
 - For a change that makes a row reach its screen: the output of one `--strict` call over the whole registry with no `--only`, exit 0, and the captures of every row it fixed, judged by eye.
 - The last-Onboarding-screen captures on phone and computer, in light and dark, judged by eye.
 - The list of crops whose result changed: only ones that were clipped.
@@ -336,7 +336,7 @@ No telemetry; read from the PR evidence and from tests.
 - **Recurrence (criterion 9)**: an entry whose path names placeholders different from its route's fails the registry test in the diff that adds it; the blind spot (a path with no placeholder) is named in the test's description and the PR.
 - **Whole registry green (criterion 10)**: the PR holds one whole-registry `--strict` output, no `--only`, exit 0; the registry has the same rows as before the fix, `EstadosConfirmar`, `EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro` included.
 - **Offline fonts (criterion 11)**: the two `EstadosSinConexionCompu*` rows pass the applied-check with no note; the applied-check's code and its weights are unchanged; their captures show "No connection" in the computer layout in the app's own font, judged by eye in both themes.
-- **Reached as a seller does**: the `EstadosConfirmar` capture shows Antes de borrar whole, with the sale's date, amount and grams and both answers, judged by eye.
+- **Reached as a seller does**: the `EstadosConfirmar` capture shows the delete confirmation (the caption `Antes de borrar` in `Estados.dc.html`) whole, with the sale's date, amount and grams and both answers, judged by eye.
 - **Costs the seller nothing (criterion 12)**: the diff touches only `scripts/design/` and, if needed, the two registry tests within their seams; every suite passes with no other test edited; nothing under `app/` or `web/src/` (outside those tests) changes.
 - **Current Analysis captures (Analysis criterion 6)**: all 4 cells attached on both sides, 0 missing; the recorded SHA equals the merging head; the undo diff and the fontsource version are present.
 - **Every difference explained (Analysis criterion 7)**: `ae.mjs` exits 0, or every non-zero line is matched to intended, a fix, an undo extra for Zeta, or a linked follow-up; 0 unlisted differences; 0 failures from a missing or unreadable side.
