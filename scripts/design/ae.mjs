@@ -153,7 +153,7 @@ export function compareIndexes(before, after, only, load, withBox = false) {
 function main() {
   const { values, positionals } = parseArgs({ options: { only: { type: 'string' }, box: { type: 'boolean' } }, allowPositionals: true })
   if (positionals.length !== 2) {
-    console.error('usage: ae.mjs <before-dir> <after-dir> [--only A,B] [--box]')
+    console.error('usage: ae.mjs <before-dir> <after-dir> [--only A,B]')
     process.exit(2)
   }
   const [beforeDir, afterDir] = positionals.map((dir) => resolve(dir))

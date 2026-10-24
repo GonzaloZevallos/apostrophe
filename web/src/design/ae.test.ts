@@ -231,6 +231,13 @@ describe('ae.mjs as a command', () => {
     expect(clean.status).toBe(0)
   })
 
+  it('prints today\'s lines without --box for a size mismatch and a one-sided null', () => {
+    const size = run(output(image(2, 2)), output(image(3, 3)))
+    expect(size.stdout).toBe('Inicio built: FAIL different dimensions\nInicio design: AE 0\n')
+    const gone = run(output(image(2, 2)), output(null))
+    expect(gone.stdout).toBe('Inicio built: FAIL no capture in after\nInicio design: AE 0\n')
+  })
+
   it('--box adds the box of a differing side, coordinates only', () => {
     const changed = image(4, 3)
     changed.data.set([99, 98, 97, 255], (1 * 4 + 2) * 4)
@@ -255,6 +262,9 @@ describe('ae.mjs as a command', () => {
   })
 
   it('exits 2 with usage when it is not given two directories', () => {
-    expect(spawnSync('node', [SCRIPT], { encoding: 'utf-8' }).status).toBe(2)
+    const result = spawnSync('node', [SCRIPT], { encoding: 'utf-8' })
+    expect(result.status).toBe(2)
+    expect(result.stdout).toBe('')
+    expect(result.stderr).toBe('usage: ae.mjs <before-dir> <after-dir> [--only A,B]\n')
   })
 })
