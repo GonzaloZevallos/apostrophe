@@ -115,7 +115,7 @@ Success criteria:
   - It is a form: "Close", and a confirmation when leaving with unsaved changes.
 - **On success**, the toast "Customer saved". It never carries a name or a number.
 - **Refusals** show inline on the field, with the domain's fixed string, and keep what was typed. They never repeat the number or the name.
-- **Design**: Customers, `ClienteFicha`, `Payment` and `NuevaVentaCliente` match `docs/product/design-system/pantallas/` on phone and computer, in both themes. Where the design's wording differs from the docs, the docs win and the difference is listed in the PR. No state is told by colour alone.
+- **Design**: Customers, `ClienteFicha`, `Payment` and `NuevaVentaCliente` match `docs/product/design-system/pantallas/` on phone and computer, in both themes. A difference in wording from the docs is listed in the PR. No state is told by colour alone.
 - **Feedback**: no network shows "No connection", a server error the generic retry, and a customer that is gone follows accounts.md's "That is gone." rule.
 
 ## Metrics

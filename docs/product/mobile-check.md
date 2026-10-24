@@ -10,7 +10,7 @@ The mobile check is part of the Gate. It walks the phone rows of the screens reg
 
 ## Invariants that hold
 
-1. **Offender lists.** They grow only as gate.md allows. The InicioChecklist and InicioImportado entries in `touch-action.json` are a new-registry-row growth from GH-274, each carrying its reason. GH-305 added no other entry and removed none.
+1. **Offender lists.** They grow only as gate.md allows. The `InicioChecklist` (Home with the first-run checklist) and `InicioImportado` (Home with the after-import notice) entries in `touch-action.json` are a new-registry-row growth from GH-274, each carrying its reason. GH-305 added no other entry and removed none.
 2. **Registry assertions.** In `web/src/design/screens.test.ts`, every assertion stays as it was before GH-274 except these two, each marked deliberate with its reason:
    - the `InicioHoyCompuOscuro` section is `HOY_PHONE`, no longer undefined;
    - the real-map `assertSelectedAccounts` call runs over the extended all map.
@@ -27,7 +27,7 @@ The mobile check is part of the Gate. It walks the phone rows of the screens reg
 ## Metrics
 
 - **Gate:** green on the change, with no offender hidden.
-- **Offender-list growth:** compared with GH-274's base, the lists grow by exactly the entries for InicioChecklist and InicioImportado, each with a reason. Removals: 0.
+- **Offender-list growth:** compared with GH-274's base, the lists grow by exactly the entries for `InicioChecklist` and `InicioImportado`, each with a reason. Removals: 0.
 - **Rewritten registry assertions:** exactly 2. Both are marked deliberate with a reason, and each is shown to fail on a regressed input.
 - **Open findings:** 0 open `important` findings on GH-274 about these two invariants.
 - **Seller-visible changes:** 0 (screens, copy, behaviour).

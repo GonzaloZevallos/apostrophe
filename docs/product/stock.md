@@ -239,7 +239,7 @@ Success criteria:
     from "+ Entry" on a variety's page (that variety already chosen, and "Stock
     inicial" preselected as the origin when the variety has no entries yet).
   - date (filled with today), grams, and variety with "It has N g today";
-  - origin: Compra · Cosecha · Stock inicial · Ajuste;
+  - origin: Purchase · Harvest · Initial stock · Adjustment;
   - total cost, with "Required for a purchase";
   - note;
   - the cost per gram before saving ("It comes to $ 8.500 per gram") whenever there is a

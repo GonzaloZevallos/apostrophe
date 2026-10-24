@@ -89,7 +89,7 @@ Success criteria, on the phone:
   2. **Special price**: the total typed for the line, in whole pesos and above $0.
   3. **Otherwise, the lowest price per gram** among the rules that apply to the line:
      - **List**: always applies.
-     - **Bulk**: Precio por cantidad is on, the current price has a bulk price, and the line's grams are at or above the bulk minimum. The minimum is measured per line, never across lines.
+     - **Bulk**: Bulk price is on, the current price has a bulk price, and the line's grams are at or above the bulk minimum. The minimum is measured per line, never across lines.
      - **VIP**: Customers VIP is on, the customer is VIP at recording time, and the current price has a VIP price.
   - **Naming the rule**:
     - On a tie between VIP and bulk, the line is stored as VIP.
@@ -183,9 +183,9 @@ Success criteria, on the phone:
   - Prices and the pricing settings are loaded when the form opens and again when the date changes; a date change reprices every line from that day's current prices.
   - Prices are never re-checked live while the seller types.
 - **Waiting for prices**: while the form waits for prices on opening, it shows the shared loading state (accounts.md, `Estados`). On a date change the form stays on screen with everything typed; each line's price, rule and total show the loading state, never a placeholder figure, until that day's prices arrive, then every line is repriced.
-- **Regalo and Precio especial exclude each other**:
+- **Gift and Special price exclude each other**:
   - Choosing one clears and disables the other, and turning it off frees the other.
-  - Precio especial doesn't accept $0.
+  - Special price doesn't accept $0.
   - The domain's gift-plus-special refusal stays as an unreachable backstop.
 - **No price that day**: a line whose variety has no current price on the sale's date shows "<variety> has no price for that date". The name comes from the screen's own line.
 - **Customer and payment stay in step**, whichever changes last:
@@ -204,16 +204,16 @@ Success criteria, on the phone:
   - An untouched form closes at once.
   - With a sheet open over the form (Pick a customer, or New customer inside it), back does exactly what that sheet's own "Close" does: it closes only the top sheet, and the form keeps everything typed. It never asks "Discard the sale?".
   - There are no drafts or autosave.
-- **Elegir cliente** (`NuevaVentaCliente`):
+- **Pick a customer** (`NuevaVentaCliente`):
   - A sheet over the sale.
   - It offers search by phone or part of the name, "No customer", and "New customer", which creates the customer and uses it. "New customer" is the same form as in Customers: only the name required; the phone optional; VIP only while Customers VIP is on (customers.md); no channel.
   - It shows a customer's VIP mark only while Customers VIP is on.
   - Its results show the shared loading state before their first answer.
   - Closing the sheet only returns to the form.
 - **"Sale saved"** (`Estados`):
-  - It carries **Deshacer** and no amount or name. It is announced like a toast and lasts a fixed few seconds.
-  - Deshacer deletes the sale with no confirmation, then shows "Sale deleted · the grams go back to stock" and returns to Sales.
-  - If the sale is already gone, Deshacer shows "That is gone. The list is up to date."
+  - It carries **Undo** and no amount or name. It is announced like a toast and lasts a fixed few seconds.
+  - Undo deletes the sale with no confirmation, then shows "Sale deleted · the grams go back to stock" and returns to Sales.
+  - If the sale is already gone, Undo shows "That is gone. The list is up to date."
   - After the notice is gone, the way to undo is "Delete sale".
 
 #### New sale on the phone
@@ -227,7 +227,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - **A line**: one fixed layout on every phone width from 320 to 430 px and at 130 % text, never switched by measuring the screen. First row: the variety and the grams. Under it: "Gift", a toggle row at least 44 px tall, and "Special price". Below those: the line's price per gram, rule badge and total.
 - **No field overflows or is clipped** at 320 px or at 130 % text.
 - **Targets**: the payment options, "Add another variety" and the dialog buttons are at least 44 px tall; every input is at least 16 px.
-- **Keypads**: grams `inputmode="decimal"`; pesos (shipping, Precio especial) `inputmode="numeric"`; a line's fields carry `enterkeyhint` so the keyboard's action key moves through them.
+- **Keypads**: grams `inputmode="decimal"`; pesos (shipping, Special price) `inputmode="numeric"`; a line's fields carry `enterkeyhint` so the keyboard's action key moves through them.
 
 ### On screen: Sales (`Sales`, `VentasCompu`)
 
@@ -257,7 +257,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - the selected tab is marked by more than color;
   - Dates' two date inputs are at least 16 px and at least 44 px tall and never overflow at 320 px or 130 % text.
 
-### On screen: Detalle de venta (`VentaDetalle`)
+### On screen: Sale of <date> (`VentaDetalle`, the sale detail)
 
 - **A detail** (navigation.md): the bar or sidebar and "‹ Sales", without "+ New sale".
 - **Loading**: while the sale loads, it shows the shared loading state (accounts.md, `Estados`), never a blank page.
@@ -266,12 +266,12 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - each line's variety, grams, price per gram, rule badge and line total;
   - shipping, the note, how it was paid, and the customer or "No customer".
 - **Recorded rule badges** ("VIP", "bulk") always show what was recorded, whatever the pricing settings say today. They are history (ADR-0003).
-- **Asignar cliente**:
+- **Assign customer**:
   - It shows only when the sale has none, and opens Pick a customer without "No customer".
   - The system back gesture with its sheet open does what the sheet's own "Close" does: it closes only the sheet and asks nothing.
   - On success, the toast "Customer assigned".
   - If someone assigned one first, "This sale already has a customer." and the detail refreshes.
-- **Borrar venta**:
+- **Delete sale**:
   - On the phone it, and its confirmation's buttons, are at least 44 px tall.
   - It is confirmed with `Before deleting`, naming the date, the amount and the total grams of its lines that return to stock, gifts included. For example: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." The buttons are "No, keep it / Yes, delete it".
   - Then the toast "Sale deleted" and back to Sales.
@@ -311,7 +311,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - **One sale per order**: a multi-variety sale is one sale, with total = rounded lines + shipping once, through the API and the form. (Criteria 2, 8)
 - **Whole or nothing**: a refused sale leaves 0 new rows in sales, lines and payments. (Criterion 4)
 - **Owing without a customer**: 0 stored; the domain refuses it and a test covers it. (Criterion 4)
-- **Delete returns grams**: after deleting a sale, its varieties' stock rises by exactly its lines' grams, and the answer names them. Borrar venta's confirmation names the grams, and Deshacer's notice says they return.
+- **Delete returns grams**: after deleting a sale, its varieties' stock rises by exactly its lines' grams, and the answer names them. Delete sale's confirmation names the grams, and Undo's notice says they return.
 - **Isolation coverage**: every sales route is in the sweep and answers 404 or empty from another business, including references to another business's customer or variety. On screen, another business's sale opened by id shows "That is gone." (Criterion 5)
 - **No echo**: (Criterion 5)
   - no refusal body or log line contains the note, a customer's name or a submitted amount;
@@ -326,19 +326,19 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - a no-price line shows its message before saving;
   - a forced API refusal keeps every field typed;
   - every sales refusal has a code in `contract.json`, checked by `tests/test_refusal_codes.py`.
-- **Undo leaves nothing**: after Deshacer, 0 rows remain for that sale in sales, lines and payments, and it is in no list. (Criterion 9)
+- **Undo leaves nothing**: after Undo, 0 rows remain for that sale in sales, lines and payments, and it is in no list. (Criterion 9)
 - **Sales**: (Criteria 10, 11)
   - each period's total and count equal the sum and number of the sales shown;
   - the week runs Monday to Sunday;
   - the "owes you" mark matches the API's settlement;
   - the list answers in under 300 ms with a few hundred sales: checked by `tests/sales/test_list_cost.py` through the query plan of the list statements (the indexes are searched, no table is scanned) and the statement count at 30 and 300 sales, never by time (docs/adr/0038).
-- **Fixing**: the end-to-end run assigns a customer to a sale that had none (Asignar cliente then disappears) and deletes a sale through its confirmation. (Criterion 11)
+- **Fixing**: the end-to-end run assigns a customer to a sale that had none (Assign customer then disappears) and deletes a sale through its confirmation. (Criterion 11)
 - **No overflow on the phone (criterion 12)**: front tests at 320, 375 and 430 px and at 130 % text, for New sale, Sales and the sale's detail, show nothing clipped or overflowing horizontally, "Special price", shipping and Dates' inputs included; Sales' tabs covered on one row and wrapped two by two.
 - **Save in reach (criterion 12)**: at those widths the footer's total and "Save sale" are visible on load; the header stays while the body scrolls; with a simulated keyboard the footer stays visible; the payment options and the Owing hint (with side margin) scroll fully above the footer.
 - **Targets and inputs (criterion 13)**: every interactive element of the three screens, dialog buttons included, is at least 44 px tall; every input has a computed font size of at least 16 px; grams carry `inputmode="decimal"`, pesos `"numeric"`, and a line's fields `enterkeyhint`.
 - **Never blank (criterion 14)**: front tests show the shared loading state on the detail, Sales' list, New sale's price wait (opening and date change) and Pick a customer's results, holding no digit, currency symbol or placeholder figure.
 - **Date change**: a front test shows everything typed is kept, the lines show loading, then every line is repriced.
-- **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "Discard the sale?" under the Close condition; "No, keep entering" keeps the form and the next back asks again; an untouched form closes at once; with Pick a customer, New customer or Asignar cliente open, back closes only the top sheet as its own "Close" does, the sale or detail underneath stays intact, and "Discard the sale?" never appears.
+- **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "Discard the sale?" under the Close condition; "No, keep entering" keeps the form and the next back asks again; an untouched form closes at once; with Pick a customer, New customer or Assign customer open, back closes only the top sheet as its own "Close" does, the sale or detail underneath stays intact, and "Discard the sale?" never appears.
 - **No regression (criterion 16)**: the existing sales and navigation tests pass without being edited; the pricing matrix and "preview = stored" stay at 0 differences; `NuevaVentaCompu` and `VentasCompu` are unchanged.
 
 ## Out of scope

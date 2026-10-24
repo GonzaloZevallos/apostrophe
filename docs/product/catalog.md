@@ -6,7 +6,7 @@ The text that offers today's sellable varieties to a business's customers. It is
 - its stock status right now (stock.md);
 - the business's pricing settings (pricing-settings.md), for the bulk line;
 
-between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Share and Copiar stay for sending it by hand. An archived variety (varieties.md) is never part of it.
+between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Share and Copy stay for sending it by hand. An archived variety (varieties.md) is never part of it.
 
 Where its pieces live (navigation.md):
 - the catalog screen (`/varieties/catalog`) opens from "Send catalog" on Varieties;
@@ -19,7 +19,7 @@ Where its pieces live (navigation.md):
 
 Setting the catalog attributes and the header and footer is the setup step of this same job. Keeping the pinned catalog current on its own (test send, publishing, pinning) is BRIEF.md's Telegram job, served by pinned-catalog.md, which reuses this text as it is.
 
-**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to without seeing fields that don't apply to me. (Defined in pricing-settings.md: served here by the bulk line following Precio por cantidad and the VIP price never reaching customers.)
+**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to without seeing fields that don't apply to me. (Defined in pricing-settings.md: served here by the bulk line following Bulk price and the VIP price never reaching customers.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the catalog screen, at most 2 taps from any tab root.)
 
@@ -34,12 +34,12 @@ Success criteria:
    - Each block has its emoji and bolded name, the indica/sativa share, the aroma, the list price per gram and the bulk line.
    - The `**bold**` markers stay in the text.
    - Money is written as `$11.000`.
-   - A line is left out when its data is missing (share, aroma, bulk), and the bulk line also while Precio por cantidad is off.
+   - A line is left out when its data is missing (share, aroma, bulk), and the bulk line also while Bulk price is off.
    - It is tested against a reference set with 0 mismatches.
 2. **Today, only what can be sold**: a variety appears only when it is unarchived, shown, has a current price on today's Argentina date and has stock above zero right now.
    - Archived, hidden, unpriced, sold-out and never-stocked varieties are out.
    - Low stock is still in.
-3. **Fast, from the phone**: from Varieties → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Share hands the native share sheet exactly the text Copiar copies; without a share sheet, Copiar remains. This includes the phone on the home network over plain http. There is no API call by hand.
+3. **Fast, from the phone**: from Varieties → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Share hands the native share sheet exactly the text Copy copies; without a share sheet, Copy remains. This includes the phone on the home network over plain http. There is no API call by hand.
 4. **No guessing why**: every unarchived variety that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
 5. **Businesses never mix** (ADR-0004): attributes, header and footer belong to one business. The text and the list never include another business's data.
 6. **Customers never see the VIP price**: the text never carries it, whatever the switches.
@@ -50,7 +50,7 @@ Success criteria:
 
 - **Emoji**: optional, exactly one emoji. Plain text or more than one emoji is refused. With none, the name line has no stand-in emoji.
 - **Indica share**: optional whole number from 0 to 100; sativa is the rest. It reads "• N% indica / (100−N)% sativa", including the 0 and 100 edges. With none, the line is left out.
-- **Aroma**: optional.
+- **Aroma/flavor**: optional.
   - It is trimmed, and every run of whitespace, line breaks included, collapses to one space.
   - It holds up to 200 characters.
   - Empty means none, and the line is left out.
@@ -81,8 +81,8 @@ Success criteria:
   - `<emoji> **<name>**`, or `**<name>**` with no emoji;
   - `• N% indica / M% sativa`, only with a share;
   - `• Aroma/flavor: <aroma>`, only with an aroma;
-  - `• Precio x gramo: $X`, the list price;
-  - `• Desde N g: $Y c/u`: the bulk minimum and the bulk price. It shows only when the current price has a bulk price and Precio por cantidad is on. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).
+  - a line with the list price per gram;
+  - a line with the bulk minimum in grams and the bulk price each. It shows only when the current price has a bulk price and Bulk price is on. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).
 - **VIP price**: never in the text, whatever the switches (pricing-settings.md).
 - **Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`.
 - **Stock in the text**: none. It never mentions grams, stock or low stock.
@@ -108,12 +108,12 @@ Success criteria:
   - Every other line, break, emoji and price is identical to the copied text.
   - It shows the empty state when nothing qualifies.
 - **Share**, the main action:
-  - it opens the device's native share sheet with exactly the text Copiar copies, `**` markers included;
-  - where the browser offers no share sheet, it is not shown, and Copiar remains;
+  - it opens the device's native share sheet with exactly the text Copy copies, `**` markers included;
+  - where the browser offers no share sheet, it is not shown, and Copy remains;
   - success, or closing the share sheet without sending, shows nothing and changes nothing: the share sheet is its own feedback, and there is no toast;
-  - a real failure (not the seller cancelling) shows the fixed "Could not share." and leaves Copiar available;
+  - a real failure (not the seller cancelling) shows the fixed "Could not share." and leaves Copy available;
   - neither carries any of the catalog text, a name or an amount.
-- **Copiar**, the fallback:
+- **Copy**, the fallback:
   - It copies the raw text with its `**` markers, the same text the pinned catalog sends.
   - On success it shows the toast "Catalog copied".
   - It works from the phone over the home network's plain http.
@@ -150,7 +150,7 @@ Success criteria:
   - share at 0, 50 and 100, or none;
   - aroma or none;
   - bulk or none, with a whole and a fractional bulk minimum;
-  - a bulk price with Precio por cantidad on and off;
+  - a bulk price with Bulk price on and off;
   - amounts with thousands;
   - a blank header and a blank footer;
   - a seller's own `**` in the header, the aroma and a name, including an unpaired one.
@@ -160,11 +160,11 @@ Success criteria:
 - **Bold pairing**: the preview, with markers removed, equals the copied text. Bold falls between pairs read left to right, and an unpaired final `**` shows as typed. 100% passing.
 - **Inclusion (criterion 2)**: a matrix of archived/unarchived × shown/hidden × price/no price today × no entries, sold out, low and ok. Only unarchived + shown + priced + stock above 0 appears. 100% passing.
 - **Reasons (criterion 4)**: exactly one reason per unarchived variety that does not go out, in priority order, told by word; archived varieties are not listed. 100% passing.
-- **Share = copy (criterion 3)**: with a stubbed share sheet, Share hands exactly the API's text; with none available, Share is not shown and Copiar works; a cancel shows nothing; a forced failure shows "Could not share." and leaves Copiar; no message holds catalog text.
+- **Share = copy (criterion 3)**: with a stubbed share sheet, Share hands exactly the API's text; with none available, Share is not shown and Copy works; a cancel shows nothing; a forced failure shows "Could not share." and leaves Copy; no message holds catalog text.
 - **Always opens**: the catalog screen opens with nothing qualifying outside first run, and "Send catalog" is disabled only while the checklist shows and nothing qualifies.
 - **Address**: `/varieties/catalog` opens the catalog screen, also on reload; `/catalogo` answers a permanent redirect to it.
 - **Temporary place**: while Settings's groups do not exist, a front test shows the bot settings and the header and footer save from it, both links open it, it shows no pin status and no Publish, and no tab, More or Settings entry points to it.
-- **No curl (criterion 3)**: the end-to-end front run edits a variety's attributes on its page and the header and footer (in Settings, or the temporary place until it exists), opens Varieties → "Send catalog" and taps Copiar. The clipboard equals the API's text.
+- **No curl (criterion 3)**: the end-to-end front run edits a variety's attributes on its page and the header and footer (in Settings, or the temporary place until it exists), opens Varieties → "Send catalog" and taps Copy. The clipboard equals the API's text.
 - **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen varieties, and opens in at most 2 taps from any tab root.
 - **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business. One business's switches never change another's text.
 - **No echo**: no refusal or log line contains the header, footer, aroma or emoji typed; after a full front run, the console and browser storage hold no catalog text.

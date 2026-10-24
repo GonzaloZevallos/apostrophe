@@ -1,6 +1,6 @@
 # Pricing settings
 
-Which pricing rules a business uses: two independent switches, **Precio por cantidad** (bulk pricing) and **Customers VIP** (VIP customers). They are seen and changed only by the business they belong to (ADR-0004), in Settings → Prices (navigation.md).
+Which pricing rules a business uses: two independent switches, **Bulk price** (bulk pricing) and **Customers VIP** (VIP customers). They are seen and changed only by the business they belong to (ADR-0004), in Settings → Prices (navigation.md).
 
 What each rule does is defined by its owner, and every owner follows the switches:
 - how a sale line is priced: sales.md;
@@ -34,7 +34,7 @@ Success criteria:
    A variety with no VIP price charges a VIP like anyone else. The live preview shows the same price before saving.
 3. **Nobody's price moves by surprise.** After the change, every existing VIP customer is charged exactly what they were charged before, for the same variety, day and grams. No past sale's price, rule or total changes, whatever the switches do later.
 4. **Switching loses nothing.** Turning a rule off and back on brings back every stored bulk price, VIP price and VIP mark. Only sales and price entries recorded while it was off go without it.
-5. **Customers never see the VIP price.** The catalog never shows it. Its bulk line shows only while Precio por cantidad is on.
+5. **Customers never see the VIP price.** The catalog never shows it. Its bulk line shows only while Bulk price is on.
 6. **Fast.** Each switch changes in a few taps from Settings → Prices. Recording a sale stays under a minute.
 7. **Businesses never mix** (ADR-0004). One business's switches never affect another's prices, screens or catalog.
 
@@ -42,7 +42,7 @@ Success criteria:
 
 ### The switches
 
-- **Two per business**, independent of each other: Precio por cantidad and Customers VIP.
+- **Two per business**, independent of each other: Bulk price and Customers VIP.
 - **Where they change**: only in Settings → Prices. Any user of the business may change them; there are no roles.
 - **A rule switched off**:
   - it stops applying to new sales and is hidden on every screen that shows it;
@@ -70,7 +70,7 @@ Success criteria:
   - on success, the toast "Prices saved", which carries no data.
 - **A fixed line** says that past sales keep the price they were recorded with, and that switching a rule off deletes nothing.
 - **A fixed help line under the VIP switch**, shown whether it is on or off: "Each variety needs its VIP price: without it, a VIP customer pays like anyone else." There is no count, no list and no warning anywhere else.
-- **Upkeep**: a save that changes either switch triggers it (pinned-catalog.md), because the catalog's bulk line depends on Precio por cantidad.
+- **Upkeep**: a save that changes either switch triggers it (pinned-catalog.md), because the catalog's bulk line depends on Bulk price.
 - **Feedback**: a group that is gone, no network and server errors follow accounts.md.
 
 ### Export

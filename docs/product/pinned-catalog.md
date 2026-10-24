@@ -56,7 +56,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 - **Token**:
   - stored encrypted, keyed from `APOSTROPHE_SECRET_KEY`;
   - once saved, no route returns it and it is never logged;
-  - on screen: "Saved on dd/mm · not shown any more" with **Cambiar**.
+  - on screen: "Saved on dd/mm · not shown any more" with **Change**.
 - **Channel chat and own chat**:
   - free text, checked only for "not blank";
   - shown in plain text and editable in place;
@@ -64,7 +64,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
   - each field has a short fixed help line.
 - **The own chat's help line**: "Tap Start in your bot; find your number with @userinfobot." (80 characters at most, GH-97; it dropped "Open your bot in Telegram" and "or tap Find my chat", which the button beside the field already says.) It replaced "Open your chat with the bot and write anything to see it here.", which promised something the screen did not do. The channel chat's help line is unchanged. The longer how (open the bot, tap Iniciar, then Find my chat fills the number, or look it up with @userinfobot) is behind More info ("More info") on that line, closed at every open.
 - **Nothing saved yet**: empty fields and no "Saved" line.
-- **Saved only through Probarlo**: settings are saved only when a test of the typed values succeeds, so the saved settings have always been tested.
+- **Saved only through Test it**: settings are saved only when a test of the typed values succeeds, so the saved settings have always been tested.
 - **Changing any of the three** re-arms the test gate. The successful Test it that saves the change satisfies it again.
 - **Changing only the own chat** leaves the channel and its pin as they were: upkeep goes on and the status doesn't change.
 - **Link to publish**: a plain link to the catalog screen, where Publish and the pin's status live. It carries no status and always opens the catalog screen. It is the reverse of the catalog screen's link to Integrations shown when Publish is unavailable.
@@ -74,7 +74,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 - **Where**: a button next to the "Your chat" field.
 - **Token used**: the token Test it would use.
-  - It is the typed token, if the seller tapped Cambiar and typed one.
+  - It is the typed token, if the seller tapped Change and typed one.
   - Otherwise it is the saved one, which never leaves the server and is never shown, logged or returned.
 - **No token of either kind**: the button is disabled and says "Enter the token first" in words, never by color alone.
 - **What it reads**: only the private chats that wrote to the bot.
@@ -140,8 +140,8 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
   - a variety archived or restored (varieties.md);
   - stock entries recorded, edited or deleted;
   - stock withdrawals recorded, edited or deleted;
-  - sales recorded or deleted, Deshacer included;
-  - a save of Settings → Prices that changes either pricing switch (pricing-settings.md), since the bulk line depends on Precio por cantidad;
+  - sales recorded or deleted, Undo included;
+  - a save of Settings → Prices that changes either pricing switch (pricing-settings.md), since the bulk line depends on Bulk price;
   - the start of a new day in Argentina time, for price entries that come into force that day.
 - **Rule**: the text is rebuilt on a trigger. The pinned message is edited only if the new text differs from the last text published. Topping up a variety already in the catalog, or withdrawing grams that leave it with stock above zero, sends nothing.
 - **It only ever edits.** Upkeep never posts a new message, even when the old one was deleted by hand.
@@ -165,9 +165,9 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
     - "It is too long for Telegram: shorten aromas or hide varieties.": the text exceeds Telegram's limit.
 - **"The last one was on dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publish there.
 - **What it reflects**: the result of the last attempt, or the unpublished token or channel change. There is no pending state: while a sync runs, the previous state stays.
-- **Not affected by Test it or Buscar mi chat**: their failures never change the status.
+- **Not affected by Test it or Find my chat**: their failures never change the status.
 - **Before the first Publish ever**: no status shows.
-- **Retrying**: a failed sync is retried automatically on the next trigger, or by Publish. There is no "Reintentar".
+- **Retrying**: a failed sync is retried automatically on the next trigger, or by Publish. There is no retry control.
 - **Where it shows**:
   - on the catalog screen, next to Publish (catalog.md);
   - on Home: while the status is "Out of date", the fixed line "Your Telegram catalog is out of date", which opens the catalog screen. It is a notice, not a figure (results.md);
@@ -177,7 +177,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 - The pin, Test it and Publish use: the header, then "Nothing to offer for now.", then the footer. A blank header or footer is left out.
 - This counts as "Up to date".
-- The catalog screen's own empty state and Copiar are unchanged: there is nothing to copy (catalog.md).
+- The catalog screen's own empty state and Copy are unchanged: there is nothing to copy (catalog.md).
 - When a variety qualifies again, upkeep restores the full catalog.
 
 ### Changing the channel or the token
@@ -189,7 +189,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 ### The text
 
-- Exactly the catalog text from the one author (ADR-0022), which never includes an archived variety, never carries a VIP price and carries the bulk line only while Precio por cantidad is on (catalog.md).
+- Exactly the catalog text from the one author (ADR-0022), which never includes an archived variety, never carries a VIP price and carries the bulk line only while Bulk price is on (catalog.md).
 - `**` markers become real Telegram bold, paired left to right. A final unpaired `**` shows as typed.
 - The test copy and the published copy are identical for the same data.
 - **Length**: measured as Telegram measures it, on the message as sent. Over Telegram's limit it is never split or cut; it is refused, as above.
@@ -223,7 +223,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 ## Metrics
 
-- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Prices save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Precio por cantidad on a business with a bulk price in force edits the pin; switching only Customers VIP sends nothing, since the text does not change. 100% passing.
+- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Prices save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Bulk price on a business with a bulk price in force edits the pin; switching only Customers VIP sends nothing, since the text does not change. 100% passing.
 - **One message per chat (criterion 2)**:
   - one post per channel chat, then edits only: 0 new posts while that message exists;
   - a channel or token change gives exactly one new post, and 0 later calls against the old message;
@@ -244,7 +244,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
   - changing only the own chat keeps upkeep running and the status unchanged;
   - a tested token or channel change reads "It still has to be published with the new bot or channel", with no "The last one was", until Publish.
 - **Unavailable Publish**: with no saved channel or no successful Test it since the last change, the catalog screen shows Publish disabled with its reason in words and a link that opens Integrations.
-- **Integraciones**: a front test shows:
+- **Integrations**: a front test shows:
   - the link to the catalog screen, no pin status and no Publish;
   - empty fields and no "Saved" line with nothing saved;
   - the "unpin it yourself in Telegram" line after a token or channel change.
@@ -253,7 +253,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
   - Each shows its fixed text, repeats nothing typed, keeps the form and saves nothing.
 - **Test it never blames the channel (criterion 8)**: across every Test it failure, "The bot cannot post in the channel" never appears. Publish and upkeep against the channel still produce it, and their states and Home's notice are unchanged. 100% passing.
 - **Help line (criterion 9)**: a front test shows the new own-chat help line and the unchanged channel help line.
-- **Buscar mi chat**: 100% passing.
+- **Find my chat**: 100% passing.
   - Exactly one private chat (with several messages) fills the field and replaces an existing number.
   - Each of these shows its own reason and leaves the field as it was: no messages, more than one private chat, unreadable messages, another failure, a bad token and Telegram down.
   - Groups and channels are never counted.
@@ -286,7 +286,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 - Unpinning or deleting old messages.
 - Splitting a long catalog across several messages, or cutting it short.
 - Upkeep posting a new message on its own.
-- A pending state, or a "Reintentar" control.
+- A pending state, or a retry control.
 - The pin's status or Publish in Integrations.
 - Checking chat formats.
 - Live updates while a screen is open.

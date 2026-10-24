@@ -155,8 +155,7 @@ Success criteria:
 - **An expense or category that is gone** when it is saved, deleted or opened follows the
   app's rule in `accounts.md`: "That is gone." Opening one offers "Back to Expenses" on
   the current month.
-- **Toasts**: "Expense saved", "Expense deleted", "Category saved" and "Categoría
-  eliminada", with no amounts in them.
+- **Toasts**: "Expense saved", "Expense deleted", "Category saved" and "Category deleted", with no amounts in them.
 - **Refusals** show inline and keep what was typed.
 - **Feedback**: network loss shows "No connection", and a server error shows a generic
   retry (accounts.md).

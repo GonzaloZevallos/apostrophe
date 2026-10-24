@@ -108,7 +108,7 @@ Success criteria:
 Success criteria, the theme:
 
 23. **Light unless chosen on the device**: a device with no stored choice opens in the light theme on every screen, whether the system is set to light or dark. With the system in dark, the page background is `--papel` (#fcfbf8).
-24. **Dark only on request, and it stays**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Only the choice "Dark" in Settings → Appearance sets it (navigation.md). The device remembers it across closing the app, reloads and logging out, and shows it on every screen of that device, Entrar, the invitation and the reset screens included. Choosing "Light" returns to light and is remembered the same way.
+24. **Dark only on request, and it stays**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Only the choice "Dark" in Settings → Appearance sets it (navigation.md). The device remembers it across closing the app, reloads and logging out, and shows it on every screen of that device, the sign-in screen, the invitation and the reset screens included. Choosing "Light" returns to light and is remembered the same way.
 25. **The themes themselves don't change**: both keep the same tokens and values; only what picks the theme changed. Every rule about state (no state told by color alone, blue ↔ amber) holds in both.
 26. **One rule, written the same everywhere**: the comment at the top of `web/src/styles/tokens.css`, `docs/product/design-system/tokens.css`, the design-system README and this file all state the same rule.
 
@@ -136,9 +136,9 @@ Success criteria, changing and resetting a password:
 
 Success criteria, the getting-in screens and shared states as redesigned (GH-49):
 
-27. **Getting in is fast.** From the phone, a seller opens an invitation link, or a reset link, and lands on Home signed in in under a minute, and logs in from Entrar in a few seconds. No step appears that the design does not draw.
+27. **Getting in is fast.** From the phone, a seller opens an invitation link, or a reset link, and lands on Home signed in in under a minute, and logs in from the sign-in screen in a few seconds. No step appears that the design does not draw.
 28. **Every state is told by word and shape, never by color alone**: the brake message, "This invitation no longer works", "This link no longer works. Ask whoever sent it for a new one.", "No connection", empty, loading, the generic server-error retry and "That is gone.". All copy in Rioplatense Spanish with vos.
-29. **Phone and computer match the design.** Entrar, NegocioNuevo, Invitacion, the reset screen and Estados match `docs/product/design-system/pantallas/` on both, checked by eye; `scripts/design/compare.sh` runs before and after.
+29. **Phone and computer match the design.** The sign-in screen (`Entrar`), the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), the reset screen and the shared states (`Estados`) match `docs/product/design-system/pantallas/` on both, checked by eye; `scripts/design/compare.sh` runs before and after.
 30. **The look reveals nothing new.**
     - No screen or state says whether an email has a user, which brake fired or how many attempts are left.
     - A dead link never says why.
@@ -333,7 +333,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - plain values: ISO 8601 dates, whole pesos, grams as decimals with up to two places;
   - each record names what it refers to (customer, variety, category) as well as its id;
   - it holds every recorded fact as stored:
-    - the business name and its pricing settings (Precio por cantidad and Customers VIP);
+    - the business name and its pricing settings (Bulk price and Customers VIP);
     - users (email and joining date);
     - customers (name, phone number, VIP);
     - varieties with their low-stock threshold and catalog attributes;
@@ -378,17 +378,17 @@ Success criteria, the cookie-security test (GH-130 follow-up):
     - the device keeps only the choice: nothing personal, no money, no session and nothing about a business;
     - it belongs to the device, not to the user or the business; a partner's device and the user's other devices are unaffected;
     - logging out does not clear it;
-    - a stored Dark shows on every screen of that device, Entrar, the invitation and the reset screens included; a device with nothing stored opens light;
+    - a stored Dark shows on every screen of that device, the sign-in screen, the invitation and the reset screens included; a device with nothing stored opens light;
     - the screens before login have no theme control.
   - Native controls and scrollbars follow the app's theme, not the system's: light with no attribute, dark with `data-tema="oscuro"`.
   - Both themes keep the same tokens and values, and every state rule holds in both.
   - The manifest's colours and the splash are static and light. The status bar follows the app's chosen theme (`data-tema`), never the system's; on iOS it stays light, because iOS fixes its style at launch.
   - The font is self-hosted.
 - **Language and formats**: every word on screen in English (product-language.md, which supersedes the earlier Spanish rule). Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
-- **Getting in** (`Go to sign in`, `NegocioNuevo`, `Invitacion`, the reset screen):
-  - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). Where the design's wording differs from this file, this file wins and the difference is a defect in the design.
+- **Getting in** (`Go to sign in`, the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), the reset screen):
+  - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). The drawings carry the app's English product text; a difference in wording is a defect in the design.
   - **One centred, phone-width layout** on every viewport, the computer's included; there is no computer-only layout for these screens.
-  - **Entrar**:
+  - **The sign-in screen** (`Entrar`):
     - the labels "Email address" and "Password" and the button "Sign in";
     - a fixed hint under the button that five failed attempts lock the email for 15 minutes, and no count of attempts left;
     - a wrong password and an unknown email show the same refusal; refusals show inline and keep what was typed.
@@ -396,14 +396,14 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - A request answered 401 goes to login.
   - An unknown, used or expired invitation shows "This invitation no longer works".
   - Opening `/invitation/{token}` or `/reset/{token}` while signed in logs out first, through the backend, then shows the invitation or the reset screen as if signed out. That includes the user's own business's join link, and a reset link for the same user.
-  - **The reset screen** (`/reset/{token}`) reuses `Invitacion`'s layout; it has no design file of its own and is registered in `scripts/design/screens.json` as a signed-out phone screen:
+  - **The reset screen** (`/reset/{token}`) reuses the invitation screen's layout (`Invitacion`); it has no design file of its own and is registered in `scripts/design/screens.json` as a signed-out phone screen:
     - "Choose your new password", one field "New password" (hidden by default, with a reveal) and the button "Save and sign in";
     - a password under 10 characters shows the same refusal as accepting an invitation and keeps what was typed;
     - on success it goes to Home, with no toast.
   - **A dead reset link**: an unknown, used, expired or retired link shows "This link no longer works. Ask whoever sent it for a new one."
     - It shows both when the link is opened and when a submit answers 404.
     - It keeps nothing typed and never says why the link is dead.
-    - Its only button goes to Entrar.
+    - Its only button goes to the sign-in screen.
 - **Where screens sit**: the bar, the sidebar, More, Settings, the chrome and back rule and the first run are navigation.md. Home is the panel (results.md).
 
 ### The installed shell
@@ -482,12 +482,12 @@ This file only says where it applies and how it is kept true. It does not restat
 
 These groups of Settings (navigation.md) replace the former Business screen, which no longer exists; `/negocio` redirects to Settings. Each is its own subscreen, a form: "Close", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Prices, between Users and Integrations, is pricing-settings.md.)
 
-- **Negocio**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
+- **Business**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
 - **Users**:
   - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
   - "Invite a partner": each tap creates one fresh join link, to copy or share with the phone's share sheet.
-- **Apariencia**: Light and Dark, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Close" always closes at once.
-- **Tu cuenta**:
+- **Appearance**: Light and Dark, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Close" always closes at once.
+- **Your account**:
   - "Change password", above "Sign out", opens a sheet:
     - the fields are "Current password" and "New password";
     - "New password" is asked once, hidden by default with a reveal, here and on the reset screen;
@@ -535,7 +535,7 @@ These groups of Settings (navigation.md) replace the former Business screen, whi
 
 ### Feedback, on every screen
 
-These states are drawn by `Estados` (GH-49), restyled from the design with their wording unchanged. Each is checked on the phone and inside every screen's own computer layout (InicioCompu, VentasCompu, the two-pane Customers and Varieties), with the same words and shapes. `Estados` draws nothing for a state no capability defines.
+These states are drawn by `Estados` (GH-49), restyled from the design with their wording unchanged. Each is checked on the phone and inside every screen's own computer layout (`InicioCompu`, the computer layout of Home; `VentasCompu`, the computer layout of Sales; the two-pane Customers and Varieties), with the same words and shapes. `Estados` draws nothing for a state no capability defines.
 
 - **Success toasts** are short, fixed and carry no data, with one deliberate exception.
   - This capability's toasts:
@@ -544,7 +544,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
     - "Password changed · we signed out your other sessions".
   - Choosing a theme shows no toast.
   - The exception is "Payment saved · still owing $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Payment saved".
-- **No "Undo" on success toasts, with one deliberate exception**: "Sale saved" (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
+- **No "Undo" on success toasts, with one deliberate exception**: "Sale saved" (sales.md) carries Undo, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
 - **Loading**: while a screen waits for the server, it shows a loading state whose wording and shape follow the design. It shows no figure, no placeholder amount and no text that could be read as data (criterion 7). At phone widths it also meets the phone standard's loading rule: shaped like the content, `aria-busy`, no false empty state.
 - **Empty states** keep each capability's own fixed wording.
 - **Leaving a form or sheet** with unsaved changes asks before discarding, and an untouched one closes at once (navigation.md). New sale's question is "Discard the sale?" (sales.md).
@@ -555,7 +555,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
     - the form or dialog closes and what was typed is discarded;
     - the list it came from refreshes;
     - a fixed notice shows: "That is gone. The list is up to date."
-  - The notice is not a success toast. It has no data, no "Undo" and no "Reintentar", and it is announced like a toast.
+  - The notice is not a success toast. It has no data, no "Undo" and no retry action, and it is announced like a toast.
   - Confirming the delete of a record already gone gives the same notice, not the delete's success toast.
   - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "That is gone." with one button back to its list:
     - "Back to Varieties" (a variety or a stock entry);
@@ -582,10 +582,10 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - an offline check shows "No connection";
   - no state is told by color alone.
 - **Theme (criteria 23–26)**:
-  - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`), nothing stored and no attribute reads the page background as `--papel` (#fcfbf8), Entrar included;
+  - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`), nothing stored and no attribute reads the page background as `--papel` (#fcfbf8), the sign-in screen included;
   - dark on request: an e2e run with `data-tema="oscuro"` on `<html>`, whatever the system setting, reads the page background as the dark theme's own value from `tokens.css`;
   - choosing Dark in Settings → Appearance sets the attribute, and Light removes it, with no toast, save button or unsaved-changes warning, and the current choice marked by more than color;
-  - the choice survives a reload and a logout; with Dark stored, Entrar, the invitation and the reset screens show dark;
+  - the choice survives a reload and a logout; with Dark stored, the sign-in screen, the invitation and the reset screens show dark;
   - browser storage holds only the theme choice;
   - no test or fixture reaches the dark theme by emulating a dark system;
   - no token value changed;
@@ -643,12 +643,12 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - completes a reset from a printed link through to Home;
   - sees the dead-link state for a used link.
 - **Getting in, redesigned (criteria 27–32)**:
-  - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at Entrar, each landing on Home signed in (`web/e2e/passwords.spec.ts`); the duration of the links is not measured by any test;
+  - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at the sign-in screen, each landing on Home signed in (`web/e2e/passwords.spec.ts`); the duration of the links is not measured by any test;
   - states: front tests show each fixed text (brake message, both dead-link texts, "No connection", the retry, both "That is gone." forms, loading); shape and color checked by eye in both themes;
   - loading is not data: a front test shows the loading state holds no digit, currency symbol or placeholder figure;
   - design:
-    - `scripts/design/compare.sh` runs before and after for Entrar, NegocioNuevo, Invitacion, `/reset/{token}` and Estados, with the comparisons attached to the PR;
-    - a by-eye pass at phone and computer viewports covers the getting-in screens and Estados inside the computer layouts;
+    - `scripts/design/compare.sh` runs before and after for the sign-in screen (`Entrar`), the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), `/reset/{token}` and the shared states (`Estados`), with the comparisons attached to the PR;
+    - a by-eye pass at phone and computer viewports covers the getting-in screens and the shared states (`Estados`) inside the computer layouts;
     - every design-vs-docs wording difference is listed in the PR;
   - nothing revealed: the same refusal for a wrong password and an unknown email, no attempt count, no brake detail; dead-link and "That is gone." carry no id, name, date or reason;
   - registry: `scripts/design/screens.json` holds `/reset/{token}` and `compare.sh` measures it;

@@ -72,7 +72,7 @@ Success criteria:
   - "Skip the rest", on optional steps only, only once both required steps are done, and never on the last step (step 6), where it would pass nothing "Skip" does not;
   - "Close", which lands on Home and keeps everything saved and the resume point.
 - **The skip controls**: "Skip" and, when it shows, "Skip the rest" sit together on one line as text links, as the design draws them; neither is a button.
-- **The step frame follows the drawn design** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); where this file and the drawing disagree on what a step shows, this file wins and the difference is a defect in the design.
+- **The step frame follows the drawn design** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); a difference between this file and the drawing on what a step shows is a defect in the design.
 - **Unsaved changes**: leaving a step with something typed and not saved, by "Close", "Back" or "Skip", asks before discarding. An untouched step leaves at once.
 - **Inside the steps**, the owners' own behaviour applies unchanged: field rules, refusals inline keeping what was typed, toasts, Test it's and Find my chat's reasons, "No connection", the generic retry and "That is gone.".
 
@@ -81,7 +81,7 @@ Success criteria:
 | # | Step | Required | Saves |
 |---|---|---|---|
 | 1 | A variety with today's price | Yes | A variety and a price entry effective today (list price, optionally a bulk price and its minimum), under Varieties' rules and refusals (varieties.md) |
-| 2 | Its opening stock | Yes | A stock entry with origin Stock inicial, grams, today's date and an optional total cost (stock.md) |
+| 2 | Its opening stock | Yes | A stock entry with origin Initial stock, grams, today's date and an optional total cost (stock.md) |
 | 3 | Catalog header and footer | No | The business's header and footer, shown with their defaults (catalog.md) |
 | 4 | Telegram bot | No | Token, channel chat, own chat (with Find my chat) and Test it, exactly as Integrations (pinned-catalog.md) |
 | 5 | A partner | No | One join link per tap, to copy or share (accounts.md) |
@@ -160,7 +160,7 @@ Success criteria:
 
 - **The evidence matrix**: every cell is captured on the task base (before) and on the head (after) with `scripts/design/comparisons.mjs --strict`. One script from one install takes both sides, on the same Argentina day, with fonts pinned (ADR-0042). The PR records the installed `@fontsource/plus-jakarta-sans` version. The cells are:
   - every Onboarding step and "Done", light and dark, phone and computer;
-  - the "Go on to the setup" notice on Home, InicioOscuro and InicioCompu;
+  - the "Go on to the setup" notice on Home, `InicioOscuro` (dark theme) and `InicioCompu` (computer layout);
   - when the change touches step 2's chip, the stock entry form opened from a variety with no entries ("Initial stock" preselected), light and dark, phone and computer.
 
   Screens the change does not touch are left out.
@@ -227,7 +227,7 @@ There is no telemetry.
   - the Onboarding has no bar and no "+ New sale";
   - New sale opened from "Done" returns to Home.
 - **Isolation**: the routes are in the isolation sweep and the gated-route test; business removal leaves 0 rows of the state and exported count = deleted count.
-- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` and `OnboardingCategorias`. Step 1's price step is registered in `screens.json` and captured before and after the "$" reaches it (varieties.md).
+- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` (the varieties step) and `OnboardingCategorias` (the expense categories step). Step 1's price step is registered in `screens.json` and captured before and after the "$" reaches it (varieties.md).
 - **Approval from the evidence (criterion 6)**, read from the PR:
   - before and after captures are attached for every cell of the matrix: 0 cells missing;
   - every difference is listed as intended, a known design defect or a defect: 0 unlisted;
