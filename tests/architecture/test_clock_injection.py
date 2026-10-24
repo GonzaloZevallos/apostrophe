@@ -13,7 +13,8 @@ it with `ast` (never a text search), per call site and not per file:
    cannot leave it out. A test function's own `clock` parameter is the conftest fixture,
    which pytest always supplies, so it needs no listing (a default still fails). The accepted
    wrappers are conftest's `app` fixture, the `served_app` fixture of
-   `tests/test_serving.py`, the `app` fixture of `tests/test_libsql_driver.py` and
+   `tests/test_serving.py`, `make_client` of `tests/test_pre_sign_in_page.py`, the `app`
+   fixture of `tests/test_libsql_driver.py` and
    of `tests/business_removal/adapters/test_sql_schema_rows.py`, and `build_app` of
    `tests/business_removal/adapters/seed.py`; a new one is added deliberately.
 
@@ -36,6 +37,7 @@ ACCEPTED_WRAPPERS = frozenset(
     {
         ("tests/conftest.py", "app"),
         ("tests/test_serving.py", "served_app"),
+        ("tests/test_pre_sign_in_page.py", "make_client"),
         ("tests/test_libsql_driver.py", "app"),
         ("tests/business_removal/adapters/test_sql_schema_rows.py", "app"),
         ("tests/business_removal/adapters/seed.py", "build_app"),
