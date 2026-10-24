@@ -52,11 +52,15 @@ def test_the_checker_reports_the_deliberate_violations() -> None:
     result = scan_hexagon(FIXTURES / "bad_hexagon", other_hexagons=other_hexagons)
 
     assert sorted((v.imported, v.rule) for v in result.violations) == [
+        ("app.shared.copy", "domain-imports-no-copy"),
+        ("app.shared.copy.CopyCatalog", "domain-imports-no-copy"),
         ("app.varieties", "domain-and-application-import-no-other-hexagon"),
         (
             "app.varieties.domain.variety.Variety",
             "domain-and-application-import-no-other-hexagon",
         ),
+        ("babel.support", "domain-imports-stdlib-and-shared-only"),
+        ("babel.support.Translations", "domain-imports-no-copy"),
         ("sqlalchemy.orm", "domain-imports-stdlib-and-shared-only"),
         (
             "tests.architecture.fixtures.bad_hexagon.adapters",
@@ -85,6 +89,25 @@ def test_each_hexagon_keeps_its_import_rules(root: Path) -> None:
 )
 def test_the_shared_kernel_imports_only_the_standard_library(module: Path) -> None:
     assert [name for name in imports_of(module) if not is_stdlib(name)] == []
+
+
+def test_the_language_value_objects_import_only_the_standard_library() -> None:
+    language = REPO_ROOT / "app" / "shared" / "language.py"
+
+    assert language.is_file()
+    assert [name for name in imports_of(language) if not is_stdlib(name)] == []
+
+
+def test_the_copy_module_does_not_import_settings() -> None:
+    modules = sorted((REPO_ROOT / "app" / "shared" / "copy").rglob("*.py"))
+
+    assert modules
+    assert [
+        (module.name, name)
+        for module in modules
+        for name in full_imports_of(module)
+        if name == "app.settings" or name.startswith("app.settings.")
+    ] == []
 
 
 TELEGRAM_HTTP = "app.pinned_catalog.adapters.telegram_http"

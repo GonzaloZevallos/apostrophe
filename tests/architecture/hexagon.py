@@ -4,6 +4,8 @@
 - `application/` never imports a framework, the database layer or an adapter.
 - `domain/` and `application/` never import another hexagon's package (only their own,
   `app.shared`, and the standard library).
+- `domain/` never imports the copy module or Babel (ADR-0050): texts reach it as plain
+  values through ports declared in `application/`.
 - `adapters/` may import anything.
 
 A relative import is resolved the way `importlib` does, so spelling an import
@@ -23,6 +25,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SHARED_KERNEL = "app.shared"
 APPLICATION_FORBIDDEN_ROOTS = ("fastapi", "starlette", "sqlalchemy", "alembic", "pydantic")
 APPLICATION_FORBIDDEN_MODULES = ("app.db", "app.tables", "app.migrations")
+DOMAIN_FORBIDDEN_MODULES = ("app.shared.copy", "babel")
 
 
 @dataclass(frozen=True)
@@ -53,6 +56,12 @@ def scan_hexagon(root: Path, other_hexagons: frozenset[str] = frozenset()) -> Sc
                 or _within(imported, domain_package)
                 or _within(imported, SHARED_KERNEL)
             )
+        ),
+        *(
+            Violation(module, imported, "domain-imports-no-copy")
+            for module in domain_modules
+            for imported in full_imports_of(module)
+            if any(_within(imported, forbidden) for forbidden in DOMAIN_FORBIDDEN_MODULES)
         ),
         *(
             Violation(module, imported, "application-imports-no-framework-or-adapter")

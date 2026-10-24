@@ -1,0 +1,30 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: apostrophe\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "fixture.greeting"
+msgstr "Hallo"
+
+msgid "fixture.farewell"
+msgstr "Auf Wiedersehen"
+
+msgid "fixture.count_percent"
+msgstr "%(n)s erledigt, zu 100%% sicher"
+
+msgid "fixture.braces"
+msgstr "Hallo {x}"
+
+msgid "fixture.two_lines"
+msgstr ""
+"Erste Zeile\n"
+"Zweite Zeile"
+
+msgid "fixture.items"
+msgid_plural "fixture.items_plural"
+msgstr[0] "%(n)s Ding"
+msgstr[1] "%(n)s Dinge"
