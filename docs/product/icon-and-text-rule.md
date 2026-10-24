@@ -1,5 +1,7 @@
 # Icon and text rule
 
+*Temporary copy. The authoritative text is `DESIGN_STANDARDS.md`. This file is removed when agentic-system#295 lands.*
+
 How every screen labels its entries, actions and notices: which controls are icon-only, which are text only and which are icon + text; how long an always-visible line may be; and what may move behind More info. It decides how things are labelled, never what they do. No action, route, entry order, confirmation, toast wording or tap budget is changed by it, and no rule about what a screen reveals (accounts.md) is weakened by it. The design-system README states the same rule, the same way. Where each screen sits is navigation.md; each screen's own copy stays in its own capability file.
 
 ## Jobs
