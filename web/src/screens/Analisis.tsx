@@ -277,7 +277,9 @@ function AnalisisContenido({
           {m.average_margin.percent !== null && (
             <>
               {' '}
-              <span className="analisis__monto-cifra">{m.average_margin.percent}%</span>
+              <span className="analisis__monto-cifra">
+                {ANALYSIS_TEXT.porcentaje(m.average_margin.percent)}
+              </span>
             </>
           )}
           {m.average_margin.pending_grams > 0 && (

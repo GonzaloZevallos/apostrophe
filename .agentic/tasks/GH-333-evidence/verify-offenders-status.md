@@ -1,8 +1,6 @@
 # verify-offenders: status at delivery
 
-- docs/product/gate.md:132 contains the "renumbered target" case (step 1 confirmed).
-- The `mobile` project run (`vite build`, then `playwright test --project=mobile --workers=3`) was cut off by
-  the 600 s foreground timeout and gave no result. It was not re-run.
-- Not done: diff of the Analysis targets, deletion of the remaining 7 Analisis figure-split entries and the
-  h-scroll decision, renumbered swaps, analysis.spec.ts:242-257 check, after captures, compare.sh counts.
-- No offender file was edited in this subtask.
+Superseded. An earlier version of this note said the `mobile` run was cut off and that no offender file was
+edited. That is no longer true: the run finished (34 passed) and 11 `Analisis` `figure-split` entries were
+deleted in 49ee1f03. The result, the 7 remaining entries and the compare.sh counts are in
+`verify-offenders.md`.
