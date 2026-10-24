@@ -60,7 +60,7 @@ Success criteria:
 9. **Today is only what can be acted on**: sold today, then Owed to you, then What you have left; a low variety links to its page; no result figure (Profit, Cash, costs, Expenses, You gave away, Purchases) shows on Today.
 10. **First run follows today's definition**: a brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the four-step checklist; an imported business sees the dismissable after-import notice; at most one first-run element shows at a time (navigation.md).
 11. **Every notice leads to its fix**: "Your Telegram catalog is out of date" opens the catalog screen; the business avatar opens Settings.
-12. **Looks as designed**: Home, InicioOscuro and InicioCompu match `docs/product/design-system/pantallas/`, phone and computer, both themes.
+12. **Looks as designed**: Home, `InicioOscuro` (Home, dark theme) and `InicioCompu` (Home, computer layout) match `docs/product/design-system/pantallas/`, phone and computer, both themes.
 
 ## Behaviour
 
@@ -97,7 +97,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 ### What each tab shows
 
 - **Today** shows what can be acted on today, top to bottom: what was sold today (sales, number of sales, average sale and grams sold), then the "Owed to you" block, then What you have left.
-- **Week and Mes** show sales, number of sales, average sale, grams sold, You gave away, Cost of goods sold, Stock shortfall (when the period has one), Promotion and Own use (each when the period has one), Expenses, Purchases de flores, Profit and Cash, then the "Owed to you" block and What you have left. Promotion and Own use sit right after Stock shortfall and before Expenses.
+- **Week and Month** show sales, number of sales, average sale, grams sold, You gave away, Cost of goods sold, Stock shortfall (when the period has one), Promotion and Own use (each when the period has one), Expenses, Flower purchases, Profit and Cash, then the "Owed to you" block and What you have left. Promotion and Own use sit right after Stock shortfall and before Expenses.
 - Profit, Cash, Cost of goods sold, Stock shortfall, Promotion, Own use, Expenses, You gave away and Purchases never show on Today.
 
 ### Pending cost
@@ -147,7 +147,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Low varieties are not moved first; the order is by name.
 - There is no total grams.
 
-### On screen (Home, InicioOscuro, InicioCompu)
+### On screen (Home; `InicioOscuro`, Home in the dark theme; `InicioCompu`, Home in the computer layout)
 
 - Home is the panel and a tab root (navigation.md), and remains the landing screen after login and after accepting a join invitation. Accepting a new-business invitation lands in the Onboarding instead (onboarding.md).
 - **At its top**: the business's avatar, which opens Settings.
@@ -162,7 +162,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   4. the tab's figures, as listed above.
 - First-run state belongs to the business: every user of it, a partner who joined included, sees the same element.
 - Week and Month keep the same notices above their own figures.
-- On a computer, it uses `InicioCompu`'s two-column layout, with the same notices in the same order at the top.
+- On a computer, it uses the two-column layout of `InicioCompu` (Home, computer layout), with the same notices in the same order at the top.
 - It follows the light and dark themes, and matches `docs/product/design-system/pantallas/` in both.
 - It is not an action menu:
   - it records nothing itself and has no toasts of its own;
@@ -192,7 +192,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - a negative adjustment lowering Profit by its costed shortfall on its own date, showing "Stock shortfall $ X", and leaving cost of goods sold and Cash unchanged;
   - a withdrawal of each reason lowering Profit on its own date, showing its own line, and leaving cost of goods sold, stock shortfall and Cash unchanged;
   - a period with no negative adjustment showing no Stock shortfall line, and one with no withdrawal of a reason showing no line for it;
-  - pending grams on a sale line leaving their sales out of Profit while "Vendiste" keeps the full sales;
+  - pending grams on a sale line leaving their sales out of Profit while "You sold today" keeps the full sales;
   - pending cost showing the note under Cost of goods sold, Stock shortfall, Promotion, Own use and Profit as defined, and never under Cash;
   - negative Profit and Cash shown as "−$ X".
 - **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from What you have left and does not count for "Start with your varieties".
@@ -208,7 +208,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - **Nothing invented (criterion 6)**:
   - an empty business shows $ 0 and 0 g, with no average sale and no Stock shortfall, Promotion or Own use line;
   - every figure on screen equals the API's answer.
-- **Looks as designed (criterion 12)**: `scripts/design/compare.sh` runs before and after for Home, InicioOscuro and InicioCompu, phone and computer, with the captures attached to the PR and every difference from the design listed.
+- **Looks as designed (criterion 12)**: `scripts/design/compare.sh` runs before and after for Home, `InicioOscuro` and `InicioCompu`, phone and computer, with the captures attached to the PR and every difference from the design listed.
 - **No curl**: the end-to-end front run opens Home, switches across the three periods, reads Promotion and Own use after recording a withdrawal of each reason, opens Customers from the block's heading, a customer from the teaser, and Record payment from a teaser row's "Collect".
 - **Business measure**, read by the operator from existing records only, never shown in the app: the share of pre-Onboarding businesses that complete the checklist, and the share of imported businesses that publish the catalog.
 

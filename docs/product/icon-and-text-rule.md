@@ -57,8 +57,8 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - the answer pair inside a confirmation, with its exact current words ("No, keep it / Yes, delete it", "No, keep entering / Yes, discard it" and the rest);
   - the submit of a form or sheet ("Save sale", "Save the warning", "Save the catalog", "Record payment", "Save and sign in", "Sign in" and the rest);
   - choices among options, which are not actions: the period tabs (Today · Week · Month · Dates), Cash · Transfer · Owing, Promotion · Own use, an entry's origin, Light · Dark, "All: $ X";
-  - Deshacer inside "Sale saved".
-- **Icon + text**: everything else, e.g. "+ New sale", "+ Stock entry", "Take from stock", "Send catalog", Collect (accessible name still "Collect from <name>"), Publish, Test it, Find my chat, Archive, Restore, "Invite a partner", Cambiar contraseña, Close sesión, Copiar and the main Share. A new action that fits neither list is icon + text. The icon next to a word is decorative and hidden from assistive technology, so the accessible name stays the word.
+  - Undo inside "Sale saved".
+- **Icon + text**: everything else, e.g. "+ New sale", "+ Stock entry", "Take from stock", "Send catalog", Collect (accessible name still "Collect from <name>"), Publish, Test it, Find my chat, Archive, Restore, "Invite a partner", "Change password", "Sign out", Copy and the main Share. A new action that fits neither list is icon + text. The icon next to a word is decorative and hidden from assistive technology, so the accessible name stays the word.
   - **The "+" in the docs is the icon**: in "+ New sale", "+ Add expense", "+ Stock entry", "+ Entry" and any other label written with a leading "+", the "+" stands for the `agregar` icon. On screen the icon draws it and the visible text is the word alone, never a literal "+" beside the icon. The accessible name is unchanged.
 - **An action never looks like a link**: only a link (`enlace`) is drawn as one (underlined, in the link style). An action, in any form, including one that opens another screen such as "New sale" or "New sale to <name>", is drawn as the action it is.
 - **Tappable notice**: a notice the seller taps to open what it points to, such as Home's "Go on to the setup". It is neither an action row nor a control of either closed list, and it does not change them.
@@ -91,7 +91,7 @@ The two lists are closed. Adding to either changes this file and the README, nev
 - Inline refusals and the reasons of Test it and Find my chat aim for 80, stay on screen and keep what the seller must fix, even past 80. They never move behind More info.
 - Consequences the seller would not otherwise expect stay visible in short form: the old pinned message staying as it is, the grams on hand in the archive confirmation, the grams that return to stock on delete.
 - A confirmation question may be shortened, but keeps every fact it names today: date, amount, grams, reason.
-- Fixed security texts (the brake message, the Entrar hint, the dead-link texts) keep their meaning; shortening never adds information, such as an attempt count or why a link is dead.
+- Fixed security texts (the brake message, the sign-in hint, the dead-link texts) keep their meaning; shortening never adds information, such as an attempt count or why a link is dead.
 - Characters are counted on the copy as shown, as code points after NFC. A placeholder is measured with `SAMPLES` (`web/src/copy/limits.ts`: date `28/09`, amount `$ 999.999` and `−$ 999.999`, grams `999,99 g`, a 24-character name, count `99`), the worst cases, never with fixture or API data. Each copy file (`web/src/copy/`) registers its always-visible strings in `LIMITED_COPY` and the refusals it keeps over 80 in `LONG_REFUSALS`; `web/src/copy/copyLimits.test.ts` fails for a module that has neither, an entry over its limit, or a long refusal not listed.
 
 ### More info

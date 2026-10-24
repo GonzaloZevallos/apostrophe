@@ -37,11 +37,11 @@ This refines the navigation job and criterion 5; it is not a new job. Its protag
 - Its protagonist is the maintainer, or the reviewer acting for them, as in gate.md, design-capture.md and onboarding.md criterion 6. The seller is affected only indirectly: a head nobody can approve holds up the work they are waiting for.
 - It refines criterion 12, results.md criteria 10–12 and ADR-0046; it is not a new product job and adds no product behaviour.
 - Its capture side (the `InicioHoyCompu` row) is design-capture.md's.
-- Before it (GH-45's follow-up): the agreement test reached `/first-run` only where the checklist shows, the shape of `checklist` outside the checklist kind was undecided, only the checklist test ran in both themes, and the Hoy capture showed a difference by construction.
+- Before it (GH-45's follow-up): the agreement test reached `/first-run` only where the checklist shows, the shape of `checklist` outside the checklist kind was undecided, only the checklist test ran in both themes, and the Today capture showed a difference by construction.
 
 Choosing which pricing rules the business uses (pricing-settings.md) belongs in Settings too, as the Prices group.
 
-Before this structure: the bar was Home · Sales · Customers · Stock · More; one variety was split across Stock, Varieties and Catalog; collecting a debt took four taps from Customers; settings were split across Business, Catalog and Expenses → Categorías, and the bot was configured inside Catalog. Nothing of it is kept but the redirects from its paths, and, until Settings's Integrations and Catalog message exist, the temporary place for the bot and the header and footer reached from the catalog screen (catalog.md).
+Before this structure: the bar was Home · Sales · Customers · Stock · More; one variety was split across Stock, Varieties and Catalog; collecting a debt took four taps from Customers; settings were split across Business, Catalog and Expenses → Expense categories, and the bot was configured inside Catalog. Nothing of it is kept but the redirects from its paths, and, until Settings's Integrations and Catalog message exist, the temporary place for the bot and the header and footer reached from the catalog screen (catalog.md).
 
 Success criteria:
 
@@ -54,7 +54,7 @@ Success criteria:
    - an expense opens in at most 2 taps (More → "+ Add expense").
 
    On a computer, each takes no more taps than on the phone.
-2. **Every business-wide setting in one place.** Name, users and join links, the pricing rules (Precio por cantidad and Customers VIP), the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Settings and nowhere else. Settings is reachable in at most 2 taps from any tab root: from the business avatar on Home and from More on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Settings groups exist. The Onboarding's steps save these same settings through their owners and are not a second place for them (onboarding.md).
+2. **Every business-wide setting in one place.** Name, users and join links, the pricing rules (Bulk price and VIP customers), the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Settings and nowhere else. Settings is reachable in at most 2 taps from any tab root: from the business avatar on Home and from More on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Settings groups exist. The Onboarding's steps save these same settings through their owners and are not a second place for them (onboarding.md).
 3. **One variety, one page.** A variety's stock and its movements (entries and withdrawals), prices, low-stock warning and catalog attributes are seen and edited from its page. No fact is edited in two places under two names.
 4. **Nothing lost, nothing invented.** Everything a seller could do before stays reachable. The one deliberate exception is the customer channel, which is removed. No navigation entry or screen exists for something not yet built: no "coming soon", no promotions, automations or languages. No link points at a screen that does not exist.
 5. **One rule for chrome and back.** Every screen is one of three kinds: tab root, card or detail, form or sheet. Each kind gets its chrome by the rule. Back follows history, and the parent screen is the fallback.
@@ -68,7 +68,7 @@ Success criteria:
 
 Success criteria, reviewing the first run (GH-45 follow-up):
 
-13. **Approved from the evidence alone.** A review of the merging head raises no important finding about the first run's agreement test, the shape of `checklist`, its theme coverage or the Hoy capture, and none is carried into another task.
+13. **Approved from the evidence alone.** A review of the merging head raises no important finding about the first run's agreement test, the shape of `checklist`, its theme coverage or the Today capture, and none is carried into another task.
 14. **A broken answer fails a test.** In any reachable state (no variety; priced without stock; stock without a price; sold out; qualifying; checklist gone), a test fails if `/first-run`'s `nothing_qualifies` is not exactly "the kind is the checklist and `GET /catalog` has no text", or if its checklist steps disagree with the data.
 15. **One shape for `checklist`.** Its shape outside the checklist kind is written once, here. The API, `contract.json` and the front agree on it, and a test pins it.
 16. **Both themes.** Every first-run test on Home runs in light and in dark.
@@ -102,23 +102,23 @@ Success criteria, reviewing the first run (GH-45 follow-up):
 ### Settings
 
 - **One screen holding every business-wide setting, in groups, and nothing else.** The groups, in this order (each group's behaviour belongs to its owner):
-  - **Negocio**: the business's name (accounts.md). Toast "Business renamed".
+  - **Business**: the business's name (accounts.md). Toast "Business renamed".
   - **Users**: the partners by email, sorted by email, the signed-in one marked "you", and "Invite a partner", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
   - **Prices** (pricing-settings.md), at `/settings/prices`:
-    - the two switches, Precio por cantidad and Customers VIP;
+    - the two switches, Bulk price and VIP customers;
     - "Save the prices", and the toast "Prices saved";
     - the fixed line that past sales keep their price and switching off deletes nothing, and the fixed help line under the VIP switch.
-  - **Integraciones**: the Telegram bot (pinned-catalog.md):
+  - **Integrations**: the Telegram bot (pinned-catalog.md):
     - the token, the channel chat, the own chat, and Test it, the only way they are saved;
     - after a token or channel change, "The previous pinned message stays as it is; unpin it yourself in Telegram.";
     - a plain link to the catalog screen, for publishing, carrying no status. Publish and the pin's status are only on the catalog screen.
   - **Catalog message**: the catalog's header and footer (catalog.md). Toast "Catalog saved".
   - **Expense categories**: add, rename and remove, the refused removal included (expenses.md).
-  - **Apariencia**: the theme, Light or Dark, under accounts.md's theme rule (Dark sets `data-tema="oscuro"`, Light removes it).
+  - **Appearance**: the theme, Light or Dark, under accounts.md's theme rule (Dark sets `data-tema="oscuro"`, Light removes it).
     - A tap applies and remembers the choice on the device at once: no save, no toast, no unsaved-changes warning.
     - The current choice is marked by word or shape and `aria-checked`, never color alone.
     - Language has no entry until it exists.
-  - **Tu cuenta**: "Change password" above "Sign out" (accounts.md). Nothing new.
+  - **Your account**: "Change password" above "Sign out" (accounts.md). Nothing new.
 - **Reached from**: the business avatar at the top of Home; More on the phone; the sidebar's business row on a computer. `/settings` marks More as the active tab on the phone.
 - **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ New sale". Back follows history; with none, it goes to "‹ More" on the phone and "‹ Home" on a computer.
 - **Each group** is its own subscreen, a form: "Close", no bar, no "+ New sale"; unsaved changes ask before discarding, an untouched group closes at once. Appearance never has unsaved changes, so it always closes at once.
@@ -170,7 +170,7 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 - Every old Spanish path redirects permanently to its new route, each tested one by one, with a record's id carried across:
   - `/ventas`, `/clientes`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/mi-stock/entradas/{id}` (to `/varieties/entries/{id}`), `/variedades`, `/variedades/{id}` (to `/varieties/{id}`), `/catalogo`, `/gastos`, `/mas`, and every other one, including the old Owed to you screen's path, which goes to Customers;
   - `/negocio` goes to Settings;
-  - the old Expenses → Categorías path (`/gastos/categorias`) goes to Settings → Expense categories.
+  - the old Expenses → Expense categories path (`/gastos/categorias`) goes to Settings → Expense categories.
 - Every redirect target is a registered screen. The server answers every old path through one redirect mechanism; the front has no redirects of its own.
 - The old Catalog had no separate paths for the bot or the header and footer, so nothing redirects to Integrations or Catalog message. Prices is new, so nothing redirects to it.
 - An unknown or mistyped address goes to Home (`/`), as it always has. An Onboarding path opened for a business whose Onboarding is over, or that never had one, goes to Home too. A later task that removes a path with no counterpart decides where that path goes.
@@ -334,4 +334,4 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - A business-wide list of stock withdrawals.
 - Changing the contract checker so it can declare a nullable array; a `null` checklist.
 - A `nothing_qualifies` that answers for every kind, or a catalog read added to every Home read for it.
-- Theme coverage of Home's Hoy, Semana and Mes figures as part of the first-run review.
+- Theme coverage of Home's Today, Week and Month figures as part of the first-run review.

@@ -111,7 +111,7 @@ Success criteria:
     every state is told by word and shape, never by colour alone, in both themes; toasts
     carry no data.
 15. **Only my rules show, and switching loses nothing** (pricing-settings.md):
-    - With Precio por cantidad off, no bulk price or bulk minimum shows in the price form or on the variety's page.
+    - With Bulk price off, no bulk price or bulk minimum shows in the price form or on the variety's page.
     - With Customers VIP off, no VIP price shows.
     - Switched back on, every stored bulk and VIP price shows again.
 16. **The price form looks as designed**: it matches `docs/product/design-system/pantallas/` on the phone and the computer, in both themes:
@@ -143,7 +143,7 @@ Success criteria:
   Every amount is above zero.
 - **A VIP price at or above the list price** is refused with its own fixed message and its own refusal code (ADR-0008), which never repeats the amount (ADR-0005).
 - **Rules switched off** (pricing-settings.md):
-  - A price entry recorded while Precio por cantidad is off stores no bulk price or bulk minimum, and one recorded while Customers VIP is off stores no VIP price, whatever the request sends. Nothing is copied forward from an earlier entry.
+  - A price entry recorded while Bulk price is off stores no bulk price or bulk minimum, and one recorded while VIP customers is off stores no VIP price, whatever the request sends. Nothing is copied forward from an earlier entry.
   - Earlier entries keep what they stored.
   - When a rule is switched back on, the current price shows no bulk or VIP line if its entry has none; the seller records a new entry if they want one.
 - One entry per variety per effective date; a second one on the same date is refused.
@@ -171,8 +171,7 @@ Success criteria:
   - The check and the delete are one guarded write: a sale or entry a partner records at
     the same moment either blocks the delete or is refused as "That is gone". Nothing is
     ever orphaned.
-  - A variety already gone answers 404 and follows accounts.md: "Eso ya no está. La lista
-    ya está al día."
+  - A variety already gone answers 404 and follows accounts.md: "That is gone. The list is up to date."
 - **Archive**: offered for a variety with history. It leaves every list and picker but
   stays in the books.
   - Archive is never refused for having or lacking history. If the variety's last sale or
@@ -180,8 +179,7 @@ Success criteria:
     it; it can be deleted later by restoring it first. An archived variety may also lose
     all its history while archived (its last entry or sale deleted); the same path
     applies.
-  - Archiving a variety already archived changes nothing; one already gone answers "Eso ya
-    no está".
+  - Archiving a variety already archived changes nothing; one already gone answers "That is gone. The list is up to date."
   - Allowed with stock above, at or below zero, always after a confirmation.
   - Archiving and restoring never create a stock entry and never change stock, lots, cost
     of goods, pending cost, prices or any other figure.
@@ -204,7 +202,7 @@ Success criteria:
   fact).
 - **Existing records stay workable** (ADR-0009): a stock entry of an archived variety can
   be edited or deleted from All entries; a sale containing one can be deleted,
-  Deshacer included; Asignar cliente still works. An entry edit can keep the archived
+  Undo included; Assign customer still works. An entry edit can keep the archived
   variety it already has, but can never move the entry onto a different archived one.
 - **Nothing new is recorded against an archived variety**: no sale line, stock entry or
   price entry; such a reference answers as gone. A form left open while a partner
@@ -314,7 +312,7 @@ Success criteria:
   - **Prices**: the last 3 price entries with "Effective from", newest first, each row with
     its delete action, and "See all" (`/varieties/{low}/prices`) for the full history.
     - Each row shows the list price.
-    - It shows the bulk price and minimum only while Precio por cantidad is on, and the VIP price ("VIP price") only while Customers VIP is on, each only when the entry has one;
+    - It shows the bulk price and minimum only while Bulk price is on, and the VIP price ("VIP price") only while VIP customers is on, each only when the entry has one;
   - **Low stock warning**: the current warning, read-only, with an on/off switch and an
     "Edit" link, and nothing else (no "See all"):
     - it reads "Warn me below 15 g", "Warning: 18,5 g left" or "Warning off";
@@ -345,7 +343,7 @@ Success criteria:
     refused with its coded refusal and the page refreshes to show "Archive variety". The
     UI never offers a delete it knows will be refused.
   - **Stale page, archive**: if the history went away after the page loaded, "Archive
-    variedad" still archives it, with no refusal.
+    variety" still archives it, with no refusal.
 - **An archived variety's page** is the same page, read-only, with the back arrow
   "‹ Archived" (with no history, back goes to Archived):
   - **Its summary line**: its grams, as a figure even when negative; today's list price,
@@ -418,7 +416,7 @@ Success criteria:
 - **Kind**: a form (navigation.md) on both devices: no bar and no "+ New sale"; "Close"; leaving with something typed asks before discarding, and an untouched form closes at once. Back with no history goes to the variety's page. Only how it is drawn on the computer differs.
 - **Fields**:
   - the effective date and the list price;
-  - the bulk price and bulk minimum only while Precio por cantidad is on, and "VIP price" only while Customers VIP is on, each optional;
+  - the bulk price and bulk minimum only while Bulk price is on, and "VIP price" only while VIP customers is on, each optional;
   - it says nothing about a rule that is switched off.
 - **Amounts in pesos**: the list price, the bulk price and the VIP price each show "$" before the amount. The bulk minimum, in grams, never does. The "$" is text under the design README's contrast rule (ADR-0029), drawn with existing tokens only. These fields are the shared price fields, so the "$" also shows in the Onboarding's step 1 (onboarding.md).
 - **"Effective from", a date chip**:
@@ -446,7 +444,7 @@ Success criteria:
   live page's critical "Delete variety" trigger is drawn too.
 - **Registry** (`scripts/design/screens.json`): the existing `VariedadArchivada` and
   `VariedadArchivadaOscuro` entries point at the new drawing and the seeded archived
-  variety, never duplicated; the Compu twins and the Archived rows (phone and computer,
+  variety, never duplicated; the computer twins and the Archived rows (phone and computer,
   light and dark) are added. Each row reaches its screen the way a seller does and
   captures its section whole (design-capture.md).
 - **Sample app** (`scripts/design/sample_app.py`): it seeds exactly one archived variety,
@@ -480,7 +478,7 @@ Success criteria:
   - A VIP price with no bulk price, and a bulk price with no VIP price, are accepted.
   - No refusal contains the amount.
 - **Switched-off rules store nothing (criterion 15)**: a price entry sent with bulk or VIP values while that rule is off stores none of them; earlier entries' values are unchanged.
-- **Switches on screen (criterion 15)**: front tests show the price form, the Prices section and the full history with no bulk fields while Precio por cantidad is off and no VIP price while Customers VIP is off, and every stored value back once switched on.
+- **Switches on screen (criterion 15)**: front tests show the price form, the Prices section and the full history with no bulk fields while Bulk price is off and no VIP price while VIP customers is off, and every stored value back once switched on.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
   page (with a VIP price when VIP customers is on), renames the variety, deletes a price
   entry, sets a low-stock threshold through "Edit", turns it off and on again through the
@@ -498,7 +496,7 @@ Success criteria:
   rows and "See all". Withdrawal rows on the page are told apart from entries by word and
   sign, covered by front tests.
 - **Saved, never guessed (criterion 6)**: front tests show:
-  - Aviso de stock bajo and En el catálogo read-only until "Edit";
+  - Low stock warning and In the catalog read-only until "Edit";
   - switching the warning on opens the threshold form, and "Close" leaves it off;
   - switching it off saves at once with "Warning saved";
   - a too-long aroma refused under its field, everything typed kept;
@@ -517,8 +515,8 @@ Success criteria:
   action maps to a place in the new screens; no link points at a missing screen; a reload
   on `/varieties/{low}/entries`, `/varieties/entries/{id}` and `/varieties/archived`
   opens the screen.
-- **Offered action (criteria 9, 12)**: a matrix, 100% passing. The page offers "Eliminar
-  variedad" exactly when the variety has no history and "Archive variedad" otherwise,
+- **Offered action (criteria 9, 12)**: a matrix, 100% passing. The page offers "Delete
+  variety" exactly when the variety has no history and "Archive variety" otherwise,
   with history from each source alone (a list line, a gift, a special price, an entry of
   each origin, both adjustment signs). Price entries, a threshold and catalog attributes
   alone leave Delete offered. Deleting the last sale or entry offers Delete again. The
@@ -546,7 +544,7 @@ Success criteria:
 - **Nothing new**: a new sale line, stock entry or price entry against an archived variety
   is refused as gone; an entry edit keeps its own archived variety and is refused moving
   onto another archived one; editing and deleting that entry, deleting a sale containing
-  it (Deshacer included) and Asignar cliente still work.
+  it (Undo included) and Assign customer still work.
 - **Findable (criterion 13)**: "Archived (N)" shows the right count and is absent with
   none; restore takes 1 tap from the card and from the archived page; the archived page
   offers no action but "Restore".
@@ -591,7 +589,7 @@ Success criteria:
 - **Design**: `scripts/design/compare.sh` runs before and after for the list, the page,
   Archived and the archived page, phone and computer, both themes, attached to the PR
   and judged by eye. The PR lists the two agreed departures from the drawing (the
-  "Edit" forms of Aviso de stock bajo and En el catálogo).
+  "Edit" forms of Low stock warning and In the catalog).
 - **Price form looks as designed (criterion 16)**:
   - `scripts/design/compare.sh` runs before and after for the price form, phone and computer, both themes, and for the Onboarding's step 1, attached to the PR and judged by eye; every design-vs-docs difference is listed in the PR;
   - `scripts/design/screens.json` holds the price form's dark twins (phone and computer), following the dark-twin convention, and the Onboarding's price step, and `compare.sh` measures them.

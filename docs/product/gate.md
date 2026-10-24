@@ -40,7 +40,7 @@ Success criteria:
 
 **When** a change adds a row to the screens registry that the mobile walk always walks, **I want** (as the Developer making that change, or the reviewer approving it) a written rule that lets that row bring all its real offender cells in the same change, **so that** a rule written for a change says what truly holds, the change can be approved, and later changes can be reviewed without arguing the same contradiction again.
 
-Before this (GH-305, a follow-up of GH-274), the only allowed growth was the trade. GH-274 added the phone rows InicioChecklist and InicioImportado. They were never listed as unreachable, so their real cells (56 entries) could not be a trade, and the plan's invariant could not hold as written. The finding stayed open on GH-274's approved head.
+Before this (GH-305, a follow-up of GH-274), the only allowed growth was the trade. GH-274 added the phone rows `InicioChecklist` (Home with the first-run checklist) and `InicioImportado` (Home with the after-import notice). They were never listed as unreachable, so their real cells (56 entries) could not be a trade, and the plan's invariant could not hold as written. The finding stayed open on GH-274's approved head.
 
 Success criteria:
 
@@ -48,7 +48,7 @@ Success criteria:
 2. Those cells are tracked like any other offender. They are never hidden, and never read as a regression.
 3. The growth covers only the new row's screen, at the sizes and themes that row covers, in the change that adds it. Any other growth still breaks invariant 9.
 4. A reviewer can check it from the registry diff and the offender-file diff alone, by screen name.
-5. No one-off exception is recorded for a new row. InicioChecklist and InicioImportado are accepted by this rule, with none.
+5. No one-off exception is recorded for a new row. `InicioChecklist` and `InicioImportado` are accepted by this rule, with none.
 
 ### A fix renumbers an untouched offender
 
@@ -127,7 +127,7 @@ This file is the one place the rule is written. The other live texts name the tw
 - **Unreachable new row.** If the walk cannot reach the new row yet, the same change lists it in `unreachable.json` at the sizes and themes it cannot reach. Its real cells come later, through the trade.
 - **Issue.** Each added cell names an issue from `AREA_ISSUES`.
 - **Same change only.** Cells for a row that already existed before the change are never this kind of growth, even when that row was added only recently.
-- **On record.** InicioChecklist and InicioImportado, the phone rows added by GH-274, brought their real cells in `touch-action.json` in that change. Each entry carries its reason. They are this rule's first case and need no exception.
+- **On record.** `InicioChecklist` (Home with the first-run checklist) and `InicioImportado`, the phone rows added by GH-274, brought their real cells in `touch-action.json` in that change. Each entry carries its reason. They are this rule's first case and need no exception.
 
 #### A renumbered target
 
@@ -152,7 +152,7 @@ A target's ordinal (`[n]`) counts only the failing nodes on the screen with the 
 - **Tracked like any other offender.** Added cells and renumbered targets are tracked like any other offender from then on. They are never hidden, never marked exempt, and never read as a regression.
 - **Readable from the files.** Growth and renumbering can be checked by screen name from the before and after offender files, plus the screens registry diff for a new row and the code diff for an untouched renumbered node. The Developer's evidence notes are not needed.
 - **Enforcement is by review only.** `diffOffenders` already makes listing and walking land together. A reachable screen's or a new row's real cells are `unlisted` until they are listed, and a reachable screen's `unreachable` cells turn `fixedButListed`. A renumbered target shows as its new key `unlisted` and its old key `fixedButListed` until the swap is made. Checking that the added cells name the removed or added screen, or are a valid renumbering, would need the base revision, which means git inside vitest, against ADR-0038 and ADR-0041. So the reviewer matches screen names and keys across the diffs. Listing an unrelated new failure to get green is caught only in review, as before.
-- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable, a row being added or a target renumbered. The rules accept CobroDesdeInicio (its removed `unreachable` entry at 246x437, #45, traded for seven 246x437 cells on #46) and InicioChecklist and InicioImportado (GH-274) with none. The exception recorded on GH-271 is retired.
+- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable, a row being added or a target renumbered. The rules accept `CobroDesdeInicio` (collecting from Home; its removed `unreachable` entry at 246x437, #45, traded for seven 246x437 cells on #46) and `InicioChecklist` and `InicioImportado` (GH-274) with none. The exception recorded on GH-271 is retired.
 
 #### Worked examples
 
@@ -273,8 +273,8 @@ There is no telemetry. These are read from the task's evidence and from review.
   - a new row with its cells passes;
   - cells for an existing row fail;
   - cells naming another screen alongside a new row fail.
-- **Nothing hidden (new-row job, criterion 2):** every real cell of InicioChecklist and InicioImportado is in the offender lists, each naming an issue and carrying its reason.
-- **Self-evident new row (new-row job, criterion 4):** the reviewer confirms the growth from the registry diff and the offender-file diff alone. Compared with GH-274's base, the lists grow by exactly the entries for InicioChecklist and InicioImportado, and remove none.
+- **Nothing hidden (new-row job, criterion 2):** every real cell of `InicioChecklist` and `InicioImportado` is in the offender lists, each naming an issue and carrying its reason.
+- **Self-evident new row (new-row job, criterion 4):** the reviewer confirms the growth from the registry diff and the offender-file diff alone. Compared with GH-274's base, the lists grow by exactly the entries for `InicioChecklist` and `InicioImportado`, and remove none.
 - **Renumbering recognised (renumber job, criteria 1 to 3):** two cases are shown, each with the expected verdict:
   - a renumbering after a fix passes;
   - a renumbering with nothing fixed fails.
