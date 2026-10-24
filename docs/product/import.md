@@ -164,7 +164,7 @@ Success criteria:
 
 ### Pricing rules
 
-- **`""` or `"Lista"`**: list or bulk, by sales.md's lowest-price rule, from the imported price history on the row's date and the row's grams. Never VIP, even for a customer who is VIP elsewhere.
+- **The sheet's `""` or `"Lista"` type**: list or bulk, by sales.md's lowest-price rule, from the imported price history on the row's date and the row's grams. Never VIP, even for a customer who is VIP elsewhere.
 - **The sheet's `"Amigo"`**: the VIP rule (sales.md), with the VIP price equal to that day's bulk price. The result is that day's bulk price, or the list price when that day has none, as in the sheet. A tie with the bulk price is stored as VIP.
   - Any customer with at least one finished `"Amigo"` row of the sheet is imported as VIP.
   - A sheet's `"Amigo"` row with no customer blocks.
@@ -238,7 +238,7 @@ From test fixtures, with no telemetry:
   - a refused real run writes 0 rows and changes no switch;
   - the dry run lists every blocking problem of a fixture in one pass, every missing column included.
 - **Any export (criteria 1, 3)**: a fixture laid out like a Google Sheets export, with no declared size in any worksheet and every number stored as a float, is read in full by the dry run. 100% passing. It holds:
-  - whole numbers in `% índica`, prices, costs, amounts, shipping and a special total, all read as whole numbers;
+  - whole numbers in the sheet's `% índica` column, prices, costs, amounts, shipping and a special total, all read as whole numbers;
   - decimal grams and a decimal threshold, read to the hundredth;
   - numbers in text cells (a cell of the sheet's Detalle or Nota column, a variety, customer and category name made of digits, one of them non-whole), read as `100`-style digits or with a decimal comma.
 
