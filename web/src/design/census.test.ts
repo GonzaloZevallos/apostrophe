@@ -27,20 +27,20 @@ const page = (body: string): string =>
 <style>body{margin:0;font-family:'Plus Jakarta Sans',sans-serif}</style>${body}`
 
 const PAGES: Record<string, string> = {
-  '/invitation/n': page(
+  'n': page(
     `<div class="pantalla"><div class="tall" style="height:2000px">Nueva venta</div>
      <div class="fill" style="height:100vh"></div></div>
      <div class="barra" style="position:fixed;bottom:0;left:0;right:0;height:60px"></div>`,
   ),
   // Calm at the real shot's height, never calm once the census grows it a second time.
-  '/reset/r': page(
+  'r': page(
     `<div class="tall" style="height:2000px">Nueva venta</div><div class="fill" style="height:100vh"></div>
      <script>addEventListener('resize', () => {
        let ticks = 0
        if (innerHeight > 4000) setInterval(() => { document.body.dataset.t = String((ticks += 1)) }, 5)
      })</script>`,
   ),
-  '/invitation/j': page(
+  'j': page(
     `<div class="fondo">Nueva venta</div>
      <div class="capa" style="position:fixed;inset:0;overflow:auto">
        <div class="hoja" style="height:3000px"></div></div>`,
@@ -63,7 +63,8 @@ beforeAll(async () => {
       response.end(readFileSync(FONT))
     } else {
       response.setHeader('content-type', 'text/html')
-      response.end(PAGES[path] ?? page(''))
+      // The page is told by its token, the last segment of the route.
+      response.end(PAGES[/[^/]*$/.exec(path)?.[0] ?? ''] ?? page(''))
     }
   })
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done))
