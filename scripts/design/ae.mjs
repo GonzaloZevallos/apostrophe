@@ -1,7 +1,7 @@
 // Before/after measure (ADR-0042): the exact count of differing pixels between the raw
 // captures `comparisons.mjs` wrote, never between the composed sheets.
 //
-//   node scripts/design/ae.mjs <before-dir> <after-dir> [--only A,B]
+//   node scripts/design/ae.mjs <before-dir> <after-dir> [--only A,B] [--box]
 //
 // Each directory holds an `index.json`; for every screen in either one, the `built` and the
 // `design` captures are compared separately and one line per screen and side is printed: the
@@ -9,6 +9,10 @@
 // capture on one side only and an unreadable PNG are failures, never AE 0; a capture missing
 // on both sides is reported and is not one. Any failure or any AE above 0 exits 1. No pixel
 // data is printed.
+//
+// With `--box`, a side whose AE is above 0 also prints the bounding box of its differing pixels
+// (coordinates only), and a size mismatch prints both dimensions. Without it the output is as
+// it always was.
 
 import { createRequire } from 'node:module'
 import { readFileSync } from 'node:fs'
@@ -40,6 +44,41 @@ export function ae(a, b) {
   return { ok: true, differing }
 }
 
+// The bounding box of the pixels `ae` counts, by the same exact RGBA comparison: null when none
+// differs, both dimensions when the images are not comparable. Coordinates only, no pixel data.
+export function box(a, b) {
+  if (a.width !== b.width || a.height !== b.height) {
+    return {
+      ok: false,
+      reason: 'size',
+      a: { width: a.width, height: a.height },
+      b: { width: b.width, height: b.height },
+    }
+  }
+  let minX = a.width
+  let minY = a.height
+  let maxX = -1
+  let maxY = -1
+  for (let at = 0; at < a.data.length; at += 4) {
+    if (
+      a.data[at] !== b.data[at] ||
+      a.data[at + 1] !== b.data[at + 1] ||
+      a.data[at + 2] !== b.data[at + 2] ||
+      a.data[at + 3] !== b.data[at + 3]
+    ) {
+      const pixel = at / 4
+      const x = pixel % a.width
+      const y = (pixel - x) / a.width
+      if (x < minX) minX = x
+      if (x > maxX) maxX = x
+      if (y < minY) minY = y
+      if (y > maxY) maxY = y
+    }
+  }
+  if (maxX < 0) return null
+  return { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+}
+
 export function decode(buffer) {
   try {
     const { width, height, data } = PNG.sync.read(Buffer.from(buffer))
@@ -58,7 +97,7 @@ const loadFile = (path) => {
 }
 
 // One side of one screen: a line and whether it is a failure.
-function compareSide(screen, side, beforePath, afterPath, load) {
+function compareSide(screen, side, beforePath, afterPath, load, withBox) {
   const label = `${screen} ${side}`
   if (beforePath === null && afterPath === null) {
     return { line: `${label}: no capture on either side`, failed: false }
@@ -70,12 +109,18 @@ function compareSide(screen, side, beforePath, afterPath, load) {
   const after = load(afterPath)
   if (!before.ok || !after.ok) return { line: `${label}: FAIL unreadable image`, failed: true }
   const result = ae(before.image, after.image)
-  if (!result.ok) return { line: `${label}: FAIL different dimensions`, failed: true }
-  return { line: `${label}: AE ${result.differing}`, failed: result.differing > 0 }
+  if (!result.ok) {
+    const sizes = withBox ? box(before.image, after.image) : null
+    const detail = sizes ? ` before ${sizes.a.width}x${sizes.a.height} after ${sizes.b.width}x${sizes.b.height}` : ''
+    return { line: `${label}: FAIL different dimensions${detail}`, failed: true }
+  }
+  const found = withBox && result.differing > 0 ? box(before.image, after.image) : null
+  const where = found ? ` box x=${found.x} y=${found.y} w=${found.width} h=${found.height}` : ''
+  return { line: `${label}: AE ${result.differing}${where}`, failed: result.differing > 0 }
 }
 
 // The pairing of two parsed `index.json` files. `load(path)` decodes one capture.
-export function compareIndexes(before, after, only, load) {
+export function compareIndexes(before, after, only, load, withBox = false) {
   const byScreen = (index) => new Map(index.map((entry) => [entry.screen, entry]))
   const beforeBy = byScreen(before)
   const afterBy = byScreen(after)
@@ -97,7 +142,7 @@ export function compareIndexes(before, after, only, load) {
       continue
     }
     for (const side of SIDES) {
-      const result = compareSide(screen, side, was[side] ?? null, now[side] ?? null, load)
+      const result = compareSide(screen, side, was[side] ?? null, now[side] ?? null, load, withBox)
       lines.push(result.line)
       if (result.failed) failed = true
     }
@@ -106,7 +151,7 @@ export function compareIndexes(before, after, only, load) {
 }
 
 function main() {
-  const { values, positionals } = parseArgs({ options: { only: { type: 'string' } }, allowPositionals: true })
+  const { values, positionals } = parseArgs({ options: { only: { type: 'string' }, box: { type: 'boolean' } }, allowPositionals: true })
   if (positionals.length !== 2) {
     console.error('usage: ae.mjs <before-dir> <after-dir> [--only A,B]')
     process.exit(2)
@@ -120,7 +165,7 @@ function main() {
     process.exit(1)
   }
   const only = values.only ? new Set(values.only.split(',')) : null
-  const { lines, failed } = compareIndexes(indexes[0], indexes[1], only, loadFile)
+  const { lines, failed } = compareIndexes(indexes[0], indexes[1], only, loadFile, values.box === true)
   for (const line of lines) console.log(line)
   if (failed) {
     console.error('ae: the before/after differ, or could not be compared')
