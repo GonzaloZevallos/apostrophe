@@ -36,7 +36,8 @@ const PAGES: Record<string, string> = {
   '/reset/r': page(
     `<div class="tall" style="height:2000px">Nueva venta</div><div class="fill" style="height:100vh"></div>
      <script>addEventListener('resize', () => {
-       if (innerHeight > 4000) setInterval(() => { document.body.dataset.t = String(Date.now()) }, 5)
+       let ticks = 0
+       if (innerHeight > 4000) setInterval(() => { document.body.dataset.t = String((ticks += 1)) }, 5)
      })</script>`,
   ),
   '/invitation/j': page(
