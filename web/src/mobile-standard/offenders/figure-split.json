@@ -25,22 +25,6 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#[3]",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[4]",
-    "issue": 48,
-    "sizes": [
-      "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
     "target": "span:$ #.#.#[1]",
     "issue": 48
   },
@@ -66,55 +50,6 @@
     "issue": 48,
     "sizes": [
       "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Own use $ #.# and # g without cost",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Stock shortfall $ #.#",
-    "issue": 48,
-    "sizes": [
-      "320x568"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Promotion $ #.#[1]",
-    "issue": 48,
-    "sizes": [
-      "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:Promotion $ #.#[2]",
-    "issue": 48,
-    "sizes": [
-      "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:expenses $ #.#.#.#",
-    "issue": 48,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
     ]
   },
   {
@@ -447,44 +382,6 @@
     "issue": 47,
     "sizes": [
       "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "issue": 48,
-    "target": "span:Stock shortfall $ #.#[1]",
-    "sizes": [
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "issue": 48,
-    "target": "span:Stock shortfall $ #.#[2]",
-    "sizes": [
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "issue": 48,
-    "target": "span:Own use $ #.# and # g without cost[1]",
-    "sizes": [
-      "375x812"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "issue": 48,
-    "target": "span:Own use $ #.# and # g without cost[2]",
-    "sizes": [
-      "375x812"
     ]
   },
   {
