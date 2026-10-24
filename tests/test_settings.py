@@ -217,7 +217,7 @@ def test_a_complete_german_in_a_temporary_directory_is_accepted(tmp_path: Path) 
     [
         ('msgid "a.one"\nmsgstr "Eins"\n', "a.two"),
         (
-            _GERMAN_COMPLETE.replace('msgstr "Zwei"', '#, fuzzy\nmsgstr "Zwei"'),
+            _GERMAN_COMPLETE.replace('msgid "a.two"', '#, fuzzy\nmsgid "a.two"'),
             "a.two",
         ),
         (_GERMAN_COMPLETE.replace('msgstr[1] "%(n)s Dinge"', 'msgstr[1] ""'), "a.items"),
