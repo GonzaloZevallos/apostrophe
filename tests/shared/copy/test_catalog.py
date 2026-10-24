@@ -11,7 +11,7 @@ from app.shared.copy import (
     mo_messages,
     po_messages,
 )
-from app.shared.language import ENGLISH, Language
+from app.shared.language import ENGLISH, TEST_LOCALE, Language
 
 FIXTURE_LOCALES = Path(__file__).resolve().parents[2] / "fixtures" / "locales"
 REAL_LOCALES = Path(__file__).resolve().parents[3] / "app" / "shared" / "copy" / "locales"
@@ -81,7 +81,7 @@ def test_the_languages_are_the_directories_with_a_compiled_catalog(locales: Path
     (locales / "not a tag" / "LC_MESSAGES").mkdir(parents=True)
     (locales / "not a tag" / "LC_MESSAGES" / "apostrophe.mo").write_bytes(b"")
 
-    assert CopyCatalog(locales).languages() == {ENGLISH, GERMAN}
+    assert CopyCatalog(locales).languages() == {ENGLISH, GERMAN, TEST_LOCALE}
 
 
 def test_a_missing_locales_directory_has_no_languages(tmp_path: Path) -> None:

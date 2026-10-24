@@ -3,7 +3,7 @@ corners (docs/adr/0050). Everything here is a pure function over a path."""
 
 from pathlib import Path
 
-from babel.messages.catalog import Message
+from babel.messages.catalog import Catalog, Message
 from babel.messages.mofile import read_mo, write_mo
 from babel.messages.pofile import read_po
 
@@ -61,3 +61,23 @@ def compile_po(po: Path, mo: Path) -> None:
         catalog = read_po(handle)
     with mo.open("wb") as handle:
         write_mo(handle, catalog)
+
+
+def read_catalog(po: Path) -> Catalog:
+    with po.open("rb") as handle:
+        return read_po(handle)
+
+
+def catalog_map(catalog: Catalog) -> dict[MessageId, tuple[MessageValue, tuple[str, ...]]]:
+    """Every message of `catalog` as id -> (text or plural forms, sorted flags), the header
+    left out: two catalogs are the same copy when their maps are equal."""
+    return {
+        _key(message): (
+            tuple(message.string)
+            if isinstance(message.string, (tuple, list))
+            else str(message.string),
+            tuple(sorted(message.flags)),
+        )
+        for message in catalog
+        if message.id
+    }
