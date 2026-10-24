@@ -33,7 +33,7 @@ SECRET = "sv-secret-only-outside-dist"
 def dist(tmp_path: Path) -> Path:
     dist_dir = tmp_path / "dist"
     dist_dir.mkdir()
-    (dist_dir / "index.html").write_text("<html>the app shell</html>")
+    (dist_dir / "index.html").write_text('<html lang="en">the app shell</html>')
     assets = dist_dir / "assets"
     assets.mkdir()
     (assets / "app.js").write_text("console.log('ok')")

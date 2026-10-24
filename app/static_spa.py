@@ -10,21 +10,30 @@ to a signed-out invitation link and turn an unknown API path into HTML.
 from __future__ import annotations
 
 import json
+import os
 import re
+from collections.abc import Collection
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import anyio
+import anyio.to_thread
 from starlette.datastructures import Headers
 from starlette.exceptions import HTTPException
 from starlette.responses import FileResponse, RedirectResponse, Response
 from starlette.staticfiles import StaticFiles
 
+from app.shared.copy.negotiation import pre_sign_in_language
+from app.shared.language import ENGLISH, Language
+
 if TYPE_CHECKING:
     from starlette.types import ASGIApp, Receive, Scope, Send
 
 # Served with `Cache-Control: no-cache`: a stale copy of any of these would keep
-# serving an old shell, an old manifest or a stale service worker forever.
-_NO_CACHE_NAMES = frozenset({"index.html", "manifest.webmanifest", "sw.js"})
+# serving an old manifest or a stale service worker forever. `index.html` is not a file
+# response: `ShellPage` answers it.
+_NO_CACHE_NAMES = frozenset({"manifest.webmanifest", "sw.js"})
+_INDEX = "index.html"
 
 
 # Front paths whose first segment is also an API route's (`/sales`, `/expenses`): the API's
@@ -153,6 +162,109 @@ class MissingBuiltFront(RuntimeError):
         )
 
 
+class MalformedBuiltFront(RuntimeError):
+    def __init__(self, path: Path) -> None:
+        super().__init__(
+            f'{path} is not a page with exactly one <html lang="…"> tag and a closing '
+            "</html>; run `npm run build` in web/ again"
+        )
+
+
+_HTML_START_TAG = re.compile(r"<html\b[^>]*>", re.IGNORECASE)
+_LANG_ATTRIBUTE = re.compile(r'(?<=\s)lang="[^"]*"', re.IGNORECASE)
+_HTML_END = "</html>"
+
+
+def _page_per_language(text: str, languages: Collection[Language]) -> dict[Language, bytes] | None:
+    """`text` once per language with the root element's `lang` replaced, or `None` when it
+    is not exactly one `<html>` start tag holding exactly one `lang="…"`, closed by
+    `</html>`. Nothing else in the page changes."""
+    tags = list(_HTML_START_TAG.finditer(text))
+    if len(tags) != 1 or not text.rstrip().lower().endswith(_HTML_END):
+        return None
+    tag = tags[0]
+    if len(_LANG_ATTRIBUTE.findall(tag.group())) != 1:
+        return None
+    return {
+        language: (
+            text[: tag.start()]
+            + _LANG_ATTRIBUTE.sub(f'lang="{language.tag}"', tag.group())
+            + text[tag.end() :]
+        ).encode("utf-8")
+        for language in languages
+    }
+
+
+class ShellPage:
+    """The one author of `index.html` (docs/adr/0050): the page's `lang` follows the
+    request's `Accept-Language` among the selectable languages (or is the forced one), and
+    nothing else about the request reaches it. No cookie, path, query or token is read, so
+    the page is byte-identical for any link in any state.
+
+    The bytes per language are built at boot and again whenever the file changes, because
+    `npm run build` may replace it under a running server. A file that cannot be read or is
+    malformed leaves the last good bytes in place, and nothing is logged.
+    """
+
+    def __init__(
+        self,
+        index_path: Path,
+        forced_language: Language | None,
+        selectable_languages: Collection[Language],
+    ) -> None:
+        self._path = index_path
+        self._forced = forced_language
+        self._selectable = tuple(selectable_languages)
+        servable = {ENGLISH, *self._selectable}
+        if forced_language is not None:
+            servable.add(forced_language)
+        self._servable = frozenset(servable)
+        self._lock = anyio.Lock()
+        loaded = self._load()
+        if loaded is None:
+            raise MalformedBuiltFront(index_path)
+        self._key, self._pages = loaded
+
+    def _load(self) -> tuple[tuple[int, int], dict[Language, bytes]] | None:
+        try:
+            status = self._path.stat()
+            text = self._path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            return None
+        pages = _page_per_language(text, self._servable)
+        if pages is None:
+            return None
+        return (status.st_mtime_ns, status.st_size), pages
+
+    def _refresh(self) -> None:
+        try:
+            status = self._path.stat()
+        except OSError:
+            return
+        if (status.st_mtime_ns, status.st_size) == self._key:
+            return
+        loaded = self._load()
+        if loaded is not None:
+            self._key, self._pages = loaded
+
+    async def response(self, scope: Scope) -> Response:
+        async with self._lock:
+            await anyio.to_thread.run_sync(self._refresh)
+            pages = self._pages
+        language = pre_sign_in_language(
+            Headers(scope=scope).get("accept-language"), self._forced, self._selectable
+        )
+        body = pages.get(language, pages[ENGLISH])
+        is_head = scope["method"] == "HEAD"
+        response = Response(
+            content=b"" if is_head else body,
+            media_type="text/html; charset=utf-8",
+            headers={"Cache-Control": "no-cache", "Vary": "Accept-Language"},
+        )
+        response.headers["Content-Length"] = str(len(body))
+        return response
+
+
 def api_segments(paths: dict[str, object]) -> frozenset[str]:
     """The first path segment of every API route, plus the framework's own docs
     routes: a GET under any of these never falls back to `index.html`."""
@@ -166,19 +278,21 @@ class SpaStatic(StaticFiles):
     falls back to `index.html`, so the front's own router decides what it means.
     """
 
-    def __init__(self, directory: Path, api_segments: frozenset[str]) -> None:
+    def __init__(self, directory: Path, api_segments: frozenset[str], shell: ShellPage) -> None:
         super().__init__(directory=directory, html=False, follow_symlink=False)
         self._api_segments = api_segments
+        self._shell = shell
 
     async def get_response(self, path: str, scope: Scope) -> Response:
+        if os.path.normpath(path) == _INDEX:
+            return await self._shell.response(scope)
         target = path
         try:
             response = await super().get_response(path, scope)
         except HTTPException as exc:
             if exc.status_code != 404 or not self._falls_back_to_index(path):
                 raise
-            target = "index.html"
-            response = await super().get_response(target, scope)
+            return await self._shell.response(scope)
         if Path(target).name in _NO_CACHE_NAMES and isinstance(response, FileResponse):
             response.headers["Cache-Control"] = "no-cache"
         return response

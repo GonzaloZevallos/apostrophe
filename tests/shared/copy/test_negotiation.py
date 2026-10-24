@@ -42,7 +42,18 @@ def test_a_header_that_is_absent_malformed_or_unmatched_gives_english(header: st
 
 @pytest.mark.parametrize(
     "header",
-    ["de", "de-AT", "DE-at", "fr, de;q=0.8", "de,", ", de", "de, *", "de;q=1", "de ; q=0.5", " de "],
+    [
+        "de",
+        "de-AT",
+        "DE-at",
+        "fr, de;q=0.8",
+        "de,",
+        ", de",
+        "de, *",
+        "de;q=1",
+        "de ; q=0.5",
+        " de ",
+    ],
 )
 def test_a_header_that_names_a_selectable_language_gives_it(header: str) -> None:
     assert pre_sign_in_language(header, None, SELECTABLE) == GERMAN
