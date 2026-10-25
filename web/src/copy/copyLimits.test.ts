@@ -32,7 +32,7 @@ const KNOWN_MODULES = [
 ]
 
 const found = import.meta.glob<CopyModule>(
-  ['/src/copy/*.ts', '!/src/copy/limits.ts', '!/src/copy/emptyStates.ts', '!/src/copy/*.test.ts'],
+  ['/src/copy/*.ts', '!/src/copy/limits.ts', '!/src/copy/emptyStates.ts', '!/src/copy/baselineArgs.ts', '!/src/copy/*.test.ts'],
   { eager: true },
 )
 
