@@ -1,3 +1,4 @@
+import json
 import math
 import re
 import shutil
@@ -75,6 +76,22 @@ def test_a_value_grows_by_about_a_third_and_keeps_every_placeholder(
     ratio = plain_length(inner(value)) / plain_length(text)
     assert 1.30 <= ratio <= 1.45
     assert plain_length(inner(value)) - plain_length(text) == math.ceil(0.35 * plain_length(text))
+
+
+SHARED_PAIRS = json.loads(
+    (Path(__file__).resolve().parents[2] / "fixtures" / "pseudo_shared.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+
+@pytest.mark.parametrize(
+    "pair", SHARED_PAIRS, ids=[pair["english"] or "empty" for pair in SHARED_PAIRS]
+)
+def test_a_value_matches_the_pair_the_front_generator_also_asserts(
+    tmp_path: Path, pair: dict[str, str]
+) -> None:
+    assert value_of(tmp_path, pair["english"]) == pair["pseudo"]
 
 
 def test_a_placeholder_is_never_accented(tmp_path: Path) -> None:

@@ -1,0 +1,11 @@
+{
+  "title": "Fixture",
+  "greeting": "Hello {{name}}",
+  "items_one": "{{count}} item",
+  "items_other": "{{count}} items",
+  "nested": {
+    "deep": "Deep",
+    "list_one": "one",
+    "list_other": "many"
+  }
+}
