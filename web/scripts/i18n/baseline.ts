@@ -58,7 +58,11 @@ function segment(key: string): string {
 /** The keys a path walks through, inverse of `segment` and of the `[index]` of arrays. */
 function steps(path: string): string[] {
   const found = [...path.matchAll(/\[("(?:[^"\\]|\\.)*")\]|\[(\d+)\]|\.?([^.[\]]+)/g)]
-  return found.map(([, quoted, index, name]) => (quoted !== undefined ? (JSON.parse(quoted) as string) : (index ?? name ?? '')))
+  return found.map(([, quoted, index, name]) => {
+    if (quoted === undefined) return index ?? name ?? ''
+    const key: unknown = JSON.parse(quoted)
+    return typeof key === 'string' ? key : ''
+  })
 }
 
 function isRows(value: unknown): value is Rows {
