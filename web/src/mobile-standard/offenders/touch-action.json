@@ -354,42 +354,6 @@
     "issue": 46
   },
   {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-action",
-    "target": "link:Customers",
-    "issue": 46
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-action",
-    "target": "link:Home",
-    "issue": 46
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-action",
-    "target": "link:More",
-    "issue": 46
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-action",
-    "target": "link:Sales",
-    "issue": 46
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-action",
-    "target": "link:Varieties",
-    "issue": 46
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-action",
-    "target": "navigation:Navigation",
-    "issue": 46
-  },
-  {
     "screen": "CobroBorrar",
     "rule": "touch-action",
     "target": "button:Delete payment",
@@ -1539,37 +1503,55 @@
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "EstadosReintento",
@@ -2001,37 +1983,61 @@
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "InicioChecklist",
@@ -2059,42 +2065,60 @@
     "rule": "touch-action",
     "target": "link:Customers",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Customers\" is not manipulation"
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Home",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Home\" is not manipulation"
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:More",
     "issue": 45,
-    "reason": "computed touch-action of the link \"More\" is not manipulation"
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Varieties",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Varieties\" is not manipulation"
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Sales",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Sales\" is not manipulation"
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "navigation:Navigation",
     "issue": 45,
-    "reason": "computed touch-action of the bottom navigation bar is not manipulation"
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioHoy",
@@ -2118,37 +2142,55 @@
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioImportado",
@@ -2176,42 +2218,60 @@
     "rule": "touch-action",
     "target": "link:Customers",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Customers\" is not manipulation"
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Home",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Home\" is not manipulation"
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:More",
     "issue": 45,
-    "reason": "computed touch-action of the link \"More\" is not manipulation"
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Varieties",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Varieties\" is not manipulation"
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Sales",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Sales\" is not manipulation"
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "navigation:Navigation",
     "issue": 45,
-    "reason": "computed touch-action of the bottom navigation bar is not manipulation"
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
@@ -2235,37 +2295,55 @@
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
@@ -2289,37 +2367,55 @@
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
@@ -2343,37 +2439,55 @@
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ]
   },
   {
     "screen": "Invitacion",
@@ -4160,42 +4274,6 @@
     "issue": 78
   },
   {
-    "screen": "Ventas",
-    "rule": "touch-action",
-    "target": "link:Customers",
-    "issue": 78
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-action",
-    "target": "link:Home",
-    "issue": 78
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-action",
-    "target": "link:More",
-    "issue": 78
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-action",
-    "target": "link:Sales",
-    "issue": 78
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-action",
-    "target": "link:Varieties",
-    "issue": 78
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-action",
-    "target": "navigation:Navigation",
-    "issue": 78
-  },
-  {
     "screen": "VentasFechas",
     "rule": "touch-action",
     "target": "button:Dates",
@@ -4217,42 +4295,6 @@
     "screen": "VentasFechas",
     "rule": "touch-action",
     "target": "button:Week",
-    "issue": 78
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-action",
-    "target": "link:Customers",
-    "issue": 78
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-action",
-    "target": "link:Home",
-    "issue": 78
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-action",
-    "target": "link:More",
-    "issue": 78
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-action",
-    "target": "link:Sales",
-    "issue": 78
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-action",
-    "target": "link:Varieties",
-    "issue": 78
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-action",
-    "target": "navigation:Navigation",
     "issue": 78
   },
   {
@@ -4302,149 +4344,5 @@
     "rule": "touch-action",
     "target": "navigation:Navigation",
     "issue": 47
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:‹ Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Assign customer",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Delete sale",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLargu",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Lu Fernández+#",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Mica SolanoVIP+#",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Nico Parra+#",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:Tincho Aguirre+#",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "button:New customer",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "navigation:Navigation",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "link:Home",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "link:Customers",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "link:Varieties",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
-    "target": "link:More",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
   }
 ]

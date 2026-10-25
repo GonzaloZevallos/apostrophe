@@ -879,14 +879,5 @@
     "rule": "autocomplete",
     "target": "textbox:To",
     "issue": 78
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "autocomplete",
-    "target": "textbox:Search",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
   }
 ]

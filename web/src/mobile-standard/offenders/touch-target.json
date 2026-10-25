@@ -12,33 +12,6 @@
     "issue": 48
   },
   {
-    "screen": "Analisis",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Analisis",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "Archivadas",
     "rule": "touch-target",
     "target": "link:Home",
@@ -70,33 +43,6 @@
     "rule": "touch-target",
     "target": "link:Edit header and footer",
     "issue": 47
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "CatalogoAtributos",
@@ -198,39 +144,9 @@
   {
     "screen": "InicioChecklist",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ],
-    "reason": "the \"Home\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ],
-    "reason": "the \"More\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
     "target": "link:Owed to you",
     "issue": 45,
     "reason": "the \"Owed to you\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ],
-    "reason": "the \"Sales\" link measures under 44px in width or height"
   },
   {
     "screen": "InicioImportado",
@@ -242,93 +158,9 @@
   {
     "screen": "InicioImportado",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ],
-    "reason": "the \"Home\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ],
-    "reason": "the \"More\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-target",
     "target": "link:Owed to you",
     "issue": 45,
     "reason": "the \"Owed to you\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ],
-    "reason": "the \"Sales\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "Clientes",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Clientes",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Clientes",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "Configuracion",
@@ -385,33 +217,6 @@
     ]
   },
   {
-    "screen": "EntradasTodas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EntradasTodas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EntradasTodas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "EstadosConfirmar",
     "rule": "touch-target",
     "target": "link:Home",
@@ -466,33 +271,6 @@
     ]
   },
   {
-    "screen": "EstadosGoneAviso",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "EstadosReintento",
     "rule": "touch-target",
     "target": "link:Home",
@@ -512,33 +290,6 @@
   },
   {
     "screen": "EstadosReintento",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
     "rule": "touch-target",
     "target": "link:Sales",
     "issue": 49,
@@ -571,33 +322,6 @@
     "issue": 48
   },
   {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "GastoEditar",
     "rule": "touch-target",
     "target": "button:Next month",
@@ -620,33 +344,6 @@
     "rule": "touch-target",
     "target": "link:Categories",
     "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "Gastos",
@@ -673,64 +370,10 @@
     "issue": 48
   },
   {
-    "screen": "Gastos",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Gastos",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Gastos",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "Inicio",
     "rule": "touch-target",
     "target": "link:Owed to you",
     "issue": 45
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "Inicio",
@@ -741,35 +384,8 @@
   {
     "screen": "InicioHoy",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "touch-target",
     "target": "link:Owed to you",
     "issue": 45
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "InicioHoy",
@@ -780,35 +396,8 @@
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-target",
     "target": "link:Owed to you",
     "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
@@ -819,35 +408,8 @@
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-target",
     "target": "link:Owed to you",
     "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
@@ -858,35 +420,8 @@
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-target",
     "target": "link:Owed to you",
     "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "InicioPrimeraVez",
@@ -1056,33 +591,6 @@
     ]
   },
   {
-    "screen": "TodasLasEntradas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "TodasLasEntradas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "TodasLasEntradas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "TodasLasEntradasVariedad",
     "rule": "touch-target",
     "target": "link:Home",
@@ -1306,39 +814,12 @@
     "rule": "touch-target",
     "target": "switch:Warn when running low",
     "issue": 47
-  },
-  {
-    "screen": "Variedades",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Variedades",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "Variedades",
     "rule": "touch-target",
     "target": "link:New variety",
     "issue": 47
-  },
-  {
-    "screen": "Variedades",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "VentaAsignarCliente",
@@ -1404,60 +885,6 @@
     ]
   },
   {
-    "screen": "Ventas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "VerTodas",
     "rule": "touch-target",
     "target": "link:Home",
@@ -1507,42 +934,6 @@
     "rule": "touch-target",
     "target": "link:More",
     "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-target",
-    "target": "button:New customer",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 78,
     "sizes": [
       "246x437"
     ]

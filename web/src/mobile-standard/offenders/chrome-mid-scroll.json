@@ -1,1 +1,140 @@
-[]
+[
+  {
+    "screen": "Clientes",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 46
+  },
+  {
+    "screen": "Clientes",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 46
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 47
+  },
+  {
+    "screen": "Gastos",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 48
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 47
+  },
+  {
+    "screen": "Analisis",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 48
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 49
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 49
+  },
+  {
+    "screen": "EntradasTodas",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 47
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 48
+  },
+  {
+    "screen": "Inicio",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "375x812"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 45,
+    "sizes": [
+      "375x812"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  }
+]
