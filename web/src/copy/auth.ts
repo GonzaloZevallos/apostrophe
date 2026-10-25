@@ -3,7 +3,7 @@
  * constant from another screen: what two of them say lives here.
  */
 
-import { baselineArgs } from './baselineArgs.ts'
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './auth.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 
@@ -38,7 +38,8 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 ]
 export const LONG_REFUSALS: readonly string[] = []
 
-const D = '28/09'
+
+const { date: D } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({

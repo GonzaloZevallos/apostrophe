@@ -3,7 +3,7 @@
  * `copy/copyLimits.test.ts`. `Analisis.tsx` renders these same bindings.
  */
 
-import { baselineArgs } from './baselineArgs.ts'
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './analysis.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 
@@ -43,7 +43,8 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 ]
 export const LONG_REFUSALS: readonly string[] = []
 
-const G = '3,5 g'
+
+const { grams: G } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({

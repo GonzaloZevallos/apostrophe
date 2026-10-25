@@ -3,7 +3,7 @@
  * renders this same binding.
  */
 
-import { baselineArgs } from './baselineArgs.ts'
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './expenses.ts'
 import type { LimitedCopy } from './limits'
 
@@ -14,8 +14,8 @@ export const FLOWER_NOTICE = "Flower purchases don't go here: enter them in Stoc
 export const LIMITED_COPY: readonly LimitedCopy[] = [{ kind: 'help', text: FLOWER_NOTICE }]
 export const LONG_REFUSALS: readonly string[] = []
 
-const M = '$ 11.000'
-const D = '28/09'
+
+const { money: M, date: D } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({

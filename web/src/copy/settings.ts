@@ -4,7 +4,7 @@
  * is not here: its one home is `ERROR_GENERICO_MENSAJE` in `components/ErrorGenerico`.
  */
 
-import { baselineArgs } from './baselineArgs.ts'
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './settings.ts'
 import { SAMPLES, type LimitedCopy } from './limits'
 import { REFUSAL_TEXT } from './refusals'
@@ -64,7 +64,8 @@ const LIMITED_COPY_1: readonly LimitedCopy[] = [
 export const LIMITED_COPY: readonly LimitedCopy[] = [...LIMITED_COPY_0, ...LIMITED_COPY_1]
 export const LONG_REFUSALS: readonly string[] = []
 
-const D = '28/09'
+
+const { date: D } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
