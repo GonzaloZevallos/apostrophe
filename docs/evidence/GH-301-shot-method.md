@@ -92,3 +92,7 @@ Across all 577 changed-element entries the flags are one value: the 900 px query
 ## `ae --box` and N
 
 Not available: the old runs were not taken (see the baseline section). Unstable rows (old1 vs old2): not measured. Failed sides: none in the census run. Rows with no census: none. **N: not given.**
+
+## Known limit of the census
+
+`census.after` grows the design page while the design context's font route is still active. A font request that the growth itself triggers and the route cannot serve would be recorded as a side failure, which under `--strict` is a non-zero exit. In the census run above no side failed and no `census_error` was written, so the limit was not hit; it is recorded here, not reproduced.
