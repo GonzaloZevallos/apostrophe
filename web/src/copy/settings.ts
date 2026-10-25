@@ -109,4 +109,17 @@ export const SETTINGS_TEXT = {
   eachVarietyNeedsItsVipPrice: 'Each variety needs its VIP price: without it, a VIP customer pays like anyone else.',
   discardThePrices: 'Discard the prices?',
   discardTheInvitation: 'Discard the invitation?',
+  language: 'Language',
+  languageGroupName: 'Language',
 } as const
+
+/** Each language's own name, fixed and the same whatever language is shown (invariant 7):
+ * never translated per shown language. A tag with no entry shows the tag itself. */
+const LANGUAGE_NAMES: ReadonlyMap<string, string> = new Map([
+  ['en', 'English'],
+  ['de', 'Deutsch'],
+])
+
+export function languageName(tag: string): string {
+  return LANGUAGE_NAMES.get(tag) ?? tag
+}

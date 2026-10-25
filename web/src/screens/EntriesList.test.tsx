@@ -11,6 +11,7 @@ import { Outlet, RouterProvider, createMemoryRouter, useLocation } from 'react-r
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
+import { SHOWN_EN } from '../test/shownLanguage'
 import InAppLink from '../components/InAppLink'
 import FlashProvider from '../flash/FlashProvider'
 import {
@@ -28,7 +29,7 @@ import { LIMITS } from '../copy/limits'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Shell from '../shell/Shell'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: SHOWN_EN }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

@@ -13,6 +13,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import panelFixture from '../../api/fixtures/panel.json'
 import paymentFixture from '../../api/fixtures/payment.json'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import type { PanelAnswer, PanelDebts } from '../../api/panel'
 import FlashProvider from '../../flash/FlashProvider'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, VARIETY, pathTo } from '../../routes'
@@ -22,7 +23,7 @@ import Inicio from '../Inicio'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 
 const RESULT_LABELS = [
   'Profit',

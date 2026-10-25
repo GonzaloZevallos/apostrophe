@@ -10,11 +10,12 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../../api/fixtures/panel.json'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import type { PanelAnswer } from '../../api/panel'
 import InicioFondo from './InicioFondo'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

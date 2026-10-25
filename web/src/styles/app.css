@@ -823,6 +823,19 @@ body {
   font-weight: 600;
 }
 
+/* The language control under the name form: the same segments, at least 44px tall. */
+.ajustes-idioma {
+  margin-top: var(--espacio-xxl);
+}
+
+.ajustes-idioma .ajustes-tema__opcion {
+  min-height: 44px;
+}
+
+.ajustes-idioma .ajustes-tema__opcion:disabled {
+  cursor: default;
+}
+
 .columna-principal {
   flex: 1;
   display: flex;

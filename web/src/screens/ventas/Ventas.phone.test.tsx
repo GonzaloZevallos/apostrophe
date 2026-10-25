@@ -10,11 +10,12 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import { COMPUTER_QUERY } from '../../format/breakpoints'
 import { SALES } from '../../routes'
 import Ventas, { EMPTY_LIST } from './Ventas'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
 
 function Context() {
   return <Outlet context={ME} />

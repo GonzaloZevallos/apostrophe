@@ -34,6 +34,7 @@ import accountFixture from '../../api/fixtures/account.json'
 import paymentFixture from '../../api/fixtures/payment.json'
 import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState } from '../../components/feedback'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
@@ -43,7 +44,7 @@ import Shell from '../../shell/Shell'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
 
 function Context() {
   return <Outlet context={ME} />

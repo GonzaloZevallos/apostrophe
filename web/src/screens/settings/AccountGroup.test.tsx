@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { WRONG_CURRENT_PASSWORD_MESSAGE } from '../CambiarContrasena'
 import { WEAK_PASSWORD_MESSAGE } from '../Invitacion'
@@ -30,7 +31,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 
 function Provide() {
   return <Outlet context={ME} />

@@ -12,6 +12,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { PricingSettings } from '../../api/pricingSettings'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { inAppState } from '../../components/inAppState'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
@@ -25,7 +26,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 
 const SETTINGS: PricingSettings = { is_bulk_pricing: true, is_vip_customers: false }
 

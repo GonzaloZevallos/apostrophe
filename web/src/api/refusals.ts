@@ -69,6 +69,10 @@ export function resolveOverride<T>(
   return isRefusalCode(code) ? overrides[code] : undefined
 }
 
+/** Fixed text for `business.language_not_selectable`: a stale language screen. It names neither
+ * the test locale nor why the value was refused. */
+export const LANGUAGE_NOT_SELECTABLE_MESSAGE = REFUSAL_TEXT.languageNotSelectable
+
 /** The pinned catalog's own closed set of status reasons (plan, "Status"): the same
  * five codes `PinStatusOut.reason` answers, so the front's `PinReason` type and this
  * table are the one place their fixed Spanish text is spelled out — the status line

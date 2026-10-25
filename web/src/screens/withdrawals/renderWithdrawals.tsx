@@ -9,6 +9,7 @@ import { render } from '@testing-library/react'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
+import type { ShownLanguage } from '../../api/language'
 import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, relative } from '../../routes'
 import Shell from '../../shell/Shell'
@@ -16,7 +17,7 @@ import Variedades from '../Variedades'
 import WithdrawalDetail from './WithdrawalDetail'
 import WithdrawalFormRoute from './WithdrawalFormRoute'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06' }
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: 'en' as ShownLanguage }
 
 export function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
