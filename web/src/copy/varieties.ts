@@ -2,6 +2,8 @@
  * always on screen: the empty states and the one help line. Each is a binding the screen
  * renders, listed in `LIMITED_COPY` with its kind (`copy/copyLimits.test.ts` measures it). */
 
+import { baselineArgs } from './baselineArgs.ts'
+import type * as Self from './varieties.ts'
 import { type LimitedCopy } from './limits.ts'
 import type { RefusalCode } from '../api/refusals.ts'
 import { COMMON_TEXT } from './common.ts'
@@ -59,6 +61,18 @@ const LIMITED_COPY_2: readonly LimitedCopy[] = []
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [...LIMITED_COPY_0, ...LIMITED_COPY_1, ...LIMITED_COPY_2]
 export const LONG_REFUSALS: readonly string[] = []
+
+const D = '28/09'
+const G = '3,5 g'
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'VARIETIES_TEXT.borrasElPrecioDesde': [[D]],
+  'VARIETIES_TEXT.n01Dias': [[G, '12']],
+  'VARIETIES_TEXT.siLaArchivas0': [['the rest goes to Archived.']],
+  'VARIETIES_TEXT.tieneUnFaltanteDe': [[G, 'the rest goes to Archived.']],
+  'VARIETIES_TEXT.teQuedan0Si': [[G, 'the rest goes to Archived.']],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const VARIETIES_TEXT = {

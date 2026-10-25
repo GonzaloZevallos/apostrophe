@@ -3,6 +3,8 @@
  * constant from another screen: what two of them say lives here.
  */
 
+import { baselineArgs } from './baselineArgs.ts'
+import type * as Self from './auth.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -35,6 +37,17 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: NOT_USABLE_DETAIL },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+const D = '28/09'
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  expiryLine: [
+    [true, D],
+    [false, D],
+  ],
+  'AUTH_TEXT.joinBusiness': [['Rosa Flowers'], [null]],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const AUTH_TEXT = {

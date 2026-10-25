@@ -49,6 +49,18 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return proto === Object.prototype || proto === null
 }
 
+/** A key as the end of a path: `.key`, or `["a.b"]` (JSON-quoted) when the key would read as
+ * more than one step, like the refusal codes of `REFUSAL_BY_CODE`. */
+function segment(key: string): string {
+  return /^[^.[\]"]+$/.test(key) ? `.${key}` : `[${JSON.stringify(key)}]`
+}
+
+/** The keys a path walks through, inverse of `segment` and of the `[index]` of arrays. */
+function steps(path: string): string[] {
+  const found = [...path.matchAll(/\[("(?:[^"\\]|\\.)*")\]|\[(\d+)\]|\.?([^.[\]]+)/g)]
+  return found.map(([, quoted, index, name]) => (quoted !== undefined ? (JSON.parse(quoted) as string) : (index ?? name ?? '')))
+}
+
 function isRows(value: unknown): value is Rows {
   return Array.isArray(value) && value.every((row) => Array.isArray(row))
 }
@@ -73,8 +85,7 @@ export function walkModules(modules: Modules): Walked {
       } else if (Array.isArray(value)) value.forEach((item, index) => visit(`${path}[${index}]`, item))
       else if (isPlainObject(value)) {
         for (const [key, item] of Object.entries(value)) {
-          if (/[.[\]]/.test(key)) throw new Error(`${source}: the key "${key}" has a dot or bracket, which a path cannot hold`)
-          visit(`${path}.${key}`, item)
+          visit(`${path}${segment(key)}`, item)
         }
       } else throw new Error(`${source}: an export of kind ${value === null ? 'null' : typeof value} is not copy`)
     }
@@ -177,7 +188,7 @@ function resolve(modules: Modules, source: string): Found {
   const path = source.slice(colon + 1)
   if (mod === undefined || SKIPPED_EXPORTS.has(path.split(/[.[]/)[0] ?? '')) return undefined
   let value: unknown = mod
-  for (const token of path.match(/[^.[\]]+/g) ?? []) {
+  for (const token of steps(path)) {
     if (typeof value !== 'object' || value === null || !Object.hasOwn(value, token)) return undefined
     value = (value as Record<string, unknown>)[token]
   }

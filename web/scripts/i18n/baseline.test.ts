@@ -56,6 +56,15 @@ describe('collectEntries', () => {
     expect(new Set(args).size).toBe(2)
   })
 
+  test('records a key with a dot (a refusal code) as a quoted step, and drift finds it again', () => {
+    const modules: Modules = { 'a.ts': { BY_CODE: { 'stock.gone': 'Gone', plain: 'Plain' } } }
+    const entries = collectEntries(modules)
+    expect(entries.map((entry) => entry.source)).toEqual(['a.ts:BY_CODE.plain', 'a.ts:BY_CODE["stock.gone"]'])
+    expect(driftProblems(modules, entries)).toEqual([])
+    const reworded: Modules = { 'a.ts': { BY_CODE: { 'stock.gone': 'Away', plain: 'Plain' } } }
+    expect(driftProblems(reworded, entries)).toEqual(['a.ts:BY_CODE["stock.gone"]: no longer renders its baseline text'])
+  })
+
   describe('stops, naming the export path, on', () => {
     const stop = (mod: Record<string, unknown>): string => {
       try {

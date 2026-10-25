@@ -1,11 +1,19 @@
 /** The dates words that are not a named message. */
 
+import { baselineArgs } from './baselineArgs.ts'
+import type * as Self from './dates.ts'
 import type { LimitedCopy } from './limits'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = []
 export const LONG_REFUSALS: readonly string[] = []
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'DATES_TEXT.salesN': [[0], [1], [2]],
+  'DATES_TEXT.owingSuffix': [['3 sales']],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const DATES_TEXT = {

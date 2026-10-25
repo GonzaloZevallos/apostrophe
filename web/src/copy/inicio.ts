@@ -3,6 +3,8 @@
  * `copy/copyLimits.test.ts`. `Inicio.tsx` renders these same bindings.
  */
 
+import { baselineArgs } from './baselineArgs.ts'
+import type * as Self from './inicio.ts'
 import type { LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
 import { NOBODY_OWES } from './customers.ts'
@@ -40,6 +42,17 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: STEP_SECOND_USER },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+const M = '$ 11.000'
+const D = '28/09'
+const G = '3,5 g'
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'INICIO_TEXT.desde0': [[D]],
+  'INICIO_TEXT.sinceDate': [[D]],
+  'INICIO_TEXT.n0Promedio12': [['12', M, G]],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const INICIO_TEXT = {

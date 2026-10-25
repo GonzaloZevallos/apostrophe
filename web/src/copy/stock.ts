@@ -3,6 +3,8 @@
  * same bindings, and `LIMITED_COPY` lists them for `copy/copyLimits.test.ts`, which
  * measures each with `SAMPLES` (never fixture or API data). */
 
+import { baselineArgs } from './baselineArgs.ts'
+import type * as Self from './stock.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
 
@@ -43,6 +45,28 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: perGramPreview(SAMPLES.amount) },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+const M = '$ 11.000'
+const D = '28/09'
+const G = '3,5 g'
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  onHandHelp: [[G]],
+  perGramPreview: [[M]],
+  'STOCK_TEXT.noGramsSince': [[D]],
+  'STOCK_TEXT.warnBelow': [[G]],
+  'STOCK_TEXT.daysLeft': [[0], [1], [2]],
+  'STOCK_TEXT.warningLow': [[G]],
+  'STOCK_TEXT.warnMeBelow': [[G]],
+  'STOCK_TEXT.borrasLaEntradaDel': [[D, 'Rosa', G]],
+  'STOCK_TEXT.variedadYGramos0': [['2']],
+  'STOCK_TEXT.variedad0': [['2']],
+  'STOCK_TEXT.gramos0': [['2']],
+  'STOCK_TEXT.quitarVariedad0': [['2']],
+  'STOCK_TEXT.borrasLaPromocionDel': [[D, G]],
+  'STOCK_TEXT.borrasElConsumoPropio': [[D, G]],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const STOCK_TEXT = {

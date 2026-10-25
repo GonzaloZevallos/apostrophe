@@ -3,6 +3,8 @@
  * `copy/copyLimits.test.ts`. `Analisis.tsx` renders these same bindings.
  */
 
+import { baselineArgs } from './baselineArgs.ts'
+import type * as Self from './analysis.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -40,6 +42,15 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   ),
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+const G = '3,5 g'
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'ANALYSIS_TEXT.porcentaje': [['35']],
+  'ANALYSIS_TEXT.pendingSuffix': [[G]],
+  'ANALYSIS_TEXT.noCostAlone': [[G]],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const ANALYSIS_TEXT = {

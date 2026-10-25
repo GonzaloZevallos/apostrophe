@@ -4,6 +4,8 @@
  * is not here: its one home is `ERROR_GENERICO_MENSAJE` in `components/ErrorGenerico`.
  */
 
+import { baselineArgs } from './baselineArgs.ts'
+import type * as Self from './settings.ts'
 import { SAMPLES, type LimitedCopy } from './limits'
 import { REFUSAL_TEXT } from './refusals'
 import { STOCK_TEXT } from './stock'
@@ -61,6 +63,15 @@ const LIMITED_COPY_1: readonly LimitedCopy[] = [
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [...LIMITED_COPY_0, ...LIMITED_COPY_1]
 export const LONG_REFUSALS: readonly string[] = []
+
+const D = '28/09'
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  inviteExpiry: [[D]],
+  'SETTINGS_TEXT.nameOf': [['Rosa']],
+  languageName: [['en'], ['de'], ['xx']],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const SETTINGS_TEXT = {
