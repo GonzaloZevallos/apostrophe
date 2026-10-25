@@ -163,6 +163,27 @@ describe('resetToBootLanguage', () => {
     await second
     expect(requested).toEqual(['de', 'de'])
   })
+
+  it('records one miss for a load that fails after a reset, without marking the language failed for the next session', async () => {
+    const lang = await freshLanguage('')
+    const { loader, requested, pending } = controlledLoader()
+    lang.setLocaleLoader(loader)
+    const stale = lang.applyShownLanguage('de')
+
+    lang.resetToBootLanguage()
+    pending[0]?.reject(new Error('chunk failed'))
+    await stale
+
+    expect(lang.misses.missingKeys()).toEqual([{ language: 'de', ns: '*', key: '*' }])
+    expect(lang.instance.language).toBe('en')
+
+    // The next session may ask for the same language again: it loads, and it is not failed.
+    const next = lang.applyShownLanguage('de')
+    pending[1]?.resolve(BUNDLE)
+    await next
+    expect(requested).toEqual(['de', 'de'])
+    expect(lang.instance.language).toBe('de')
+  })
 })
 
 describe('startLanguage', () => {

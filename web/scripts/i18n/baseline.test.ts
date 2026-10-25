@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
@@ -163,6 +163,12 @@ describe('runBaseline', () => {
     expect(updated.find((entry) => entry.source === 'sample.ts:TITLE')?.text).toBe('Another title')
     expect(updated.find((entry) => entry.source === 'sample.ts:GROUP.hello')?.text).toBe('Hello')
     expect(updated.some((entry) => entry.source.endsWith('BRAND_NEW'))).toBe(false)
+  })
+
+  test('update refuses to write a file that does not exist, since it never adds an entry', () => {
+    const file = newFile()
+    expect(() => runBaseline({ modules: SAMPLE, file, mode: 'update' })).toThrow('--update only rewrites existing entries')
+    expect(existsSync(file)).toBe(false)
   })
 
   test('update leaves the file byte for byte when nothing changed', () => {

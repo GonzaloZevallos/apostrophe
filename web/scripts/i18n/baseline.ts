@@ -245,6 +245,8 @@ export interface RunResult {
 export function runBaseline({ modules, file, mode }: RunOptions): RunResult {
   const current = collectEntries(modules)
   if (!existsSync(file)) {
+    // `--update` never adds an entry (invariant 2): with no file there is nothing to update.
+    if (mode === 'update') throw new Error(`${file} does not exist: --update only rewrites existing entries; run without --update to write it`)
     writeFileSync(file, serialize(current))
     return { action: 'wrote', problems: [] }
   }
