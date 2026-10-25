@@ -15,7 +15,7 @@ import { textsOf } from './copyTexts'
 
 type CopyFile = Record<string, unknown>
 
-const copyFiles = import.meta.glob<CopyFile>(['/src/copy/*.ts', '!/src/copy/limits.ts', '!/src/copy/*.test.ts'], {
+const copyFiles = import.meta.glob<CopyFile>(['/src/copy/*.ts', '!/src/copy/limits.ts', '!/src/copy/baselineArgs.ts', '!/src/copy/*.test.ts'], {
   eager: true,
 })
 

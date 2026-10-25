@@ -5,6 +5,8 @@
  * (docs/product/icon-and-text-rule.md).
  */
 
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import type * as Self from './customers.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { SHELL_TEXT } from './shell.ts'
 
@@ -66,3 +68,15 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(CUSTOMERS_TEXT.methodTransfer) },
   { kind: 'help', text: CUSTOMERS_TEXT.onAccountOf(SAMPLES.date) },
 ]
+
+
+const { money: M, date: D } = FIXTURE
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'CUSTOMERS_TEXT.deletePaymentOf': [[M, 'cash', D]],
+  'CUSTOMERS_TEXT.paymentTitle': [['cash']],
+  'CUSTOMERS_TEXT.onAccountOf': [[D]],
+  'CUSTOMERS_TEXT.creditAmount': [[M]],
+  'CUSTOMERS_TEXT.balanceAmount': [[M]],
+})

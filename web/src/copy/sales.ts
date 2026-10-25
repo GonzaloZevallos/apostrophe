@@ -4,6 +4,8 @@
  * from `noPriceMessage`), registered here and measured with `SAMPLES` by
  * `copy/copyLimits.test.ts`, never with fixture or API data. */
 
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import type * as Self from './sales.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { EMPTY_STATES } from './emptyStates.ts'
 import { VARIETIES_TEXT } from './varieties.ts'
@@ -28,6 +30,24 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 
 /** Nothing here is over 80 characters. */
 export const LONG_REFUSALS: readonly string[] = []
+
+
+const { money: M, date: D, grams: G } = FIXTURE
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  noPriceMessage: [['Rosa']],
+  'SALES_TEXT.giftGrams': [[G]],
+  'SALES_TEXT.lineLabel': [['2', 'Rosa']],
+  'SALES_TEXT.withUnit': [['3,5']],
+  'SALES_TEXT.lineVariety': [['2']],
+  'SALES_TEXT.lineGrams': [['2']],
+  'SALES_TEXT.lineGift': [['2']],
+  'SALES_TEXT.lineSpecialPrice': [['2']],
+  'SALES_TEXT.removeLine': [['2']],
+  'SALES_TEXT.saleOf': [[D]],
+  'SALES_TEXT.deleteSaleConfirm': [[M, D, G]],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const SALES_TEXT = {

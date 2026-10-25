@@ -1,11 +1,22 @@
 /** The payments words that are not a named message. */
 
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import type * as Self from './payments.ts'
 import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = []
 export const LONG_REFUSALS: readonly string[] = []
+
+
+const { money: M, date: D } = FIXTURE
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'PAYMENTS_TEXT.owesYouSince': [[M, D]],
+  'PAYMENTS_TEXT.savedStillOwing': [[M]],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const PAYMENTS_TEXT = {

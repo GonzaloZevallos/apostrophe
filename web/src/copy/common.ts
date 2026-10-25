@@ -5,6 +5,8 @@
  * none (`queryClient.ts`).
  */
 
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import type * as Self from './common.ts'
 import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -17,6 +19,20 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: ERROR_GENERICO_MENSAJE },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+
+const { money: M, date: D } = FIXTURE
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'COMMON_TEXT.settingsFor': [['Rosa Flowers']],
+  'COMMON_TEXT.pricePerGram': [[M]],
+  'COMMON_TEXT.collectFrom': [['Ana']],
+  'COMMON_TEXT.todayWith': [[D]],
+  'COMMON_TEXT.returnsTo': [[M, D]],
+  'COMMON_TEXT.noPriceBefore': [[D]],
+  'COMMON_TEXT.backArrow': [['Customers']],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const COMMON_TEXT = {
