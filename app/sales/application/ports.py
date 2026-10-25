@@ -154,6 +154,15 @@ class OwingSales(Protocol):
         ...
 
 
+class BusinessNames(Protocol):
+    """The current name of the business, read fresh on every call. Built for one
+    business."""
+
+    def current(self) -> str | None:
+        """`None` when the business has no row."""
+        ...
+
+
 @dataclass(frozen=True)
 class LineCost:
     """One sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none
