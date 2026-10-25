@@ -359,6 +359,7 @@ stays disabled while it refreshes, and the capture waits for it.
 5. **The shot never disturbs the page.** The viewport first grows to the document's height and a plain
    shot is taken unless the page is wider than the viewport; the caret is hidden by a stylesheet, not
    by Playwright's `style` writes. This, and not the hops, is what closes the finding.
+> Superseded by ADR-0052 on rule 5 only: how the shot is taken is decided there. The rule above is kept as written.
 6. **A frame after the shot, with no clock advance.** The PNG is kept only if that frame is calm and
    its hash equals the last settled frame's; otherwise the side is `null`, no PNG is written and the
    sheet shows "—".
