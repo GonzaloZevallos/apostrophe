@@ -32,6 +32,7 @@ def test_a_new_business_invitation_opens_a_business_and_signs_its_user_in(
         "email": "nueva@example.com",
         "business_name": "La Huerta",
         "today": "2026-10-02",
+        "shown_language": "en",
     }
 
 
@@ -274,7 +275,12 @@ def test_get_business_shows_its_name_and_its_users_sorted_by_email(
     business = client.get("/business")
 
     assert business.status_code == 200
-    assert business.json() == {"name": "Primer Negocio", "users": [{"email": "uno@example.com"}]}
+    assert business.json() == {
+        "name": "Primer Negocio",
+        "users": [{"email": "uno@example.com"}],
+        "language": "en",
+        "selectable_languages": ["en"],
+    }
     # The business comes only from the session: another business's own call answers
     # its own business, never business `client`'s (CODING_STANDARDS §9).
     assert other_client.get("/business").json()["name"] == "Otro Negocio"
