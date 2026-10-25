@@ -25,11 +25,12 @@ _Avoid_: signup link, referral, code
 
 **Variety**:
 A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Varieties tab. A variety with no history can be deleted; one with history can be archived and restored. _In the app_: Variety; the tab is Varieties.
-_Avoid_: product, strain, item, SKU
+_Avoid_: strain, item, SKU
+In code, tests and docs: Product (ADR-0060). Variety stays the glossary's word for what screens show.
 _In the app_: Variety
 
 **Price entry**:
-A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. _In the app_: Price (price history).
+A product's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. _In the app_: Price (price history).
 _Avoid_: price change, price update, tariff
 _In the app_: Price (price history)
 
@@ -406,7 +407,7 @@ Finding the seller's own chat number among the private chats that wrote to the b
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. _In the app_: VIP price.
+An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. For what becomes of it when customer-type prices arrive, see ADR-0058. _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
@@ -508,3 +509,7 @@ _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 **Sale bill**:
 The facts about one recorded sale that a seller may share with that sale's customer: business name, date, shipping charged, total, lines, payment state and the customer's current balance. They are worked out live from settlement when the sale's detail is read, and never stored; the balance is the customer's whole current account. A bill is facts only, with no text; in the app it has no word of its own yet (part 2 of GH-322 chooses it).
 _Avoid_: invoice, receipt, statement, ticket
+
+**Product**:
+What a business sells, in code, tests and docs, whatever the business calls it on screen. Today every business's product is shown as a Variety.
+_Avoid_: item, SKU, article, variety (that is the screen word)

@@ -15,6 +15,7 @@ outranks every other; section 10 says the frontend's; section 11 names the datab
 - `adapters/` holds tables, repositories, routers, schemas and command lines.
 - `tests/architecture/` checks these rules on every run. A new capability adds its root
   to `HEXAGON_ROOTS` in the diff that creates it.
+- Business configuration is split into hexagons by reason to change, each its own root in `HEXAGON_ROOTS` (docs/adr/0054).
 
 ## 2. Tactical DDD
 
@@ -276,6 +277,7 @@ allowlist.
   the convention's name out with `op.f(...)`, since Alembic cannot recompute a
   naming-convention name from a bare string.
 - A new column's mapped attribute has the column's own name.
+- Columns referencing `variety.id` keep the name `variety_id` until #75, and the table class's attribute matches the column, while domain and API say `product_id` (docs/adr/0060).
 
 ### Scope
 
