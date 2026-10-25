@@ -16,6 +16,8 @@ This refines the job above for each week and month row; it is not a new job. Bef
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, with analysis within reach for the weekly or monthly look, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md.)
 
+**When** I want to know how a month went, from my phone and between other things, **I want to** pick the month first and read every Analysis figure straight down the screen, without scrolling sideways or zooming, **so I can** tell whether I made money that month and which varieties earned it. (GH-319, Analysis on the phone. It refines the first job for the phone and changes only the layout, never what a section shows. Before it, the owner scrolled sideways and lost which variety or period a figure belonged to, or waited until they were at the computer.)
+
 Success criteria:
 
 1. **Answers without arithmetic**: from one screen on the phone, a seller can name the chosen month's variety with the highest margin and the one with the lowest, the best of the last 8 weeks, the best weekday, and the expense category that took the most that month.
@@ -29,6 +31,10 @@ Success criteria:
 4. **Nothing read from color alone, nothing invented**: every bar and row carries its own figure. A period with no activity shows $0 or is left out by a stated rule, never with a placeholder figure.
 5. **Businesses never mix** (ADR-0004): every figure covers only the session's business.
 6. **Every row explains its profit**: all 8 week rows and all 12 month rows show Cost of goods sold, and Stock shortfall when the period has one, next to Promotion, Own use, expenses, profit and cash.
+7. **Read straight down on the phone**: at 320 px and at 246 px (130 % text), with a 60-character variety name and nine-digit figures, the owner can change month and read each section with no sideways scroll.
+8. **Nothing lost on the phone**: every figure of every table row appears on its card with the same existing label and in the same order, and the month selector is the first control on the screen.
+9. **Computer unchanged**: the `AnalisisCompu` capture comes out the same as before the phone cards.
+10. **Readable at a glance**: on the phone every headline figure fits on one line, no text is under 12 px, and every tap target, the month arrows included, is at least 44×44.
 
 ## Behaviour
 
@@ -140,17 +146,34 @@ Success criteria:
 ### On screen (`Analisis`, `AnalisisCompu`)
 
 - **Where**: a tab root (navigation.md). On the phone, the More entry "Analysis · Varieties, weeks, months and days"; on a computer, "Analysis" in the sidebar, under the divider.
-- **Computer**: the `AnalisisCompu` layout.
-- **Week and month rows**: how Cost of goods sold and Stock shortfall sit on a row (lines or sub-rows), on the phone and on a computer, is design's call. Each figure is in words, and pending and negative are told by word or sign, never by color alone, in both themes.
+- **Computer**: the `AnalisisCompu` layout, with the three sections as tables. The phone layout never changes it: its capture stays the same.
+- **Week and month rows**: on the phone they are cards (see On the phone); on a computer, how Cost of goods sold and Stock shortfall sit on a row (lines or sub-rows) is design's call. Each figure is in words, and pending and negative are told by word or sign, never by color alone, in both themes.
 - **Charts**: the accent and the tokens only; every bar carries its figure. Best marks, pending marks and negatives are told by word or shape, never by color alone.
-- **Language and formats**: Rioplatense Spanish with vos. Money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
+- **Language and formats**: the copy is the product language's (product-language.md), every text from the copy module. Formats stay Argentine: money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
 - **Read only**: no forms and no toasts. Figures come from the API on every open; the browser computes nothing, including whether a figure is fully pending.
 - **Feedback**: network loss and server errors follow accounts.md.
+
+### On the phone (under the 900 px breakpoint)
+
+- **Month selector first**: it is the first control on Analysis. Expenses' ordering rule for its own month selector is scoped to Expenses and never reaches Analysis.
+- **One layout at a time**: at phone width the three sections (by variety, last 8 weeks, last 12 months) render as lists of cards and no table is in the page; at computer width they render as tables and no card is in the page. The month selector, the section headings and the aside are the same elements in both. No figure is exposed twice to assistive technology. Analysis has no forms, so crossing 900 px loses nothing.
+- **Variety card**: the name, then sales, share of the month, grams sold, grams gifted, cost of goods sold, margin with its percentage. Share and percentage show under the same rules as on the computer.
+- **Week card and month card**: the period label, then the row's figures in the row's order (Week by week, above). Stock shortfall, Promotion and Own use appear only when the period has them.
+- **Same figures, same order, same labels**: each card carries every figure of the row it replaces, in that row's order, with the labels the copy module already has. Nothing is reordered, hidden behind a tap or collapsed, and there are no section jumps.
+- **Headline**: sales is a card's headline figure; it stays on one line and its "$" is never split from its number.
+- **Fit**:
+  - Names and period labels truncate with an ellipsis; the full name stays readable on the computer and on the variety's own page.
+  - Figures never truncate, wrap or split, and never lose their "$".
+  - A pending mark ("and N g without cost", or "N g without cost" when the whole figure is pending) goes on the line below its figure inside the same card, never cut or truncated, so a partly pending figure is never read as complete.
+  - No sideways scroll at 320 px or at 246 px (130 % text), with a 60-character name and nine-digit figures; no text under 12 px; every tap target at least 44×44, the month arrows included.
+- **Marks**: the best-week mark, the "no best week" line and the empty-month line show with the words they have on the computer. The current week's card is set apart by shape (such as an edge or outline), never by background color alone, and by a word only if the copy module already has one.
+- **Aside**: the weekday bars, the since-the-first-record lines, the two expense breakdowns and the purchases line "Kept apart, added in Stock" keep their content and order and do not become cards. They meet the same fit limits; long category names truncate with an ellipsis.
 
 ### Constraints
 
 - The business comes from the session. Every route joins the isolation sweep and the gated-route test.
 - No amounts or names go to logs, the console or browser storage (CODING_STANDARDS §9, ADR-0005).
+- Every phone rule sits under the 900 px breakpoint; the computer's captures do not change because of it.
 
 ## Metrics
 
@@ -209,14 +232,19 @@ Success criteria:
   - best week.
 
   The only display change outside the rows is a fully pending Stock shortfall, Promotion or Own use in the header or since the first record, which now shows only its grams instead of "$ 0 and N g without cost".
+- **Read straight down on the phone (criterion 7)**: with the seed's extreme data (a 60-character name, nine-digit figures), at 320 px and at 246 px (130 %), the Mobile check finds no sideways scroll on any of Analysis's walked states; the name ends in an ellipsis, every figure is whole with its "$", and a pending mark shows whole on the line below its figure.
+- **Nothing lost on the phone (criterion 8)**: a front test with `fetch` faked at a phone viewport finds the month selector as the first control and, in each section, cards carrying every figure of its table rows with the existing labels and in the row's order, and no table in the page. The best-week mark, "no best week" and the empty-month line show with their existing words; the current-week card is set apart by something other than background color.
+- **One layout at a time**: at a computer viewport the same test finds the tables and no card; at both viewports the month selector, the section headings and the aside are the same elements.
+- **Computer unchanged (criterion 9)**: the `AnalisisCompu` capture from `scripts/design/compare.sh` is identical before and after.
+- **Readable at a glance (criterion 10)**: the Mobile check passes on Analysis's walked states with no `touch-target`, `text-size`, `h-scroll`, `name-overflow` or `figure-split` entry left for an Analysis content cell this work fixed; every such entry turned green is deleted, and none is added outside gate.md's rules.
 - **Isolation (criterion 5)**: every analysis route is in the sweep and answers only its own business's figures, never the seeded other business's data.
 - **No echo**: after a full front run, the console and browser storage hold no amounts or names.
 - **Speed**: the screen answers in under 300 ms with a year of a few hundred sales and a few dozen varieties (ADR-0010's revisit trigger).
 - **No curl**: the end-to-end front run:
   - opens More → Analysis on the phone, and the sidebar entry on a computer;
   - moves back a month;
-  - reads each section, including Cost of goods sold, Stock shortfall, Promotion and Own use on the rows.
-- **Design**: `scripts/design/compare.sh` runs before and after for Analysis, phone and computer, both themes, with the captures attached to the PR.
+  - reads each section, including Cost of goods sold, Stock shortfall, Promotion and Own use on the rows (cards on the phone).
+- **Design**: `scripts/design/compare.sh` runs before and after for Analysis, phone and computer, both themes, with the captures, the `mobile` e2e result and the offender counts attached to the PR.
 
 ## Out of scope
 
@@ -232,3 +260,5 @@ Success criteria:
 - Live updates between partners while the screen is open.
 - Forecasts beyond stock's days left.
 - Tying a promotion to later sales.
+- On the phone: collapsible sections, section jumps, or new copy for the cards or the current week.
+- The bottom bar, the floating "+ New sale" and the bar labels on Analysis (navigation's, GH-319 part 1).
