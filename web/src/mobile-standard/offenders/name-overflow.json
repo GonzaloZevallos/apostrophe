@@ -1,17 +1,5 @@
 [
   {
-    "screen": "Analisis",
-    "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
-    "issue": 48
-  },
-  {
     "screen": "Catalogo",
     "rule": "name-overflow",
     "target": "link:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",

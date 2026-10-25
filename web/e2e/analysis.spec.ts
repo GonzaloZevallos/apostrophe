@@ -319,14 +319,14 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
     email: `duena-ancho-${uniqueTag()}@example.com`,
   })
 
-  const longName = 'Rosa de invernadero de pétalos grandes y color muy intenso 1'.slice(0, 60)
+  const longName = `Variedad ${'Larguísimo'.repeat(6)}`.slice(0, 60)
   expect(longName).toHaveLength(60)
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill(longName)
   await page.getByRole('button', { name: 'Add the variety' }).click()
   await expect(page.getByText('Variety saved')).toBeVisible()
-  await page.getByRole('link', { name: /Rosa de invernadero/ }).click()
+  await page.getByRole('link', { name: /Variedad Larguísimo/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('900000')
   await page.getByRole('button', { name: 'Save the price' }).click()
@@ -343,7 +343,7 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   // An expense with a 60-character category name and a nine-digit amount.
-  const longCategory = 'Categoría de gastos con un nombre larguísimo de sesenta letr'.slice(0, 60)
+  const longCategory = `Categoría ${'Larguísimo'.repeat(6)}`.slice(0, 60)
   expect(longCategory).toHaveLength(60)
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
@@ -365,7 +365,13 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
       scroll: document.documentElement.scrollWidth,
       client: document.documentElement.clientWidth,
     }))
-    expect(page_.scroll, `page scroll width at ${width} px`).toBeLessThanOrEqual(page_.client)
+    const beyond = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.analisis *'))
+        .filter((node) => node.getBoundingClientRect().right > document.documentElement.clientWidth + 0.5)
+        .map((node) => `${node.tagName}.${node.className}:${node.textContent?.slice(0, 30)}`)
+        .slice(0, 12),
+    )
+    expect(page_.scroll, `page scroll width at ${width} px; wider than the page: ${beyond.join(' | ')}`).toBeLessThanOrEqual(page_.client)
     const wide = await page.evaluate(() =>
       Array.from(document.querySelectorAll('.analisis__principal, .analisis__principal *'))
         .filter((node) => node.getBoundingClientRect().right > document.documentElement.clientWidth + 0.5)
