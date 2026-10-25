@@ -17,7 +17,8 @@ The language covers the app's own texts only (**Product language**): screens, an
 - Only a user's choice changes the stored language. Nothing else does, including a change to the selectable list.
 - **Shown language:** a screen is shown in the operator's forced language when one is set, and in the stored language otherwise. The front renders by the shown language.
 - The language control reads and shows the stored language, never the forced one.
-- A business whose stored language has dropped off the selectable list keeps it, and its screens still follow the rule above. The operator keeps the list consistent with the copy that exists, so there is no fallback rule.
+- A business whose stored language has dropped off the selectable list keeps it, and its screens still follow the rule above. The operator keeps the list consistent with the copy that exists, so no rule ever replaces or changes a stored language.
+- **Missing copy shows English.** Any text missing in the shown language, up to that language's whole copy file, shows its English text (the gettext fallback, language.md). This never changes the stored language and never makes an output fail.
 
 ## Changing the language
 
@@ -40,6 +41,7 @@ The language covers the app's own texts only (**Product language**): screens, an
 
 - **Fixed lines follow the shown language.** The catalog's fixed lines are the share line, "Aroma/flavor", "Price per gram", the "From … each" bulk line and the empty line "Nothing to offer for now." (catalog.md). They come in the business's shown language, worked out at the moment each output runs: the catalog screen, Test it, Publish and upkeep (including the start-of-day run). In English they are byte-identical to the baseline `en.baseline.json`.
 - **The catalog reads the language through its own port.** The catalog's own adapter over accounts is the only place it reads a business's language, and the only place the forced override is applied for it. Upkeep reads the language in its own session, after the triggering commit.
+- **A language without copy never stops the catalog.** If the shown language has no copy at all (its copy file removed), the catalog screen, Test it, Publish and upkeep all build the full catalog with English fixed lines. The stored language stays as it is, no error reaches the seller and no new Out of date reason is added. Upkeep follows its usual rule and edits only when the text differs. Once the copy is back, the next upkeep, at the latest the start-of-day run, restores that language's lines. Customers are never left on stale prices because copy is missing.
 - A language change triggers **Upkeep**. Upkeep edits the pinned message in place only when the catalog text differs from the **Last published text** of the current bot and channel chat, and never posts or pins.
 - At most one edit is sent per change.
 - Nothing is sent when the chosen language is the one already stored, when the text comes out identical, or when the business has no pinned catalog.
@@ -55,6 +57,7 @@ The language covers the app's own texts only (**Product language**): screens, an
 - **Defaults in the stored language:** the new business is opened with the default catalog header and footer and the four default expense categories in its stored language, taken through the `BusinessDefaults` port (catalog.md, expenses.md).
   - They are stored as the business's own data. A later language change never rewrites them, and the seller edits them in Settings as before.
   - They follow the stored language, never the shown one, so they are never written in `en-XA`, even while the forced language is on.
+  - Any default missing in that language is written in English. The opening never fails for lack of copy.
   - In English they are byte-identical to the baseline.
   - Businesses that existed before the defaults followed the language keep what they stored, with no backfill.
 
@@ -74,5 +77,6 @@ The installation runs locally with no telemetry. Each metric is a figure the tes
 - **Phone read once:** new businesses whose stored language matches the accepting phone's best selectable match, or English with no match: 100%. Reads of the phone's language outside accepting a new-business invitation: 0.
 - **Test locale unreachable:** requests accepted that store `en-XA`: 0.
 - **Catalog follows the language:** with a fixture `de` (`selectable_languages=("en","de")`), a business stored as `de` gets `de`'s fixed lines from `GET /catalog`, Test it, Publish and the start-of-day run; an `en` business in the same run is byte-identical to the baseline. A change from `en` to `de` on a business with a pin gives exactly 1 edit with `de` lines. 100% passing.
+- **Missing copy falls back:** a business whose stored language has no copy file gets the full catalog with English fixed lines from `GET /catalog`, Test it, Publish and upkeep, and a new business opened in it gets the English defaults. Failed outputs, status changes to Out of date or changed stored languages caused by the missing copy: 0.
 - **Defaults follow the stored language:** a business opened in `de` stores `de`'s header, footer and four categories; after a language change they are unchanged; businesses opened under the forced `en-XA` with defaults in `en-XA`: 0; rows changed in existing businesses: 0.
 - **No leftover English:** under the forced `en-XA`, the catalog text, the pinned empty text and the defaults rendered from the defaults source leave 0 letters after removing `⟦…⟧` segments, stored data and money/grams tokens; a planted literal fails the check.
