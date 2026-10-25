@@ -79,7 +79,7 @@ Success criteria, sale bill:
 
 20. **One tap, no typing.** On the sale's detail, one tap on the phone opens the phone's share sheet with the bill ready or puts it on the clipboard; choosing the chat and sending are the phone's own steps. If sharing or copying fails, the seller still gets the text with no typing.
 21. **The figures match the app.** The bill's total, payment state, still-owed amount and balance always agree with the sale's detail, because they come from the same settlement pass in the same response. Evidence: the hand-written reference set, 0 mismatches.
-22. **Nothing private leaks.** No note, customer name, VIP, special or list wording, ids or links; a VIP or special line reads like a list line. Evidence: the leak test.
+22. **Nothing private leaks.** No note, customer name, VIP, special or list wording, ids or links; a VIP or special line reads like a list line. The bill adds no formatting of its own, while names the seller typed (the business and its varieties) go out exactly as typed. Evidence: the leak test.
 23. **Assume nothing holds.** Every fixed word and the unit come from the copy module; the unit is one entry, "g" by default, until #318. Evidence: with the unit set to "u", the text reads "3,5 u" and "/u".
 
 ## Behaviour
@@ -148,6 +148,7 @@ Success criteria, sale bill:
 - **See one**: date, customer or none, shipping, note, how it was paid, total, and each line's variety, grams, stored price per gram, pricing rule, line total and cost of goods (costed amount and pending grams). It also carries the sale's **sale bill** (below), or none.
 - **Sale bill** (the facts behind the shared text):
   - The business name, the date, each line's variety, quantity, amount and rule (bulk, gift or none: list, VIP and special all read as none), with the unit price on bulk lines; shipping charged; the total; the payment state (cash, transfer, paid, owed, none) with what is still owed on this sale; and the customer's balance, or none when the sale has no customer.
+  - The business name and variety names are the seller's own data, carried exactly as stored, never escaped, stripped or rewritten.
   - Payment state, still owed and balance come from the one settlement pass behind the detail's "still owing", in the same response; nothing recomputes settlement elsewhere.
   - The balance is the customer's whole account at the moment the detail is read, not on the sale's date.
   - It is closed: it has no field for the note, the customer's name or id, any sale or line id, the VIP flag, a pricing rule other than bulk or gift, cost, margin or a link. The business comes from the session only.
@@ -326,7 +327,9 @@ A short plain-text bill of one sale that the seller sends to the customer in one
 
 **The unit entry**: the unit is one keyed copy entry, "g", until #318 makes it customizable. Every fixed word of the bill lives in the copy module (`saleBill` group); no sale bill module holds a "g" literal or calls the grams formatter.
 
-**Never in the bill**: the note, the customer's name, VIP, special or list wording, ids, links, or Markdown markers (`*`, `_`, backtick).
+**Never in the bill**: the note, the customer's name, VIP, special or list wording, ids or links.
+
+**No formatting of its own**: no fixed word, separator or format of the bill carries `*`, `_` or a backtick. Text the seller typed (the business name and variety names) goes out exactly as typed, those characters included: never escaped, stripped or replaced, so the customer reads the same name the seller sees. How a chat app displays it is the chat's affair; escaping for one app would hard-code a channel (Assume nothing).
 
 **The button** (on the detail, never inside the "Sale saved" notice):
 - **Label**: Share where the phone can share, otherwise Copy.
@@ -399,9 +402,9 @@ A short plain-text bill of one sale that the seller sends to the customer in one
 - **Date change**: a front test shows everything typed is kept, the lines show loading, then every line is repriced.
 - **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "Discard the sale?" under the Close condition; "No, keep entering" keeps the form and the next back asks again; an untouched form closes at once; with Pick a customer, New customer or Assign customer open, back closes only the top sheet as its own "Close" does, the sale or detail underneath stays intact, and "Discard the sale?" never appears.
 - **No regression (criterion 16)**: the existing sales and navigation tests pass without being edited; the pricing matrix and "preview = stored" stay at 0 differences; `NuevaVentaCompu` and `VentasCompu` are unchanged.
-- **Sale bill reference set (criterion 21)**: `saleBill.cases.json`, expected texts written by hand against this definition, never generated; 0 mismatches. Cases: with and without bulk; a VIP and a special line reading like list lines; a gift; a $0 gifts-only sale with a non-zero balance; cash, transfer, paid later, partly owed, fully owed; a balance, a credit and a balance of exactly $0; no customer; with and without shipping; one line and several lines; quantities 0.01, 0.1, 1.05 and 1000.
+- **Sale bill reference set (criterion 21)**: `saleBill.cases.json`, expected texts written by hand against this definition, never generated; 0 mismatches. Cases: with and without bulk; a VIP and a special line reading like list lines; a gift; a $0 gifts-only sale with a non-zero balance; cash, transfer, paid later, partly owed, fully owed; a balance, a credit and a balance of exactly $0; no customer; with and without shipping; one line and several lines; quantities 0.01, 0.1, 1.05 and 1000; a variety whose name holds `*`, `_` and a backtick, shown unchanged.
 - **Quantity format (criterion 21)**: `formatQuantity` gives 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" from integer hundredths; the existing `formatGrams` tests pass unedited.
-- **Sale bill leak test (criterion 22)**: across the reference set, no text contains the note, the customer's name, "VIP", "special", "list", an id, "http", `*`, `_` or a backtick; the API's sale bill schema is closed and has no such field.
+- **Sale bill leak test (criterion 22)**: with business and variety names free of `*`, `_` and backticks, no text across the cases contains the note, the customer's name, "VIP", "special", "list", an id, "http", `*`, `_` or a backtick; the API's sale bill schema is closed and has no such field.
 - **Contract kept**: a vitest reads `tests/fixtures/openapi_snapshot.json`'s `SaleBillOut` schemas and asserts their property names and enums equal the front's key lists; the front and the API never drift.
 - **Unit and words from the copy module (criterion 23)**: with the unit entry set to "u", the text reads "3,5 u" and "/u"; a guard finds no "g" literal or `formatGrams` call in any `saleBill*` source; `en-XA` is regenerated and the copy staleness tests pass.
 - **One tap (criterion 20)**: front tests (fetch faked) show Share calls the share with the bill text; with `isSecureContext=false`, `execCommand('copy')` is called synchronously right after the click and the toast "Bill copied" shows; cancel shows nothing; share failed shows its line with the attention icon and flips the label to Copy; copy failed shows its line and the selectable block; `bill` null hides the button; loading keeps the label, disabled and busy, with no digit or `$`. `WalkState` includes the copy-failed and loading states, and the mobile e2e project passes with no new offender.
@@ -422,4 +425,4 @@ A short plain-text bill of one sale that the seller sends to the customer in one
 - Building New customer's unsaved-changes confirmation (customers.md): its own issue, with its own copy, for Customers and Pick a customer alike.
 - Other VIP rules (a percent off list); price promotions by date.
 - Refusing or warning a sale because the pricing settings changed mid-sale.
-- For the sale bill: a year in the date; a preview step; an "already shared" state; a payment receipt; choosing a channel or sending from the app; an invoice; making the unit customizable (#318); any other language (#317).
+- For the sale bill: a year in the date; a preview step; an "already shared" state; a payment receipt; choosing a channel or sending from the app; an invoice; escaping or rewriting seller-typed names for any chat app's formatting; making the unit customizable (#318); any other language (#317).
