@@ -18,6 +18,7 @@
 
 import { type ReactNode, type RefObject, useEffect, useRef } from 'react'
 import { useViewport } from '../shell/useViewport'
+import { useVisualViewport } from './useVisualViewport'
 
 export interface SheetProps {
   /** True on a computer: the frame is the host's `computerClass`. */
@@ -86,6 +87,9 @@ export default function Sheet({
   // as a control without a name, a role or a pressed state.
   const frame = useRef<HTMLElement>(null)
   const body = useRef<HTMLDivElement>(null)
+  // On a phone the sheet's height and top follow the visible viewport (`--vv-alto`, `--vv-top`),
+  // so the keyboard does not cover the pinned action. The hook does nothing on a computer.
+  useVisualViewport(frame, { fixedForm: false })
   useEffect(() => {
     const element = frame.current
     if (!computer || !computerDialog || touched || element === null) return
