@@ -40,6 +40,7 @@ from app.payments.adapters.import_port import PaymentsImport
 from app.pricing_settings.adapters.import_port import PricingSettingsImport
 from app.sales.adapters.import_port import SalesImport
 from app.settings import Settings
+from app.shared.copy import OperatorText
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cells import read_workbook
 from app.spreadsheet_import.adapters.mapping import read_mapping
@@ -88,19 +89,40 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def run(argv: Sequence[str], *, engine: Engine, clock: Clock, out: TextIO, err: TextIO) -> int:
+def run(
+    argv: Sequence[str],
+    *,
+    engine: Engine,
+    clock: Clock,
+    out: TextIO,
+    err: TextIO,
+    text: OperatorText,
+) -> int:
     args = _parse_args(argv)
     try:
-        return _run(args, engine, clock, out)
+        return _run(args, engine, clock, out, text)
     except KeyboardInterrupt:
         raise
     except Exception as exc:  # the plan's invariant: never str(exc), never a traceback
         code = getattr(exc, "code", None) or type(exc).__name__
-        err.write(f"refused: {code}\n")
+        err.write(f"{_refusal_line(text, code)}\n")
         return 1
 
 
-def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) -> int:
+def _refusal_line(text: OperatorText | None, code: str) -> str:
+    """The translated refusal; if it cannot be rendered, the fixed English
+    `refused: <code>` stands in, so a failure path never raises (docs/adr/0050)."""
+    try:
+        if text is not None:
+            return text("operator.import.refused", code=code)
+    except Exception:
+        pass
+    return f"refused: {code}"
+
+
+def _run(
+    args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO, text: OperatorText
+) -> int:
     with Session(engine) as session:
         directory = BusinessDirectory(SqlAccounts(session))
         business_name = directory.name_of(args.business_id)
@@ -146,7 +168,7 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
             business_ref=SheetRef(layout.BUSINESS_SHEET, layout.NO_ROW),
         )
 
-        print_report(plan, business_name=business_name, dry_run=args.dry_run, out=out)
+        print_report(plan, business_name=business_name, dry_run=args.dry_run, out=out, text=text)
 
         if args.dry_run:
             return 0
@@ -173,17 +195,19 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
 
 
 def main(argv: list[str] | None = None, *, clock: Clock = system_clock) -> int:
-    settings = Settings.from_env()
+    arguments = argv if argv is not None else sys.argv[1:]
+    _parse_args(arguments)
+    try:
+        settings = Settings.from_env()
+        text = settings.operator_translator()
+    except Exception as exc:
+        # Nothing has been installed or written yet.
+        sys.stderr.write(f"{_refusal_line(None, type(exc).__name__)}\n")
+        return 1
     engine = make_engine(settings.database_url)
     upgrade_to_head(engine)
 
-    return run(
-        argv if argv is not None else sys.argv[1:],
-        engine=engine,
-        clock=clock,
-        out=sys.stdout,
-        err=sys.stderr,
-    )
+    return run(arguments, engine=engine, clock=clock, out=sys.stdout, err=sys.stderr, text=text)
 
 
 if __name__ == "__main__":

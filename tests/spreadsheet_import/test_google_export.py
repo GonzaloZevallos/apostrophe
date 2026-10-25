@@ -23,6 +23,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
+from app.shared.copy import OperatorText
 from app.shared.grams import Grams
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cells import read_workbook
@@ -386,7 +387,11 @@ def test_read_workbook_over_the_a1_variant_reads_the_same(tmp_path: Path) -> Non
 
 
 def test_dry_run_over_the_clean_export_finds_everything_and_reports_mismatches(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save(_clean_workbook(), tmp_path, name="sheet.xlsx", a1_dimension=False)
@@ -400,6 +405,7 @@ def test_dry_run_over_the_clean_export_finds_everything_and_reports_mismatches(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     report = out.getvalue()
@@ -414,7 +420,11 @@ def test_dry_run_over_the_clean_export_finds_everything_and_reports_mismatches(
 
 
 def test_real_run_over_the_clean_export_writes_the_numeric_names(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save(_clean_workbook(), tmp_path, name="sheet.xlsx", a1_dimension=False)
@@ -428,6 +438,7 @@ def test_real_run_over_the_clean_export_writes_the_numeric_names(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 0, err.getvalue()
@@ -444,7 +455,11 @@ def test_real_run_over_the_clean_export_writes_the_numeric_names(
 
 
 def test_dry_run_over_the_problem_export_lists_every_problem_in_one_pass(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save(_problem_workbook(), tmp_path, name="sheet.xlsx", a1_dimension=False)
@@ -458,6 +473,7 @@ def test_dry_run_over_the_problem_export_lists_every_problem_in_one_pass(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     report = out.getvalue()
@@ -478,7 +494,11 @@ def test_dry_run_over_the_problem_export_lists_every_problem_in_one_pass(
 
 
 def test_real_run_over_the_problem_export_writes_nothing(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save(_problem_workbook(), tmp_path, name="sheet.xlsx", a1_dimension=False)
@@ -492,6 +512,7 @@ def test_real_run_over_the_problem_export_writes_nothing(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 1

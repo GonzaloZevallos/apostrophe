@@ -30,6 +30,7 @@ from app.main import create_app
 from app.migrations.runner import upgrade_to_head
 from app.sales.adapters.import_port import SalesImport
 from app.settings import Settings
+from app.shared.copy import OperatorText
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cli import main, run
@@ -145,7 +146,11 @@ def _business_id(engine: Engine, name: str = "Primer Negocio") -> int:
 
 
 def test_dry_run_writes_nothing_and_reports_the_counts(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
@@ -158,6 +163,7 @@ def test_dry_run_writes_nothing_and_reports_the_counts(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 0
@@ -175,6 +181,7 @@ def test_real_run_imports_and_the_figures_match(
     clock: MovableClock,
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
@@ -188,6 +195,7 @@ def test_real_run_imports_and_the_figures_match(
             clock=clock,
             out=out,
             err=err,
+            text=operator_text_en,
         )
 
     assert code == 0, err.getvalue()
@@ -219,7 +227,7 @@ def test_real_run_imports_and_the_figures_match(
 
 
 def test_an_unknown_business_is_refused_with_no_echo(
-    engine: Engine, clock: MovableClock, tmp_path: Path
+    engine: Engine, clock: MovableClock, tmp_path: Path, operator_text_en: OperatorText
 ) -> None:
     upgrade_to_head(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
@@ -232,6 +240,7 @@ def test_an_unknown_business_is_refused_with_no_echo(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 1
@@ -240,7 +249,11 @@ def test_an_unknown_business_is_refused_with_no_echo(
 
 
 def test_a_business_with_records_is_refused_with_nothing_written(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     client.post("/varieties", json={"name": "Existente"})
     business_id = _business_id(engine)
@@ -254,6 +267,7 @@ def test_a_business_with_records_is_refused_with_nothing_written(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 1
@@ -269,6 +283,7 @@ def test_imported_records_are_invisible_from_another_business(
     engine: Engine,
     clock: MovableClock,
     tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
@@ -281,6 +296,7 @@ def test_imported_records_are_invisible_from_another_business(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 0, err.getvalue()
@@ -295,6 +311,7 @@ def test_a_malformed_mapping_on_a_real_run_is_refused_with_no_echo(
     clock: MovableClock,
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
@@ -311,6 +328,7 @@ def test_a_malformed_mapping_on_a_real_run_is_refused_with_no_echo(
             clock=clock,
             out=out,
             err=err,
+            text=operator_text_en,
         )
 
     assert code == 1
@@ -329,6 +347,7 @@ def test_a_mapping_entry_with_a_blank_phone_imports_the_customer_without_one(
     clock: MovableClock,
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
+    operator_text_en: OperatorText,
 ) -> None:
     # A blank phone cell means no number (ADR-0021): it is not a problem, and the
     # customer is imported under their name alone.
@@ -345,6 +364,7 @@ def test_a_mapping_entry_with_a_blank_phone_imports_the_customer_without_one(
             clock=clock,
             out=out,
             err=err,
+            text=operator_text_en,
         )
 
     assert code == 0, out.getvalue()
@@ -359,13 +379,24 @@ def test_a_mapping_entry_with_a_blank_phone_imports_the_customer_without_one(
 
 
 def test_no_mapping_flag_imports_every_customer_without_a_phone(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
     out, err = io.StringIO(), io.StringIO()
 
-    code = run([str(business_id), str(xlsx)], engine=engine, clock=clock, out=out, err=err)
+    code = run(
+        [str(business_id), str(xlsx)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
+        text=operator_text_en,
+    )
 
     assert code == 0, err.getvalue()
     report = out.getvalue()
@@ -377,7 +408,11 @@ def test_no_mapping_flag_imports_every_customer_without_a_phone(
 
 
 def test_a_partial_mapping_imports_unmapped_names_without_a_phone(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     workbook = _workbook()
     ventas = workbook[layout.VENTAS_SHEET]
@@ -399,6 +434,7 @@ def test_a_partial_mapping_imports_unmapped_names_without_a_phone(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 0, err.getvalue()
@@ -415,6 +451,7 @@ def test_a_well_formed_mapping_row_with_a_malformed_phone_blocks_with_no_echo(
     clock: MovableClock,
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
+    operator_text_en: OperatorText,
 ) -> None:
     # The row itself is well formed (one name, one non-blank phone cell): the
     # phone text just doesn't normalise. check_customer's own phone_code must
@@ -431,6 +468,7 @@ def test_a_well_formed_mapping_row_with_a_malformed_phone_blocks_with_no_echo(
             clock=clock,
             out=out,
             err=err,
+            text=operator_text_en,
         )
 
     assert code == 1
@@ -452,7 +490,11 @@ def test_a_well_formed_mapping_row_with_a_malformed_phone_blocks_with_no_echo(
 
 
 def test_the_dry_run_count_of_customers_without_a_phone_matches_the_real_run(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     workbook = _workbook()
     ventas = workbook[layout.VENTAS_SHEET]
@@ -474,6 +516,7 @@ def test_the_dry_run_count_of_customers_without_a_phone_matches_the_real_run(
         clock=clock,
         out=dry_out,
         err=dry_err,
+        text=operator_text_en,
     )
 
     assert dry_code == 0, dry_err.getvalue()
@@ -487,6 +530,7 @@ def test_the_dry_run_count_of_customers_without_a_phone_matches_the_real_run(
         clock=clock,
         out=real_out,
         err=real_err,
+        text=operator_text_en,
     )
 
     assert real_code == 0, real_err.getvalue()
@@ -502,6 +546,7 @@ def test_the_last_writer_forced_to_raise_leaves_nothing_written(
     clock: MovableClock,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    operator_text_en: OperatorText,
 ) -> None:
     # Ventas is the last kind written (varieties -> ... -> Entradas -> Gastos ->
     # Ventas): forcing the real `SalesImport.write_sale` port method to raise proves
@@ -523,6 +568,7 @@ def test_the_last_writer_forced_to_raise_leaves_nothing_written(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 1
@@ -540,7 +586,11 @@ def test_the_last_writer_forced_to_raise_leaves_nothing_written(
 
 
 def test_a_dry_run_and_a_refused_real_run_over_a_blocking_fixture_write_nothing(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     # An unknown Entradas origin blocks the whole plan; nothing else about the
     # fixture is invalid, so every other row would otherwise be written fine.
@@ -558,6 +608,7 @@ def test_a_dry_run_and_a_refused_real_run_over_a_blocking_fixture_write_nothing(
             clock=clock,
             out=out,
             err=err,
+            text=operator_text_en,
         )
         assert code in (0, 1)
         assert err.getvalue() == ""
@@ -575,6 +626,7 @@ def test_a_real_duplicate_phone_is_refused_by_its_own_clean_code(
     clock: MovableClock,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    operator_text_en: OperatorText,
 ) -> None:
     """A second writer lands a customer with the same phone number into this business
     *during* the write — the known, accepted race of concurrent writes (ADR-0018's
@@ -614,6 +666,7 @@ def test_a_real_duplicate_phone_is_refused_by_its_own_clean_code(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 1
@@ -720,7 +773,11 @@ _ELIGIBILITY_SEEDS = (
 
 
 def test_eligibility_refuses_each_of_the_seven_kinds(
-    app: FastAPI, engine: Engine, clock: MovableClock, tmp_path: Path
+    app: FastAPI,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     for index, seed in enumerate(_ELIGIBILITY_SEEDS):
         name = f"Negocio {index}"
@@ -740,6 +797,7 @@ def test_eligibility_refuses_each_of_the_seven_kinds(
             clock=clock,
             out=out,
             err=err,
+            text=operator_text_en,
         )
 
         assert code == 1, f"{seed.__name__}: {out.getvalue()}"
@@ -747,7 +805,11 @@ def test_eligibility_refuses_each_of_the_seven_kinds(
 
 
 def test_a_business_with_only_renamed_or_removed_seeded_categories_is_accepted(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     categories = client.get("/expense-categories").json()
     by_name = {c["name"]: c["id"] for c in categories}
@@ -765,6 +827,7 @@ def test_a_business_with_only_renamed_or_removed_seeded_categories_is_accepted(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
 
     assert code == 0, err.getvalue()
@@ -777,7 +840,11 @@ PHONE2 = "1123456788"
 
 
 def test_recording_order_follows_date_then_sheet_row(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     """Two things, both end to end through `cli.run`:
 
@@ -901,6 +968,7 @@ def test_recording_order_follows_date_then_sheet_row(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
     assert code == 0, err.getvalue()
 

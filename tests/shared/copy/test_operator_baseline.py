@@ -6,8 +6,6 @@ import re
 from pathlib import Path
 from string import Formatter
 
-import pytest
-
 from app.settings import DEFAULT_LOCALES_DIR
 from app.shared.copy import MissingOperatorKey, OperatorText, operator_translator, po_messages
 from app.shared.copy.messages import po_path

@@ -22,7 +22,7 @@ from app.pricing_settings.adapters.import_port import PricingSettingsImport
 from app.pricing_settings.adapters.tables import PricingSettingsRow
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cli import run
-from tests.conftest import MovableClock
+from tests.conftest import OPERATOR_TEXT_EN, MovableClock
 from tests.spreadsheet_import.test_cli import (
     ENTRADAS_TITLES,
     GASTOS_TITLES,
@@ -89,7 +89,12 @@ def _import(
     out, err = io.StringIO(), io.StringIO()
     argv = [str(_business_id(engine)), str(xlsx), "--mapping", str(mapping)]
     code = run(
-        [*argv, "--dry-run"] if dry_run else argv, engine=engine, clock=clock, out=out, err=err
+        [*argv, "--dry-run"] if dry_run else argv,
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
+        text=OPERATOR_TEXT_EN,
     )
     assert err.getvalue() == ""
     return code, out.getvalue()

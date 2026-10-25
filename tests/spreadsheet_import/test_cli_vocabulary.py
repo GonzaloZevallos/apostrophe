@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
 from app.catalog.adapters.import_port import SHOWN_WORDS
+from app.shared.copy import OperatorText
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cli import run
 from app.spreadsheet_import.domain.plan import PAGO_WORDS, TIPO_WORDS
@@ -156,7 +157,11 @@ def _vocabulary_workbook() -> Workbook:
 
 
 def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save(tmp_path / "sheet.xlsx", _vocabulary_workbook())
@@ -169,6 +174,7 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
     assert code == 0
     assert err.getvalue() == ""
@@ -184,6 +190,7 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
     assert code == 0, err.getvalue()
     assert err.getvalue() == ""
@@ -292,7 +299,11 @@ def _literal_word_workbook() -> Workbook:
 
 
 def test_pm_s_own_words_dry_run_clean_real_run_stores_cash_transfer_and_one_owing(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save(tmp_path / "sheet.xlsx", _literal_word_workbook())
@@ -312,6 +323,7 @@ def test_pm_s_own_words_dry_run_clean_real_run_stores_cash_transfer_and_one_owin
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
     assert code == 0
     assert err.getvalue() == ""
@@ -325,6 +337,7 @@ def test_pm_s_own_words_dry_run_clean_real_run_stores_cash_transfer_and_one_owin
         clock=clock,
         out=out,
         err=err,
+        text=operator_text_en,
     )
     assert code == 0, err.getvalue()
     assert err.getvalue() == ""
@@ -371,7 +384,11 @@ def _blocking_pago_workbook(pago_cell: str | None) -> Workbook:
 
 
 def test_a_blank_pago_on_a_finished_row_above_zero_blocks_as_payment_required(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save(tmp_path / "sheet.xlsx", _blocking_pago_workbook(None))
@@ -385,6 +402,7 @@ def test_a_blank_pago_on_a_finished_row_above_zero_blocks_as_payment_required(
             clock=clock,
             out=out,
             err=err,
+            text=operator_text_en,
         )
         assert code in (0, 1)
         assert err.getvalue() == ""
@@ -396,7 +414,11 @@ def test_a_blank_pago_on_a_finished_row_above_zero_blocks_as_payment_required(
 
 
 def test_an_unknown_pago_word_on_a_finished_row_above_zero_blocks_as_payment_unknown(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save(tmp_path / "sheet.xlsx", _blocking_pago_workbook("Cheque"))
@@ -410,6 +432,7 @@ def test_an_unknown_pago_word_on_a_finished_row_above_zero_blocks_as_payment_unk
             clock=clock,
             out=out,
             err=err,
+            text=operator_text_en,
         )
         assert code in (0, 1)
         assert err.getvalue() == ""

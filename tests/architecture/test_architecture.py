@@ -52,6 +52,7 @@ def test_the_checker_reports_the_deliberate_violations() -> None:
     result = scan_hexagon(FIXTURES / "bad_hexagon", other_hexagons=other_hexagons)
 
     assert sorted((v.imported, v.rule) for v in result.violations) == [
+        ("app.shared.copy", "application-imports-no-framework-or-adapter"),
         ("app.shared.copy", "domain-imports-no-copy"),
         ("app.shared.copy.CopyCatalog", "domain-imports-no-copy"),
         ("app.varieties", "domain-and-application-import-no-other-hexagon"),
@@ -59,6 +60,7 @@ def test_the_checker_reports_the_deliberate_violations() -> None:
             "app.varieties.domain.variety.Variety",
             "domain-and-application-import-no-other-hexagon",
         ),
+        ("babel.support", "application-imports-no-framework-or-adapter"),
         ("babel.support", "domain-imports-stdlib-and-shared-only"),
         ("babel.support.Translations", "domain-imports-no-copy"),
         ("sqlalchemy.orm", "domain-imports-stdlib-and-shared-only"),

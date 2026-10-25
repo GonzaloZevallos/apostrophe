@@ -33,14 +33,14 @@ def build_parser(text: OperatorText | None) -> argparse.ArgumentParser:
     `help=` texts out (a refused start still parses its arguments). argparse's own frame --
     `usage:`, `options:`, its error lines -- stays the standard library's English."""
 
-    def helped(key: str) -> dict[str, str]:
-        return {} if text is None else {"help": text(key)}
+    def helped(key: str) -> str | None:
+        return None if text is None else text(key)
 
     parser = argparse.ArgumentParser(prog="apostrophe")
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("invite-business", **helped("operator.accounts.help_invite_business"))
+    commands.add_parser("invite-business", help=helped("operator.accounts.help_invite_business"))
     reset_parser = commands.add_parser(
-        "reset-password", **helped("operator.accounts.help_reset_password")
+        "reset-password", help=helped("operator.accounts.help_reset_password")
     )
     reset_parser.add_argument("email")
     return parser
