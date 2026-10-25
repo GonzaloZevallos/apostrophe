@@ -1,8 +1,9 @@
 import i18next from 'i18next'
-import { SAMPLES } from '../copy/limits'
-import { productionOptions } from './options'
-import { PLACEHOLDERS } from './placeholders'
-import { placeholdersOf, resolveKey, type Args, type Bundle } from './resolve'
+import { SAMPLES } from '../copy/limits.ts'
+import { productionOptions } from './options.ts'
+import { PLACEHOLDERS } from './placeholders.ts'
+import type { LocaleBundle } from './resources.ts'
+import { placeholdersOf, resolveKey, type Args, type Bundle } from './resolve.ts'
 
 /**
  * The parity reference for the resolver tests: a fresh instance initialised with the
@@ -53,11 +54,18 @@ export function parityCases(bundle: Bundle): ParityCase[] {
   return cases
 }
 
+/** What a fresh instance on the production options answers for a key: the reference. */
+export function referenceT(bundle: LocaleBundle, tag = 'en'): (key: string, args?: Args) => string {
+  const instance = i18next.createInstance()
+  void instance.init({ ...productionOptions, lng: tag, ns: Object.keys(bundle), resources: { [tag]: bundle } })
+  return (key, args) => String(instance.t(key as never, { ...args } as never))
+}
+
 type Answer = (bundle: Bundle, key: string, args: Args, tag: string) => string
 
 /** How many cases ran and one sentence per case where `resolve` and i18next disagree. */
 export function parityProblems(
-  bundle: Bundle,
+  bundle: LocaleBundle,
   tag = 'en',
   resolve: Answer = resolveKey,
 ): { cases: number; problems: string[] } {
@@ -67,11 +75,10 @@ export function parityProblems(
   } catch (error) {
     return { cases: 0, problems: [error instanceof Error ? error.message : 'parityCases failed'] }
   }
-  const instance = i18next.createInstance()
-  void instance.init({ ...productionOptions, lng: tag, ns: Object.keys(bundle), resources: { [tag]: bundle } })
+  const answer = referenceT(bundle, tag)
   const problems: string[] = []
   for (const { key, args } of cases) {
-    if (resolve(bundle, key, args, tag) !== instance.t(key as never, args as never)) {
+    if (resolve(bundle, key, args, tag) !== answer(key, args)) {
       problems.push(`${key}: resolveKey and i18next answer differently`)
     }
   }

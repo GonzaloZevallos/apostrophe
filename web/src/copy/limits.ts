@@ -6,8 +6,8 @@
  * `SAMPLES` (the worst cases), never from fixture or API data.
  */
 
-import { PLACEHOLDERS } from '../i18n/placeholders'
-import { interpolate, MissingKeyError, placeholdersOf, selectText, type Args, type Bundle } from '../i18n/resolve'
+import { PLACEHOLDERS } from '../i18n/placeholders.ts'
+import { interpolate, MissingKeyError, placeholdersOf, selectText, type Args, type Bundle } from '../i18n/resolve.ts'
 
 /** The kinds of always-visible text with a limit, in characters. */
 export const LIMITS = {
@@ -38,18 +38,25 @@ export function measure(text: string): number {
   return Array.from(text.normalize('NFC')).length
 }
 
-/** A text kept in a copy module: today's word, or a key into a locale namespace whose `args`
- * only choose a plural form or override a sample (every other placeholder is filled from
- * `SAMPLES` through `PLACEHOLDERS`). */
-export type LimitedCopy =
-  | { kind: CopyKind; text: string }
-  | { kind: CopyKind; key: string; args?: Args }
+export interface LimitedCopy {
+  kind: CopyKind
+  text: string
+}
+
+/** The keyed form of `LimitedCopy`: a key into the module's `NAMESPACE` whose `args` only
+ * choose a plural form or override a sample (every other placeholder is filled from
+ * `SAMPLES` through `PLACEHOLDERS`). A module lists `LimitedCopy | KeyedCopy` entries. */
+export interface KeyedCopy {
+  kind: CopyKind
+  key: string
+  args?: Args
+}
 
 /** What a copy module (a file of `web/src/copy/`) exports besides its strings. A keyed module
  * exports `NAMESPACE`, and its `LONG_REFUSALS` holds keys rather than texts. */
 export interface CopyModule {
   NAMESPACE?: string
-  LIMITED_COPY?: readonly LimitedCopy[]
+  LIMITED_COPY?: readonly (LimitedCopy | KeyedCopy)[]
   LONG_REFUSALS?: readonly string[]
   [name: string]: unknown
 }
@@ -172,7 +179,7 @@ function keyedProblems(path: string, mod: CopyModule, locales: Locales, namespac
  * `NAMESPACE`) is resolved in `en` and in every real language of `locales` (`en-XA`
  * excluded by name): a key missing in `en` is a problem, one missing in another language
  * is skipped (ADR-0050). */
-export function copyProblems(path: string, mod: CopyModule, locales: Locales): string[] {
+export function copyProblems(path: string, mod: CopyModule, locales: Locales = {}): string[] {
   const problems: string[] = []
   const { LIMITED_COPY, LONG_REFUSALS, NAMESPACE } = mod
   if (LIMITED_COPY === undefined) problems.push(`${path}: LIMITED_COPY is not exported`)

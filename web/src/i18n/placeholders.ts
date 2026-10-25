@@ -1,4 +1,4 @@
-import type { SAMPLES } from '../copy/limits'
+import type { SAMPLES } from '../copy/limits.ts'
 
 /**
  * The placeholders a copy key may hold, each mapped to the kind of worst-case sample the

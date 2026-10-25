@@ -94,7 +94,7 @@ describe('resolveKey equals a fresh i18next instance with the production options
   })
 
   test('a broken resolver is seen: a value that differs from the runtime is a problem', () => {
-    const wrong: Bundle = { shapes: { title: 'Sample title' } }
+    const wrong = { shapes: { title: 'Sample title' } }
     const { problems } = parityProblems(wrong, 'en', () => 'not the runtime')
 
     expect(problems).toEqual(['shapes:title: resolveKey and i18next answer differently'])

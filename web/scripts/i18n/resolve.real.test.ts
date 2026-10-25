@@ -7,10 +7,8 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import i18next from 'i18next'
 import { describe, expect, test } from 'vitest'
-import { productionOptions } from '../../src/i18n/options.ts'
-import { parityProblems } from '../../src/i18n/parity.ts'
+import { parityProblems, referenceT } from '../../src/i18n/parity.ts'
 import { resolveKey } from '../../src/i18n/resolve.ts'
 import { parseBaseline } from './baseline.ts'
 import { loadMappingFiles, mappedRows } from './baselineKeys.ts'
@@ -52,9 +50,8 @@ describe('the resolver over the real en folder', () => {
   test('equals the i18next runtime on every mapped baseline row with its recorded args', () => {
     const committed = parseBaseline(readFileSync(join(import.meta.dirname, '../../src/copy/en.baseline.json'), 'utf8'))
     const { rows } = mappedRows(loadMappingFiles(), committed)
-    const instance = i18next.createInstance()
-    void instance.init({ ...productionOptions, ns: Object.keys(en), resources: { en } })
-    const differing = rows.filter((row) => resolveKey(en, row.key, row.args) !== instance.t(row.key as never, row.args as never))
+    const reference = referenceT(en)
+    const differing = rows.filter((row) => resolveKey(en, row.key, row.args) !== reference(row.key, row.args))
 
     expect(differing.map((row) => `${row.source} row ${row.index}`)).toEqual([])
   })
