@@ -342,14 +342,30 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
+  // An expense with a 60-character category name and a nine-digit amount.
+  const longCategory = 'Categoría de gastos con un nombre larguísimo de sesenta letr'.slice(0, 60)
+  expect(longCategory).toHaveLength(60)
+  await openGastos(page)
+  await page.getByRole('link', { name: 'Add expense' }).click()
+  await page.getByRole('button', { name: 'Create a new category' }).click()
+  await page.getByLabel('New category name').fill(longCategory)
+  await page.getByRole('button', { name: 'Create category' }).click()
+  await page.getByLabel('Amount').fill('123456789')
+  await page.getByLabel('Details').fill('Gasto grande')
+  await page.getByRole('button', { name: 'Save the expense' }).click()
+  await expect(page.getByText('Expense saved')).toBeVisible()
+
   for (const width of [320, 246]) {
     await page.setViewportSize({ width, height: 844 })
     await page.goto(ANALYSIS)
     await expect(page.getByText('You sold in the month')).toBeVisible()
 
-    // The cards' column holds nothing wider than the page. The hero's nine-digit figure and
-    // the aside are fitted by the hero-and-aside subtask, which owns the page-level check
-    // (`documentElement.scrollWidth <= clientWidth`) once they fit.
+    // The page does not scroll sideways, and nothing in the cards' column is wider than it.
+    const page_ = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+    }))
+    expect(page_.scroll, `page scroll width at ${width} px`).toBeLessThanOrEqual(page_.client)
     const wide = await page.evaluate(() =>
       Array.from(document.querySelectorAll('.analisis__principal, .analisis__principal *'))
         .filter((node) => node.getBoundingClientRect().right > document.documentElement.clientWidth + 0.5)
@@ -364,6 +380,28 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
       overflow: getComputedStyle(node).textOverflow,
     }))
     expect(truncated).toEqual({ cut: true, overflow: 'ellipsis' })
+
+    // The hero's and the aside's figures are whole, with their "$", and the category name
+    // ends in an ellipsis while its subtotal stays whole.
+    const hero = page.locator('.analisis .cifra-xl')
+    await expect(hero).toContainText('$')
+    expect(await hero.evaluate((node) => {
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      return range.getClientRects().length
+    })).toBe(1)
+    const category = page.locator('.analisis__gastos .gastos__categoria-nombre', { hasText: longCategory.slice(0, 20) }).first()
+    expect(await category.evaluate((node) => ({
+      cut: node.scrollWidth > node.clientWidth,
+      overflow: getComputedStyle(node).textOverflow,
+    }))).toEqual({ cut: true, overflow: 'ellipsis' })
+    const subtotal = page.locator('.analisis__gastos .gastos__categoria-subtotal', { hasText: '123.456.789' }).first()
+    await expect(subtotal).toBeVisible()
+    expect(await subtotal.evaluate((node) => {
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      return range.getClientRects().length
+    })).toBe(1)
 
     // Every pending line sits below the figure it belongs to, whole.
     const pendings = page.locator('.analisis__tarjeta-pendiente')

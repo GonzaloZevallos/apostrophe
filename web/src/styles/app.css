@@ -3319,6 +3319,46 @@ body {
     flex: none;
     align-self: stretch;
   }
+
+  /* The hero (GH-319): the month's sales is one unbreakable unit that shrinks with the
+     width, as the sale detail's total does, so nine digits and their "$" fit at 246 px. */
+  .analisis .cifra-xl {
+    font-size: clamp(24px, 10vw, 54px);
+    white-space: nowrap;
+  }
+
+  .analisis .analisis__monto-cifra,
+  .analisis .analisis__dia-cifra {
+    white-space: nowrap;
+  }
+
+  /* The aside: the page's column may not be wider than the screen, whatever it holds. */
+  .analisis .analisis__aside,
+  .analisis .analisis__dias,
+  .analisis .analisis__gastos {
+    min-width: 0;
+  }
+
+  /* An expense category's name ends in an ellipsis and its subtotal stays whole. The last
+     row (the purchases line, with its note) is not a name: it wraps and is never cut. */
+  .analisis .analisis__gastos > .gastos__categoria-cabecera:not(:last-child) > .gastos__categoria-nombre {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .analisis .analisis__gastos > .gastos__categoria-cabecera:last-child > .gastos__categoria-nombre {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .analisis .gastos__categoria-subtotal {
+    flex: none;
+    white-space: nowrap;
+  }
 }
 
 @media (min-width: 900px) {

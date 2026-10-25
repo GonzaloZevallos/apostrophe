@@ -237,7 +237,7 @@ function AnalisisContenido({
               <div key={day.weekday} className="analisis__dia">
                 <span>{WEEKDAY_LABEL[day.weekday]}</span>
                 <Bar value={day.sales} max={maxWeekdaySales} />
-                <span>{formatMoney(day.sales)}</span>
+                <span className="analisis__dia-cifra">{formatMoney(day.sales)}</span>
                 <span>{day.count}{ANALYSIS_TEXT.ventas}</span>
                 {day.best && <span className="analisis__marca-mejor">{BEST_WEEKDAY_MARK}</span>}
               </div>
