@@ -1,22 +1,20 @@
 # Design capture
 
-*Temporary copy. The authoritative text is `DESIGN_STANDARDS.md`. This file is removed when agentic-system#295 lands.*
-
-The evidence a reviewer uses to judge that a screen looks as designed: the design file and the built app are captured side by side from the screens registry (`scripts/design/screens.json`), with pinned fonts, by `scripts/design/comparisons.mjs`, and when a change needs a before/after pair, the raw captures are compared by exact AE with `scripts/design/ae.mjs` (ADR-0042). How a shot is taken is frozen by ADR-0052 (the GH-301 request called it ADR-0050). This file holds what the capture and its registry must guarantee for the people who rely on them. It changes no product behaviour: no capability's rule, screen, route, step or copy is defined here, and the capture always follows the product, never the reverse. It is review evidence attached to a PR and judged by eye; it is never a step of the gate (gate.md). Sellers and the operator see nothing of it.
+The evidence a reviewer uses to judge that a screen looks as designed: the design file and the built app are captured side by side from the screens registry (`scripts/design/screens.json`), with pinned fonts, by `scripts/design/comparisons.mjs`, and when a change needs a before/after pair, the raw captures are compared by exact AE with `scripts/design/ae.mjs` (ADR-0042). How a shot is taken is frozen by ADR-0052 (the GH-301 request called it ADR-0050). This file holds what the capture and its registry must guarantee for the people who rely on them. It changes no product behaviour: no capability's rule, screen, route, step or copy is defined here, and the capture always follows the product, never the reverse. It is review evidence attached to a PR and judged by eye; it is never a step of the gate (docs/product/gate.md). Sellers and the operator see nothing of it.
 
 ## Jobs
 
 **When** I run the design capture over Home and the Onboarding before approving a change, **I want** every screen the registry lists, both themes of the last Onboarding screen included, to be reached the way a seller reaches it and captured whole, and the registry, its tests and the plan to agree, **so I can** trust a green `--strict` run as evidence and approve without hand-patching a test, accepting a screen that was never reached, or recording an exception.
 
-- Its protagonist is the maintainer, or the reviewer acting for them, as in accounts.md's and gate.md's maintainer jobs. The seller is affected only indirectly: a capture nobody can trust holds up the changes they are waiting for.
-- It refines the "looks as designed" criteria (navigation.md criterion 7, onboarding.md criterion 5 and its design metric, icon-and-text-rule.md criterion 6); it is not a new product job.
+- Its protagonist is the maintainer, or the reviewer acting for them, as in docs/product/accounts.md's and docs/product/gate.md's maintainer jobs. The seller is affected only indirectly: a capture nobody can trust holds up the changes they are waiting for.
+- It refines the "looks as designed" criteria (docs/product/navigation.md criterion 7, docs/product/onboarding.md criterion 5 and its design metric, docs/product/icon-and-text-rule.md criterion 6); it is not a new product job.
 - It also serves when a design guard or a registry test fails and the maintainer must tell a real defect from a broken registry row.
 - Before it (GH-142's follow-up): a one-test edit broke the plan's own invariant, the `OnboardingListo` row could not reach the last Onboarding screen, the `OnboardingListoOscuro` crop was clipped, and those two defects had no issue.
 
 **When** I am about to approve the Onboarding restyle from GH-164 and the evidence on the PR covers only some of its screens, **I want** every Onboarding step and "Done" compared with its design (phone and computer viewports, light and dark, the narrowest phone at 130 % text) and a before/after pair of the restyle, **so I can** approve knowing that only the intended things changed and that nothing a seller reads or taps there moved, without approving on partial evidence or holding the PR.
 
 - Its protagonist is the maintainer, or the reviewer acting for them; the seller is affected only indirectly.
-- It refines onboarding.md criterion 5 and icon-and-text-rule.md criterion 6; it is not a new product job.
+- It refines docs/product/onboarding.md criterion 5 and docs/product/icon-and-text-rule.md criterion 6; it is not a new product job.
 - Before it (GH-164's follow-up): approval rested on two of the seven screens (Bot and the last Onboarding screen); Partner and Expense categories were never read; there was no dark theme, no 320 px / 130 % check and no before/after pair.
 
 **When** I review a change against the design capture, **I want** every row of the screens registry to name the screen and the record it actually reaches and captures, **so I can** approve from the capture alone, without checking the registry against the screenshots by hand and without leaving a finding open on an approved head.
@@ -32,7 +30,7 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 **When** I review a change to how Analysis looks, **I want** current before and after captures of Analysis, a comparison over every other screen in the registry, and a plan that names every file the change edits, **so I can** approve or reject from the PR's evidence alone, without retaking captures, hand-checking screens or carrying an open finding into the next task.
 
 - Its protagonist is the maintainer, or the reviewer acting for them (in the end Zeta). The seller is affected only indirectly: a change nobody can approve holds up the Cost of goods sold and Stock shortfall rows they are waiting for.
-- It refines analysis.md's design metric and the job above; it is not a new product job and adds no product behaviour.
+- It refines docs/product/analysis.md's design metric and the job above; it is not a new product job and adds no product behaviour.
 - Before it (GH-141's follow-up): the muestra guard was edited outside the plan's declared seam, and the design evidence was missing or stale. The same spec-scope finding was raised three times on one head.
 
 **When** I review a change whose before/after design capture (`compare.sh` / `comparisons.mjs`) was taken on the shared development machine, where other agents and worktrees are always running, **I want** that capture to count as evidence whatever load the machine was under, **so I can** approve on it without the Developer recording a rule as "unsatisfiable" and shipping past it.
@@ -40,9 +38,9 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - Same protagonist as the job above; it refines that job and is not a new product job.
 - Before it (GH-150's follow-up): a plan invariant asked for `compare.sh` runs with no foreign load; all six runs had load, so it could never hold, and it was recorded as unsatisfiable and shipped past.
 
-**When** I review a change to Home's first-run elements before approving it, **I want** the tests, the `/first-run` contract and the design capture to prove what navigation.md, results.md and ADR-0046 say in every state they can be in and in both themes, **so I can** approve from the evidence alone, without trusting partial checks or carrying open findings into the next task.
+**When** I review a change to Home's first-run elements before approving it, **I want** the tests, the `/first-run` contract and the design capture to prove what docs/product/navigation.md, docs/product/results.md and ADR-0046 say in every state they can be in and in both themes, **so I can** approve from the evidence alone, without trusting partial checks or carrying open findings into the next task.
 
-- Same protagonist as the jobs above; it refines this file's second and third jobs for the Home rows and is not a new product job. Its test and contract side is navigation.md's.
+- Same protagonist as the jobs above; it refines this file's second and third jobs for the Home rows and is not a new product job. Its test and contract side is docs/product/navigation.md's.
 - Served here by the `InicioHoyCompu` row naming its own section, and by a by-eye audit of the other `Inicio*` rows.
 - Before it (GH-45's follow-up): `InicioHoyCompu` named no section, so its Today-only capture was compared with the whole `InicioCompu.dc.html`, which also draws Week, and its difference was non-zero by construction.
 
@@ -54,13 +52,13 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 **When** I review a change that touches Home and I look at its design capture before approving it, **I want** every first-run element Home can show (the Onboarding notice, the first-run checklist with its "Done" marks, the after-import notice) and the Today tab on the computer each captured on its own and compared against a drawing of exactly that, **so I can** approve or reject from the PR's evidence alone, without checking those states by hand on a business I set up myself, and without reading Week's figures into a comparison of Today.
 
 - Its protagonist is the maintainer, or the reviewer acting for them; the seller is affected only indirectly: Home changes that can't be approved from evidence wait longer.
-- It refines the first job above ("every row reaches its screen") and results.md criterion 12 ("Looks as designed"); it is not a new product job and adds no product behaviour.
+- It refines the first job above ("every row reaches its screen") and docs/product/results.md criterion 12 ("Looks as designed"); it is not a new product job and adds no product behaviour.
 - Before it (GH-45's evidence, docs/evidence/GH-45-inicio-captures.md): no drawing showed the first-run checklist or the after-import notice and no capture could reach a business that shows them, so a reviewer judged them by hand if at all; `InicioHoyCompu` and `InicioHoyCompuOscuro` compared against the whole `InicioCompu` file, Week included.
 
 **When** I am asked to accept GH-272's Home restyle, **I want** to see how Home measures against its design on every Home variant (light and dark, phone and computer), and how it holds at 960 px, 1280 px and 960 px with text at 130 %, **so I can** approve it knowing the seller's Home looks as designed, instead of trusting that it was built right.
 
 - Its protagonist is the PM, who reviews and approves GH-272. The seller gets no new behaviour; their Home (the Panel, tabs Today, Week and Month) on their devices and with enlarged text is what is protected. A later change that must not break Home's look can reuse the same evidence.
-- It refines results.md criterion 12 ("Looks as designed") and the Analysis and Onboarding evidence jobs above; it is not a new product job and adds no product behaviour.
+- It refines docs/product/results.md criterion 12 ("Looks as designed") and the Analysis and Onboarding evidence jobs above; it is not a new product job and adds no product behaviour.
 - Before it (GH-272's follow-up): GH-272 was approved with invariant 12 resting on construction alone. There was no `ae.mjs` after-run, no list of `InicioCompu` (Home, computer layout) and `InicioCompuOscuro` AE lines and no screenshots at 960 px, 1280 px or 130 % text, so the Coverage block marked it "Not touched" and an `important` finding stayed open at `web/src/styles/app.css:3098`.
 
 **When** I review the shot method that ADR-0052 froze, **I want** one document showing that the method gives the same result run after run, and showing every row where it differs from the old capture, with an image of each, **so I can** judge each difference once, on evidence I could reproduce, and close GH-273's five findings.
@@ -73,12 +71,12 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 Success criteria:
 
 1. **One green run.** One `--strict` call over `Inicio*` (Home) and the Onboarding block exits 0.
-2. **Reached and whole.** Every Onboarding screen the registry lists, the last Onboarding screen in light and dark included, is reached as onboarding.md defines and captured whole. No crop is clipped, and no row captures a screen other than the one it names.
+2. **Reached and whole.** Every Onboarding screen the registry lists, the last Onboarding screen in light and dark included, is reached as docs/product/onboarding.md defines and captured whole. No crop is clipped, and no row captures a screen other than the one it names.
 3. **Registry, tests and plan agree.** The change needs no recorded exception and no test edited outside a declared seam.
-4. **Nothing a seller sees changes.** onboarding.md, navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
+4. **Nothing a seller sees changes.** docs/product/onboarding.md, docs/product/navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
 5. **No test loosened.** A changed registry or enforcement test keeps everything it guarded and states the corrected rule.
 6. **Every row tells the truth about its record.** A row's declared path names the same sample record its route and steps reach and capture. The light `VariedadArchivada` row names Sir Jack (`{sold_out}`), an archived variety reached from Archived. A dark twin's own declaration matches its own capture; it need not show the light row's record.
-7. **The registry, its tests and navigation.md agree on the archived variety's page** and its parent "‹ Archived", with no recorded exception and no loosened test.
+7. **The registry, its tests and docs/product/navigation.md agree on the archived variety's page** and its parent "‹ Archived", with no recorded exception and no loosened test.
 8. **Truthfulness costs the seller nothing.** Fixing a row's declaration changes no capability doc, nothing under `app/`, and nothing under `web/src/` but `web/src/design/screens.test.ts` within its declared seam. No row's steps change to make it truthful.
 9. **A wrong record never passes unnoticed again.** An entry whose path names a record different from the one its route names fails the registry test in the diff that introduces it.
 10. **The whole registry runs green.** One `--strict` call over the whole registry, with no `--only`, exits 0. No row is removed, skipped, excused or listed as a known failure to get there.
@@ -89,19 +87,19 @@ Success criteria, the Onboarding restyle's evidence (GH-164 follow-up) (numbered
 
 6. **Every Onboarding screen covered.** Each of the six steps and "Done" has captures for the phone and computer viewports, in light and dark, plus one phone capture at 320 px with text at 130 %, in light only, all from one `--strict` run that exits 0. A missing screen, a missing side or a one-sided `null` is a failure, never a pass.
 7. **A before/after pair of the restyle.** "Before" is the code without GH-164's change (once it has merged, the merging head with only that change undone, the undo diff in the PR); "after" is the head that merges. Both come from the head's own `comparisons.mjs`, one install, the same Argentina day, fonts pinned, and are compared as raw captures by exact AE with `ae.mjs`. The PR records the installed `@fontsource/plus-jakarta-sans` version.
-8. **Every difference accounted for.** Each non-zero difference, and each difference between the design and the docs, is listed in the PR with its screen and side, as intended (by GH-164's brief) or fixed. A difference between onboarding.md and the drawing on what a step shows is a defect in the drawing. A difference neither the brief nor the docs can settle goes to Zeta in the PR.
+8. **Every difference accounted for.** Each non-zero difference, and each difference between the design and the docs, is listed in the PR with its screen and side, as intended (by GH-164's brief) or fixed. A difference between docs/product/onboarding.md and the drawing on what a step shows is a defect in the drawing. A difference neither the brief nor the docs can settle goes to Zeta in the PR.
 9. **Nothing clipped.** At 320 px with text at 130 %, no line, control or crop of any step or "Done" is clipped, and controls stay at least 44 px.
 10. **No seller-visible change beyond a listed fix.** Every suite passes; no test is edited to fit, the two registry tests excepted when rows are added.
 
 Success criteria, reviewing GH-141's change to Analysis:
 
 6. **Current captures of Analysis.** The PR has before and after captures of Analysis on phone and computer, in light and dark.
-   - "After" is the head that merges the change; "before" is that same head with only GH-141's change undone (pinned-catalog.md's "Restyling Integrations" rule), with the undo diff in the PR.
+   - "After" is the head that merges the change; "before" is that same head with only GH-141's change undone (docs/product/pinned-catalog.md's "Restyling Integrations" rule), with the undo diff in the PR.
    - If undoing GH-141 alone changes more than GH-141 did, the PR says so and lists the extra differences for Zeta; nothing more is undone.
    - Both sides come from head's `comparisons.mjs --strict`, one install, one Argentina day, fonts pinned (ADR-0042). The PR records the fontsource version.
 7. **Every other screen compared, every difference explained.** `ae.mjs` runs over the raw captures of every other screen in the registry, with its output attached. AE 0 is expected; every non-zero line is accounted for (see Behaviour). A missing side, a one-sided `null` or an unreadable capture is a failure, never AE 0.
 8. **The guard edit is declared, not loosened.** The plan's seam for `muestra` names `tests/design/test_muestra_screens.py` and `tests/design/muestra_guard.py`, for that plan only, and the guard keeps everything it checked before.
-9. **Nothing a seller sees changes** beyond GH-141's decided intent: analysis.md and ADR-0020's GH-141 amendment stand, and every suite passes.
+9. **Nothing a seller sees changes** beyond GH-141's decided intent: docs/product/analysis.md and ADR-0020's GH-141 amendment stand, and every suite passes.
 
 Success criteria, captures under load (numbered on their own; Metrics cites them as "Load criterion N"):
 
@@ -128,7 +126,7 @@ Success criteria, Home's first-run and Today evidence (GH-45 follow-up) (numbere
 1. **Every first-run element has a drawing and registry rows.** `pantallas/` draws the first-run checklist with its "Done" marks and the after-import notice, and each has registry rows that reach it the way a seller sees it, capturing its section whole.
 2. **Today is compared as Today.** `InicioHoyCompu` and `InicioHoyCompuOscuro` crop to a section holding only Today, never one that also draws Week.
 3. **Whole registry green, nothing a seller sees changes.** One whole-registry `--strict` run with no `--only` exits 0, with no row removed, skipped or excused. No capability doc's rule, screen, route or app copy changes. The only edited tests are the two registry tests within their declared seams and `tests/design/test_sample_app.py`, this plan's own declared seam, extended only; every other test passes unedited.
-4. **Differences are listed.** Wherever a drawing and the docs differ on wording or on what is shown (navigation.md for the checklist and the after-import notice, results.md for Home's order), the PR lists every difference.
+4. **Differences are listed.** Wherever a drawing and the docs differ on wording or on what is shown (docs/product/navigation.md for the checklist and the after-import notice, docs/product/results.md for Home's order), the PR lists every difference.
 
 Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on their own; Metrics cites them as "Home criterion N"):
 
@@ -166,7 +164,7 @@ Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their 
 
 ### Capturing at rest
 
-- **Elements that never stop**: an element that never stops moving does not fail its row just for moving, and gets no exemption either: like every row, it must give the same capture on every run, whatever the machine's load. No registry row is designed to keep moving at rest (loading states are shaped like the content, accounts.md), so no exception is named. A row that needed one is a product question for PM, never a registry entry.
+- **Elements that never stop**: an element that never stops moving does not fail its row just for moving, and gets no exemption either: like every row, it must give the same capture on every run, whatever the machine's load. No registry row is designed to keep moving at rest (loading states are shaped like the content, docs/product/accounts.md), so no exception is named. A row that needed one is a product question for PM, never a registry entry.
 - **Slow screens**: a slow screen passes once it comes to rest. A screen that has not come to rest within a bound fails its row (see Failures). The bound limits how long the capture waits; it is never a statement about duration, and nothing asserts elapsed time (ADR-0038). It is generous enough that load alone never fails a row. Its value, and how rest is detected (animations, pending requests, a control's state), are the Tech Lead's call.
 - **No per-run state check**: waiting for rest is a condition on when to capture, never a check of what the screen shows. The capture never compares a screen's content with the sample data. The resting state is verified by eye in the evidence of the task that settled it, and a later regression to a stable but wrong state shows as a non-zero AE in a before/after or as a mismatch with the design file, caught by eye in review.
 - **The app is not changed for it**: a control the app keeps disabled while a refresh runs (the seller's guard against acting mid-refresh) stays as it is; the capture waits for the refresh to end.
@@ -175,7 +173,7 @@ Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their 
 ### Every row reaches its screen
 
 - Every row of the registry, not only `Inicio*` (Home) and the Onboarding, reaches its screen the way a seller does and captures its named section whole. A whole-registry `--strict` run exits non-zero only when a row truly fails.
-- **`EstadosConfirmar`** reaches the delete confirmation (the caption `Antes de borrar` in `Estados.dc.html`) on a sale's detail as a seller does: it opens a sale that exists in the sample and taps "Delete sale". Its capture shows the confirmation whole: the question naming the sale's date, amount and grams that return, and "No, keep it / Yes, delete it" (sales.md).
+- **`EstadosConfirmar`** reaches the delete confirmation (the caption `Antes de borrar` in `Estados.dc.html`) on a sale's detail as a seller does: it opens a sale that exists in the sample and taps "Delete sale". Its capture shows the confirmation whole: the question naming the sale's date, amount and grams that return, and "No, keep it / Yes, delete it" (docs/product/sales.md).
 - **`EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro`** show "No connection" in the computer layout, light and dark. The page's own fonts are in place before the network drops, so going offline never leaves a page font in error. The capture's fonts stay pinned and local (ADR-0042).
 - The applied-check is unchanged and covers every row, offline rows included: a font in error stays a failure, never a pass.
 - A row is made to reach its screen by its steps, the sample data or the capture tooling alone. Never by changing the screen, its copy, the app's own `font-display`, or the applied-check, and never by dropping or excusing the row.
@@ -202,7 +200,7 @@ Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their 
 
 ### Registry rows for the last Onboarding screen
 
-- **Every last-Onboarding-screen row reaches the last Onboarding screen the way a seller does**: it starts on an optional step once both required steps are met, on an account of its own in that state, and passes the remaining optional steps as onboarding.md defines them. The account state is setup, not behaviour.
+- **Every last-Onboarding-screen row reaches the last Onboarding screen the way a seller does**: it starts on an optional step once both required steps are met, on an account of its own in that state, and passes the remaining optional steps as docs/product/onboarding.md defines them. The account state is setup, not behaviour.
 - **the last Onboarding screen has four rows**: phone light, phone dark, computer light and computer dark, so that it is covered on both viewports in both themes like every other Onboarding screen.
 - **`OnboardingListo`** (the default row, phone light) follows that rule, on its own account written by the sample app (`scripts/design/sample_app.py`'s `ONBOARDING_ACCOUNTS`). It does not start at `/onboarding/categories`, does not run the whole flow through step 6, and never clicks "Skip the rest" on step 6.
 - **`OnboardingListoCompu` and `OnboardingListoOscuro`** keep their accounts, `listo_compu` and `listo_oscuro`.
@@ -215,14 +213,14 @@ Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their 
 
 - **Rows**: the first-run checklist and the after-import notice get three rows each, phone, computer and phone-dark, like the existing `InicioPrimeraVez*` rows: 6 new rows. There is no computer-dark row for a first-run element; a later change to Home's dark computer layout adds one if it needs it. The existing `InicioPrimeraVez`, `InicioPrimeraVezCompu` and `InicioPrimeraVezOscuro` rows keep covering what they cover. Exact row and account names are the Tech Lead's.
 - **The checklist's drawing and capture**:
-  - design draws the four steps (navigation.md) with their "Done" marks from existing design-system elements only: no new component, colour or token value;
+  - design draws the four steps (docs/product/navigation.md) with their "Done" marks from existing design-system elements only: no new component, colour or token value;
   - the drawing and the capture show the same state, a mix with at least one step "Done" and at least one pending; never both required steps (1 and 2) "Done", since the checklist goes for good the first time both are met. Assumed mix: step 1 "Done" (a variety priced today), step 2 and both optional steps pending; any mix meeting the constraint serves equally;
   - each step reads its box and the word "Done", never colour alone, and the checklist carries no attention icon; the step labels are design's wording within the icon and text rule's limits;
   - its capture account is a business with no Onboarding state, as a business that existed before the Onboarding shipped.
 - **The after-import notice's drawing and capture**:
   - the row captures the notice alone and whole: "Connect the bot so the pinned catalog updates by itself", its attention icon and its dismiss control; whatever sits in slot 1 is outside the crop;
-  - its capture account is a business the spreadsheet import really loaded, as the import records it (import.md, ADR-0046), captured before the notice is dismissed and before the bot is first published;
-  - an imported business that also showed the checklist is a product defect (navigation.md), never a state to capture.
+  - its capture account is a business the spreadsheet import really loaded, as the import records it (docs/product/import.md, ADR-0046), captured before the notice is dismissed and before the bot is first published;
+  - an imported business that also showed the checklist is a product defect (docs/product/navigation.md), never a state to capture.
 - **The Today label**: only `InicioCompu.dc.html` changes. It gains a label for its Today section that occurs exactly once in the file, worded like the `InicioHoy` section label (`Hoy · la pestaña con la que abre el panel`, Today, the tab the panel opens on). It is a drawing annotation, not app copy. `InicioHoyCompu` and `InicioHoyCompuOscuro` crop to that section by that text. The built screen is untouched; if the crop could only be named by changing the built screen, the work stops and comes back to the PM as a copy question.
 - **Capture accounts**: written by design tooling alone, never by product code, a product route or the seed `muestra.md` is rendered from. No last-Onboarding-screen entry ever names one, and any new account kind is declared in `facts.account_kinds`, refused when missing or mismatched as before. The mechanism is the Tech Lead's, and so is recording it as an amendment to ADR-0042, next to the GH-189 amendment that defined the account kinds.
 - **Edited files**:
@@ -295,11 +293,11 @@ Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their 
 ### The Onboarding restyle's evidence (GH-164 follow-up)
 
 - **Screens**: the six Onboarding steps (variety and price, opening stock, header and footer, Telegram bot, partner, expense categories) and "Done", which has its four rows (phone and computer, light and dark), each reached as above.
-- **Computer** means the Onboarding's one phone-width column captured at the computer viewport; the Onboarding has no computer layout of its own (onboarding.md).
+- **Computer** means the Onboarding's one phone-width column captured at the computer viewport; the Onboarding has no computer layout of its own (docs/product/onboarding.md).
 - **Per screen**: phone and computer, light and dark; plus one phone capture at 320 px with text at 130 %, light only. Each shows its named section whole.
 - **Registry**: every capture is a row of `scripts/design/screens.json`. A missing row is added as design tooling, with the two registry tests as its seams; a row that cannot reach its screen is a defect, never an exemption. Any mechanism for the 130 % text lives in `scripts/design/` only, never in product code.
 - **Before/after**: "before" is the code without GH-164's change; once GH-164 has merged, it is the merging head with only GH-164's own change undone, and the PR shows that undo diff. If undoing it alone changes more than GH-164 did, the PR says so and lists the extra differences for Zeta; nothing more is undone. "After" is the merging head. Both are taken by the head's own `comparisons.mjs`, from one install, on the same Argentina day, fonts pinned, `--strict`; raw captures are compared by exact AE with `ae.mjs`, never the composed sheet.
-- **Judging**: every capture by eye against its design file; every non-zero AE line and every design-vs-docs difference listed with its screen and side as intended (by GH-164's brief) or fixed. A difference between onboarding.md and the drawing on what a step shows is a defect in the drawing. What neither the brief nor the docs can settle goes to Zeta in the PR.
+- **Judging**: every capture by eye against its design file; every non-zero AE line and every design-vs-docs difference listed with its screen and side as intended (by GH-164's brief) or fixed. A difference between docs/product/onboarding.md and the drawing on what a step shows is a defect in the drawing. What neither the brief nor the docs can settle goes to Zeta in the PR.
 - **Mismatches fixed here** only when the fix is CSS only, within the existing tokens (no token value changed), adds no component or colour, and changes nothing a seller reads or does: a clip at 320–430 px or 130 % text, or a step frame that strays from `OnboardingVariedad` and `OnboardingCategorias`. After a fix, both sides are captured again from the fixed head and compared again.
 - **Never fixed here**: a wording difference is never fixed by changing copy (the difference is listed); anything that changes behaviour, copy, steps, actions or routes is split into its own bug and only listed in the PR.
 - **Everything matches**: the PR says so with the evidence; that is a valid outcome.
@@ -393,7 +391,7 @@ No telemetry; read from the PR evidence and from tests.
 - **Never half-drawn (Rest criterion 3)**: a deliberately unsettled row (something that never comes to rest within the bound) under `--strict` exits non-zero, its side `null`, no PNG written, with the fixed message naming the row and side, shown once in the PR; it is never read as an AE difference.
 - **Nothing loosened (Rest criterion 4)**: read from the diff: no tolerance in the comparison; the registry has the same rows as before; no seller-visible change under `app/` or `web/src/`, the switch's disabled-while-refreshing behaviour included; no change to `.agentic/stack.yaml`, CI or the gate; no elapsed-time assertion (ADR-0038).
 - **Finding closed**: the closing record marks GH-261's `VariedadesCompu built: AE 2888` resolved, with its cause corrected to a background refresh with the control disabled, citing the five runs per commit. Business measure: spec-scope findings for an unexplained AE on a screen the PR did not touch, goal 0.
-- **First-run rows exist (First-run criterion 1)**: `index.json` holds a result for each of the 6 new rows, 0 missing sides and no one-sided `null`; each capture shows its whole section, judged by eye. The checklist captures show at least one "Done" and at least one pending step and never both required steps "Done", judged against navigation.md; the after-import capture shows the notice alone with its icon and dismiss control.
+- **First-run rows exist (First-run criterion 1)**: `index.json` holds a result for each of the 6 new rows, 0 missing sides and no one-sided `null`; each capture shows its whole section, judged by eye. The checklist captures show at least one "Done" and at least one pending step and never both required steps "Done", judged against docs/product/navigation.md; the after-import capture shows the notice alone with its icon and dismiss control.
 - **Today compared as Today (First-run criterion 2)**: the Today label occurs exactly once in `InicioCompu.dc.html`; the two Today computer captures show no Week content, judged by eye.
 - **Whole registry green (First-run criterion 3)**: the PR holds one whole-registry `--strict` output, no `--only`, exit 0, and the installed fontsource version; every suite passes; the diff touches only `scripts/design/`, `pantallas/`, the two registry tests, `tests/design/test_sample_app.py` (new cases only, every existing assertion kept), the ADR-0042 amendment and this file; the plan's Seams line names the three tests; no step is added to `.agentic/stack.yaml`, CI or the gate.
 - **Differences are listed (First-run criterion 4)**: every drawing-versus-docs difference is listed in the PR with its screen: 0 unlisted.
@@ -414,7 +412,7 @@ No telemetry; read from the PR evidence and from tests.
 
 ## Out of scope
 
-- Any change to onboarding.md, navigation.md, a screen's copy or its steps to make it easier to capture.
+- Any change to docs/product/onboarding.md, docs/product/navigation.md, a screen's copy or its steps to make it easier to capture.
 - Widening a screen beyond its registered width to fit a crop.
 - Making the design comparison a gate step, or any new automated check of a capture.
 - A before/after AE pair for a change with nothing seller-visible to compare.

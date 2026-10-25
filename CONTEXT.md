@@ -434,11 +434,11 @@ The longer how-or-why behind a shortened line, one tap away on an "i" at the end
 _Avoid_: tooltip, popover, help modal, info sheet, details
 
 **Icon and text rule**:
-The one written rule for how every screen labels its entries, actions and notices. It decides how things are labelled, never what they do. Its full text lives in DESIGN_STANDARDS.md. In the app: no word of its own.
+The one written rule for how every screen labels its entries, actions and notices. It decides how things are labelled, never what they do. Its full text lives in `docs/product/icon-and-text-rule.md`. In the app: no word of its own.
 _Avoid_: style guide, UI guidelines, icon policy
 
 **Attention icon**:
-The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed. Its full rule lives in DESIGN_STANDARDS.md. In the app: no word of its own.
+The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed. Its full rule lives in `docs/product/icon-and-text-rule.md`. In the app: no word of its own.
 _Avoid_: warning icon, alert icon, badge, error icon
 
 **Gate**:
@@ -446,11 +446,11 @@ The checks every change must pass before it merges: pytest, vitest and e2e. A re
 _Avoid_: pipeline, build, test run
 
 **Tappable notice**:
-A notice the seller taps to open what it points to, such as Home's "Go on to the setup". Its sentence carries the meaning and is its accessible name. Its full rule lives in DESIGN_STANDARDS.md.
+A notice the seller taps to open what it points to, such as Home's "Go on to the setup". Its sentence carries the meaning and is its accessible name. Its full rule lives in `docs/product/icon-and-text-rule.md`.
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-The side-by-side capture of a screen's design file and the built app, attached to a PR as review evidence and judged by eye against Drawing as guide. It is never a step of the gate. Its full rule lives in DESIGN_STANDARDS.md.
+The side-by-side capture of a screen's design file and the built app, attached to a PR as review evidence and judged by eye against Drawing as guide. It is never a step of the gate. Its full rule lives in `docs/product/design-capture.md`.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
 
 **Product language**:
