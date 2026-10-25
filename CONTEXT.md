@@ -504,3 +504,7 @@ _Avoid_: locale, display language, preferred language, business locale
 **Assume nothing**:
 The owner's fourth criterion: the app never hard-codes one business's way of working (product type, units, currency, payment methods, pricing rules, channels, and so on), and each business runs it its own way through settings with neutral defaults. There are no ready-made business-type presets. Its test is "would this still be right for a business that sells something else, in other units, other ways?" If not, it is a finding, a default that fits one business included; it applies to new work, while existing assumptions are swept in #330 and made customizable in #318. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
 _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
+
+**Sale bill**:
+The facts about one recorded sale that a seller may share with that sale's customer: business name, date, shipping charged, total, lines, payment state and the customer's current balance. They are worked out live from settlement when the sale's detail is read, and never stored; the balance is the customer's whole current account. A bill is facts only, with no text; in the app it has no word of its own yet (part 2 of GH-322 chooses it).
+_Avoid_: invoice, receipt, statement, ticket
