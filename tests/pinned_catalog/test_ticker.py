@@ -46,8 +46,8 @@ def test_ticker_runs_once_at_startup_and_stops_on_shutdown(
     )
 
     with TestClient(app) as test_client:
-        # A business needs to exist before the ticker is meaningful to anything but its
-        # own start/stop; this proves the app still answers while the ticker runs.
+        # No business exists here: the ticker is only started and stopped. This request
+        # proves the app still answers while the ticker runs.
         invited = test_client.post("/invitations/does-not-exist/accept", json={})
         assert invited.status_code in (404, 422)
 
