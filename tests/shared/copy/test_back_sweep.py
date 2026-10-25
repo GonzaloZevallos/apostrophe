@@ -2,8 +2,6 @@
 `catalog_text` and `pinned_catalog_text` sits inside a `⟦…⟧` segment, stored data or a money
 or grams rendering. Stripped by exact strings the test computed, never by pattern."""
 
-import re
-
 import pytest
 
 from app.catalog.adapters.babel_defaults import BabelHeaderFooterDefaults
@@ -19,7 +17,31 @@ from tests.catalog.reference_texts import entry
 
 NAME, EMOJI, AROMA, HEADER, FOOTER = "Zorblax", "\U0001f33f", "Quimbly", "Hdrwq", "Ftrwq"
 SENTINELS = (NAME, AROMA, HEADER, FOOTER, "$11.000", "$9.000", "2,5 g", "60", "40", "**", EMOJI)
-SEGMENT = re.compile("⟦[^⟧]*⟧")
+
+_PSEUDO = CopyCatalog(DEFAULT_LOCALES_DIR).translations(TEST_LOCALE).gettext
+
+
+def exact_segments() -> tuple[str, ...]:
+    """The `⟦…⟧` segments the catalog lines come to under the sentinel holes, computed here
+    from the shipped `en-XA` messages with the formatted values the domain passes, never from
+    the `CatalogWords` under test, so a planted literal beside a real segment is not removed."""
+    return (
+        _PSEUDO("catalog.nothing_to_offer"),
+        _PSEUDO("catalog.indica_line").format(indica="60", sativa="40"),
+        _PSEUDO("catalog.aroma_line").format(aroma=AROMA),
+        _PSEUDO("catalog.price_per_gram_line").format(price="$11.000"),
+        _PSEUDO("catalog.bulk_line").format(grams="2,5 g", price="$9.000"),
+    )
+
+
+DEFAULT_KEYS = (
+    "catalog.default_header",
+    "catalog.default_footer",
+    "expenses.default_category.growing_supplies",
+    "expenses.default_category.packaging",
+    "expenses.default_category.shipping_and_transport",
+    "expenses.default_category.other",
+)
 
 
 def entries() -> list[CatalogEntry]:
@@ -38,7 +60,9 @@ def entries() -> list[CatalogEntry]:
 
 def leftover_letters(text: str) -> str:
     """What is left of `text` once the segments and the sentinels are removed, letters only."""
-    rest = SEGMENT.sub("", text)
+    rest = text
+    for segment in exact_segments():
+        rest = rest.replace(segment, "")
     for sentinel in SENTINELS:
         rest = rest.replace(sentinel, "")
     return "".join(character for character in rest if character.isalpha())
@@ -116,7 +140,9 @@ def default_letters(texts: list[str]) -> str:
     """Letters left once the segments and the emoji and `**` are removed, by exact string."""
     left = ""
     for default in texts:
-        rest = SEGMENT.sub("", default)
+        rest = default
+        for key in DEFAULT_KEYS:
+            rest = rest.replace(_PSEUDO(key), "")
         for sentinel in DEFAULT_SENTINELS:
             rest = rest.replace(sentinel, "")
         left += "".join(character for character in rest if character.isalpha())
