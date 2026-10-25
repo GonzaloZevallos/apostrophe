@@ -4,6 +4,15 @@ The criteria the design roles apply to every screen, and the design rules they w
 
 While `docs/product/icon-and-text-rule.md` and `docs/product/design-capture.md` exist, they are temporary copies of the "Icon and text rule" and "Design capture" sections below. They are removed when agentic-system#295 lands, and a change to either rule is made in both places, in the same diff, so the two never differ.
 
+## The owner's four criteria
+
+The owner's four product and design criteria. Each one's full text lives where it is listed.
+
+1. Drawing as guide: `DESIGN_STANDARDS.md`, "Drawing as guide".
+2. Phone first: `DESIGN_STANDARDS.md`, "Phone first".
+3. The primary user, with the priority line: `BRIEF.md`, "Problem and who has it".
+4. Assume nothing: `DESIGN_STANDARDS.md`, "Assume nothing", with its test also in `BRIEF.md`.
+
 ## Drawing as guide
 
 The drawing is a guide, not an exact spec. A difference from the drawing is fixed only when it changes what the person understands or does. A pixel or layout difference that changes neither is not a finding and opens no issue.
@@ -29,6 +38,21 @@ Working on the phone comes before polish. When a choice is needed, the flow work
   - the gate is green, Mobile check included.
 - Polish is never opened from a finding. It becomes a separate task only when the owner or PM chooses to schedule it.
 - A polish gap never blocks a task and never reopens a phone flow that has shipped.
+
+## Assume nothing
+
+The owner's fourth criterion: the app never hard-codes one business's way of working. Each business runs it its own way, through settings with neutral defaults.
+
+- The owner's examples are product type, units, currency, payment methods, pricing rules, channels, and so on. The list is open, so "it isn't on the list" is never a defence.
+- A label, unit, field, option list or default drawn as fixed, as the only choice for every business, is a finding. A default that fits only one business is the same finding as a fixed word on screen.
+- There are no ready-made business-type presets.
+- Sample data and a seller's own data are not findings, for example a variety called "Blue Dream", 3.5 g in a drawing, or a seller's header text.
+- Criterion 4 applies to new scoping, design and review. It does not reclassify what exists. Choices already written down are existing assumptions, not findings against new work that follows them: the brief's constraints, the formats and inputs in `CODING_STANDARDS.md` §10, the ADRs and `docs/product/`. #330 sweeps them and #318 makes them customizable.
+- New work extends an existing choice when it reuses, unchanged, a word, unit or option list that `CONTEXT.md`, `BRIEF.md` or the code already fixes for every business (for example a new field in grams or whole pesos, or another "cash or transfer" choice). That finding is recorded as a review comment linking #330 (and #318 when the customizable model is what is missing), and the change merges; it does not wait for the sweep.
+- Anything the new work adds to or changes in such a choice (a further fixed option, a new unit next to grams), or that appears in none of `CONTEXT.md`, `BRIEF.md` or the code, is the new work's own assumption. Its finding blocks the merge like any finding: before merge, the choice becomes a setting with a neutral default, or the PM rules it borderline and decides with criterion 4's test.
+- When the reviewer cannot tell which case applies, they ask the PM before merge, and the PM decides.
+- It works alongside "Drawing as guide" and does not reopen it.
+- Test: Would this still be right for a business that sells something else, in other units, other ways? If not, it is a finding.
 
 ## Icon and text rule
 
