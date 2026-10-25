@@ -3212,14 +3212,9 @@ body {
   flex-direction: column;
 }
 
-/* `AnalisisCompu.dc.html`'s own tables (variety, week and month): hidden below
-   900px, where the cards above carry the same rows instead — only one of the two
-   is ever on screen, the same switch `.bar-inferior`/`.riel-lateral` already make,
-   never both at once (PM: "the computer gets the phone's cards" was the bug). */
-.analisis__tabla-contenedor {
-  display: none;
-}
-
+/* `AnalisisCompu.dc.html`'s own tables (variety, week and month). `Analisis.tsx`
+   renders them only at computer width and the cards only on the phone
+   (`useViewport()`), so no rule hides one of the two. */
 .analisis__tabla {
   width: 100%;
   border-collapse: collapse;
@@ -3364,16 +3359,6 @@ body {
   .analisis__aside {
     flex: 1 1 300px;
     max-width: 380px;
-  }
-
-  .analisis__variedades,
-  .analisis__semanas,
-  .analisis__meses {
-    display: none;
-  }
-
-  .analisis__tabla-contenedor {
-    display: block;
   }
 
   /* `InicioCompu`: Te deben and Lo que te queda sit side by side instead of

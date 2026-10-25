@@ -7,7 +7,7 @@
 
 import { ANALYSIS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -17,6 +17,8 @@ import analysisEmptyFixture from '../api/fixtures/analysis-empty.json'
 import analysisFixture from '../api/fixtures/analysis.json'
 import { ANALYSIS_TEXT } from '../copy/analysis'
 import { formatDateShort, formatMonthLong } from '../format/dates'
+import { flipViewport, stubViewport } from '../test-viewport'
+import type { Viewport } from '../routes'
 import { rowOf } from './analisis/rowOf'
 import Analisis, {
   BEST_WEEKDAY_MARK,
@@ -58,7 +60,11 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function renderAnalisis(fetchImpl: (url: string, init?: RequestInit) => Promise<Response>) {
+function renderAnalisis(
+  fetchImpl: (url: string, init?: RequestInit) => Promise<Response>,
+  viewport: Viewport = 'phone',
+) {
+  stubViewport(viewport)
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -169,7 +175,7 @@ test('month navigation requests the previous month and disables at the bounds', 
 })
 
 test('the computer table carries headers, the margin stack, pending marks and the best/current week', async () => {
-  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  renderAnalisis(async () => jsonResponse(200, analysisFixture), 'computer')
 
   const table = (await screen.findAllByText('Variety')).find(
     (node) => node.closest('table') !== null,
@@ -241,7 +247,8 @@ test('the computer table carries headers, the margin stack, pending marks and th
   expect(within(monthTable).getByText('Cash')).toBeInTheDocument()
 })
 
-test('"None stood out" shows in the week table when every week is $0', async () => {
+describe.each(['phone', 'computer'] as const)('"None stood out" at %s width', (viewport) => {
+test('shows once when every week is $0', async () => {
   const noBestFixture = {
     ...analysisFixture,
     weeks: analysisFixture.weeks.map((week) => ({
@@ -250,9 +257,10 @@ test('"None stood out" shows in the week table when every week is $0', async () 
       best: false,
     })),
   }
-  renderAnalisis(async () => jsonResponse(200, noBestFixture))
+  renderAnalisis(async () => jsonResponse(200, noBestFixture), viewport)
 
-  expect(await screen.findByText(NO_BEST_WEEK_LINE)).toBeInTheDocument()
+  expect(await screen.findAllByText(NO_BEST_WEEK_LINE)).toHaveLength(1)
+})
 })
 
 test('month navigation disables "Previous month" when there is no earlier month', async () => {
@@ -355,8 +363,8 @@ test('every week and month row shows Cost of goods sold, in the PRD order', asyn
   expect(rowOf(first, 'Cost of goods sold').textContent).toBe(`Cost of goods sold $ ${cost}`)
 })
 
-test('each week and month renders its cost rows in both the card and the table', async () => {
-  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+test.each(['phone', 'computer'] as const)('each week and month renders its cost rows once at %s width', async (viewport) => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture), viewport)
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
   const names = [
@@ -365,7 +373,7 @@ test('each week and month renders its cost rows in both the card and the table',
   ]
   for (const name of names) {
     const copies = screen.getAllByRole('group', { name })
-    expect(copies, 'card and table').toHaveLength(2)
+    expect(copies, 'the one layout on screen').toHaveLength(1)
     for (const copy of copies) {
       // label, amount, marker: in that order inside each cost row
       const cost = rowOf(copy, 'Cost of goods sold')
@@ -442,7 +450,7 @@ test('a partly pending cost of goods reads its amount and its grams; a real zero
 })
 
 test('the computer tables carry the same cost lines under each row', async () => {
-  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()), 'computer')
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
   const weekTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--semanas')!
@@ -548,5 +556,63 @@ describe('the strip line of grams and average margin', () => {
     )
     const node = await screen.findByText(/average margin/)
     expect(node.textContent).toBe(`${line} · average margin and 2,5 g without cost`)
+  })
+})
+
+describe('one layout in the DOM, chosen by the viewport', () => {
+  test('at phone width no table is in the page', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    expect(screen.queryByRole('table')).toBeNull()
+    expect(document.querySelectorAll('.analisis__variedad')).toHaveLength(
+      analysisFixture.month.varieties.length,
+    )
+  })
+
+  test('at computer width the three tables render and no card does', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'computer')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    expect(screen.getAllByRole('table')).toHaveLength(3)
+    expect(document.querySelector('.analisis__variedad')).toBeNull()
+    expect(document.querySelector('.analisis__semana')).toBeNull()
+    expect(document.querySelector('.analisis__mes-fila')).toBeNull()
+  })
+
+  test('the month selector, the section headings and the aside are the same nodes across 900 px', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    const shared = () => [
+      document.querySelector('.gastos__mes'),
+      screen.getByText(ANALYSIS_TEXT.porVariedad),
+      screen.getByText(ANALYSIS_TEXT.semanaASemanaUltimas),
+      screen.getByText(ANALYSIS_TEXT.mesAMesUltimos),
+      document.querySelector('.analisis__aside'),
+    ]
+    const before = shared()
+    expect(before.every((node) => node !== null)).toBe(true)
+
+    flipViewport('computer')
+    expect(screen.getAllByRole('table')).toHaveLength(3)
+    const after = shared()
+    after.forEach((node, index) => expect(node).toBe(before[index]))
+
+    flipViewport('phone')
+    expect(screen.queryByRole('table')).toBeNull()
+    shared().forEach((node, index) => expect(node).toBe(before[index]))
+  })
+
+  test('the empty-month line shows once at both widths', async () => {
+    const emptyMonth = {
+      ...analysisFixture,
+      month: { ...analysisFixture.month, varieties: [] },
+    }
+    for (const viewport of ['phone', 'computer'] as const) {
+      renderAnalisis(async () => jsonResponse(200, emptyMonth), viewport)
+      expect(await screen.findAllByText(EMPTY_MONTH_LINE)).toHaveLength(1)
+      cleanup()
+    }
   })
 })
