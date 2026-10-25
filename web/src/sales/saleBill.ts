@@ -35,9 +35,8 @@ function renderLine(line: SaleBillLine, text: BillText): string {
       )
     case 'gift':
       return text.gift(line.product, quantity, text.unit)
-    default:
-      return assertNever(rule)
   }
+  return assertNever(rule)
 }
 
 function paymentLine(bill: SaleBill, text: BillText): string | null {
@@ -53,9 +52,8 @@ function paymentLine(bill: SaleBill, text: BillText): string | null {
       return text.stillOwed(formatMoney(bill.payment.still_owed ?? 0))
     case 'none':
       return null
-    default:
-      return assertNever(state)
   }
+  return assertNever(state)
 }
 
 function balanceLine(balance: number | null, text: BillText): string | null {
