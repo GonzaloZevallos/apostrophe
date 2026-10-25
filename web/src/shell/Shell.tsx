@@ -20,7 +20,7 @@
  * has to re-run `GET /auth/me`.
  */
 
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { Fragment, useCallback, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
 import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
@@ -51,6 +51,7 @@ import { chromeOf } from './chrome'
 import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useViewport } from './useViewport'
+import { useVisualViewport } from '../components/useVisualViewport'
 import { SHELL_TEXT } from '../copy/shell'
 import { COMMON_TEXT } from '../copy/common'
 
@@ -163,13 +164,16 @@ export default function Shell() {
   const railPlace = placeOf(leaf.id, 'computer').rail
   const chrome = chromeOf(leaf, useViewport())
   const backParent = useBackParentStore()
+  const layoutRef = useRef<HTMLDivElement>(null)
+  // The shell hides its bar and button while a text keyboard is up (ADR-0028); it pins nothing.
+  useVisualViewport(layoutRef, { fixedForm: false })
   const missing = useNuevaVentaMissing(chrome.railNuevaVenta || chrome.barNuevaVenta)
   const barDescribedBy = missing ? NUEVA_VENTA_MISSING_ID : undefined
   const railDescribedBy = missing ? RAIL_MISSING_ID : undefined
 
   return (
     <BackParentContext.Provider value={backParent}>
-    <div className="disposicion">
+    <div className="disposicion" ref={layoutRef}>
       {chrome.rail && (
         <nav className="riel-lateral" aria-label={SHELL_TEXT.navigation} data-menu>
           {chrome.railNuevaVenta && (
@@ -228,7 +232,7 @@ export default function Shell() {
           {chrome.backArrow && <BackArrow id={leaf.id} />}
           <Outlet context={me} />
           {chrome.barNuevaVenta && (
-            <>
+            <div className="nueva-venta-flotante">
               <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
                 {COMMON_TEXT.newSale}
               </BotonLink>
@@ -237,7 +241,7 @@ export default function Shell() {
                   {NUEVA_VENTA_MISSING}
                 </span>
               )}
-            </>
+            </div>
           )}
           {chrome.bar && (
             <nav className="bar-inferior" aria-label={SHELL_TEXT.navigation} data-menu>
