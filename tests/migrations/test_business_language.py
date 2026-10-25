@@ -9,6 +9,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import make_engine
@@ -41,6 +42,9 @@ def _seed(engine: Engine) -> None:
                 "VALUES (:b, :b, 'Lavanda', 'lavanda')",
                 "INSERT INTO sale (id, business_id, sale_date, shipping_charged, recorded_at) "
                 "VALUES (:b, :b, '2026-01-01', 0, :now)",
+                "INSERT INTO sale_line (id, business_id, sale_id, variety_id, grams_hundredths, "
+                "pricing_rule, price_per_gram, line_total, position) "
+                "VALUES (:b, :b, :b, :b, 500, 'list', 100, 500, 1)",
             )
             for statement in statements:
                 connection.execute(text(statement), params)
@@ -50,10 +54,10 @@ def _assert_migrated_whole(engine: Engine) -> None:
     with Session(engine) as session:
         languages = session.execute(text("SELECT id, language FROM business ORDER BY id")).all()
         assert [(row.id, row.language) for row in languages] == [(1, "en"), (2, "en")]
-        for child in ("app_user", "invitation", "variety", "sale"):
+        for child in ("app_user", "invitation", "variety", "sale", "sale_line"):
             joined = session.execute(
                 text(
-                    f"SELECT {child}.id FROM {child} "  # noqa: S608 - fixed table names
+                    f"SELECT {child}.id FROM {child} "
                     f"JOIN business ON business.id = {child}.business_id"
                 )
             ).all()
@@ -96,6 +100,6 @@ def test_the_language_column_is_not_null_and_keeps_no_server_default(tmp_path: P
     column = next(c for c in inspect(engine).get_columns("business") if c["name"] == "language")
     assert column["nullable"] is False
     assert column["default"] is None
-    with pytest.raises(Exception, match="NOT NULL"), engine.begin() as connection:
+    with pytest.raises(IntegrityError, match="NOT NULL"), engine.begin() as connection:
         connection.execute(text("INSERT INTO business (name) VALUES ('Sin idioma')"))
     engine.dispose()
