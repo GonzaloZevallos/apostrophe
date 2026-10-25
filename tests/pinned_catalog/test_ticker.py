@@ -6,7 +6,7 @@ app has shut down.
 
 from __future__ import annotations
 
-import time
+import threading
 from datetime import date
 from pathlib import Path
 
@@ -26,9 +26,11 @@ def test_ticker_runs_once_at_startup_and_stops_on_shutdown(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls: list[date] = []
+    ran = threading.Event()
 
     def fake_sync_all_published(today: date, due: DueBusinesses, run: object) -> None:
         calls.append(today)
+        ran.set()
 
     monkeypatch.setattr(ticker_module, "sync_all_published", fake_sync_all_published)
 
@@ -49,10 +51,9 @@ def test_ticker_runs_once_at_startup_and_stops_on_shutdown(
         invited = test_client.post("/invitations/does-not-exist/accept", json={})
         assert invited.status_code in (404, 422)
 
-        deadline = time.monotonic() + 2.0
-        while not calls and time.monotonic() < deadline:
-            time.sleep(0.02)
-        assert calls, "the ticker should have run once at startup"
+        # The timeout only bounds a hang; it is not a budget the ticker must meet.
+        assert ran.wait(timeout=30), "hang: the ticker never ran at startup"
+        assert len(calls) == 1
 
         task = app.state.pinned_catalog_ticker_task
         assert task is not None
