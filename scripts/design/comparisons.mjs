@@ -25,6 +25,12 @@
 // again right after the screenshot, in the same page. A miss in either is a failure of the
 // screen, like a font failure. A `section` crop needs exactly one element with that label;
 // any other count is a screen that threw, never a silent first match.
+//
+// `--census` (off by default) adds an optional `census` to each `index.json` entry, `{ design?, built? }`
+// (`census.mjs`): what each side looked like before its viewport grew, and which element sizes
+// changed once it did, read after the real shot on the same page, which is then discarded. It
+// never changes a PNG, a failure or the exit code: a census that could not be read is a fixed
+// English `census_error`.
 
 import { createRequire } from 'node:module'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -49,6 +55,8 @@ import {
   unfinished,
 } from './settle.mjs'
 import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
+import { createCensus } from './census.mjs'
+import { grownHeight, shotOptions } from './shot.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -63,6 +71,7 @@ const { values } = parseArgs({
     out: { type: 'string' },
     only: { type: 'string' },
     strict: { type: 'boolean', default: false },
+    census: { type: 'boolean', default: false },
   },
 })
 if (!values.facts || !values.out) {
@@ -386,23 +395,14 @@ async function sectionClip(block) {
   })
 }
 
-// A full-page shot of a page taller than its viewport makes Chromium resize the viewport for a
-// moment; at 900 px or more that flips the app's viewport query and remounts the screen, which
-// re-reads every query it shows (GH-273). The capture does it first and settles on the result:
-// the viewport grows to the height of the document, same width, so the shot never has to.
-async function fitViewport(page) {
-  const height = await page.evaluate(() => document.documentElement.scrollHeight)
-  const { width, height: current } = page.viewportSize()
-  if (height > current) await page.setViewportSize({ width, height })
-}
-
-// A shot of a page that now fits its viewport is a plain one: asking for `fullPage` is what
-// makes Chromium resize the viewport (measured: the remount still happened after `fitViewport`
-// with `fullPage: true`). A page wider than its viewport still needs it, and keeps it.
-async function fullPageIfWide(page) {
-  const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
-  return { fullPage: wide, ...SHOT }
-}
+// The size of the document against its window, in CSS px.
+const readMetrics = (page) =>
+  page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    scrollHeight: document.documentElement.scrollHeight,
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+  }))
 
 // Playwright's `caret: 'hide'` sets and restores a `style` attribute on the page's text inputs,
 // a DOM mutation the probe would see in the frame after the shot. The caret is hidden instead by
@@ -410,7 +410,28 @@ async function fullPageIfWide(page) {
 // own caret option alone: the pixels are the same and the page is untouched.
 const SHOT = { animations: 'disabled', caret: 'initial' }
 
+// How a shot is taken, the same on both sides (`shot.mjs` decides each step; nothing here looks at
+// the row, the side, the file or the width). A full-page shot of a page taller than its viewport
+// makes Chromium resize the viewport for a moment; at 900 px or more that flips the app's viewport
+// query and remounts the screen (GH-273). So the viewport grows to the height of the document, same
+// width, first; the page settles on the result; and `fullPage` is asked for only by a page wider
+// than its viewport. The census, when on, reads its values right before the growth.
+async function takeShot(page, { block, ofFirstText, census }) {
+  await census?.before(page)
+  const viewport = page.viewportSize()
+  const height = grownHeight(await readMetrics(page), viewport)
+  if (height !== null) await page.setViewportSize({ width: viewport.width, height })
+  // The clip is read before the final settle, so that the screenshot is the very next call after it.
+  const clip = block ? await sectionClip(block) : null
+  const last = await settle(page, { advanceMs: 0, ofFirstText })
+  if (last) return sideOutcome(last, null)
+  census?.atShot(page)
+  if (block && !clip) return sideOutcome(null, await block.screenshot(SHOT))
+  return sideOutcome(null, await page.screenshot(shotOptions(await readMetrics(page), clip ?? undefined)))
+}
+
 async function captureDesign(browser, s, options, ctx) {
+  const census = ctx.census?.design
   const context = await browser.newContext(options)
   try {
     await pauseClock(context)
@@ -431,17 +452,13 @@ async function captureDesign(browser, s, options, ctx) {
       if (count !== 1) throw new Error(`${s.screen}: section matches ${count} elements, expected 1`)
       block = label.locator('xpath=..')
     }
-    await fitViewport(page)
-    const clip = block ? await sectionClip(block) : null
-    const last = await settle(page, { advanceMs: 0, ofFirstText: true })
-    if (last) return sideOutcome(last, null)
-    const png = !block
-      ? await page.screenshot(await fullPageIfWide(page))
-      : clip
-        ? await page.screenshot({ clip, ...(await fullPageIfWide(page)) })
-        : await block.screenshot(SHOT)
-    return await verifyAfterShot(page, s, 'diseño', png)
+    const shot = await takeShot(page, { block, ofFirstText: true, census })
+    if (shot.failure !== null) return shot
+    const outcome = await verifyAfterShot(page, s, 'diseño', shot.png)
+    await census?.after(page)
+    return outcome
   } finally {
+    await census?.dispose()
     await context.close()
   }
 }
@@ -454,6 +471,7 @@ async function captureBuilt(browser, s, options, ctx) {
   try {
     return await captureBuiltIn(context, s, options, ctx, notes)
   } finally {
+    await ctx.census?.built.dispose()
     await context.close()
   }
 }
@@ -501,11 +519,11 @@ async function captureBuiltIn(context, s, options, ctx, notes) {
   const width = options.viewport.width
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
   if (scrollWidth > width) notes.push(`desborda: ${scrollWidth}px de ancho en ${width}px`)
-  await fitViewport(page)
-  const last = await settle(page, { advanceMs: 0, ofFirstText: false })
-  if (last) return sideOutcome(last, null)
-  const png = await page.screenshot(await fullPageIfWide(page))
-  return await verifyAfterShot(page, s, 'construido', png)
+  const shot = await takeShot(page, { block: null, ofFirstText: false, census: ctx.census?.built })
+  if (shot.failure !== null) return shot
+  const outcome = await verifyAfterShot(page, s, 'construido', shot.png)
+  await ctx.census?.built.after(page)
+  return outcome
 }
 
 async function composeSheet(browser, s, width, design, built, notes, file) {
@@ -524,6 +542,16 @@ async function composeSheet(browser, s, width, design, built, notes, file) {
     <div class="row">${column(`Diseño · ${designOf(s)}.dc.html${s.section ? ` · ${s.section}` : ''}`, design)}${column(`Construido · ${s.route ?? 'sin ruta'}`, built)}</div>`)
   await page.locator('body').screenshot({ path: file })
   await context.close()
+}
+
+// The census of a row, one per side; its settle is the capture's own, with no clock advance.
+function censusOf(options, s) {
+  const side = (ofFirstText) =>
+    createCensus({
+      deviceScaleFactor: options.deviceScaleFactor,
+      settle: (page) => settle(page, { advanceMs: 0, ofFirstText }),
+    })
+  return { design: side(true), built: side(false) }
 }
 
 // The capture of one side: what it could not do is a failure of the screen, not a throw, and
@@ -552,7 +580,7 @@ try {
       colorScheme: 'light',
       baseURL: facts.url,
     }
-    const ctx = { notes: [], failures: [] }
+    const ctx = { notes: [], failures: [], census: values.census ? censusOf(options, s) : null }
     const { notes } = ctx
     const entry = { screen: s.screen, file: null, notes, design: null, built: null }
     try {
@@ -573,6 +601,12 @@ try {
       entry.file = file
     } catch (error) {
       fail(ctx, `la pantalla falló: ${firstLine(error)}`)
+    }
+    if (ctx.census) {
+      const sides = Object.entries({ design: ctx.census.design, built: ctx.census.built }).filter(
+        ([, side]) => Object.keys(side.record).length > 0,
+      )
+      if (sides.length) entry.census = Object.fromEntries(sides.map(([name, side]) => [name, side.record]))
     }
     if (ctx.failures.length) failed = true
     results.push(entry)

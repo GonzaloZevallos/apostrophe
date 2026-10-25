@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { PNG } from 'pngjs'
 import { afterEach, describe, expect, it } from 'vitest'
-import { ae, compareIndexes, decode } from '../../../scripts/design/ae.mjs'
+import { ae, box, compareIndexes, decode } from '../../../scripts/design/ae.mjs'
 
 type Image = { width: number; height: number; data: Uint8Array }
 
@@ -40,6 +40,34 @@ describe('ae', () => {
   it('is a failure, not 0, for images of different dimensions', () => {
     expect(ae(image(3, 2), image(2, 3))).toEqual({ ok: false, reason: 'size' })
     expect(ae(image(3, 2), image(3, 3))).toEqual({ ok: false, reason: 'size' })
+  })
+})
+
+describe('box', () => {
+  it('is the bounding box of the differing pixels, by the same exact comparison as ae', () => {
+    const changed = image(5, 4)
+    changed.data.set([11, 20, 30, 255], (1 * 5 + 2) * 4) // (2,1)
+    changed.data.set([10, 20, 30, 254], (3 * 5 + 4) * 4) // (4,3): alpha only
+    expect(box(image(5, 4), changed)).toEqual({ x: 2, y: 1, width: 3, height: 3 })
+  })
+
+  it('is a 1x1 box for a single pixel', () => {
+    const changed = image(3, 3)
+    changed.data.set([0, 0, 0, 255], (2 * 3 + 0) * 4)
+    expect(box(image(3, 3), changed)).toEqual({ x: 0, y: 2, width: 1, height: 1 })
+  })
+
+  it('is null for identical images', () => {
+    expect(box(image(3, 2), image(3, 2))).toBeNull()
+  })
+
+  it('names both dimensions, and no box, on a size mismatch', () => {
+    expect(box(image(3, 2), image(2, 3))).toEqual({
+      ok: false,
+      reason: 'size',
+      a: { width: 3, height: 2 },
+      b: { width: 2, height: 3 },
+    })
   })
 })
 
@@ -189,7 +217,54 @@ describe('ae.mjs as a command', () => {
     expect(run(dir, dir, '--only', 'Nope').status).toBe(1)
   })
 
+  it('prints exactly today\'s output, stderr and exit code without --box', () => {
+    const changed = image(2, 2)
+    changed.data.set([99, 98, 97, 255], 0)
+    const result = run(output(image(2, 2)), output(changed))
+    expect(result.stdout).toBe('Inicio built: AE 1\nInicio design: AE 0\n')
+    expect(result.stderr).toBe('ae: the before/after differ, or could not be compared\n')
+    expect(result.status).toBe(1)
+    const same = output(image(2, 2))
+    const clean = run(same, same)
+    expect(clean.stdout).toBe('Inicio built: AE 0\nInicio design: AE 0\n')
+    expect(clean.stderr).toBe('')
+    expect(clean.status).toBe(0)
+  })
+
+  it('prints today\'s lines without --box for a size mismatch and a one-sided null', () => {
+    const size = run(output(image(2, 2)), output(image(3, 3)))
+    expect(size.stdout).toBe('Inicio built: FAIL different dimensions\nInicio design: AE 0\n')
+    const gone = run(output(image(2, 2)), output(null))
+    expect(gone.stdout).toBe('Inicio built: FAIL no capture in after\nInicio design: AE 0\n')
+  })
+
+  it('--box adds the box of a differing side, coordinates only', () => {
+    const changed = image(4, 3)
+    changed.data.set([99, 98, 97, 255], (1 * 4 + 2) * 4)
+    const result = run(output(image(4, 3)), output(changed), '--box')
+    expect(result.status).toBe(1)
+    expect(result.stdout).toContain('Inicio built: AE 1 box x=2 y=1 w=1 h=1\n')
+    expect(result.stdout).not.toMatch(/99|98|97/)
+  })
+
+  it('--box leaves an AE 0 line as it is', () => {
+    const dir = output(image(2, 2))
+    const result = run(dir, dir, '--box')
+    expect(result.status).toBe(0)
+    expect(result.stdout).toBe('Inicio built: AE 0\nInicio design: AE 0\n')
+  })
+
+  it('--box prints both dimensions on a size mismatch and no box', () => {
+    const result = run(output(image(2, 2)), output(image(3, 4)), '--box')
+    expect(result.status).toBe(1)
+    expect(result.stdout).toContain('Inicio built: FAIL different dimensions before 2x2 after 3x4\n')
+    expect(result.stdout).not.toMatch(/Inicio built.*box/)
+  })
+
   it('exits 2 with usage when it is not given two directories', () => {
-    expect(spawnSync('node', [SCRIPT], { encoding: 'utf-8' }).status).toBe(2)
+    const result = spawnSync('node', [SCRIPT], { encoding: 'utf-8' })
+    expect(result.status).toBe(2)
+    expect(result.stdout).toBe('')
+    expect(result.stderr).toBe('usage: ae.mjs <before-dir> <after-dir> [--only A,B]\n')
   })
 })
