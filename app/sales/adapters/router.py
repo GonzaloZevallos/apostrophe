@@ -173,9 +173,7 @@ def get_sale(
     sale_id: int, sales: SalesDep, line_costs: LineCostsDep, owing_sales: OwingSalesDep
 ) -> SaleDetailOut:
     with as_http:
-        view, costs = view_sales.get_sale_detail(sales, line_costs, sale_id)
-        still_owing = _still_owing(view, owing_sales)
-        return SaleDetailOut.of(view, costs, still_owing)
+        return SaleDetailOut.of(view_sales.get_sale_detail(sales, line_costs, owing_sales, sale_id))
 
 
 @router.put("/{sale_id}/customer")

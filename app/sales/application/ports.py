@@ -5,9 +5,10 @@ another business is, from here, a record that does not exist.
 
 from __future__ import annotations
 
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
+from types import MappingProxyType
 from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
@@ -115,6 +116,19 @@ class SaleViews(Protocol):
         ...
 
 
+@dataclass(frozen=True)
+class CustomerSettlement:
+    """One customer's settlement as sales reads it: the signed `balance` and, per sale
+    id, the amount still owed. `still_owed` holds exactly the sales `settle()` reports
+    (every sale not paid on the spot, a paid one at 0) and is read-only."""
+
+    balance: int
+    still_owed: Mapping[int, int]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "still_owed", MappingProxyType(dict(self.still_owed)))
+
+
 class OwingSales(Protocol):
     """Which of a business's sales settlement still shows as owed (CONTEXT.md: Sales
     still owing), from the customers' own payments. Built for one business.
@@ -130,6 +144,13 @@ class OwingSales(Protocol):
         """The ids of sales of these customers that are not yet fully paid once
         later payments are applied oldest debt first. A sale with no customer is
         never in it: settlement never sees one."""
+        ...
+
+    def settlement_of(self, customer_id: int) -> CustomerSettlement:
+        """The customer's balance and the amount still owed per sale for every sale
+        `settle()` reports: every sale not paid on the spot, a paid one at 0; sales
+        paid on the spot are absent. A customer with no ledger answers a balance of 0
+        and an empty mapping."""
         ...
 
 

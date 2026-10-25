@@ -2,7 +2,6 @@
 rule stays the domain's and its message is a fixed string (ADR-0005). Grams are typed
 `Decimal` here and become `Grams` only through `Grams.of`, at the router."""
 
-from collections.abc import Sequence
 from datetime import date
 from decimal import Decimal
 from typing import Literal
@@ -10,6 +9,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from app.sales.application.ports import LineCost, SaleView, SaleViewCustomer, SaleViewLine
+from app.sales.application.view_sales import SaleDetail
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import PaymentMethod, Sale
 from app.varieties.adapters.schemas import GramsOut
@@ -170,9 +170,8 @@ class SaleDetailOut(BaseModel):
     still_owing: bool
 
     @classmethod
-    def of(
-        cls, view: SaleView, costs: Sequence[LineCost], still_owing: bool = False
-    ) -> "SaleDetailOut":
+    def of(cls, detail: SaleDetail) -> "SaleDetailOut":
+        view, costs = detail.view, detail.costs
         sale = view.sale
         assert sale.id is not None, "only stored sales go out"
         assert len(costs) == len(view.lines), "one LineCost per line, in the same order"
@@ -189,7 +188,7 @@ class SaleDetailOut(BaseModel):
                 for line, cost in zip(view.lines, costs, strict=True)
             ],
             total_grams=sale.total_grams.as_decimal(),
-            still_owing=still_owing,
+            still_owing=detail.still_owing,
         )
 
 
