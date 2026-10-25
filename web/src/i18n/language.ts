@@ -43,6 +43,10 @@ const failed = new Set<string>()
 // Bumped by every request to change language and by every reset: only the latest request may apply.
 let currentRequest = 0
 
+// Bumped only by a reset: a load that started before it must not mark anything as failed for the
+// session that follows.
+let epoch = 0
+
 let version = 0
 const listeners = new Set<() => void>()
 
@@ -64,14 +68,15 @@ function recordMiss(language: string): void {
   if (import.meta.env.MODE === 'test') missingKeyHandler(language, '*', '*')
 }
 
-function applyNow(language: string): void {
+function applyNow(language: string, tellReaders = true): void {
   if (i18n.language !== language) void i18n.changeLanguage(language)
   document.documentElement.lang = language
-  notify()
+  if (tellReaders) notify()
 }
 
 /** One load of one chunk: true when it landed in time, false (one miss recorded) when not. */
 function attempt(language: string): Promise<boolean> {
+  const startedIn = epoch
   return new Promise<boolean>((resolve) => {
     let settled = false
     const finish = (ok: boolean): void => {
@@ -79,7 +84,7 @@ function attempt(language: string): Promise<boolean> {
       settled = true
       clearTimeout(timer)
       if (!ok) {
-        failed.add(language)
+        if (startedIn === epoch) failed.add(language)
         recordMiss(language)
       }
       resolve(ok)
@@ -125,12 +130,18 @@ export async function startLanguage(): Promise<void> {
   bootApplied = i18n.language
 }
 
-/** Every session boundary: back to the language of boot, forgetting what was attempted. */
+/**
+ * Every session boundary: back to the language of boot, forgetting what was attempted. It runs
+ * between the cache clear and the navigation, so it tells no mounted reader: a re-render of the
+ * still-mounted gated layout here would fetch `/auth/me` again from the emptied cache. The
+ * navigation unmounts those readers, and a reader mounted later works its readiness out afresh.
+ */
 export function resetToBootLanguage(): void {
   attempted.clear()
   failed.clear()
   currentRequest += 1
-  applyNow(bootApplied)
+  epoch += 1
+  applyNow(bootApplied, false)
 }
 
 /**

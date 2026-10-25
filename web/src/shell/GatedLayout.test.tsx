@@ -20,6 +20,7 @@ import {
   resetToBootLanguage,
   setLocaleLoader,
 } from '../i18n/language'
+import { logOut } from '../session'
 import { missingKeys } from '../i18n/missingKeys'
 import { loadLocale, type LocaleBundle } from '../i18n/resources'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
@@ -254,4 +255,27 @@ test('a failed load followed by a "me" refetch records one miss and asks for the
   expect(screen.getByText('contenido del negocio')).toBeInTheDocument()
   expect(requested).toEqual(['de'])
   expect(missingKeys()).toHaveLength(1)
+})
+
+test('after "Sign out" nothing asks /auth/me again on the way to Entrar', async () => {
+  const fetchMock = vi.fn().mockImplementation((url: string) =>
+    Promise.resolve(
+      String(url).endsWith('/auth/me')
+        ? jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' })
+        : new Response(null, { status: 204 }),
+    ),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  const queryClient = renderLanguageGated()
+  expect(await screen.findByText('contenido del negocio')).toBeInTheDocument()
+  const meCalls = () => fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/auth/me')).length
+  expect(meCalls()).toBe(1)
+
+  // The navigation is a stub, so the layout stays mounted exactly as in the moment before it commits.
+  await act(async () => {
+    await logOut({ queryClient, navigate: vi.fn() })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+
+  expect(meCalls()).toBe(1)
 })
