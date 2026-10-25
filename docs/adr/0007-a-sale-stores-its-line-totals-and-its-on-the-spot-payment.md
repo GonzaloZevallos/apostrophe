@@ -51,3 +51,15 @@ count a sale paid on the spot as money received without migrating anything.
   payment shapes and a join on every balance read.
 - **A field on the sale instead of a payment row**: #4 would have to migrate it into
   payments.
+
+## Amendment (GH-318 part 1): whole-peso line totals
+
+ADR-0057 narrows one sentence of this ADR. The code changes in the part that builds it; until then
+the sentence describes what runs.
+
+> **A sale line stores `line_total` in whole pesos, and it is the authoritative figure.**
+
+Narrowed by [ADR-0057](0057-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md): a line total is stored in the business's smallest unit (whole pesos at
+scale 0, hundredths at scale 2) and is still the authoritative figure, computed once. The half-up
+rounding that `line_total` and `special_rate` do goes through `round_half_up` in
+`app/shared/money.py`, and the amounts stay integers in a column declared with `money_column()`.

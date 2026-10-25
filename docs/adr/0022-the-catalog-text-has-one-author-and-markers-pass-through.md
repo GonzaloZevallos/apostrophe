@@ -64,3 +64,14 @@ function or the pairing rule.
 - The preview this ADR describes ("Cómo se ve en Telegram") lives at
   `web/src/screens/telegramPreview.ts`; `web/src/catalog/` is not where it is — that
   path was this ADR's placeholder, not the file that shipped.
+
+## Amendment (GH-318 part 1): the catalog's money and quantity formats
+
+ADR-0055 and ADR-0057 narrow the formats this text owns. The code changes in the parts that build
+them; until then the sentence describes what runs.
+
+> It owns the catalog's own formats, `$11.000` and `10 g` / `2,5 g`
+
+Narrowed by [ADR-0057](0057-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md) for the amount, which follows the business's currency symbol and money
+decimals, and by [ADR-0055](0055-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md) for the quantity, whose places come from its unit's decimals and
+whose label is the unit's own. The text is still written by this one function.

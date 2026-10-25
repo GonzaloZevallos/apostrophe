@@ -58,3 +58,15 @@ the same figures, so how they are produced is hard to change later.
 - **Largest remainder per lot**: rounds lot by lot, so a line spanning two lots is
   rounded twice.
 - **Rounding each line on its own**: three thirds of a $100 lot sum to $99.
+
+## Amendment (GH-318 part 1): rounding along lot order
+
+ADR-0057 narrows what the rounding rounds to. The code changes in the part that builds it; until then
+the sentence describes what runs.
+
+> Every lot boundary falls on a whole-peso cumulative cost, so a used-up lot's draws sum to
+
+Narrowed by [ADR-0057](0057-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md): the cumulative cost is rounded half up to the business's stored unit
+(the peso at scale 0, the hundredth at scale 2), through `round_half_up`, not to the peso. The
+construction (`half_up(C(end)) - half_up(C(start))` along lot order, a draw spanning lots rounded
+once) is unchanged, and a used-up lot's draws still sum to exactly its cost.

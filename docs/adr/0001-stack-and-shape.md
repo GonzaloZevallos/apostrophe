@@ -107,3 +107,20 @@ offset from either) and checked by an app on another clock expires between the t
     when someone reads the `NOT_ISSUERS` rows;
   - the closed-world test reflects only those two modules and the port; a new module of
     credentials elsewhere is added to its reflection list.
+
+## Amendment (GH-318 part 1): money and grams as whole numbers
+
+ADR-0055 and ADR-0057 narrow two sentences of this ADR. The code changes in the parts that build
+them; until then both sentences describe what runs.
+
+> **Money is whole pesos** (`int`): prices in this business never carry cents.
+
+Narrowed by [ADR-0057](0057-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md): money is still an `int` column, now a count of the business's smallest
+unit at a per-business scale of 0 or 2. Existing businesses stay at scale 0, which is whole pesos;
+new ones start at scale 2.
+
+> **Grams are whole hundredths** (`app/shared/grams.py`): exact sums, no float drift, and
+
+Narrowed by [ADR-0055](0055-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md): every stored quantity of every unit is a whole number of hundredths, and
+a unit's decimals only validate input and decide display. The gram becomes one unit among the
+seller's own; its stored values are unchanged.
