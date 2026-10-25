@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.catalog.adapters.babel_words import BabelCatalogWords
 from app.catalog.adapters.import_port import CatalogImport
 from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.adapters.sql_catalog_varieties import SqlCatalogVarieties
@@ -24,6 +25,8 @@ from app.catalog.adapters.stock_status import StockStatusesFromStock
 from app.catalog.application.read_catalog import read_catalog
 from app.catalog.domain.errors import IndicaShareInvalid
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
+from app.settings import DEFAULT_LOCALES_DIR
+from app.shared.copy import CopyCatalog
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.domain.rows import CatalogRow, HeaderFooterCells, SheetRef
 
@@ -154,6 +157,7 @@ def test_write_attributes_writes_through_no_commit_and_reads_back(
             SqlCatalogAttributes(session, business_id=1),
             SqlCatalogHeaderFooter(session, business_id=1),
             SqlPricingSettings(session, business_id=1),
+            BabelCatalogWords(CopyCatalog(DEFAULT_LOCALES_DIR)),
             TODAY,
         )
         written = next(v for v in view.varieties if v.id == variety_id)

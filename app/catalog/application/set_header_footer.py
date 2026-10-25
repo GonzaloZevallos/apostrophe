@@ -13,6 +13,7 @@ from app.catalog.application.ports import (
     CatalogPricingSettings,
     CatalogStock,
     CatalogVarieties,
+    CatalogWordsSource,
 )
 from app.catalog.application.read_catalog import CatalogView, read_catalog
 from app.catalog.domain.header_footer import CatalogHeaderFooter
@@ -37,6 +38,7 @@ def set_header_footer(
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
+    words: CatalogWordsSource,
     transaction: Transaction,
     header: str,
     footer: str,
@@ -44,5 +46,5 @@ def set_header_footer(
 ) -> CatalogView:
     write_header_footer(header_footer_repo, transaction, header, footer)
     return read_catalog(
-        varieties, stock, attributes_repo, header_footer_repo, pricing_settings, today
+        varieties, stock, attributes_repo, header_footer_repo, pricing_settings, words, today
     )

@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.catalog.application.ports import CatalogPricingSettings
+from app.catalog.application.ports import CatalogPricingSettings, CatalogWordsSource
 from app.pinned_catalog.adapters.publishable_catalog import publishable_text
 from app.pinned_catalog.adapters.sql_settings import settings_from_row
 from app.pinned_catalog.adapters.tables import PinnedCatalogRow
@@ -50,10 +50,12 @@ class SqlPinSnapshots:
         engine: Engine,
         cipher: TokenCipher,
         pricing_settings: Callable[[Session, int], CatalogPricingSettings],
+        words: CatalogWordsSource,
     ) -> None:
         self._engine = engine
         self._cipher = cipher
         self._pricing_settings = pricing_settings
+        self._words = words
 
     def snapshot(self, business_id: int, today: date) -> PinSnapshot:
         with Session(self._engine) as session:
@@ -62,5 +64,7 @@ class SqlPinSnapshots:
             )
             settings = settings_from_row(row, self._cipher)
             facts = _facts_from_row(row)
-            text = publishable_text(session, business_id, today, self._pricing_settings)
+            text = publishable_text(
+                session, business_id, today, self._pricing_settings, self._words
+            )
             return PinSnapshot(settings=settings, pin=facts, text=text)

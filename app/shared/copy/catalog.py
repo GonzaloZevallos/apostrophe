@@ -39,6 +39,14 @@ class CopyCatalog:
             translations.add_fallback(self._load(ENGLISH))
         return translations
 
+    def translations_or_english(self, language: Language) -> Translations:
+        """`translations`, except that a language with no compiled catalog gets English's:
+        the one place that decides such a language renders English (the gettext fallback
+        of docs/language.md, applied to every key at once)."""
+        if language not in self.languages():
+            return self.translations(ENGLISH)
+        return self.translations(language)
+
     def _load(self, language: Language) -> Translations:
         path = mo_path(self._locales_dir, language.tag)
         if not path.is_file():

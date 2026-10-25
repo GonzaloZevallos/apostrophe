@@ -23,6 +23,7 @@ from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
+from app.catalog.adapters.babel_words import BabelCatalogWords
 from app.catalog.adapters.leaving import SqlCatalogLeaving
 from app.catalog.adapters.onboarding_facts import SqlCatalogFacts
 from app.catalog.adapters.opening import CatalogHeaderFooterOpening
@@ -59,6 +60,7 @@ from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
+from app.shared.copy import CopyCatalog
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.leaving import SqlStockLeaving
@@ -223,6 +225,8 @@ def create_app(
     # port (ADR-0006); the same `(Session, business_id)` factory shape. The router and the
     # pinned catalog's snapshot both build it from here.
     app.state.catalog_pricing_settings = SqlPricingSettings
+    # The catalog's fixed lines, built once over the copy module (docs/adr/0050).
+    app.state.catalog_words = BabelCatalogWords(CopyCatalog(settings.locales_dir))
     # Deleting a variety removes what stock and the catalog keep of it (docs/adr/0006).
     app.state.variety_leaving = CompositeLeaving(SqlStockLeaving, SqlCatalogLeaving)
     # Two more factories of the same shape: customers reaches a balance, and sales a
