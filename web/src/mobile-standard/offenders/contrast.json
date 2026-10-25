@@ -111,5 +111,14 @@
       "375x812",
       "430x932"
     ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "contrast",
+    "target": "textbox:Search::placeholder",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
   }
 ]

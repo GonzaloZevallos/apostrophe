@@ -1510,5 +1510,41 @@
     "sizes": [
       "246x437"
     ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-target",
+    "target": "button:New customer",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
   }
 ]

@@ -336,5 +336,14 @@
       "375x812",
       "430x932"
     ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
   }
 ]
