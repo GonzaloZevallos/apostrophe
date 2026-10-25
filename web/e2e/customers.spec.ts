@@ -194,12 +194,14 @@ async function expectTheDocumentScrolls(page: Page): Promise<void> {
   expect(scrolls).toBe(true)
 }
 
-async function expectPinnedInView(page: Page, footer: Locator): Promise<void> {
+/** The footer rests on the viewport's bottom, or on the fixed bar's top when `aboveBar`. */
+async function expectPinnedInView(page: Page, footer: Locator, aboveBar = false): Promise<void> {
   const height = await viewportHeight(page)
   const box = await rectOf(footer)
+  const floor = aboveBar ? (await rectOf(page.locator('.bar-inferior'))).y : height
   expect(box.y).toBeGreaterThanOrEqual(0)
   expect(box.y + box.height).toBeLessThanOrEqual(height + SUBPIXEL)
-  expect(Math.abs(height - (box.y + box.height))).toBeLessThanOrEqual(SUBPIXEL)
+  expect(Math.abs(floor - (box.y + box.height))).toBeLessThanOrEqual(SUBPIXEL)
 }
 
 test.describe('the card\'s pinned "New sale to <name>" on a phone', () => {
@@ -216,9 +218,9 @@ test.describe('the card\'s pinned "New sale to <name>" on a phone', () => {
     await expectTheDocumentScrolls(page)
 
     await scrollTo(page, 0)
-    await expectPinnedInView(page, footer)
+    await expectPinnedInView(page, footer, true)
     await scrollTo(page, 0.5)
-    await expectPinnedInView(page, footer)
+    await expectPinnedInView(page, footer, true)
 
     await scrollTo(page, 1)
     const end = await rectOf(footer)

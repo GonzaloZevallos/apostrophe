@@ -4685,7 +4685,7 @@ body {
   }
 
   /* A card's pinned "New sale to ..." sits above the fixed bar. */
-  .ficha-cliente__pie {
+  .columna-principal .ficha-cliente__pie {
     bottom: var(--bottom-chrome-height);
   }
 

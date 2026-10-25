@@ -176,7 +176,7 @@ test.describe.serial('navigation', () => {
 
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(HOME)
-    await expectAction(page.locator('.columna-principal > .boton-nueva-venta'))
+    await expectAction(page.locator('.nueva-venta-flotante > .boton-nueva-venta'))
 
     await page.setViewportSize({ width: 1280, height: 920 })
     await page.goto(HOME)
@@ -187,7 +187,7 @@ test.describe.serial('navigation', () => {
     await page.evaluate(() => document.documentElement.setAttribute('data-tema', 'oscuro'))
     await expectAction(page.locator('.boton-nueva-venta--escritorio'))
     await page.setViewportSize({ width: 390, height: 844 })
-    await expectAction(page.locator('.columna-principal > .boton-nueva-venta'))
+    await expectAction(page.locator('.nueva-venta-flotante > .boton-nueva-venta'))
     await page.evaluate(() => document.documentElement.removeAttribute('data-tema'))
 
     for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 920 }]) {
@@ -201,7 +201,7 @@ test.describe.serial('navigation', () => {
     const fresh = await context.newPage()
     await signUp(fresh, 'PrimeraVez')
     await fresh.goto(HOME)
-    await expectAction(fresh.locator('.columna-principal > .boton-nueva-venta'))
+    await expectAction(fresh.locator('.nueva-venta-flotante > .boton-nueva-venta'))
     await fresh.setViewportSize({ width: 1280, height: 920 })
     await expectAction(fresh.locator('.boton-nueva-venta--escritorio'))
     await context.close()
