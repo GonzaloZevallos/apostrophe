@@ -2,16 +2,17 @@
 rule stays the domain's and its message is a fixed string (ADR-0005). Grams are typed
 `Decimal` here and become `Grams` only through `Grams.of`, at the router."""
 
-from collections.abc import Sequence
 from datetime import date
 from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.sales.application.ports import LineCost, SaleView, SaleViewCustomer, SaleViewLine
+from app.sales.application.view_sales import SaleDetail
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import PaymentMethod, Sale
+from app.sales.domain.sale_bill import BillPayment, BillRule, BillState, SaleBill, SaleBillLine
 from app.varieties.adapters.schemas import GramsOut
 
 # "Owing" and "none" are adapter-only words for a sale with no `OnTheSpotPayment`;
@@ -152,6 +153,64 @@ class SaleLineDetailOut(BaseModel):
         )
 
 
+class BillPaymentOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    state: BillState
+    still_owed: int | None
+
+    @classmethod
+    def of(cls, payment: BillPayment) -> "BillPaymentOut":
+        return cls(state=payment.state, still_owed=payment.still_owed)
+
+
+class SaleBillLineOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    product: str
+    quantity: GramsOut
+    amount: int
+    rule: BillRule | None
+    unit_price: int | None
+
+    @classmethod
+    def of(cls, line: SaleBillLine) -> "SaleBillLineOut":
+        return cls(
+            product=line.product,
+            quantity=line.quantity.as_decimal(),
+            amount=line.amount,
+            rule=line.rule,
+            unit_price=line.unit_price,
+        )
+
+
+class SaleBillOut(BaseModel):
+    """The facts a seller may share with a sale's customer (CONTEXT.md: Sale bill),
+    closed: no field for the note, the customer, any id, the VIP flag, cost or margin."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    business_name: str
+    date: SaleDate
+    shipping_charged: int
+    total: int
+    lines: list[SaleBillLineOut]
+    payment: BillPaymentOut
+    balance: int | None
+
+    @classmethod
+    def of(cls, bill: SaleBill) -> "SaleBillOut":
+        return cls(
+            business_name=bill.business_name,
+            date=bill.date,
+            shipping_charged=bill.shipping_charged,
+            total=bill.total,
+            lines=[SaleBillLineOut.of(line) for line in bill.lines],
+            payment=BillPaymentOut.of(bill.payment),
+            balance=bill.balance,
+        )
+
+
 class SaleDetailOut(BaseModel):
     """`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as
     `SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this
@@ -168,11 +227,11 @@ class SaleDetailOut(BaseModel):
     lines: list[SaleLineDetailOut]
     total_grams: GramsOut
     still_owing: bool
+    bill: SaleBillOut | None
 
     @classmethod
-    def of(
-        cls, view: SaleView, costs: Sequence[LineCost], still_owing: bool = False
-    ) -> "SaleDetailOut":
+    def of(cls, detail: SaleDetail) -> "SaleDetailOut":
+        view, costs = detail.view, detail.costs
         sale = view.sale
         assert sale.id is not None, "only stored sales go out"
         assert len(costs) == len(view.lines), "one LineCost per line, in the same order"
@@ -189,7 +248,8 @@ class SaleDetailOut(BaseModel):
                 for line, cost in zip(view.lines, costs, strict=True)
             ],
             total_grams=sale.total_grams.as_decimal(),
-            still_owing=still_owing,
+            still_owing=detail.still_owing,
+            bill=None if detail.bill is None else SaleBillOut.of(detail.bill),
         )
 
 

@@ -411,6 +411,39 @@
         "title": "AssignCustomerIn",
         "type": "object"
       },
+      "BillPaymentOut": {
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "cash",
+              "transfer",
+              "paid",
+              "owed",
+              "none"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "still_owed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Still Owed"
+          }
+        },
+        "required": [
+          "state",
+          "still_owed"
+        ],
+        "title": "BillPaymentOut",
+        "type": "object"
+      },
       "BusinessLanguageOut": {
         "description": "The `GET /business` language fields: the stored tag, never the shown one.",
         "properties": {
@@ -2848,6 +2881,113 @@
         "title": "SaleAccountRowOut",
         "type": "object"
       },
+      "SaleBillLineOut": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "product": {
+            "title": "Product",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "rule": {
+            "anyOf": [
+              {
+                "enum": [
+                  "bulk",
+                  "gift"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          }
+        },
+        "required": [
+          "product",
+          "quantity",
+          "amount",
+          "rule",
+          "unit_price"
+        ],
+        "title": "SaleBillLineOut",
+        "type": "object"
+      },
+      "SaleBillOut": {
+        "additionalProperties": false,
+        "description": "The facts a seller may share with a sale's customer (CONTEXT.md: Sale bill),\nclosed: no field for the note, the customer, any id, the VIP flag, cost or margin.",
+        "properties": {
+          "balance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Balance"
+          },
+          "business_name": {
+            "title": "Business Name",
+            "type": "string"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/SaleBillLineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/BillPaymentOut"
+          },
+          "shipping_charged": {
+            "title": "Shipping Charged",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "business_name",
+          "date",
+          "shipping_charged",
+          "total",
+          "lines",
+          "payment",
+          "balance"
+        ],
+        "title": "SaleBillOut",
+        "type": "object"
+      },
       "SaleCustomerOut": {
         "properties": {
           "id": {
@@ -2874,6 +3014,16 @@
       "SaleDetailOut": {
         "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
         "properties": {
+          "bill": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaleBillOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "customer": {
             "anyOf": [
               {
@@ -2953,7 +3103,8 @@
           "total",
           "lines",
           "total_grams",
-          "still_owing"
+          "still_owing",
+          "bill"
         ],
         "title": "SaleDetailOut",
         "type": "object"
