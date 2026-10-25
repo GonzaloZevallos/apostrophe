@@ -127,6 +127,26 @@ def test_missing_keys_come_in_english_order(locales: Path) -> None:
     assert missing_keys(locales, GERMAN) == ("fixture.greeting", "fixture.braces")
 
 
+def test_a_translation_that_renames_a_hole_is_missing(locales: Path) -> None:
+    edit_german(locales, 'msgstr "Hallo {x}"', 'msgstr "Hallo {y}"')
+
+    assert missing_keys(locales, GERMAN) == ("fixture.braces",)
+
+
+def test_a_translation_that_drops_or_adds_a_hole_is_missing(locales: Path) -> None:
+    edit_german(locales, 'msgstr "Hallo {x}"', 'msgstr "Hallo"')
+    assert missing_keys(locales, GERMAN) == ("fixture.braces",)
+
+    edit_german(locales, 'msgstr "Hallo"', 'msgstr "Hallo {x} {z}"')
+    assert missing_keys(locales, GERMAN) == ("fixture.greeting", "fixture.braces")
+
+
+def test_a_translation_that_reorders_its_holes_is_complete(locales: Path) -> None:
+    edit_german(locales, 'msgstr "Hallo {x}"', 'msgstr "{x}, hallo"')
+
+    assert missing_keys(locales, GERMAN) == ()
+
+
 def test_a_language_without_a_po_misses_every_key(locales: Path) -> None:
     assert missing_keys(locales, Language("fr")) == (
         "fixture.greeting",
