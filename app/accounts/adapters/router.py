@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Annotated, Literal, TypedDict
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Header, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -32,7 +32,8 @@ from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.settings import Settings
-from app.shared.language import shown_language
+from app.shared.copy.negotiation import pre_sign_in_language
+from app.shared.language import BusinessLanguage, shown_language
 
 # Public: how a user gets a session. Every other accounts route is gated in `app.main`.
 public_router = APIRouter(tags=["accounts"])
@@ -199,7 +200,14 @@ def accept_invitation(
     clock: ClockDep,
     settings: SettingsDep,
     opening: Annotated[BusinessOpening, Depends(get_business_opening)],
+    accept_language: Annotated[str | None, Header()] = None,
 ) -> SessionOut:
+    # The one place the phone's language is read. `forced=None` on purpose: the forced
+    # language changes what is shown, never what is stored. Not `BusinessLanguage.parse`:
+    # English may be off the selectable list.
+    language = BusinessLanguage(
+        pre_sign_in_language(accept_language, None, settings.selectable_languages)
+    )
     with as_http:
         session_token = invitations.accept_invitation(
             accounts,
@@ -212,6 +220,7 @@ def accept_invitation(
             body.business_name,
             clock(),
             opening=opening,
+            language=language,
         )
     return _open(response, session_token, settings)
 

@@ -19,7 +19,7 @@ from app.accounts.domain.invitation import (
 )
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
-from app.shared.language import ENGLISH, BusinessLanguage
+from app.shared.language import BusinessLanguage
 from app.shared.transaction import Transaction
 
 
@@ -82,6 +82,7 @@ def accept_invitation(
     now: datetime,
     *,
     opening: BusinessOpening,
+    language: BusinessLanguage,
 ) -> str:
     """Creates the user (and, for a new-business invitation, the business), spends the
     invitation and answers a session token for the new user. A join invitation ignores
@@ -89,7 +90,8 @@ def accept_invitation(
 
     `opening` sets up whatever a brand-new business needs beyond its own accounts rows
     (docs/adr/0006); it is called only on the new-business branch, before the single
-    commit, so it lands in the same transaction or not at all."""
+    commit, so it lands in the same transaction or not at all. `language` is the new
+    business's stored language; a join invitation ignores it."""
     invitation = _usable(accounts, token, now)
     email = Email.of(raw_email)
     check_password_strength(password)
@@ -98,7 +100,7 @@ def accept_invitation(
     if accounts.user_by_email(email) is not None:
         raise EmailTaken()
     if name is not None:
-        business_id = accounts.add_business(Business(name, BusinessLanguage(ENGLISH))).id
+        business_id = accounts.add_business(Business(name, language)).id
         assert business_id is not None
         opening.opened(business_id)
     else:
