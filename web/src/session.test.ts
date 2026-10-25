@@ -1,7 +1,10 @@
 import { CUSTOMERS, HOME, INVITATION, LOGIN, RESET, pathTo } from './routes'
 import { QueryClient } from '@tanstack/react-query'
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from './api/client'
+import i18n from './i18n'
+import { applyShownLanguage, resetToBootLanguage, setLocaleLoader } from './i18n/language'
+import { loadLocale } from './i18n/resources'
 import {
   acceptInvitation,
   changePassword,
@@ -25,6 +28,17 @@ function actions(): SessionActions & { navigate: ReturnType<typeof vi.fn> } {
   const navigate = vi.fn<(path: string) => void>()
   return { queryClient, navigate }
 }
+
+async function showGerman(): Promise<void> {
+  setLocaleLoader(() => Promise.resolve({ common: { hello: 'Hallo' } }))
+  await applyShownLanguage('de')
+  expect(i18n.language).toBe('de')
+}
+
+afterEach(() => {
+  setLocaleLoader(loadLocale)
+  resetToBootLanguage()
+})
 
 beforeEach(() => {
   vi.mocked(client.post).mockReset().mockResolvedValue(undefined)
@@ -194,5 +208,77 @@ describe('submitReset', () => {
     expect(client.post).toHaveBeenCalledWith('/reset-links/tok123', { new_password: 'nueva123456' })
     expect(session.queryClient.getQueryData(['me'])).toBeUndefined()
     expect(session.navigate).toHaveBeenCalledWith(HOME)
+  })
+})
+
+describe('the boot language at every session boundary', () => {
+  test('login, accept, logout and reset submit restore it', async () => {
+    const boundaries = [
+      (session: SessionActions) => login(session, 'ana@x.com', 'secreta123'),
+      (session: SessionActions) =>
+        acceptInvitation(session, 'tok', { email: 'ana@x.com', password: 'secreta123' }, 'join_business'),
+      (session: SessionActions) => logOut(session),
+      (session: SessionActions) => submitReset(session, 'tok', 'secreta123'),
+    ]
+    for (const run of boundaries) {
+      await showGerman()
+
+      await run(actions())
+
+      expect(i18n.language).toBe('en')
+      expect(document.documentElement.lang).toBe('en')
+    }
+  })
+
+  test('the invitation lookup restores it before the lookup answers', async () => {
+    await showGerman()
+    vi.mocked(client.get).mockImplementation(() => {
+      expect(i18n.language).toBe('en')
+      return Promise.resolve({ kind: 'join_business', business_name: null, expires_at: 'x' })
+    })
+
+    await openInvitation({ queryClient: new QueryClient() }, 'tok')
+
+    expect(i18n.language).toBe('en')
+  })
+
+  test('opening a reset link restores it', async () => {
+    await showGerman()
+    vi.mocked(client.get).mockResolvedValue(undefined)
+
+    await openResetLink({ queryClient: new QueryClient() }, 'tok')
+
+    expect(i18n.language).toBe('en')
+  })
+
+  test('a 401 on a gated screen restores it; on a public screen nothing changes', async () => {
+    await showGerman()
+    handleUnauthorized(actions(), LOGIN)
+    expect(i18n.language).toBe('de')
+
+    handleUnauthorized(actions(), CUSTOMERS)
+
+    expect(i18n.language).toBe('en')
+  })
+
+  test('a password change is no boundary: the shown language stays', async () => {
+    await showGerman()
+
+    await changePassword('vieja12345', 'nueva12345')
+
+    expect(i18n.language).toBe('de')
+  })
+
+  test('a response that lands after the sign-out leaves <html lang> at the boot value', async () => {
+    let answer: (bundle: Record<string, never>) => void = () => undefined
+    setLocaleLoader(() => new Promise((resolve) => { answer = resolve }))
+    const pending = applyShownLanguage('de')
+
+    await logOut(actions())
+    answer({})
+    await pending
+
+    expect(i18n.language).toBe('en')
+    expect(document.documentElement.lang).toBe('en')
   })
 })

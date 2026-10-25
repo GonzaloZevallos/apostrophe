@@ -66,6 +66,35 @@ amends ADR-0049, which assumed one language for good.
   `scripts/*.sh` (not `scripts/design/`) prints literal text with `echo`, `printf` or
   `cat <<`. Operator output comes from the Python commands.
 
+## Amendment: the front's runtime language (GH-316, part 5)
+
+- **Boot.** `web/src/i18n/language.ts` reads the server-written `<html lang>` once. When it
+  is not `en`, `main.tsx` awaits `startLanguage()` before the first render, so Entrar never
+  flashes in English. Signed in, `GatedLayout` takes `shown_language` from `/auth/me`
+  through `useShownLanguage`, which decides readiness during render: an English business
+  mounts in the same commit its `me` arrives in, any other waits for its chunk. The language
+  is never read from `localStorage`, `navigator.language`, a URL or any other request input,
+  and `language.ts` is the only module that calls `changeLanguage`. `<html lang>` always
+  holds the language actually applied. The manifest is untouched.
+- **Every boundary resets.** `resetToBootLanguage()` runs beside every cache clear: login,
+  accept, logout and reset submit (`boundary()`), the invitation lookup, the reset-link
+  lookup, and a 401 on a gated screen (`handleUnauthorized`, which goes through
+  `boundary()`). It empties the attempted set and applies the language boot ended in, so the
+  last business's language never shows on the screens that follow. `changePassword` is not
+  a boundary (no clear, same session) and does not reset.
+- **Failure and late results.** A chunk that fails or does not settle within
+  `LANGUAGE_LOAD_TIMEOUT_MS` ends in English with one recorded miss
+  `{language, ns: '*', key: '*'}` (recorded only under the test runner). A language already
+  attempted in the session is never loaded again, and only the latest request may apply: a
+  result that arrives late, repeated, or after a reset never calls `changeLanguage`.
+- **Pinned init.** The one init sets `interpolation.escapeValue: false`,
+  `initAsync: false`, `react.useSuspense: false` and `fallbackLng: 'en'`, and no call site
+  passes interpolation options.
+- **The one exception to "a part edits only its own files".**
+  `web/src/i18n/resources.generated.d.ts` is committed and written only by
+  `npm run i18n:types`. Parts that conflict on it resolve by rerunning that script, never by
+  hand.
+
 ## Consequences
 
 - A new language ships by adding a complete catalog and letting the operator choose it
