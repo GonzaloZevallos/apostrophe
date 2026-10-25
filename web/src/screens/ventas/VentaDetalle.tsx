@@ -173,18 +173,11 @@ function VentaDetalleScreen() {
     setAssignError(null)
     setAssignOffline(false)
     try {
-      const updated = await assignMutation.mutateAsync(customer.id)
-      // The PUT already answers the sale as it now stands (docs/adr/0011): this
-      // writes that answer straight into the cache instead of a second `GET`
-      // (plan, invariants: what is shown comes from the API's answer). The PUT's
-      // `SaleOut` carries no line cost (ADR-0009: only `GET /sales/{id}` allocates
-      // one), so each line keeps the cost the detail already read: assigning a
-      // customer never touches a line.
-      queryClient.setQueryData<SaleDetail>(keys.sale(saleId), (current) =>
-        current === undefined
-          ? current
-          : { ...updated, lines: current.lines, total_grams: current.total_grams },
-      )
+      await assignMutation.mutateAsync(customer.id)
+      // The detail is read back from `GET /sales/{id}`, never rebuilt from the PUT's
+      // answer: the sale bill's balance comes from the settlement pass only that read
+      // runs (ADR-0053), and the PUT's `SaleOut` carries no bill and no line cost
+      // (ADR-0009). `keys.sale(saleId)` shares the `sales` prefix, so this refetches it.
       invalidateResource(queryClient, 'sales')
       setAssigned(true)
     } catch (caught) {
