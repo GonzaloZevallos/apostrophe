@@ -7,6 +7,8 @@
 import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './sales.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
+import { COMMON_TEXT } from './common.ts'
+import { CUSTOMERS_TEXT } from './customers.ts'
 import { EMPTY_STATES } from './emptyStates.ts'
 import { VARIETIES_TEXT } from './varieties.ts'
 
@@ -26,8 +28,8 @@ export function noPriceMessage(varietyName: string): string {
  * own, so no entry holds `*`, `_` or a backtick; names and figures are the sale's. `unit`
  * is the one unit entry until #318. */
 export const SALE_BILL_TEXT = {
-  share: 'Share',
-  copy: 'Copy',
+  share: COMMON_TEXT.share,
+  copy: COMMON_TEXT.copy,
   copied: 'Bill copied',
   shareFailed: "Couldn't share. Tap Copy and paste it into the chat.",
   copyFailed: "Couldn't copy. Select the text below and copy it by hand.",
@@ -40,8 +42,8 @@ export const SALE_BILL_TEXT = {
   gift: (product: string, quantity: string, unit: string) => `${product} ${quantity} ${unit} · Gift · $ 0`,
   shipping: (amount: string) => `Shipping · ${amount}`,
   total: (amount: string) => `Total · ${amount}`,
-  paidCash: 'Paid in cash',
-  paidTransfer: 'Paid by transfer',
+  paidCash: CUSTOMERS_TEXT.paidInCash,
+  paidTransfer: CUSTOMERS_TEXT.paidByTransfer,
   paid: 'Paid',
   stillOwed: (amount: string) => `Still owed on this sale: ${amount}`,
   balance: (amount: string) => `Your balance: ${amount}`,
