@@ -64,6 +64,13 @@ class CatalogPricingSettings(Protocol):
         ...
 
 
+class HeaderFooterDefaults(Protocol):
+    def for_language(self, language: Language) -> CatalogHeaderFooter:
+        """The header and footer a business opened in `language` starts with, English for
+        a language the copy has no catalog for."""
+        ...
+
+
 class CatalogWordsSource(Protocol):
     def words_for(self, language: Language) -> CatalogWords:
         """The fixed lines of the catalog text in `language`, English for a language the

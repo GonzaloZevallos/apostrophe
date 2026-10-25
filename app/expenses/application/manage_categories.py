@@ -1,6 +1,5 @@
 from app.expenses.application.ports import ExpenseCategories
 from app.expenses.domain.category import (
-    DEFAULT_CATEGORY_NAMES,
     CategoryName,
     CategoryNameTaken,
     CategoryNotFound,
@@ -55,8 +54,9 @@ def remove_category(
     transaction.commit()
 
 
-def open_default_categories(categories: ExpenseCategories) -> None:
-    """Called once, when a business opens (docs/adr/0006). Never commits: the caller's
-    own transaction covers it, together with the rest of what opening a business does."""
-    for raw_name in DEFAULT_CATEGORY_NAMES:
-        categories.add(ExpenseCategory(CategoryName.of(raw_name)))
+def open_default_categories(categories: ExpenseCategories, names: tuple[CategoryName, ...]) -> None:
+    """Called once, when a business opens (docs/adr/0006), with the names of its stored
+    language. Never commits: the caller's own transaction covers it, together with the
+    rest of what opening a business does."""
+    for name in names:
+        categories.add(ExpenseCategory(name))

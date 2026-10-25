@@ -1,9 +1,10 @@
 from typing import Protocol
 
-from app.expenses.domain.category import ExpenseCategory
+from app.expenses.domain.category import CategoryName, ExpenseCategory
 from app.expenses.domain.expense import Expense
 from app.expenses.domain.month import Month
 from app.expenses.domain.monthly_view import CategorizedExpense
+from app.shared.language import Language
 
 
 class ExpenseCategories(Protocol):
@@ -41,3 +42,10 @@ class Expenses(Protocol):
     def remove(self, expense_id: int) -> None: ...
 
     def in_month(self, month: Month) -> list[CategorizedExpense]: ...
+
+
+class CategoryDefaults(Protocol):
+    def for_language(self, language: Language) -> tuple[CategoryName, ...]:
+        """The four categories a business opened in `language` starts with, in order,
+        English for a language the copy has no catalog for."""
+        ...

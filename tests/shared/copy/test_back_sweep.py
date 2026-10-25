@@ -6,9 +6,12 @@ import re
 
 import pytest
 
+from app.catalog.adapters.babel_defaults import BabelHeaderFooterDefaults
 from app.catalog.adapters.babel_words import BabelCatalogWords
 from app.catalog.domain.text import CatalogEntry, catalog_text, pinned_catalog_text
 from app.catalog.domain.words import CatalogWords
+from app.expenses.adapters.babel_defaults import BabelCategoryDefaults
+from app.expenses.domain.category import CategoryName
 from app.settings import DEFAULT_LOCALES_DIR
 from app.shared.copy import CopyCatalog
 from app.shared.language import TEST_LOCALE
@@ -95,3 +98,41 @@ def test_the_pseudo_lines_hold_none_of_the_english_words(word: str) -> None:
 
     assert text is not None
     assert word not in text
+
+
+def default_texts(categories: tuple[CategoryName, ...] | None = None) -> list[str]:
+    """What a business opened under the test locale would store: the defaults the real
+    sources build, called directly, nothing stored."""
+    copy = CopyCatalog(DEFAULT_LOCALES_DIR)
+    header_footer = BabelHeaderFooterDefaults(copy).for_language(TEST_LOCALE)
+    names = categories or BabelCategoryDefaults(copy).for_language(TEST_LOCALE)
+    return [header_footer.header, header_footer.footer, *(name.value for name in names)]
+
+
+DEFAULT_SENTINELS = ("\U0001f33f", "\U0001f4e9", "**")
+
+
+def default_letters(texts: list[str]) -> str:
+    """Letters left once the segments and the emoji and `**` are removed, by exact string."""
+    left = ""
+    for default in texts:
+        rest = SEGMENT.sub("", default)
+        for sentinel in DEFAULT_SENTINELS:
+            rest = rest.replace(sentinel, "")
+        left += "".join(character for character in rest if character.isalpha())
+    return left
+
+
+def test_the_defaults_under_the_test_locale_leave_no_letter_outside_the_segments() -> None:
+    texts = default_texts()
+
+    assert len(texts) == 6
+    assert all("⟦" in text for text in texts)
+    assert default_letters(texts) == ""
+
+
+def test_a_categories_source_with_a_real_name_and_a_literal_fails_the_sweep() -> None:
+    real = BabelCategoryDefaults(CopyCatalog(DEFAULT_LOCALES_DIR)).for_language(TEST_LOCALE)
+    planted = (real[0], CategoryName.of("Other"))
+
+    assert default_letters(default_texts(planted)) == "Other"
