@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from app.catalog.adapters.babel_words import BabelCatalogWords, MissingCatalogKey
+from app.catalog.adapters.babel_words import BabelCatalogWords
 from app.catalog.domain.text import catalog_text, pinned_catalog_text
 from app.settings import DEFAULT_LOCALES_DIR
-from app.shared.copy import CopyCatalog, compile_po
+from app.shared.copy import CopyCatalog, MissingCatalogKey, compile_po
 from app.shared.language import ENGLISH, TEST_LOCALE, Language
 from tests.catalog.reference_texts import CASES, Case
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.catalog.domain.attributes import CatalogAttributes
-from app.catalog.domain.header_footer import DEFAULT_FOOTER, DEFAULT_HEADER
 from app.catalog.domain.text import CatalogEntry
 from app.catalog.domain.variety import CatalogPrice
 from app.shared.grams import Grams
@@ -49,6 +48,9 @@ class Case:
 
 
 NOTHING = "Nothing to offer for now."
+# The English defaults a new business is opened with, written out: the bytes of the baseline.
+DEFAULT_HEADER = "\U0001f33f **CATALOG** \U0001f33f"
+DEFAULT_FOOTER = "\U0001f4e9 Questions and orders by private message."
 BLANK_BLOCK = "**A**\n• Price per gram: $1.000"
 
 CASES = [

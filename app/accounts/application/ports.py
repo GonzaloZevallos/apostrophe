@@ -4,6 +4,7 @@ from typing import Protocol
 
 from app.accounts.domain.account import Business, Email, User
 from app.accounts.domain.invitation import Invitation
+from app.shared.language import BusinessLanguage
 
 
 @dataclass(frozen=True)
@@ -23,7 +24,7 @@ class BusinessOpening(Protocol):
     `app/main.py` wires the real one in, and `accept_invitation` calls it before its
     single commit."""
 
-    def opened(self, business_id: int) -> None: ...
+    def opened(self, business_id: int, language: BusinessLanguage) -> None: ...
 
 
 class Accounts(Protocol):

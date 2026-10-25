@@ -44,3 +44,21 @@ msgstr "⟦• Ṗřìçè ṗèř ĝřåṁ: {price}·~·~·~·⟧"
 
 msgid "catalog.bulk_line"
 msgstr "⟦• Ḟřöṁ {grams}: {price} èåçĥ·~·~·⟧"
+
+msgid "catalog.default_header"
+msgstr "⟦🌿 **ÇÅŤÅĿÖĜ** 🌿·~·~·~⟧"
+
+msgid "catalog.default_footer"
+msgstr "⟦📩 Ǫûèšťìöňš åňđ öřđèřš ƀý ṗřìṽåťè ṁèššåĝè.·~·~·~·~·~·~·~·⟧"
+
+msgid "expenses.default_category.growing_supplies"
+msgstr "⟦Ĝřöŵìňĝ šûṗṗłìèš·~·~·~⟧"
+
+msgid "expenses.default_category.packaging"
+msgstr "⟦Ṗåçķåĝìňĝ·~·~⟧"
+
+msgid "expenses.default_category.shipping_and_transport"
+msgstr "⟦Šĥìṗṗìňĝ åňđ ťřåňšṗöřť·~·~·~·~⟧"
+
+msgid "expenses.default_category.other"
+msgstr "⟦Öťĥèř·~⟧"

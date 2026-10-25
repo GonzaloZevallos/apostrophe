@@ -160,6 +160,12 @@ def test_a_language_without_a_po_misses_every_key(locales: Path) -> None:
         "catalog.aroma_line",
         "catalog.price_per_gram_line",
         "catalog.bulk_line",
+        "catalog.default_header",
+        "catalog.default_footer",
+        "expenses.default_category.growing_supplies",
+        "expenses.default_category.packaging",
+        "expenses.default_category.shipping_and_transport",
+        "expenses.default_category.other",
     )
 
 

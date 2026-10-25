@@ -3,7 +3,12 @@
 Babel is imported only under this package, and nothing here imports `app.settings`.
 """
 
-from app.shared.copy.catalog import CopyCatalog, UnknownLanguage
+from app.shared.copy.catalog import (
+    CopyCatalog,
+    MissingCatalogKey,
+    UnknownLanguage,
+    required_text,
+)
 from app.shared.copy.completeness import missing_keys
 from app.shared.copy.messages import (
     catalog_map,
@@ -18,6 +23,7 @@ from app.shared.copy.report import missing_report
 
 __all__ = [
     "CopyCatalog",
+    "MissingCatalogKey",
     "MissingOperatorKey",
     "OperatorText",
     "UnknownLanguage",
@@ -31,4 +37,5 @@ __all__ = [
     "po_text",
     "pseudo_catalog",
     "read_catalog",
+    "required_text",
 ]

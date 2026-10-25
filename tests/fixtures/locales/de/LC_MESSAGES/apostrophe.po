@@ -43,3 +43,21 @@ msgstr "de: • Price per gram: {price}"
 
 msgid "catalog.bulk_line"
 msgstr "de: • From {grams}: {price} each"
+
+msgid "catalog.default_header"
+msgstr "de: 🌿 **CATALOG** 🌿"
+
+msgid "catalog.default_footer"
+msgstr "de: 📩 Questions and orders by private message."
+
+msgid "expenses.default_category.growing_supplies"
+msgstr "de: Growing supplies"
+
+msgid "expenses.default_category.packaging"
+msgstr "de: Packaging"
+
+msgid "expenses.default_category.shipping_and_transport"
+msgstr "de: Shipping and transport"
+
+msgid "expenses.default_category.other"
+msgstr "de: Other"

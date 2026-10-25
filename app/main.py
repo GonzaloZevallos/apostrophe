@@ -23,6 +23,7 @@ from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
+from app.catalog.adapters.babel_defaults import BabelHeaderFooterDefaults
 from app.catalog.adapters.babel_words import BabelCatalogWords
 from app.catalog.adapters.business_language import SqlCatalogLanguage
 from app.catalog.adapters.leaving import SqlCatalogLeaving
@@ -32,6 +33,7 @@ from app.catalog.adapters.router import router as catalog_router
 from app.clock import Clock, system_clock
 from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
+from app.expenses.adapters.babel_defaults import BabelCategoryDefaults
 from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
@@ -62,6 +64,7 @@ from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
 from app.shared.copy import CopyCatalog
+from app.shared.language import BusinessLanguage
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.leaving import SqlStockLeaving
@@ -75,16 +78,16 @@ from app.varieties.adapters.router import router as varieties_router
 
 
 class _Opening(Protocol):
-    def opened(self, business_id: int) -> None: ...
+    def opened(self, business_id: int, language: BusinessLanguage) -> None: ...
 
 
 class _BoundComposite:
     def __init__(self, openings: Sequence[_Opening]) -> None:
         self._openings = openings
 
-    def opened(self, business_id: int) -> None:
+    def opened(self, business_id: int, language: BusinessLanguage) -> None:
         for opening in self._openings:
-            opening.opened(business_id)
+            opening.opened(business_id, language)
 
 
 class _Leaving(Protocol):
@@ -206,9 +209,12 @@ def create_app(
     # own `Session`. `CompositeOpening` composes every capability that seeds something
     # at opening, so a new one joins here, not as a second keyword argument on
     # `accept_invitation` (docs/adr/0006).
+    copy_catalog = CopyCatalog(settings.locales_dir)
+    category_defaults = BabelCategoryDefaults(copy_catalog)
+    header_footer_defaults = BabelHeaderFooterDefaults(copy_catalog)
     app.state.business_opening = CompositeOpening(
-        ExpenseCategoriesOpening,
-        CatalogHeaderFooterOpening,
+        partial(ExpenseCategoriesOpening, defaults=category_defaults),
+        partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
         partial(OnboardingOpening, clock=clock),
     )
@@ -227,7 +233,7 @@ def create_app(
     # pinned catalog's snapshot both build it from here.
     app.state.catalog_pricing_settings = SqlPricingSettings
     # The catalog's fixed lines, built once over the copy module (docs/adr/0050).
-    app.state.catalog_words = BabelCatalogWords(CopyCatalog(settings.locales_dir))
+    app.state.catalog_words = BabelCatalogWords(copy_catalog)
     # The language those lines are shown in: the forced one read once here, the stored one
     # read per call by `SqlCatalogLanguage` (the only place the catalog applies the override).
     app.state.catalog_language = partial(SqlCatalogLanguage, forced=settings.forced_language)
