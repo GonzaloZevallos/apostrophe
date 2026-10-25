@@ -500,3 +500,7 @@ _Avoid_: mobile-only, responsive, mobile first, polish pass
 **Stored language**:
 The one language recorded on a business. A new business gets it from the accepting phone when its invitation is accepted, an existing business has English, and afterwards only a user's choice in Settings → Business changes it. It is what the language control shows and edits, and it is the shown language unless the operator's forced language overrides it. In the app: no word of its own.
 _Avoid_: locale, display language, preferred language, business locale
+
+**Sheet**:
+Below 900 px, how a form is drawn: full screen, a modal dialog with "Close" at the top and its main action pinned at the bottom, drawn by one shared component, over the screen it was opened from (or over its parent on a direct address). Back is the same as Close, and tapping outside closes it only when nothing was changed. On a computer the same form keeps its own frame. In the app: no word of its own.
+_Avoid_: modal, overlay, drawer, bottom sheet, popup, capa
