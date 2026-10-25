@@ -27,17 +27,19 @@ import {
 } from '../api/analysis'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
-import { formatDateShort, formatMonthLong } from '../format/dates'
+import { formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { amountParts } from './analisisCost'
 import AmountRow from './analisis/AmountRow'
-import { RowCostLines, WithdrawalLines } from './analisis/CostLines'
+import { WithdrawalLines } from './analisis/CostLines'
 import { pendingSuffix } from './analisis/pendingSuffix'
+import Bar from './analisis/Bar'
 import NoBestWeekLine from './analisis/NoBestWeekLine'
 import { BEST_WEEKDAY_MARK, BEST_WEEK_MARK, BEST_WEEK_TABLE_MARK } from './analisis/marks'
 import { TablaMeses, TablaSemanas, TablaVariedades } from './AnalisisTablas'
+import { TarjetasMeses, TarjetasSemanas, TarjetasVariedades } from './AnalisisTarjetas'
 import { useViewport } from '../shell/useViewport'
 import {
   COST_OF_GOODS_LABEL,
@@ -77,25 +79,6 @@ const WEEKDAY_LABEL: Record<number, string> = {
   7: ANALYSIS_TEXT.dom,
 }
 
-
-/** A bar's fill, purely a rendering proportion against the widest value in its own
- * list — it names no business figure of its own and decides no mark, sort, share or
- * percentage: the figure next to every bar is still the backend's own number. */
-function barWidth(value: number, max: number): number {
-  if (max <= 0) return 0
-  return Math.max(0, Math.min(100, (value / max) * 100))
-}
-
-function Bar({ value, max }: { value: number; max: number }) {
-  return (
-    <span className="analisis__barra-pista">
-      <span
-        className="analisis__barra-llena"
-        style={{ width: `${barWidth(value, max)}%` }}
-      />
-    </span>
-  )
-}
 
 function MonthNav({
   month,
@@ -172,7 +155,6 @@ function AnalisisContenido({
   const ids = useId()
   const heroId = `${ids}-hero`
   const historyLabelId = `${ids}-history`
-  const maxWeekSales = Math.max(0, ...data.weeks.map((week) => week.sales))
   const maxWeekdaySales = Math.max(0, ...data.weekdays.map((day) => day.sales))
 
   return (
@@ -228,101 +210,21 @@ function AnalisisContenido({
           {m.varieties.length === 0 && <span className="pie">{EMPTY_MONTH_LINE}</span>}
           {m.varieties.length > 0 &&
             (phone ? (
-              <>
-                {/* The phone's cards (`Analisis.dc.html`): one block per variety, every
-                   figure labelled inline, since there is no header row at this width. */}
-                <div className="analisis__variedades">
-                  {m.varieties.map((variety) => (
-                    <div key={variety.variety_id} className="analisis__variedad">
-                      <div className="analisis__variedad-cabecera">
-                        <span className="analisis__variedad-nombre">{variety.name}</span>
-                        <span className="analisis__variedad-ventas">
-                          {formatMoney(variety.sales_without_shipping)}
-                        </span>
-                      </div>
-                      <div className="analisis__variedad-detalle">
-                        {variety.share_percent !== null && (
-                          <span>{variety.share_percent}{ANALYSIS_TEXT.delMes}</span>
-                        )}
-                        <span>{formatGrams(variety.grams_sold)}{COMMON_TEXT.soldSuffix}</span>
-                        <span>{formatGrams(variety.grams_gifted)}{ANALYSIS_TEXT.regalados}</span>
-                        <span>
-                          {ANALYSIS_TEXT.costo}{formatMoney(variety.cost.costed)}
-                          {pendingSuffix(variety.cost.pending_grams)}
-                        </span>
-                        <span className="analisis__variedad-margen">
-                          {ANALYSIS_TEXT.margen}{formatMoney(variety.margin.amount)}
-                          {variety.margin.percent !== null && ` (${variety.margin.percent}%)`}
-                          {pendingSuffix(variety.margin.pending_grams)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
+              <TarjetasVariedades varieties={m.varieties} />
             ) : (
               <TablaVariedades varieties={m.varieties} />
             ))}
 
           <span className="pie">{ANALYSIS_TEXT.semanaASemanaUltimas}</span>
           {phone ? (
-            <>
-              <div className="analisis__semanas">
-                {data.weeks.map((week) => (
-                  <div
-                    key={week.first_day}
-                    role="group"
-                    aria-labelledby={`${ids}-w-${week.first_day}`}
-                    className="analisis__semana"
-                  >
-                    <span id={`${ids}-w-${week.first_day}`}>{formatDateShort(week.first_day)}</span>
-                    <Bar value={week.sales} max={maxWeekSales} />
-                    <span className="analisis__monto-cifra">{formatMoney(week.sales)}</span>
-                    <span>{formatGrams(week.grams)}</span>
-                    <div className="analisis__costos">
-                      <RowCostLines period={week} />
-                    </div>
-                    <span>{ANALYSIS_TEXT.gastos}{formatMoney(week.expenses)}</span>
-                    <span>
-                      {ANALYSIS_TEXT.ganancia}{formatMoney(week.profit.amount)}
-                      {pendingSuffix(week.profit.pending_grams)}
-                    </span>
-                    <span>{ANALYSIS_TEXT.caja}{formatMoney(week.cash)}</span>
-                    {week.best && <span className="analisis__marca-mejor">{BEST_WEEK_MARK}</span>}
-                  </div>
-                ))}
-              </div>
-              <NoBestWeekLine weeks={data.weeks} />
-            </>
+            <TarjetasSemanas weeks={data.weeks} />
           ) : (
             <TablaSemanas weeks={data.weeks} ids={ids} />
           )}
 
           <span className="pie">{ANALYSIS_TEXT.mesAMesUltimos}</span>
           {phone ? (
-            <div className="analisis__meses">
-              {data.months.map((row) => (
-                <div
-                  key={row.month}
-                  role="group"
-                  aria-labelledby={`${ids}-m-${row.month}`}
-                  className="analisis__mes-fila"
-                >
-                  <span id={`${ids}-m-${row.month}`}>{formatMonthLong(row.month)}</span>
-                  <span className="analisis__monto-cifra">{formatMoney(row.sales)}</span>
-                  <span>{formatGrams(row.grams)}</span>
-                  <div className="analisis__costos">
-                    <RowCostLines period={row} />
-                  </div>
-                  <span>{ANALYSIS_TEXT.gastos}{formatMoney(row.expenses)}</span>
-                  <span>
-                    {ANALYSIS_TEXT.ganancia}{formatMoney(row.profit.amount)}
-                    {pendingSuffix(row.profit.pending_grams)}
-                  </span>
-                  <span>{ANALYSIS_TEXT.caja}{formatMoney(row.cash)}</span>
-                </div>
-              ))}
-            </div>
+            <TarjetasMeses months={data.months} />
           ) : (
             <TablaMeses months={data.months} ids={ids} />
           )}
