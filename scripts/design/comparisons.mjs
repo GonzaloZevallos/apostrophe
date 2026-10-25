@@ -441,7 +441,7 @@ async function nodeIdentity(page, before, beforeHandle, after, afterHandle) {
 async function takeShot(page, { block, ofFirstText, census, side }) {
   const handles = []
   try {
-    await census?.before(page)
+    if (census) await bounded(census.before(page))
     return await shotSteps(page, { block, ofFirstText, census, side }, handles)
   } catch (error) {
     return sideOutcome(shotStepReason(stepKind(error), side), null)
