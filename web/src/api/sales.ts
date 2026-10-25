@@ -61,11 +61,78 @@ export interface SaleDetailLine extends SaleLine {
   cost: SaleLineCost
 }
 
+/** Where the server's one settlement pass leaves the sale (`BillState`, ADR-0053):
+ * a different fact from `Sale['payment']`, which is how the sale was paid, so
+ * the two vocabularies stay apart on purpose. */
+export type BillState = 'cash' | 'transfer' | 'paid' | 'owed' | 'none'
+
+/** The pricing rules a bill line can show; a VIP or special line reads like a list
+ * line, so it has none (`rule: null`). */
+export type BillRule = 'bulk' | 'gift'
+
+export interface SaleBillPayment {
+  state: BillState
+  still_owed: number | null
+}
+
+export interface SaleBillLine {
+  product: string
+  quantity: GramsOut
+  amount: number
+  rule: BillRule | null
+  unit_price: number | null
+}
+
+/** `SaleBillOut` (`app/sales/adapters/schemas.py`): the facts a seller may share with
+ * the customer, read from the last `GET /sales/{id}` and never recomputed here. */
+export interface SaleBill {
+  business_name: string
+  date: SaleDetail['date']
+  shipping_charged: number
+  total: number
+  lines: SaleBillLine[]
+  payment: SaleBillPayment
+  balance: number | null
+}
+
+/** The key lists the contract test (`saleBillContract.test.ts`) holds equal to the
+ * OpenAPI snapshot; `satisfies` ties each to its type so a renamed field fails `tsc`. */
+export const SALE_BILL_KEYS = [
+  'business_name',
+  'date',
+  'shipping_charged',
+  'total',
+  'lines',
+  'payment',
+  'balance',
+] as const satisfies readonly (keyof SaleBill)[]
+export const SALE_BILL_LINE_KEYS = [
+  'product',
+  'quantity',
+  'amount',
+  'rule',
+  'unit_price',
+] as const satisfies readonly (keyof SaleBillLine)[]
+export const SALE_BILL_PAYMENT_KEYS = [
+  'state',
+  'still_owed',
+] as const satisfies readonly (keyof SaleBillPayment)[]
+export const BILL_STATES = [
+  'cash',
+  'transfer',
+  'paid',
+  'owed',
+  'none',
+] as const satisfies readonly BillState[]
+export const BILL_RULES = ['bulk', 'gift'] as const satisfies readonly BillRule[]
+
 export interface SaleDetail extends Omit<Sale, 'lines'> {
   lines: SaleDetailLine[]
   /** Every line's grams summed, gifts included (sales.md: named in the delete
    * confirmation, "Vuelven N g al stock" — the front never adds this up itself). */
   total_grams: GramsOut
+  /** The sale bill, or `null` when the server could not build one. */
+  bill: SaleBill | null
 }
 
 /** The grams a deleted sale gave back to one variety's stock. */
