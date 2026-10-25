@@ -12,6 +12,7 @@ import { useContext, useEffect, useLayoutEffect, useState, type ReactNode } from
 import { createMemoryRouter, Outlet, RouterProvider, useParams, type RouteObject } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
+import { SHOWN_EN } from '../test/shownLanguage'
 import {
   ANALYSIS,
   ARCHIVED_VARIETIES,
@@ -27,7 +28,7 @@ import {
 import Shell from './Shell'
 import { BackParentContext, useBackParent } from './useBackParent'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 
 interface Detail {
   id: number

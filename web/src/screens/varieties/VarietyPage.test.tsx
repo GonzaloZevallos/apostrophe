@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter, matchRoutes, useLocation } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import FlashProvider from '../../flash/FlashProvider'
 import { router as appRouter } from '../../router'
 import Shell from '../../shell/Shell'
@@ -33,7 +34,7 @@ import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 
 const VARIETY_ROW = {
   id: 1,

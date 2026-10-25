@@ -11,6 +11,7 @@ import InAppLink from '../../components/InAppLink'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
+import type { ShownLanguage } from '../../api/language'
 import FlashProvider from '../../flash/FlashProvider'
 import { EXPENSES, EXPENSE_NEW, MORE, relative } from '../../routes'
 import Shell from '../../shell/Shell'
@@ -18,7 +19,7 @@ import Gastos from '../Gastos'
 import ExpenseNewRoute from './ExpenseNewRoute'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
 
 export function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

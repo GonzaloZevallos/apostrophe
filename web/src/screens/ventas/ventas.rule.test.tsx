@@ -17,6 +17,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { stubViewport } from '../../test-viewport'
 import type { Viewport } from '../../routes'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import saleFixture from '../../api/fixtures/sale.json'
 import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
 import { GRAMS_HELP } from '../../copy/sales'
@@ -29,7 +30,7 @@ import NuevaVenta from './NuevaVenta'
 import VentaDetalle from './VentaDetalle'
 import Ventas from './Ventas'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 const ROSA = {
   id: 1,
   name: 'Rosa',

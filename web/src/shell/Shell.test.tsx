@@ -17,6 +17,7 @@ import { createMemoryRouter, Outlet, RouterProvider, useLocation, type RouteObje
 import { afterEach, expect, test, vi } from 'vitest'
 import type { FirstRunAnswer } from '../api/firstRun'
 import type { Me } from '../api/me'
+import { SHOWN_EN } from '../test/shownLanguage'
 import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
 import { inAppState } from '../components/inAppState'
 import InAppLink from '../components/InAppLink'
@@ -45,7 +46,7 @@ import Mas from '../screens/Mas'
 import { chooseTheme } from '../theme'
 import Shell from './Shell'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 
 const BAR = ['Home', 'Sales', 'Customers', 'Varieties', 'More']
 const RAIL = ['Home', 'Sales', 'Customers', 'Varieties', 'Expenses', 'Analysis']

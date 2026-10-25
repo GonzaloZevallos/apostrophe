@@ -14,6 +14,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import saleFixture from '../../api/fixtures/sale.json'
 import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import Ventas from './Ventas'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
@@ -26,7 +27,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
 
 function Context() {
   return <Outlet context={ME} />

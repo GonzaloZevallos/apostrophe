@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import type { OnboardingProgress, OnboardingTarget, StepSlug } from '../../api/onboarding'
 import { inAppState } from '../../components/inAppState'
 import { ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
@@ -22,7 +23,7 @@ import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
 import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 
 interface Stored {
   id: number

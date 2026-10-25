@@ -11,6 +11,7 @@ import { render } from '@testing-library/react'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
+import type { ShownLanguage } from '../../api/language'
 import InAppLink from '../../components/InAppLink'
 import FlashProvider from '../../flash/FlashProvider'
 import {
@@ -32,7 +33,7 @@ import VarietyRoute from './VarietyRoute'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
 
 export const VARIETY_ROW = {
   id: 1,

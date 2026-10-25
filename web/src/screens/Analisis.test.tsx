@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
+import { SHOWN_EN } from '../test/shownLanguage'
 import analysisEmptyFixture from '../api/fixtures/analysis-empty.json'
 import analysisFixture from '../api/fixtures/analysis.json'
 import { ANALYSIS_TEXT } from '../copy/analysis'
@@ -44,7 +45,7 @@ function partsOf(row: HTMLElement): string[] {
   ).map((node) => (node.textContent ?? '').trim())
 }
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04', shown_language: SHOWN_EN }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
