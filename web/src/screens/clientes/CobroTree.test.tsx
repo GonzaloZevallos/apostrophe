@@ -199,6 +199,18 @@ describe('on a phone', () => {
     expect(document.querySelector('.sheet__actions')).toBeNull()
   })
 
+  test('the Amount and Date fields say autocomplete off on the phone, and carry no attribute on a computer', async () => {
+    renderApp([{ pathname: PAYMENT }], 'phone')
+    const amount = await screen.findByLabelText('Amount')
+    expect(amount).toHaveAttribute('autocomplete', 'off')
+    expect(screen.getByLabelText('Date')).toHaveAttribute('autocomplete', 'off')
+
+    flipViewport('computer')
+
+    expect(screen.getByLabelText('Amount')).not.toHaveAttribute('autocomplete')
+    expect(screen.getByLabelText('Date')).not.toHaveAttribute('autocomplete')
+  })
+
   test('the card alone is behind the form: no list beside it', async () => {
     renderApp([{ pathname: PAYMENT }], 'phone')
 

@@ -4572,6 +4572,11 @@ body {
     padding: var(--espacio-md) 0 calc(var(--espacio-md) + var(--inset-abajo));
     background: var(--papel);
   }
+
+  /* A tap on a sheet's control is a tap, never a double-tap zoom (the phone standard's touch). */
+  .sheet button {
+    touch-action: manipulation;
+  }
 }
 
 /* pressed */

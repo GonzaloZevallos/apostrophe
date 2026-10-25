@@ -54,42 +54,6 @@
     "issue": 46
   },
   {
-    "screen": "Cobro",
-    "rule": "autocomplete",
-    "target": "textbox:Amount",
-    "issue": 46
-  },
-  {
-    "screen": "Cobro",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "autocomplete",
-    "target": "textbox:Amount",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeClientes",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "autocomplete",
-    "target": "textbox:Amount",
-    "issue": 46
-  },
-  {
-    "screen": "CobroDesdeInicio",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 46
-  },
-  {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "autocomplete",
     "target": "textbox:New category",

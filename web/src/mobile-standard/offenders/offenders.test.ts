@@ -204,3 +204,31 @@ describe('the offenders of a row new to the registry', () => {
     })
   }
 })
+
+/**
+ * Collect's walked sheet states: the sheet draws them (ADR-0053), so the faults of its own markup
+ * are fixed, not listed. The one exception is Save's `pending-state`: a pending state needs a
+ * word the idle button does not say, and this change adds no visible text.
+ */
+const COLLECT_SHEET_STATES = ['Cobro', 'CobroDesdeClientes', 'CobroDesdeInicio']
+
+/** The entries that name one of `screens`, other than the allowed `pending-state` of Save. */
+function sheetEntries(offenders: readonly Offender[], screens: readonly string[]): Offender[] {
+  return offenders.filter(
+    (offender) =>
+      screens.includes(offender.screen) && !(offender.rule === 'pending-state' && offender.target === 'button:Save'),
+  )
+}
+
+describe("Collect's walked sheet states", () => {
+  test('no entry names them but the pending state of Save', () => {
+    expect(sheetEntries(OFFENDERS, COLLECT_SHEET_STATES)).toEqual([])
+  })
+
+  test('the check rejects an entry that does name one of them', () => {
+    const listed: Offender = { ...violation({ screen: 'CobroDesdeClientes', rule: 'autocomplete', target: 'textbox:Amount' }), issue: 46 }
+    const pending: Offender = { ...listed, rule: 'pending-state', target: 'button:Save' }
+    expect(sheetEntries([listed, pending], COLLECT_SHEET_STATES)).toEqual([listed])
+    expect(sheetEntries([{ ...listed, screen: 'Entrar' }], COLLECT_SHEET_STATES)).toEqual([])
+  })
+})

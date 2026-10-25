@@ -33,6 +33,7 @@ import {
 } from '../../api/payments'
 import Boton from '../../components/Boton'
 import { SheetActions } from '../../components/Sheet'
+import { useViewport } from '../../shell/useViewport'
 import SegmentedChoice from '../../components/SegmentedChoice'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
@@ -105,6 +106,8 @@ export default function Cobro({
   onDirtyChange,
   onSendingChange,
 }: CobroProps) {
+  // Only the phone standard asks for `autocomplete`; the computer form's DOM stays as it was.
+  const phoneAutoComplete = useViewport() === 'phone' ? 'off' : undefined
   const balance = customer.balance
   // The number the API receives: the field's text is only how it is shown (`formatMoney`).
   const [amount, setAmount] = useState<number | null>(balance)
@@ -211,6 +214,7 @@ export default function Cobro({
               className="campo__input cobro__monto"
               type="text"
               inputMode="numeric"
+              autoComplete={phoneAutoComplete}
               value={amount === null ? '' : formatMoney(amount)}
               onChange={(event) => {
                 const native = event.nativeEvent
@@ -241,6 +245,7 @@ export default function Cobro({
             <input
               className="fecha-fila__input"
               type="date"
+              autoComplete={phoneAutoComplete}
               aria-label={COMMON_TEXT.date}
               aria-describedby={dateError === null ? dateTextId : `${dateTextId} ${dateErrorId}`}
               value={date}
