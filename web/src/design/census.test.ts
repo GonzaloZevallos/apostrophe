@@ -27,17 +27,21 @@ const page = (body: string): string =>
 <style>body{margin:0;font-family:'Plus Jakarta Sans',sans-serif}</style>${body}`
 
 const PAGES: Record<string, string> = {
+  // A box sized by the viewport that grows only: the screen is `100vh` high with its content
+  // overflowing, and `.fill` is out of flow, so the document is as tall after the growth as before.
   'n': page(
-    `<div class="pantalla"><div class="tall" style="height:2000px">Nueva venta</div>
-     <div class="fill" style="height:100vh"></div></div>
+    `<div class="pantalla" style="height:100vh"><div class="tall" style="height:2000px">Nueva venta</div>
+     <div class="fill" style="position:absolute;top:0;left:0;width:5px;height:100vh"></div></div>
      <div class="barra" style="position:fixed;bottom:0;left:0;right:0;height:60px"></div>`,
   ),
-  // Calm at the real shot's height, never calm once the census grows it a second time.
+  // A layer over a document taller than the screen: the shot never grows it, the census does, and
+  // the page is calm at the shot's height and never calm once the census has grown it.
   'r': page(
-    `<div class="tall" style="height:2000px">Nueva venta</div><div class="fill" style="height:100vh"></div>
+    `<div style="height:2000px">Nueva venta</div>
+     <div class="capa" style="position:fixed;inset:0;background:#fff"></div>
      <script>addEventListener('resize', () => {
        let ticks = 0
-       if (innerHeight > 4000) setInterval(() => { document.body.dataset.t = String((ticks += 1)) }, 5)
+       if (innerHeight > 1500) setInterval(() => { document.body.dataset.t = String((ticks += 1)) }, 5)
      })</script>`,
   ),
   'j': page(
@@ -162,7 +166,7 @@ describe('comparisons.mjs --census', () => {
     expect(entry.census?.built).toMatchObject({
       census_error: 'census settle after growth failed',
       census_settle: 'unsettled',
-      class: 'grown',
+      class: 'layer',
     })
     expect(entry.census?.built?.sizes_changed).toBeUndefined()
     expect(entry.census?.design?.census_error).toBeUndefined()
