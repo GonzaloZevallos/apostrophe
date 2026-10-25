@@ -10,11 +10,19 @@ from dataclasses import dataclass
 from ipaddress import IPv4Network, IPv6Network, ip_network
 from pathlib import Path
 
+from app.shared.copy import missing_keys
+from app.shared.copy.messages import po_path
+from app.shared.language import ENGLISH, TEST_LOCALE, Language
+
 DEFAULT_DATABASE_URL = "sqlite:///./apostrophe.db"
 DEFAULT_PUBLIC_URL = "http://localhost:8000"
 # Where a removed business's export file is written (app/business_removal); never
 # served, never inside the repository.
 DEFAULT_EXPORT_DIR = "~/apostrophe-exports"
+# The gettext catalogs (docs/adr/0050), next to the code that reads them.
+DEFAULT_LOCALES_DIR = Path(__file__).resolve().parent / "shared" / "copy" / "locales"
+# How many missing key ids an `IncompleteLanguage` diagnostic names.
+_NAMED_MISSING_KEYS = 5
 
 
 class MissingSetting(RuntimeError):
@@ -27,6 +35,16 @@ class InvalidSetting(RuntimeError):
         # Never the value: a malformed CIDR could otherwise put an operator's network
         # layout into a log line (CODING_STANDARDS section 9).
         super().__init__(f"{name} is invalid; see .env.example")
+
+
+class IncompleteLanguage(RuntimeError):
+    """A language the installation would offer lacks copy. An English diagnostic for the
+    operator: the tag and the first missing key ids, nothing else."""
+
+    def __init__(self, tag: str, missing: tuple[str, ...]) -> None:
+        named = ", ".join(missing[:_NAMED_MISSING_KEYS])
+        more = " and more" if len(missing) > _NAMED_MISSING_KEYS else ""
+        super().__init__(f"Language {tag} is incomplete; missing keys: {named}{more}")
 
 
 @dataclass(frozen=True)
@@ -50,6 +68,14 @@ class Settings:
     # Kept as text, like `database_url` and `public_url` above; parsed once by
     # `Settings.trusted_networks()`. Empty by default (the home network has no proxy).
     trusted_proxies: tuple[str, ...] = ()
+    # Where the `.po` catalogs live; tests point it at a fixture directory.
+    locales_dir: Path = DEFAULT_LOCALES_DIR
+    # The languages a business may choose, and the language of operator output. Never
+    # read from the environment: #317 decides how the operator chooses.
+    selectable_languages: tuple[Language, ...] = (ENGLISH,)
+    operator_language: Language = ENGLISH
+    # APOSTROPHE_FORCED_LANGUAGE: only the test locale, to judge layout.
+    forced_language: Language | None = None
 
     def __post_init__(self) -> None:
         # Parse first: a CIDR that cannot be parsed is refused on its own, whether or
@@ -57,6 +83,22 @@ class Settings:
         self.trusted_networks()
         if self.secure_cookie and not self.trusted_proxies:
             raise MissingSetting("APOSTROPHE_TRUSTED_PROXIES")
+        self._check_languages()
+
+    def _check_languages(self) -> None:
+        if self.forced_language is not None and (
+            self.forced_language != TEST_LOCALE
+            or not po_path(self.locales_dir, self.forced_language.tag).is_file()
+        ):
+            raise InvalidSetting("APOSTROPHE_FORCED_LANGUAGE")
+        if TEST_LOCALE in self.selectable_languages:
+            raise InvalidSetting("selectable_languages")
+        if self.operator_language == TEST_LOCALE:
+            raise InvalidSetting("operator_language")
+        for language in (*self.selectable_languages, self.operator_language):
+            missing = missing_keys(self.locales_dir, language)
+            if missing:
+                raise IncompleteLanguage(language.tag, missing)
 
     @property
     def secure_cookie(self) -> bool:
@@ -84,8 +126,17 @@ class Settings:
             public_url=os.environ.get("APOSTROPHE_PUBLIC_URL", DEFAULT_PUBLIC_URL).rstrip("/"),
             web_dist=Path(web_dist) if web_dist else None,
             trusted_proxies=trusted_proxies,
+            forced_language=_forced_language(os.environ.get("APOSTROPHE_FORCED_LANGUAGE", "")),
             export_dir=Path(os.environ.get("APOSTROPHE_EXPORT_DIR", DEFAULT_EXPORT_DIR)),
         )
+
+
+def _forced_language(raw: str) -> Language | None:
+    if not raw:
+        return None
+    if raw != TEST_LOCALE.tag:
+        raise InvalidSetting("APOSTROPHE_FORCED_LANGUAGE")
+    return TEST_LOCALE
 
 
 def _required(name: str) -> str:

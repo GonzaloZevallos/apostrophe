@@ -454,8 +454,32 @@ The side-by-side capture of a screen's design file and the built app, attached t
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
 
 **Product language**:
-The one language the product writes in for a person to read: English. It covers screens, accessible names, API messages, operator script output and the catalog's fixed lines, never the seller's own data. Numeric and date formats stay Argentine.
+The language the product writes in for a person to read. English is the source copy and, until a second language ships (#317), the only selectable language. It covers screens, accessible names, API messages, operator script output and the catalog's fixed lines, never the seller's own data. An API refusal's `detail` is an English diagnostic, never shown. Numeric and date formats stay Argentine.
 _Avoid_: locale, i18n, translation, Rioplatense
+
+**Language**:
+A language the copy module has copy for, identified by its tag. In the app: no word of its own.
+_Avoid_: locale, translation
+
+**Selectable language**:
+A language a business may be set to: every language with complete copy (every English message has a non-empty translation) except the test locale. Only English until #317. In the app: no word of its own.
+_Avoid_: supported language, available locale
+
+**Shown language**:
+The language texts are shown in for a business: its stored language, unless the forced language overrides it. Until #317 every business is English. In the app: no word of its own.
+_Avoid_: display locale, UI language
+
+**Test locale**:
+`en-XA`, generated from English and used only to judge layout, never character limits. Never selectable and never chosen by a request. In the app: no word of its own.
+_Avoid_: pseudo-language, fake language
+
+**Forced language**:
+The test locale, switched on for the whole installation by the operator through `APOSTROPHE_FORCED_LANGUAGE`. It overrides the shown language and the pre-sign-in language, never the operator's output or a stored language. In the app: no word of its own.
+_Avoid_: override mode, debug language
+
+**Pre-sign-in language**:
+The language of the page before sign-in, worked out from the phone's `Accept-Language` and the selectable languages alone, English when nothing matches. No business, user, invitation or link can influence it, so the page reveals nothing about any of them. In the app: no word of its own.
+_Avoid_: browser language, default language
 
 **Copy module**:
 The one keyed place that holds every text the front shows, accessible names included. No screen holds a text of its own, so a rewording or an added language is a change there only.

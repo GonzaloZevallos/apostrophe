@@ -13,6 +13,7 @@ dependencies = [
     "cryptography>=50.0.2",
     "sqlalchemy-libsql>=0.2.0",
     "openpyxl",
+    "babel",
 ]
 
 [project.optional-dependencies]

@@ -23,8 +23,9 @@ conflicting with it (the `*Messages.ts` files master kept editing were deleted b
 - **A value has one home.** A value two areas share lives in `common`.
 - **`es.snapshot.json`** is the frozen `{key: Spanish value}` of the move. Only tests read
   it; it is deleted when every file is `'en'`.
-- **No translation library and no language switch.** `LANGUAGE` is a label on a file, not
-  a runtime choice. Number and collation locales (`es-AR`, `es`) are not words and stay.
+- ~~**No translation library and no language switch.** `LANGUAGE` is a label on a file, not
+  a runtime choice.~~ (struck by ADR-0050) Number and collation locales (`es-AR`, `es`) are
+  not words and stay.
 - **The limits registrations travel with their strings:** `LIMITED_COPY` and
   `LONG_REFUSALS` are exported by each copy file and checked by `copy/copyLimits.test.ts`.
   `api/refusals.ts` keeps the dispatch and its `Record<RefusalCode, …>` types and reads
@@ -34,8 +35,9 @@ conflicting with it (the `*Messages.ts` files master kept editing were deleted b
 
 - Rewording or adding a language is a change under `web/src/copy/` only.
 - A literal text in a screen is a defect the guards (GH-53, landing 1) catch.
-- Toast and notice unions typed on literal strings (`SuccessToast`) keep their literals
-  in `components/AvisoExito.tsx` for now; they are the one place a word is spelled twice.
+- ~~Toast and notice unions typed on literal strings (`SuccessToast`) keep their literals
+  in `components/AvisoExito.tsx` for now; they are the one place a word is spelled twice.~~
+  (struck by ADR-0050)
 
 ## What the guards do not see
 
@@ -113,3 +115,12 @@ The guards are a ratchet, not a proof (GH-53, landing 1).
   - JSX text is not modelled: the scan reads it as code. A misread that leaves a string, a
     template or a comment open shows through `endsInCode`, which the real-tree test asserts
     for every file, so it fails closed.
+
+## Amendment (GH-316, part 1): ADR-0050
+
+ADR-0050 puts the product's words behind i18next on the front and Babel/gettext on the back,
+keyed by id, with English as the source copy. It strikes two clauses of this ADR, above:
+"no translation library and no language switch", and the `SuccessToast` exemption. The
+exemption's permission is withdrawn; the literals in `components/AvisoExito.tsx` remain as
+debt that a later GH-316 front part removes. The rest of this ADR stands until those parts
+move the words.

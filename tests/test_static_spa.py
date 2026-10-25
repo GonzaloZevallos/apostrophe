@@ -12,10 +12,13 @@ from pathlib import Path
 import pytest
 
 from app.main import create_app
+from app.shared.language import ENGLISH
 from app.static_spa import (
     LEGACY_FRONT_PATHS,
     SHARED_FRONT_PATHS,
+    MalformedBuiltFront,
     MalformedLegacyFrontPaths,
+    ShellPage,
     matches_template,
     parse_legacy_front_paths,
 )
@@ -257,3 +260,52 @@ def test_the_api_document_is_the_one_committed_before_the_english_routes(
     ).openapi()
 
     assert json.loads(json.dumps(document)) == snapshot
+
+
+SHELL_FIXTURE = '<!doctype html>\n<html lang="en"><head></head><body>app</body></html>\n'
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "<!doctype html><head></head><body>no html tag</body>",
+        '<html lang="en"></html><html lang="en"></html>',
+        "<html><body></body></html>",
+        '<html lang="en" lang="de"><body></body></html>',
+        '<html lang="en"><body>never closed',
+        "",
+        '<html lang="en">',
+    ],
+)
+def test_boot_refuses_an_index_that_is_not_a_page_with_one_html_lang(
+    tmp_path: Path, text: str
+) -> None:
+    index = tmp_path / "index.html"
+    index.write_text(text, encoding="utf-8")
+
+    with pytest.raises(MalformedBuiltFront) as refused:
+        ShellPage(index, None, (ENGLISH,))
+
+    # The setting's name, never its value: the path comes from APOSTROPHE_WEB_DIST.
+    assert "APOSTROPHE_WEB_DIST" in str(refused.value)
+    assert str(tmp_path) not in str(refused.value)
+
+
+def test_boot_refuses_an_index_that_is_not_utf8(tmp_path: Path) -> None:
+    index = tmp_path / "index.html"
+    index.write_bytes(b'<html lang="en">\xff</html>')
+
+    with pytest.raises(MalformedBuiltFront):
+        ShellPage(index, None, (ENGLISH,))
+
+
+def test_boot_refuses_a_missing_index(tmp_path: Path) -> None:
+    with pytest.raises(MalformedBuiltFront):
+        ShellPage(tmp_path / "index.html", None, (ENGLISH,))
+
+
+def test_boot_accepts_a_page_with_one_html_tag_and_trailing_whitespace(tmp_path: Path) -> None:
+    index = tmp_path / "index.html"
+    index.write_text(SHELL_FIXTURE + "\n\n", encoding="utf-8")
+
+    ShellPage(index, None, (ENGLISH,))

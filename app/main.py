@@ -58,7 +58,7 @@ from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
-from app.static_spa import FrontNavigation, MissingBuiltFront, SpaStatic, api_segments
+from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
@@ -305,7 +305,12 @@ def create_app(
         # Last: a `Mount` is only ever reached once no API route has matched, and it
         # adds no entry to `app.openapi()["paths"]`.
         segments = api_segments(app.openapi()["paths"])
-        spa = SpaStatic(settings.web_dist, segments)
+        shell = ShellPage(
+            settings.web_dist / "index.html",
+            settings.forced_language,
+            settings.selectable_languages,
+        )
+        spa = SpaStatic(settings.web_dist, segments, shell)
         app.mount("/", spa)
         # Outside routing, so `/expenses` reaches the front before the API's router claims
         # it (docs/adr/0024); the same `spa`, so the shell has one author of its headers.
