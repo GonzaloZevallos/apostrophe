@@ -3258,42 +3258,6 @@
     "issue": 47
   },
   {
-    "screen": "PrecioNuevo",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioNuevo",
-    "rule": "touch-action",
-    "target": "button:Save the price",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioNuevo",
-    "rule": "touch-action",
-    "target": "button:Today #/#",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioNuevoFormulario",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioNuevoFormulario",
-    "rule": "touch-action",
-    "target": "button:Save the price",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioNuevoFormulario",
-    "rule": "touch-action",
-    "target": "button:Today #/#",
-    "issue": 47
-  },
-  {
     "screen": "Reset",
     "rule": "touch-action",
     "target": "button:Save and sign in",
