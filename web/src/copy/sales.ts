@@ -21,11 +21,41 @@ export function noPriceMessage(varietyName: string): string {
   return `${varietyName} has no price for that date`
 }
 
+/** The sale bill: the Share/Copy button, its outcomes and the fixed words of the text a
+ * seller sends the customer. The separator is " · ". The bill adds no formatting of its
+ * own, so no entry holds `*`, `_` or a backtick; names and figures are the sale's. `unit`
+ * is the one unit entry until #318. */
+export const SALE_BILL_TEXT = {
+  share: 'Share',
+  copy: 'Copy',
+  copied: 'Bill copied',
+  shareFailed: "Couldn't share. Tap Copy and paste it into the chat.",
+  copyFailed: "Couldn't copy. Select the text below and copy it by hand.",
+  blockName: 'Sale bill',
+  header: (business: string, date: string) => `${business}\n${date}`,
+  item: (product: string, quantity: string, unit: string, amount: string) =>
+    `${product} ${quantity} ${unit} · ${amount}`,
+  bulk: (product: string, quantity: string, unit: string, unitPrice: string, amount: string) =>
+    `${product} ${quantity} ${unit} · bulk price ${unitPrice}/${unit} · ${amount}`,
+  gift: (product: string, quantity: string, unit: string) => `${product} ${quantity} ${unit} · Gift · $ 0`,
+  shipping: (amount: string) => `Shipping · ${amount}`,
+  total: (amount: string) => `Total · ${amount}`,
+  paidCash: 'Paid in cash',
+  paidTransfer: 'Paid by transfer',
+  paid: 'Paid',
+  stillOwed: (amount: string) => `Still owed on this sale: ${amount}`,
+  balance: (amount: string) => `Your balance: ${amount}`,
+  credit: (amount: string) => `In your favor: ${amount}`,
+  unit: 'g',
+}
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: EMPTY_LIST },
   { kind: 'help', text: OWING_HINT },
   { kind: 'help', text: GRAMS_HELP },
   { kind: 'help', text: noPriceMessage(SAMPLES.name) },
+  { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },
+  { kind: 'notice', text: SALE_BILL_TEXT.copyFailed },
 ]
 
 /** Nothing here is over 80 characters. */
@@ -47,6 +77,15 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.removeLine': [['2']],
   'SALES_TEXT.saleOf': [[D]],
   'SALES_TEXT.deleteSaleConfirm': [[M, D, G]],
+  'SALE_BILL_TEXT.header': [['Flores Test', D]],
+  'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
+  'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],
+  'SALE_BILL_TEXT.gift': [['Rosa', '1', 'g']],
+  'SALE_BILL_TEXT.shipping': [[M]],
+  'SALE_BILL_TEXT.total': [[M]],
+  'SALE_BILL_TEXT.stillOwed': [[M]],
+  'SALE_BILL_TEXT.balance': [[M]],
+  'SALE_BILL_TEXT.credit': [[M]],
 })
 
 /** Every text a person reads in this area that is not a named message above, by key. */
