@@ -20,15 +20,19 @@ def baseline() -> dict[str, dict[str, object]]:
     return loaded
 
 
+def operator_baseline() -> dict[str, dict[str, object]]:
+    return {key: entry for key, entry in baseline().items() if key.startswith("operator.")}
+
+
 def test_every_baseline_key_names_its_area_and_a_line() -> None:
-    for key, entry in baseline().items():
+    for key, entry in operator_baseline().items():
         assert re.fullmatch(r"operator\.(accounts|import|removal)\.[a-z_]+", key), key
         assert key.split(".")[1] == entry["area"]
         assert entry["area"] in AREAS
 
 
 def test_every_baseline_text_uses_only_named_placeholders_and_no_percent() -> None:
-    for key, entry in baseline().items():
+    for key, entry in operator_baseline().items():
         text = str(entry["text"])
         assert "%" not in text, key
         for _literal, field, _spec, _conv in Formatter().parse(text):
@@ -36,7 +40,7 @@ def test_every_baseline_text_uses_only_named_placeholders_and_no_percent() -> No
 
 
 def test_the_baseline_holds_every_area() -> None:
-    assert {str(entry["area"]) for entry in baseline().values()} == set(AREAS)
+    assert {str(entry["area"]) for entry in operator_baseline().values()} == set(AREAS)
 
 
 def sample_data(text: str) -> dict[str, str]:

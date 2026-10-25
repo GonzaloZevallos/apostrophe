@@ -181,3 +181,36 @@ msgstr "⟦Řèḟûšìňĝ: ťåƀłè(š) ŵìťĥ ňö ňåṁè öř đèç
 
 msgid "operator.removal.refusing_cycle"
 msgstr "⟦Řèḟûšìňĝ: ťĥè đèłèťè öřđèř ĥåš å çýçłè ťĥřöûĝĥ: {tables}·~·~·~·~·~·~·~·~·⟧"
+
+msgid "catalog.nothing_to_offer"
+msgstr "⟦Ňöťĥìňĝ ťö öḟḟèř ḟöř ňöŵ.·~·~·~·~·⟧"
+
+msgid "catalog.indica_line"
+msgstr "⟦• {indica}% ìňđìçå / {sativa}% šåťìṽå·~·~·~·~⟧"
+
+msgid "catalog.aroma_line"
+msgstr "⟦• Åřöṁå/ḟłåṽöř: {aroma}·~·~·~⟧"
+
+msgid "catalog.price_per_gram_line"
+msgstr "⟦• Ṗřìçè ṗèř ĝřåṁ: {price}·~·~·~·⟧"
+
+msgid "catalog.bulk_line"
+msgstr "⟦• Ḟřöṁ {grams}: {price} èåçĥ·~·~·⟧"
+
+msgid "catalog.default_header"
+msgstr "⟦🌿 **ÇÅŤÅĿÖĜ** 🌿·~·~·~⟧"
+
+msgid "catalog.default_footer"
+msgstr "⟦📩 Ǫûèšťìöňš åňđ öřđèřš ƀý ṗřìṽåťè ṁèššåĝè.·~·~·~·~·~·~·~·⟧"
+
+msgid "expenses.default_category.growing_supplies"
+msgstr "⟦Ĝřöŵìňĝ šûṗṗłìèš·~·~·~⟧"
+
+msgid "expenses.default_category.packaging"
+msgstr "⟦Ṗåçķåĝìňĝ·~·~⟧"
+
+msgid "expenses.default_category.shipping_and_transport"
+msgstr "⟦Šĥìṗṗìňĝ åňđ ťřåňšṗöřť·~·~·~·~⟧"
+
+msgid "expenses.default_category.other"
+msgstr "⟦Öťĥèř·~⟧"
