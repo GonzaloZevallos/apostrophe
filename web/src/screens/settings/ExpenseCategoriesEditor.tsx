@@ -129,14 +129,21 @@ function Categories({
     }
   }, [adding, addCollapsed])
 
+  // The toast and the gone notice clear themselves after 2.5 s; a pending timer must not outlive the editor.
+  const timers = useRef<number[]>([])
+  useEffect(() => {
+    const pending = timers.current
+    return () => pending.forEach((id) => window.clearTimeout(id))
+  }, [])
+
   function flash(message: SuccessToast): void {
     setToast(message)
-    setTimeout(() => setToast(null), 2500)
+    timers.current.push(window.setTimeout(() => setToast(null), 2500))
   }
 
   function flashGone(): void {
     setGoneNotice(true)
-    setTimeout(() => setGoneNotice(false), 2500)
+    timers.current.push(window.setTimeout(() => setGoneNotice(false), 2500))
   }
 
   function setDraft(id: number, name: string | undefined): void {
