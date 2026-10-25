@@ -96,3 +96,11 @@ Not available: the old runs were not taken (see the baseline section). Unstable 
 ## Known limit of the census
 
 `census.after` grows the design page while the design context's font route is still active. A font request that the growth itself triggers and the route cannot serve would be recorded as a side failure, which under `--strict` is a non-zero exit. In the census run above no side failed and no `census_error` was written, so the limit was not hit; it is recorded here, not reproduced.
+
+## Hand check 1 of 4 (`Inicio`): red, work stopped
+
+- Command, in a scratch tree of app commit `2c49d361` with this branch's `scripts/design` and `web/src/design` laid over it (`git archive`, `web/node_modules` and `.venv` linked): `scripts/design/compare.sh --strict --only Inicio`, fresh `mktemp -d`; 2026-10-25 03:55:30 to 03:56:28 -03:00; exit 1. The scratch tree is needed because this branch's `app/` is ahead of `2c49d361` (`app/` only; `web/src` outside `web/src/design` is identical).
+- Read from that run's own `index.json`: `design: null`, `built: null`, no `Inicio.design.png` and no `Inicio.built.png`.
+  - design side: `shot: section outside the viewport (design)` (`regionMiss`)
+  - built side: `shot: the page changed when the viewport grew (built)` (`sizeRecordMiss`)
+- Nothing was loosened. The other three hand checks (`VariedadesCompu`, `Cobro`, `InicioChecklist`) and the whole-registry `--strict` run were not started, as the brief says. The census run above (`a3c5ac83`) reported `Inicio` as a grown row with sizes only compared on pages thrown away; this is the first real grown shot of the method, which is known risk 1 of ADR-0052.

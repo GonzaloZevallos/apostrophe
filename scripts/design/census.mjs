@@ -9,98 +9,11 @@
 
 import { SETTLE_REASON_REJECTED, SETTLE_REASON_UNSETTLED } from './settle.mjs'
 import { censusClass, coversScreen, fitsViewport, grownHeight, sizesChanged } from './shot.mjs'
+import { allElements, fixedInPage, layerInPage, readMetrics, sameNodesInPage, snapshotInPage } from './shot-page.mjs'
 
 export const ERROR_BEFORE = 'census read before growth failed'
 export const ERROR_AFTER = 'census read after growth failed'
 export const ERROR_SETTLE = 'census settle after growth failed'
-
-// Every element of the document, in document order. Held by a handle: nothing is attached to the page.
-const allElements = () => [...document.querySelectorAll('*')]
-
-// The size of the document against its window.
-const readMetrics = () => ({
-  scrollWidth: document.documentElement.scrollWidth,
-  scrollHeight: document.documentElement.scrollHeight,
-  innerWidth: window.innerWidth,
-  innerHeight: window.innerHeight,
-})
-
-// The fixed elements, each as the predicate reads it, with its index among all the elements.
-// Self-contained: sent to the page.
-function fixedInPage(elements) {
-  const found = []
-  elements.forEach((element, index) => {
-    const style = getComputedStyle(element)
-    if (style.position !== 'fixed') return
-    const rect = element.getBoundingClientRect()
-    found.push({
-      index,
-      display: style.display,
-      visibility: style.visibility,
-      opacity: Number(style.opacity),
-      rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
-    })
-  })
-  return found
-}
-
-// One entry per element, parallel to the handle: its tag-and-class path, its ordinal among the
-// elements of that path in document order, its size, and whether it is `.pantalla` or holds one.
-// Also the count per path, whether the 900 px query matches, and the inline `--vv-alto`. Self-contained.
-function snapshotInPage(elements) {
-  const seen = {}
-  let vvAlto = null
-  const entries = elements.map((element) => {
-    const classes = (element.getAttribute('class') ?? '').trim().split(/\s+/).filter(Boolean)
-    const path = element.localName + classes.map((name) => `.${name}`).join('')
-    const ordinal = seen[path] ?? 0
-    seen[path] = ordinal + 1
-    const rect = element.getBoundingClientRect()
-    if (vvAlto === null) {
-      const value = element.style?.getPropertyValue('--vv-alto') ?? ''
-      if (value !== '') vvAlto = value
-    }
-    return {
-      path,
-      ordinal,
-      width: Math.round(rect.width * 100) / 100,
-      height: Math.round(rect.height * 100) / 100,
-      pantalla: element.classList.contains('pantalla') || element.querySelector('.pantalla') !== null,
-    }
-  })
-  return { entries, counts: seen, query900: window.matchMedia('(min-width: 900px)').matches, vvAlto }
-}
-
-// The layer's own box, its inner scroll containers and whether its frame lies inside the viewport.
-// `ordinals` are the snapshot's, by index. Self-contained.
-function layerInPage([elements, index, ordinals, paths]) {
-  const layer = elements[index]
-  const rect = layer.getBoundingClientRect()
-  const containers = []
-  elements.forEach((element, at) => {
-    if (!layer.contains(element)) return
-    const { overflowY } = getComputedStyle(element)
-    if (overflowY !== 'auto' && overflowY !== 'scroll' && overflowY !== 'overlay') return
-    containers.push({
-      path: paths[at],
-      ordinal: ordinals[at],
-      client_height: element.clientHeight,
-      scroll_height: element.scrollHeight,
-      scroll_top: element.scrollTop,
-    })
-  })
-  return {
-    overflows: layer.scrollHeight > layer.clientHeight || layer.scrollWidth > layer.clientWidth,
-    frame_inside_viewport:
-      rect.left >= 0 && rect.top >= 0 && rect.right <= window.innerWidth && rect.bottom <= window.innerHeight,
-    scroll_containers: containers,
-  }
-}
-
-// Which elements before are the very same node after, for the pairs of indexes given. Self-contained.
-function sameNodesInPage([before, after, pairs]) {
-  return pairs.map(([was, now]) => before[was] === after[now])
-}
 
 const settleReason = (reason) =>
   reason === SETTLE_REASON_UNSETTLED ? 'unsettled' : reason === SETTLE_REASON_REJECTED ? 'rejected' : 'other'
@@ -150,8 +63,12 @@ export function createCensus({ deviceScaleFactor, settle }) {
     })
     before = await page.evaluate(snapshotInPage, handle)
     if (covering !== undefined) {
-      const ordinals = before.entries.map((entry) => entry.ordinal)
-      const paths = before.entries.map((entry) => entry.path)
+      const ordinals = []
+      const paths = []
+      for (const entry of before.entries) {
+        ordinals[entry.index] = entry.ordinal
+        paths[entry.index] = entry.path
+      }
       record.layer_metrics = await page.evaluate(layerInPage, [handle, covering.index, ordinals, paths])
     }
   }
@@ -179,7 +96,11 @@ export function createCensus({ deviceScaleFactor, settle }) {
       const now = nowOf.get(keyOf(entry))
       if (now !== undefined) pairs.push([was, now])
     })
-    const same = await page.evaluate(sameNodesInPage, [handle, afterHandle, pairs])
+    const same = await page.evaluate(sameNodesInPage, [
+      handle,
+      afterHandle,
+      pairs.map(([was, now]) => [before.entries[was].index, after.entries[now].index]),
+    ])
     pairs.forEach(([was], at) => {
       before.entries[was].same_node = same[at]
     })

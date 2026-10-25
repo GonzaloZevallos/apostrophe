@@ -5,7 +5,7 @@
 //
 // `--facts` is what `scripts/design/sample-app.sh` wrote. Screens and how to reach each
 // state come from `scripts/design/screens.json`. A step that fails, a screen not built
-// yet and a page wider than its viewport are written on the image and in `index.json`,
+// yet are written on the image and in `index.json`,
 // never thrown: one broken screen must not hide the others. The facts carry `today`.
 //
 // A design capture never touches the network (ADR-0042): its Google Fonts requests are
@@ -33,7 +33,7 @@
 // English `census_error`.
 
 import { createRequire } from 'node:module'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -56,7 +56,8 @@ import {
 } from './settle.mjs'
 import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
 import { createCensus } from './census.mjs'
-import { grownHeight, shotOptions } from './shot.mjs'
+import { coversScreen, layerMiss, planShot, regionMiss, shotStepReason, sizeRecordMiss, staleFiles, viewportMovedReason, viewportUnchanged } from './shot.mjs'
+import { allElements, fixedInPage, layerReadInPage, readMetrics, sameNodesInPage, snapshotInPage } from './shot-page.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -356,10 +357,16 @@ async function applyTextScale(page, s, side, ofFirstText) {
   return settle(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText })
 }
 
-// The screenshot has been taken: the scaled text is checked once more, then the page must still
-// be at rest; a miss in either discards it.
-async function verifyAfterShot(page, s, side, png) {
-  const miss = s.text_scale ? await scaleMisses(page, s, side, 'después de la captura') : null
+// The screenshot has been taken: the viewport must be the size it was at the final settle, the
+// scaled text is checked once more, then the page must still be at rest; a miss in any discards it.
+// `label` is the side in the text-scale note; `side` is the one in the shot's own reasons.
+const settledViewport = new WeakMap()
+
+async function verifyAfterShot(page, s, label, png, side) {
+  if (!viewportUnchanged(settledViewport.get(page), page.viewportSize())) {
+    return sideOutcome(viewportMovedReason(side), null)
+  }
+  const miss = s.text_scale ? await scaleMisses(page, s, label, 'después de la captura') : null
   return sideOutcome(miss ?? (await restAfterShot(page)), png)
 }
 
@@ -368,41 +375,27 @@ const designOf = (s) => s.design ?? s.screen
 
 // A section is cropped to its parent block. When a direct child sticks out of that block
 // (a fixed-width card inside a padded column), the crop is the union of the block and its
-// children, in page coordinates, so no line of the section is cut; a block that holds its
-// children is cropped exactly as `locator.screenshot()` does. The clip is read before the
-// final settle, so that the screenshot is the very next call after it.
+// children, in page coordinates, so no line of the section is cut. Always a box, whole pixels
+// outward, as `locator.screenshot()` rounds its own. Read before the final settle, so that the
+// screenshot is the very next call after it.
 async function sectionClip(block) {
   return block.evaluate((el) => {
     const box = (e) => {
       const r = e.getBoundingClientRect()
       return { left: r.left + scrollX, top: r.top + scrollY, right: r.right + scrollX, bottom: r.bottom + scrollY }
     }
-    const own = box(el)
     // A child with no box (display:none, display:contents) sits at the origin: not a part of the section.
     const drawn = [...el.children].filter((c) => c.getBoundingClientRect().width > 0 || c.getBoundingClientRect().height > 0)
-    const all = [own, ...drawn.map(box)]
+    const all = [box(el), ...drawn.map(box)]
     const left = Math.min(...all.map((b) => b.left))
     const top = Math.min(...all.map((b) => b.top))
     const right = Math.max(...all.map((b) => b.right))
     const bottom = Math.max(...all.map((b) => b.bottom))
-    const slack = 0.5
-    const fits = own.left - left < slack && own.top - top < slack && right - own.right < slack && bottom - own.bottom < slack
-    if (fits) return null
-    // Whole pixels outward, as `locator.screenshot()` rounds its own box.
     const x = Math.floor(left)
     const y = Math.floor(top)
     return { x, y, width: Math.ceil(right) - x, height: Math.ceil(bottom) - y }
   })
 }
-
-// The size of the document against its window, in CSS px.
-const readMetrics = (page) =>
-  page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    scrollHeight: document.documentElement.scrollHeight,
-    innerWidth: window.innerWidth,
-    innerHeight: window.innerHeight,
-  }))
 
 // Playwright's `caret: 'hide'` sets and restores a `style` attribute on the page's text inputs,
 // a DOM mutation the probe would see in the frame after the shot. The caret is hidden instead by
@@ -410,24 +403,88 @@ const readMetrics = (page) =>
 // own caret option alone: the pixels are the same and the page is untouched.
 const SHOT = { animations: 'disabled', caret: 'initial' }
 
-// How a shot is taken, the same on both sides (`shot.mjs` decides each step; nothing here looks at
-// the row, the side, the file or the width). A full-page shot of a page taller than its viewport
-// makes Chromium resize the viewport for a moment; at 900 px or more that flips the app's viewport
-// query and remounts the screen (GH-273). So the viewport grows to the height of the document, same
-// width, first; the page settles on the result; and `fullPage` is asked for only by a page wider
-// than its viewport. The census, when on, reads its values right before the growth.
-async function takeShot(page, { block, ofFirstText, census }) {
-  await census?.before(page)
+// A step of the shot that cannot finish is the side's failure, with a fixed reason and no error text.
+const stepKind = (error) => (error?.message === 'timeout' || error?.name === 'TimeoutError' ? 'timeout' : 'error')
+
+// Every read, resize and the shot itself run bounded by `withinTimeout`; the settle keeps its own bounds.
+const bounded = (promise) => withinTimeout(Promise.resolve(promise))
+
+// The before and after snapshots of the elements, matched by node identity through their handles.
+async function sizeSnapshot(page, handle) {
+  return bounded(page.evaluate(snapshotInPage, handle))
+}
+
+async function nodeIdentity(page, before, beforeHandle, after, afterHandle) {
+  const afterAt = new Map(after.entries.map((entry) => [`${entry.path}\u0000${entry.ordinal}`, entry]))
+  const pairs = []
+  const matched = []
+  for (const entry of before.entries) {
+    const other = afterAt.get(`${entry.path}\u0000${entry.ordinal}`)
+    if (other === undefined) continue
+    pairs.push([entry.index, other.index])
+    matched.push(other)
+  }
+  const same = await bounded(page.evaluate(sameNodesInPage, [beforeHandle, afterHandle, pairs]))
+  matched.forEach((other, at) => {
+    other.same_node = same[at]
+  })
+}
+
+// How a shot is taken, the same for every row and both sides (`shot.mjs` decides each step; nothing here
+// looks at the row, the file, the width or the kind of screen; `side` only names a failure). A layer
+// over the screen is never grown: its frame must lie inside the viewport and nothing in it may be
+// scrolled. Any other page grows the viewport once, to the height of the document at the same width
+// (a full-page shot makes Chromium resize the viewport for a moment, and `captureBeyondViewport` does
+// too: docs/adr/0052), settles, and only then is checked: the sizes before and after the growth, then
+// that the region fits the viewport. The shot is a plain one, with the section's clip when there is one.
+// A miss, a timeout included, is `sideOutcome(reason, null)`.
+async function takeShot(page, { block, ofFirstText, census, side }) {
+  const handles = []
+  try {
+    if (census) await bounded(census.before(page))
+    return await shotSteps(page, { block, ofFirstText, census, side }, handles)
+  } catch (error) {
+    return sideOutcome(shotStepReason(stepKind(error), side), null)
+  } finally {
+    await Promise.allSettled(handles.map((handle) => handle.dispose()))
+  }
+}
+
+async function shotSteps(page, { block, ofFirstText, census, side }, handles) {
   const viewport = page.viewportSize()
-  const height = grownHeight(await readMetrics(page), viewport)
-  if (height !== null) await page.setViewportSize({ width: viewport.width, height })
-  // The clip is read before the final settle, so that the screenshot is the very next call after it.
-  const clip = block ? await sectionClip(block) : null
+  const metrics = await bounded(page.evaluate(readMetrics))
+  const beforeHandle = await bounded(page.evaluateHandle(allElements))
+  handles.push(beforeHandle)
+  const fixed = await bounded(page.evaluate(fixedInPage, beforeHandle))
+  const plan = planShot(metrics, fixed, viewport)
+  let before = null
+  if (plan.mode === 'grow') {
+    before = await sizeSnapshot(page, beforeHandle)
+    if (plan.height !== viewport.height) {
+      await bounded(page.setViewportSize({ width: viewport.width, height: plan.height }))
+    }
+  }
+  const clip = block ? await bounded(sectionClip(block)) : undefined
   const last = await settle(page, { advanceMs: 0, ofFirstText })
   if (last) return sideOutcome(last, null)
+  settledViewport.set(page, page.viewportSize())
+  let miss
+  if (plan.mode === 'layer') {
+    const covering = fixed.find((element) => coversScreen([element], viewport))
+    const { frame, containers } = await bounded(page.evaluate(layerReadInPage, [beforeHandle, covering.index]))
+    miss = layerMiss(frame, viewport, containers, side)
+  } else {
+    const afterHandle = await bounded(page.evaluateHandle(allElements))
+    handles.push(afterHandle)
+    const after = await sizeSnapshot(page, afterHandle)
+    await nodeIdentity(page, before, beforeHandle, after, afterHandle)
+    miss = sizeRecordMiss(before, after, side)
+  }
+  miss ??= regionMiss(await bounded(page.evaluate(readMetrics)), clip, side, { layer: plan.mode === 'layer' })
+  if (miss) return sideOutcome(miss, null)
   census?.atShot(page)
-  if (block && !clip) return sideOutcome(null, await block.screenshot(SHOT))
-  return sideOutcome(null, await page.screenshot(shotOptions(await readMetrics(page), clip ?? undefined)))
+  const png = await bounded(page.screenshot(clip === undefined ? SHOT : { ...SHOT, clip }))
+  return sideOutcome(null, png)
 }
 
 async function captureDesign(browser, s, options, ctx) {
@@ -452,9 +509,9 @@ async function captureDesign(browser, s, options, ctx) {
       if (count !== 1) throw new Error(`${s.screen}: section matches ${count} elements, expected 1`)
       block = label.locator('xpath=..')
     }
-    const shot = await takeShot(page, { block, ofFirstText: true, census })
+    const shot = await takeShot(page, { block, ofFirstText: true, census, side: 'design' })
     if (shot.failure !== null) return shot
-    const outcome = await verifyAfterShot(page, s, 'diseño', shot.png)
+    const outcome = await verifyAfterShot(page, s, 'diseño', shot.png, 'design')
     await census?.after(page)
     return outcome
   } finally {
@@ -463,20 +520,18 @@ async function captureDesign(browser, s, options, ctx) {
   }
 }
 
-// The built screen in the state its entry asks for; what could not be reached, or a page
-// wider than its viewport, goes into `notes`.
+// The built screen in the state its entry asks for; what could not be reached is the side's failure.
 async function captureBuilt(browser, s, options, ctx) {
-  const { notes } = ctx
   const context = await browser.newContext(options)
   try {
-    return await captureBuiltIn(context, s, options, ctx, notes)
+    return await captureBuiltIn(context, s, options, ctx)
   } finally {
     await ctx.census?.built.dispose()
     await context.close()
   }
 }
 
-async function captureBuiltIn(context, s, options, ctx, notes) {
+async function captureBuiltIn(context, s, options, ctx) {
   await pauseClock(context)
   await addProbe(context)
   if (s.tema) {
@@ -516,12 +571,9 @@ async function captureBuiltIn(context, s, options, ctx, notes) {
   }
   const scaled = await applyTextScale(page, s, 'construido', false)
   if (scaled) return sideOutcome(scaled, null)
-  const width = options.viewport.width
-  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
-  if (scrollWidth > width) notes.push(`desborda: ${scrollWidth}px de ancho en ${width}px`)
-  const shot = await takeShot(page, { block: null, ofFirstText: false, census: ctx.census?.built })
+  const shot = await takeShot(page, { block: null, ofFirstText: false, census: ctx.census?.built, side: 'built' })
   if (shot.failure !== null) return shot
-  const outcome = await verifyAfterShot(page, s, 'construido', shot.png)
+  const outcome = await verifyAfterShot(page, s, 'construido', shot.png, 'built')
   await ctx.census?.built.after(page)
   return outcome
 }
@@ -580,6 +632,8 @@ try {
       colorScheme: 'light',
       baseURL: facts.url,
     }
+    // A row's side PNGs come only from this run's own buffers: the previous run's are deleted first.
+    for (const file of staleFiles(readdirSync(out), [s.screen])) unlinkSync(join(out, file))
     const ctx = { notes: [], failures: [], census: values.census ? censusOf(options, s) : null }
     const { notes } = ctx
     const entry = { screen: s.screen, file: null, notes, design: null, built: null }
