@@ -283,8 +283,12 @@ def test_boot_refuses_an_index_that_is_not_a_page_with_one_html_lang(
     index = tmp_path / "index.html"
     index.write_text(text, encoding="utf-8")
 
-    with pytest.raises(MalformedBuiltFront):
+    with pytest.raises(MalformedBuiltFront) as refused:
         ShellPage(index, None, (ENGLISH,))
+
+    # The setting's name, never its value: the path comes from APOSTROPHE_WEB_DIST.
+    assert "APOSTROPHE_WEB_DIST" in str(refused.value)
+    assert str(tmp_path) not in str(refused.value)
 
 
 def test_boot_refuses_an_index_that_is_not_utf8(tmp_path: Path) -> None:

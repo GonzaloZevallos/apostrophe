@@ -163,10 +163,11 @@ class MissingBuiltFront(RuntimeError):
 
 
 class MalformedBuiltFront(RuntimeError):
-    def __init__(self, path: Path) -> None:
+    def __init__(self) -> None:
+        # The setting's name, never its value: the path is built from APOSTROPHE_WEB_DIST.
         super().__init__(
-            f'{path} is not a page with exactly one <html lang="…"> tag and a closing '
-            "</html>; run `npm run build` in web/ again"
+            "The index.html under APOSTROPHE_WEB_DIST is not a page with exactly one "
+            '<html lang="…"> tag and a closing </html>; run `npm run build` in web/ again'
         )
 
 
@@ -222,7 +223,7 @@ class ShellPage:
         self._lock = anyio.Lock()
         loaded = self._load()
         if loaded is None:
-            raise MalformedBuiltFront(index_path)
+            raise MalformedBuiltFront
         self._key, self._pages = loaded
 
     def _load(self) -> tuple[tuple[int, int], dict[Language, bytes]] | None:
