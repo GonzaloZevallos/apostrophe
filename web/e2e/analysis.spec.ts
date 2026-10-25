@@ -274,10 +274,10 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use
 
   // The same rows on the phone, as cards.
   await page.setViewportSize({ width: 390, height: 844 })
-  const phoneWeeks = page.locator('.analisis__semana')
+  const phoneWeeks = page.locator('.analisis__semanas > .analisis__tarjeta')
   await expect(phoneWeeks.filter({ hasText: 'Cost of goods sold $ 10.000 and 5 g without cost' })).toHaveCount(1)
   await expect(phoneWeeks.last()).toContainText('Stock shortfall 1 g without cost')
-  await expect(page.locator('.analisis__mes-fila').filter({ hasText: 'Promotion 2 g without cost' })).toHaveCount(1)
+  await expect(page.locator('.analisis__meses > .analisis__tarjeta').filter({ hasText: 'Promotion 2 g without cost' })).toHaveCount(1)
 
   // Screenshots for the PR: header, the rows and the since-the-first-record block, per
   // viewport and theme.
@@ -306,5 +306,82 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use
     }
   }
 
+  expect(consoleMessages).toEqual([])
+})
+
+test('Análisis cards fit at 320 px and at 246 px with a 60-character name and nine-digit figures', async ({
+  page,
+}) => {
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+  await signUpNewBusiness(page, {
+    businessName: `Flores del Ancho ${uniqueTag()}`,
+    email: `duena-ancho-${uniqueTag()}@example.com`,
+  })
+
+  const longName = 'Rosa de invernadero de pétalos grandes y color muy intenso 1'.slice(0, 60)
+  expect(longName).toHaveLength(60)
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill(longName)
+  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
+  await page.getByRole('link', { name: /Rosa de invernadero/ }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
+  await page.getByLabel(/^List price/).fill('900000')
+  await page.getByRole('button', { name: 'Save the price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
+
+  // The first record is two weeks old, so there is more than the current week. 10 g are costed; the 500 g sold leave 490 g without a cost: a partly pending figure.
+  await page.goto(STOCK_ENTRY_NEW)
+  const today = await page.getByLabel('Date').inputValue()
+  await recordEntry(page, { date: daysFrom(today, -14), grams: '10', variety: longName, origin: 'Purchase', cost: '10000' })
+  await page.goto(SALE_NEW)
+  await fillSaleLine(page, 1, { variety: longName, grams: '500' })
+  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('button', { name: 'Save sale' }).click()
+  await expect(page.getByText('Sale saved')).toBeVisible()
+
+  for (const width of [320, 246]) {
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto(ANALYSIS)
+    await expect(page.getByText('You sold in the month')).toBeVisible()
+
+    // The cards' column holds nothing wider than the page. The hero's nine-digit figure and
+    // the aside are fitted by the hero-and-aside subtask, which owns the page-level check
+    // (`documentElement.scrollWidth <= clientWidth`) once they fit.
+    const wide = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.analisis__principal, .analisis__principal *'))
+        .filter((node) => node.getBoundingClientRect().right > document.documentElement.clientWidth + 0.5)
+        .map((node) => `${node.tagName}.${node.className}:${node.textContent?.slice(0, 30)}`)
+        .slice(0, 12),
+    )
+    expect(wide, `elements of the cards wider than the page at ${width} px`).toEqual([])
+
+    const name = page.locator('.analisis__variedades .analisis__tarjeta-titulo').first()
+    const truncated = await name.evaluate((node) => ({
+      cut: node.scrollWidth > node.clientWidth,
+      overflow: getComputedStyle(node).textOverflow,
+    }))
+    expect(truncated).toEqual({ cut: true, overflow: 'ellipsis' })
+
+    // Every pending line sits below the figure it belongs to, whole.
+    const pendings = page.locator('.analisis__tarjeta-pendiente')
+    expect(await pendings.count()).toBeGreaterThan(0)
+    for (let i = 0; i < (await pendings.count()); i += 1) {
+      const gap = await pendings.nth(i).evaluate((node) => {
+        const figure = node.parentElement?.querySelector('.analisis__tarjeta-cifra')
+        if (!figure) return Number.POSITIVE_INFINITY
+        return node.getBoundingClientRect().top - figure.getBoundingClientRect().bottom
+      })
+      expect(gap).toBeGreaterThanOrEqual(0)
+    }
+
+    // The current week is set apart by its border, not by its fill alone.
+    const edges = await page.locator('.analisis__semanas > .analisis__tarjeta').evaluateAll((cards) =>
+      cards.map((card) => getComputedStyle(card).borderInlineStartWidth),
+    )
+    expect(edges.at(-1)).not.toBe(edges[0])
+  }
   expect(consoleMessages).toEqual([])
 })
