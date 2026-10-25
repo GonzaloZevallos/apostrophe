@@ -73,6 +73,16 @@ CASES = [
         + "\n\n\U0001f4e9 Consultas y pedidos por privado.",
     ),
     Case(
+        "a stored Spanish header and footer and no entries",
+        "\U0001f33f **CATÁLOGO** \U0001f33f",
+        "\U0001f4e9 Consultas y pedidos por privado.",
+        [],
+        None,
+        "\U0001f33f **CATÁLOGO** \U0001f33f\n\n"
+        + NOTHING
+        + "\n\n\U0001f4e9 Consultas y pedidos por privado.",
+    ),
+    Case(
         "the 24K Gold example",
         DEFAULT_HEADER,
         DEFAULT_FOOTER,
