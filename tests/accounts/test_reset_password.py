@@ -49,7 +49,9 @@ def test_a_link_is_dead_after_24_hours(
     clock.set(NOW + timedelta(hours=24))
 
     looked_up = anonymous_client.get(f"/reset-links/{token}")
-    submitted = anonymous_client.post(f"/reset-links/{token}", json={"new_password": NEW_PASSWORD})
+    submitted = anonymous_client.post(
+        f"/reset-links/{token}", json={"new_password": NEW_PASSWORD}
+    )
 
     assert looked_up.status_code == 404
     assert submitted.status_code == 404
@@ -86,7 +88,9 @@ def test_a_link_is_retired_by_a_change(
 ) -> None:
     token = issue(engine, clock())
 
-    client.post("/auth/password", json={"current_password": PASSWORD, "new_password": NEW_PASSWORD})
+    client.post(
+        "/auth/password", json={"current_password": PASSWORD, "new_password": NEW_PASSWORD}
+    )
 
     dead = anonymous_client.post(f"/reset-links/{token}", json={"new_password": "irrelevant!!"})
     assert dead.status_code == 404
@@ -166,7 +170,9 @@ def test_success_closes_every_earlier_session_and_signs_this_device_in(
     old_token = client.headers["Authorization"].removeprefix("Bearer ")
     token = issue(engine, clock())
 
-    submitted = anonymous_client.post(f"/reset-links/{token}", json={"new_password": NEW_PASSWORD})
+    submitted = anonymous_client.post(
+        f"/reset-links/{token}", json={"new_password": NEW_PASSWORD}
+    )
 
     assert submitted.status_code == 200
     new_session_token = submitted.json()["token"]
@@ -181,7 +187,9 @@ def test_success_lifts_an_active_email_lock_and_leaves_the_address_alone(
     anonymous_client: TestClient, client: TestClient, engine: Engine, clock: MovableClock
 ) -> None:
     for _ in range(5):
-        anonymous_client.post("/auth/login", json={"email": "uno@example.com", "password": "wrong"})
+        anonymous_client.post(
+            "/auth/login", json={"email": "uno@example.com", "password": "wrong"}
+        )
     with Session(engine) as session:
         locked = session.get(LoginGuardRow, "uno@example.com")
         assert locked is not None and locked.locked_until is not None

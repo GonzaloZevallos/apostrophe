@@ -368,8 +368,6 @@ def test_one_business_s_switches_never_gate_another_business_s_entries(
 
     assert (mine["bulk_price"], mine["vip_price"]) == (None, None)
     assert (theirs["bulk_price"], theirs["vip_price"]) == (10_000, 9_000)
-
-
 def test_an_archived_variety_is_absent_from_the_list_but_still_found_by_id(
     client: TestClient, engine: Engine
 ) -> None:

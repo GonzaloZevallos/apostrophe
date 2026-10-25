@@ -483,7 +483,9 @@ def test_a_mismatch_between_exported_and_deleted_ids_rolls_back_and_removes_the_
 
 
 def test_a_failure_during_the_delete_rolls_back_and_removes_the_file() -> None:
-    schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows(), _delete_fails=StorageBusy("locked"))
+    schema_rows = FakeSchemaRows(
+        _schema(), BUSINESS, _rows(), _delete_fails=StorageBusy("locked")
+    )
     export_file = FakeExportFile()
     transaction = FakeTransaction()
     output = FakeOutput()

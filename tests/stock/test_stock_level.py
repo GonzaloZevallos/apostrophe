@@ -174,7 +174,9 @@ def test_sold_out_since_follows_a_withdrawals_date() -> None:
 
 
 def test_days_left_is_none_when_stock_is_at_or_below_zero() -> None:
-    level = stock_level([_lot("10", date(2026, 9, 1))], [_draw("12", TODAY)], None, TODAY)
+    level = stock_level(
+        [_lot("10", date(2026, 9, 1))], [_draw("12", TODAY)], None, TODAY
+    )
 
     assert level.days_left is None
 
@@ -187,7 +189,9 @@ def test_days_left_is_none_with_nothing_out_in_the_last_30_days() -> None:
 
 def test_days_left_counts_a_draw_exactly_29_days_before_today() -> None:
     edge_day = TODAY - timedelta(days=29)
-    level = stock_level([_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY)
+    level = stock_level(
+        [_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY
+    )
 
     # Stock is 100 - 10 = 90; the edge draw counts: 90 * 30 // 10 = 270.
     assert level.days_left == 270
@@ -195,7 +199,9 @@ def test_days_left_counts_a_draw_exactly_29_days_before_today() -> None:
 
 def test_days_left_excludes_a_draw_30_days_before_today() -> None:
     edge_day = TODAY - timedelta(days=30)
-    level = stock_level([_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY)
+    level = stock_level(
+        [_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY
+    )
 
     # The draw still reduces stock (90g) but falls outside the 30-day pace window.
     assert level.days_left is None

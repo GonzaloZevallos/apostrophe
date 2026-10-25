@@ -30,7 +30,9 @@ SKIPPED_TABLES: frozenset[str] = frozenset({"alembic_version", "login_address_gu
 # `reset_link` carries its own `business_id` (unlike `invitation` and `login_guard`,
 # both platform tables) and is withheld whole rather than exported: a reset link holds
 # nothing a business export is for.
-WITHHELD_TABLES: frozenset[str] = frozenset({INVITATION_TABLE, LOGIN_GUARD_TABLE, RESET_LINK_TABLE})
+WITHHELD_TABLES: frozenset[str] = frozenset(
+    {INVITATION_TABLE, LOGIN_GUARD_TABLE, RESET_LINK_TABLE}
+)
 
 # (table, column) pairs dropped from every exported row, even though their table is
 # exported. Each future secret column joins this set in the diff that adds it.

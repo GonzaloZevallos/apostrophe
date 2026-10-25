@@ -33,7 +33,8 @@ class SqlDraws:
             select(SaleLineRow, SaleRow, VarietyRow.name)
             .join(
                 SaleRow,
-                (SaleRow.id == SaleLineRow.sale_id) & (SaleRow.business_id == self._business_id),
+                (SaleRow.id == SaleLineRow.sale_id)
+                & (SaleRow.business_id == self._business_id),
             )
             .join(
                 VarietyRow,
