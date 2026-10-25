@@ -90,9 +90,10 @@ export default function CobroRoute() {
   const ready = data !== undefined
   const focusedTitle = useRef(false)
   useEffect(() => {
-    if (!computer || !ready || focusedTitle.current) return
+    if (!ready || focusedTitle.current) return
+    // Decided once, at the first draw: a phone that flips to a computer keeps the focus it has.
     focusedTitle.current = true
-    titleRef.current?.focus()
+    if (computer) titleRef.current?.focus()
   }, [computer, ready])
 
   const focusBeforeAsking = useRef<Element | null>(null)

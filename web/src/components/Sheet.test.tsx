@@ -7,8 +7,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRef, type ReactNode } from 'react'
-import { describe, expect, test, vi } from 'vitest'
-import Sheet from './Sheet'
+import { afterEach, describe, expect, test, vi } from 'vitest'
+import { flipViewport, stubViewport } from '../test-viewport'
+import Sheet, { SheetActions } from './Sheet'
 
 interface Options {
   computer?: boolean
@@ -289,5 +290,52 @@ describe('focus on the phone', () => {
       </Sheet>,
     )
     expect(document.body).toHaveFocus()
+  })
+})
+
+describe('SheetActions', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  function form() {
+    return (
+      <form aria-label="the form">
+        <input aria-label="field" />
+        <SheetActions>
+          <span role="alert">an error</span>
+          <button type="submit">Save</button>
+        </SheetActions>
+      </form>
+    )
+  }
+
+  test('on the phone it is the form last child, holding the error above the main action', () => {
+    stubViewport('phone')
+    render(form())
+    const actions = screen.getByRole('button', { name: 'Save' }).parentElement
+    expect(actions).toHaveClass('sheet__actions')
+    expect(screen.getByRole('form')?.lastElementChild).toBe(actions)
+    expect(Array.from(actions?.children ?? []).map((node) => node.tagName)).toEqual(['SPAN', 'BUTTON'])
+  })
+
+  test('on a computer it adds no element: the main action is a child of the form, as before', () => {
+    stubViewport('computer')
+    render(form())
+    expect(screen.getByRole('button', { name: 'Save' }).parentElement).toBe(screen.getByRole('form'))
+    expect(document.querySelector('.sheet__actions')).toBeNull()
+  })
+
+  test('a flip keeps the field mounted and typed in', async () => {
+    stubViewport('computer')
+    render(form())
+    await userEvent.type(screen.getByLabelText('field'), 'abc')
+    const field = screen.getByLabelText('field')
+
+    flipViewport('phone')
+
+    expect(screen.getByLabelText('field')).toBe(field)
+    expect(field).toHaveValue('abc')
+    expect(document.querySelector('.sheet__actions')).not.toBeNull()
   })
 })

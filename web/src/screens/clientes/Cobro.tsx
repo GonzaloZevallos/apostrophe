@@ -32,6 +32,7 @@ import {
   recordPayment,
 } from '../../api/payments'
 import Boton from '../../components/Boton'
+import { SheetActions } from '../../components/Sheet'
 import SegmentedChoice from '../../components/SegmentedChoice'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
@@ -288,12 +289,12 @@ export default function Cobro({
             </div>
           )}
 
-          <div className="sheet__actions">
+          <SheetActions>
             {offline && <SinConexion />}
             <Boton textOnly="submit" type="submit" disabled={record.isPending}>
               {COMMON_TEXT.save}
             </Boton>
-          </div>
+          </SheetActions>
         </form>
     </>
   )

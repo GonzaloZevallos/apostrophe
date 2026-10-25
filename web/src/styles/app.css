@@ -4508,7 +4508,7 @@ body {
 }
 /* ===== end ventas-telefono-carga ===== */
 
-/* A form as a sheet on a phone (ADR-0049): one `Sheet` draws it full screen, over the visible
+/* A form as a sheet on a phone (ADR-0053): one `Sheet` draws it full screen, over the visible
  * viewport (`--vv-top`, `--vv-alto`). "Close" is the form's own and sticks to the top; the form's
  * main action sits in `.sheet__actions`, the form's last child, pushed to the bottom and sticky
  * there, with errors above it. The body scrolls by itself and the page behind is held still. A
@@ -4571,13 +4571,6 @@ body {
     bottom: 0;
     padding: var(--espacio-md) 0 calc(var(--espacio-md) + var(--inset-abajo));
     background: var(--papel);
-  }
-}
-
-/* On a computer the actions container adds no box of its own. */
-@media (min-width: 900px) {
-  .sheet__actions {
-    display: contents;
   }
 }
 

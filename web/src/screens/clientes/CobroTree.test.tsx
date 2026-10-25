@@ -187,6 +187,18 @@ describe('on a phone', () => {
     expect(screen.getByLabelText('Amount').closest('form')).toBe(form)
   })
 
+  test('a flip to the computer leaves focus on the field being typed in, and the computer form has no actions wrapper', async () => {
+    renderApp([{ pathname: PAYMENT }], 'phone')
+    const amount = await screen.findByLabelText('Amount')
+    await waitFor(() => expect(amount).toHaveFocus())
+
+    flipViewport('computer')
+
+    expect(screen.getByLabelText('Amount')).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Save' }).parentElement).toBe(screen.getByLabelText('Amount').closest('form'))
+    expect(document.querySelector('.sheet__actions')).toBeNull()
+  })
+
   test('the card alone is behind the form: no list beside it', async () => {
     renderApp([{ pathname: PAYMENT }], 'phone')
 
