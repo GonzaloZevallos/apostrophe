@@ -153,102 +153,82 @@
   },
   "operator.removal.no_business": {
     "area": "removal",
-    "text": "No business for that email.",
-    "pending": true
+    "text": "No business for that email."
   },
   "operator.removal.confirmation_failed": {
     "area": "removal",
-    "text": "Nothing deleted: the typed name did not match.",
-    "pending": true
+    "text": "Nothing deleted: the typed name did not match."
   },
   "operator.removal.interrupted": {
     "area": "removal",
-    "text": "Interrupted: nothing deleted.",
-    "pending": true
+    "text": "Interrupted: nothing deleted."
   },
   "operator.removal.busy": {
     "area": "removal",
-    "text": "Database busy: nothing deleted. Run it again.",
-    "pending": true
+    "text": "Database busy: nothing deleted. Run it again."
   },
   "operator.removal.failed": {
     "area": "removal",
-    "text": "Failed: nothing deleted.",
-    "pending": true
+    "text": "Failed: nothing deleted."
   },
   "operator.removal.unknown_outcome": {
     "area": "removal",
-    "text": "Commit outcome unknown; export kept at {path}. Run with --dry-run and the same email before anything else.",
-    "pending": true
+    "text": "Commit outcome unknown; export kept at {path}. Run with --dry-run and the same email before anything else."
   },
   "operator.removal.records_changed": {
     "area": "removal",
-    "text": "Records changed during the run: nothing deleted. Run it again.",
-    "pending": true
+    "text": "Records changed during the run: nothing deleted. Run it again."
   },
   "operator.removal.count_dry": {
     "area": "removal",
-    "text": "{table_name}: {count}",
-    "pending": true
+    "text": "{table_name}: {count}"
   },
   "operator.removal.count_withheld_dry": {
     "area": "removal",
-    "text": "{table_name}: {count} (deleted only)",
-    "pending": true
+    "text": "{table_name}: {count} (deleted only)"
   },
   "operator.removal.prompt": {
     "area": "removal",
-    "text": "Type the business name ({name}) to remove it: ",
-    "pending": true
+    "text": "Type the business name ({name}) to remove it: "
   },
   "operator.removal.export_written": {
     "area": "removal",
-    "text": "Export written: {path}",
-    "pending": true
+    "text": "Export written: {path}"
   },
   "operator.removal.count_exported_deleted": {
     "area": "removal",
-    "text": "{table_name}: exported {exported}, deleted {deleted}",
-    "pending": true
+    "text": "{table_name}: exported {exported}, deleted {deleted}"
   },
   "operator.removal.count_deleted": {
     "area": "removal",
-    "text": "{table_name}: deleted {deleted}",
-    "pending": true
+    "text": "{table_name}: deleted {deleted}"
   },
   "operator.removal.count_exported": {
     "area": "removal",
-    "text": "{table_name}: exported {exported}",
-    "pending": true
+    "text": "{table_name}: exported {exported}"
   },
   "operator.removal.removed": {
     "area": "removal",
-    "text": "Business removed; export kept at {path}.",
-    "pending": true
+    "text": "Business removed; export kept at {path}."
   },
   "operator.removal.refusing_unowned": {
     "area": "removal",
-    "text": "Refusing: table(s) with no business_id: {tables}",
-    "pending": true
+    "text": "Refusing: table(s) with no business_id: {tables}"
   },
   "operator.removal.refusing_secret": {
     "area": "removal",
-    "text": "Refusing: column(s) that look like a secret: {columns}",
-    "pending": true
+    "text": "Refusing: column(s) that look like a secret: {columns}"
   },
   "operator.removal.refusing_other_type": {
     "area": "removal",
-    "text": "Refusing: column(s) of a type the export cannot write: {columns}",
-    "pending": true
+    "text": "Refusing: column(s) of a type the export cannot write: {columns}"
   },
   "operator.removal.refusing_unlabelled": {
     "area": "removal",
-    "text": "Refusing: table(s) with no name or declared label: {tables}",
-    "pending": true
+    "text": "Refusing: table(s) with no name or declared label: {tables}"
   },
   "operator.removal.refusing_cycle": {
     "area": "removal",
-    "text": "Refusing: the delete order has a cycle through: {tables}",
-    "pending": true
+    "text": "Refusing: the delete order has a cycle through: {tables}"
   }
 }

@@ -95,7 +95,7 @@ def test_the_check_on_pending_keys_rejects_one_that_already_resolves() -> None:
     entry = {"area": "accounts", "text": "no user for that email", "pending": True}
 
     assert resolves_while_pending(production_en(), "operator.accounts.no_user", entry)
-    assert not resolves_while_pending(production_en(), "operator.removal.failed", entry)
+    assert not resolves_while_pending(production_en(), "operator.removal.not_a_line", entry)
 
 
 def resolves_while_pending(text: OperatorText, key: str, entry: dict[str, object]) -> bool:

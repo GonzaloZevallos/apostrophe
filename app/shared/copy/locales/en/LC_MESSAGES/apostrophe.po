@@ -120,3 +120,63 @@ msgstr "Writable: no"
 
 msgid "operator.import.refused"
 msgstr "refused: {code}"
+
+msgid "operator.removal.no_business"
+msgstr "No business for that email."
+
+msgid "operator.removal.confirmation_failed"
+msgstr "Nothing deleted: the typed name did not match."
+
+msgid "operator.removal.interrupted"
+msgstr "Interrupted: nothing deleted."
+
+msgid "operator.removal.busy"
+msgstr "Database busy: nothing deleted. Run it again."
+
+msgid "operator.removal.failed"
+msgstr "Failed: nothing deleted."
+
+msgid "operator.removal.unknown_outcome"
+msgstr "Commit outcome unknown; export kept at {path}. Run with --dry-run and the same email before anything else."
+
+msgid "operator.removal.records_changed"
+msgstr "Records changed during the run: nothing deleted. Run it again."
+
+msgid "operator.removal.count_dry"
+msgstr "{table_name}: {count}"
+
+msgid "operator.removal.count_withheld_dry"
+msgstr "{table_name}: {count} (deleted only)"
+
+msgid "operator.removal.prompt"
+msgstr "Type the business name ({name}) to remove it: "
+
+msgid "operator.removal.export_written"
+msgstr "Export written: {path}"
+
+msgid "operator.removal.count_exported_deleted"
+msgstr "{table_name}: exported {exported}, deleted {deleted}"
+
+msgid "operator.removal.count_deleted"
+msgstr "{table_name}: deleted {deleted}"
+
+msgid "operator.removal.count_exported"
+msgstr "{table_name}: exported {exported}"
+
+msgid "operator.removal.removed"
+msgstr "Business removed; export kept at {path}."
+
+msgid "operator.removal.refusing_unowned"
+msgstr "Refusing: table(s) with no business_id: {tables}"
+
+msgid "operator.removal.refusing_secret"
+msgstr "Refusing: column(s) that look like a secret: {columns}"
+
+msgid "operator.removal.refusing_other_type"
+msgstr "Refusing: column(s) of a type the export cannot write: {columns}"
+
+msgid "operator.removal.refusing_unlabelled"
+msgstr "Refusing: table(s) with no name or declared label: {tables}"
+
+msgid "operator.removal.refusing_cycle"
+msgstr "Refusing: the delete order has a cycle through: {tables}"

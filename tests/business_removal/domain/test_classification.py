@@ -10,6 +10,7 @@ from __future__ import annotations
 import pytest
 
 from app.business_removal.domain.classification import (
+    DeleteOrderCycle,
     delete_order,
     looks_secret,
     other_type_columns,
@@ -179,8 +180,10 @@ def test_delete_order_refuses_a_cycle_and_names_the_tables_in_it() -> None:
     )
     schema = Schema((business, a, b))
 
-    with pytest.raises(ValueError, match="a, b|b, a"):
+    with pytest.raises(DeleteOrderCycle) as raised:
         delete_order(schema)
+
+    assert raised.value.tables == ("a", "b", "business")
 
 
 def test_other_type_columns_reports_an_unexcluded_other_typed_column() -> None:

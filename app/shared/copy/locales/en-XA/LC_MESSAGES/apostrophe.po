@@ -121,3 +121,63 @@ msgstr "⟦Ŵřìťåƀłè: ňö·~·~·⟧"
 
 msgid "operator.import.refused"
 msgstr "⟦řèḟûšèđ: {code}·~·~⟧"
+
+msgid "operator.removal.no_business"
+msgstr "⟦Ňö ƀûšìňèšš ḟöř ťĥåť èṁåìł.·~·~·~·~·~⟧"
+
+msgid "operator.removal.confirmation_failed"
+msgstr "⟦Ňöťĥìňĝ đèłèťèđ: ťĥè ťýṗèđ ňåṁè đìđ ňöť ṁåťçĥ.·~·~·~·~·~·~·~·~·⟧"
+
+msgid "operator.removal.interrupted"
+msgstr "⟦Ìňťèřřûṗťèđ: ňöťĥìňĝ đèłèťèđ.·~·~·~·~·~·⟧"
+
+msgid "operator.removal.busy"
+msgstr "⟦Ðåťåƀåšè ƀûšý: ňöťĥìňĝ đèłèťèđ. Řûň ìť åĝåìň.·~·~·~·~·~·~·~·~⟧"
+
+msgid "operator.removal.failed"
+msgstr "⟦Ḟåìłèđ: ňöťĥìňĝ đèłèťèđ.·~·~·~·~·⟧"
+
+msgid "operator.removal.unknown_outcome"
+msgstr "⟦Çöṁṁìť öûťçöṁè ûňķňöŵň; èẋṗöřť ķèṗť åť {path}. Řûň ŵìťĥ --đřý-řûň åňđ ťĥè šåṁè èṁåìł ƀèḟöřè åňýťĥìňĝ èłšè.·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·⟧"
+
+msgid "operator.removal.records_changed"
+msgstr "⟦Řèçöřđš çĥåňĝèđ đûřìňĝ ťĥè řûň: ňöťĥìňĝ đèłèťèđ. Řûň ìť åĝåìň.·~·~·~·~·~·~·~·~·~·~·~⟧"
+
+msgid "operator.removal.count_dry"
+msgstr "⟦{table_name}: {count}·⟧"
+
+msgid "operator.removal.count_withheld_dry"
+msgstr "⟦{table_name}: {count} (đèłèťèđ öňłý)·~·~·~⟧"
+
+msgid "operator.removal.prompt"
+msgstr "⟦Ťýṗè ťĥè ƀûšìňèšš ňåṁè ({name}) ťö řèṁöṽè ìť: ·~·~·~·~·~·~·~⟧"
+
+msgid "operator.removal.export_written"
+msgstr "⟦Èẋṗöřť ŵřìťťèň: {path}·~·~·~⟧"
+
+msgid "operator.removal.count_exported_deleted"
+msgstr "⟦{table_name}: èẋṗöřťèđ {exported}, đèłèťèđ {deleted}·~·~·~·~⟧"
+
+msgid "operator.removal.count_deleted"
+msgstr "⟦{table_name}: đèłèťèđ {deleted}·~·~⟧"
+
+msgid "operator.removal.count_exported"
+msgstr "⟦{table_name}: èẋṗöřťèđ {exported}·~·~⟧"
+
+msgid "operator.removal.removed"
+msgstr "⟦ßûšìňèšš řèṁöṽèđ; èẋṗöřť ķèṗť åť {path}.·~·~·~·~·~·~⟧"
+
+msgid "operator.removal.refusing_unowned"
+msgstr "⟦Řèḟûšìňĝ: ťåƀłè(š) ŵìťĥ ňö ƀûšìňèšš_ìđ: {tables}·~·~·~·~·~·~·~⟧"
+
+msgid "operator.removal.refusing_secret"
+msgstr "⟦Řèḟûšìňĝ: çöłûṁň(š) ťĥåť łööķ łìķè å šèçřèť: {columns}·~·~·~·~·~·~·~·~⟧"
+
+msgid "operator.removal.refusing_other_type"
+msgstr "⟦Řèḟûšìňĝ: çöłûṁň(š) öḟ å ťýṗè ťĥè èẋṗöřť çåňňöť ŵřìťè: {columns}·~·~·~·~·~·~·~·~·~·~⟧"
+
+msgid "operator.removal.refusing_unlabelled"
+msgstr "⟦Řèḟûšìňĝ: ťåƀłè(š) ŵìťĥ ňö ňåṁè öř đèçłåřèđ łåƀèł: {tables}·~·~·~·~·~·~·~·~·~⟧"
+
+msgid "operator.removal.refusing_cycle"
+msgstr "⟦Řèḟûšìňĝ: ťĥè đèłèťè öřđèř ĥåš å çýçłè ťĥřöûĝĥ: {tables}·~·~·~·~·~·~·~·~·⟧"

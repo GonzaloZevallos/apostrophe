@@ -18,9 +18,11 @@ from pathlib import Path
 from typing import Protocol
 
 from app.business_removal.application.export_file import ExportFile
+from app.business_removal.application.operator_words import OperatorWords
 from app.business_removal.application.schema_rows import SchemaRows
 from app.business_removal.application.signals import blocked_signals
 from app.business_removal.domain.classification import (
+    DeleteOrderCycle,
     delete_order,
     has_business_id,
     other_type_columns,
@@ -57,17 +59,6 @@ def withheld_business_tables(schema: Schema) -> tuple[str, ...]:
     )
 
 
-NO_BUSINESS_MESSAGE = "No business for that email."
-CONFIRMATION_FAILED_MESSAGE = "Nothing deleted: the typed name did not match."
-INTERRUPTED_MESSAGE = "Interrupted: nothing deleted."
-BUSY_MESSAGE = "Database busy: nothing deleted. Run it again."
-FAILED_MESSAGE = "Failed: nothing deleted."
-UNKNOWN_OUTCOME_MESSAGE = (
-    "Commit outcome unknown; export kept at {path}. "
-    "Run with --dry-run and the same email before anything else."
-)
-
-
 class Confirm(Protocol):
     def ask(self, prompt: str) -> str | None:
         """The operator's answer, trailing newline and all; `None` for EOF or a
@@ -94,41 +85,38 @@ class StorageBusy(Exception):
 
 class RecordsChanged(Exception):
     """The ids read back from the export file no longer match what the delete
-    returned: something changed the business's rows during the run. The message
-    names no table and no row, only that the run must be repeated."""
-
-    def __init__(self) -> None:
-        super().__init__("Records changed during the run: nothing deleted. Run it again.")
+    returned: something changed the business's rows during the run. It names no table
+    and no row, and holds no text: the operator's line is `words.records_changed()`."""
 
 
-def dry_run(schema_rows: SchemaRows, output: Output, email: str) -> int:
+def dry_run(schema_rows: SchemaRows, output: Output, words: OperatorWords, email: str) -> int:
     """Names the business found from `email` and counts, by table, what a real run
     would export and delete. Writes nothing, asks nothing. Nothing this function
     does can leave a traceback on the way out: every exception, including one
     raised by a port, ends in one fixed message and `1` (the plan's invariant)."""
     try:
         schema = schema_rows.schema()
-        refusal = _schema_refusal(schema)
+        refusal = _schema_refusal(schema, words)
         if refusal is not None:
             output.line(refusal)
             return 1
         business = schema_rows.business_of(email)
         if business is None:
-            output.line(NO_BUSINESS_MESSAGE)
+            output.line(words.no_business())
             return 1
 
         output.line(terminal_name(business.name))
         for table_name in exported_tables(schema):
             count = len(schema_rows.rows(table_name, business.id))
-            output.line(f"{table_name}: {count}")
+            output.line(words.count_dry(table_name, str(count)))
         for table_name in withheld_business_tables(schema):
             count = schema_rows.withheld_count(table_name, business.id)
-            output.line(f"{table_name}: {count} (deleted only)")
+            output.line(words.count_withheld_dry(table_name, str(count)))
         return 0
     except SystemExit:
         raise
     except BaseException as exc:
-        output.line(failure_message(exc))
+        output.line(failure_message(exc, words))
         return 1
 
 
@@ -138,6 +126,7 @@ def remove_business(
     confirm: Confirm,
     transaction: Transaction,
     output: Output,
+    words: OperatorWords,
     clock: Clock,
     email: str,
 ) -> int:
@@ -157,23 +146,22 @@ def remove_business(
     owned: tuple[str, ...] = ()
     try:
         schema = schema_rows.schema()
-        refusal = _schema_refusal(schema)
+        refusal = _schema_refusal(schema, words)
         if refusal is not None:
             output.line(refusal)
             return 1
         business = schema_rows.business_of(email)
         if business is None:
-            output.line(NO_BUSINESS_MESSAGE)
+            output.line(words.no_business())
             return 1
 
         order = delete_order(schema)
         owned = exported_tables(schema)
         export_file.prepare()
 
-        prompt = f"Type the business name ({terminal_name(business.name)}) to remove it: "
-        typed = confirm.ask(prompt)
+        typed = confirm.ask(words.prompt(terminal_name(business.name)))
         if typed is None or not name_matches(typed, business.name):
-            output.line(CONFIRMATION_FAILED_MESSAGE)
+            output.line(words.confirmation_failed())
             return 1
 
         rows = {name: schema_rows.rows(name, business.id) for name in owned}
@@ -181,7 +169,7 @@ def remove_business(
         document = build_document(Business(business.id, business.name), schema, rows, now)
         name = file_name(business.name, now)
         path = export_file.write_durably(name, document)
-        output.line(f"Export written: {path}")
+        output.line(words.export_written(str(path)))
 
         read_back = export_file.read_back(path)
         # `id_sets` only covers the "kinds" (the owned tables other than `business`
@@ -204,11 +192,13 @@ def remove_business(
         for table_name in owned:
             exported_count = len(exported_ids.get(table_name, frozenset()))
             deleted_count = len(deleted.tables.get(table_name, frozenset()))
-            output.line(f"{table_name}: exported {exported_count}, deleted {deleted_count}")
+            output.line(
+                words.count_exported_deleted(table_name, str(exported_count), str(deleted_count))
+            )
         for table_name in sorted(deleted.withheld_counts):
-            output.line(f"{table_name}: deleted {deleted.withheld_counts[table_name]}")
-        output.line(f"{LOGIN_GUARD_TABLE}: deleted {deleted.login_guard_count}")
-        output.line(f"Business removed; export kept at {path}.")
+            output.line(words.count_deleted(table_name, str(deleted.withheld_counts[table_name])))
+        output.line(words.count_deleted(LOGIN_GUARD_TABLE, str(deleted.login_guard_count)))
+        output.line(words.removed(str(path)))
         return 0
     except SystemExit:
         raise
@@ -219,7 +209,7 @@ def remove_business(
             # not let through to a caller that does not know the delete already
             # happened (the plan's invariant).
             try:
-                output.line(f"Business removed; export kept at {path}.")
+                output.line(_rendered(lambda: words.removed(str(path)), exc))
             except SystemExit:
                 raise
             except BaseException:
@@ -234,8 +224,8 @@ def remove_business(
                     output.line(terminal_name(business.name))
                 for table_name in owned:
                     exported_count = len(exported_ids.get(table_name, frozenset()))
-                    output.line(f"{table_name}: exported {exported_count}")
-                output.line(UNKNOWN_OUTCOME_MESSAGE.format(path=path))
+                    output.line(words.count_exported(table_name, str(exported_count)))
+                output.line(_rendered(lambda: words.unknown_outcome(str(path)), exc))
             except SystemExit:
                 raise
             except BaseException:
@@ -252,45 +242,57 @@ def remove_business(
             raise
         except BaseException:
             pass
-        output.line(failure_message(exc))
+        output.line(failure_message(exc, words))
         return 1
 
 
-def _schema_refusal(schema: Schema) -> str | None:
+def _schema_refusal(schema: Schema, words: OperatorWords) -> str | None:
     unowned = unowned_tables(schema)
     if unowned:
-        return f"Refusing: table(s) with no business_id: {', '.join(unowned)}"
+        return words.unowned_tables(", ".join(unowned))
     secrets = secret_columns(schema)
     if secrets:
-        names = ", ".join(f"{table}.{column}" for table, column in secrets)
-        return f"Refusing: column(s) that look like a secret: {names}"
+        return words.secret_columns(", ".join(f"{table}.{column}" for table, column in secrets))
     other_types = other_type_columns(schema)
     if other_types:
-        names = ", ".join(f"{table}.{column}" for table, column in other_types)
-        return f"Refusing: column(s) of a type the export cannot write: {names}"
+        return words.other_type_columns(
+            ", ".join(f"{table}.{column}" for table, column in other_types)
+        )
     unlabelled = unlabelled_tables(schema)
     if unlabelled:
-        return f"Refusing: table(s) with no name or declared label: {', '.join(sorted(unlabelled))}"
+        return words.unlabelled_tables(", ".join(sorted(unlabelled)))
     try:
         delete_order(schema)
-    except ValueError as exc:
-        return f"Refusing: {exc}"
+    except DeleteOrderCycle as cycle:
+        return words.delete_order_cycle(", ".join(cycle.tables))
     return None
 
 
-def failure_message(exc: BaseException) -> str:
+def failure_message(exc: BaseException, words: OperatorWords) -> str:
     """The one fixed line a failure before the commit is reported as -- never the
     exception's own text, which might repeat a path or a row (the plan's
     invariant). Public so the CLI's own top-level handler classifies the same way
     for whatever happens outside `dry_run`/`remove_business` themselves (engine
-    setup, migrations)."""
+    setup, migrations). A failure line never raises: if rendering it fails, the line
+    is the fixed, untranslated `refused: <ClassName of exc>`."""
+    return _rendered(lambda: _classified(exc, words), exc)
+
+
+def _classified(exc: BaseException, words: OperatorWords) -> str:
     if isinstance(exc, RecordsChanged):
-        return str(exc)
+        return words.records_changed()
     if isinstance(exc, (Interrupted, KeyboardInterrupt)):
-        return INTERRUPTED_MESSAGE
+        return words.interrupted()
     if isinstance(exc, StorageBusy):
-        return BUSY_MESSAGE
-    return FAILED_MESSAGE
+        return words.busy()
+    return words.failed()
+
+
+def _rendered(render: Callable[[], str], exc: BaseException) -> str:
+    try:
+        return render()
+    except Exception:
+        return f"refused: {type(exc).__name__}"
 
 
 def _naive_utc(instant: datetime) -> datetime:
