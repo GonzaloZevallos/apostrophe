@@ -30,7 +30,9 @@ def test_a_month_with_no_expenses_has_a_zero_total_and_no_categories() -> None:
 
 
 def test_the_total_is_the_sum_of_every_expense() -> None:
-    view = MonthlyExpenses.of(MONTH, [_entry(1, "Otros", 100, 1), _entry(2, "Packaging", 250, 2)])
+    view = MonthlyExpenses.of(
+        MONTH, [_entry(1, "Otros", 100, 1), _entry(2, "Packaging", 250, 2)]
+    )
 
     assert view.total == 350
 
@@ -49,6 +51,8 @@ def test_each_categorys_subtotal_is_the_sum_of_its_own_expenses() -> None:
 
 
 def test_categories_are_sorted_by_name() -> None:
-    view = MonthlyExpenses.of(MONTH, [_entry(2, "Packaging", 1, 1), _entry(1, "Insumos", 1, 2)])
+    view = MonthlyExpenses.of(
+        MONTH, [_entry(2, "Packaging", 1, 1), _entry(1, "Insumos", 1, 2)]
+    )
 
     assert [c.name for c in view.categories] == ["Insumos", "Packaging"]

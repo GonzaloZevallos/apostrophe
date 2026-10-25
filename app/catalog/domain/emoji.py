@@ -271,7 +271,9 @@ def _is_keycap(code_points: list[int]) -> bool:
     if len(code_points) == 3:
         base, vs16, combining = code_points
         return (
-            chr(base) in _KEYCAP_BASES and vs16 == ord(VS16) and combining == ord(_KEYCAP_COMBINING)
+            chr(base) in _KEYCAP_BASES
+            and vs16 == ord(VS16)
+            and combining == ord(_KEYCAP_COMBINING)
         )
     return False
 

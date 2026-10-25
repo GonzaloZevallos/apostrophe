@@ -44,7 +44,9 @@ def upgrade() -> None:
         sa.UniqueConstraint(
             "business_id", "name_key", name=op.f("uq_expense_category_business_id_name_key")
         ),
-        sa.UniqueConstraint("business_id", "id", name=op.f("uq_expense_category_business_id_id")),
+        sa.UniqueConstraint(
+            "business_id", "id", name=op.f("uq_expense_category_business_id_id")
+        ),
     )
     op.create_table(
         "expense",
@@ -66,7 +68,9 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_expense")),
     )
-    op.create_index("ix_expense_business_id_category_id", "expense", ["business_id", "category_id"])
+    op.create_index(
+        "ix_expense_business_id_category_id", "expense", ["business_id", "category_id"]
+    )
     op.create_index("ix_expense_business_id_spent_on", "expense", ["business_id", "spent_on"])
 
     expense_category = sa.table(

@@ -190,7 +190,9 @@ def test_under_the_email_lock_alone_a_short_new_password_still_answers_429_and_c
         # adds its own one (the plan invariant: counting never stops under a lock).
         assert email_row is not None and email_row.failures == 1
         assert email_row.locked_until is not None
-        total_address_failures = session.scalar(select(func.sum(LoginAddressGuardRow.failures)))
+        total_address_failures = session.scalar(
+            select(func.sum(LoginAddressGuardRow.failures))
+        )
         assert total_address_failures == 6
 
 
@@ -302,7 +304,9 @@ def test_success_deletes_the_user_s_live_reset_link(
         accounts.issue_reset_link(user.id, "a" * 64, clock())
         session.commit()
 
-    client.post("/auth/password", json={"current_password": PASSWORD, "new_password": NEW_PASSWORD})
+    client.post(
+        "/auth/password", json={"current_password": PASSWORD, "new_password": NEW_PASSWORD}
+    )
 
     with Session(engine) as session:
         assert session.scalar(select(ResetLinkRow)) is None

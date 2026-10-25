@@ -18,5 +18,16 @@
     }
   ],
   "still_owing": true,
-  "total_grams": 3.5
+  "total_grams": 3.5,
+  "bill": {
+    "business_name": "Flores del Sur",
+    "date": "2026-09-14",
+    "shipping_charged": 500,
+    "total": 11000,
+    "lines": [
+      { "product": "Flor A", "quantity": 3.5, "amount": 10500, "rule": null, "unit_price": null }
+    ],
+    "payment": { "state": "owed", "still_owed": 11000 },
+    "balance": 11000
+  }
 }

@@ -27,7 +27,7 @@ LINE_KEYS = {"product", "quantity", "amount", "rule", "unit_price"}
 PAYMENT_KEYS = {"state", "still_owed"}
 
 
-def _variety(client: TestClient, name: str = "Lavanda", **prices: int) -> int:
+def _variety(client: TestClient, name: str = "Lavanda", **prices: int | str) -> int:
     variety = client.post("/varieties", json={"name": name}).json()
     response = client.post(
         f"/varieties/{variety['id']}/prices",

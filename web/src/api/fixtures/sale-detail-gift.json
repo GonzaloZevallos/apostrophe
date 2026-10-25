@@ -36,5 +36,6 @@
     }
   ],
   "still_owing": false,
-  "total_grams": 4.5
+  "total_grams": 4.5,
+  "bill": null
 }

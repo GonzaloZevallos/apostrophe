@@ -28,7 +28,9 @@ class Varieties(Protocol):
 
     def save(self, variety: Variety) -> Variety: ...
 
-    def name_holder(self, name: VarietyName, *, other_than: int | None = None) -> NameHolder | None:
+    def name_holder(
+        self, name: VarietyName, *, other_than: int | None = None
+    ) -> NameHolder | None:
         """Who holds `name` in this business, archived varieties included."""
         ...
 
