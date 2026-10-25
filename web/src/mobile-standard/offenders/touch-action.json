@@ -357,37 +357,145 @@
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "ClientesBusqueda",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 46
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "CobroBorrar",
@@ -1539,37 +1647,145 @@
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 49
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosReintento",
@@ -2001,37 +2217,67 @@
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "InicioChecklist",
@@ -2059,42 +2305,312 @@
     "rule": "touch-action",
     "target": "link:Customers",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Customers\" is not manipulation"
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Home",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Home\" is not manipulation"
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:More",
     "issue": 45,
-    "reason": "computed touch-action of the link \"More\" is not manipulation"
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Varieties",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Varieties\" is not manipulation"
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "link:Sales",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Sales\" is not manipulation"
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "navigation:Navigation",
     "issue": 45,
-    "reason": "computed touch-action of the bottom navigation bar is not manipulation"
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioHoy",
@@ -2118,37 +2634,289 @@
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioImportado",
@@ -2176,42 +2944,312 @@
     "rule": "touch-action",
     "target": "link:Customers",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Customers\" is not manipulation"
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Customers\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Home",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Home\" is not manipulation"
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Home\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:More",
     "issue": 45,
-    "reason": "computed touch-action of the link \"More\" is not manipulation"
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"More\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Varieties",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Varieties\" is not manipulation"
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Varieties\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "link:Sales",
     "issue": 45,
-    "reason": "computed touch-action of the link \"Sales\" is not manipulation"
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "reason": "computed touch-action of the link \"Sales\" is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "touch-action",
     "target": "navigation:Navigation",
     "issue": 45,
-    "reason": "computed touch-action of the bottom navigation bar is not manipulation"
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "reason": "computed touch-action of the bottom navigation bar is not manipulation",
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
@@ -2235,37 +3273,289 @@
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
@@ -2289,37 +3579,289 @@
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
@@ -2343,37 +3885,289 @@
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 45
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 45,
+    "sizes": [
+      "430x932"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Invitacion",
@@ -4163,37 +5957,145 @@
     "screen": "Ventas",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Ventas",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VentasFechas",
@@ -4223,37 +6125,145 @@
     "screen": "VentasFechas",
     "rule": "touch-action",
     "target": "link:Customers",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Customers",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
     "target": "link:Home",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Home",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
     "target": "link:More",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
     "target": "link:Sales",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Sales",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
     "target": "link:Varieties",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "link:Varieties",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VentasFechas",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-action",
+    "target": "navigation:Navigation",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VerTodas",

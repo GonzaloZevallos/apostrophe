@@ -15,7 +15,25 @@
     "screen": "Archivadas",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Archivadas",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Catalogo",
@@ -27,13 +45,49 @@
     "screen": "CatalogoAtributos",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "ClienteFicha",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Clientes",
@@ -59,7 +113,25 @@
     "screen": "ClientesBusqueda",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "CobroBorrar",
@@ -67,17 +139,47 @@
     "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
       "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
     ]
   },
   {
     "screen": "Configuracion",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EntradasTodas",
@@ -94,13 +196,49 @@
     "screen": "EstadosConfirmar",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosGone",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosGone",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosGoneAviso",
@@ -117,7 +255,6 @@
     "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
-      "320x568",
       "246x437"
     ]
   },
@@ -125,7 +262,25 @@
     "screen": "EstadosReintento",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "EstadosSinConexion",
@@ -179,89 +334,317 @@
     "screen": "Inicio",
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437",
+      "375x812"
+    ]
   },
   {
     "screen": "Inicio",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437",
+      "375x812"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
     "issue": 59,
-    "reason": "the New sale link's box leaves the viewport with the page scrolled halfway"
+    "reason": "the New sale link's box leaves the viewport with the page scrolled halfway",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 59,
+    "reason": "the New sale link's box leaves the viewport with the page scrolled halfway",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioChecklist",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
     "issue": 59,
-    "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled halfway"
+    "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled halfway",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled halfway",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioHoy",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
     "issue": 59,
-    "reason": "the New sale link's box leaves the viewport with the page scrolled halfway"
+    "reason": "the New sale link's box leaves the viewport with the page scrolled halfway",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 59,
+    "reason": "the New sale link's box leaves the viewport with the page scrolled halfway",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioImportado",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
     "issue": 59,
-    "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled halfway"
+    "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled halfway",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "reason": "the bottom navigation bar's box leaves the viewport with the page scrolled halfway",
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingCompleto",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "chrome-mid-scroll",
     "target": "link:New sale",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "chrome-mid-scroll",
+    "target": "link:New sale",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "InicioPrimeraVez",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Mas",
@@ -276,19 +659,73 @@
     "screen": "Mas",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "Mas",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "RetiroDetalle",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "RetiroDetalle",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "TodasLasEntradas",
@@ -305,31 +742,121 @@
     "screen": "TodasLasEntradasVariedad",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VariedadArchivada",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VariedadArchivada",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VariedadDetalle",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VariedadRenombrar",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VariedadUmbral",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Variedades",
@@ -348,27 +875,52 @@
     "issue": 59
   },
   {
-    "screen": "VentaAsignarCliente",
+    "screen": "VentaBorrar",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
+      "246x437"
+    ],
+    "themes": [
+      "claro"
     ]
   },
   {
     "screen": "VentaBorrar",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VentaDetalle",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "Ventas",
@@ -385,7 +937,6 @@
     "target": "navigation:Navigation",
     "issue": 59,
     "sizes": [
-      "320x568",
       "246x437"
     ]
   },
@@ -395,7 +946,6 @@
     "target": "link:New sale",
     "issue": 59,
     "sizes": [
-      "320x568",
       "246x437"
     ]
   },
@@ -403,12 +953,48 @@
     "screen": "VentasFechas",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VerTodas",
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
-    "issue": 59
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "claro"
+    ]
+  },
+  {
+    "screen": "VerTodas",
+    "rule": "chrome-mid-scroll",
+    "target": "navigation:Navigation",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ],
+    "themes": [
+      "oscuro"
+    ]
   }
 ]
