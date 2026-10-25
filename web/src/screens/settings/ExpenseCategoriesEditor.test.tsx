@@ -5,7 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import ExpenseCategoriesEditor, { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
@@ -177,6 +177,39 @@ test('collapsed, a rename saves at once through the owner route, with no other w
     .map(([url, init]) => `${init?.method} ${url}`)
   expect(requests).toEqual(['PATCH /expense-categories/1'])
   expect(JSON.parse(String(fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH')?.[1]?.body))).toEqual({ name: 'Embalaje' })
+})
+
+test('a toast still showing when the editor unmounts leaves no timer behind', async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: false })
+  try {
+    const client = new QueryClient()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<Fetch>(async (url, init) => {
+        if (url === '/expense-categories' && init?.method === 'POST') return jsonResponse(201, { id: 2, name: 'Luz' })
+        return listOnly(url, init)
+      }),
+    )
+    const { unmount } = render(
+      <QueryClientProvider client={client}>
+        <ExpenseCategoriesEditor onDirtyChange={() => undefined} />
+      </QueryClientProvider>,
+    )
+    await act(() => vi.advanceTimersByTimeAsync(100))
+    expect(screen.getByText('Packaging')).toBeInTheDocument()
+    // Testing Library's async wrapper waits on a real `setTimeout(0)` that vitest's fake clock
+    // never fires, so the typing and the click go through `fireEvent` here.
+    fireEvent.change(screen.getByLabelText('New category'), { target: { value: 'Luz' } })
+    fireEvent.click(screen.getByRole('button', { name: '+ Category' }))
+    await act(() => vi.advanceTimersByTimeAsync(100))
+    expect(screen.getByText('Category saved')).toBeInTheDocument()
+
+    unmount()
+    client.clear()
+    expect(vi.getTimerCount()).toBe(0)
+  } finally {
+    vi.useRealTimers()
+  }
 })
 
 test('collapsed, a removal saves at once through the owner route, with no other write', async () => {
