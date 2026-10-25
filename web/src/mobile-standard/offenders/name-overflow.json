@@ -12,12 +12,6 @@
     "issue": 48
   },
   {
-    "screen": "Analisis",
-    "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
-    "issue": 48
-  },
-  {
     "screen": "Catalogo",
     "rule": "name-overflow",
     "target": "link:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",

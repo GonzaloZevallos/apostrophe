@@ -2,18 +2,6 @@
   {
     "screen": "Analisis",
     "rule": "touch-target",
-    "target": "button:Next month",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "touch-target",
-    "target": "button:Previous month",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "touch-target",
     "target": "link:Home",
     "issue": 48,
     "sizes": [

@@ -25,13 +25,7 @@
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:$ #.#.#[1]",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#[2]",
+    "target": "span:$ #.#.#",
     "issue": 48
   },
   {
