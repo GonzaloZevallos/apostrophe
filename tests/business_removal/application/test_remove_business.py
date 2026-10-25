@@ -33,7 +33,7 @@ from app.shared.transaction import Transaction
 
 NOW = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
 EMAIL = "owner@example.com"
-BUSINESS = BusinessRef(id=1, name="La Huerta")
+BUSINESS = BusinessRef(id=1, name="La Huerta", language="en")
 
 
 def _col(name: str, type_: ColumnType = ColumnType.INTEGER) -> Column:

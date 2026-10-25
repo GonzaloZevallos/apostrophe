@@ -19,6 +19,7 @@ from app.accounts.domain.invitation import (
 )
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
+from app.shared.language import ENGLISH, BusinessLanguage
 from app.shared.transaction import Transaction
 
 
@@ -97,7 +98,7 @@ def accept_invitation(
     if accounts.user_by_email(email) is not None:
         raise EmailTaken()
     if name is not None:
-        business_id = accounts.add_business(Business(name)).id
+        business_id = accounts.add_business(Business(name, BusinessLanguage(ENGLISH))).id
         assert business_id is not None
         opening.opened(business_id)
     else:

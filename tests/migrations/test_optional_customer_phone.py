@@ -26,10 +26,13 @@ def _upgrade_to(engine: Engine, revision: str) -> None:
             command.upgrade(config, revision)
 
 
-def _insert_business(engine: Engine, business_id: int, name: str) -> None:
+def _insert_business(engine: Engine, business_id: int, name: str, *, at_head: bool = False) -> None:
+    """At an older revision the column `language` does not exist yet."""
+    columns = "id, name, language" if at_head else "id, name"
+    values = ":id, :name, 'en'" if at_head else ":id, :name"
     with engine.begin() as connection:
         connection.execute(
-            text("INSERT INTO business (id, name) VALUES (:id, :name)"),
+            text(f"INSERT INTO business ({columns}) VALUES ({values})"),
             {"id": business_id, "name": name},
         )
 
@@ -167,7 +170,7 @@ def test_the_unique_constraint_still_carries_its_name(tmp_path: Path) -> None:
 def test_two_customers_with_no_phone_coexist_after_the_upgrade(tmp_path: Path) -> None:
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
     upgrade_to_head(engine)
-    _insert_business(engine, 1, "Uno")
+    _insert_business(engine, 1, "Uno", at_head=True)
     with engine.begin() as connection:
         connection.execute(
             text(
@@ -192,7 +195,7 @@ def test_two_customers_with_no_phone_coexist_after_the_upgrade(tmp_path: Path) -
 def test_downgrade_fails_loudly_on_a_null_phone(tmp_path: Path) -> None:
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
     upgrade_to_head(engine)
-    _insert_business(engine, 1, "Uno")
+    _insert_business(engine, 1, "Uno", at_head=True)
     with engine.begin() as connection:
         connection.execute(
             text(

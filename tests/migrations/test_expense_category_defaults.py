@@ -4,11 +4,10 @@ business later removes is never restored."""
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.tables import BusinessRow
 from app.db import make_engine
 from app.expenses.adapters.tables import ExpenseCategoryRow
 from app.migrations.runner import MIGRATIONS_ROOT, upgrade_to_head
@@ -34,7 +33,7 @@ def test_an_existing_business_gets_the_four_defaults_once_and_they_are_not_resto
     engine = make_engine("sqlite://")
     _upgrade_to(engine, "0001")
     with Session(engine) as session:
-        session.add(BusinessRow(name="Vieja Huerta"))
+        session.execute(text("INSERT INTO business (name) VALUES (:n)"), {"n": "Vieja Huerta"})
         session.commit()
 
     upgrade_to_head(engine)

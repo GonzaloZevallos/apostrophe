@@ -13,8 +13,15 @@ from app.accounts.adapters.tables import (
     UserRow,
 )
 from app.accounts.application.ports import LoginLocks
-from app.accounts.domain.account import Business, BusinessName, Email, User
+from app.accounts.domain.account import (
+    Business,
+    BusinessName,
+    Email,
+    StoredLanguageCorrupt,
+    User,
+)
 from app.accounts.domain.invitation import Invitation, InvitationKind
+from app.shared.language import BusinessLanguage, InvalidLanguageTag, Language
 
 
 class SqlAccounts:
@@ -24,19 +31,28 @@ class SqlAccounts:
         self._session = session
 
     def add_business(self, business: Business) -> Business:
-        row = BusinessRow(name=business.name.value)
+        row = BusinessRow(name=business.name.value, language=business.language.language.tag)
         self._session.add(row)
         self._session.flush()
-        return Business(business.name, row.id)
+        return Business(business.name, business.language, row.id)
 
     def business(self, business_id: int) -> Business | None:
         row = self._session.get(BusinessRow, business_id)
-        return None if row is None else Business(BusinessName(row.name), row.id)
+        if row is None:
+            return None
+        # Never `BusinessLanguage.parse`: a well-formed tag that is no longer selectable
+        # still loads and stays as it is.
+        try:
+            language = BusinessLanguage(Language(row.language))
+        except InvalidLanguageTag:
+            raise StoredLanguageCorrupt from None
+        return Business(BusinessName(row.name), language, row.id)
 
     def save_business(self, business: Business) -> None:
         assert business.id is not None
         row = self._session.get_one(BusinessRow, business.id)
         row.name = business.name.value
+        row.language = business.language.language.tag
         self._session.flush()
 
     def add_user(self, user: User) -> User:

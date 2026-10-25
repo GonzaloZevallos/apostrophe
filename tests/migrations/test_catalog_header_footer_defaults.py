@@ -4,11 +4,10 @@ sibling test for expense categories): the upgrade inserts no catalog attribute r
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.tables import BusinessRow
 from app.catalog.adapters.tables import CatalogAttributesRow, CatalogHeaderFooterRow
 from app.db import make_engine
 from app.migrations.runner import MIGRATIONS_ROOT, upgrade_to_head
@@ -30,8 +29,8 @@ def test_an_existing_business_gets_the_default_header_and_footer_with_no_attribu
     engine = make_engine("sqlite://")
     _upgrade_to(engine, "0005")
     with Session(engine) as session:
-        session.add(BusinessRow(name="Vieja Huerta"))
-        session.add(BusinessRow(name="Otra Huerta"))
+        session.execute(text("INSERT INTO business (name) VALUES (:n)"), {"n": "Vieja Huerta"})
+        session.execute(text("INSERT INTO business (name) VALUES (:n)"), {"n": "Otra Huerta"})
         session.commit()
 
     upgrade_to_head(engine)

@@ -13,9 +13,12 @@ from dataclasses import dataclass
 class BusinessRef:
     id: int
     name: str
+    language: str
 
     def __post_init__(self) -> None:
         if self.id <= 0:
             raise ValueError("a business ref needs a positive id")
         if not self.name:
             raise ValueError("a business ref needs a name")
+        if not self.language:
+            raise ValueError("a business ref needs a language")

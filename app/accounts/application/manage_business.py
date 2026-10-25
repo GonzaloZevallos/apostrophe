@@ -2,10 +2,11 @@
 business comes only from the session, never from a path or body; these two use cases
 take `business_id` from `CurrentBusinessId`, not from the caller)."""
 
+import dataclasses
 from dataclasses import dataclass
 
 from app.accounts.application.ports import Accounts
-from app.accounts.domain.account import Business, BusinessName
+from app.accounts.domain.account import BusinessName
 from app.shared.transaction import Transaction
 
 
@@ -31,6 +32,6 @@ def rename_business(
     name = BusinessName.of(raw_name)
     business = accounts.business(business_id)
     assert business is not None, "a signed-in user's business always exists"
-    accounts.save_business(Business(name, business_id))
+    accounts.save_business(dataclasses.replace(business, name=name))
     transaction.commit()
     return business_profile(accounts, business_id)

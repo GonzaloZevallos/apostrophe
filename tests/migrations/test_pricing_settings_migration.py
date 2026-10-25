@@ -275,7 +275,7 @@ def test_the_matrix_checker_rejects_a_changed_rule() -> None:
 def test_a_raw_insert_without_a_vip_price_succeeds_and_reads_back_null(tmp_path: Path) -> None:
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
     upgrade_to_head(engine)
-    _exec(engine, "INSERT INTO business (id, name) VALUES (1, 'Uno')")
+    _exec(engine, "INSERT INTO business (id, name, language) VALUES (1, 'Uno', 'en')")
     _exec(engine, "INSERT INTO variety (id, business_id, name, name_key) VALUES (1, 1, 'V', 'v')")
 
     _exec(
@@ -291,7 +291,7 @@ def test_a_raw_insert_without_a_vip_price_succeeds_and_reads_back_null(tmp_path:
 def test_a_business_cannot_have_two_settings_rows(tmp_path: Path) -> None:
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
     upgrade_to_head(engine)
-    _exec(engine, "INSERT INTO business (id, name) VALUES (1, 'Uno')")
+    _exec(engine, "INSERT INTO business (id, name, language) VALUES (1, 'Uno', 'en')")
     insert = (
         "INSERT INTO pricing_settings (business_id, is_bulk_pricing, is_vip_customers) "
         "VALUES (1, 0, 0)"

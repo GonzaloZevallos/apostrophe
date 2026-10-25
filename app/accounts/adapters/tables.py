@@ -17,6 +17,7 @@ class BusinessRow(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(BUSINESS_NAME_MAX_LENGTH))
+    language: Mapped[str] = mapped_column(String(35))
 
 
 class UserRow(Base):

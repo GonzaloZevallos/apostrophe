@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -289,6 +290,22 @@ def test_patch_business_renames_only_the_caller_s_own_business(
     assert client.get("/auth/me").json()["business_name"] == "La Huerta Nueva"
     # Unaffected: the business comes from the session, never the request.
     assert other_client.get("/business").json()["name"] == "Otro Negocio"
+
+
+def test_patch_business_leaves_the_stored_language_as_it_was(
+    client: TestClient, engine: Engine
+) -> None:
+    with engine.begin() as connection:
+        connection.execute(text("UPDATE business SET language = 'fr' WHERE id = 1"))
+
+    renamed = client.patch("/business", json={"name": "La Huerta Nueva"})
+
+    assert renamed.status_code == 200
+    with Session(engine) as session:
+        business = SqlAccounts(session).business(1)
+    assert business is not None
+    assert business.name.value == "La Huerta Nueva"
+    assert business.language.language.tag == "fr"
 
 
 def test_patch_business_refuses_a_blank_name(client: TestClient) -> None:
