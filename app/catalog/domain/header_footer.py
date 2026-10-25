@@ -10,9 +10,6 @@ from dataclasses import dataclass
 
 from app.catalog.domain.errors import FooterTooLong, HeaderTooLong
 
-DEFAULT_HEADER = "\U0001f33f **CATALOG** \U0001f33f"
-DEFAULT_FOOTER = "\U0001f4e9 Questions and orders by private message."
-
 MAX_LENGTH = 500
 
 

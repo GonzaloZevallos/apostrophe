@@ -18,7 +18,11 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.datastructures import State
 
-from app.catalog.application.ports import CatalogPricingSettings
+from app.catalog.application.ports import (
+    CatalogLanguage,
+    CatalogPricingSettings,
+    CatalogWordsSource,
+)
 from app.clock import Clock
 from app.pinned_catalog.adapters.sql_recorder import SqlPinRecorder
 from app.pinned_catalog.adapters.sql_snapshot import SqlPinSnapshots
@@ -38,7 +42,9 @@ def run_upkeep_safely(state: State, business_id: int, today: date) -> None:
     pricing_settings = cast(
         Callable[[Session, int], CatalogPricingSettings], state.catalog_pricing_settings
     )
-    snapshots = SqlPinSnapshots(engine, cipher, pricing_settings)
+    words = cast(CatalogWordsSource, state.catalog_words)
+    language = cast(Callable[[Session], CatalogLanguage], state.catalog_language)
+    snapshots = SqlPinSnapshots(engine, cipher, pricing_settings, words, language)
     recorder = SqlPinRecorder(engine)
     try:
         push(telegram, snapshots, recorder, locks, business_id, "upkeep", today, clock())

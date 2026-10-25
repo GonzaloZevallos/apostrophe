@@ -230,5 +230,49 @@
   "operator.removal.refusing_cycle": {
     "area": "removal",
     "text": "Refusing: the delete order has a cycle through: {tables}"
+  },
+  "catalog.nothing_to_offer": {
+    "area": "catalog",
+    "text": "Nothing to offer for now."
+  },
+  "catalog.indica_line": {
+    "area": "catalog",
+    "text": "• {indica}% indica / {sativa}% sativa"
+  },
+  "catalog.aroma_line": {
+    "area": "catalog",
+    "text": "• Aroma/flavor: {aroma}"
+  },
+  "catalog.price_per_gram_line": {
+    "area": "catalog",
+    "text": "• Price per gram: {price}"
+  },
+  "catalog.bulk_line": {
+    "area": "catalog",
+    "text": "• From {grams}: {price} each"
+  },
+  "catalog.default_header": {
+    "area": "catalog",
+    "text": "🌿 **CATALOG** 🌿"
+  },
+  "catalog.default_footer": {
+    "area": "catalog",
+    "text": "📩 Questions and orders by private message."
+  },
+  "expenses.default_category.growing_supplies": {
+    "area": "expenses",
+    "text": "Growing supplies"
+  },
+  "expenses.default_category.packaging": {
+    "area": "expenses",
+    "text": "Packaging"
+  },
+  "expenses.default_category.shipping_and_transport": {
+    "area": "expenses",
+    "text": "Shipping and transport"
+  },
+  "expenses.default_category.other": {
+    "area": "expenses",
+    "text": "Other"
   }
 }

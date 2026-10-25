@@ -180,3 +180,37 @@ msgstr "Refusing: table(s) with no name or declared label: {tables}"
 
 msgid "operator.removal.refusing_cycle"
 msgstr "Refusing: the delete order has a cycle through: {tables}"
+
+msgid "catalog.nothing_to_offer"
+msgstr "Nothing to offer for now."
+
+#, no-python-format
+msgid "catalog.indica_line"
+msgstr "• {indica}% indica / {sativa}% sativa"
+
+msgid "catalog.aroma_line"
+msgstr "• Aroma/flavor: {aroma}"
+
+msgid "catalog.price_per_gram_line"
+msgstr "• Price per gram: {price}"
+
+msgid "catalog.bulk_line"
+msgstr "• From {grams}: {price} each"
+
+msgid "catalog.default_header"
+msgstr "🌿 **CATALOG** 🌿"
+
+msgid "catalog.default_footer"
+msgstr "📩 Questions and orders by private message."
+
+msgid "expenses.default_category.growing_supplies"
+msgstr "Growing supplies"
+
+msgid "expenses.default_category.packaging"
+msgstr "Packaging"
+
+msgid "expenses.default_category.shipping_and_transport"
+msgstr "Shipping and transport"
+
+msgid "expenses.default_category.other"
+msgstr "Other"

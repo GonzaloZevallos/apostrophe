@@ -13,9 +13,11 @@ from app.catalog.application.errors import CatalogVarietyArchived, CatalogVariet
 from app.catalog.application.ports import (
     CatalogAttributesRepository,
     CatalogHeaderFooterRepository,
+    CatalogLanguage,
     CatalogPricingSettings,
     CatalogStock,
     CatalogVarieties,
+    CatalogWordsSource,
 )
 from app.catalog.application.read_catalog import CatalogView, read_catalog
 from app.catalog.domain.attributes import CatalogAttributes
@@ -49,6 +51,9 @@ def set_variety_attributes(
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
+    words: CatalogWordsSource,
+    language: CatalogLanguage,
+    business_id: int,
     transaction: Transaction,
     variety_id: int,
     shown: bool,
@@ -61,5 +66,13 @@ def set_variety_attributes(
         varieties, attributes_repo, transaction, variety_id, shown, emoji, indica_share, aroma
     )
     return read_catalog(
-        varieties, stock, attributes_repo, header_footer_repo, pricing_settings, today
+        varieties,
+        stock,
+        attributes_repo,
+        header_footer_repo,
+        pricing_settings,
+        words,
+        language,
+        business_id,
+        today,
     )
