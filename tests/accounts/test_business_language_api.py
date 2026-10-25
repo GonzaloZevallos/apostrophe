@@ -96,7 +96,11 @@ def test_a_value_that_is_not_selectable_is_refused_and_nothing_changes(
 
     assert refused.status_code == 422
     assert refused.json()["code"] == "business.language_not_selectable"
-    assert tag not in refused.json()["detail"] or tag == ""
+    detail = refused.json()["detail"]
+    assert detail, "the refusal names the rule"
+    assert tag not in detail if tag else True
+    # The sentence is the fixed rule, the same whatever the value was.
+    assert detail == _change(client, "another-value").json()["detail"]
     assert _stored(client) == "de"
 
 
