@@ -10,13 +10,16 @@
     "lint": "oxlint --deny-warnings",
     "test": "vitest run",
     "preview": "vite preview",
-    "e2e": "sh scripts/e2e.sh"
+    "e2e": "sh scripts/e2e.sh",
+    "i18n:types": "I18N_TYPES_WRITE=1 vitest run scripts/i18n/resourceTypes.test.ts"
   },
   "dependencies": {
     "@fontsource/plus-jakarta-sans": "^5.3.0",
     "@tanstack/react-query": "^5.104.1",
+    "i18next": "^26.5.10",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-i18next": "^17.1.8",
     "react-router": "^8.4.0"
   },
   "devDependencies": {
