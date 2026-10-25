@@ -12,7 +12,9 @@
     "preview": "vite preview",
     "e2e": "sh scripts/e2e.sh",
     "i18n:baseline": "node scripts/i18n/baseline.mjs",
-    "i18n:types": "I18N_TYPES_WRITE=1 vitest run scripts/i18n/resourceTypes.test.ts"
+    "i18n:types": "I18N_TYPES_WRITE=1 vitest run scripts/i18n/resourceTypes.test.ts",
+    "i18n:pseudo": "I18N_PSEUDO_WRITE=1 vitest run scripts/i18n/pseudo.test.ts",
+    "i18n:missing": "I18N_MISSING_REPORT=1 vitest run scripts/i18n/missingKeys.test.ts"
   },
   "dependencies": {
     "@fontsource/plus-jakarta-sans": "^5.3.0",
