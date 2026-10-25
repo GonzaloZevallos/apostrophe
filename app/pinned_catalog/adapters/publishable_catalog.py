@@ -15,7 +15,11 @@ from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.adapters.sql_catalog_varieties import SqlCatalogVarieties
 from app.catalog.adapters.sql_header_footer import SqlCatalogHeaderFooter
 from app.catalog.adapters.stock_status import StockStatusesFromStock
-from app.catalog.application.ports import CatalogPricingSettings, CatalogWordsSource
+from app.catalog.application.ports import (
+    CatalogLanguage,
+    CatalogPricingSettings,
+    CatalogWordsSource,
+)
 from app.catalog.application.read_catalog import read_publishable_text
 
 
@@ -25,6 +29,7 @@ def publishable_text(
     today: date,
     pricing_settings: Callable[[Session, int], CatalogPricingSettings],
     words: CatalogWordsSource,
+    language: Callable[[Session], CatalogLanguage],
 ) -> str:
     varieties = SqlCatalogVarieties(session, business_id)
     stock = StockStatusesFromStock(session, business_id)
@@ -37,5 +42,7 @@ def publishable_text(
         header_footer,
         pricing_settings(session, business_id),
         words,
+        language(session),
+        business_id,
         today,
     )

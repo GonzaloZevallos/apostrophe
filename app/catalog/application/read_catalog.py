@@ -11,6 +11,7 @@ from datetime import date
 from app.catalog.application.ports import (
     CatalogAttributesRepository,
     CatalogHeaderFooterRepository,
+    CatalogLanguage,
     CatalogPricingSettings,
     CatalogStock,
     CatalogVarieties,
@@ -19,7 +20,6 @@ from app.catalog.application.ports import (
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.text import CatalogEntry, catalog_text, pinned_catalog_text
 from app.catalog.domain.variety import CatalogPrice, CatalogState, catalog_state
-from app.shared.language import ENGLISH
 
 
 @dataclass(frozen=True)
@@ -102,12 +102,17 @@ def read_catalog(
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
     words: CatalogWordsSource,
+    language: CatalogLanguage,
+    business_id: int,
     today: date,
 ) -> CatalogView:
     views, entries = _qualify(varieties, stock, attributes_repo, pricing_settings, today)
     header_footer = header_footer_repo.get()
     text = catalog_text(
-        words.words_for(ENGLISH), header_footer.header, header_footer.footer, entries
+        words.words_for(language.language_of(business_id)),
+        header_footer.header,
+        header_footer.footer,
+        entries,
     )
     return CatalogView(
         text=text, header=header_footer.header, footer=header_footer.footer, varieties=views
@@ -121,6 +126,8 @@ def read_publishable_text(
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
     words: CatalogWordsSource,
+    language: CatalogLanguage,
+    business_id: int,
     today: date,
 ) -> str:
     """What Telegram needs (#10): `pinned_catalog_text` over the same qualification
@@ -128,5 +135,8 @@ def read_publishable_text(
     _, entries = _qualify(varieties, stock, attributes_repo, pricing_settings, today)
     header_footer = header_footer_repo.get()
     return pinned_catalog_text(
-        words.words_for(ENGLISH), header_footer.header, header_footer.footer, entries
+        words.words_for(language.language_of(business_id)),
+        header_footer.header,
+        header_footer.footer,
+        entries,
     )

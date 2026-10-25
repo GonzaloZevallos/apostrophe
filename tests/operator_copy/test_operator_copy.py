@@ -26,7 +26,7 @@ from app.settings import DEFAULT_LOCALES_DIR
 from app.shared.copy import operator_translator
 from app.shared.language import ENGLISH, Language
 from tests.conftest import NOW, MovableClock
-from tests.operator_copy.locales import MARK
+from tests.fixture_locales import MARK
 from tests.operator_copy.runs import (
     GROUPS,
     Capture,

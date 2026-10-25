@@ -24,6 +24,7 @@ from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.catalog.adapters.babel_words import BabelCatalogWords
+from app.catalog.adapters.business_language import SqlCatalogLanguage
 from app.catalog.adapters.leaving import SqlCatalogLeaving
 from app.catalog.adapters.onboarding_facts import SqlCatalogFacts
 from app.catalog.adapters.opening import CatalogHeaderFooterOpening
@@ -227,6 +228,9 @@ def create_app(
     app.state.catalog_pricing_settings = SqlPricingSettings
     # The catalog's fixed lines, built once over the copy module (docs/adr/0050).
     app.state.catalog_words = BabelCatalogWords(CopyCatalog(settings.locales_dir))
+    # The language those lines are shown in: the forced one read once here, the stored one
+    # read per call by `SqlCatalogLanguage` (the only place the catalog applies the override).
+    app.state.catalog_language = partial(SqlCatalogLanguage, forced=settings.forced_language)
     # Deleting a variety removes what stock and the catalog keep of it (docs/adr/0006).
     app.state.variety_leaving = CompositeLeaving(SqlStockLeaving, SqlCatalogLeaving)
     # Two more factories of the same shape: customers reaches a balance, and sales a

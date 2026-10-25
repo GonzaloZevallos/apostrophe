@@ -1,4 +1,4 @@
-"""The catalogs the operator-copy tests run over: production `en` and `en-XA`, and a `de`
+"""The catalogs fixture-language tests run over: production `en` and `en-XA`, and a `de`
 written from `en` (each text is `de:` + the English, placeholders kept), all in a
 temporary directory -- no hand-kept `de` `.po` lives in the fixtures (docs/adr/0050)."""
 
@@ -36,7 +36,7 @@ def _de_catalog(english: Catalog) -> Catalog:
     return german
 
 
-def build_operator_locales(root: Path) -> Path:
+def build_fixture_locales(root: Path) -> Path:
     """`root` holding `en`, `en-XA` (copied) and `de` (written and compiled)."""
     locales = root / "locales"
     for language in (ENGLISH, TEST_LOCALE):

@@ -17,6 +17,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.catalog.adapters.babel_words import BabelCatalogWords
+from app.catalog.adapters.business_language import SqlCatalogLanguage
 from app.catalog.adapters.import_port import CatalogImport
 from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.adapters.sql_catalog_varieties import SqlCatalogVarieties
@@ -158,6 +159,8 @@ def test_write_attributes_writes_through_no_commit_and_reads_back(
             SqlCatalogHeaderFooter(session, business_id=1),
             SqlPricingSettings(session, business_id=1),
             BabelCatalogWords(CopyCatalog(DEFAULT_LOCALES_DIR)),
+            SqlCatalogLanguage(session, forced=None),
+            1,
             TODAY,
         )
         written = next(v for v in view.varieties if v.id == variety_id)

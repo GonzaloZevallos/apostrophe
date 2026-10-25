@@ -69,3 +69,11 @@ class CatalogWordsSource(Protocol):
         """The fixed lines of the catalog text in `language`, English for a language the
         copy has no catalog for."""
         ...
+
+
+class CatalogLanguage(Protocol):
+    def language_of(self, business_id: int) -> Language:
+        """The language the business's catalog texts are shown in: the operator's forced
+        language when set, else the business's stored one. English for a business that
+        no longer exists."""
+        ...

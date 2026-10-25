@@ -13,6 +13,7 @@ from app.catalog.application.errors import CatalogVarietyArchived, CatalogVariet
 from app.catalog.application.ports import (
     CatalogAttributesRepository,
     CatalogHeaderFooterRepository,
+    CatalogLanguage,
     CatalogPricingSettings,
     CatalogStock,
     CatalogVarieties,
@@ -51,6 +52,8 @@ def set_variety_attributes(
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
     words: CatalogWordsSource,
+    language: CatalogLanguage,
+    business_id: int,
     transaction: Transaction,
     variety_id: int,
     shown: bool,
@@ -63,5 +66,13 @@ def set_variety_attributes(
         varieties, attributes_repo, transaction, variety_id, shown, emoji, indica_share, aroma
     )
     return read_catalog(
-        varieties, stock, attributes_repo, header_footer_repo, pricing_settings, words, today
+        varieties,
+        stock,
+        attributes_repo,
+        header_footer_repo,
+        pricing_settings,
+        words,
+        language,
+        business_id,
+        today,
     )

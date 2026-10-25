@@ -19,7 +19,11 @@ from app.catalog.adapters.stock_status import StockStatusesFromStock
 from app.catalog.application import set_header_footer as set_header_footer_uc
 from app.catalog.application import set_variety_attributes as set_variety_attributes_uc
 from app.catalog.application.errors import CatalogVarietyArchived, CatalogVarietyNotFound
-from app.catalog.application.ports import CatalogPricingSettings, CatalogWordsSource
+from app.catalog.application.ports import (
+    CatalogLanguage,
+    CatalogPricingSettings,
+    CatalogWordsSource,
+)
 from app.catalog.application.read_archived import read_archived
 from app.catalog.application.read_catalog import read_catalog
 from app.catalog.domain.errors import (
@@ -75,12 +79,19 @@ def get_words(request: Request) -> CatalogWordsSource:
     return cast(CatalogWordsSource, request.app.state.catalog_words)
 
 
+def get_language(request: Request, session: SessionDep) -> CatalogLanguage:
+    # The forced language is applied inside the factory `app/main.py` built, never here.
+    factory = cast(Callable[[Session], CatalogLanguage], request.app.state.catalog_language)
+    return factory(session)
+
+
 VarietiesDep = Annotated[SqlCatalogVarieties, Depends(get_varieties)]
 StockDep = Annotated[StockStatusesFromStock, Depends(get_stock)]
 AttributesDep = Annotated[SqlCatalogAttributes, Depends(get_attributes)]
 HeaderFooterDep = Annotated[SqlCatalogHeaderFooter, Depends(get_header_footer)]
 PricingSettingsDep = Annotated[CatalogPricingSettings, Depends(get_pricing_settings)]
 WordsDep = Annotated[CatalogWordsSource, Depends(get_words)]
+LanguageDep = Annotated[CatalogLanguage, Depends(get_language)]
 
 
 as_http = TranslateErrors(
@@ -99,9 +110,21 @@ def get_catalog(
     header_footer: HeaderFooterDep,
     pricing_settings: PricingSettingsDep,
     words: WordsDep,
+    language: LanguageDep,
+    business_id: CurrentBusinessId,
     today: TodayDep,
 ) -> CatalogOut:
-    view = read_catalog(varieties, stock, attributes, header_footer, pricing_settings, words, today)
+    view = read_catalog(
+        varieties,
+        stock,
+        attributes,
+        header_footer,
+        pricing_settings,
+        words,
+        language,
+        business_id,
+        today,
+    )
     return CatalogOut.of(view)
 
 
@@ -122,6 +145,8 @@ def put_variety_attributes(
     header_footer: HeaderFooterDep,
     pricing_settings: PricingSettingsDep,
     words: WordsDep,
+    language: LanguageDep,
+    business_id: CurrentBusinessId,
     session: SessionDep,
     today: TodayDep,
 ) -> CatalogOut:
@@ -134,6 +159,8 @@ def put_variety_attributes(
                 header_footer,
                 pricing_settings,
                 words,
+                language,
+                business_id,
                 session,
                 variety_id,
                 body.shown,
@@ -156,6 +183,8 @@ def put_header_footer(
     header_footer: HeaderFooterDep,
     pricing_settings: PricingSettingsDep,
     words: WordsDep,
+    language: LanguageDep,
+    business_id: CurrentBusinessId,
     session: SessionDep,
     today: TodayDep,
 ) -> CatalogOut:
@@ -167,6 +196,8 @@ def put_header_footer(
             header_footer,
             pricing_settings,
             words,
+            language,
+            business_id,
             session,
             body.header,
             body.footer,
