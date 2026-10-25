@@ -170,6 +170,8 @@ def test_a_vip_price_at_or_above_the_list_price_is_refused_with_its_own_code(
 def test_a_vip_price_must_be_positive(vip_price: int) -> None:
     with pytest.raises(InvalidPriceEntry):
         PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=vip_price)
+
+
 def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
     from datetime import UTC, datetime
 

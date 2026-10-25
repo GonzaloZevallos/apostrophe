@@ -83,9 +83,16 @@ def telegram() -> FakeTelegram:
 
 
 @pytest.fixture
-def app(engine: Engine, clock: MovableClock, telegram: FakeTelegram) -> FastAPI:
+def settings() -> Settings:
+    """The one `Settings` the test app is built from. A test module that needs other
+    languages overrides this fixture, never builds its own app."""
+    return SETTINGS
+
+
+@pytest.fixture
+def app(engine: Engine, clock: MovableClock, telegram: FakeTelegram, settings: Settings) -> FastAPI:
     return create_app(
-        SETTINGS,
+        settings,
         engine=engine,
         clock=clock,
         hasher=TEST_HASHER,

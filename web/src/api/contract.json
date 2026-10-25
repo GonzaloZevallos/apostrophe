@@ -9,6 +9,7 @@
     "account.login_locked": { "kind": "refusal" },
     "account.current_password_wrong": { "kind": "refusal" },
     "account.reset_link_gone": { "kind": "gone" },
+    "business.language_not_selectable": { "kind": "refusal" },
     "customer.not_found": { "kind": "gone" },
     "customer.phone_taken": { "kind": "refusal" },
     "customer.required_field_cleared": { "kind": "refusal" },

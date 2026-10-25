@@ -405,5 +405,3 @@ def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
         event.remove(engine, "before_cursor_execute", _record)
 
     assert len(statements) == 2, statements
-
-

@@ -411,11 +411,44 @@
         "title": "AssignCustomerIn",
         "type": "object"
       },
+      "BusinessLanguageOut": {
+        "description": "The `GET /business` language fields: the stored tag, never the shown one.",
+        "properties": {
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "selectable_languages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selectable Languages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "language",
+          "selectable_languages"
+        ],
+        "title": "BusinessLanguageOut",
+        "type": "object"
+      },
       "BusinessOut": {
         "properties": {
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "selectable_languages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selectable Languages",
+            "type": "array"
           },
           "users": {
             "items": {
@@ -427,7 +460,9 @@
         },
         "required": [
           "name",
-          "users"
+          "users",
+          "language",
+          "selectable_languages"
         ],
         "title": "BusinessOut",
         "type": "object"
@@ -1466,6 +1501,19 @@
         "title": "InvitationViewOut",
         "type": "object"
       },
+      "LanguageIn": {
+        "properties": {
+          "language": {
+            "title": "Language",
+            "type": "string"
+          }
+        },
+        "required": [
+          "language"
+        ],
+        "title": "LanguageIn",
+        "type": "object"
+      },
       "LineCostOut": {
         "description": "A sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none of\nthe line's grams is costed yet; `pending_grams` is the part with no lot behind it,\nnever folded into `costed` as a $0 cost.",
         "properties": {
@@ -1593,6 +1641,10 @@
             "title": "Email",
             "type": "string"
           },
+          "shown_language": {
+            "title": "Shown Language",
+            "type": "string"
+          },
           "today": {
             "format": "date",
             "title": "Today",
@@ -1602,7 +1654,8 @@
         "required": [
           "email",
           "business_name",
-          "today"
+          "today",
+          "shown_language"
         ],
         "title": "MeOut",
         "type": "object"
@@ -2733,7 +2786,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One An\u00e1lisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_grams` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_grams` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -2819,7 +2872,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
         "properties": {
           "customer": {
             "anyOf": [
@@ -4257,6 +4310,52 @@
           }
         ],
         "summary": "Rename Business",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/business/language": {
+      "put": {
+        "operationId": "change_language_business_language_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LanguageIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessLanguageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Change Language",
         "tags": [
           "accounts"
         ]

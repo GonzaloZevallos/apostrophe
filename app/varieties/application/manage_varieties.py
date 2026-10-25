@@ -92,9 +92,7 @@ def delete_variety(
     transaction.commit()
 
 
-def removal_offered(
-    varieties: Varieties, variety: Variety
-) -> Literal["delete", "archive"] | None:
+def removal_offered(varieties: Varieties, variety: Variety) -> Literal["delete", "archive"] | None:
     """`None` for an archived variety; otherwise the one removal its page offers."""
     if variety.is_archived:
         return None

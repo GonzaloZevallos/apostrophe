@@ -40,9 +40,7 @@ class FileExportFile:
     def prepare(self) -> Path:
         resolved = self._export_dir.expanduser().resolve()
         if is_inside(resolved, REPO_ROOT):
-            raise ExportDirectoryRefused(
-                "the export directory must resolve outside the repository"
-            )
+            raise ExportDirectoryRefused("the export directory must resolve outside the repository")
         if not resolved.is_dir():
             resolved.mkdir(mode=0o700, parents=True, exist_ok=True)
             os.chmod(resolved, 0o700)
