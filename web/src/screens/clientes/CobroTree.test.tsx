@@ -16,7 +16,7 @@ import { router as appRouter } from '../../router'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, pathTo, readPaymentUnderneath } from '../../routes'
 import type { PaymentUnderneath, Viewport } from '../../routes'
 import panelFixture from '../../api/fixtures/panel.json'
-import { renderWithViewport } from '../../test-viewport'
+import { flipViewport, renderWithViewport } from '../../test-viewport'
 import { inAppState } from '../../components/inAppState'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
@@ -142,11 +142,11 @@ describe('on a phone', () => {
     expect(screen.queryByRole('link', { name: 'New sale' })).toBeNull()
   })
 
-  test('focus goes to the title and Escape leaves like Close does', async () => {
+  test('focus goes to the first field and Escape leaves like Close does', async () => {
     const router = renderApp([{ pathname: PAYMENT }], 'phone')
     const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
 
-    await waitFor(() => expect(within(dialog).getByText('Record payment')).toHaveFocus())
+    await waitFor(() => expect(within(dialog).getByLabelText('Amount')).toHaveFocus())
     fireEvent.keyDown(document, { key: 'Escape' })
     await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
   })
@@ -159,6 +159,32 @@ describe('on a phone', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(PAYMENT)
+  })
+
+  test('the sheet holds exactly one Close, and Save inside the form in its pinned actions', async () => {
+    renderApp([{ pathname: PAYMENT }], 'phone')
+    const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
+
+    expect(within(dialog).getAllByRole('button', { name: 'Close' })).toHaveLength(1)
+    const save = within(dialog).getByRole('button', { name: 'Save' })
+    expect(save.parentElement).toHaveClass('sheet__actions')
+    expect(save.closest('form')?.lastElementChild).toBe(save.parentElement)
+  })
+
+  test('a flip across 900 px and back keeps the amount typed, with the form kept mounted', async () => {
+    renderApp([{ pathname: PAYMENT }], 'phone')
+    const amount = await screen.findByLabelText('Amount')
+    await userEvent.clear(amount)
+    await userEvent.type(amount, '5000')
+    const form = amount.closest('form')
+
+    flipViewport('computer')
+    expect(screen.getByLabelText('Amount')).toHaveValue('$ 5.000')
+    expect(screen.getByRole('dialog', { name: 'Record payment' })).not.toHaveClass('sheet__body')
+    flipViewport('phone')
+
+    expect(screen.getByLabelText('Amount')).toHaveValue('$ 5.000')
+    expect(screen.getByLabelText('Amount').closest('form')).toBe(form)
   })
 
   test('the card alone is behind the form: no list beside it', async () => {

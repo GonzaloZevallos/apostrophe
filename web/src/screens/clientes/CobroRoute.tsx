@@ -86,13 +86,14 @@ export default function CobroRoute() {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [leave])
 
+  // On a computer the title takes focus; on a phone `Sheet` puts it on the first field.
   const ready = data !== undefined
   const focusedTitle = useRef(false)
   useEffect(() => {
-    if (!ready || focusedTitle.current) return
+    if (!computer || !ready || focusedTitle.current) return
     focusedTitle.current = true
     titleRef.current?.focus()
-  }, [ready])
+  }, [computer, ready])
 
   const focusBeforeAsking = useRef<Element | null>(null)
   const wasBlocked = useRef(false)

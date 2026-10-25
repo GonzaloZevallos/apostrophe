@@ -288,11 +288,12 @@ export default function Cobro({
             </div>
           )}
 
-          {offline && <SinConexion />}
-
-          <Boton textOnly="submit" type="submit" disabled={record.isPending}>
-            {COMMON_TEXT.save}
-          </Boton>
+          <div className="sheet__actions">
+            {offline && <SinConexion />}
+            <Boton textOnly="submit" type="submit" disabled={record.isPending}>
+              {COMMON_TEXT.save}
+            </Boton>
+          </div>
         </form>
     </>
   )

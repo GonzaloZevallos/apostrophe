@@ -179,11 +179,13 @@ export default function PriceForm({
           errors={errors}
           onChange={(field, value) => setValues((current) => ({ ...current, [field]: value }))}
         />
-        <FieldError message={errors.form} />
-        {offline && <SinConexion />}
-        <Boton textOnly="submit" type="submit" disabled={sending}>
-          {VARIETIES_TEXT.guardaElPrecio}
-        </Boton>
+        <div className="sheet__actions">
+          <FieldError message={errors.form} />
+          {offline && <SinConexion />}
+          <Boton textOnly="submit" type="submit" disabled={sending}>
+            {VARIETIES_TEXT.guardaElPrecio}
+          </Boton>
+        </div>
       </form>
     </div>
   )
