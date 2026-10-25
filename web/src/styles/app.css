@@ -628,6 +628,12 @@ body {
   margin: 0 var(--margen-pantalla) var(--espacio-md);
 }
 
+/* The phone's floating group (`Shell.tsx`) is a box only below 900 px; elsewhere it takes no part
+ * in the layout, so the computer keeps the markup's old flow. */
+.nueva-venta-flotante {
+  display: contents;
+}
+
 .boton-nueva-venta--escritorio {
   display: none;
   margin-bottom: var(--espacio-lg);
@@ -4576,6 +4582,122 @@ body {
   /* A tap on a sheet's control is a tap, never a double-tap zoom (the phone standard's touch). */
   .sheet button {
     touch-action: manipulation;
+  }
+}
+
+/* The phone's fixed chrome (GH-319): the bar is fixed to the bottom on tab roots and cards, and
+ * "+ New sale" with its missing line floats just above it, on tab roots only. One token,
+ * `--bottom-chrome-height` (the bar, the button group and the home-bar inset), feeds the content's
+ * bottom padding, the group's `bottom` and the toast's `bottom`; no rule below states those heights
+ * again. `html:has(...)` switches the parts on, so the toast (drawn outside the column) reads the
+ * same token. A form or a sheet has no bar and no group, so its token is the inset alone, plus the
+ * sheet's pinned action under a sheet. */
+@media (max-width: 899.98px) {
+  :root {
+    --bar-height: 0px;
+    --group-height: 0px;
+    --sheet-actions-height: 0px;
+    --missing-line-height: 2rem;
+    --bottom-chrome-height: calc(
+      var(--bar-height) + var(--group-height) + var(--sheet-actions-height) + var(--inset-abajo)
+    );
+  }
+
+  html:has(.bar-inferior) {
+    --bar-height: calc(var(--alto-tocable) + 28px);
+  }
+
+  html:has(.nueva-venta-flotante) {
+    --group-height: calc(var(--alto-boton) + var(--espacio-md));
+  }
+
+  html:has(.nueva-venta-flotante .nueva-venta__falta) {
+    --group-height: calc(
+      var(--alto-boton) + var(--espacio-md) + var(--espacio-xs) + var(--missing-line-height)
+    );
+  }
+
+  html:has(.sheet) {
+    --sheet-actions-height: calc(var(--alto-boton) + 2 * var(--espacio-md));
+  }
+
+  .columna-principal {
+    padding-bottom: var(--bottom-chrome-height);
+  }
+
+  .bar-inferior {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    box-sizing: border-box;
+    height: calc(var(--bar-height) + var(--inset-abajo));
+    margin-inline: 0;
+    padding: 8px calc(var(--espacio-sm) + var(--inset-derecha)) calc(12px + var(--inset-abajo))
+      calc(var(--espacio-sm) + var(--inset-izquierda));
+    background: var(--papel);
+  }
+
+  .bar-inferior__item {
+    font-size: 0.75rem;
+  }
+
+  .nueva-venta-flotante {
+    position: fixed;
+    left: var(--inset-izquierda);
+    right: var(--inset-derecha);
+    bottom: calc(var(--bottom-chrome-height) - var(--group-height));
+    z-index: 5;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    padding: 0 var(--margen-pantalla) var(--espacio-md);
+    /* The strip around the button is not a target: only the button and its line are. */
+    pointer-events: none;
+  }
+
+  .nueva-venta-flotante > * {
+    pointer-events: auto;
+  }
+
+  .nueva-venta-flotante .boton-nueva-venta {
+    margin: 0;
+  }
+
+  .nueva-venta-flotante .nueva-venta__falta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: var(--missing-line-height);
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  /* A text keyboard is up: hidden and untappable, never pushed above it. The padding stays, so
+   * nothing shifts. */
+  .disposicion[data-teclado='abierto'] .bar-inferior,
+  .disposicion[data-teclado='abierto'] .nueva-venta-flotante {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* A card's pinned "New sale to ..." sits above the fixed bar. */
+  .ficha-cliente__pie {
+    bottom: var(--bottom-chrome-height);
+  }
+
+  /* Toasts only move: they sit above the bar and the button, above a sheet's pinned action, and
+   * over the sheet itself. */
+  .aviso-flotante {
+    top: auto;
+    bottom: calc(var(--bottom-chrome-height) + var(--espacio-md));
+  }
+
+  html:has(.sheet) .aviso-flotante {
+    z-index: 30;
   }
 }
 
