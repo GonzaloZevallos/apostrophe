@@ -1,7 +1,8 @@
 /**
  * Every session boundary — login, accept, logout, a 401 on a gated call — clears
  * the whole query cache before it navigates (plan, "Session"): no screen of the
- * business just left stays warm in the cache for whoever signs in next. Login and
+ * business just left stays warm in the cache for whoever signs in next, and the front goes
+ * back to the language of boot, never the last business's (`i18n/language.ts`). Login and
  * accept return nothing: the client never reads the token (plan, invariants); the
  * session lives only in the backend's cookie, which `api/client.ts` already sends
  * with `credentials: 'include'`.
@@ -10,6 +11,7 @@
 import { HOME, isPublicPath, LOGIN, ONBOARDING } from './routes'
 import type { QueryClient } from '@tanstack/react-query'
 import { get, post } from './api/client'
+import { resetToBootLanguage } from './i18n/language'
 
 export interface SessionActions {
   queryClient: QueryClient
@@ -18,6 +20,7 @@ export interface SessionActions {
 
 function boundary(actions: SessionActions, path: string): void {
   actions.queryClient.clear()
+  resetToBootLanguage()
   actions.navigate(path)
 }
 
@@ -75,6 +78,7 @@ export async function openInvitation(
 ): Promise<InvitationView> {
   await post('/auth/logout')
   actions.queryClient.clear()
+  resetToBootLanguage()
   return get<InvitationView>(`/invitations/${token}`)
 }
 
@@ -102,6 +106,7 @@ export async function openResetLink(
 ): Promise<void> {
   await post('/auth/logout')
   actions.queryClient.clear()
+  resetToBootLanguage()
   await get<void>(`/reset-links/${token}`)
 }
 

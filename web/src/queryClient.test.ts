@@ -7,6 +7,9 @@
 import { CUSTOMERS, HOME, LOGIN } from './routes'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { ApiError } from './api/client'
+import i18n from './i18n'
+import { applyShownLanguage, resetToBootLanguage, setLocaleLoader } from './i18n/language'
+import { loadLocale } from './i18n/resources'
 import { queryClient, setCurrentPath, setNavigate } from './queryClient'
 
 beforeEach(() => {
@@ -14,6 +17,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  setLocaleLoader(loadLocale)
+  resetToBootLanguage()
   queryClient.clear()
   setCurrentPath(HOME)
   setNavigate(() => {})
@@ -90,4 +95,23 @@ test('a 401 from a gated mutation (a screen\'s own save or delete) is the same b
 
   expect(queryClient.getQueryData(['me'])).toBeUndefined()
   expect(navigate).toHaveBeenCalledWith(LOGIN)
+})
+
+test('a 401 from a gated query restores the boot language, never the last one shown', async () => {
+  setCurrentPath(CUSTOMERS)
+  setNavigate(vi.fn())
+  setLocaleLoader(() => Promise.resolve({ common: { hello: 'Hallo' } }))
+  await applyShownLanguage('de')
+  expect(i18n.language).toBe('de')
+
+  await expect(
+    queryClient.fetchQuery({
+      queryKey: ['boom-lang'],
+      queryFn: () => Promise.reject(new ApiError(401, 'unknown')),
+      retry: false,
+    }),
+  ).rejects.toMatchObject({ status: 401 })
+
+  expect(i18n.language).toBe('en')
+  expect(document.documentElement.lang).toBe('en')
 })
