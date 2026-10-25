@@ -500,3 +500,7 @@ _Avoid_: mobile-only, responsive, mobile first, polish pass
 **Stored language**:
 The one language recorded on a business. A new business gets it from the accepting phone when its invitation is accepted, an existing business has English, and afterwards only a user's choice in Settings → Business changes it. It is what the language control shows and edits, and it is the shown language unless the operator's forced language overrides it. In the app: no word of its own.
 _Avoid_: locale, display language, preferred language, business locale
+
+**Assume nothing**:
+The owner's fourth criterion: the app never hard-codes one business's way of working (product type, units, currency, payment methods, pricing rules, channels, and so on), and each business runs it its own way through settings with neutral defaults. There are no ready-made business-type presets. Its test is "would this still be right for a business that sells something else, in other units, other ways?" If not, it is a finding, a default that fits one business included; it applies to new work, while existing assumptions are swept in #330 and made customizable in #318. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
+_Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
