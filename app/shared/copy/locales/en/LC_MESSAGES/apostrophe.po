@@ -6,3 +6,177 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "operator.accounts.no_user"
+msgstr "no user for that email"
+
+msgid "operator.accounts.valid_once"
+msgstr "Valid once, until {expires_at} UTC."
+
+msgid "operator.accounts.refused"
+msgstr "refused: {name}"
+
+msgid "operator.accounts.help_invite_business"
+msgstr "print a link that opens one new business"
+
+msgid "operator.accounts.help_reset_password"
+msgstr "print a link that lets one user choose a new password"
+
+msgid "operator.import.dry_run"
+msgstr "Dry run: {business_name}"
+
+msgid "operator.import.import"
+msgstr "Import: {business_name}"
+
+msgid "operator.import.counts_heading"
+msgstr "Counts:"
+
+msgid "operator.import.count_varieties"
+msgstr "  Varieties: {count}"
+
+msgid "operator.import.count_price_entries"
+msgstr "  Price entries: {count}"
+
+msgid "operator.import.count_catalog_attributes"
+msgstr "  Catalog attributes: {count}"
+
+msgid "operator.import.count_stock_entries"
+msgstr "  Stock entries: {count}"
+
+msgid "operator.import.count_expense_categories"
+msgstr "  Expense categories: {count}"
+
+msgid "operator.import.count_expenses"
+msgstr "  Expenses: {count}"
+
+msgid "operator.import.count_customers"
+msgstr "  Customers: {count}"
+
+msgid "operator.import.count_customers_without_phone"
+msgstr "  Customers without a phone number: {count}"
+
+msgid "operator.import.count_sales"
+msgstr "  Sales: {count}"
+
+msgid "operator.import.count_payments"
+msgstr "  Payments: {count}"
+
+msgid "operator.import.switches"
+msgstr "Switches turned on: {switches}"
+
+msgid "operator.import.switch_bulk_pricing"
+msgstr "Bulk pricing"
+
+msgid "operator.import.switch_vip_customers"
+msgstr "VIP customers"
+
+msgid "operator.import.switch_none"
+msgstr "none"
+
+msgid "operator.import.problems_heading"
+msgstr "Blocking problems:"
+
+msgid "operator.import.problem_line"
+msgstr "  {sheet} row {row} [{column}]: {problem}"
+
+msgid "operator.import.hint_text_is_date"
+msgstr "{kind}: a date where text is expected; re-type the cell as text (in Google Sheets, start it with an apostrophe) and run again"
+
+msgid "operator.import.unfinished_heading"
+msgstr "Left out as unfinished:"
+
+msgid "operator.import.unfinished_line"
+msgstr "  {sheet} row {row}: {text}"
+
+msgid "operator.import.mismatches_heading"
+msgstr "Total mismatches (sheet vs. recomputed):"
+
+msgid "operator.import.mismatch_line"
+msgstr "  {sheet} row {row}: {sheet_total} vs. {recomputed_total}"
+
+msgid "operator.import.merged_categories_heading"
+msgstr "Categories merged by name:"
+
+msgid "operator.import.merged_category_line"
+msgstr "  {names}"
+
+msgid "operator.import.merged_customers_heading"
+msgstr "Spellings merged into one customer:"
+
+msgid "operator.import.merged_customer_line"
+msgstr "  {spellings} -> kept: {kept_name}"
+
+msgid "operator.import.unused_mapping_heading"
+msgstr "Unused mapping entries:"
+
+msgid "operator.import.unused_mapping_line"
+msgstr "  {name}"
+
+msgid "operator.import.writable_yes"
+msgstr "Writable: yes"
+
+msgid "operator.import.writable_no"
+msgstr "Writable: no"
+
+msgid "operator.import.refused"
+msgstr "refused: {code}"
+
+msgid "operator.removal.no_business"
+msgstr "No business for that email."
+
+msgid "operator.removal.confirmation_failed"
+msgstr "Nothing deleted: the typed name did not match."
+
+msgid "operator.removal.interrupted"
+msgstr "Interrupted: nothing deleted."
+
+msgid "operator.removal.busy"
+msgstr "Database busy: nothing deleted. Run it again."
+
+msgid "operator.removal.failed"
+msgstr "Failed: nothing deleted."
+
+msgid "operator.removal.unknown_outcome"
+msgstr "Commit outcome unknown; export kept at {path}. Run with --dry-run and the same email before anything else."
+
+msgid "operator.removal.records_changed"
+msgstr "Records changed during the run: nothing deleted. Run it again."
+
+msgid "operator.removal.count_dry"
+msgstr "{table_name}: {count}"
+
+msgid "operator.removal.count_withheld_dry"
+msgstr "{table_name}: {count} (deleted only)"
+
+msgid "operator.removal.prompt"
+msgstr "Type the business name ({name}) to remove it: "
+
+msgid "operator.removal.export_written"
+msgstr "Export written: {path}"
+
+msgid "operator.removal.count_exported_deleted"
+msgstr "{table_name}: exported {exported}, deleted {deleted}"
+
+msgid "operator.removal.count_deleted"
+msgstr "{table_name}: deleted {deleted}"
+
+msgid "operator.removal.count_exported"
+msgstr "{table_name}: exported {exported}"
+
+msgid "operator.removal.removed"
+msgstr "Business removed; export kept at {path}."
+
+msgid "operator.removal.refusing_unowned"
+msgstr "Refusing: table(s) with no business_id: {tables}"
+
+msgid "operator.removal.refusing_secret"
+msgstr "Refusing: column(s) that look like a secret: {columns}"
+
+msgid "operator.removal.refusing_other_type"
+msgstr "Refusing: column(s) of a type the export cannot write: {columns}"
+
+msgid "operator.removal.refusing_unlabelled"
+msgstr "Refusing: table(s) with no name or declared label: {tables}"
+
+msgid "operator.removal.refusing_cycle"
+msgstr "Refusing: the delete order has a cycle through: {tables}"

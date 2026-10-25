@@ -23,9 +23,10 @@ from tests.business_removal.adapters.seed import (
     seed,
     set_env,
 )
+from tests.business_removal.english_words import baseline_text
 from tests.conftest import MovableClock
 
-FAILED_MESSAGE = "Failed: nothing deleted."
+FAILED_MESSAGE = baseline_text("operator.removal.failed")
 
 
 def _business_id(db_path: Path, name: str) -> int:

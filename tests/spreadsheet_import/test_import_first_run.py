@@ -21,9 +21,10 @@ from app.onboarding.adapters.sql_first_runs import SqlFirstRuns
 from app.onboarding.adapters.sql_onboardings import SqlOnboardings
 from app.onboarding.adapters.tables import OnboardingRow
 from app.onboarding.domain.first_run import FirstRun
+from app.shared.copy import OperatorText
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cli import run
-from tests.conftest import MovableClock
+from tests.conftest import OPERATOR_TEXT_EN, MovableClock
 from tests.spreadsheet_import.test_cli import (
     CUSTOMER,
     PHONE,
@@ -62,7 +63,14 @@ def _import(setup: Setup, *flags: str) -> int:
     xlsx = _save_workbook(_workbook(), setup.tmp_path)
     mapping = _save_mapping(setup.tmp_path, ((CUSTOMER, PHONE),))
     argv = [str(setup.business_id), str(xlsx), "--mapping", str(mapping), *flags]
-    return run(argv, engine=setup.engine, clock=setup.clock, out=io.StringIO(), err=io.StringIO())
+    return run(
+        argv,
+        engine=setup.engine,
+        clock=setup.clock,
+        out=io.StringIO(),
+        err=io.StringIO(),
+        text=OPERATOR_TEXT_EN,
+    )
 
 
 def _no_rows(setup: Setup) -> None:
@@ -112,14 +120,23 @@ def test_a_dry_run_leaves_no_first_run_row(setup: Setup) -> None:
     assert _first_run(setup) is None
 
 
-def test_a_refused_real_run_leaves_no_first_run_row(setup: Setup) -> None:
+def test_a_refused_real_run_leaves_no_first_run_row(
+    setup: Setup, operator_text_en: OperatorText
+) -> None:
     # An unknown Entradas origin blocks the plan, so the real run is refused.
     workbook = _workbook()
     workbook[layout.ENTRADAS_SHEET].cell(row=2, column=4, value="Robo")
     xlsx = _save_workbook(workbook, setup.tmp_path, "blocked.xlsx")
     argv = [str(setup.business_id), str(xlsx)]
 
-    code = run(argv, engine=setup.engine, clock=setup.clock, out=io.StringIO(), err=io.StringIO())
+    code = run(
+        argv,
+        engine=setup.engine,
+        clock=setup.clock,
+        out=io.StringIO(),
+        err=io.StringIO(),
+        text=operator_text_en,
+    )
 
     assert code == 1
 

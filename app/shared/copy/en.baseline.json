@@ -1,0 +1,234 @@
+{
+  "operator.accounts.no_user": {
+    "area": "accounts",
+    "text": "no user for that email"
+  },
+  "operator.accounts.valid_once": {
+    "area": "accounts",
+    "text": "Valid once, until {expires_at} UTC."
+  },
+  "operator.accounts.refused": {
+    "area": "accounts",
+    "text": "refused: {name}"
+  },
+  "operator.accounts.help_invite_business": {
+    "area": "accounts",
+    "text": "print a link that opens one new business"
+  },
+  "operator.accounts.help_reset_password": {
+    "area": "accounts",
+    "text": "print a link that lets one user choose a new password"
+  },
+  "operator.import.dry_run": {
+    "area": "import",
+    "text": "Dry run: {business_name}"
+  },
+  "operator.import.import": {
+    "area": "import",
+    "text": "Import: {business_name}"
+  },
+  "operator.import.counts_heading": {
+    "area": "import",
+    "text": "Counts:"
+  },
+  "operator.import.count_varieties": {
+    "area": "import",
+    "text": "  Varieties: {count}"
+  },
+  "operator.import.count_price_entries": {
+    "area": "import",
+    "text": "  Price entries: {count}"
+  },
+  "operator.import.count_catalog_attributes": {
+    "area": "import",
+    "text": "  Catalog attributes: {count}"
+  },
+  "operator.import.count_stock_entries": {
+    "area": "import",
+    "text": "  Stock entries: {count}"
+  },
+  "operator.import.count_expense_categories": {
+    "area": "import",
+    "text": "  Expense categories: {count}"
+  },
+  "operator.import.count_expenses": {
+    "area": "import",
+    "text": "  Expenses: {count}"
+  },
+  "operator.import.count_customers": {
+    "area": "import",
+    "text": "  Customers: {count}"
+  },
+  "operator.import.count_customers_without_phone": {
+    "area": "import",
+    "text": "  Customers without a phone number: {count}"
+  },
+  "operator.import.count_sales": {
+    "area": "import",
+    "text": "  Sales: {count}"
+  },
+  "operator.import.count_payments": {
+    "area": "import",
+    "text": "  Payments: {count}"
+  },
+  "operator.import.switches": {
+    "area": "import",
+    "text": "Switches turned on: {switches}"
+  },
+  "operator.import.switch_bulk_pricing": {
+    "area": "import",
+    "text": "Bulk pricing"
+  },
+  "operator.import.switch_vip_customers": {
+    "area": "import",
+    "text": "VIP customers"
+  },
+  "operator.import.switch_none": {
+    "area": "import",
+    "text": "none"
+  },
+  "operator.import.problems_heading": {
+    "area": "import",
+    "text": "Blocking problems:"
+  },
+  "operator.import.problem_line": {
+    "area": "import",
+    "text": "  {sheet} row {row} [{column}]: {problem}"
+  },
+  "operator.import.hint_text_is_date": {
+    "area": "import",
+    "text": "{kind}: a date where text is expected; re-type the cell as text (in Google Sheets, start it with an apostrophe) and run again"
+  },
+  "operator.import.unfinished_heading": {
+    "area": "import",
+    "text": "Left out as unfinished:"
+  },
+  "operator.import.unfinished_line": {
+    "area": "import",
+    "text": "  {sheet} row {row}: {text}"
+  },
+  "operator.import.mismatches_heading": {
+    "area": "import",
+    "text": "Total mismatches (sheet vs. recomputed):"
+  },
+  "operator.import.mismatch_line": {
+    "area": "import",
+    "text": "  {sheet} row {row}: {sheet_total} vs. {recomputed_total}"
+  },
+  "operator.import.merged_categories_heading": {
+    "area": "import",
+    "text": "Categories merged by name:"
+  },
+  "operator.import.merged_category_line": {
+    "area": "import",
+    "text": "  {names}"
+  },
+  "operator.import.merged_customers_heading": {
+    "area": "import",
+    "text": "Spellings merged into one customer:"
+  },
+  "operator.import.merged_customer_line": {
+    "area": "import",
+    "text": "  {spellings} -> kept: {kept_name}"
+  },
+  "operator.import.unused_mapping_heading": {
+    "area": "import",
+    "text": "Unused mapping entries:"
+  },
+  "operator.import.unused_mapping_line": {
+    "area": "import",
+    "text": "  {name}"
+  },
+  "operator.import.writable_yes": {
+    "area": "import",
+    "text": "Writable: yes"
+  },
+  "operator.import.writable_no": {
+    "area": "import",
+    "text": "Writable: no"
+  },
+  "operator.import.refused": {
+    "area": "import",
+    "text": "refused: {code}"
+  },
+  "operator.removal.no_business": {
+    "area": "removal",
+    "text": "No business for that email."
+  },
+  "operator.removal.confirmation_failed": {
+    "area": "removal",
+    "text": "Nothing deleted: the typed name did not match."
+  },
+  "operator.removal.interrupted": {
+    "area": "removal",
+    "text": "Interrupted: nothing deleted."
+  },
+  "operator.removal.busy": {
+    "area": "removal",
+    "text": "Database busy: nothing deleted. Run it again."
+  },
+  "operator.removal.failed": {
+    "area": "removal",
+    "text": "Failed: nothing deleted."
+  },
+  "operator.removal.unknown_outcome": {
+    "area": "removal",
+    "text": "Commit outcome unknown; export kept at {path}. Run with --dry-run and the same email before anything else."
+  },
+  "operator.removal.records_changed": {
+    "area": "removal",
+    "text": "Records changed during the run: nothing deleted. Run it again."
+  },
+  "operator.removal.count_dry": {
+    "area": "removal",
+    "text": "{table_name}: {count}"
+  },
+  "operator.removal.count_withheld_dry": {
+    "area": "removal",
+    "text": "{table_name}: {count} (deleted only)"
+  },
+  "operator.removal.prompt": {
+    "area": "removal",
+    "text": "Type the business name ({name}) to remove it: "
+  },
+  "operator.removal.export_written": {
+    "area": "removal",
+    "text": "Export written: {path}"
+  },
+  "operator.removal.count_exported_deleted": {
+    "area": "removal",
+    "text": "{table_name}: exported {exported}, deleted {deleted}"
+  },
+  "operator.removal.count_deleted": {
+    "area": "removal",
+    "text": "{table_name}: deleted {deleted}"
+  },
+  "operator.removal.count_exported": {
+    "area": "removal",
+    "text": "{table_name}: exported {exported}"
+  },
+  "operator.removal.removed": {
+    "area": "removal",
+    "text": "Business removed; export kept at {path}."
+  },
+  "operator.removal.refusing_unowned": {
+    "area": "removal",
+    "text": "Refusing: table(s) with no business_id: {tables}"
+  },
+  "operator.removal.refusing_secret": {
+    "area": "removal",
+    "text": "Refusing: column(s) that look like a secret: {columns}"
+  },
+  "operator.removal.refusing_other_type": {
+    "area": "removal",
+    "text": "Refusing: column(s) of a type the export cannot write: {columns}"
+  },
+  "operator.removal.refusing_unlabelled": {
+    "area": "removal",
+    "text": "Refusing: table(s) with no name or declared label: {tables}"
+  },
+  "operator.removal.refusing_cycle": {
+    "area": "removal",
+    "text": "Refusing: the delete order has a cycle through: {tables}"
+  }
+}

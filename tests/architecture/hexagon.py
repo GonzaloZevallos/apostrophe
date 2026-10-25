@@ -2,6 +2,8 @@
 
 - `domain/` imports the standard library, its own domain package and `app.shared`.
 - `application/` never imports a framework, the database layer or an adapter.
+- `application/` never imports the copy module, Babel or gettext either (ADR-0051): text born
+  there reaches it through a port declared in `application/`.
 - `domain/` and `application/` never import another hexagon's package (only their own,
   `app.shared`, and the standard library).
 - `domain/` never imports the copy module or Babel (ADR-0050): texts reach it as plain
@@ -24,7 +26,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 SHARED_KERNEL = "app.shared"
 APPLICATION_FORBIDDEN_ROOTS = ("fastapi", "starlette", "sqlalchemy", "alembic", "pydantic")
-APPLICATION_FORBIDDEN_MODULES = ("app.db", "app.tables", "app.migrations")
+APPLICATION_FORBIDDEN_MODULES = (
+    "app.db",
+    "app.tables",
+    "app.migrations",
+    "app.shared.copy",
+    "babel",
+    "gettext",
+)
 DOMAIN_FORBIDDEN_MODULES = ("app.shared.copy", "babel")
 
 
@@ -66,7 +75,7 @@ def scan_hexagon(root: Path, other_hexagons: frozenset[str] = frozenset()) -> Sc
         *(
             Violation(module, imported, "application-imports-no-framework-or-adapter")
             for module in application_modules
-            for imported in imports_of(module)
+            for imported in full_imports_of(module)
             if _forbidden_for_application(imported)
         ),
         *(
