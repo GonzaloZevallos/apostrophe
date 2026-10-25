@@ -2,7 +2,7 @@
 
 *Temporary copy. The authoritative text is `DESIGN_STANDARDS.md`. This file is removed when agentic-system#295 lands.*
 
-The evidence a reviewer uses to judge that a screen looks as designed: the design file and the built app are captured side by side from the screens registry (`scripts/design/screens.json`), with pinned fonts, by `scripts/design/comparisons.mjs`, and when a change needs a before/after pair, the raw captures are compared by exact AE with `scripts/design/ae.mjs` (ADR-0042). This file holds what the capture and its registry must guarantee for the people who rely on them. It changes no product behaviour: no capability's rule, screen, route, step or copy is defined here, and the capture always follows the product, never the reverse. It is review evidence attached to a PR and judged by eye; it is never a step of the gate (gate.md). Sellers and the operator see nothing of it.
+The evidence a reviewer uses to judge that a screen looks as designed: the design file and the built app are captured side by side from the screens registry (`scripts/design/screens.json`), with pinned fonts, by `scripts/design/comparisons.mjs`, and when a change needs a before/after pair, the raw captures are compared by exact AE with `scripts/design/ae.mjs` (ADR-0042). How a shot is taken is frozen by ADR-0050. This file holds what the capture and its registry must guarantee for the people who rely on them. It changes no product behaviour: no capability's rule, screen, route, step or copy is defined here, and the capture always follows the product, never the reverse. It is review evidence attached to a PR and judged by eye; it is never a step of the gate (gate.md). Sellers and the operator see nothing of it.
 
 ## Jobs
 
@@ -62,6 +62,13 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - Its protagonist is the PM, who reviews and approves GH-272. The seller gets no new behaviour; their Home (the Panel, tabs Today, Week and Month) on their devices and with enlarged text is what is protected. A later change that must not break Home's look can reuse the same evidence.
 - It refines results.md criterion 12 ("Looks as designed") and the Analysis and Onboarding evidence jobs above; it is not a new product job and adds no product behaviour.
 - Before it (GH-272's follow-up): GH-272 was approved with invariant 12 resting on construction alone. There was no `ae.mjs` after-run, no list of `InicioCompu` (Home, computer layout) and `InicioCompuOscuro` AE lines and no screenshots at 960 px, 1280 px or 130 % text, so the Coverage block marked it "Not touched" and an `important` finding stayed open at `web/src/styles/app.css:3098`.
+
+**When** I review the shot method that ADR-0050 froze, **I want** one document showing that the method gives the same result run after run, and showing every row where it differs from the old tool, with an image of each, **so I can** judge each difference once, on evidence I could reproduce, and close GH-273's five findings.
+
+- Its protagonist is the PR reviewer. The seller is affected only indirectly: a capture method nobody can trust holds up the changes they are waiting for.
+- It refines the captures-at-rest job and its Rest criterion 1 for the shot method; it is not a new product job and adds no product behaviour.
+- Before it (GH-273): five findings stood open against the old way of taking a shot, `VariedadesCompu built` among them, captured gray by the old tool. No evidence showed the new method repeating itself or accounted for each row where it differs from the old one.
+- Served by `docs/evidence/GH-301-shot-method.md` (GH-301 part 3), the only file that task changes.
 
 Success criteria:
 
@@ -130,6 +137,15 @@ Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on th
 3. **Home holds at every width.** Screenshots of Home's computer layout, light theme, Today, Week and Month tabs, are attached at 960 px, 1280 px and 960 px with 130 % text. In each, nothing is clipped, overlapping, truncated mid-word or unreachable, and every figure and control can still be read and used.
 4. **Invariant 12 covered.** The Coverage block carries a one-line result for invariant 12, moved from "Not touched" to covered and pointing at the PR evidence, and the finding at `web/src/styles/app.css:3098` is closed from it.
 5. **Nothing loosened, nothing new a seller sees.** No design file is edited; any fix brings the build to the design within what GH-272 restyled on Home and changes no copy, behaviour, figure or route; no capture step joins the gate.
+
+Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their own; Metrics cites them as "Shot criterion N"):
+
+1. **Repeatable, criterion (a).** For the head and for the base `6541887d` (captured with the head's `scripts/design` as overlay), five whole-registry `--strict` runs each, no `--only`, each on a fresh sample, all ten on one Argentina day; `ae.mjs` comparing run 1 with runs 2 to 5 on each side shows 0 non-zero lines, no missing side and no one-sided `null`. Anything else is reported as a defect, never smoothed over or re-run until it passes.
+2. **Old versus new, criterion (d).** Every row and side where part 1's old-tooling runs differ from head run 1 (`ae.mjs --box`) has an old-versus-new side-by-side PNG on the PR and one line in the verdict table.
+3. **One loud failure.** The method is shown failing a row, with its non-zero exit code under `--strict`, its `null` side, no PNG under any name and its fixed English reason naming the side.
+4. **Judged, not just listed.** The reviewer has judged every line of the verdict table, with 0 wrong and 0 unjudged. A complete but unjudged table is not done.
+5. **Reproducible.** The reviewer could repeat the runs from what the document records.
+6. **Nothing else moves.** Only `docs/evidence/GH-301-shot-method.md` changes; nothing under `app/` or the product part of `web/src/`, no registry row, and nothing in the gate, CI or `.agentic/stack.yaml`. The document carries no page text, names, amounts or pixel data.
 
 ## Behaviour
 
@@ -251,6 +267,7 @@ Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on th
 - A font left in error on a capture, an offline step included, fails the applied-check, so `--strict` exits non-zero.
 - **A row whose screen has not finished drawing when it is captured fails.** Under `--strict` it gives a non-zero exit, like a row that cannot reach its screen. It is never captured half-drawn and never accepted as a pass. How the capture tells that a screen has finished drawing is the Tech Lead's decision; this file names no mechanism.
 - **A row whose screen has not come to rest within the bound fails**, whatever was still changing (an animation, a pending request, a control still disabled or busy). The failure names the row and the side, with a fixed sentence saying the screen had not come to rest. It is reported like a screen that never finished drawing: that side is `null` in `index.json`, no `.design.png` or `.built.png` is written for it, the sheet is still composed with "—" for that side, and under `--strict` the run finishes every row, writes `index.json` and exits non-zero. It never shows up as an AE difference, and it carries no page text, sample data, amounts or names.
+- **A shot-method miss is that side's failure reason** (ADR-0050): `null` in `index.json`, no PNG under any name, a fixed English reason naming the side, and a non-zero exit under `--strict` after every row has run.
 - A difference that machine load causes in a capture's pixels is a capture defect, fixed in the capture; the comparison is never loosened and an idle machine is never asked for.
 - A capture that shows a screen other than its row names, or a clipped section, is caught by eye in review and blocks approval. Neither is ever accepted as a pass.
 - A last-Onboarding-screen entry naming an account the sample does not write fails the registry test.
@@ -271,6 +288,7 @@ Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on th
 - For the change that settles capture at rest (GH-261's follow-up): five whole-registry `--strict` runs per commit, base and head, on the loaded shared machine on one Argentina day, with the `ae.mjs` outputs comparing run 1 with runs 2 to 5 on each side and base with head; the VariedadesCompu captures, and those of every row with an animated element or a control that waits on a refresh, judged by eye against the sample's stored data in light and dark where the registry has both, with the switch's resting state stated (enabled, on or off as the stored threshold gives it); one deliberately unsettled row shown failing under `--strict`; and the closing record marking GH-261's finding resolved and correcting its cause to a background refresh with the control disabled.
 - For Home's first-run and Today evidence: one whole-registry `--strict` output with no `--only`, exit 0; the six first-run captures and the two Today computer captures, judged by eye; every drawing-versus-docs difference listed with its screen.
 - For the Home restyle's evidence (GH-272 follow-up): see that section below.
+- For the shot method's evidence (GH-301 part 3): see that section below.
 
 ### The Onboarding restyle's evidence (GH-164 follow-up)
 
@@ -315,6 +333,18 @@ Success criteria, the Home restyle's evidence (GH-272 follow-up) (numbered on th
 - **Closing**: the plan's Coverage block carries a one-line result for invariant 12, moved from "Not touched" to covered and pointing at the PR evidence; the finding at `web/src/styles/app.css:3098` is closed from that line.
 - **Everything matches**: the PR says so with the evidence; that is a valid outcome.
 - Assumed: before this follow-up Home had no check of its look beyond the construction argument and the reviewer's trust.
+
+### The shot method's evidence (GH-301 part 3) (Shot criteria 1–6)
+
+- **Where it lives**: one document, `docs/evidence/GH-301-shot-method.md`, the only file the task changes. Side-by-side PNGs are attached to the PR, never committed. The document records only class paths, sizes, booleans and coordinates: no page text, names, amounts or pixel data.
+- **Baseline first**: before any run, `main` is checked against part 1's pinned app commit for `app/`, `web/src/` and the registry. If any of the three moved, the work stops with no partial evidence and reports which moved and between which commits, so the baseline can be retaken.
+- **Repeatability runs (criterion a)**: ten whole-registry `--strict` runs, none with `--only`, each on a fresh sample: five of the head and five of the base `6541887d` with the head's `scripts/design` as overlay (ADR-0042, GH-219). All ten are taken on one Argentina day; if they cannot be, the work starts again on a single day and never mixes days. On each side `ae.mjs` compares run 1 with runs 2, 3, 4 and 5, and the document reports per side the non-zero lines, the rows with a missing side and the rows with a one-sided `null`, target 0 each. Anything else is a defect reported with its row, side and run pair, never smoothed over or re-run until it passes.
+- **Reproducibility record**: the pinned app commit, the head and base SHAs, the overlay diff stat, the fontsource version, the Argentina day and the commands. The reviewer does not re-run the tooling as a step of the review; being able to is what makes the evidence trustworthy.
+- **Old versus new (criterion d)**: part 1's two old-tooling runs are each compared with head run 1 by `ae.mjs --box`. Every differing row and side gets an old-versus-new side-by-side PNG; a row differing on one side only gets an image and a line for that side only. `VariedadesCompu built` is compared with both old runs, a gray old capture noted as the old tool's known GH-273 defect. The rows absent from the old registry are listed. If nothing differs, the document says so with the counts compared.
+- **The verdict table**: one line per differing row and side, holding the row, the side, the image reference, a proposed reason and an empty verdict cell. Order: layer rows first; then rows whose layout depends on viewport height (fixed bars, `dvh`/`min-height`), under a heading naming them as such for metric (c); then the rest. A reason is proposed only where ADR-0050, the layer rule or the viewport-height rule plainly explains the row; every other row reads "no proposed reason". The reviewer's verdicts are same, intended difference with a one-line reason, or wrong; the author never fills one.
+- **One loud failure**: the method is shown failing a row, a real one if one fails, else a throwaway scratch row in `/tmp` (as GH-273 did, e.g. a layer taller than the viewport) that never enters `screens.json` and is never committed. The document records the non-zero exit code under `--strict`, reached after every row ran, the `null` side in `index.json`, that no PNG exists under any name, and the fixed English reason naming the side. If the method does not fail the row, that is reported as a defect, never presented as the loud failure.
+- **Optional fields**: every new `index.json` field stays optional for `ae.mjs`, `compare.sh`, `composeSheet` and `web/src/design/*.test.ts`; the document depends on none being present.
+- **Closing**: the document ends with a closing record listing GH-273's five findings by number, each pointing to the evidence that closes it. They close once every verdict is filled with 0 wrong and 0 unjudged; a wrong verdict keeps them open and its row is the follow-up.
 
 ## Metrics
 
@@ -369,6 +399,12 @@ No telemetry; read from the PR evidence and from tests.
 - **Invariant 12 covered (Home criterion 4)**: the Coverage block line for invariant 12 reads covered and points at the PR evidence; the `web/src/styles/app.css:3098` finding is closed.
 - **Nothing loosened (Home criterion 5)**: read from the diff: no design file under `pantallas/` edited; any fix is under what GH-272 restyled on Home and touches no copy module entry, route or figure; every suite passes; no step added to `.agentic/stack.yaml`, CI or the gate.
 - **Home business measure**: spec-scope findings for missing Home design evidence on a merging head: goal 0 (GH-272 had 1).
+- **Repeatable (Shot criterion 1)**: per side (head, base), across runs 2 to 5 against run 1: 0 non-zero lines, 0 missing sides, 0 one-sided `null`; all ten runs on one recorded Argentina day.
+- **Old versus new (Shot criterion 2)**: the count of differing rows and sides; 100 % with a side-by-side PNG on the PR and a verdict-table line; the count of viewport-height rows (metric c), named in their group; the count of rows absent from the old registry; `VariedadesCompu built` shown against both old runs.
+- **Loud failure (Shot criterion 3)**: present, with non-zero exit code, `null` side, no PNG and fixed reason (yes/no).
+- **Judged (Shot criterion 4)**: verdict counts of same, intended difference, wrong and unjudged: 0 wrong, 0 unjudged; GH-273's five findings closed, 5 of 5, each pointing to its evidence.
+- **Reproducible (Shot criterion 5)**: the pinned app commit, head and base SHAs, overlay diff stat, fontsource version, Argentina day and commands are all present.
+- **Nothing else moves (Shot criterion 6)**: read from the diff: only `docs/evidence/GH-301-shot-method.md` changes; no step added to `.agentic/stack.yaml`, CI or the gate; the document holds no page text, names, amounts or pixel data.
 
 ## Out of scope
 
@@ -406,3 +442,4 @@ No telemetry; read from the PR evidence and from tests.
 - Creating a capture account through product code, a product route or the `muestra.md` seed.
 - Any change to what a seller sees on Home, the first-run elements included, beyond a GH-272 follow-up fix that brings the build back to its design.
 - In GH-272's follow-up: other screens GH-272 touched; any edit to a design file; new Home behaviour, figures or copy; dark screenshot sets at 960 px, 1280 px or 130 %; a 1280 px / 130 % set when 960 px / 130 % shows no break.
+- In GH-301 part 3: any change beyond `docs/evidence/GH-301-shot-method.md`; committing the side-by-side PNGs or the `/tmp` scratch row; the author proposing a verdict, or a reason not plainly explained by ADR-0050, the layer rule or the viewport-height rule; the reviewer re-running the tooling as a step of the review; partial evidence on a moved baseline or on mixed Argentina days; reopening how a shot is taken (ADR-0050).
