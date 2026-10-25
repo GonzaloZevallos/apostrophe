@@ -31,7 +31,7 @@ from app.business_removal.adapters.cli import main as removal_main
 from app.spreadsheet_import.adapters.cli import run as import_run
 from tests.architecture.test_no_spanish import SPANISH_CHARACTERS, WORD, load_denylist
 from tests.business_removal.adapters.seed import EMAIL_LEAVING, PINNED, seed, set_env
-from tests.conftest import NOW, MovableClock
+from tests.conftest import NOW, OPERATOR_TEXT_EN, MovableClock
 from tests.spreadsheet_import.test_cli import (
     CUSTOMER,
     PHONE,
@@ -219,6 +219,7 @@ def test_the_import_report_prints_no_spanish_beyond_what_the_sheet_wrote(
             clock=clock,
             out=out,
             err=err,
+            text=OPERATOR_TEXT_EN,
         )
         assert code in (0, 1), err.getvalue()
         reports.append(out.getvalue() + err.getvalue())

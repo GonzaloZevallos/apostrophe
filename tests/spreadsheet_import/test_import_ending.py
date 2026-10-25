@@ -15,9 +15,10 @@ from sqlalchemy.orm import Session
 from app.onboarding.adapters.sql_onboardings import SqlOnboardings
 from app.onboarding.adapters.tables import OnboardingRow
 from app.onboarding.domain.onboarding import Onboarding, Pass
+from app.shared.copy import OperatorText
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cli import run
-from tests.conftest import MovableClock
+from tests.conftest import OPERATOR_TEXT_EN, MovableClock
 from tests.spreadsheet_import.test_cli import (
     CUSTOMER,
     PHONE,
@@ -43,7 +44,11 @@ def _remember_passes(engine: Engine, business_id: int) -> None:
 
 
 def _import(
-    engine: Engine, clock: MovableClock, tmp_path: Path, business_id: int, *flags: str
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    business_id: int,
+    *flags: str,
 ) -> tuple[int, str, str]:
     xlsx = _save_workbook(_workbook(), tmp_path)
     mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
@@ -54,6 +59,7 @@ def _import(
         clock=clock,
         out=out,
         err=err,
+        text=OPERATOR_TEXT_EN,
     )
     return code, out.getvalue(), err.getvalue()
 
@@ -95,7 +101,11 @@ def test_a_business_with_a_variety_is_refused_and_its_onboarding_is_unchanged(
 
 
 def test_a_dry_run_and_a_refused_real_run_leave_the_onboarding_open(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
 ) -> None:
     business_id = _business_id(engine)
 
@@ -108,7 +118,14 @@ def test_a_dry_run_and_a_refused_real_run_leave_the_onboarding_open(
     workbook[layout.ENTRADAS_SHEET].cell(row=2, column=4, value="Robo")
     xlsx = _save_workbook(workbook, tmp_path, "blocked.xlsx")
     out, err = io.StringIO(), io.StringIO()
-    code = run([str(business_id), str(xlsx)], engine=engine, clock=clock, out=out, err=err)
+    code = run(
+        [str(business_id), str(xlsx)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
+        text=operator_text_en,
+    )
 
     assert code == 1
     assert "Writable: no" in out.getvalue()

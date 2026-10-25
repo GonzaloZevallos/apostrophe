@@ -16,6 +16,7 @@ from app.accounts.domain.password import PasswordHasher, ScryptParams
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
+from app.shared.copy import OperatorText
 from tests.fakes.telegram import FakeTelegram
 
 # 2026-10-02 15:00 in Buenos Aires (UTC-3). Tests reason about "today" from here.
@@ -123,3 +124,12 @@ def other_client(
     with TestClient(app) as test_client:
         token = open_business(test_client, engine, clock, "Otro Negocio", "otro@example.com")
         yield signed_in(test_client, token)
+
+
+OPERATOR_TEXT_EN = SETTINGS.operator_translator()
+
+
+@pytest.fixture
+def operator_text_en() -> OperatorText:
+    """The operator's translator in production English: the bytes the commands print."""
+    return OPERATOR_TEXT_EN

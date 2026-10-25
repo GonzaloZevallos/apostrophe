@@ -13,6 +13,7 @@ only `no user for that email` or `refused: <ExceptionClassName>`.
 
 import argparse
 import sys
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
@@ -24,51 +25,88 @@ from app.clock import Clock, system_clock
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
 from app.settings import Settings
+from app.shared.copy import OperatorText
 
-NO_USER_MESSAGE = "no user for that email"
+
+def build_parser(text: OperatorText | None) -> argparse.ArgumentParser:
+    """The command's arguments. `text` is the operator's translator: `None` leaves the
+    `help=` texts out (a refused start still parses its arguments). argparse's own frame --
+    `usage:`, `options:`, its error lines -- stays the standard library's English."""
+
+    def helped(key: str) -> str | None:
+        return None if text is None else text(key)
+
+    parser = argparse.ArgumentParser(prog="apostrophe")
+    commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("invite-business", help=helped("operator.accounts.help_invite_business"))
+    reset_parser = commands.add_parser(
+        "reset-password", help=helped("operator.accounts.help_reset_password")
+    )
+    reset_parser.add_argument("email")
+    return parser
 
 
 def main(argv: list[str] | None = None, *, clock: Clock = system_clock) -> int:
-    parser = argparse.ArgumentParser(prog="apostrophe")
-    commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("invite-business", help="print a link that opens one new business")
-    reset_parser = commands.add_parser(
-        "reset-password", help="print a link that lets one user choose a new password"
-    )
-    reset_parser.add_argument("email")
+    try:
+        settings = Settings.from_env()
+        text = settings.operator_translator()
+        parser = build_parser(text)
+    except Exception as exc:
+        # Nothing has been installed or written yet; the arguments still get parsed so a
+        # usage error is argparse's, whatever state the settings are in.
+        build_parser(None).parse_args(argv)
+        return _refused(exc, None)
     args = parser.parse_args(argv)
 
     try:
-        settings = Settings.from_env()
         engine = make_engine(settings.database_url, auth_token=settings.database_auth_token)
         upgrade_to_head(engine)
         with Session(engine) as session:
             if args.command == "invite-business":
-                return _invite_business(session, settings, clock)
-            return _reset_password(session, settings, args.email, clock)
+                return _invite_business(session, settings, text, clock)
+            return _reset_password(session, settings, text, args.email, clock)
     except SystemExit:
         raise
     except BaseException as exc:
-        # Never `str(exc)`, never a traceback: a refusal names only its own class.
-        sys.stderr.write(f"refused: {type(exc).__name__}\n")
-        return 1
+        return _refused(exc, text)
 
 
-def _invite_business(session: Session, settings: Settings, clock: Clock) -> int:
+def _refused(exc: BaseException, text: OperatorText | None) -> int:
+    """Never `str(exc)`, never a traceback: a refusal names only its own class. With no
+    translator, or if even this line cannot be rendered, the fixed English
+    `refused: <ClassName>` stands in (docs/adr/0050)."""
+    name = type(exc).__name__
+    try:
+        line = f"refused: {name}" if text is None else text("operator.accounts.refused", name=name)
+    except Exception:
+        line = f"refused: {name}"
+    sys.stderr.write(f"{line}\n")
+    return 1
+
+
+def _expiry_line(text: OperatorText, expires_at: datetime) -> str:
+    return text("operator.accounts.valid_once", expires_at=f"{expires_at:%Y-%m-%d %H:%M}")
+
+
+def _invite_business(session: Session, settings: Settings, text: OperatorText, clock: Clock) -> int:
     issued = invite_new_business(SqlAccounts(session), session, clock())
+    expiry = _expiry_line(text, issued.expires_at)
     sys.stdout.write(f"{invitation_url(settings.public_url, issued.token)}\n")
-    sys.stdout.write(f"Valid once, until {issued.expires_at:%Y-%m-%d %H:%M} UTC.\n")
+    sys.stdout.write(f"{expiry}\n")
     return 0
 
 
-def _reset_password(session: Session, settings: Settings, email: str, clock: Clock) -> int:
+def _reset_password(
+    session: Session, settings: Settings, text: OperatorText, email: str, clock: Clock
+) -> int:
     issued = issue_reset_link(SqlAccounts(session), session, email, clock())
     if issued is None:
         session.rollback()
-        sys.stderr.write(f"{NO_USER_MESSAGE}\n")
+        sys.stderr.write(f"{text('operator.accounts.no_user')}\n")
         return 1
+    expiry = _expiry_line(text, issued.expires_at)
     sys.stdout.write(f"{reset_url(settings.public_url, issued.token)}\n")
-    sys.stdout.write(f"Valid once, until {issued.expires_at:%Y-%m-%d %H:%M} UTC.\n")
+    sys.stdout.write(f"{expiry}\n")
     return 0
 
 

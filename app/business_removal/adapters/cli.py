@@ -3,9 +3,12 @@
 
     scripts/remove-business.sh <email> [--dry-run]
 
-Messages are in English, in the style of `invite-business.sh`: the command is not
-app copy. Nothing it prints carries an email, a name, a phone number or an amount --
-only the business name, a path and counts (CODING_STANDARDS section 9). No traceback
+Messages are the operator's, in the operator's language (docs/adr/0050 and its
+amendment) -- never a business's: they come from `OperatorWords` over
+`Settings.operator_translator()`. The one fixed English line is `refused: <ClassName>`,
+for a start the translator could not be built for. Nothing it prints carries an email,
+a name, a phone number or an amount -- only the business name, a path and counts
+(CODING_STANDARDS section 9). No traceback
 is ever printed: everything `dry_run`/`remove_business` do not already catch is
 caught here, classified by `failure_message`, and printed as one fixed line.
 """
@@ -27,7 +30,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import ConnectionPoolEntry
 
 from app.business_removal.adapters.export_file import FileExportFile
+from app.business_removal.adapters.operator_words import TranslatedOperatorWords
 from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
+from app.business_removal.application.operator_words import OperatorWords
 from app.business_removal.application.remove_business import (
     Interrupted,
     StorageBusy,
@@ -128,11 +133,11 @@ def _make_engine(database_url: str) -> Engine:
     return engine
 
 
-def _report(output: _StreamOutput, exc: BaseException) -> int:
+def _report(output: _StreamOutput, words: OperatorWords, exc: BaseException) -> int:
     if isinstance(exc, OperationalError) and _looks_locked(exc):
-        output.line(failure_message(StorageBusy("the database was locked")))
+        output.line(failure_message(StorageBusy("the database was locked"), words))
     else:
-        output.line(failure_message(exc))
+        output.line(failure_message(exc, words))
     return 1
 
 
@@ -148,8 +153,14 @@ def main(
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
 
-    settings = Settings.from_env()
     output = _StreamOutput(stdout)
+    try:
+        settings = Settings.from_env()
+        words = TranslatedOperatorWords(settings.operator_translator())
+    except Exception as exc:
+        # Nothing has been installed or written yet: no signal handler, no export file.
+        output.line(f"refused: {type(exc).__name__}")
+        return 1
 
     previous_sighup = signal.signal(signal.SIGHUP, _raise_interrupted)
     previous_sigterm = signal.signal(signal.SIGTERM, _raise_interrupted)
@@ -165,10 +176,10 @@ def main(
             with Session(engine) as session:
                 schema_rows = _BusyTranslatingSchemaRows(SqlSchemaRows(session))
                 if args.dry_run:
-                    return dry_run(schema_rows, output, args.email)
+                    return dry_run(schema_rows, output, words, args.email)
                 confirm = _StdinConfirm(stdin, stdout)
                 return remove_business(
-                    schema_rows, export_file, confirm, session, output, clock, args.email
+                    schema_rows, export_file, confirm, session, output, words, clock, args.email
                 )
         except SystemExit:
             raise
@@ -180,7 +191,7 @@ def main(
                 export_file.discard()
             except BaseException:
                 pass
-            return _report(output, exc)
+            return _report(output, words, exc)
     finally:
         signal.signal(signal.SIGHUP, previous_sighup)
         signal.signal(signal.SIGTERM, previous_sigterm)

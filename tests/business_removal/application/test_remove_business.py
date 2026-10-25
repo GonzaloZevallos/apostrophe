@@ -13,26 +13,30 @@ from typing import Any
 
 from app.business_removal.application.export_file import ExportFile
 from app.business_removal.application.remove_business import (
-    BUSY_MESSAGE,
-    CONFIRMATION_FAILED_MESSAGE,
-    FAILED_MESSAGE,
-    INTERRUPTED_MESSAGE,
-    NO_BUSINESS_MESSAGE,
     Confirm,
     Interrupted,
     Output,
     RecordsChanged,
     StorageBusy,
     dry_run,
+    failure_message,
     remove_business,
 )
 from app.business_removal.application.schema_rows import DeletedIds, SchemaRows
 from app.business_removal.domain.business_ref import BusinessRef
 from app.business_removal.domain.schema import Column, ColumnType, ForeignKey, Schema, Table
+from app.shared.copy import MissingOperatorKey
 from app.shared.transaction import Transaction
+from tests.business_removal.english_words import baseline_text, english_words
 
 NOW = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
 EMAIL = "owner@example.com"
+NO_BUSINESS_MESSAGE = baseline_text("operator.removal.no_business")
+CONFIRMATION_FAILED_MESSAGE = baseline_text("operator.removal.confirmation_failed")
+INTERRUPTED_MESSAGE = baseline_text("operator.removal.interrupted")
+BUSY_MESSAGE = baseline_text("operator.removal.busy")
+FAILED_MESSAGE = baseline_text("operator.removal.failed")
+RECORDS_CHANGED_MESSAGE = baseline_text("operator.removal.records_changed")
 BUSINESS = BusinessRef(id=1, name="La Huerta", language="en")
 
 
@@ -260,6 +264,7 @@ def _remove(
         confirm if confirm is not None else FakeConfirm("La Huerta\n"),
         transaction if transaction is not None else FakeTransaction(),
         output if output is not None else FakeOutput(),
+        english_words(),
         _clock,
         email,
     )
@@ -269,7 +274,7 @@ def test_dry_run_names_the_business_and_counts_by_table_writing_nothing() -> Non
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
     output = FakeOutput()
 
-    result = dry_run(schema_rows, output, EMAIL)
+    result = dry_run(schema_rows, output, english_words(), EMAIL)
 
     assert result == 0
     assert output.lines[0] == "La Huerta"
@@ -281,7 +286,7 @@ def test_dry_run_reports_an_unknown_email_and_does_nothing() -> None:
     schema_rows = FakeSchemaRows(_schema(), None, {})
     output = FakeOutput()
 
-    result = dry_run(schema_rows, output, "nobody@example.com")
+    result = dry_run(schema_rows, output, english_words(), "nobody@example.com")
 
     assert result == 1
     assert output.lines == [NO_BUSINESS_MESSAGE]
@@ -291,7 +296,7 @@ def test_dry_run_refuses_a_schema_with_a_table_that_has_no_business_id() -> None
     schema_rows = FakeSchemaRows(_unowned_schema(), BUSINESS, _rows())
     output = FakeOutput()
 
-    result = dry_run(schema_rows, output, EMAIL)
+    result = dry_run(schema_rows, output, english_words(), EMAIL)
 
     assert result == 1
     assert "mystery" in output.lines[0]
@@ -305,7 +310,7 @@ def test_dry_run_ends_in_a_fixed_message_when_a_port_raises() -> None:
     )
     output = FakeOutput()
 
-    result = dry_run(schema_rows, output, EMAIL)
+    result = dry_run(schema_rows, output, english_words(), EMAIL)
 
     assert result == 1
     assert output.lines == [FAILED_MESSAGE]
@@ -479,13 +484,11 @@ def test_a_mismatch_between_exported_and_deleted_ids_rolls_back_and_removes_the_
     assert transaction.rolled_back is True
     assert transaction.committed is False
     assert export_file.exists is False
-    assert output.lines[-1] == str(RecordsChanged())
+    assert output.lines[-1] == RECORDS_CHANGED_MESSAGE
 
 
 def test_a_failure_during_the_delete_rolls_back_and_removes_the_file() -> None:
-    schema_rows = FakeSchemaRows(
-        _schema(), BUSINESS, _rows(), _delete_fails=StorageBusy("locked")
-    )
+    schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows(), _delete_fails=StorageBusy("locked"))
     export_file = FakeExportFile()
     transaction = FakeTransaction()
     output = FakeOutput()
@@ -560,3 +563,161 @@ def test_a_commit_that_raises_keeps_the_file_and_reports_unknown_outcome() -> No
     assert any(line == "La Huerta" for line in output.lines)
     assert any(line.startswith("customer: exported") for line in output.lines)
     assert not any("deleted" in line.lower() for line in output.lines)
+
+
+def _cyclic_schema() -> Schema:
+    business = Table("business", (_pk(), _col("name", ColumnType.TEXT)), ())
+    a = Table(
+        "a",
+        (_pk(), _col("business_id"), _col("b_id"), _col("name", ColumnType.TEXT)),
+        (
+            ForeignKey(("business_id",), "business", ("id",)),
+            ForeignKey(("b_id",), "b", ("id",)),
+        ),
+    )
+    b = Table(
+        "b",
+        (_pk(), _col("business_id"), _col("a_id"), _col("name", ColumnType.TEXT)),
+        (
+            ForeignKey(("business_id",), "business", ("id",)),
+            ForeignKey(("a_id",), "a", ("id",)),
+        ),
+    )
+    return Schema((business, a, b))
+
+
+def test_a_cyclic_schema_is_refused_with_the_baseline_cycle_line_in_both_modes() -> None:
+    expected = "Refusing: the delete order has a cycle through: a, b, business"
+    dry_output = FakeOutput()
+    real_output = FakeOutput()
+
+    dry = dry_run(
+        FakeSchemaRows(_cyclic_schema(), BUSINESS, {}), dry_output, english_words(), EMAIL
+    )
+    real = _remove(FakeSchemaRows(_cyclic_schema(), BUSINESS, {}), output=real_output)
+
+    assert (dry, real) == (1, 1)
+    assert dry_output.lines == [expected]
+    assert real_output.lines == [expected]
+
+
+class BrokenWords:
+    """Every line it is asked for fails to render, as a catalog lacking a key would.
+    It implements the whole `OperatorWords` port, so mypy checks its shape."""
+
+    def _fail(self, name: str) -> str:
+        raise MissingOperatorKey(f"operator.removal.{name}")
+
+    def no_business(self) -> str:
+        return self._fail("no_business")
+
+    def confirmation_failed(self) -> str:
+        return self._fail("confirmation_failed")
+
+    def interrupted(self) -> str:
+        return self._fail("interrupted")
+
+    def busy(self) -> str:
+        return self._fail("busy")
+
+    def failed(self) -> str:
+        return self._fail("failed")
+
+    def records_changed(self) -> str:
+        return self._fail("records_changed")
+
+    def unknown_outcome(self, path: str) -> str:
+        return self._fail("unknown_outcome")
+
+    def export_written(self, path: str) -> str:
+        return self._fail("export_written")
+
+    def removed(self, path: str) -> str:
+        return self._fail("removed")
+
+    def prompt(self, name: str) -> str:
+        return self._fail("prompt")
+
+    def unowned_tables(self, tables: str) -> str:
+        return self._fail("unowned_tables")
+
+    def secret_columns(self, columns: str) -> str:
+        return self._fail("secret_columns")
+
+    def other_type_columns(self, columns: str) -> str:
+        return self._fail("other_type_columns")
+
+    def unlabelled_tables(self, tables: str) -> str:
+        return self._fail("unlabelled_tables")
+
+    def delete_order_cycle(self, tables: str) -> str:
+        return self._fail("delete_order_cycle")
+
+    def count_dry(self, table_name: str, count: str) -> str:
+        return self._fail("count_dry")
+
+    def count_withheld_dry(self, table_name: str, count: str) -> str:
+        return self._fail("count_withheld_dry")
+
+    def count_exported(self, table_name: str, exported: str) -> str:
+        return self._fail("count_exported")
+
+    def count_deleted(self, table_name: str, deleted: str) -> str:
+        return self._fail("count_deleted")
+
+    def count_exported_deleted(self, table_name: str, exported: str, deleted: str) -> str:
+        return self._fail("count_exported_deleted")
+
+
+def test_a_failure_line_that_cannot_be_rendered_falls_back_to_refused_and_the_class_name() -> None:
+    rows = FakeSchemaRows(_schema(), BUSINESS, _rows(), _business_of_fails=ValueError("/secret"))
+    dry_output = FakeOutput()
+    real_output = FakeOutput()
+
+    dry = dry_run(rows, dry_output, BrokenWords(), EMAIL)
+    real = remove_business(
+        rows,
+        FakeExportFile(),
+        FakeConfirm("La Huerta\n"),
+        FakeTransaction(),
+        real_output,
+        BrokenWords(),
+        _clock,
+        EMAIL,
+    )
+
+    assert (dry, real) == (1, 1)
+    assert dry_output.lines == ["refused: ValueError"]
+    assert real_output.lines == ["refused: ValueError"]
+    assert failure_message(RecordsChanged(), BrokenWords()) == "refused: RecordsChanged"
+
+
+def test_an_unknown_outcome_whose_lines_cannot_be_rendered_ends_in_one_refused_line() -> None:
+    rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    transaction = FakeTransactionThatFailsToCommit()
+    output = FakeOutput()
+
+    result = remove_business(
+        rows,
+        FakeExportFile(),
+        FakeConfirm("La Huerta\n"),
+        transaction,
+        output,
+        _ConfirmingWords(),
+        _clock,
+        EMAIL,
+    )
+
+    assert result == 1
+    assert output.lines[-1] == "refused: RuntimeError"
+    assert not transaction.rolled_back
+
+
+class _ConfirmingWords(BrokenWords):
+    """Renders the prompt (so the run reaches the commit) and nothing after it."""
+
+    def prompt(self, name: str) -> str:
+        return f"type {name}"
+
+    def export_written(self, path: str) -> str:
+        return f"written {path}"

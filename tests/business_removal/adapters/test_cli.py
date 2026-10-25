@@ -10,9 +10,11 @@ from __future__ import annotations
 import io
 import json
 import re
+import signal
 import sqlite3
 import stat
 import unicodedata
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TextIO, cast
@@ -25,7 +27,6 @@ from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application.reset_password import issue_reset_link
 from app.accounts.domain.invitation import token_digest
 from app.business_removal.adapters.cli import main
-from app.business_removal.application.remove_business import BUSY_MESSAGE
 from app.clock import business_day
 from app.db import make_engine
 from tests.business_removal.adapters.seed import (
@@ -49,8 +50,10 @@ from tests.business_removal.adapters.seed import (
     seeded_days,
     set_env,
 )
+from tests.business_removal.english_words import baseline_text
 from tests.conftest import MovableClock
 
+BUSY_MESSAGE = baseline_text("operator.removal.busy")
 NO_PHONE_CUSTOMER_NAME = "Sin Numero"  # exported only in the export test; not counted
 # elsewhere, so the shared `seed()`'s own row counts stay untouched.
 
@@ -807,3 +810,50 @@ def test_the_export_carries_the_stored_language_of_the_removed_business(
     with sqlite3.connect(db_path) as connection:
         remaining = connection.execute("SELECT name FROM business ORDER BY id").fetchall()
     assert remaining == [("Otro Negocio",)]
+
+
+def test_an_invalid_forced_language_prints_one_refused_line_before_any_handler_is_installed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    set_env(monkeypatch, db_path, export_dir)
+    monkeypatch.setenv("APOSTROPHE_FORCED_LANGUAGE", "fr-secret")
+    handlers = (signal.getsignal(signal.SIGHUP), signal.getsignal(signal.SIGTERM))
+    stdout = io.StringIO()
+
+    result = main([EMAIL_LEAVING], stdin=io.StringIO(""), stdout=stdout, clock=MovableClock(PINNED))
+
+    assert result == 1
+    assert stdout.getvalue() == "refused: InvalidSetting\n"
+    assert (signal.getsignal(signal.SIGHUP), signal.getsignal(signal.SIGTERM)) == handlers
+    assert not db_path.exists()
+    assert not export_dir.exists()
+
+
+def test_a_line_that_cannot_be_rendered_ends_in_one_refused_line_through_main(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Broken:
+        def __init__(self, _text: object) -> None:
+            pass
+
+        def __getattr__(self, name: str) -> Callable[..., str]:
+            def fail(*_args: object, **_kwargs: object) -> str:
+                raise RuntimeError("no text")
+
+            return fail
+
+    db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
+    seed(db_path, clock)
+    set_env(monkeypatch, db_path, tmp_path / "exports")
+    monkeypatch.setattr("app.business_removal.adapters.cli.TranslatedOperatorWords", Broken)
+    stdout = io.StringIO()
+
+    result = main(
+        ["nobody@example.com", "--dry-run"], stdin=io.StringIO(""), stdout=stdout, clock=clock
+    )
+
+    assert result == 1
+    assert stdout.getvalue() == "refused: RuntimeError\n"

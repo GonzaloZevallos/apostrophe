@@ -46,6 +46,15 @@ SECRET_SEGMENTS = frozenset(
 SECRET_SUFFIXES = ("api_key", "private_key", "secret_key")
 
 
+class DeleteOrderCycle(Exception):
+    """The tables still stuck in a foreign-key cycle. Holds no text: the operator's line
+    is rendered elsewhere, in the operator's language."""
+
+    def __init__(self, tables: tuple[str, ...]) -> None:
+        super().__init__("the delete order has a cycle")
+        self.tables = tables
+
+
 def has_business_id(table: Table) -> bool:
     return any(column.name == BUSINESS_ID_COLUMN for column in table.columns)
 
@@ -154,5 +163,5 @@ def delete_order(schema: Schema) -> tuple[str, ...]:
 
     if len(order) != len(tables):
         remaining = sorted(set(tables) - set(order))
-        raise ValueError(f"the delete order has a cycle through: {', '.join(remaining)}")
+        raise DeleteOrderCycle(tuple(remaining))
     return tuple(order)
