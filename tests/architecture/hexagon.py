@@ -75,7 +75,7 @@ def scan_hexagon(root: Path, other_hexagons: frozenset[str] = frozenset()) -> Sc
         *(
             Violation(module, imported, "application-imports-no-framework-or-adapter")
             for module in application_modules
-            for imported in imports_of(module)
+            for imported in full_imports_of(module)
             if _forbidden_for_application(imported)
         ),
         *(

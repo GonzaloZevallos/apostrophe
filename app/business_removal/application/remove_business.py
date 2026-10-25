@@ -21,6 +21,7 @@ from app.business_removal.application.export_file import ExportFile
 from app.business_removal.application.operator_words import OperatorWords
 from app.business_removal.application.schema_rows import SchemaRows
 from app.business_removal.application.signals import blocked_signals
+from app.business_removal.domain.business_ref import BusinessRef
 from app.business_removal.domain.classification import (
     DeleteOrderCycle,
     delete_order,
@@ -220,12 +221,8 @@ def remove_business(
             # nothing here may say "nothing deleted" or report success (PM's
             # ruling). The file is kept -- it may be the only copy left.
             try:
-                if business is not None:
-                    output.line(terminal_name(business.name))
-                for table_name in owned:
-                    exported_count = len(exported_ids.get(table_name, frozenset()))
-                    output.line(words.count_exported(table_name, str(exported_count)))
-                output.line(_rendered(lambda: words.unknown_outcome(str(path)), exc))
+                for line in _unknown_outcome_lines(words, exc, business, owned, exported_ids, path):
+                    output.line(line)
             except SystemExit:
                 raise
             except BaseException:
@@ -286,6 +283,28 @@ def _classified(exc: BaseException, words: OperatorWords) -> str:
     if isinstance(exc, StorageBusy):
         return words.busy()
     return words.failed()
+
+
+def _unknown_outcome_lines(
+    words: OperatorWords,
+    exc: BaseException,
+    business: BusinessRef | None,
+    owned: tuple[str, ...],
+    exported_ids: dict[str, frozenset[int]],
+    path: Path | None,
+) -> list[str]:
+    """Every line of the unknown-outcome report, rendered before any is printed: if
+    any render fails the whole report is the one fixed `refused: <ClassName of exc>`
+    line, never a half report or none at all."""
+    try:
+        lines = [terminal_name(business.name)] if business is not None else []
+        for table_name in owned:
+            exported_count = len(exported_ids.get(table_name, frozenset()))
+            lines.append(words.count_exported(table_name, str(exported_count)))
+        lines.append(words.unknown_outcome(str(path)))
+        return lines
+    except Exception:
+        return [f"refused: {type(exc).__name__}"]
 
 
 def _rendered(render: Callable[[], str], exc: BaseException) -> str:

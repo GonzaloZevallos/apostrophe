@@ -602,13 +602,71 @@ def test_a_cyclic_schema_is_refused_with_the_baseline_cycle_line_in_both_modes()
 
 
 class BrokenWords:
-    """Every line it is asked for fails to render, as a catalog lacking a key would."""
+    """Every line it is asked for fails to render, as a catalog lacking a key would.
+    It implements the whole `OperatorWords` port, so mypy checks its shape."""
 
-    def __getattr__(self, name: str) -> Any:
-        def fail(*_args: object, **_kwargs: object) -> str:
-            raise MissingOperatorKey(f"operator.removal.{name}")
+    def _fail(self, name: str) -> str:
+        raise MissingOperatorKey(f"operator.removal.{name}")
 
-        return fail
+    def no_business(self) -> str:
+        return self._fail("no_business")
+
+    def confirmation_failed(self) -> str:
+        return self._fail("confirmation_failed")
+
+    def interrupted(self) -> str:
+        return self._fail("interrupted")
+
+    def busy(self) -> str:
+        return self._fail("busy")
+
+    def failed(self) -> str:
+        return self._fail("failed")
+
+    def records_changed(self) -> str:
+        return self._fail("records_changed")
+
+    def unknown_outcome(self, path: str) -> str:
+        return self._fail("unknown_outcome")
+
+    def export_written(self, path: str) -> str:
+        return self._fail("export_written")
+
+    def removed(self, path: str) -> str:
+        return self._fail("removed")
+
+    def prompt(self, name: str) -> str:
+        return self._fail("prompt")
+
+    def unowned_tables(self, tables: str) -> str:
+        return self._fail("unowned_tables")
+
+    def secret_columns(self, columns: str) -> str:
+        return self._fail("secret_columns")
+
+    def other_type_columns(self, columns: str) -> str:
+        return self._fail("other_type_columns")
+
+    def unlabelled_tables(self, tables: str) -> str:
+        return self._fail("unlabelled_tables")
+
+    def delete_order_cycle(self, tables: str) -> str:
+        return self._fail("delete_order_cycle")
+
+    def count_dry(self, table_name: str, count: str) -> str:
+        return self._fail("count_dry")
+
+    def count_withheld_dry(self, table_name: str, count: str) -> str:
+        return self._fail("count_withheld_dry")
+
+    def count_exported(self, table_name: str, exported: str) -> str:
+        return self._fail("count_exported")
+
+    def count_deleted(self, table_name: str, deleted: str) -> str:
+        return self._fail("count_deleted")
+
+    def count_exported_deleted(self, table_name: str, exported: str, deleted: str) -> str:
+        return self._fail("count_exported_deleted")
 
 
 def test_a_failure_line_that_cannot_be_rendered_falls_back_to_refused_and_the_class_name() -> None:
@@ -632,3 +690,34 @@ def test_a_failure_line_that_cannot_be_rendered_falls_back_to_refused_and_the_cl
     assert dry_output.lines == ["refused: ValueError"]
     assert real_output.lines == ["refused: ValueError"]
     assert failure_message(RecordsChanged(), BrokenWords()) == "refused: RecordsChanged"
+
+
+def test_an_unknown_outcome_whose_lines_cannot_be_rendered_ends_in_one_refused_line() -> None:
+    rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    transaction = FakeTransactionThatFailsToCommit()
+    output = FakeOutput()
+
+    result = remove_business(
+        rows,
+        FakeExportFile(),
+        FakeConfirm("La Huerta\n"),
+        transaction,
+        output,
+        _ConfirmingWords(),
+        _clock,
+        EMAIL,
+    )
+
+    assert result == 1
+    assert output.lines[-1] == "refused: RuntimeError"
+    assert not transaction.rolled_back
+
+
+class _ConfirmingWords(BrokenWords):
+    """Renders the prompt (so the run reaches the commit) and nothing after it."""
+
+    def prompt(self, name: str) -> str:
+        return f"type {name}"
+
+    def export_written(self, path: str) -> str:
+        return f"written {path}"

@@ -55,17 +55,18 @@ def test_the_checker_reports_the_deliberate_violations() -> None:
         ("app.shared.copy", "application-imports-no-framework-or-adapter"),
         ("app.shared.copy", "domain-imports-no-copy"),
         ("app.shared.copy.CopyCatalog", "domain-imports-no-copy"),
+        ("app.shared.copy.OperatorText", "application-imports-no-framework-or-adapter"),
         ("app.varieties", "domain-and-application-import-no-other-hexagon"),
         (
             "app.varieties.domain.variety.Variety",
             "domain-and-application-import-no-other-hexagon",
         ),
-        ("babel.support", "application-imports-no-framework-or-adapter"),
         ("babel.support", "domain-imports-stdlib-and-shared-only"),
+        ("babel.support.Translations", "application-imports-no-framework-or-adapter"),
         ("babel.support.Translations", "domain-imports-no-copy"),
         ("sqlalchemy.orm", "domain-imports-stdlib-and-shared-only"),
         (
-            "tests.architecture.fixtures.bad_hexagon.adapters",
+            "tests.architecture.fixtures.bad_hexagon.adapters.tables",
             "application-imports-no-framework-or-adapter",
         ),
         (
