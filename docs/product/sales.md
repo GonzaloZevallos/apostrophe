@@ -5,7 +5,7 @@ What a customer takes in one go, each line priced from the day's prices and the 
 - customers, with their VIP status, from customers;
 - which pricing rules the business uses from pricing settings (pricing-settings.md).
 
-Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: New sale, Sales and a sale's detail, on the phone and on a computer. Where they sit is navigation.md.
+Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: New sale, Sales and a sale's detail, on the phone and on a computer, and the sale bill shared from a sale's detail. Where they sit is navigation.md.
 
 ## Jobs
 
@@ -21,6 +21,8 @@ Payments (`payments.md`) settle what a sale leaves owing and say whether each sa
 
 **When** I check between orders what I sold today, this week or this month, **I want** to switch period and open a sale on my phone without mis-tapping and without a blank screen while it loads, **so I can** find the sale to fix and assign its customer or delete it in a few taps. (This refines the job above and criterion 11 for the phone; fixing a sale still means exactly those two things.)
 
+**When** I have recorded a sale, or a customer later asks what they took or what they owe, **I want** to send them a short plain-text bill of that sale in one tap (its lines, shipping, total, how they paid, what is still owed on it and their balance now), **so I can** answer in our chat without retyping or working out figures, and the customer sees the same numbers I do. (The sale bill; the story names "the chat", never a channel, by Assume nothing.)
+
 **When** a customer pays me part or all of what they owe, in cash or by transfer, on the day or weeks later, **I want** to record it from my phone in a few taps and see their balance and "owing since" drop right away, **so I** always know who owes me what and since when, and nothing they paid or still owe gets lost or lands on the wrong person. (Served here by the "owes you" mark in Sales; defined in `payments.md`.)
 
 **When** I register a customer (from Customers, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by Pick a customer's "New customer"; defined in `customers.md`.)
@@ -28,6 +30,8 @@ Payments (`payments.md`) settle what a sale leaves owing and say whether each sa
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "+ New sale", one tap from every tab root.)
 
 The protagonist of the phone jobs is the seller. The computer layouts (`NuevaVentaCompu`, `VentasCompu`) are the same jobs on a bigger screen. Before the phone redesign the seller recorded sales on the phone with friction (scrolling to find the save button, zooming to hit small controls, sometimes recording later from memory), with no fallback outside the app.
+
+The sale bill serves two moments: right after saving, with the customer still waiting in the chat (the main one), and later, when the customer asks and the seller opens that sale's detail. Assumed today: the seller retypes the order and total, or sends a screenshot, and works out the balance by hand.
 
 Success criteria, recording (API):
 
@@ -70,6 +74,13 @@ Success criteria, on the phone:
 14. **Never blank**: nothing on these screens that waits for the server shows a blank screen; the sale is still recorded in under 60 s (criterion 1).
 15. **The order is never lost by accident**: the system back gesture asks "Discard the sale?" under exactly the same condition as "Close".
 16. **Nothing else changes**: pricing, the preview, the flow, the texts and the computer layouts behave as defined here; existing sales and navigation tests pass without being edited to fit the phone layout.
+
+Success criteria, sale bill:
+
+20. **One tap, no typing.** On the sale's detail, one tap on the phone opens the phone's share sheet with the bill ready or puts it on the clipboard; choosing the chat and sending are the phone's own steps. If sharing or copying fails, the seller still gets the text with no typing.
+21. **The figures match the app.** The bill's total, payment state, still-owed amount and balance always agree with the sale's detail, because they come from the same settlement pass in the same response. Evidence: the hand-written reference set, 0 mismatches.
+22. **Nothing private leaks.** No note, customer name, VIP, special or list wording, ids or links; a VIP or special line reads like a list line. Evidence: the leak test.
+23. **Assume nothing holds.** Every fixed word and the unit come from the copy module; the unit is one entry, "g" by default, until #318. Evidence: with the unit set to "u", the text reads "3,5 u" and "/u".
 
 ## Behaviour
 
@@ -134,7 +145,14 @@ Success criteria, on the phone:
   - An inverted range is empty.
   - Order: newest date first, then most recently recorded first.
   - Each sale says whether it is still owing, worked out live by payments.
-- **See one**: date, customer or none, shipping, note, how it was paid, total, and each line's variety, grams, stored price per gram, pricing rule, line total and cost of goods (costed amount and pending grams).
+- **See one**: date, customer or none, shipping, note, how it was paid, total, and each line's variety, grams, stored price per gram, pricing rule, line total and cost of goods (costed amount and pending grams). It also carries the sale's **sale bill** (below), or none.
+- **Sale bill** (the facts behind the shared text):
+  - The business name, the date, each line's variety, quantity, amount and rule (bulk, gift or none: list, VIP and special all read as none), with the unit price on bulk lines; shipping charged; the total; the payment state (cash, transfer, paid, owed, none) with what is still owed on this sale; and the customer's balance, or none when the sale has no customer.
+  - Payment state, still owed and balance come from the one settlement pass behind the detail's "still owing", in the same response; nothing recomputes settlement elsewhere.
+  - The balance is the customer's whole account at the moment the detail is read, not on the sale's date.
+  - It is closed: it has no field for the note, the customer's name or id, any sale or line id, the VIP flag, a pricing rule other than bulk or gift, cost, margin or a link. The business comes from the session only.
+  - When it cannot be worked out, the detail answers no bill and the rest of the detail is unaffected; the error names the rule broken and no sale, customer or amount.
+  - Nothing of it is stored or logged.
 - **Delete**:
   - A hard delete, lines and on-the-spot payment included; nothing remains to list or restore.
   - Its grams return to stock, landing back on lots by date (ADR-0009). The answer says the grams returned per variety.
@@ -215,6 +233,7 @@ Success criteria, on the phone:
   - Undo deletes the sale with no confirmation, then shows "Sale deleted · the grams go back to stock" and returns to Sales.
   - If the sale is already gone, Undo shows "That is gone. The list is up to date."
   - After the notice is gone, the way to undo is "Delete sale".
+  - It never holds the Share/Copy button; that lives on the sale's detail.
 
 #### New sale on the phone
 
@@ -266,6 +285,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - each line's variety, grams, price per gram, rule badge and line total;
   - shipping, the note, how it was paid, and the customer or "No customer".
 - **Recorded rule badges** ("VIP", "bulk") always show what was recorded, whatever the pricing settings say today. They are history (ADR-0003).
+- **Share the bill** (Share / Copy): see "Sale bill" below.
 - **Assign customer**:
   - It shows only when the sale has none, and opens Pick a customer without "No customer".
   - The system back gesture with its sheet open does what the sheet's own "Close" does: it closes only the sheet and asks nothing.
@@ -281,9 +301,48 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - assigning, deleting or undoing shows "That is gone. The list is up to date."
 - No names, notes or amounts go to the console or browser storage, and no business id appears in a URL.
 
+### Sale bill (on the sale's detail)
+
+A short plain-text bill of one sale that the seller sends to the customer in one tap. Facts only, never an invoice.
+
+**The text**, in order:
+1. The business name, then on a new line the date as dd/mm, with no year. A blank line.
+2. One line per sale line:
+   - list, VIP or special: `{product} {quantity} {unit} · {amount}`;
+   - bulk: `{product} {quantity} {unit} · bulk price {unitPrice}/{unit} · {amount}`;
+   - gift: `{product} {quantity} {unit} · Gift · $ 0`.
+3. `Shipping · {amount}`, only when shipping charged is above $0.
+4. A blank line, then `Total · {amount}`.
+5. The payment line: "Paid in cash" or "Paid by transfer" for an on-the-spot payment; "Paid" when paid in full later; `Still owed on this sale: {amount}` when something is owed on it, partly or fully; none when the payment state is none.
+6. The balance line: `Your balance: {amount}` when the balance is above $0; `In your favor: {amount}` for a credit, as its magnitude.
+
+**Absent lines**: shipping at $0; the payment line when the state is none; the balance line when the sale has no customer or the balance is exactly $0.
+
+**The balance** is the customer's whole account at the moment of sharing, not on the sale's date; for a sale shared later the two can differ, and that is intended.
+
+**Formats**:
+- Quantities are formatted from integer hundredths, never a float: Argentine separators, trailing zeros dropped (0,01 · 0,1 · 1,05 · 3,5 · 1.000). The existing grams display reads exactly as before.
+- Money reads `$ 11.000`, never the catalog's format.
+
+**The unit entry**: the unit is one keyed copy entry, "g", until #318 makes it customizable. Every fixed word of the bill lives in the copy module (`saleBill` group); no sale bill module holds a "g" literal or calls the grams formatter.
+
+**Never in the bill**: the note, the customer's name, VIP, special or list wording, ids, links, or Markdown markers (`*`, `_`, backtick).
+
+**The button** (on the detail, never inside the "Sale saved" notice):
+- **Label**: Share where the phone can share, otherwise Copy.
+- **Share**: success shows nothing (the sheet closing is the confirmation); a cancel shows nothing; a failure shows "Couldn't share. Tap Copy and paste it into the chat." with the attention icon, and the label becomes Copy.
+- **Copy**: success shows the toast "Bill copied"; a failure shows "Couldn't copy. Select the text below and copy it by hand." with the bill in a selectable block, accessible name "Sale bill".
+- **No preview**: the text appears on screen only when copying fails.
+- **No bill**: the button is hidden when the detail answers no bill. A sale with no customer keeps it, with no balance line.
+- **Loading**: the button keeps its label, is disabled and busy (`aria-busy`), and shows no digits or `$`.
+- **Not found**: a missing sale takes the existing not-found path.
+- **Fresh text**: built from the latest detail the screen holds; the detail keeps its existing refreshes.
+- **Phone**: at least 44 px, tokens only, works over plain http on the home network because the share or copy call runs synchronously inside the tap (ADR-0002); passes the mobile check with no new offender.
+- **Silent**: nothing of the bill goes to the console or storage, and no "already shared" state exists.
+
 ### Shared loading state
 
-- On these screens it applies to the sale's detail, Sales' list before its first answer, New sale while it waits for prices (on opening and on a date change) and Pick a customer's results before their first answer.
+- On these screens it applies to the sale's detail, Sales' list before its first answer, New sale while it waits for prices (on opening and on a date change), Pick a customer's results before their first answer, and the sale bill button while the detail loads.
 - It carries no digit, currency symbol or placeholder figure (accounts.md, criterion 7).
 
 ## Metrics
@@ -340,6 +399,13 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - **Date change**: a front test shows everything typed is kept, the lines show loading, then every line is repriced.
 - **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "Discard the sale?" under the Close condition; "No, keep entering" keeps the form and the next back asks again; an untouched form closes at once; with Pick a customer, New customer or Assign customer open, back closes only the top sheet as its own "Close" does, the sale or detail underneath stays intact, and "Discard the sale?" never appears.
 - **No regression (criterion 16)**: the existing sales and navigation tests pass without being edited; the pricing matrix and "preview = stored" stay at 0 differences; `NuevaVentaCompu` and `VentasCompu` are unchanged.
+- **Sale bill reference set (criterion 21)**: `saleBill.cases.json`, expected texts written by hand against this definition, never generated; 0 mismatches. Cases: with and without bulk; a VIP and a special line reading like list lines; a gift; a $0 gifts-only sale with a non-zero balance; cash, transfer, paid later, partly owed, fully owed; a balance, a credit and a balance of exactly $0; no customer; with and without shipping; one line and several lines; quantities 0.01, 0.1, 1.05 and 1000.
+- **Quantity format (criterion 21)**: `formatQuantity` gives 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" from integer hundredths; the existing `formatGrams` tests pass unedited.
+- **Sale bill leak test (criterion 22)**: across the reference set, no text contains the note, the customer's name, "VIP", "special", "list", an id, "http", `*`, `_` or a backtick; the API's sale bill schema is closed and has no such field.
+- **Contract kept**: a vitest reads `tests/fixtures/openapi_snapshot.json`'s `SaleBillOut` schemas and asserts their property names and enums equal the front's key lists; the front and the API never drift.
+- **Unit and words from the copy module (criterion 23)**: with the unit entry set to "u", the text reads "3,5 u" and "/u"; a guard finds no "g" literal or `formatGrams` call in any `saleBill*` source; `en-XA` is regenerated and the copy staleness tests pass.
+- **One tap (criterion 20)**: front tests (fetch faked) show Share calls the share with the bill text; with `isSecureContext=false`, `execCommand('copy')` is called synchronously right after the click and the toast "Bill copied" shows; cancel shows nothing; share failed shows its line with the attention icon and flips the label to Copy; copy failed shows its line and the selectable block; `bill` null hides the button; loading keeps the label, disabled and busy, with no digit or `$`. `WalkState` includes the copy-failed and loading states, and the mobile e2e project passes with no new offender.
+- **Sale bill stays silent**: after the front tests, the console and browser storage hold nothing of the bill.
 
 ## Out of scope
 
@@ -356,3 +422,4 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - Building New customer's unsaved-changes confirmation (customers.md): its own issue, with its own copy, for Customers and Pick a customer alike.
 - Other VIP rules (a percent off list); price promotions by date.
 - Refusing or warning a sale because the pricing settings changed mid-sale.
+- For the sale bill: a year in the date; a preview step; an "already shared" state; a payment receipt; choosing a channel or sending from the app; an invoice; making the unit customizable (#318); any other language (#317).
