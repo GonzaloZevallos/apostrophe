@@ -177,9 +177,7 @@ def test_check_sales_prices_list_bulk_and_vip_falling_back_to_list(
     with Session(engine) as session:
         sales_import = SalesImport(session, business_id)
 
-        lista_bulk = _sale_input(
-            has_customer=True, grams=Grams.of(20), sale_date=date(2026, 6, 1)
-        )
+        lista_bulk = _sale_input(has_customer=True, grams=Grams.of(20), sale_date=date(2026, 6, 1))
         lista_under_minimum = _sale_input(
             has_customer=True, grams=Grams.of(1), sale_date=date(2026, 6, 1)
         )
@@ -286,9 +284,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
             ),
             (
                 vip_date,
-                _sale_input(
-                    has_customer=True, vip=True, grams=Grams.of(20), sale_date=vip_date
-                ),
+                _sale_input(has_customer=True, vip=True, grams=Grams.of(20), sale_date=vip_date),
             ),
         ]
         for sale_date, sale in cases:

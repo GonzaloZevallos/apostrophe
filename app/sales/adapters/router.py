@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.sales.adapters.business_name import SqlBusinessNames
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
 from app.sales.adapters.schemas import (
@@ -26,6 +27,7 @@ from app.sales.application.assign_customer import assign_customer as assign_cust
 from app.sales.application.delete_sale import delete_sale as delete_sale_use_case
 from app.sales.application.errors import SaleNotFound
 from app.sales.application.ports import (
+    BusinessNames,
     LineCosts,
     OwingSales,
     PricingSettingsReader,
@@ -99,9 +101,14 @@ def get_pricing_settings(
     return factory(session, business_id)
 
 
+def get_business_names(session: SessionDep, business_id: CurrentBusinessId) -> BusinessNames:
+    return SqlBusinessNames(session, business_id)
+
+
 LineCostsDep = Annotated[LineCosts, Depends(get_line_costs)]
 PricingSettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 OwingSalesDep = Annotated[OwingSales, Depends(get_owing_sales)]
+BusinessNamesDep = Annotated[BusinessNames, Depends(get_business_names)]
 
 
 as_http = TranslateErrors(
@@ -170,10 +177,15 @@ def list_sales(
 
 @router.get("/{sale_id}")
 def get_sale(
-    sale_id: int, sales: SalesDep, line_costs: LineCostsDep, owing_sales: OwingSalesDep
+    sale_id: int,
+    sales: SalesDep,
+    line_costs: LineCostsDep,
+    owing_sales: OwingSalesDep,
+    business_names: BusinessNamesDep,
 ) -> SaleDetailOut:
     with as_http:
-        return SaleDetailOut.of(view_sales.get_sale_detail(sales, line_costs, owing_sales, sale_id))
+        detail = view_sales.get_sale_detail(sales, line_costs, owing_sales, business_names, sale_id)
+        return SaleDetailOut.of(detail)
 
 
 @router.put("/{sale_id}/customer")

@@ -99,9 +99,7 @@ def test_a_sale_without_a_customer_paid_on_the_spot_has_no_balance() -> None:
 def test_case_2_paid_on_the_spot_yet_owed_gives_no_bill_and_reads_no_name() -> None:
     names = FakeNames("Mi Negocio")
 
-    bill = sale_bill(
-        _view(method=PaymentMethod.CASH), CustomerSettlement(50, {SALE_ID: 50}), names
-    )
+    bill = sale_bill(_view(method=PaymentMethod.CASH), CustomerSettlement(50, {SALE_ID: 50}), names)
 
     assert bill is None
     assert names.reads == 0
