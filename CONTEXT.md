@@ -496,3 +496,7 @@ _Avoid_: exact spec, pixel-perfect, design fidelity, mockup diff
 **Phone first**:
 When a choice is needed, the flow working on the phone ships first. Polish is a later task the owner or PM chooses to schedule. The computer keeps every capability but gets no dedicated polish. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
 _Avoid_: mobile-only, responsive, mobile first, polish pass
+
+**Stored language**:
+The one language recorded on a business. A new business gets it from the accepting phone when its invitation is accepted, an existing business has English, and afterwards only a user's choice in Settings → Business changes it. It is what the language control shows and edits, and it is the shown language unless the operator's forced language overrides it. In the app: no word of its own.
+_Avoid_: locale, display language, preferred language, business locale
