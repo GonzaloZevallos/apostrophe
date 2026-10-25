@@ -27,6 +27,7 @@ import panelFixture from '../api/fixtures/panel.json'
 import type { FirstRunAnswer } from '../api/firstRun'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
+import { SHOWN_EN } from '../test/shownLanguage'
 import { LIMITS } from '../copy/limits'
 import { chooseTheme } from '../theme'
 import { consumePaymentReturn } from '../paymentReturn'
@@ -76,7 +77,7 @@ const firstRunCalls: string[] = []
 /** What a POST to `/onboarding-progress/advance` answers; the read's answer when null. */
 let advanced: OnboardingProgress | null = null
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 
 function Provide() {
   return <Outlet context={ME} />

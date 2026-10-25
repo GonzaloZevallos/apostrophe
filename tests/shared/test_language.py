@@ -7,6 +7,7 @@ from app.shared.language import (
     InvalidLanguageTag,
     Language,
     LanguageNotSelectable,
+    shown_language,
 )
 
 GERMAN = Language("de")
@@ -93,3 +94,11 @@ def test_the_refusal_names_the_rule_never_the_tag() -> None:
         BusinessLanguage.parse("xx-secret", [ENGLISH])
 
     assert "xx-secret" not in str(refused.value)
+
+
+def test_the_forced_language_overrides_the_stored_one_when_set() -> None:
+    assert shown_language(BusinessLanguage(Language("de")), TEST_LOCALE) == TEST_LOCALE
+
+
+def test_the_stored_language_is_shown_when_nothing_is_forced() -> None:
+    assert shown_language(BusinessLanguage(Language("de")), None) == Language("de")

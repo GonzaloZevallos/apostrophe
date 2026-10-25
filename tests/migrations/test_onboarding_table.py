@@ -21,7 +21,7 @@ def _migrated() -> Engine:
     engine = make_engine("sqlite://")
     upgrade_to_head(engine)
     with engine.begin() as connection:
-        connection.execute(text("INSERT INTO business (id, name) VALUES (1, 'b')"))
+        connection.execute(text("INSERT INTO business (id, name, language) VALUES (1, 'b', 'en')"))
     return engine
 
 

@@ -60,3 +60,10 @@ class BusinessLanguage:
         if language == TEST_LOCALE or language not in selectable:
             raise LanguageNotSelectable
         return cls(language)
+
+
+def shown_language(stored: BusinessLanguage, forced: Language | None) -> Language:
+    """The language screens are rendered in: the operator's forced one when set, else the
+    business's own. The only place the forced language overrides stored data (ADR-0050);
+    the stored value itself is never rewritten."""
+    return forced if forced is not None else stored.language

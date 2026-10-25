@@ -29,6 +29,7 @@ export const REFUSAL_TEXT = {
   lookupNoMessages: 'No messages in your bot yet: open it in Telegram, tap Start and look again.',
   lookupSeveralChats: 'Several people wrote to your bot: find your number with @userinfobot, type it.',
   lookupUpdatesUnreadable: 'We cannot read your bot\'s messages: find your number with @userinfobot, type it.',
+  languageNotSelectable: 'That language isn\'t available for your business.',
   vipPriceNotBelowList: 'The VIP price has to be lower than the list price',
   pinReason: {
     telegram_unreachable: 'Telegram did not respond',
@@ -64,6 +65,7 @@ export const REFUSAL_BY_CODE = {
   'account.login_locked': GENERIC_REFUSAL,
   'account.current_password_wrong': GENERIC_REFUSAL,
   'account.reset_link_gone': REFUSAL_TEXT.goneNotice,
+  'business.language_not_selectable': REFUSAL_TEXT.languageNotSelectable,
   'customer.not_found': REFUSAL_TEXT.goneNotice,
   'customer.phone_taken': GENERIC_REFUSAL,
   'customer.required_field_cleared': GENERIC_REFUSAL,

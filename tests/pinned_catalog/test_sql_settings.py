@@ -21,7 +21,7 @@ from app.pinned_catalog.adapters.token_cipher import TokenCipher
 
 def _business(engine: Engine) -> int:
     with Session(engine) as session:
-        business = BusinessRow(name="a business")
+        business = BusinessRow(name="a business", language="en")
         session.add(business)
         session.commit()
         return business.id

@@ -788,6 +788,30 @@ def test_a_locked_database_ends_on_the_busy_line_through_main(
     assert not export_dir.exists() or list(export_dir.glob("*")) == []
 
 
+def test_the_export_carries_the_stored_language_of_the_removed_business(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    clock = MovableClock(PINNED)
+    seed(db_path, clock)
+    set_env(monkeypatch, db_path, export_dir)
+    with sqlite3.connect(db_path) as connection:
+        connection.execute("UPDATE business SET language = 'de' WHERE name = 'La Huerta'")
+
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock
+    )
+
+    assert result == 0
+    (written,) = export_dir.glob("*.json")
+    document = json.loads(written.read_text())
+    assert document["business"]["language"] == "de"
+    with sqlite3.connect(db_path) as connection:
+        remaining = connection.execute("SELECT name FROM business ORDER BY id").fetchall()
+    assert remaining == [("Otro Negocio",)]
+
+
 def test_an_invalid_forced_language_prints_one_refused_line_before_any_handler_is_installed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, RouterProvider, Route, Routes, createMemoryRouter, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
+import { SHOWN_EN } from '../test/shownLanguage'
 import * as clipboard from '../clipboard'
 import * as share from '../share'
 import Shell from '../shell/Shell'
@@ -43,7 +44,7 @@ function VarietyLanding() {
   )
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 
 function Provide() {
   return <Outlet context={ME} />

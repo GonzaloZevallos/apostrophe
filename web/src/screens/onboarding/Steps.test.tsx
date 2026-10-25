@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import type { OnboardingProgress, StepSlug, StepState } from '../../api/onboarding'
 import { expectIconAndTextRule, iconAndTextProblems } from '../../test/iconAndTextRule'
 import { PUBLISH_LINE } from './BotStep'
@@ -21,7 +22,7 @@ import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
 import { ONBOARDING_BOT, ONBOARDING_CATALOG_MESSAGE, ONBOARDING_CATEGORIES, ONBOARDING_PARTNER, ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
 const PATHS: Record<StepSlug, string> = {
   variety: 'variety',

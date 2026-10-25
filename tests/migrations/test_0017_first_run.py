@@ -68,7 +68,7 @@ def test_a_second_row_for_a_business_and_a_row_with_no_business_are_refused() ->
     engine = make_engine("sqlite://")
     upgrade_to_head(engine)
     with engine.begin() as connection:
-        connection.execute(text("INSERT INTO business (id, name) VALUES (1, 'b')"))
+        connection.execute(text("INSERT INTO business (id, name, language) VALUES (1, 'b', 'en')"))
         connection.execute(text("INSERT INTO first_run (business_id) VALUES (1)"))
 
     with pytest.raises(IntegrityError), engine.begin() as connection:

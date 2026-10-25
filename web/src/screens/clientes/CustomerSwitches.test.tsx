@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import FlashProvider from '../../flash/FlashProvider'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALES, pathTo } from '../../routes'
 import Ventas from '../ventas/Ventas'
@@ -17,7 +18,7 @@ import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 import ClienteForm from './ClienteForm'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })

@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -31,6 +32,7 @@ def test_a_new_business_invitation_opens_a_business_and_signs_its_user_in(
         "email": "nueva@example.com",
         "business_name": "La Huerta",
         "today": "2026-10-02",
+        "shown_language": "en",
     }
 
 
@@ -273,7 +275,12 @@ def test_get_business_shows_its_name_and_its_users_sorted_by_email(
     business = client.get("/business")
 
     assert business.status_code == 200
-    assert business.json() == {"name": "Primer Negocio", "users": [{"email": "uno@example.com"}]}
+    assert business.json() == {
+        "name": "Primer Negocio",
+        "users": [{"email": "uno@example.com"}],
+        "language": "en",
+        "selectable_languages": ["en"],
+    }
     # The business comes only from the session: another business's own call answers
     # its own business, never business `client`'s (CODING_STANDARDS §9).
     assert other_client.get("/business").json()["name"] == "Otro Negocio"
@@ -289,6 +296,22 @@ def test_patch_business_renames_only_the_caller_s_own_business(
     assert client.get("/auth/me").json()["business_name"] == "La Huerta Nueva"
     # Unaffected: the business comes from the session, never the request.
     assert other_client.get("/business").json()["name"] == "Otro Negocio"
+
+
+def test_patch_business_leaves_the_stored_language_as_it_was(
+    client: TestClient, engine: Engine
+) -> None:
+    with engine.begin() as connection:
+        connection.execute(text("UPDATE business SET language = 'fr' WHERE id = 1"))
+
+    renamed = client.patch("/business", json={"name": "La Huerta Nueva"})
+
+    assert renamed.status_code == 200
+    with Session(engine) as session:
+        business = SqlAccounts(session).business(1)
+    assert business is not None
+    assert business.name.value == "La Huerta Nueva"
+    assert business.language.language.tag == "fr"
 
 
 def test_patch_business_refuses_a_blank_name(client: TestClient) -> None:

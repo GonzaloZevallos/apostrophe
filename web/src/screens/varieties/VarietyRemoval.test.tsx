@@ -13,12 +13,13 @@ import { Outlet, RouterProvider, createMemoryRouter, useLocation } from 'react-r
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 const GONE_TEXT = 'That is gone. The list is up to date.'
 const ARCHIVE_DETAIL =
   'You have 12 g left. If you archive it, they stop showing on Home and in the lists, but the stock is kept.'

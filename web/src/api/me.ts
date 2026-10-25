@@ -5,11 +5,14 @@
  */
 
 import { get } from './client'
+import type { ShownLanguage } from './language'
 
 export interface Me {
   email: string
   business_name: string
   today: string
+  /** The forced language when the operator set one, else the stored one: what decides the texts. */
+  shown_language: ShownLanguage
 }
 
 export function getMe(): Promise<Me> {

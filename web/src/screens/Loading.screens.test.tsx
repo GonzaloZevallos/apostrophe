@@ -18,6 +18,7 @@ import {
 } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
+import { SHOWN_EN } from '../test/shownLanguage'
 import FlashProvider from '../flash/FlashProvider'
 import { SheetRouterProvider } from '../components/useSheetStack'
 import Root from '../Root'
@@ -35,7 +36,7 @@ import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
 
 // The gated layout's providers: a screen may raise a flash (`GatedLayout`).
 function Context() {

@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar
 
+from app.shared.language import BusinessLanguage
+
 BUSINESS_NAME_MAX_LENGTH = 60
 EMAIL_MAX_LENGTH = 254
 MIN_PASSWORD_LENGTH = 10
@@ -77,9 +79,22 @@ def check_password_strength(password: str) -> None:
         raise WeakPassword(f"a password has at least {MIN_PASSWORD_LENGTH} characters")
 
 
+class StoredLanguageCorrupt(RuntimeError):
+    """A business's stored language is not a language tag. A broken row, not a broken
+    request: it is no `AccountRuleBroken`, so it never maps to a refusal. The message
+    never carries the stored value."""
+
+    def __init__(self) -> None:
+        super().__init__("a business's stored language is not a language tag")
+
+
 @dataclass(frozen=True)
 class Business:
+    """`language` is required with no default: every write starts from the stored
+    business (`dataclasses.replace`), so a write never resets the language."""
+
     name: BusinessName
+    language: BusinessLanguage
     id: int | None = None
 
 

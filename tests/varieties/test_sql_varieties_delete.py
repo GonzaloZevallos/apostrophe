@@ -50,7 +50,9 @@ def engine(request: pytest.FixtureRequest, tmp_path: Path) -> Iterator[Engine]:
     engine = make_engine(f"{request.param}:///{tmp_path / 'apostrophe.db'}")
     upgrade_to_head(engine)
     with engine.begin() as connection:
-        connection.execute(text("INSERT INTO business (id, name) VALUES (1, 'Negocio')"))
+        connection.execute(
+            text("INSERT INTO business (id, name, language) VALUES (1, 'Negocio', 'en')")
+        )
     yield engine
     engine.dispose()
 
@@ -154,7 +156,9 @@ def test_remove_unused_removes_nothing_from_a_variety_with_history(engine: Engin
 def test_a_variety_of_another_business_is_never_removed(engine: Engine) -> None:
     variety_id = _seed_variety(engine)
     with engine.begin() as connection:
-        connection.execute(text("INSERT INTO business (id, name) VALUES (2, 'Otro')"))
+        connection.execute(
+            text("INSERT INTO business (id, name, language) VALUES (2, 'Otro', 'en')")
+        )
 
     with Session(engine) as session:
         assert SqlVarieties(session, 2).remove_unused(variety_id) is False

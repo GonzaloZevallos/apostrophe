@@ -41,7 +41,7 @@ def _migrated_file(path: Path) -> None:
 def _seed(path: Path, *, payment_at: datetime, expense_at: datetime) -> None:
     engine = make_engine(f"sqlite:///{path}")
     with Session(engine) as session:
-        business = BusinessRow(name="Vivero Sur")
+        business = BusinessRow(name="Vivero Sur", language="en")
         session.add(business)
         session.flush()
         category = ExpenseCategoryRow(business_id=business.id, name="Flete", name_key="flete")

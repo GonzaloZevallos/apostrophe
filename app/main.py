@@ -17,6 +17,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import require_session
+from app.accounts.adapters.language_router import router as language_router
 from app.accounts.adapters.onboarding_facts import SqlUserFacts
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
@@ -283,6 +284,10 @@ def create_app(
     # says, so it also schedules upkeep's own post-commit, off-session sync.
     upkeep_gated = [*gated, Depends(schedule_upkeep)]
     app.include_router(accounts_router, dependencies=gated)
+    # Not `upkeep_gated`, on purpose: the request wires `Depends(schedule_upkeep)` here, but
+    # then `en -> en` would still sync. Only a changed language can owe the pin an edit, so
+    # the router schedules upkeep itself when it did (ADR-0014, as pricing settings does).
+    app.include_router(language_router, dependencies=gated)
     app.include_router(varieties_router, dependencies=upkeep_gated)
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)

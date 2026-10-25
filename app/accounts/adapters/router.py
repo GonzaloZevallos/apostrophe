@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Annotated, Literal, TypedDict
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Header, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -32,6 +32,8 @@ from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.settings import Settings
+from app.shared.copy.negotiation import pre_sign_in_language
+from app.shared.language import BusinessLanguage, shown_language
 
 # Public: how a user gets a session. Every other accounts route is gated in `app.main`.
 public_router = APIRouter(tags=["accounts"])
@@ -70,6 +72,9 @@ class MeOut(BaseModel):
     # The business day (America/Argentina/Buenos_Aires): the front's one clock. It
     # never builds "today" from a `Date` of its own (docs/adr/0001).
     today: date
+    # The language screens are rendered in: the forced one when the operator set it, else
+    # the stored one (docs/adr/0050). Never what the Settings control shows.
+    shown_language: str
 
 
 class UserOut(BaseModel):
@@ -79,6 +84,9 @@ class UserOut(BaseModel):
 class BusinessOut(BaseModel):
     name: str
     users: list[UserOut]
+    # The stored language and the ones a business may switch to, for the Settings control.
+    language: str
+    selectable_languages: list[str]
 
 
 class BusinessPatchIn(BaseModel):
@@ -192,7 +200,14 @@ def accept_invitation(
     clock: ClockDep,
     settings: SettingsDep,
     opening: Annotated[BusinessOpening, Depends(get_business_opening)],
+    accept_language: Annotated[str | None, Header()] = None,
 ) -> SessionOut:
+    # The one place the phone's language is read. `forced=None` on purpose: the forced
+    # language changes what is shown, never what is stored. Not `BusinessLanguage.parse`:
+    # English may be off the selectable list.
+    language = BusinessLanguage(
+        pre_sign_in_language(accept_language, None, settings.selectable_languages)
+    )
     with as_http:
         session_token = invitations.accept_invitation(
             accounts,
@@ -205,23 +220,36 @@ def accept_invitation(
             body.business_name,
             clock(),
             opening=opening,
+            language=language,
         )
     return _open(response, session_token, settings)
 
 
+def _business_out(profile: manage_business.BusinessProfile, settings: Settings) -> BusinessOut:
+    return BusinessOut(
+        name=profile.name,
+        users=[UserOut(email=e) for e in profile.user_emails],
+        language=profile.language,
+        selectable_languages=[language.tag for language in settings.selectable_languages],
+    )
+
+
 @router.get("/auth/me")
-def me(signed_in: CurrentSession, today: TodayDep) -> MeOut:
+def me(signed_in: CurrentSession, today: TodayDep, settings: SettingsDep) -> MeOut:
     return MeOut(
         email=signed_in.user.email.value,
         business_name=signed_in.business.name.value,
         today=today,
+        shown_language=shown_language(signed_in.business.language, settings.forced_language).tag,
     )
 
 
 @router.get("/business")
-def get_business(business_id: CurrentBusinessId, accounts: AccountsDep) -> BusinessOut:
+def get_business(
+    business_id: CurrentBusinessId, accounts: AccountsDep, settings: SettingsDep
+) -> BusinessOut:
     profile = manage_business.business_profile(accounts, business_id)
-    return BusinessOut(name=profile.name, users=[UserOut(email=e) for e in profile.user_emails])
+    return _business_out(profile, settings)
 
 
 @router.patch("/business")
@@ -230,10 +258,11 @@ def rename_business(
     business_id: CurrentBusinessId,
     accounts: AccountsDep,
     session: SessionDep,
+    settings: SettingsDep,
 ) -> BusinessOut:
     with as_http:
         profile = manage_business.rename_business(accounts, session, business_id, body.name)
-    return BusinessOut(name=profile.name, users=[UserOut(email=e) for e in profile.user_emails])
+    return _business_out(profile, settings)
 
 
 @router.post("/invitations", status_code=201)

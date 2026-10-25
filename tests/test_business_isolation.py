@@ -20,6 +20,8 @@ would.
 """
 
 from collections.abc import Callable, Iterator
+from dataclasses import replace
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -46,7 +48,9 @@ from app.payments.adapters import router as payments_router_module
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
 from app.results.domain.periods import periods as compute_periods
+from app.settings import Settings
 from app.shared.calendar import Month
+from app.shared.language import ENGLISH, Language
 from app.shared.transaction import Transaction
 from tests.conftest import (
     NOW,
@@ -272,6 +276,9 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "detail": "edited expense",
     },
     ("PATCH", "/business"): {"name": "Renamed by B"},
+    # `de` is selectable in this module (the `settings` fixture below), so the body really
+    # changes the stored language of whichever business calls it.
+    ("PUT", "/business/language"): {"language": "de"},
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,
@@ -358,6 +365,16 @@ LISTS.append("/stock?archived=true")
 # through `LISTS` (a `GET /business` with no path parameter is itself one of `LISTS`,
 # which is how a route like `PATCH /business` gets checked at all).
 SINGLETON_WRITES = [(m, p) for m, p, _ in OPERATIONS if m != "GET" and "{" not in p]
+
+
+@pytest.fixture
+def settings() -> Settings:
+    """`de` selectable, so `PUT /business/language`'s body changes something."""
+    return replace(
+        SETTINGS,
+        selectable_languages=(ENGLISH, Language("de")),
+        locales_dir=Path(__file__).resolve().parent / "fixtures" / "locales",
+    )
 
 
 @pytest.fixture

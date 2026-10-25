@@ -23,7 +23,9 @@ LATER = FIRST + timedelta(days=3)
 def session(engine: Engine) -> Iterator[Session]:
     upgrade_to_head(engine)
     with engine.begin() as connection:
-        connection.execute(text("INSERT INTO business (id, name) VALUES (1, 'a'), (2, 'b')"))
+        connection.execute(
+            text("INSERT INTO business (id, name, language) VALUES (1, 'a', 'en'), (2, 'b', 'en')")
+        )
     with Session(engine) as session:
         yield session
 

@@ -260,11 +260,13 @@ class _Rows:
         return self._schema
 
     def business_of(self, email: str) -> BusinessRef | None:
-        return BusinessRef(id=1, name=LEAVING_BUSINESS) if email == OWNER_EMAIL else None
+        if email != OWNER_EMAIL:
+            return None
+        return BusinessRef(id=1, name=LEAVING_BUSINESS, language="en")
 
     def rows(self, table: str, business_id: int) -> list[dict[str, Any]]:
         if table == "business":
-            return [{"id": 1, "name": LEAVING_BUSINESS}]
+            return [{"id": 1, "name": LEAVING_BUSINESS, "language": "en"}]
         return [{"id": 5, "business_id": 1, "name": "Juana"}] if table == "customer" else []
 
     def withheld_count(self, table: str, business_id: int) -> int:

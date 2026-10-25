@@ -22,7 +22,7 @@ def _migrated() -> Engine:
 
 def _insert_header(engine: Engine, reason: str) -> None:
     with engine.begin() as connection:
-        connection.execute(text("INSERT INTO business (id, name) VALUES (1, 'b')"))
+        connection.execute(text("INSERT INTO business (id, name, language) VALUES (1, 'b', 'en')"))
         connection.execute(
             text(
                 "INSERT INTO stock_withdrawal (business_id, reason, withdrawn_on, recorded_at) "

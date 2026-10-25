@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter, type InitialEntry } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { SHOWN_EN } from '../../test/shownLanguage'
 import { inAppState } from '../../components/inAppState'
 import FlashProvider from '../../flash/FlashProvider'
 import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo, relative } from '../../routes'
@@ -25,7 +26,7 @@ import VarietiesLayout from './VarietiesLayout'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })

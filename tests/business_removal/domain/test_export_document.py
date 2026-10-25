@@ -87,7 +87,7 @@ SCHEMA = Schema(
     )
 )
 
-BUSINESS = Business(1, "La Flor")
+BUSINESS = Business(1, "La Flor", "es")
 EXPORTED_AT = datetime(2026, 10, 3, 12, 0, 0)
 
 
@@ -287,3 +287,11 @@ def test_no_password_hash_or_withheld_table_ever_reaches_the_document() -> None:
     user = document["kinds"]["app_user"][0]
     assert "password_hash" not in user
     assert "business_id" not in user
+
+
+def test_the_header_carries_the_business_s_id_name_and_language() -> None:
+    document = build_document(
+        Business(1, "La Flor", "de"), SCHEMA, {"app_user": [], "customer": []}, EXPORTED_AT
+    )
+
+    assert document["business"] == {"id": 1, "name": "La Flor", "language": "de"}
