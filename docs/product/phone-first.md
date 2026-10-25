@@ -18,7 +18,7 @@ Used at four moments:
 - Drawing as guide (rule 1): `DESIGN_STANDARDS.md`.
 - Phone first (rule 2): `DESIGN_STANDARDS.md`.
 - The primary user (rule 3) and the priority line: `BRIEF.md`, "Problem and who has it".
-- Assume nothing (criterion 4): `DESIGN_STANDARDS.md`, section "Assume nothing", and `BRIEF.md`, next to the primary user and the priority line. Both state its test in identical wording. The PM decides borderline findings with criterion 4's test, as for rule 1. The owner is asked only when the PM cannot tell whether a choice belongs to the business or to the product.
+- Assume nothing (criterion 4): `DESIGN_STANDARDS.md`, section "Assume nothing" (authoritative, including how a reviewer tells an extension from the new work's own assumption), and `BRIEF.md`, next to the primary user and the priority line. Both state its test in identical wording. The PM decides borderline findings with criterion 4's test, as for rule 1. The owner is asked only when the PM cannot tell whether a choice belongs to the business or to the product.
 - Icon and text rule, attention icon, tappable notice, design capture: `DESIGN_STANDARDS.md`, the authoritative copy.
 - Mobile standard: `CODING_STANDARDS.md` §10 "Phone", pointed to from `DESIGN_STANDARDS.md`.
 - Mobile check (phone rows, offender lists, growth conditions): `docs/product/mobile-check.md` and `docs/product/gate.md`.
@@ -29,7 +29,10 @@ Used at four moments:
   - Their rule text is unchanged, and each opens with a line naming `DESIGN_STANDARDS.md` as authoritative and saying the file is removed when #295 lands.
   - Any change to either rule is made in `DESIGN_STANDARDS.md` and copied identically into the temporary copy.
 - Once #295 lands, a follow-up task deletes both copies and points every citation to `DESIGN_STANDARDS.md`.
-- Criterion 4 applies to new scoping, design and review. It does not reclassify what exists: the brief's current constraints describe where the first businesses start, the existing assumptions are swept in #330, and the customizable model is #318. When new work extends an existing hard-coded choice, the test applies to the new part only. The finding is recorded and does not block on #330.
+- Criterion 4 applies to new scoping, design and review. It does not reclassify what exists: the brief's current constraints describe where the first businesses start, the existing assumptions are swept in #330, and the customizable model is #318.
+  - New work extends an existing choice when it reuses, unchanged, a word, unit or option list that `CONTEXT.md`, `BRIEF.md` or the code already fixes for every business (for example a new field in grams or whole pesos, or another "cash or transfer" choice). That finding is recorded as a review comment linking #330 (and #318 when the customizable model is what is missing), and the change merges; it does not wait for the sweep.
+  - Anything the new work adds to or changes in such a choice (a further fixed option, a new unit next to grams), or that appears in none of `CONTEXT.md`, `BRIEF.md` or the code, is the new work's own assumption. Its finding blocks the merge like any finding: before merge, the choice becomes a setting with a neutral default, or the PM rules it borderline and decides with criterion 4's test.
+  - When the reviewer cannot tell which case applies, they ask the PM before merge, and the PM decides.
 
 ## Success criteria
 
@@ -39,6 +42,7 @@ Used at four moments:
 4. The design rules have one home in `DESIGN_STANDARDS.md`, with no copy left in `docs/product/` once the post-#295 follow-up merges. Glossary entries stay and point there.
 5. Every open "differs from the drawing" follow-up, design-capture review follow-ups included, has been reviewed against rule 1. The ones it makes moot are closed with a note quoting rule 1. The PM decides borderline ones with the same test. The rest stay open.
 6. The four criteria read together, in the same order and with the same numbers, in `BRIEF.md` and `DESIGN_STANDARDS.md`. Criterion 4's test is stated in both with its verdict, and a role can apply it to a concrete case (product type, units, currency, payment methods, pricing rules, channels, and so on) without asking the PM.
+7. A reviewer can tell from one diff whether a criterion 4 finding extends an existing choice (recorded, merges) or is the new work's own assumption (blocks), using the test in `DESIGN_STANDARDS.md` "Assume nothing".
 
 ## Metrics
 
@@ -55,8 +59,11 @@ Used at four moments:
 - Closed follow-ups carrying a note quoting rule 1: 100%.
 - Borderline cases left undecided: 0.
 - Criterion 4's test reads identically in `BRIEF.md` and `DESIGN_STANDARDS.md`: true.
+- The extension test reads identically in `DESIGN_STANDARDS.md` "Assume nothing" and this file's Rollout: true.
 - Wording in `BRIEF.md`, `DESIGN_STANDARDS.md`, `CONTEXT.md` or this file that presents the brief's current constraints as rules for new work: 0.
 - New PRDs, designs or reviews after criterion 4 lands that fix a word, unit, field, option list or default for every business without a finding: target 0.
+- Changes merged with an unresolved criterion 4 finding on an assumption of their own: 0.
+- Criterion 4 findings on extensions of existing hard-coded choices recorded without a link to #330: 0.
 - Ready-made business-type presets introduced: 0.
 
 ## Out of scope
