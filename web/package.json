@@ -10,7 +10,8 @@
     "lint": "oxlint --deny-warnings",
     "test": "vitest run",
     "preview": "vite preview",
-    "e2e": "sh scripts/e2e.sh"
+    "e2e": "sh scripts/e2e.sh",
+    "i18n:baseline": "node scripts/i18n/baseline.mjs"
   },
   "dependencies": {
     "@fontsource/plus-jakarta-sans": "^5.3.0",

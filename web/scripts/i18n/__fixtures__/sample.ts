@@ -4,7 +4,7 @@
 import { baselineArgs, counted } from '../../../src/copy/baselineArgs.ts'
 import type * as Self from './sample.ts'
 
-export const LANGUAGE: 'en' = 'en'
+export const LANGUAGE = 'en' as const
 export const TITLE = 'Sample title'
 export const LIMITED_COPY: readonly string[] = []
 export const LONG_REFUSALS: readonly string[] = []
