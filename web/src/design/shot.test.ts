@@ -103,6 +103,14 @@ describe('coversScreen', () => {
     expect(coversScreen([fixed({ left: 0, top: 0, right: 389, bottom: 844 })], PHONE)).toBe(false)
   })
 
+  it('clips the rect to the viewport on every side before measuring it', () => {
+    // Raw size would pass on each of these; only the part inside the viewport counts.
+    expect(coversScreen([fixed({ left: -300, top: 0, right: 200, bottom: 844 })], PHONE)).toBe(false)
+    expect(coversScreen([fixed({ left: 100, top: 0, right: 600, bottom: 844 })], PHONE)).toBe(false)
+    expect(coversScreen([fixed({ left: 0, top: -500, right: 390, bottom: 300 })], PHONE)).toBe(false)
+    expect(coversScreen([fixed({ left: 0, top: 700, right: 390, bottom: 1700 })], PHONE)).toBe(false)
+  })
+
   it('is false with no fixed elements', () => {
     expect(coversScreen([], PHONE)).toBe(false)
   })
@@ -133,6 +141,20 @@ describe('sizesChanged', () => {
   it('returns nothing when no size changed', () => {
     const s = snap([['div.a', 0, 10, 10]], { 'div.a': 1 })
     expect(sizesChanged(s, s)).toStrictEqual([])
+  })
+
+  it('never lets a flag overwrite the path, ordinal, before, after or kind of an entry', () => {
+    const before: Snapshot = {
+      entries: [{ path: 'div.a', ordinal: 0, width: 1, height: 1, before: true, after: 'x', kind: 'y' }],
+      counts: { 'div.a': 1 },
+    }
+    const after: Snapshot = {
+      entries: [{ path: 'div.a', ordinal: 0, width: 1, height: 2 }],
+      counts: { 'div.a': 1 },
+    }
+    expect(sizesChanged(before, after)).toStrictEqual([
+      { path: 'div.a', ordinal: 0, before: { width: 1, height: 1 }, after: { width: 1, height: 2 } },
+    ])
   })
 
   it('carries the flags of the entry through', () => {

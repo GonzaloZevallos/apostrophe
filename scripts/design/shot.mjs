@@ -38,7 +38,17 @@ export function coversScreen(fixedElements, viewport) {
 
 const keyOf = (entry) => `${entry.path}\u0000${entry.ordinal}`
 const sizeOf = (entry) => ({ width: entry.width, height: entry.height })
-const flagsOf = ({ path: _path, ordinal: _ordinal, width: _width, height: _height, ...flags }) => flags
+// Flags named like a field of the change itself are dropped, so they cannot shadow it.
+const flagsOf = ({
+  path: _path,
+  ordinal: _ordinal,
+  width: _width,
+  height: _height,
+  before: _before,
+  after: _after,
+  kind: _kind,
+  ...flags
+}) => flags
 
 // The elements whose size differs between two snapshots, matched on tag-and-class path plus
 // their ordinal among same-path elements in document order. An element on one side only has
@@ -50,20 +60,20 @@ export function sizesChanged(before, after) {
   for (const entry of before.entries) {
     const other = afterByKey.get(keyOf(entry))
     if (other === undefined) {
-      changes.push({ path: entry.path, ordinal: entry.ordinal, before: sizeOf(entry), after: null, ...flagsOf(entry) })
+      changes.push({ ...flagsOf(entry), path: entry.path, ordinal: entry.ordinal, before: sizeOf(entry), after: null })
     } else if (entry.width !== other.width || entry.height !== other.height) {
       changes.push({
+        ...flagsOf(entry),
         path: entry.path,
         ordinal: entry.ordinal,
         before: sizeOf(entry),
         after: sizeOf(other),
-        ...flagsOf(entry),
       })
     }
   }
   for (const entry of after.entries) {
     if (!beforeKeys.has(keyOf(entry))) {
-      changes.push({ path: entry.path, ordinal: entry.ordinal, before: null, after: sizeOf(entry), ...flagsOf(entry) })
+      changes.push({ ...flagsOf(entry), path: entry.path, ordinal: entry.ordinal, before: null, after: sizeOf(entry) })
     }
   }
   const paths = new Set([...Object.keys(before.counts), ...Object.keys(after.counts)])
