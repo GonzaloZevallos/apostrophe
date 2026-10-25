@@ -1055,3 +1055,39 @@ def test_main_takes_its_business_day_from_the_clock_it_is_given(
     assert "Writable: yes" in capsys.readouterr().out
     assert main(argv, clock=MovableClock(datetime(2025, 12, 31, 12, 0, tzinfo=UTC))) == 0
     assert "Writable: no" in capsys.readouterr().out
+
+
+def test_an_invalid_forced_language_prints_only_refused_invalid_setting(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("APOSTROPHE_SECRET_KEY", "cli-secret")
+    monkeypatch.setenv("APOSTROPHE_DATABASE_URL", f"sqlite:///{tmp_path / 'apostrophe.db'}")
+    monkeypatch.setenv("APOSTROPHE_FORCED_LANGUAGE", "de")
+
+    assert main(["1", str(tmp_path / "sheet.xlsx")]) == 1
+
+    captured = capsys.readouterr()
+    assert captured.err == "refused: InvalidSetting\n"
+    assert captured.out == ""
+    assert not (tmp_path / "apostrophe.db").exists()
+
+
+def test_a_refusal_the_translator_cannot_render_prints_the_fixed_english_line(
+    operator_text_en: OperatorText,
+) -> None:
+    broken = Settings("k", locales_dir=Path(__file__).resolve().parents[1] / "fixtures" / "locales")
+    out, err = io.StringIO(), io.StringIO()
+    engine = make_engine("sqlite://")
+
+    code = run(
+        ["1", "missing.xlsx"],
+        engine=engine,
+        clock=MovableClock(datetime(2026, 10, 2, 18, 0, tzinfo=UTC)),
+        out=out,
+        err=err,
+        text=broken.operator_translator(),
+    )
+
+    assert code == 1
+    assert err.getvalue().startswith("refused: ")
+    assert "\n" not in err.getvalue().rstrip("\n")

@@ -1,5 +1,6 @@
-from app.shared.copy import OperatorText
 from babel.support import Translations
+
+from app.shared.copy import OperatorText
 
 
 def use() -> object:
