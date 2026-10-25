@@ -4,8 +4,15 @@ import {
   coversScreen,
   fitsViewport,
   grownHeight,
-  shotOptions,
+  layerMiss,
+  planShot,
+  regionMiss,
+  shotStepReason,
+  sizeRecordMiss,
   sizesChanged,
+  staleFiles,
+  viewportMovedReason,
+  viewportUnchanged,
   type FixedElement,
   type Snapshot,
 } from '../../../scripts/design/shot.mjs'
@@ -28,30 +35,6 @@ describe('grownHeight', () => {
 
   it('is the height of the document when it is taller', () => {
     expect(grownHeight({ scrollHeight: 2000 }, PHONE)).toBe(2000)
-  })
-})
-
-describe('shotOptions', () => {
-  const SHOT = { animations: 'disabled', caret: 'initial' }
-
-  it('asks for a plain shot of a page that fits its width', () => {
-    expect(shotOptions({ scrollWidth: 390, innerWidth: 390 })).toStrictEqual({ fullPage: false, ...SHOT })
-  })
-
-  it('asks for fullPage only for a page wider than its viewport', () => {
-    expect(shotOptions({ scrollWidth: 1200, innerWidth: 390 })).toStrictEqual({ fullPage: true, ...SHOT })
-  })
-
-  it('puts the clip first for a section and keeps the same rule', () => {
-    const clip = { x: 0, y: 10, width: 100, height: 50 }
-    const options = shotOptions({ scrollWidth: 390, innerWidth: 390 }, clip)
-    expect(options).toStrictEqual({ clip, fullPage: false, ...SHOT })
-    expect(Object.keys(options)[0]).toBe('clip')
-    expect(shotOptions({ scrollWidth: 400, innerWidth: 390 }, clip)).toStrictEqual({
-      clip,
-      fullPage: true,
-      ...SHOT,
-    })
   })
 })
 
@@ -228,5 +211,219 @@ describe('censusClass', () => {
     expect(censusClass({ layer: true, grown: true, wide: true })).toBe('layer')
     expect(censusClass({ layer: true, grown: false, wide: true })).toBe('layer')
     expect(censusClass({ layer: false, grown: true, wide: true })).toBe('grown')
+  })
+})
+
+describe('planShot', () => {
+  const metrics = { scrollWidth: 390, scrollHeight: 1699, innerWidth: 390, innerHeight: 844 }
+  const layer = fixed({ left: 0, top: 0, right: 390, bottom: 844 })
+  const bar = fixed({ left: 0, top: 784, right: 390, bottom: 844 })
+
+  it('is a layer, never grown, when a fixed element covers the screen', () => {
+    expect(planShot(metrics, [bar, layer], PHONE)).toStrictEqual({ mode: 'layer' })
+  })
+
+  it('grows to the height of the document otherwise, a bar included', () => {
+    expect(planShot(metrics, [bar], PHONE)).toStrictEqual({ mode: 'grow', height: 1699 })
+    expect(planShot(metrics, [], PHONE)).toStrictEqual({ mode: 'grow', height: 1699 })
+  })
+
+  it('keeps the current height when the page already fits', () => {
+    expect(planShot({ ...metrics, scrollHeight: 300 }, [], PHONE)).toStrictEqual({ mode: 'grow', height: 844 })
+  })
+})
+
+describe('layerMiss', () => {
+  const inside = { left: 0, top: 0, right: 390, bottom: 844 }
+  const container = (scrollTop: number) => ({ scrollTop })
+  const SIDE_REASON = /\((design|built)\)$/
+
+  it('passes a frame inside the viewport with nothing scrolled', () => {
+    expect(layerMiss(inside, PHONE, [], 'built')).toBeNull()
+    expect(layerMiss({ left: 0, top: 48, right: 390, bottom: 844 }, PHONE, [], 'design')).toBeNull()
+  })
+
+  it('misses a frame past the bottom, the right, the left or the top', () => {
+    const bottom = layerMiss({ ...inside, bottom: 845 }, PHONE, [], 'built')
+    expect(bottom).toBe('shot: layer frame outside the viewport (built)')
+    expect(layerMiss({ ...inside, right: 391 }, PHONE, [], 'design')).toBe('shot: layer frame outside the viewport (design)')
+    expect(layerMiss({ ...inside, left: -1 }, PHONE, [], 'built')).toMatch(/frame outside/)
+    expect(layerMiss({ ...inside, top: -1 }, PHONE, [], 'built')).toMatch(/frame outside/)
+  })
+
+  it('passes a list at its top, whether or not it overflows', () => {
+    expect(layerMiss(inside, PHONE, [container(0), container(0)], 'built')).toBeNull()
+  })
+
+  it('misses any element of the layer that is scrolled, whatever its overflow', () => {
+    const reason = layerMiss(inside, PHONE, [container(0), container(12)], 'built')
+    expect(reason).toBe("shot: a layer's content is scrolled (built)")
+    expect(reason).toMatch(SIDE_REASON)
+  })
+})
+
+describe('regionMiss', () => {
+  const fits = { scrollWidth: 390, scrollHeight: 844, innerWidth: 390, innerHeight: 844 }
+
+  it('passes a document that fits the viewport in both axes', () => {
+    expect(regionMiss(fits, undefined, 'built')).toBeNull()
+  })
+
+  it('misses a page wider than its viewport, on either side', () => {
+    expect(regionMiss({ ...fits, scrollWidth: 414 }, undefined, 'built')).toBe('shot: page wider than its viewport (built)')
+    expect(regionMiss({ ...fits, scrollWidth: 414 }, undefined, 'design')).toBe('shot: page wider than its viewport (design)')
+  })
+
+  it('misses a page still taller than its viewport', () => {
+    expect(regionMiss({ ...fits, scrollHeight: 2000 }, undefined, 'built')).toBe('shot: page taller than its viewport (built)')
+  })
+
+  it('passes a clip inside the viewport, however wide the document is', () => {
+    const clip = { x: 10, y: 20, width: 370, height: 800 }
+    expect(regionMiss({ ...fits, scrollWidth: 414 }, clip, 'design')).toBeNull()
+  })
+
+  it('does not look at the document behind a layer, which may scroll, but still checks a clip', () => {
+    const behind = { ...fits, scrollWidth: 414, scrollHeight: 1059 }
+    expect(regionMiss(behind, undefined, 'built', { layer: true })).toBeNull()
+    expect(regionMiss(behind, undefined, 'built', { layer: false })).toMatch(/wider/)
+    expect(regionMiss(behind, { x: 0, y: 0, width: 500, height: 10 }, 'design', { layer: true })).toMatch(/section outside/)
+  })
+
+  it('misses a clip that leaves the viewport', () => {
+    expect(regionMiss(fits, { x: 0, y: 0, width: 391, height: 100 }, 'design')).toBe('shot: section outside the viewport (design)')
+    expect(regionMiss(fits, { x: 0, y: 800, width: 100, height: 100 }, 'design')).toMatch(/section outside/)
+    expect(regionMiss(fits, { x: -1, y: 0, width: 100, height: 100 }, 'design')).toMatch(/section outside/)
+  })
+})
+
+describe('sizeRecordMiss', () => {
+  type Rec = { path: string; ordinal: number; top: number; width: number; height: number; pinned: boolean; same_node?: boolean }
+  const rec = (path: string, ordinal: number, top: number, width: number, height: number, over: Partial<Rec> = {}): Rec => ({
+    path,
+    ordinal,
+    top,
+    width,
+    height,
+    pinned: false,
+    same_node: true,
+    ...over,
+  })
+  const state = (entries: Rec[]): Snapshot => {
+    const counts: Record<string, number> = {}
+    for (const entry of entries) counts[entry.path] = (counts[entry.path] ?? 0) + 1
+    return { entries, counts }
+  }
+  const REASON = 'shot: the page changed when the viewport grew (built)'
+
+  it('passes growth with every top where it was', () => {
+    const before = state([rec('div.a', 0, 0, 390, 844), rec('div.b', 0, 100, 300, 50)])
+    const after = state([rec('div.a', 0, 0, 390, 1699), rec('div.b', 0, 100, 300, 50)])
+    expect(sizeRecordMiss(before, after, 'built')).toBeNull()
+  })
+
+  it('misses a child whose top moves', () => {
+    const before = state([rec('div.a', 0, 100, 300, 50)])
+    const after = state([rec('div.a', 0, 220, 300, 50)])
+    expect(sizeRecordMiss(before, after, 'built')).toBe(REASON)
+  })
+
+  it('lets a pinned bar move its top, and nothing else', () => {
+    const before = state([rec('nav.bar', 0, 784, 390, 60, { pinned: true })])
+    expect(sizeRecordMiss(before, state([rec('nav.bar', 0, 1639, 390, 60, { pinned: true })]), 'built')).toBeNull()
+    expect(sizeRecordMiss(before, state([rec('nav.bar', 0, 1639, 400, 60, { pinned: true })]), 'built')).toBe(REASON)
+    expect(sizeRecordMiss(before, state([rec('nav.bar', 0, 1639, 390, 40, { pinned: true })]), 'built')).toBe(REASON)
+  })
+
+  it('misses a width change and a height shrink', () => {
+    const before = state([rec('div.a', 0, 0, 300, 50)])
+    expect(sizeRecordMiss(before, state([rec('div.a', 0, 0, 320, 50)]), 'built')).toBe(REASON)
+    expect(sizeRecordMiss(before, state([rec('div.a', 0, 0, 300, 49)]), 'built')).toBe(REASON)
+  })
+
+  it('misses a replaced node', () => {
+    const before = state([rec('div.a', 0, 0, 300, 50)])
+    const after = state([rec('div.a', 0, 0, 300, 50, { same_node: false })])
+    expect(sizeRecordMiss(before, after, 'design')).toBe('shot: the page changed when the viewport grew (design)')
+  })
+
+  it('misses a count change, an element gained or lost', () => {
+    const before = state([rec('li.x', 0, 0, 5, 5)])
+    expect(sizeRecordMiss(before, state([rec('li.x', 0, 0, 5, 5), rec('li.x', 1, 5, 5, 5)]), 'built')).toBe(REASON)
+    expect(sizeRecordMiss(before, state([]), 'built')).toBe(REASON)
+  })
+
+  it('misses an element that grows while the document stays taller than the viewport, through regionMiss', () => {
+    const before = state([rec('div.a', 0, 0, 390, 844)])
+    const after = state([rec('div.a', 0, 0, 390, 1200)])
+    expect(sizeRecordMiss(before, after, 'built')).toBeNull()
+    const stuck = { scrollWidth: 390, scrollHeight: 2000, innerWidth: 390, innerHeight: 1200 }
+    expect(regionMiss(stuck, undefined, 'built')).toBe('shot: page taller than its viewport (built)')
+  })
+
+  it('carries no page text or number in its reason', () => {
+    const before = state([rec('div.secret-name', 0, 100, 300, 50)])
+    const after = state([rec('div.secret-name', 0, 999, 300, 50)])
+    expect(sizeRecordMiss(before, after, 'built')).not.toMatch(/secret|\d/)
+  })
+})
+
+describe('viewportUnchanged', () => {
+  it('is true for the same size and false for any other', () => {
+    expect(viewportUnchanged({ width: 390, height: 1699 }, { width: 390, height: 1699 })).toBe(true)
+    expect(viewportUnchanged({ width: 390, height: 1699 }, { width: 1, height: 1 })).toBe(false)
+    expect(viewportUnchanged({ width: 390, height: 1699 }, { width: 390, height: 844 })).toBe(false)
+    expect(viewportUnchanged({ width: 390, height: 1699 }, { width: 400, height: 1699 })).toBe(false)
+  })
+
+  it('has a fixed English reason naming only the side', () => {
+    expect(viewportMovedReason('design')).toBe('shot: the viewport changed during the shot (design)')
+    expect(viewportMovedReason('built')).toBe('shot: the viewport changed during the shot (built)')
+  })
+})
+
+describe('staleFiles', () => {
+  const listing = [
+    'Inicio.png',
+    'Inicio.design.png',
+    'Inicio.built.png',
+    'InicioCompu.design.png',
+    'InicioCompu.built.png',
+    'Ajustes.built.png',
+    'index.json',
+    'notes.txt',
+  ]
+
+  it("returns exactly the row's two side PNGs", () => {
+    expect(staleFiles(listing, ['Inicio']).sort()).toStrictEqual(['Inicio.built.png', 'Inicio.design.png'])
+  })
+
+  it('leaves another row, the sheet, index.json and a longer row name alone', () => {
+    const stale = staleFiles(listing, ['Inicio'])
+    expect(stale).not.toContain('InicioCompu.built.png')
+    expect(stale).not.toContain('Inicio.png')
+    expect(stale).not.toContain('index.json')
+    expect(stale).not.toContain('Ajustes.built.png')
+  })
+
+  it('returns only what is present, for every row about to run', () => {
+    expect(staleFiles(listing, ['InicioCompu', 'Ajustes', 'Gastos']).sort()).toStrictEqual([
+      'Ajustes.built.png',
+      'InicioCompu.built.png',
+      'InicioCompu.design.png',
+    ])
+    expect(staleFiles([], ['Inicio'])).toStrictEqual([])
+  })
+})
+
+describe('shotStepReason', () => {
+  it('names a timeout and the side', () => {
+    expect(shotStepReason('timeout', 'design')).toBe('shot: timed out taking the shot (design)')
+    expect(shotStepReason('timeout', 'built')).toBe('shot: timed out taking the shot (built)')
+  })
+
+  it('gives one reason for any other kind', () => {
+    expect(shotStepReason('error', 'design')).toBe('shot: could not take the shot (design)')
+    expect(shotStepReason('whatever', 'built')).toBe('shot: could not take the shot (built)')
   })
 })
