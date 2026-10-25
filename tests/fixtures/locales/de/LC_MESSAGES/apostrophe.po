@@ -28,3 +28,18 @@ msgid "fixture.items"
 msgid_plural "fixture.items_plural"
 msgstr[0] "%(n)s Ding"
 msgstr[1] "%(n)s Dinge"
+
+msgid "catalog.nothing_to_offer"
+msgstr "de: Nothing to offer for now."
+
+msgid "catalog.indica_line"
+msgstr "de: • {indica}% indica / {sativa}% sativa"
+
+msgid "catalog.aroma_line"
+msgstr "de: • Aroma/flavor: {aroma}"
+
+msgid "catalog.price_per_gram_line"
+msgstr "de: • Price per gram: {price}"
+
+msgid "catalog.bulk_line"
+msgstr "de: • From {grams}: {price} each"
