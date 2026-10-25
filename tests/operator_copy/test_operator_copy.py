@@ -103,6 +103,16 @@ def test_the_operator_language_de_changes_every_command_and_the_report(
         assert in_german != in_english, group
         assert any(MARK in line.text for line in german.of(group)), group
 
+    # Per command, not per group: the removal group also holds use-case lines the harness
+    # renders itself, which must not stand in for what `removal_cli.main` prints.
+    scenarios = {(line.group, line.scenario) for line in german.lines}
+    assert scenarios == {(line.group, line.scenario) for line in english.lines}
+    for group, scenario in sorted(scenarios):
+        german_lines = [line for line in german.of(group) if line.scenario == scenario]
+        english_lines = [line for line in english.of(group) if line.scenario == scenario]
+        assert any(MARK in line.text for line in german_lines), (group, scenario)
+        assert not any(MARK in line.text for line in english_lines), (group, scenario)
+
 
 def test_under_the_test_locale_no_letter_is_left_outside_a_segment_the_data_or_a_token(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, forced_test_locale: None
