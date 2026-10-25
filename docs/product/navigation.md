@@ -93,7 +93,7 @@ Success criteria, the phone layout (GH-319). They are checked at 320, 360 and 39
 20. **Nothing typed or found is lost, and the computer is untouched.**
     - Rotating the phone or resizing across 900 px keeps what was typed.
     - Closing a sheet opened from a scrolled list returns to the same scroll position.
-    - Tapping outside a sheet closes it only when nothing was changed. It never discards work and never adds a confirmation.
+    - Tapping outside a sheet never discards work and never adds a confirmation. Where a visible area lies outside it, a tap there closes it only when nothing was changed. A full-screen phone sheet has no outside: the safe-area strip by the status bar never counts as one.
     - Computer layouts come out with unchanged captures, ADR-0044's price modal included.
 
 ## Behaviour
@@ -211,7 +211,10 @@ Below 900 px only. Every rule here is scoped under that breakpoint. Computer lay
   - With nothing changed, the sheet closes and the seller is back where they opened it from, at the same scroll position.
   - With something typed, the form's existing leave confirmation appears, exactly as before.
   - The inline edits on a variety's page close their sheet first and never jump over the page.
-- **Tap outside**: it is the only quiet exit. It closes an untouched sheet and does nothing on a touched one. It never opens a dialog, and no form gains a new confirmation.
+- **Tap outside**:
+  - On the phone a sheet fills the screen and has no outside. The safe-area strip by the status bar does not count as outside: a tap there does nothing, whether the sheet is touched or not. No gap or visible backdrop is added to create an outside. "Close" and back are a phone sheet's only exits.
+  - Where a visible area does lie outside a dialog (the computer's existing dialogs), a tap there closes an untouched dialog and does nothing on a touched one. Those computer frames keep their backdrop behaviour exactly as it is today; this part does not edit them.
+  - Anywhere, tapping outside never discards work, never opens a dialog, and no form gains a new confirmation.
 - **What is behind a sheet**:
   - Opened from inside the app, the screen behind is the one the form was opened from. An in-page sheet (a variety's inline edits, editing an expense) has its own screen behind it.
   - Opened by a direct address, a routed form shows its sheet over the parent from the back-with-no-history table. That parent is inert and hidden from assistive technology, with no chrome, no heading and no ids.
@@ -339,7 +342,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   - a record that is gone follows the "That is gone." rule.
 - **Phone layout (GH-319)**:
   - Every phone sheet is rendered by the one shared `Sheet`. No form defines its own backdrop, Close placement, pinned-action layout or scroll lock.
-  - A sheet's tap-outside and its Close read the same `touched` value: the `dirty` the host already passes to `useLeaveGuard`.
+  - Wherever a sheet has an outside, its tap-outside and its Close read the same `touched` value: the `dirty` the host already passes to `useLeaveGuard`. On the phone's full-screen sheet nothing outside it closes it.
   - "Keyboard open" is decided only in `useVisualViewport` (ADR-0028 as amended).
   - The phone rules never edit ADR-0044's `PriceFrame` dialog branch or `CobroFrame`'s computer branch.
   - Each step leaves the Mobile check green, deletes every offender entry it turns green, keeps registry keys and adds no entry outside gate.md's trade or new-row rules.
@@ -413,7 +416,8 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - **Nothing lost (criterion 20)**:
   - Viewport-flip tests in the price form and in Record payment keep the typed text.
   - Close from a scrolled list returns to the same offset.
-  - `Sheet` unit tests show that tapping outside closes an untouched sheet and does nothing on a touched one.
+  - `Sheet` unit tests, wherever a backdrop is drawn: tapping it closes an untouched sheet and does nothing on a touched one.
+  - A `Sheet` unit test on the phone: a tap on the top safe-area strip leaves the sheet open, touched or untouched.
   - The existing unsaved-changes tests pass unedited.
 - **Computer untouched (criterion 20)**: the computer captures of touched screens are unchanged. `PriceFrame`'s dialog branch and `CobroFrame`'s computer branch have 0 changed lines.
 - **Offender lists (GH-319)**: 0 entries added outside gate.md's trade or new-row rules. Each new assertion is shown failing once on a deliberately regressed input in the PR, and that input is not committed.
@@ -450,3 +454,4 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - Converting Change password, the expense categories editor or New sale's new-customer overlay into sheets.
 - Any computer layout change from the phone layout; changing the timing or dismissal of toasts; changing New sale's tap count or what Save does before the payment choice.
 - Disabling Save in New sale; a scroll-and-highlight on Save.
+- A tap-outside area on the phone's full-screen sheet: a gap, a visible backdrop strip, or the safe-area strip acting as a close target.

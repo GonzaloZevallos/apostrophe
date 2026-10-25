@@ -502,5 +502,5 @@ The one language recorded on a business. A new business gets it from the accepti
 _Avoid_: locale, display language, preferred language, business locale
 
 **Sheet**:
-Below 900 px, how a form is drawn: full screen, a modal dialog with "Close" at the top and its main action pinned at the bottom, drawn by one shared component, over the screen it was opened from (or over its parent on a direct address). Back is the same as Close, and tapping outside closes it only when nothing was changed. On a computer the same form keeps its own frame. In the app: no word of its own.
+Below 900 px, how a form is drawn: full screen, a modal dialog with "Close" at the top and its main action pinned at the bottom, drawn by one shared component over the screen it was opened from (or over its parent on a direct address). Its only exits are "Close" and the phone's back gesture, which are the same action; it has no outside, so nothing around it (not even the safe-area strip by the status bar) closes it. On a computer the same form keeps its own frame. In the app: no word of its own.
 _Avoid_: modal, overlay, drawer, bottom sheet, popup, capa
