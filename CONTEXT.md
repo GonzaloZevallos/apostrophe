@@ -180,7 +180,7 @@ _In the app_: Expense
 _Avoid_: cost, outflow, bill
 
 **Expense category**:
-A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A business opened after the move to English starts with "Growing supplies", "Packaging", "Shipping and transport" and "Other"; earlier businesses keep the Spanish defaults they received. A category cannot be removed while it has expenses.
+A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A new business starts with four defaults in its stored language at opening (in English "Growing supplies", "Packaging", "Shipping and transport" and "Other"), which a language change never renames; earlier businesses keep the defaults they received, Spanish ones included. A category cannot be removed while it has expenses.
 _Avoid_: type, tag, label, account, cost center
 _In the app_: Category
 
@@ -202,7 +202,7 @@ _Avoid_: menu, price list, flyer
 _In the app_: Catalog
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram channel chat by its own bot, edited in place whenever the catalog text changes and never posted again in that chat. When nothing qualifies, it shows the header, "Nothing to offer for now." and the footer.
+The catalog message pinned in the business's Telegram channel chat by its own bot, edited in place whenever the catalog text changes and never posted again in that chat. When nothing qualifies, it shows the header, the empty line ("Nothing to offer for now." in English) and the footer; its fixed lines follow the business's shown language.
 _Avoid_: post, broadcast
 _In the app_: Pinned message
 
@@ -260,7 +260,7 @@ One line of free text describing a variety's aroma and flavour for the catalog, 
 _Avoid_: description, notes, flavor profile
 
 **Catalog header and footer**:
-A business's own text opening and closing the catalog, multi-line and up to 500 characters each; a blank one is left out. A business opened after the move to English starts with "🌿 **CATALOG** 🌿" and "📩 Questions and orders by private message."; earlier businesses keep what they stored. They are edited only in Settings.
+A business's own text opening and closing the catalog, multi-line and up to 500 characters each; a blank one is left out. A new business starts with the defaults in its stored language at opening (in English "🌿 **CATALOG** 🌿" and "📩 Questions and orders by private message."); from then on they are its own data, edited only in Settings, and a language change never rewrites them. Earlier businesses keep what they stored.
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:

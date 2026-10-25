@@ -24,6 +24,12 @@ with expenses within reach for the weekly or monthly look and every setting in o
 job, navigation.md: served here by "+ Add expense" in More, a way to record from Expenses
 itself, Expenses as the one monthly view, and categories in Settings.)
 
+**When** my business works in a language other than English, **I want** a business opened
+in that language to start with its expense categories already in it, **so I** have nothing
+to retype, while nothing changes for a business in English. (Shared with stored-language.md
+and catalog.md: served here by the default categories following the stored language at
+opening.)
+
 In practice, these jobs come together like this. The seller pays for something that isn't
 flower between orders, or sits down for the weekly or monthly look at spending. They load
 the expense in at most 2 taps from wherever they are. They find any month's expenses, with
@@ -48,6 +54,9 @@ Success criteria:
    creating a category inside the expense form.
 6. **It looks as designed.** More and Expenses, phone and computer, match
    `docs/product/design-system/pantallas/`, judged by eye.
+7. **Defaults in the business's language.** A new business opened in a language other
+   than English starts with its four default categories in that language. In English they
+   are byte-identical to the baseline, and a later language change never rewrites them.
 
 ## Behaviour
 
@@ -57,11 +66,17 @@ Success criteria:
   - trimmed, inner spaces collapsed, up to 60 characters;
   - unique within a business whatever the case or spacing;
   - two businesses may each have a category with the same name.
-- **Default categories**: "Growing supplies", "Packaging", "Shipping and transport" and
-  "Other".
-  - A new business opens with them.
-  - A business opened before expenses existed receives them once, when the app is
-    upgraded.
+- **Default categories**: four, in the business's stored language at opening
+  (stored-language.md).
+  - In English: "Growing supplies", "Packaging", "Shipping and transport" and "Other",
+    byte-identical to the baseline `en.baseline.json`.
+  - A new business opens with them, stored as its own categories. A stored language is
+    never the test locale, so they are never written in `en-XA`.
+  - A later language change never renames them: they are the seller's own data and are
+    never translated.
+  - A business opened before expenses existed received them once, when the app was
+    upgraded. Businesses that existed before the defaults followed the language keep
+    exactly what they have (Spanish names included), with no backfill.
   - Each business receives the defaults exactly once. A default it removes is never
     recreated.
 - **Add**: a duplicate name is refused, with the reason.
@@ -168,6 +183,9 @@ Success criteria:
 - A link from Expenses to Settings → Expense categories appears only once that group
   exists. No link may point at a screen that doesn't exist, and no seller may lose
   category management.
+- The expenses domain holds no default names and imports no translation library. The new
+  business's opening takes the defaults through the `BusinessDefaults` port
+  (`for_language(language)`), with the stored language, never the shown one.
 
 ## Metrics
 
@@ -214,6 +232,12 @@ Read from the data and from tests; there is no telemetry.
   redirect, each tested.
 - **M12, looks as designed (criterion 6)**: before and after comparisons from
   `scripts/design/compare.sh`, phone and computer, attached to the PR and judged by eye.
+- **M13, defaults follow the language (criterion 7)**: a business opened in `en` gets the
+  four categories byte-identical to `en.baseline.json`; one opened in a fixture `de` gets
+  `de`'s four; after either business changes language, its categories are unchanged; rows
+  changed in existing businesses: 0; businesses opened under the forced `en-XA` with
+  categories in `en-XA`: 0. Under the forced `en-XA`, the defaults rendered from the
+  defaults source leave no letter after removing `⟦…⟧` segments. 100% passing.
 
 ## Out of scope
 
@@ -226,3 +250,5 @@ Read from the data and from tests; there is no telemetry.
 - Archiving a category.
 - Managing categories from Expenses.
 - Building Settings or its groups: navigation.md and their own issues.
+- Translating or renaming a business's stored categories when its language changes, or
+  backfilling defaults in another language for existing businesses.

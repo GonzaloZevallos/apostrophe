@@ -5,6 +5,7 @@ The text that offers today's sellable varieties to a business's customers. It is
 - its current price today (varieties.md);
 - its stock status right now (stock.md);
 - the business's pricing settings (pricing-settings.md), for the bulk line;
+- the business's shown language, for the fixed lines (stored-language.md);
 
 between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Share and Copy stay for sending it by hand. An archived variety (varieties.md) is never part of it.
 
@@ -27,6 +28,8 @@ Setting the catalog attributes and the header and footer is the setup step of th
 
 **When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by leaving archived varieties out of the text and of what does not go out; defined in varieties.md.)
 
+**When** my business works in a language other than English, **I want** my customers' catalog to speak that language from start to end, including the fixed lines and not just the header and footer I typed, and a business opened in that language to start with its header, footer and expense categories already in it, **so** what customers read is consistent and I have nothing to translate or retype. While my business is in English, nothing I or my customers see changes at all. (Shared with stored-language.md: served here by the fixed lines following the shown language and the header and footer defaults following the stored language at opening.)
+
 Success criteria:
 
 1. **Exact text**: the copied text follows the spreadsheet's format exactly.
@@ -43,13 +46,15 @@ Success criteria:
 4. **No guessing why**: every unarchived variety that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
 5. **Businesses never mix** (ADR-0004): attributes, header and footer belong to one business. The text and the list never include another business's data.
 6. **Customers never see the VIP price**: the text never carries it, whatever the switches.
+7. **One language from start to end**: for a business whose shown language is not English, every fixed line of the text (and the pinned catalog's empty line) is in that language, on the catalog screen, Test it, Publish and upkeep alike. A business in English in the same run stays English.
+8. **English unchanged**: for a business in English, the text and the new-business header and footer are byte-identical to the frozen baseline (`en.baseline.json`). Money and grams formats are the same in every language.
 
 ## Behaviour
 
 ### Catalog attributes, per variety
 
 - **Emoji**: optional, exactly one emoji. Plain text or more than one emoji is refused. With none, the name line has no stand-in emoji.
-- **Indica share**: optional whole number from 0 to 100; sativa is the rest. It reads "• N% indica / (100−N)% sativa", including the 0 and 100 edges. With none, the line is left out.
+- **Indica share**: optional whole number from 0 to 100; sativa is the rest. In English it reads "• N% indica / (100−N)% sativa", including the 0 and 100 edges. With none, the line is left out.
 - **Aroma/flavor**: optional.
   - It is trimmed, and every run of whitespace, line breaks included, collapses to one space.
   - It holds up to 200 characters.
@@ -66,9 +71,11 @@ Success criteria:
 
 - **Shape**: free multi-line text, up to 500 characters each. Inner line breaks are kept; leading and trailing blank lines are trimmed.
 - **Blank**: allowed. A blank header or footer is left out of the text.
-- **Defaults**: header "🌿 **CATALOG** 🌿" and footer "📩 Questions and orders by private message.".
-  - A new business receives them when it opens.
-  - A business that existed when the catalog shipped received them once, on upgrade.
+- **Defaults**: a new business is opened with a default header and footer in its stored language at opening (stored-language.md), stored as its own data.
+  - In English they are header "🌿 **CATALOG** 🌿" and footer "📩 Questions and orders by private message.", byte-identical to the baseline.
+  - A stored language is never the test locale, so defaults are never written in `en-XA`, even while the operator's forced language is on.
+  - A later language change never rewrites them: from opening they are the seller's own data, never translated.
+  - A business that existed when the catalog shipped received the English defaults once, on upgrade; every business that existed before this change keeps exactly what it stored, with no backfill.
   - There is no "restore default".
 - **Where**: they are edited only in Settings → Catalog message (navigation.md).
   - **Temporary exception**: until that group exists, they are edited, exactly as before, in the temporary place reached only from the catalog screen (see On screen). It is removed when Settings ships.
@@ -77,16 +84,23 @@ Success criteria:
 
 - **Layout**: header, then one block per qualifying variety sorted by name, then footer. There is one blank line between sections, and a blank header or footer leaves no extra blank line.
 - **Who qualifies**: a variety that is unarchived, shown, has a current price today in Argentina time and has stock above zero. Low stock qualifies. An archived variety never qualifies, whatever its flag, price or stock.
-- **A variety block**:
+- **A variety block** (English wording shown):
   - `<emoji> **<name>**`, or `**<name>**` with no emoji;
   - `• N% indica / M% sativa`, only with a share;
   - `• Aroma/flavor: <aroma>`, only with an aroma;
-  - a line with the list price per gram;
-  - a line with the bulk minimum in grams and the bulk price each. It shows only when the current price has a bulk price and Bulk price is on. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).
+  - `• Price per gram: <money>`, the list price per gram;
+  - `• From <grams>: <money> each`, the bulk minimum in grams and the bulk price each. It shows only when the current price has a bulk price and Bulk price is on. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).
+- **Fixed lines and language**:
+  - The fixed lines are the share line, the aroma/flavor line, the price per gram line, the bulk line, and the pinned catalog's empty line "Nothing to offer for now." (pinned-catalog.md).
+  - They come from the copy module in the business's shown language: the operator's forced language when one is set, otherwise the stored language (stored-language.md). The language is worked out when the text is built, on every open of the catalog screen and by every Test it, Publish and upkeep run.
+  - When a line shows, and the data it carries, do not depend on the language.
+  - The seller's own data is never translated: names, emoji, aroma, header and footer stay as stored.
+  - Money and grams formats are the same in every language.
+  - In English every fixed line is byte-identical to the baseline `en.baseline.json`.
 - **VIP price**: never in the text, whatever the switches (pricing-settings.md).
 - **Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`.
 - **Stock in the text**: none. It never mentions grams, stock or low stock.
-- **Freshness**: the text is computed on every open from the data and the pricing settings as they stand. Nothing is stored, and the screen does not update itself while open. A save of Prices that changes either switch triggers the pinned catalog's upkeep (pinned-catalog.md).
+- **Freshness**: the text is computed on every open from the data, the pricing settings and the shown language as they stand. Nothing is stored, and the screen does not update itself while open. A save of Prices that changes either switch, and a change of the stored language, trigger the pinned catalog's upkeep (pinned-catalog.md, stored-language.md).
 - **Nothing qualifies**: there is no text, and the screen says nothing is in the catalog today. The pinned catalog sends its own empty message instead (pinned-catalog.md).
 
 ### Bold markers
@@ -142,6 +156,11 @@ Success criteria:
 - Every catalog table carries `business_id`, and the business comes from the session.
 - Every route joins the isolation sweep, the gated-route test and the ownership migration test.
 - No header, footer, aroma or catalog text goes to logs, the console or browser storage.
+- **Language**:
+  - The catalog domain imports no translation library. The fixed lines reach it as a plain `CatalogWords` value through `CatalogWordsSource`, a port in the catalog's application layer.
+  - The business's language reaches the catalog only through `CatalogLanguage`, implemented in the catalog's own adapter over accounts. That adapter is the only place the forced override is applied.
+  - Upkeep reads the language in its own session, after the triggering commit.
+  - No route, query or body names a business or a language, and no request input selects `en-XA`.
 
 ## Metrics
 
@@ -166,15 +185,20 @@ Success criteria:
 - **Temporary place**: while Settings's groups do not exist, a front test shows the bot settings and the header and footer save from it, both links open it, it shows no pin status and no Publish, and no tab, More or Settings entry points to it.
 - **No curl (criterion 3)**: the end-to-end front run edits a variety's attributes on its page and the header and footer (in Settings, or the temporary place until it exists), opens Varieties → "Send catalog" and taps Copy. The clipboard equals the API's text.
 - **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen varieties, and opens in at most 2 taps from any tab root.
-- **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business. One business's switches never change another's text.
+- **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business. One business's switches or language never change another's text.
 - **No echo**: no refusal or log line contains the header, footer, aroma or emoji typed; after a full front run, the console and browser storage hold no catalog text.
 - **Design**: `scripts/design/compare.sh` runs before and after for the catalog screen, phone and computer, attached to the PR.
+- **English unchanged (criterion 8)**: every moved fixed line and the header and footer defaults render in English exactly as `en.baseline.json`; the reference set plus the empty case shows 0 differences from before the move.
+- **Follows the language (criterion 7)**: with a fixture `de` (`selectable_languages=("en","de")`), a business stored as `de` gets `de`'s fixed lines from `GET /catalog`, Test it, Publish and the Ticker's start-of-day run, while a business in `en` in the same run stays byte-identical to the baseline. Domain unit tests build `CatalogWords` by hand. 100% passing.
+- **No leftover English**: under the forced `en-XA`, the catalog text, the pinned empty text and the defaults rendered from the defaults source contain, after removing `⟦…⟧` segments, stored data and money/grams tokens, 0 letters; a planted literal fails the check.
 
 ## Out of scope
 
 - The Telegram bot (test send, publishing, pinning, token and chats): pinned-catalog.md.
 - A custom variety order.
 - Restoring the default header or footer.
+- Rewriting a business's stored header or footer when its language changes, or backfilling defaults for existing businesses.
+- Translating the seller's own data.
 - Stock figures in the text.
 - Escaping or refusing a seller's own `**` markers.
 - Live updates between partners while the screen is open.
