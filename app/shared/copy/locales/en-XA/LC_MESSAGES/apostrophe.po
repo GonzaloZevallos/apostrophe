@@ -7,3 +7,117 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: scripts/pseudo_locale.py\n"
+
+msgid "operator.accounts.no_user"
+msgstr "⟦ňö ûšèř ḟöř ťĥåť èṁåìł·~·~·~·~⟧"
+
+msgid "operator.accounts.valid_once"
+msgstr "⟦Ṽåłìđ öňçè, ûňťìł {expires_at} ÛŤÇ.·~·~·~·~·⟧"
+
+msgid "operator.accounts.refused"
+msgstr "⟦řèḟûšèđ: {name}·~·~⟧"
+
+msgid "operator.accounts.help_invite_business"
+msgstr "⟦ṗřìňť å łìňķ ťĥåť öṗèňš öňè ňèŵ ƀûšìňèšš·~·~·~·~·~·~·~⟧"
+
+msgid "operator.accounts.help_reset_password"
+msgstr "⟦ṗřìňť å łìňķ ťĥåť łèťš öňè ûšèř çĥööšè å ňèŵ ṗåššŵöřđ·~·~·~·~·~·~·~·~·~·⟧"
+
+msgid "operator.import.dry_run"
+msgstr "⟦Ðřý řûň: {business_name}·~·~⟧"
+
+msgid "operator.import.import"
+msgstr "⟦Ìṁṗöřť: {business_name}·~·⟧"
+
+msgid "operator.import.counts_heading"
+msgstr "⟦Çöûňťš:·~·⟧"
+
+msgid "operator.import.count_varieties"
+msgstr "⟦  Ṽåřìèťìèš: {count}·~·~·⟧"
+
+msgid "operator.import.count_price_entries"
+msgstr "⟦  Ṗřìçè èňťřìèš: {count}·~·~·~⟧"
+
+msgid "operator.import.count_catalog_attributes"
+msgstr "⟦  Çåťåłöĝ åťťřìƀûťèš: {count}·~·~·~·~⟧"
+
+msgid "operator.import.count_stock_entries"
+msgstr "⟦  Šťöçķ èňťřìèš: {count}·~·~·~⟧"
+
+msgid "operator.import.count_expense_categories"
+msgstr "⟦  Èẋṗèňšè çåťèĝöřìèš: {count}·~·~·~·~⟧"
+
+msgid "operator.import.count_expenses"
+msgstr "⟦  Èẋṗèňšèš: {count}·~·~·⟧"
+
+msgid "operator.import.count_customers"
+msgstr "⟦  Çûšťöṁèřš: {count}·~·~·⟧"
+
+msgid "operator.import.count_customers_without_phone"
+msgstr "⟦  Çûšťöṁèřš ŵìťĥöûť å ṗĥöňè ňûṁƀèř: {count}·~·~·~·~·~·~·⟧"
+
+msgid "operator.import.count_sales"
+msgstr "⟦  Šåłèš: {count}·~·~⟧"
+
+msgid "operator.import.count_payments"
+msgstr "⟦  Ṗåýṁèňťš: {count}·~·~·⟧"
+
+msgid "operator.import.switches"
+msgstr "⟦Šŵìťçĥèš ťûřňèđ öň: {switches}·~·~·~·⟧"
+
+msgid "operator.import.switch_bulk_pricing"
+msgstr "⟦ßûłķ ṗřìçìňĝ·~·~·⟧"
+
+msgid "operator.import.switch_vip_customers"
+msgstr "⟦ṼÌṖ çûšťöṁèřš·~·~·⟧"
+
+msgid "operator.import.switch_none"
+msgstr "⟦ňöňè·~⟧"
+
+msgid "operator.import.problems_heading"
+msgstr "⟦ßłöçķìňĝ ṗřöƀłèṁš:·~·~·~·⟧"
+
+msgid "operator.import.problem_line"
+msgstr "⟦  {sheet} řöŵ {row} [{column}]: {problem}·~·~·⟧"
+
+msgid "operator.import.hint_text_is_date"
+msgstr "⟦{kind}: å đåťè ŵĥèřè ťèẋť ìš èẋṗèçťèđ; řè-ťýṗè ťĥè çèłł åš ťèẋť (ìň Ĝööĝłè Šĥèèťš, šťåřť ìť ŵìťĥ åň åṗöšťřöṗĥè) åňđ řûň åĝåìň·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~⟧"
+
+msgid "operator.import.unfinished_heading"
+msgstr "⟦Ŀèḟť öûť åš ûňḟìňìšĥèđ:·~·~·~·~·⟧"
+
+msgid "operator.import.unfinished_line"
+msgstr "⟦  {sheet} řöŵ {row}: {text}·~·~⟧"
+
+msgid "operator.import.mismatches_heading"
+msgstr "⟦Ťöťåł ṁìšṁåťçĥèš (šĥèèť ṽš. řèçöṁṗûťèđ):·~·~·~·~·~·~·~⟧"
+
+msgid "operator.import.mismatch_line"
+msgstr "⟦  {sheet} řöŵ {row}: {sheet_total} ṽš. {recomputed_total}·~·~·⟧"
+
+msgid "operator.import.merged_categories_heading"
+msgstr "⟦Çåťèĝöřìèš ṁèřĝèđ ƀý ňåṁè:·~·~·~·~·~⟧"
+
+msgid "operator.import.merged_category_line"
+msgstr "⟦  {names}·⟧"
+
+msgid "operator.import.merged_customers_heading"
+msgstr "⟦Šṗèłłìňĝš ṁèřĝèđ ìňťö öňè çûšťöṁèř:·~·~·~·~·~·~·⟧"
+
+msgid "operator.import.merged_customer_line"
+msgstr "⟦  {spellings} -> ķèṗť: {kept_name}·~·~·⟧"
+
+msgid "operator.import.unused_mapping_heading"
+msgstr "⟦Ûňûšèđ ṁåṗṗìňĝ èňťřìèš:·~·~·~·~·⟧"
+
+msgid "operator.import.unused_mapping_line"
+msgstr "⟦  {name}·⟧"
+
+msgid "operator.import.writable_yes"
+msgstr "⟦Ŵřìťåƀłè: ýèš·~·~·⟧"
+
+msgid "operator.import.writable_no"
+msgstr "⟦Ŵřìťåƀłè: ňö·~·~·⟧"
+
+msgid "operator.import.refused"
+msgstr "⟦řèḟûšèđ: {code}·~·~⟧"

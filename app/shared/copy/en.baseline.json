@@ -1,193 +1,155 @@
 {
   "operator.accounts.no_user": {
     "area": "accounts",
-    "text": "no user for that email",
-    "pending": true
+    "text": "no user for that email"
   },
   "operator.accounts.valid_once": {
     "area": "accounts",
-    "text": "Valid once, until {expires_at} UTC.",
-    "pending": true
+    "text": "Valid once, until {expires_at} UTC."
   },
   "operator.accounts.refused": {
     "area": "accounts",
-    "text": "refused: {name}",
-    "pending": true
+    "text": "refused: {name}"
   },
   "operator.accounts.help_invite_business": {
     "area": "accounts",
-    "text": "print a link that opens one new business",
-    "pending": true
+    "text": "print a link that opens one new business"
   },
   "operator.accounts.help_reset_password": {
     "area": "accounts",
-    "text": "print a link that lets one user choose a new password",
-    "pending": true
+    "text": "print a link that lets one user choose a new password"
   },
   "operator.import.dry_run": {
     "area": "import",
-    "text": "Dry run: {business_name}",
-    "pending": true
+    "text": "Dry run: {business_name}"
   },
   "operator.import.import": {
     "area": "import",
-    "text": "Import: {business_name}",
-    "pending": true
+    "text": "Import: {business_name}"
   },
   "operator.import.counts_heading": {
     "area": "import",
-    "text": "Counts:",
-    "pending": true
+    "text": "Counts:"
   },
   "operator.import.count_varieties": {
     "area": "import",
-    "text": "  Varieties: {count}",
-    "pending": true
+    "text": "  Varieties: {count}"
   },
   "operator.import.count_price_entries": {
     "area": "import",
-    "text": "  Price entries: {count}",
-    "pending": true
+    "text": "  Price entries: {count}"
   },
   "operator.import.count_catalog_attributes": {
     "area": "import",
-    "text": "  Catalog attributes: {count}",
-    "pending": true
+    "text": "  Catalog attributes: {count}"
   },
   "operator.import.count_stock_entries": {
     "area": "import",
-    "text": "  Stock entries: {count}",
-    "pending": true
+    "text": "  Stock entries: {count}"
   },
   "operator.import.count_expense_categories": {
     "area": "import",
-    "text": "  Expense categories: {count}",
-    "pending": true
+    "text": "  Expense categories: {count}"
   },
   "operator.import.count_expenses": {
     "area": "import",
-    "text": "  Expenses: {count}",
-    "pending": true
+    "text": "  Expenses: {count}"
   },
   "operator.import.count_customers": {
     "area": "import",
-    "text": "  Customers: {count}",
-    "pending": true
+    "text": "  Customers: {count}"
   },
   "operator.import.count_customers_without_phone": {
     "area": "import",
-    "text": "  Customers without a phone number: {count}",
-    "pending": true
+    "text": "  Customers without a phone number: {count}"
   },
   "operator.import.count_sales": {
     "area": "import",
-    "text": "  Sales: {count}",
-    "pending": true
+    "text": "  Sales: {count}"
   },
   "operator.import.count_payments": {
     "area": "import",
-    "text": "  Payments: {count}",
-    "pending": true
+    "text": "  Payments: {count}"
   },
   "operator.import.switches": {
     "area": "import",
-    "text": "Switches turned on: {switches}",
-    "pending": true
+    "text": "Switches turned on: {switches}"
   },
   "operator.import.switch_bulk_pricing": {
     "area": "import",
-    "text": "Bulk pricing",
-    "pending": true
+    "text": "Bulk pricing"
   },
   "operator.import.switch_vip_customers": {
     "area": "import",
-    "text": "VIP customers",
-    "pending": true
+    "text": "VIP customers"
   },
   "operator.import.switch_none": {
     "area": "import",
-    "text": "none",
-    "pending": true
+    "text": "none"
   },
   "operator.import.problems_heading": {
     "area": "import",
-    "text": "Blocking problems:",
-    "pending": true
+    "text": "Blocking problems:"
   },
   "operator.import.problem_line": {
     "area": "import",
-    "text": "  {sheet} row {row} [{column}]: {problem}",
-    "pending": true
+    "text": "  {sheet} row {row} [{column}]: {problem}"
   },
   "operator.import.hint_text_is_date": {
     "area": "import",
-    "text": "{kind}: a date where text is expected; re-type the cell as text (in Google Sheets, start it with an apostrophe) and run again",
-    "pending": true
+    "text": "{kind}: a date where text is expected; re-type the cell as text (in Google Sheets, start it with an apostrophe) and run again"
   },
   "operator.import.unfinished_heading": {
     "area": "import",
-    "text": "Left out as unfinished:",
-    "pending": true
+    "text": "Left out as unfinished:"
   },
   "operator.import.unfinished_line": {
     "area": "import",
-    "text": "  {sheet} row {row}: {text}",
-    "pending": true
+    "text": "  {sheet} row {row}: {text}"
   },
   "operator.import.mismatches_heading": {
     "area": "import",
-    "text": "Total mismatches (sheet vs. recomputed):",
-    "pending": true
+    "text": "Total mismatches (sheet vs. recomputed):"
   },
   "operator.import.mismatch_line": {
     "area": "import",
-    "text": "  {sheet} row {row}: {sheet_total} vs. {recomputed_total}",
-    "pending": true
+    "text": "  {sheet} row {row}: {sheet_total} vs. {recomputed_total}"
   },
   "operator.import.merged_categories_heading": {
     "area": "import",
-    "text": "Categories merged by name:",
-    "pending": true
+    "text": "Categories merged by name:"
   },
   "operator.import.merged_category_line": {
     "area": "import",
-    "text": "  {names}",
-    "pending": true
+    "text": "  {names}"
   },
   "operator.import.merged_customers_heading": {
     "area": "import",
-    "text": "Spellings merged into one customer:",
-    "pending": true
+    "text": "Spellings merged into one customer:"
   },
   "operator.import.merged_customer_line": {
     "area": "import",
-    "text": "  {spellings} -> kept: {kept_name}",
-    "pending": true
+    "text": "  {spellings} -> kept: {kept_name}"
   },
   "operator.import.unused_mapping_heading": {
     "area": "import",
-    "text": "Unused mapping entries:",
-    "pending": true
+    "text": "Unused mapping entries:"
   },
   "operator.import.unused_mapping_line": {
     "area": "import",
-    "text": "  {name}",
-    "pending": true
+    "text": "  {name}"
   },
   "operator.import.writable_yes": {
     "area": "import",
-    "text": "Writable: yes",
-    "pending": true
+    "text": "Writable: yes"
   },
   "operator.import.writable_no": {
     "area": "import",
-    "text": "Writable: no",
-    "pending": true
+    "text": "Writable: no"
   },
   "operator.import.refused": {
     "area": "import",
-    "text": "refused: {code}",
-    "pending": true
+    "text": "refused: {code}"
   },
   "operator.removal.no_business": {
     "area": "removal",

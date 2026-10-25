@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from ipaddress import IPv4Network, IPv6Network, ip_network
 from pathlib import Path
 
-from app.shared.copy import missing_keys
+from app.shared.copy import OperatorText, missing_keys, operator_translator
 from app.shared.copy.messages import po_path
 from app.shared.language import ENGLISH, TEST_LOCALE, Language
 
@@ -99,6 +99,14 @@ class Settings:
             missing = missing_keys(self.locales_dir, language)
             if missing:
                 raise IncompleteLanguage(language.tag, missing)
+
+    def operator_translator(self) -> OperatorText:
+        """The text of the operator's commands (docs/adr/0050): never a business's language."""
+        return operator_translator(
+            locales_dir=self.locales_dir,
+            operator_language=self.operator_language,
+            forced_language=self.forced_language,
+        )
 
     @property
     def secure_cookie(self) -> bool:

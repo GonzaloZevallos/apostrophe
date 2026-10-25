@@ -12,11 +12,14 @@ from app.shared.copy.messages import (
     po_messages,
     read_catalog,
 )
+from app.shared.copy.operator import MissingOperatorKey, OperatorText, operator_translator
 from app.shared.copy.pseudo import po_text, pseudo_catalog
 from app.shared.copy.report import missing_report
 
 __all__ = [
     "CopyCatalog",
+    "MissingOperatorKey",
+    "OperatorText",
     "UnknownLanguage",
     "catalog_map",
     "compile_po",
@@ -24,6 +27,7 @@ __all__ = [
     "missing_report",
     "mo_messages",
     "po_messages",
+    "operator_translator",
     "po_text",
     "pseudo_catalog",
     "read_catalog",
