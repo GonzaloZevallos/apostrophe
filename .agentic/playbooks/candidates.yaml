@@ -339,3 +339,102 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: For every new branch, such as an undefined or empty state, add a test at the real screen seam that fails when the branch's guard is removed. Never weaken an existing assertion to make a change pass.
+  confidence: medium
+  seen_in:
+  - GH-166
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When a guard iterates over cards or files, check that each item runs in its real loaded state, and that its scan globs every file type. Seed what each item reads, or list it as exempt with a reason.
+  confidence: medium
+  seen_in:
+  - GH-166
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering evidence, list every capture the brief names (each theme, device and state, such as archived records) and check that each one exists. Add the missing entries to the capture config.
+  confidence: medium
+  seen_in:
+  - GH-166
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: When a merge brings code that breaks an invariant, fix the code to satisfy the invariant. Do not add it to an exemption list unless you record the invariant as unsatisfiable.
+  confidence: medium
+  seen_in:
+  - GH-166
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer_integrator
+  category: spec-scope
+  lesson: Run every check the plan assigns to the integration pass (before/after comparisons, throwaway captures) on the final head and attach the output. If one cannot run, record the command and why.
+  confidence: medium
+  seen_in:
+  - GH-237
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When you write a static checker, list every syntactic form of what it must catch (aliased, relative, from-import, attribute access) and add a flagged test case for each before delivering.
+  confidence: medium
+  seen_in:
+  - GH-216
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, tick each acceptance line against your report, including requested counts, and recount any numbers you state against the actual files.
+  confidence: medium
+  seen_in:
+  - GH-216
+  sources:
+  - finding
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, tick off every deliverable the brief lists, including PR-body evidence. Produce each one, or write down which is missing and why. File an issue for every defect you find.
+  confidence: medium
+  seen_in:
+  - GH-142
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: 'Before you declare an invariant unsatisfiable, show it: run the command, quote its output, and check that the case is not just the empty set. Cover every item the invariant names, not a sample.'
+  confidence: medium
+  seen_in:
+  - GH-150
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before you deliver, tick off each step of the brief's Record and Done-when list. Quote the decisive evidence (the failing assertion, not the build noise) inside the deliverable, not in a temporary log.
+  confidence: medium
+  seen_in:
+  - GH-150
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
