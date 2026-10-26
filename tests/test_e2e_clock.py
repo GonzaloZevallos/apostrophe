@@ -202,11 +202,15 @@ def _run_module(*args: str) -> subprocess.CompletedProcess[str]:
 
 
 def test_module_execution_prints_only_the_offset_integer(e2e_environment: None) -> None:
+    # The child reads the clock somewhere between these two reads, however long an
+    # interpreter takes to start on a busy machine, and the offset only falls as time goes.
+    before = offset_seconds()
     run = _run_module("offset")
+    after = offset_seconds()
 
     assert run.returncode == 0, run.stderr
     assert re.fullmatch(r"-?\d+\n", run.stdout)
-    assert abs(int(run.stdout) - offset_seconds()) <= 5
+    assert after <= int(run.stdout) <= before
     assert run.stderr == ""
 
 
