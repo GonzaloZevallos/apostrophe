@@ -172,12 +172,6 @@
     "issue": 49
   },
   {
-    "screen": "SacarDelStock",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 47
-  },
-  {
     "screen": "TodasLasEntradas",
     "rule": "h-scroll",
     "target": "",

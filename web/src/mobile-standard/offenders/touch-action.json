@@ -3036,36 +3036,6 @@
     "issue": 47
   },
   {
-    "screen": "SacarDelStock",
-    "rule": "touch-action",
-    "target": "button:Add another variety",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "touch-action",
-    "target": "button:Own use",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "touch-action",
-    "target": "button:Save the withdrawal",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "touch-action",
-    "target": "button:Promotion",
-    "issue": 47
-  },
-  {
     "screen": "TodasLasEntradas",
     "rule": "touch-action",
     "target": "button:Delete@#/# · #K GoldAdjustment · -# g",
