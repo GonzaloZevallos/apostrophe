@@ -98,3 +98,21 @@ tasks:
     decisions: 1
   GH-150@review:
     cost_usd: 0.0915
+  GH-141@review:
+    cost_usd: 0.1489
+  GH-244@review:
+    cost_usd: 0.0377
+  GH-217@review:
+    cost_usd: 0.0106
+  GH-218@review:
+    cost_usd: 0.0204
+  GH-219@review:
+    cost_usd: 0.1229
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-219

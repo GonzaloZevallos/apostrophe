@@ -438,3 +438,62 @@ candidates:
   - finding
   - return
   added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Before delivering, list every assertion and test the brief names, including null cases and e2e extensions, and point each one to a test that fails if the behaviour breaks.
+  confidence: medium
+  seen_in:
+  - GH-141
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer
+  category: standard-seams
+  lesson: Do not edit a file outside the declared seam. If a test or guard must change, record in Decisions which check fails without it and its output, and ask for the seam to be widened.
+  confidence: medium
+  seen_in:
+  - GH-141
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Run git fetch and check that master is not ahead against origin/master, never the local master, before you declare the branch integrated.
+  confidence: medium
+  seen_in:
+  - GH-141
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Deliver the acceptance evidence the brief names (full runs, captures) on the final head. If some part cannot pass, run the rest and list each exclusion with its error line. Do not stop at targeted tests.
+  confidence: medium
+  seen_in:
+  - GH-244
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: In evidence documents, re-read the quoted lines and describe exactly what they show; never restate an invariant's wording as fact when the code differs (e.g. two instances called one shared instance).
+  confidence: low
+  seen_in:
+  - GH-218
+  sources:
+  - finding
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before delivering, check the branch diff against every plan invariant's file list. If a file outside it must change, record the invariant, the failing command with its output and the version shipped.
+  confidence: medium
+  seen_in:
+  - GH-219
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
