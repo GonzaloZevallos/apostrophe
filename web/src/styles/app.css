@@ -253,8 +253,6 @@ body {
    * browser's underline would read as one. */
   text-decoration: none;
   cursor: pointer;
-  /* No tap delay or double-tap zoom on any button (the sale bill's Share/Copy included). */
-  touch-action: manipulation;
 }
 
 .boton:disabled {
@@ -2023,6 +2021,19 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* The sale bill's own wrapper (`SaleBillButton`): it lays its children out as the actions row
+ * does, and its Share/Copy takes no tap delay or double-tap zoom. Scoped here, not on `.boton`,
+ * so no other screen's listed touch-action offender changes. */
+.sale-bill {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sale-bill > .boton {
+  touch-action: manipulation;
 }
 
 /* The bill shown by hand when copying failed (`SaleBillButton`): the one place the text is

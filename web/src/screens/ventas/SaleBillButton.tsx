@@ -97,7 +97,7 @@ export default function SaleBillButton({ state, refreshing, onCopied }: SaleBill
   }
 
   return (
-    <>
+    <div className="sale-bill">
       <Boton
         variant="secondary"
         icon={icon}
@@ -117,6 +117,6 @@ export default function SaleBillButton({ state, refreshing, onCopied }: SaleBill
           <pre className="sale-bill__texto">{failure.text}</pre>
         </div>
       )}
-    </>
+    </div>
   )
 }

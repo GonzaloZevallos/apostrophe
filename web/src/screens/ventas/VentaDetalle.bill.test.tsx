@@ -89,8 +89,11 @@ test('the button is the first of the actions, and never inside the Sale saved no
 
   await screen.findByText('Sale of 14/09')
   const copy = screen.getByRole('button', { name: 'Copy' })
-  const actions = copy.parentElement
-  expect(actions?.firstElementChild).toBe(copy)
+  const wrapper = copy.parentElement
+  expect(wrapper).toHaveClass('sale-bill')
+  expect(wrapper?.firstElementChild).toBe(copy)
+  const actions = wrapper?.parentElement
+  expect(actions?.firstElementChild).toBe(wrapper)
   expect(within(actions as HTMLElement).getByRole('button', { name: 'Assign customer' })).toBeInTheDocument()
   expect(copy.closest('.venta-guardada')).toBeNull()
 })
