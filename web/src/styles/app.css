@@ -253,6 +253,8 @@ body {
    * browser's underline would read as one. */
   text-decoration: none;
   cursor: pointer;
+  /* No tap delay or double-tap zoom on any button (the sale bill's Share/Copy included). */
+  touch-action: manipulation;
 }
 
 .boton:disabled {
@@ -2021,11 +2023,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-/* The sale bill's Share/Copy: no tap delay or double-tap zoom. */
-.sale-bill__boton {
-  touch-action: manipulation;
 }
 
 /* The bill shown by hand when copying failed (`SaleBillButton`): the one place the text is

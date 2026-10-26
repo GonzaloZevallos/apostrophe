@@ -44,8 +44,8 @@ function enumOf(name: string, property: string): string[] {
   return [...values].sort()
 }
 
-/** The comparison every test below makes; exported through the rejection test so
- * a drifted list is proven to fail, not only a matching one to pass. */
+/** The one comparison every test below makes, the drift-rejection test included, so a
+ * drifted list is proven to fail through the very function that guards the contract. */
 function sameSet(front: readonly string[], server: readonly string[]): boolean {
   const left = [...front].sort()
   const right = [...server].sort()
@@ -53,14 +53,14 @@ function sameSet(front: readonly string[], server: readonly string[]): boolean {
 }
 
 test('the bill key lists equal the snapshot schemas property for property', () => {
-  expect([...SALE_BILL_KEYS].sort()).toEqual(propertyNames('SaleBillOut'))
-  expect([...SALE_BILL_LINE_KEYS].sort()).toEqual(propertyNames('SaleBillLineOut'))
-  expect([...SALE_BILL_PAYMENT_KEYS].sort()).toEqual(propertyNames('BillPaymentOut'))
+  expect(sameSet(SALE_BILL_KEYS, propertyNames('SaleBillOut'))).toBe(true)
+  expect(sameSet(SALE_BILL_LINE_KEYS, propertyNames('SaleBillLineOut'))).toBe(true)
+  expect(sameSet(SALE_BILL_PAYMENT_KEYS, propertyNames('BillPaymentOut'))).toBe(true)
 })
 
 test('the payment state and rule enums equal the snapshot', () => {
-  expect([...BILL_STATES].sort()).toEqual(enumOf('BillPaymentOut', 'state'))
-  expect([...BILL_RULES].sort()).toEqual(enumOf('SaleBillLineOut', 'rule'))
+  expect(sameSet(BILL_STATES, enumOf('BillPaymentOut', 'state'))).toBe(true)
+  expect(sameSet(BILL_RULES, enumOf('SaleBillLineOut', 'rule'))).toBe(true)
 })
 
 test('the sale detail carries the bill', () => {

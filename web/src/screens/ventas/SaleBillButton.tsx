@@ -103,7 +103,6 @@ export default function SaleBillButton({ state, refreshing, onCopied }: SaleBill
         icon={icon}
         disabled={busy}
         ariaBusy={busy ? true : undefined}
-        className="sale-bill__boton"
         onClick={onClick}
       >
         {label}
