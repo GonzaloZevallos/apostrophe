@@ -43,8 +43,9 @@ items:
   - GH-279
   - GH-303
   - GH-333
+  - GH-363
   added_at: '2026-10-26T04:29:54.986+00:00'
-  last_applied: '2026-10-26T04:39:00.111+00:00'
+  last_applied: '2026-10-26T04:50:52.469+00:00'
 - id: developer-5
   lesson: When you change a value other code reads (shared copy, labels, dates), run every suite that reads it, sister unit tests, e2e specs and phone cells, and fix the lookups before delivering.
   category: process-suite-red
@@ -73,3 +74,11 @@ items:
   - GH-281
   added_at: '2026-10-26T04:32:56.270+00:00'
   last_applied: '2026-10-26T04:32:56.270+00:00'
+- id: developer-8
+  lesson: 'Never add noqa, type: ignore or any silencing directive. Fix the cause, or record the limit under Decisions. Before delivering, grep your diff and the code for noqa and type: ignore, and remove any you find.'
+  category: standard-typing-silenced
+  since: aa68cf9c
+  seen_in:
+  - GH-346
+  added_at: '2026-10-26T04:50:52.469+00:00'
+  last_applied: '2026-10-26T04:50:52.469+00:00'

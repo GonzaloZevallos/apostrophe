@@ -1027,3 +1027,12 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: In a migration test, seed a row for every entity the brief names, child tables included. After the upgrade, assert each row survived and still joins to its parent.
+  confidence: medium
+  seen_in:
+  - GH-346
+  sources:
+  - finding
+  added_at: '2026-10-26T04:50:52.469+00:00'

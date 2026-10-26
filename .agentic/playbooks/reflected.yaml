@@ -386,3 +386,31 @@ tasks:
     cost_usd: 0.0548
   GH-339@review:
     cost_usd: 0.0377
+  GH-363@review:
+    cost_usd: 0.019
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-363
+  GH-362@review:
+    cost_usd: 0.0
+  GH-346@review:
+    cost_usd: 0.1075
+    applied:
+    - op: add
+      slug: developer
+      category: standard-typing-silenced
+      lesson: 'Never add noqa, type: ignore or any silencing directive. Fix the cause, or record the limit under Decisions. Before delivering, grep your diff and the code for noqa and type: ignore, and remove any you find.'
+      item_id: ''
+      tasks:
+      - GH-346
+    decisions: 2
+  GH-340@review:
+    cost_usd: 0.0438
+    decisions: 1
+  GH-356@review:
+    cost_usd: 0.0194
