@@ -13,6 +13,7 @@ setup:
   web-browsers: npx --prefix web playwright install chromium
 checks:
   tests: uv run --no-project pytest -n 8
+  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests scripts
   web-types: npm --prefix web run typecheck
@@ -23,7 +24,7 @@ checks:
   # e2e on every pull request, without gating the merge until `ci:` is back (#432).
   # Restore with the line below when the owner says so.
   # web-e2e: npm --prefix web run e2e
-# `parallel_checks`: the gate runs the six checks above at once (agentic-system ADR-0044),
+# `parallel_checks`: the gate runs the checks above at once (agentic-system ADR-0044),
 # so a gate takes the slowest check instead of the sum (passing-gate median 16.1 min, 2026-10-12
 # to 26). Shared-state inventory, 2026-10-26, 16 cores, each check run alone: every cache has one
 # writer (.ruff_cache lint, .mypy_cache types, web/node_modules/.tmp web-types,
@@ -39,6 +40,35 @@ checks:
 # iterations of the load-sensitive tests, with the other checks looping at load 57-148, were green.
 # Read at a task's base, like every key here.
 parallel_checks: true
+# `delivery_checks` (agentic-system ADR-0064): the fast tier every subtask delivery and
+# re-delivery runs, with the affected forms below where declared. The full tier is all of
+# `checks`: it runs once per task in `full_checks` on the integrated head, and the merge gate
+# runs it too. Measured 2026-10-26, 16 cores, each check alone then in parallel as the gate runs
+# them (table in .agentic/tasks/GH-442.md; the machine was never idle, load 17-72, so every
+# figure is an upper bound). Declaring every check (A) took 345.3 s at best (load 26.86 -> 34.89),
+# median 424.6 s: over the ~300 s goal, and `tests` was the slowest check (345.3 s), not
+# `web-tests` (241.4 s with its full rerun). Dropping `web-tests` (B) did not help: 403.6 s at
+# best (load 56.78 -> 72.30). So `tests` is replaced by `tests-fast`, the pytest subset that
+# guards the cheap whole-codebase rules (architecture, migrations, business isolation, gated
+# routes, and the two stack pins): 94.8 s alone with -n 4 (load 34.14 -> 31.72) against 110.5 s
+# with -n 2 (load 21.23 -> 16.62), so -n 4. The gate with it (C) took 229.3 s at best (load
+# 18.71 -> 46.32), median 290.2 s, worst 312.2 s (load 47.52 -> 53.11), with the `web-tests`
+# rerun included. What moved to the full tier: the rest of pytest (`tests` alone: 187.7 s,
+# load 29.82 -> 22.02). Its cost: a failure outside those paths is found at `full_checks`, after
+# the subtasks are integrated, not at the Developer's delivery. `web-tests` stays in: on a
+# web diff its affected form took 83.9-90.4 s (loads 41.00 -> 38.37 and 53.46 -> 47.99), and
+# an app-only diff selects nothing, so it reruns in full (180.3 s alone, load 40.89 -> 41.12).
+# `web-e2e` is not here (suspended, PR #434). The shared-state inventory above still holds:
+# `tests-fast` carries `-p no:cacheprovider`, so `.pytest_cache` keeps one writer (`tests`).
+# Read at a task's base, like every key here.
+delivery_checks:
+  - tests-fast
+  - lint
+  - types
+  - web-types
+  - web-lint
+  - web-tests
+  - web-build
 # Affected-only forms (agentic-system ADR-0046, ours ADR-0039): the Developer's and the
 # reviewer's gates run these with `{base}` replaced by the task base sha, and rerun the
 # check in full when one fails. The merge gate and CI always run the full commands above.
