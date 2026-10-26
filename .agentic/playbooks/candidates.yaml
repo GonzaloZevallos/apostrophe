@@ -138,3 +138,40 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer_integrator
+  category: spec-missing-test
+  lesson: For every new branch or rule at a declared seam, add a fixture that feeds it an input it must reject, plus one it accepts. A positive-only fixture would still pass if the branch were removed.
+  confidence: medium
+  seen_in:
+  - GH-102
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:52:52.269+00:00'
+- slug: tech_lead_platform
+  category: plan-calibration
+  lesson: Before fixing a detection marker or heuristic in a brief, test it against the real tree; if it breaks other invariants, specify the exact exemption and its limits in the plan instead of leaving it to the Developer.
+  confidence: medium
+  seen_in:
+  - GH-165
+  sources:
+  - finding
+  added_at: '2026-10-26T03:52:52.269+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Before delivering, build a checklist from the brief's required design comparisons (every screen, theme, viewport, text scale, before/after) and check each one. Attach the evidence instead of sampling.
+  confidence: medium
+  seen_in:
+  - GH-164
+  sources:
+  - finding
+  added_at: '2026-10-26T03:52:52.269+00:00'
+- slug: tech_lead
+  category: integration-crosscut
+  lesson: After a merge, grep for every selector or identifier that master's changes target and confirm each still matches a rendered element. Renamed markup silently orphans rules, so add a test for it.
+  confidence: medium
+  seen_in:
+  - GH-164
+  sources:
+  - finding
+  added_at: '2026-10-26T03:52:52.269+00:00'

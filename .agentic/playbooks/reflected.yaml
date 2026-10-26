@@ -47,3 +47,13 @@ tasks:
     cost_usd: 0.0753
   GH-134@review:
     cost_usd: 0.0105
+  GH-102@review:
+    cost_usd: 0.0476
+  GH-165@review:
+    cost_usd: 0.0142
+  GH-181@review:
+    cost_usd: 0.0105
+  GH-197@review:
+    cost_usd: 0.0126
+  GH-164@review:
+    cost_usd: 0.023
