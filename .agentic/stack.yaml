@@ -24,7 +24,7 @@ checks:
   # e2e on every pull request, without gating the merge until `ci:` is back (#432).
   # Restore with the line below when the owner says so.
   # web-e2e: npm --prefix web run e2e
-# `parallel_checks`: the gate runs the six checks above at once (agentic-system ADR-0044),
+# `parallel_checks`: the gate runs the checks above at once (agentic-system ADR-0044),
 # so a gate takes the slowest check instead of the sum (passing-gate median 16.1 min, 2026-10-12
 # to 26). Shared-state inventory, 2026-10-26, 16 cores, each check run alone: every cache has one
 # writer (.ruff_cache lint, .mypy_cache types, web/node_modules/.tmp web-types,

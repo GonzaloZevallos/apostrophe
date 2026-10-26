@@ -238,11 +238,57 @@ def test_delivery_checks_never_name_web_e2e() -> None:
     assert "web-e2e" not in AFFECTED
 
 
-def test_a_second_pytest_check_writes_no_cache() -> None:
-    pytest_checks = [c for c in CHECKS.values() if shlex.split(c)[3:4] == ["pytest"]]
-    assert pytest_checks
-    cacheless = [c for c in pytest_checks if "no:cacheprovider" in shlex.split(c)]
-    assert len(pytest_checks) - len(cacheless) <= 1
+def writes_pytest_cache(commands: dict[str, str]) -> list[str]:
+    """The names of the pytest checks that write `.pytest_cache`.
+
+    A check is pytest whatever its prefix (`pytest`, `uv run pytest`,
+    `python -m pytest`). It writes no cache only when `no:cacheprovider` is the value
+    right after `-p`; the same text anywhere else does not count."""
+    writers: list[str] = []
+    for name, command in commands.items():
+        words = shlex.split(command)
+        pairs = list(zip(words, words[1:], strict=False))
+        if "pytest" not in words and ("-m", "pytest") not in pairs:
+            continue
+        if ("-p", "no:cacheprovider") not in pairs:
+            writers.append(name)
+    return writers
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "pytest -n 8",
+        "uv run pytest -n 8",
+        "uv run --no-project pytest -n 8",
+        "python -m pytest -n 8",
+        "pytest -n 8 no:cacheprovider",
+        "pytest -n 8 --no:cacheprovider",
+        "pytest -p other no:cacheprovider",
+        "pytest -p",
+        "pytest -n 8 -p cacheprovider",
+    ],
+)
+def test_a_pytest_check_that_may_write_the_cache_is_found(command: str) -> None:
+    assert writes_pytest_cache({"extra": command}) == ["extra"]
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "pytest -p no:cacheprovider",
+        "uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture",
+        "python -m pytest -p no:cacheprovider",
+        "uv run --no-project ruff check .",
+        "npm --prefix web test",
+    ],
+)
+def test_a_check_that_writes_no_pytest_cache_is_not_counted(command: str) -> None:
+    assert writes_pytest_cache({"extra": command}) == []
+
+
+def test_each_pytest_cache_has_one_writer() -> None:
+    assert writes_pytest_cache(CHECKS) == ["tests"]
 
 
 @pytest.mark.parametrize("path", SWEEP_FILES)
