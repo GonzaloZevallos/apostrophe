@@ -202,49 +202,52 @@ def _run_module(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_module_execution_prints_only_the_offset_integer(e2e_environment: None) -> None:
-    started = time.monotonic()
-    run = _run_module("offset")
-    here = offset_seconds()
+def _assert_link_valid_until(stdout: str, link: str, expiry: datetime, started: float) -> None:
+    """The child's anchored clock keeps advancing from the offset the test read at `started`
+    (`time.monotonic()`), so its printed expiry is `expiry` plus at most the time the test has
+    run since, however slow a busy machine made the children."""
+    printed = re.fullmatch(rf"{link}\nValid once, until (\S+ \S+) UTC\.\n", stdout)
+    assert printed, stdout
+    until = datetime.strptime(printed[1], "%Y-%m-%d %H:%M").replace(tzinfo=UTC)
+    elapsed = timedelta(seconds=time.monotonic() - started + 1)
+    assert expiry <= until <= expiry + elapsed
 
-    # The two offsets are read at different instants: they differ by the time that really passed.
-    elapsed = time.monotonic() - started
+
+def test_module_execution_prints_only_the_offset_integer(e2e_environment: None) -> None:
+    # The child reads the clock somewhere between these two reads, however long an
+    # interpreter takes to start on a busy machine, and the offset only falls as time goes.
+    before = offset_seconds()
+    run = _run_module("offset")
+    after = offset_seconds()
+
     assert run.returncode == 0, run.stderr
     assert re.fullmatch(r"-?\d+\n", run.stdout)
-    assert abs(int(run.stdout) - here) <= elapsed + 2
+    assert after <= int(run.stdout) <= before
     assert run.stderr == ""
-
-
-def _expiry_printed(stdout: str, link: str) -> datetime:
-    """The expiry instant a CLI output line prints, to the minute."""
-    found = re.fullmatch(
-        link + r"/\S+\nValid once, until (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC\.\n", stdout
-    )
-    assert found, stdout
-    return datetime.strptime(found.group(1), "%Y-%m-%d %H:%M").replace(tzinfo=UTC)
 
 
 def test_module_execution_invites_a_business_on_the_anchored_clock(
     e2e_environment: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
     started = time.monotonic()
+    monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
 
     run = _run_module("invite-business")
 
-    # The clock keeps advancing, so a slow machine prints a later minute: the printed instant is
-    # the anchor plus seven days plus at most the time that really passed.
-    elapsed = timedelta(seconds=time.monotonic() - started + 1)
     assert run.returncode == 0, run.stderr
-    printed = _expiry_printed(run.stdout, "http://localhost:9/invitation")
-    assert ANCHOR + timedelta(days=7) <= printed <= ANCHOR + timedelta(days=7) + elapsed
+    _assert_link_valid_until(
+        run.stdout,
+        r"http://localhost:9/invitation/\S+",
+        datetime(2026, 10, 14, 15, 0, tzinfo=UTC),
+        started,
+    )
 
 
 def test_module_execution_issues_a_reset_link_a_day_after_the_anchor(
     e2e_environment: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
     started = time.monotonic()
+    monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
     token = _run_module("invite-business").stdout.splitlines()[0].rsplit("/", 1)[1]
     with TestClient(create_e2e_app()) as client:
         accepted = client.post(
@@ -255,12 +258,13 @@ def test_module_execution_issues_a_reset_link_a_day_after_the_anchor(
 
     run = _run_module("reset-password", "reset@example.com")
 
-    # The clock keeps advancing, so a slow machine prints a later minute: the printed instant is
-    # the anchor plus one day plus at most the time that really passed.
-    elapsed = timedelta(seconds=time.monotonic() - started + 1)
     assert run.returncode == 0, run.stderr
-    printed = _expiry_printed(run.stdout, "http://localhost:9/reset")
-    assert ANCHOR + timedelta(days=1) <= printed <= ANCHOR + timedelta(days=1) + elapsed
+    _assert_link_valid_until(
+        run.stdout,
+        r"http://localhost:9/reset/\S+",
+        datetime(2026, 10, 8, 15, 0, tzinfo=UTC),
+        started,
+    )
 
 
 def test_an_empty_offset_variable_means_the_real_clock(
