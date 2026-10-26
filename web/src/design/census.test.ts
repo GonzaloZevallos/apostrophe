@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -108,7 +108,11 @@ async function run(name: string, only: string, extra: string[]): Promise<Run> {
   child.stdout.on('data', (chunk: Buffer) => (output += chunk.toString()))
   child.stderr.on('data', (chunk: Buffer) => (output += chunk.toString()))
   const status = await new Promise<number>((done) => child.on('close', (code) => done(code ?? -1)))
-  return { entries: JSON.parse(readFileSync(join(out, 'index.json'), 'utf-8')), status, output }
+  const index = join(out, 'index.json')
+  // A child that died before writing the index (a missing browser, say) fails with its own exit
+  // status and output, not with an ENOENT on a file it never wrote.
+  if (!existsSync(index)) throw new Error(`comparisons.mjs exited with status ${status} and wrote no index.json:\n${output}`)
+  return { entries: JSON.parse(readFileSync(index, 'utf-8')), status, output }
 }
 
 describe('comparisons.mjs --census', () => {
