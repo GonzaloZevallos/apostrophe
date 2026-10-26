@@ -785,3 +785,50 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Produce every evidence item the brief's acceptance lists before you deliver. If one was not run, say so and leave out any text that reports an outcome for it, such as an ADR paragraph.
+  confidence: medium
+  seen_in:
+  - GH-261
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, grep the final diff to confirm each deletion the brief lists is gone and that no block was pasted twice or left unscoped; do not report a change as done unverified.
+  confidence: medium
+  seen_in:
+  - GH-271
+  sources:
+  - finding
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Produce every evidence artifact the brief requires (measured runs, screenshots, listed outputs) before delivering; if one cannot be produced, say so under Decisions rather than claiming the invariant holds by construction.
+  confidence: medium
+  seen_in:
+  - GH-272
+  sources:
+  - finding
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When an invariant asks for a before capture or judgement, record the output path and build SHA of that capture and the fixing commit of each dropped item; never map it to a test or a post-change run.
+  confidence: medium
+  seen_in:
+  - GH-192
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: product_analyst
+  category: definition
+  lesson: Reproduce every item of a ruling and measure each one against the written product docs, not only against code or frames; never rule on a single item and generalise it to the rest.
+  confidence: low
+  seen_in:
+  - GH-192
+  sources:
+  - return
+  added_at: '2026-10-26T04:24:18.086+00:00'

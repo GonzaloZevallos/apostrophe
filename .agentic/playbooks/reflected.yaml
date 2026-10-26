@@ -1,6 +1,6 @@
 started_at: '2026-10-25T20:01:08.546+00:00'
-summaries: 6
-summarised: 60
+summaries: 7
+summarised: 70
 tasks:
   GH-349@review:
     cost_usd: 0.0454
@@ -174,3 +174,28 @@ tasks:
     cost_usd: 0.0371
   GH-189@review:
     cost_usd: 0.0349
+  GH-195@review:
+    cost_usd: 0.0139
+  GH-261@review:
+    cost_usd: 0.0534
+  GH-271@review:
+    cost_usd: 0.0641
+    applied:
+    - op: add
+      slug: developer
+      category: standard-other
+      lesson: Open and view every comparison image the task requires, one per screen, before delivering, and record what you saw for each; never deliver with screens unviewed.
+      item_id: ''
+      tasks:
+      - GH-271
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-271
+  GH-272@review:
+    cost_usd: 0.0244
+  GH-192@review:
+    cost_usd: 0.097
