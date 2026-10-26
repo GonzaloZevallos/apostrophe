@@ -56,8 +56,10 @@ export default defineConfig({
     // The census test drives real browsers, and the script it runs bounds every browser step by
     // wall-clock time (8 s a step, 30 s for the network). Run beside ~15 jsdom workers it is
     // slowed 4 to 6 times and a step misses its bound, so it is a project of its own, in a later
-    // group: it starts when the other files are done and has the CPU to itself. Everything else
-    // (the 40 s ceiling above included) is inherited unchanged.
+    // group: it starts when the other files are done and has the CPU to itself. Measured: one
+    // design page load, starved of CPU, takes 8 to 20 s (document, stylesheet, then the lazy font
+    // files, each seconds apart), so no request hangs and the bounds are only a measure of load.
+    // Everything else (the 40 s ceiling above included) is inherited unchanged.
     projects: [
       { extends: true, test: { name: 'unit', exclude: [...CONFIG_EXCLUDE, CENSUS] } },
       { extends: true, test: { name: 'census', include: [CENSUS], sequence: { groupOrder: 1 } } },
