@@ -12,7 +12,7 @@ setup:
   web: npm --prefix web ci --no-fund --no-audit
   web-browsers: npx --prefix web playwright install chromium
 checks:
-  tests: uv run --no-project pytest -n auto
+  tests: uv run --no-project pytest -n 8
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests
   web-types: npm --prefix web run typecheck
