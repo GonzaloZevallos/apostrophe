@@ -138,18 +138,6 @@ function descendants(root: ts.Node, visit: (node: ts.Node) => void): void {
   ts.forEachChild(root, walk)
 }
 
-/** Whether a statement can return from the function itself (not from a nested function). */
-function returnsEarly(statement: ts.Node): boolean {
-  let found = false
-  const walk = (node: ts.Node): void => {
-    if (found || isFunctionNode(node)) return
-    if (ts.isReturnStatement(node)) found = true
-    else ts.forEachChild(node, walk)
-  }
-  walk(statement)
-  return found
-}
-
 class FileRewrite {
   readonly errors: CodemodError[] = []
   private readonly sf: ts.SourceFile
@@ -307,7 +295,7 @@ class FileRewrite {
     const statements = ts.isBlock(body) ? body.statements : []
     const reusable = statements.findIndex(isPlainHook)
     if (hooks.length > 0) {
-      const ok = hooks.length === 1 && reusable >= 0 && !statements.slice(0, reusable).some(returnsEarly)
+      const ok = hooks.length === 1 && reusable === 0
       if (!ok) return this.fail(hooks[0], 'useTranslation is not a plain const { t } = useTranslation() at the top of the body')
     }
     const reused = reusable >= 0 ? statements[reusable] : undefined

@@ -134,51 +134,86 @@ interface Refusal {
   name: string
   source: string
   line: number
+  message: string
   path?: string
 }
 
 const body = (statement: string): string => `${IMPORT}function View() {\n  ${statement}\n}\n`
+const NOT_AT_TOP = 'useTranslation is not a plain const { t } = useTranslation() at the top of the body'
 
 const REFUSALS: Refusal[] = [
-  { name: 'an alias', source: body('const copy = COMMON_TEXT\n  return copy.save'), line: 3 },
-  { name: 'a spread', source: body('return { ...COMMON_TEXT }'), line: 3 },
-  { name: 'a computed access', source: body("return COMMON_TEXT['save']"), line: 3 },
-  { name: 'a use at module top level', source: `${IMPORT}export const TITLE = COMMON_TEXT.save\n`, line: 2 },
-  { name: 'a file under web/src/copy', source: `${IMPORT}\nexport const X = 1\n`, line: 1, path: 'web/src/copy/other.ts' },
-  { name: 'a wrong argument count', source: body('return COMMON_TEXT.greet()'), line: 3 },
-  { name: 'a call of a text', source: body('return COMMON_TEXT.save(1)'), line: 3 },
-  { name: 'a function read without a call', source: body('return [1].map(COMMON_TEXT.greet)'), line: 3 },
-  { name: 'a spread argument', source: body('return COMMON_TEXT.greet(...[])'), line: 3 },
+  { name: 'an alias', source: body('const copy = COMMON_TEXT\n  return copy.save'), line: 3, message: 'COMMON_TEXT is aliased or passed as a value' },
+  { name: 'a spread', source: body('return { ...COMMON_TEXT }'), line: 3, message: 'COMMON_TEXT is spread' },
+  { name: 'a computed access', source: body("return COMMON_TEXT['save']"), line: 3, message: 'COMMON_TEXT is read by computed access' },
+  { name: 'a use at module top level', source: `${IMPORT}export const TITLE = COMMON_TEXT.save\n`, line: 2, message: 'a copy read at module top level' },
+  {
+    name: 'a file under web/src/copy',
+    source: `${IMPORT}\nexport const X = 1\n`,
+    line: 1,
+    path: 'web/src/copy/other.ts',
+    message: 'a file under web/src/copy is never rewritten',
+  },
+  { name: 'a wrong argument count', source: body('return COMMON_TEXT.greet()'), line: 3, message: 'COMMON_TEXT.greet takes 1 arguments, called with 0' },
+  { name: 'a call of a text', source: body('return COMMON_TEXT.save(1)'), line: 3, message: 'COMMON_TEXT.save takes 0 arguments, called with 1' },
+  {
+    name: 'a function read without a call',
+    source: body('return [1].map(COMMON_TEXT.greet)'),
+    line: 3,
+    message: 'COMMON_TEXT.greet is a function and is read without a call',
+  },
+  { name: 'a spread argument', source: body('return COMMON_TEXT.greet(...[])'), line: 3, message: 'COMMON_TEXT.greet is called with a spread argument' },
   {
     name: 'a use inside a function that is neither a component nor a hook',
     source: `${IMPORT}function format() {\n  return COMMON_TEXT.save\n}\n`,
     line: 3,
+    message: 'a copy read in format, which is neither a component nor a hook',
   },
-  { name: 'an existing local named t', source: body("const t = 'x'\n  return [t, COMMON_TEXT.save]"), line: 3 },
   {
-    name: 'a useTranslation that is not at the top of the body',
+    name: 'an existing local named t',
+    source: body("const t = 'x'\n  return [t, COMMON_TEXT.save]"),
+    line: 3,
+    message: 'a local named t already exists where the hook goes',
+  },
+  {
+    name: 'a useTranslation after an early return',
     source: `${HOOK_IMPORT}${IMPORT}function View({ a }: { a: boolean }) {\n  if (a) return null\n  const { t } = useTranslation()\n  return [t, COMMON_TEXT.save]\n}\n`,
     line: 5,
+    message: NOT_AT_TOP,
   },
-  { name: 'a type position', source: `${IMPORT}type Save = typeof COMMON_TEXT.save\nfunction View() {\n  return COMMON_TEXT.save\n}\n`, line: 2 },
-  { name: 'a string concatenation', source: body("return COMMON_TEXT.save + '!'"), line: 3 },
-  { name: 'a template literal', source: body('return `${COMMON_TEXT.save}!`'), line: 3 },
+  {
+    name: 'a useTranslation after a copy read',
+    source: `${HOOK_IMPORT}${IMPORT}function View() {\n  const before = COMMON_TEXT.cancel\n  const { t } = useTranslation()\n  return [before, t, COMMON_TEXT.save]\n}\n`,
+    line: 5,
+    message: NOT_AT_TOP,
+  },
+  {
+    name: 'a type position',
+    source: `${IMPORT}type Save = typeof COMMON_TEXT.save\nfunction View() {\n  return COMMON_TEXT.save\n}\n`,
+    line: 2,
+    message: 'COMMON_TEXT is read in a type position',
+  },
+  { name: 'a string concatenation', source: body("return COMMON_TEXT.save + '!'"), line: 3, message: 'COMMON_TEXT.save is concatenated into a string' },
+  { name: 'a template literal', source: body('return `${COMMON_TEXT.save}!`'), line: 3, message: 'COMMON_TEXT.save is put in a template literal' },
   {
     name: 'a dependency list that is not an array literal',
     source: body('const deps = []\n  return useMemo(() => COMMON_TEXT.save, deps)'),
     line: 4,
+    message: 'a dependency list that is not an array literal',
   },
-  { name: 'an anonymous memo wrapper', source: `import { memo } from 'react'\n${IMPORT}export default memo(() => COMMON_TEXT.save)\n`, line: 3 },
+  {
+    name: 'an anonymous memo wrapper',
+    source: `import { memo } from 'react'\n${IMPORT}export default memo(() => COMMON_TEXT.save)\n`,
+    line: 3,
+    message: 'an anonymous memo or forwardRef wrapper cannot take the hook',
+  },
 ]
 
 describe('the refusals', () => {
-  test.each(REFUSALS)('$name names the file and line and writes nothing', ({ source, line, path }) => {
+  test.each(REFUSALS)('$name is refused with its own problem, file and line', ({ source, line, message, path }) => {
     const target = file(source, path ?? 'web/src/sales/View.tsx')
     const result = run([target], MAPPINGS)
     if (!('errors' in result)) throw new Error('the codemod accepted a source it must refuse')
-    expect(result.errors).toHaveLength(1)
-    expect(result.errors[0]).toMatchObject({ file: target.path, line })
-    expect(target.text).toBe(source)
+    expect(result.errors).toEqual([{ file: target.path, line, message }])
   })
 
   test('a failing file leaves every other file unwritten', () => {
