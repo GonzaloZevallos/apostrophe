@@ -49,7 +49,7 @@
 
 import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
@@ -368,7 +368,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.ventas__total')).toHaveText(pesos(mes.total))
 
   // --- Isolation: a second business can never reach the first one's sale. ---
-  const otherContext = await browser.newContext({ baseURL: workerServer.url })
+  const otherContext = await withToastRecorder(browser.newContext({ baseURL: workerServer.url }))
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await signUpNewBusiness(otherPage, {

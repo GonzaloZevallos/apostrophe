@@ -13,7 +13,7 @@
 
 import { SETTINGS_USERS } from '../src/routes.js'
 import { watchConsole } from './console.js'
-import { expect, test } from './fixtures.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
 import { signUpNewBusiness, leaveOnboarding, DEFAULT_PASSWORD } from './helpers/signup.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
@@ -53,10 +53,10 @@ for (const viewport of VIEWPORTS) {
     const inviteUrl = await page.locator('.usuarios__link').textContent()
     if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
 
-    const partnerContext = await browser.newContext({
+    const partnerContext = await withToastRecorder(browser.newContext({
       baseURL: workerServer.url,
       viewport: { width: viewport.width, height: viewport.height },
-    })
+    }))
     const partnerPage = await partnerContext.newPage()
     watchConsole(partnerPage, consoleMessages)
     await partnerPage.goto(inviteUrl)

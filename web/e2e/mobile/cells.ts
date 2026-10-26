@@ -2,6 +2,7 @@
 
 import type { Browser, BrowserContext } from '@playwright/test'
 import { mobileBaseUrl } from '../env.js'
+import { withToastRecorder } from '../fixtures.js'
 import { installToolkit } from './toolkit.js'
 import { SIZES, THEMES, type Size, type Theme } from '../../src/mobile-standard/violation.ts'
 
@@ -28,14 +29,14 @@ export async function newCell(
   theme: Theme,
   storageState: string | { cookies: []; origins: [] },
 ): Promise<BrowserContext> {
-  const context = await browser.newContext({
+  const context = await withToastRecorder(browser.newContext({
     baseURL: mobileBaseUrl(),
     viewport: viewportOf(size),
     isMobile: true,
     hasTouch: true,
     deviceScaleFactor: 2,
     storageState,
-  })
+  }))
   await context.clock.setFixedTime(PINNED_INSTANT)
   await context.addInitScript(installToolkit)
   if (theme === 'oscuro') {

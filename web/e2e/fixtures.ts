@@ -12,15 +12,20 @@
  * It is also the only e2e module allowed to import the values `test` and `expect` from
  * `@playwright/test` (`web/.oxlintrc.json`): every spec imports them from here, so a spec
  * can never run without its worker's server.
+ *
+ * It also installs the in-page toast recorder (`toastRecorder.ts`) in every context: the
+ * `context` fixture does it for `page`, and `withToastRecorder` does it for each
+ * `browser.newContext(...)` a spec opens itself.
  */
 
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
 import { mkdirSync, rmSync } from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { expect, test as base } from '@playwright/test'
+import { expect, test as base, type BrowserContext } from '@playwright/test'
 import { E2E_HOST, e2eBaseUrl, e2eDbPath, e2eEnv, e2ePort } from './env.js'
 import { freePort } from './freePort.js'
+import { installToastRecorder } from './toastRecorder.js'
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const ATTEMPTS = 3
@@ -143,6 +148,20 @@ export interface WorkerServer {
   url: string
 }
 
+/**
+ * Installs the toast recorder in a context a spec opened with `browser.newContext(...)` and
+ * returns it: `withToastRecorder(browser.newContext({ ... }))`. Every such call outside this
+ * file goes through it (`e2eToastRule.test.ts`), so `expectToast` finds a recorder on every
+ * page.
+ */
+export async function withToastRecorder(
+  context: Promise<BrowserContext> | BrowserContext,
+): Promise<BrowserContext> {
+  const opened = await context
+  await opened.addInitScript(installToastRecorder)
+  return opened
+}
+
 export const test = base.extend<object, { workerServer: WorkerServer }>({
   workerServer: [
     async ({ playwright }, provide) => {
@@ -171,6 +190,10 @@ export const test = base.extend<object, { workerServer: WorkerServer }>({
   ],
   baseURL: async ({ baseURL, workerServer }, provide) => {
     await provide(baseURL ?? workerServer.url)
+  },
+  context: async ({ context }, provide) => {
+    await context.addInitScript(installToastRecorder)
+    await provide(context)
   },
 })
 
