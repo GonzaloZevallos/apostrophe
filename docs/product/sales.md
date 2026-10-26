@@ -332,12 +332,13 @@ A short plain-text bill of one sale that the seller sends to the customer in one
 **No formatting of its own**: no fixed word, separator or format of the bill carries `*`, `_` or a backtick. Text the seller typed (the business name and variety names) goes out exactly as typed, those characters included: never escaped, stripped or replaced, so the customer reads the same name the seller sees. How a chat app displays it is the chat's affair; escaping for one app would hard-code a channel (Assume nothing).
 
 **The button** (on the detail, never inside the "Sale saved" notice):
+- **Where**: the first item of the detail's bottom action stack, above Assign customer and Delete sale.
 - **Label**: Share where the phone can share, otherwise Copy.
 - **Share**: success shows nothing (the sheet closing is the confirmation); a cancel shows nothing; a failure shows "Couldn't share. Tap Copy and paste it into the chat." with the attention icon, and the label becomes Copy.
-- **Copy**: success shows the toast "Bill copied"; a failure shows "Couldn't copy. Select the text below and copy it by hand." with the bill in a selectable block, accessible name "Sale bill".
+- **Copy**: success shows the toast "Bill copied"; a failure shows "Couldn't copy. Select the text below and copy it by hand." with the attention icon, and the bill in a selectable block directly beneath it, accessible name "Sale bill".
 - **No preview**: the text appears on screen only when copying fails.
 - **No bill**: the button is hidden when the detail answers no bill. A sale with no customer keeps it, with no balance line.
-- **Loading**: the button keeps its label, is disabled and busy (`aria-busy`), and shows no digits or `$`.
+- **Loading**: the button keeps its label, is disabled and busy (`aria-busy`), and shows no digits or `$`. It stays busy after Assign customer until the detail read back shows the customer.
 - **Not found**: a missing sale takes the existing not-found path.
 - **Fresh text**: built from the latest detail the screen holds; the detail keeps its existing refreshes.
 - **Phone**: at least 44 px, tokens only, works over plain http on the home network because the share or copy call runs synchronously inside the tap (ADR-0002); passes the mobile check with no new offender.
