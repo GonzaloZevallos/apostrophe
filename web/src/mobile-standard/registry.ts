@@ -52,6 +52,8 @@ export const STATE_NAMES: readonly string[] = [
   'CobroDesdeInicio',
   'CobroBorrar',
   'VentasFechas',
+  'VentaBillCargando',
+  'VentaBillNoSePudoCopiar',
   // Getting in and the shared Estados (`states-getting-in`).
   'EntrarFreno',
   'InvitacionMuerta',

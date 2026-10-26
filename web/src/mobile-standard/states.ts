@@ -49,6 +49,10 @@ export interface WalkState {
   writes?: readonly WriteStub[]
   /** The GETs the state answers with a fixed status. */
   reads?: readonly ReadStub[]
+  /** Visited with the API held (its loading state) instead of loaded: no step runs. */
+  held?: true
+  /** The page's clipboard refuses every write, so a Copy fails in the walk (a test hook of the walk's page, never production code). */
+  failClipboard?: true
 }
 
 /** What is wrong between the walked states and the names `Violation.screen` may carry. */

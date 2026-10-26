@@ -175,9 +175,9 @@ function VentaDetalleScreen() {
   }, [notice])
 
   const assignedCustomerArrived = data !== undefined && data.customer !== null
-  useEffect(() => {
-    if (awaitingAssigned && (isError || assignedCustomerArrived)) setAwaitingAssigned(false)
-  }, [awaitingAssigned, isError, assignedCustomerArrived])
+  // Derived while rendering, not in an effect: the wait ends the render the detail shows the
+  // customer, or the query errors.
+  if (awaitingAssigned && (isError || assignedCustomerArrived)) setAwaitingAssigned(false)
 
   async function onCustomerChosen(customer: Customer | null): Promise<void> {
     if (customer === null) return // `allowNone={false}`: the sheet never offers it here.
