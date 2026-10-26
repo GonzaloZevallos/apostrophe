@@ -1,7 +1,7 @@
 """Local checks and CI run one list (ADR-0054): every `checks` command of
 `.agentic/stack.yaml` is a `run:` step of exactly one job of `.github/workflows/ci.yml`,
 and every `run:` step of that file is a `setup` command, a `checks` command or a named
-`CI_ONLY` entry. When `stack.yaml` has `ci:`, the gated jobs are the job ids of `ci.yml`
+`CI_ONLY` entry, and every `CI_ONLY` entry is run by some job. When `stack.yaml` has `ci:`, the gated jobs are the job ids of `ci.yml`
 and together hold every check and every `CI_ONLY` command. `stack_ci_problems` is a pure
 function over the parsed YAML, so the rejections are tested on in-memory data; the real
 files are checked with `ci:` absent (today) and with it added to a copy."""
