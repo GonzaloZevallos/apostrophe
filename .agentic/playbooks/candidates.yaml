@@ -728,3 +728,60 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, check each new file against every plan invariant on location and imports. Make the guard mapped to the invariant reject a sibling breaking it, with a rejecting fixture.
+  confidence: medium
+  seen_in:
+  - GH-80
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Commit a test that feeds each new enforcement path an input it must reject, at the declared seam. A hand-run negative check that was reverted is not evidence.
+  confidence: medium
+  seen_in:
+  - GH-80
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: process-suite-red
+  lesson: Before delivering, run every suite the repo gates on, not only the tests you added. New files can trip existing repo-wide scans, so check them for tripping those scans.
+  confidence: medium
+  seen_in:
+  - GH-188
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Tick off each numbered step and evidence item of the brief before delivery. Run every hand mutation it names, or state explicitly which ones you did not run and why.
+  confidence: medium
+  seen_in:
+  - GH-188
+  sources:
+  - finding
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Give every new function, main-level guard and written output a test that actually runs. Never wrap a required guard in a skip condition; a test the brief lets fail until a merge must fail, not skip.
+  confidence: medium
+  seen_in:
+  - GH-189
+  sources:
+  - finding
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer_integrator
+  category: spec-missing-test
+  lesson: Before delivering the integration, list the new functions and guards the merged subtasks added and check each is called by a test. Add the missing test, or record why none is possible.
+  confidence: low
+  seen_in:
+  - GH-189
+  sources:
+  - finding
+  added_at: '2026-10-26T04:18:57.034+00:00'
