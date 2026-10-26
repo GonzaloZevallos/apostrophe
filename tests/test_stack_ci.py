@@ -1,11 +1,12 @@
 """Local checks and CI run one list (ADR-0054): every `checks` command of
 `.agentic/stack.yaml` is a `run:` step of exactly one job of `.github/workflows/ci.yml`,
 and every `run:` step of that file is a `setup` command, a `checks` command or a named
-`CI_ONLY` entry, and every `CI_ONLY` entry is run by some job. When `stack.yaml` has `ci:`,
-the gated jobs are the job ids of `ci.yml` and together hold every check and every
-`CI_ONLY` command. `stack_ci_problems` is a pure
-function over the parsed YAML, so the rejections are tested on in-memory data; the real
-files are checked with `ci:` absent (today) and with it added to a copy."""
+`CI_ONLY` or `PARKED` entry, and every `CI_ONLY` and `PARKED` entry is run by some job, and
+no command is in both dicts. A `PARKED` command runs in CI on every pull request and gates
+nothing. When `stack.yaml` has `ci:`, the gated jobs are the job ids of `ci.yml` and together
+hold every check and every `CI_ONLY` command, and no gated job holds a `PARKED` command.
+`stack_ci_problems` is a pure function over the parsed YAML, so the rejections are tested on
+in-memory data; the real files are checked with `ci:` absent (today) and with it added to a copy."""
 
 from __future__ import annotations
 
@@ -23,7 +24,15 @@ CI_ONLY: dict[str, str] = {
     "npx --prefix web playwright install --with-deps chromium": (
         "the runner needs the root `--with-deps` form of `setup.web-browsers`"
     ),
-    "npm --prefix web run e2e": "off locally by the owner's decision of 2026-10-26",
+}
+
+# Commands CI runs on every pull request that gate no merge, each with the reason it is parked
+# and when it joins `ci:`. A parked command never sits in a gated job.
+PARKED: dict[str, str] = {
+    "npm --prefix web run e2e": (
+        "off locally by the owner (2026-10-26, PR #434) and flaky under #428; "
+        "joins ci: when both are lifted"
+    ),
 }
 
 Data = dict[str, Any]
@@ -35,7 +44,7 @@ def _load(path: Path) -> Data:
 
 STACK = _load(REPO_ROOT / ".agentic" / "stack.yaml")
 WORKFLOW = _load(REPO_ROOT / ".github" / "workflows" / "ci.yml")
-GATED = ["test", "web", "e2e"]
+GATED = ["test", "web"]
 
 
 def _runs(workflow: Data) -> dict[str, list[str]]:
@@ -46,7 +55,9 @@ def _runs(workflow: Data) -> dict[str, list[str]]:
     }
 
 
-def stack_ci_problems(stack: Data, workflow: Data, ci_only: dict[str, str]) -> list[str]:
+def stack_ci_problems(
+    stack: Data, workflow: Data, ci_only: dict[str, str], parked: dict[str, str]
+) -> list[str]:
     """What keeps `stack` and `workflow` from being one list of checks."""
     problems: list[str] = []
     runs = _runs(workflow)
@@ -61,9 +72,16 @@ def stack_ci_problems(stack: Data, workflow: Data, ci_only: dict[str, str]) -> l
         elif gated is not None and holders[0] not in gated:
             problems.append(f"check {name!r} runs in job {holders[0]!r}, not in ci:")
 
-    for command in ci_only:
-        if not any(command in commands for commands in runs.values()):
-            problems.append(f"CI_ONLY command ({command}) is run by no job of ci.yml")
+    for kind, exempt in (("CI_ONLY", ci_only), ("PARKED", parked)):
+        for command in exempt:
+            if not any(command in commands for commands in runs.values()):
+                problems.append(f"{kind} command ({command}) is run by no job of ci.yml")
+
+    problems.extend(
+        f"command ({command}) is in both CI_ONLY and PARKED"
+        for command in ci_only
+        if command in parked
+    )
 
     if gated is not None:
         for name in gated:
@@ -73,8 +91,14 @@ def stack_ci_problems(stack: Data, workflow: Data, ci_only: dict[str, str]) -> l
             holders = [job for job, commands in runs.items() if command in commands]
             if holders and not any(job in gated for job in holders):
                 problems.append(f"CI_ONLY command ({command}) is not in a gated job")
+        for command in parked:
+            problems.extend(
+                f"PARKED command ({command}) is in gated job {job!r}"
+                for job, commands in runs.items()
+                if command in commands and job in gated
+            )
 
-    known = {*setup.values(), *checks.values(), *ci_only}
+    known = {*setup.values(), *checks.values(), *ci_only, *parked}
     for job, commands in runs.items():
         problems.extend(
             f"job {job!r} runs an unknown step: {command}"
@@ -94,34 +118,55 @@ def _renamed(workflow: Data, old: str, new: str) -> Data:
 
 
 def test_ci_yml_runs_the_declared_checks_and_nothing_unnamed() -> None:
-    assert stack_ci_problems(STACK, WORKFLOW, CI_ONLY) == []
+    assert stack_ci_problems(STACK, WORKFLOW, CI_ONLY, PARKED) == []
 
 
 def test_the_same_holds_once_ci_is_turned_on() -> None:
-    assert stack_ci_problems(_with_ci(STACK, GATED), WORKFLOW, CI_ONLY) == []
+    assert stack_ci_problems(_with_ci(STACK, GATED), WORKFLOW, CI_ONLY, PARKED) == []
 
 
 def test_a_renamed_job_is_not_a_job_the_gate_names() -> None:
     problems = stack_ci_problems(
-        _with_ci(STACK, GATED), _renamed(WORKFLOW, "test", "unit"), CI_ONLY
+        _with_ci(STACK, GATED), _renamed(WORKFLOW, "test", "unit"), CI_ONLY, PARKED
     )
     assert any("ci: names 'test'" in p for p in problems)
     assert any("job 'unit', not in ci:" in p for p in problems)
 
 
 def test_a_check_in_an_ungated_job_is_refused_when_ci_is_on() -> None:
-    problems = stack_ci_problems(_with_ci(STACK, ["test", "e2e"]), WORKFLOW, CI_ONLY)
+    problems = stack_ci_problems(_with_ci(STACK, ["test", "e2e"]), WORKFLOW, CI_ONLY, PARKED)
     assert any("'web'" in p and "not in ci:" in p for p in problems)
 
 
 def test_a_ci_only_command_in_an_ungated_job_is_refused_when_ci_is_on() -> None:
-    problems = stack_ci_problems(_with_ci(STACK, ["test", "web"]), WORKFLOW, CI_ONLY)
-    assert any("npm --prefix web run e2e" in p and "gated" in p for p in problems)
+    install = "npx --prefix web playwright install --with-deps chromium"
+    problems = stack_ci_problems(_with_ci(STACK, ["test"]), WORKFLOW, CI_ONLY, PARKED)
+    assert f"CI_ONLY command ({install}) is not in a gated job" in problems
+
+
+def test_a_parked_command_in_a_gated_job_is_refused() -> None:
+    problems = stack_ci_problems(_with_ci(STACK, ["test", "web", "e2e"]), WORKFLOW, CI_ONLY, PARKED)
+    assert problems == ["PARKED command (npm --prefix web run e2e) is in gated job 'e2e'"]
+
+
+def test_a_parked_command_no_job_runs_is_refused() -> None:
+    parked = {**PARKED, "npm --prefix web run storybook": "a step nobody runs"}
+    problems = stack_ci_problems(STACK, WORKFLOW, CI_ONLY, parked)
+    assert problems == [
+        "PARKED command (npm --prefix web run storybook) is run by no job of ci.yml"
+    ]
+
+
+def test_a_command_in_both_dicts_is_refused() -> None:
+    e2e = "npm --prefix web run e2e"
+    ci_only = {**CI_ONLY, e2e: "also listed as CI_ONLY"}
+    problems = stack_ci_problems(STACK, WORKFLOW, ci_only, PARKED)
+    assert problems == [f"command ({e2e}) is in both CI_ONLY and PARKED"]
 
 
 def test_a_ci_only_entry_no_job_runs_is_refused() -> None:
     ci_only = {**CI_ONLY, "npm --prefix web run storybook": "a step nobody runs"}
-    problems = stack_ci_problems(STACK, WORKFLOW, ci_only)
+    problems = stack_ci_problems(STACK, WORKFLOW, ci_only, PARKED)
     assert problems == [
         "CI_ONLY command (npm --prefix web run storybook) is run by no job of ci.yml"
     ]
@@ -130,28 +175,28 @@ def test_a_ci_only_entry_no_job_runs_is_refused() -> None:
 def test_an_unknown_step_is_refused() -> None:
     workflow = copy.deepcopy(WORKFLOW)
     workflow["jobs"]["test"]["steps"].append({"run": "make everything-green"})
-    problems = stack_ci_problems(STACK, workflow, CI_ONLY)
+    problems = stack_ci_problems(STACK, workflow, CI_ONLY, PARKED)
     assert problems == ["job 'test' runs an unknown step: make everything-green"]
 
 
 def test_a_check_missing_from_ci_yml_is_refused() -> None:
     stack = copy.deepcopy(STACK)
     stack["checks"]["web-docs"] = "npm --prefix web run docs"
-    problems = stack_ci_problems(stack, WORKFLOW, CI_ONLY)
+    problems = stack_ci_problems(stack, WORKFLOW, CI_ONLY, PARKED)
     assert any("'web-docs'" in p and "0 jobs" in p for p in problems)
 
 
 def test_a_check_run_by_two_jobs_is_refused() -> None:
     workflow = copy.deepcopy(WORKFLOW)
     workflow["jobs"]["e2e"]["steps"].append({"run": STACK["checks"]["types"]})
-    problems = stack_ci_problems(STACK, workflow, CI_ONLY)
+    problems = stack_ci_problems(STACK, workflow, CI_ONLY, PARKED)
     assert any("'types'" in p and "2 jobs" in p for p in problems)
 
 
 def test_a_check_that_differs_from_its_ci_step_is_refused() -> None:
     stack = copy.deepcopy(STACK)
     stack["checks"]["types"] = "uv run --no-project mypy app tests"
-    problems = stack_ci_problems(stack, WORKFLOW, CI_ONLY)
+    problems = stack_ci_problems(stack, WORKFLOW, CI_ONLY, PARKED)
     assert any("'types'" in p for p in problems)
     assert any("mypy app tests scripts" in p and "unknown step" in p for p in problems)
 
@@ -159,3 +204,8 @@ def test_a_check_that_differs_from_its_ci_step_is_refused() -> None:
 @pytest.mark.parametrize("command", sorted(CI_ONLY))
 def test_every_ci_only_entry_has_a_reason(command: str) -> None:
     assert CI_ONLY[command].strip()
+
+
+@pytest.mark.parametrize("command", sorted(PARKED))
+def test_every_parked_entry_has_a_reason(command: str) -> None:
+    assert PARKED[command].strip()
