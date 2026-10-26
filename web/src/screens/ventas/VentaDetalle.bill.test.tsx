@@ -154,7 +154,15 @@ const WITH_CUSTOMER = { ...SALE, customer: NICO, bill: { ...SALE.bill, balance: 
 
 test('after an assign the copied text ends with the balance of the second GET', async () => {
   setSecureContext(false)
-  Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true })
+  const copied: string[] = []
+  Object.defineProperty(document, 'execCommand', {
+    // `copyText` selects a temporary textarea holding the text, then calls this.
+    value: vi.fn(() => {
+      copied.push(document.querySelector('textarea')?.value ?? '')
+      return true
+    }),
+    configurable: true,
+  })
   stubAssign([() => Promise.resolve(jsonResponse(200, NO_CUSTOMER)), () => Promise.resolve(jsonResponse(200, WITH_CUSTOMER))])
   renderDetalle()
   await chooseNico()
@@ -163,7 +171,8 @@ test('after an assign the copied text ends with the balance of the second GET', 
   fireEvent.click(await readyButton('Copy'))
 
   await screen.findByText('Bill copied')
-  expect(document.execCommand).toHaveBeenCalledTimes(1)
+  expect(copied).toHaveLength(1)
+  expect(copied[0]?.endsWith('Your balance: $ 41.000')).toBe(true)
   expect(screen.queryByText('Customer assigned')).not.toBeInTheDocument()
 })
 

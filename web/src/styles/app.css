@@ -2023,8 +2023,8 @@ body {
   gap: 10px;
 }
 
-/* The sale bill's Share/Copy is the first of the actions: no tap delay or double-tap zoom. */
-.venta-detalle__acciones > .boton:first-child {
+/* The sale bill's Share/Copy: no tap delay or double-tap zoom. */
+.sale-bill__boton {
   touch-action: manipulation;
 }
 

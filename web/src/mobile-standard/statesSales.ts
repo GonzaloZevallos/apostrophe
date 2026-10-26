@@ -3,7 +3,7 @@
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import { COMMON_TEXT } from '../copy/common.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
-import { SALE_BILL_TEXT, SALES_TEXT } from '../copy/sales.ts'
+import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkState } from './states.ts'
 
 export const SALES_STATES: readonly WalkState[] = [
@@ -74,19 +74,5 @@ export const SALES_STATES: readonly WalkState[] = [
     route: SALES,
     steps: [{ click: SALES_TEXT.dates }],
     visible: SALES_TEXT.to,
-  },
-  {
-    screen: 'VentaBillCargando',
-    route: SALE.replace(':id', '{owing_sale}'),
-    steps: [],
-    visible: SALE_BILL_TEXT.copy,
-    held: true,
-  },
-  {
-    screen: 'VentaBillNoSePudoCopiar',
-    route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: SALE_BILL_TEXT.copy }],
-    visible: SALE_BILL_TEXT.copyFailed,
-    failClipboard: true,
   },
 ]

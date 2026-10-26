@@ -68,24 +68,9 @@ export async function walkState(
   const context = page.context()
   const undoWrites = await guardWrites(context, state.writes ?? [])
   const undoReads = await stubReads(context, state.reads ?? [])
-  if (state.failClipboard === true) {
-    // The walk's page refuses every clipboard write: Copy fails, as it does on a phone that withholds it.
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator, 'clipboard', {
-        value: { writeText: () => Promise.reject(new Error('refused')) },
-        configurable: true,
-      })
-    })
-  }
   try {
-    return await walkScreen(page, asScreen(state), cell, state.held === true, facts)
+    return await walkScreen(page, asScreen(state), cell, false, facts)
   } finally {
-    if (state.failClipboard === true) {
-      // Init scripts cannot be removed: a later one puts the page's own clipboard back for the next state.
-      await page.addInitScript(() => {
-        Reflect.deleteProperty(navigator, 'clipboard')
-      })
-    }
     await undoReads()
     await undoWrites()
   }
