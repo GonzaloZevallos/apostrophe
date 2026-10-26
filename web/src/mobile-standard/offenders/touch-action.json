@@ -1692,42 +1692,6 @@
     "issue": 48
   },
   {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "link:Customers",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "link:Home",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "link:More",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "link:Sales",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "link:Varieties",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "navigation:Navigation",
-    "issue": 48
-  },
-  {
     "screen": "GastoEditar",
     "rule": "touch-action",
     "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
@@ -1755,42 +1719,6 @@
     "screen": "GastoEditar",
     "rule": "touch-action",
     "target": "button:Previous month",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "link:Customers",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "link:Home",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "link:More",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "link:Sales",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "link:Varieties",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "navigation:Navigation",
     "issue": 48
   },
   {

@@ -78,30 +78,6 @@
     "issue": 47
   },
   {
-    "screen": "GastoEditar",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "chrome-at-load",
-    "target": "link:New sale",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "chrome-at-load",
-    "target": "link:New sale",
-    "issue": 48
-  },
-  {
     "screen": "Inicio",
     "rule": "chrome-at-load",
     "target": "navigation:Navigation",
