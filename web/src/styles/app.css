@@ -442,6 +442,12 @@ body {
 
 .disposicion .pantalla {
   padding: 0;
+  /* Inside the shell the column is already at least one viewport tall (`.disposicion`), and
+   * the card's "‹ parent" arrow and the bar sit in it with the screen: the screen takes what
+   * they leave, not a viewport of its own on top of them. A page that is one viewport tall
+   * stays one viewport tall when the viewport grows (the design capture's growth check). */
+  min-height: 0;
+  flex: 1;
 }
 
 .bar-inferior {
