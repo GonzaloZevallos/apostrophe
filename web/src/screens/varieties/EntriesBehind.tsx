@@ -8,27 +8,36 @@
  * chrome, no `h1` and no ids.
  */
 
-import { useQuery } from '@tanstack/react-query'
-import { useOutletContext } from 'react-router'
-import { get } from '../../api/client'
-import { keys } from '../../api/keys'
-import type { Me } from '../../api/me'
-import { readStock } from '../../api/stock'
-import { COMMON_TEXT } from '../../copy/common'
-import { EntryRows } from '../EntriesList'
-import type { Variety } from '../Variedades'
+import { useQuery } from "@tanstack/react-query";
+import { useOutletContext } from "react-router";
+import { get } from "../../api/client";
+import { keys } from "../../api/keys";
+import type { Me } from "../../api/me";
+import { readStock } from "../../api/stock";
+import { COMMON_TEXT } from "../../copy/common";
+import { EntryRows } from "../EntriesList";
+import type { Variety } from "../Variedades";
 
 function noDelete(): void {
   // The pane is a picture: nothing in it acts.
 }
 
 export default function EntriesBehind() {
-  const me = useOutletContext<Me>()
-  const varieties = useQuery({ queryKey: keys.varieties(), queryFn: () => get<Variety[]>('/varieties'), retry: false })
-  const stock = useQuery({ queryKey: keys.stock(), queryFn: readStock, retry: false })
+  const me = useOutletContext<Me>();
+  const varieties = useQuery({
+    queryKey: keys.varieties(),
+    queryFn: () => get<Variety[]>("/varieties"),
+    retry: false,
+  });
+  const stock = useQuery({
+    queryKey: keys.stock(),
+    queryFn: readStock,
+    retry: false,
+  });
 
-  if (varieties.data === undefined || stock.data === undefined) return null
-  const nameOf = (id: number): string => varieties.data.find((variety) => variety.id === id)?.name ?? ''
+  if (varieties.data === undefined || stock.data === undefined) return null;
+  const nameOf = (id: number): string =>
+    varieties.data.find((variety) => variety.id === id)?.name ?? "";
 
   return (
     <div className="pantalla">
@@ -36,7 +45,10 @@ export default function EntriesBehind() {
         <span className="encabezado__titulo">{COMMON_TEXT.allEntries}</span>
         {stock.data.entries.length > 0 && (
           <EntryRows
-            rows={stock.data.entries.map((entry) => ({ ...entry, kind: 'entry' as const }))}
+            rows={stock.data.entries.map((entry) => ({
+              ...entry,
+              kind: "entry" as const,
+            }))}
             today={me.today}
             nameOf={nameOf}
             varietyId={undefined}
@@ -46,5 +58,5 @@ export default function EntriesBehind() {
         )}
       </div>
     </div>
-  )
+  );
 }
