@@ -63,3 +63,21 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When a measurement needs a temporary override that departs from the brief, record the override with the figures and carry it into the PR description, together with the SHAs, versions and date.
+  confidence: low
+  seen_in:
+  - GH-156
+  sources:
+  - finding
+  added_at: '2026-10-26T03:45:20.375+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When a doc records measured figures, name the exact commit they were measured at, and after merging the base branch re-check that the base and tree claims still describe the head.
+  confidence: medium
+  seen_in:
+  - GH-112
+  sources:
+  - finding
+  added_at: '2026-10-26T03:45:20.375+00:00'

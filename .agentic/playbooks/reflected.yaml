@@ -27,3 +27,13 @@ tasks:
   GH-101@review:
     cost_usd: 0.1332
     decisions: 1
+  GH-157@review:
+    cost_usd: 0.0143
+  GH-158@review:
+    cost_usd: 0.0107
+  GH-156@review:
+    cost_usd: 0.0319
+  GH-112@review:
+    cost_usd: 0.0146
+  GH-136@review:
+    cost_usd: 0.0118
