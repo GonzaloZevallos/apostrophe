@@ -4585,6 +4585,16 @@ body {
   }
 }
 
+/* The screen drawn behind a phone sheet on a direct address (`BehindPane`): a picture of the
+ * parent, never touched or read, and clipped in width so what overflows under the sheet cannot
+ * widen the page. */
+@media (max-width: 899.98px) {
+  .behind-pane {
+    pointer-events: none;
+    overflow-x: clip;
+  }
+}
+
 /* The phone's fixed chrome (GH-319): the bar is fixed to the bottom on tab roots and cards, and
  * "+ New sale" with its missing line floats just above it, on tab roots only. One token,
  * `--bottom-chrome-height` (the bar, the button group and the home-bar inset), feeds the content's

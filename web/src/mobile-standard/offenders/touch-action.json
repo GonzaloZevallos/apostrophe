@@ -246,18 +246,6 @@
     "issue": 47
   },
   {
-    "screen": "ClienteEditar",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteEditar",
-    "rule": "touch-action",
-    "target": "button:Save and use",
-    "issue": 46
-  },
-  {
     "screen": "ClienteFicha",
     "rule": "touch-action",
     "target": "button:Delete payment",
@@ -303,18 +291,6 @@
     "screen": "ClienteFicha",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "touch-action",
-    "target": "button:Save and use",
     "issue": 46
   },
   {

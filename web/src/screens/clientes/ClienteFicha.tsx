@@ -22,7 +22,6 @@ import { getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import { useIsVipCustomers } from '../../api/pricingSettings'
 import {
-  type AccountRow,
   type PaymentMethod,
   deletePayment,
   getAccount,
@@ -47,28 +46,13 @@ import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
-import { type BalanceTone, METHOD_LABEL, deleteRowIndices, ledgerRowView } from './accountRows'
+import AccountRowLine from './AccountRowLine'
+import { METHOD_LABEL, deleteRowIndices, rowKey } from './accountRows'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 
-/** The balance line's class, by the tone `ledgerRowView` chose: amber only for what is
- * owed, the neutral/blue accent for a credit, plain ink for a settled balance. */
-const BALANCE_TONE_CLASS: Record<BalanceTone, string> = {
-  debt: 'monto-deuda',
-  credit: 'monto-credito',
-  neutral: '',
-}
-
 function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
   return CUSTOMERS_TEXT.deletePaymentOf(formatMoney(payment.amount), METHOD_LABEL[payment.method], formatDateShort(payment.paid_on))
-}
-
-/** A row's React key, from the ids its own kind carries (never its index). A
- * payment settles a given sale in at most one split, so `payment`+`sale` is unique. */
-function rowKey(row: AccountRow): string {
-  if (row.kind === 'sale') return `sale-${row.sale.id}`
-  if (row.kind === 'payment') return `payment-${row.payment.id}-${row.applied_to.sale_id}`
-  return `credit-${row.payment.id}`
 }
 
 function cardHeading(root: HTMLElement): HTMLElement | null {
@@ -238,37 +222,25 @@ export default function ClienteFicha() {
           <h2 id="cuenta-cliente-titulo" className="rotulo cuenta-cliente__encabezado">
             {CUSTOMERS_TEXT.accountHeading}
           </h2>
-          {rows.map((row, index) => {
-            const view = ledgerRowView(row)
-            return (
-              <div key={rowKey(row)} className="cuenta-cliente__fila">
-                <span className="cuenta-cliente__fecha">{formatDateShort(row.date)}</span>
-                <div className="cuenta-cliente__texto">
-                  <span className="cuenta-cliente__titulo">{view.title}</span>
-                  <span className="cuenta-cliente__sub">{view.sub}</span>
-                </div>
-                <div className="cuenta-cliente__cifras">
-                  <span className="cuenta-cliente__monto">{view.own}</span>
-                  <span className={`cuenta-cliente__saldo ${BALANCE_TONE_CLASS[view.balanceTone]}`.trim()}>{view.balance}</span>
-                </div>
-                {deleteIndices.has(index) && row.kind !== 'sale' && (
-                  <Boton
-                    variant="icon"
-                    action="delete"
-                    ariaLabel={CUSTOMERS_TEXT.deletePayment}
-                    onClick={() =>
-                      setConfirmingDelete({
-                        id: row.payment.id,
-                        amount: row.payment.amount,
-                        method: row.payment.method,
-                        paid_on: row.payment.paid_on,
-                      })
-                    }
-                  />
-                )}
-              </div>
-            )
-          })}
+          {rows.map((row, index) => (
+            <AccountRowLine key={rowKey(row)} row={row}>
+              {deleteIndices.has(index) && row.kind !== 'sale' && (
+                <Boton
+                  variant="icon"
+                  action="delete"
+                  ariaLabel={CUSTOMERS_TEXT.deletePayment}
+                  onClick={() =>
+                    setConfirmingDelete({
+                      id: row.payment.id,
+                      amount: row.payment.amount,
+                      method: row.payment.method,
+                      paid_on: row.payment.paid_on,
+                    })
+                  }
+                />
+              )}
+            </AccountRowLine>
+          ))}
         </section>
 
         <div className="ficha-cliente__pie">

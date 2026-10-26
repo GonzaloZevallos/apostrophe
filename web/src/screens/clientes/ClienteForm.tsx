@@ -22,6 +22,7 @@ import { type FormEvent, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
+import Sheet, { SheetActions } from '../../components/Sheet'
 import { useFlash } from '../../flash/useFlash'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
@@ -204,27 +205,45 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     }
   }
 
+  const title = mode === 'nuevo' ? COMMON_TEXT.newCustomer : COMMON_TEXT.editCustomer
+
   return (
-    <main className="pantalla">
-      <div className="cuerpo">
-        <div className="encabezado-fila">
-          <span className="encabezado__titulo">
-            {mode === 'nuevo' ? COMMON_TEXT.newCustomer : COMMON_TEXT.editCustomer}
-          </span>
-          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
-        </div>
-        <form className="formulario" onSubmit={onSubmit}>
-          <CustomerFields
-            value={{ name, phone, vip }}
-            onChange={(next) => {
-              setName(next.name)
-              setPhone(next.phone)
-              setVip(next.vip)
-            }}
-            nameError={nameError}
-            phoneError={phoneError}
-            showVip={vipCustomers}
+    <Sheet
+      computer={viewport === 'computer'}
+      computerClass="pantalla"
+      computerDialog={false}
+      label={title}
+      touched={dirty}
+      onClose={close}
+      aside={
+        blocker.state === 'blocked' && (
+          <LeaveConfirm
+            blocker={blocker}
+            question={CUSTOMERS_TEXT.discardTheCustomer}
+            detail={COMMON_TEXT.losesWhatYouEntered}
+            keepLabel={COMMON_TEXT.noKeepEntering}
+            discardLabel={COMMON_TEXT.yesDiscard}
           />
+        )
+      }
+    >
+      <div className="encabezado-fila">
+        <span className="encabezado__titulo">{title}</span>
+        <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
+      </div>
+      <form className="formulario" onSubmit={onSubmit}>
+        <CustomerFields
+          value={{ name, phone, vip }}
+          onChange={(next) => {
+            setName(next.name)
+            setPhone(next.phone)
+            setVip(next.vip)
+          }}
+          nameError={nameError}
+          phoneError={phoneError}
+          showVip={vipCustomers}
+        />
+        <SheetActions>
           {formError !== null && (
             <span className="campo__error" role="alert">
               {formError}
@@ -234,17 +253,8 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           <Boton textOnly="submit" type="submit" disabled={save.isPending}>
             {CUSTOMERS_TEXT.saveAndUse}
           </Boton>
-        </form>
-      </div>
-      {blocker.state === 'blocked' && (
-        <LeaveConfirm
-          blocker={blocker}
-          question={CUSTOMERS_TEXT.discardTheCustomer}
-          detail={COMMON_TEXT.losesWhatYouEntered}
-          keepLabel={COMMON_TEXT.noKeepEntering}
-          discardLabel={COMMON_TEXT.yesDiscard}
-        />
-      )}
-    </main>
+        </SheetActions>
+      </form>
+    </Sheet>
   )
 }
