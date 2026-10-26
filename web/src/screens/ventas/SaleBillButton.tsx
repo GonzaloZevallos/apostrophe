@@ -97,13 +97,12 @@ export default function SaleBillButton({ state, refreshing, onCopied }: SaleBill
   }
 
   return (
-    <>
+    <div className="sale-bill">
       <Boton
         variant="secondary"
         icon={icon}
         disabled={busy}
         ariaBusy={busy ? true : undefined}
-        className="sale-bill__boton"
         onClick={onClick}
       >
         {label}
@@ -118,6 +117,6 @@ export default function SaleBillButton({ state, refreshing, onCopied }: SaleBill
           <pre className="sale-bill__texto">{failure.text}</pre>
         </div>
       )}
-    </>
+    </div>
   )
 }

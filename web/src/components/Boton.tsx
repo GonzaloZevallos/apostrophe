@@ -48,8 +48,6 @@ interface BotonCommon {
   ariaControls?: string
   /** For a button whose action is waiting on data: it reads as busy to assistive technology. */
   ariaBusy?: boolean
-  /** A placement class of the screen (a spacing or gesture rule for this one button), never a base style. */
-  className?: string
 }
 
 interface BotonWithText extends BotonCommon {
@@ -122,7 +120,7 @@ export default function Boton(props: BotonProps) {
   return (
     <button
       type={props.type ?? 'button'}
-      className={props.className === undefined ? className : `${className} ${props.className}`}
+      className={className}
       onClick={props.onClick}
       disabled={props.disabled ?? false}
       aria-label={ariaLabel}

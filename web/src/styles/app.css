@@ -2023,8 +2023,13 @@ body {
   gap: 10px;
 }
 
-/* The sale bill's Share/Copy: no tap delay or double-tap zoom. */
-.sale-bill__boton {
+/* The sale bill's Share/Copy (`SaleBillButton`): the wrapper takes no box of its own, so its
+ * children stay items of the actions column; its button gets no tap delay or double-tap zoom. */
+.sale-bill {
+  display: contents;
+}
+
+.sale-bill > button {
   touch-action: manipulation;
 }
 
