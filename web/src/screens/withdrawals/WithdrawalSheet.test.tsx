@@ -81,7 +81,7 @@ test('a direct address to the edit shows the sheet over the withdrawal, focus on
   expectBehindPane(pane)
 })
 
-test('while the withdrawal is pending only the form's own loading frame is drawn, no pane', async () => {
+test('while the withdrawal is pending only the loading frame is drawn, with no pane', async () => {
   renderWithdrawals([EDIT], withdrawalApi(() => new Promise<Response>(() => undefined)))
 
   await waitFor(() => expect(document.querySelector('.pantalla')).not.toBeNull())
