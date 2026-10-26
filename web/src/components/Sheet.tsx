@@ -37,6 +37,8 @@ export interface SheetProps {
   /** Whether the form holds something typed: the host's `dirty`, the one `useLeaveGuard` reads. */
   touched: boolean
   /** A click on the computer backdrop itself, while untouched. */
+  /** A role the computer frame keeps (the in-page edit `.capa` is `presentation`). */
+  computerFrameRole?: 'presentation'
   onClose: () => void
   /** The control that takes focus on a phone, instead of the first one. */
   initialFocus?: RefObject<HTMLElement | null>
@@ -85,6 +87,7 @@ export default function Sheet({
   computerDialog,
   computerBodyClass = 'cuerpo',
   frameTag: Frame = 'main',
+  computerFrameRole,
   titleId,
   label,
   touched,
@@ -141,7 +144,11 @@ export default function Sheet({
   }, [computer])
 
   return (
-    <Frame ref={frame} className={computer ? computerClass : 'pantalla sheet'}>
+    <Frame
+      ref={frame}
+      className={computer ? computerClass : 'pantalla sheet'}
+      role={computer ? computerFrameRole : undefined}
+    >
       <div
         ref={body}
         className={computer ? computerBodyClass : 'cuerpo sheet__body'}

@@ -130,6 +130,18 @@ export default function Gastos() {
   const [goneNotice, setGoneNotice] = useState(false)
 
   const view = useQuery({ queryKey: keys.expenses(month), queryFn: () => monthlyView(month) })
+  // On a computer it is the last child of `.capa__contenido`, as it always was; on a phone it sits
+  // beside the sheet's body.
+  const discardDialog = confirmingDiscard && (
+    <ConfirmDialog
+      title={COMMON_TEXT.discardTheChanges}
+      detail={EXPENSES_TEXT.whatYouChangedIsLost}
+      confirmText={EXPENSES_TEXT.yesDiscardThem}
+      cancelText={COMMON_TEXT.noKeepEditing}
+      onConfirm={closeEdit}
+      onCancel={() => setConfirmingDiscard(false)}
+    />
+  )
 
   // The gone notice clears itself after 2.5 s; a pending timer must not outlive the screen.
   const timers = useRef<number[]>([])
@@ -216,18 +228,8 @@ export default function Gastos() {
           label={EXPENSES_TEXT.editExpense}
           touched={editDirty}
           onClose={() => (editDirty ? setConfirmingDiscard(true) : closeEdit())}
-          aside={
-            confirmingDiscard && (
-              <ConfirmDialog
-                title={COMMON_TEXT.discardTheChanges}
-                detail={EXPENSES_TEXT.whatYouChangedIsLost}
-                confirmText={EXPENSES_TEXT.yesDiscardThem}
-                cancelText={COMMON_TEXT.noKeepEditing}
-                onConfirm={closeEdit}
-                onCancel={() => setConfirmingDiscard(false)}
-              />
-            )
-          }
+          computerFrameRole="presentation"
+          aside={!computer && discardDialog}
         >
           <ExpenseForm
             target={editTarget}
@@ -247,6 +249,7 @@ export default function Gastos() {
               setDeleteTarget(expense)
             }}
           />
+          {computer && discardDialog}
         </Sheet>
       )}
       {deleteTarget !== null && (

@@ -12,6 +12,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { COMMON_TEXT } from '../../copy/common'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { EXPENSE_NEW, EXPENSES } from '../../routes'
+import { stubViewport } from '../../test-viewport'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { type FetchImpl, ME, jsonResponse, renderExpenses } from './renderExpenses'
 
@@ -88,4 +89,20 @@ test('editing an expense opens an in-page sheet with Delete above Save, focus in
   const actions = document.querySelector('.sheet__actions')
   const buttons = Array.from(actions?.querySelectorAll('button') ?? []).map((button) => button.getAttribute('aria-label') ?? button.textContent)
   expect(buttons).toEqual([EXPENSES_TEXT.deleteExpense, EXPENSES_TEXT.saveTheExpense])
+})
+
+test('on a computer the edit keeps its frame: .capa presentation, and the discard question inside .capa__contenido', async () => {
+  stubViewport('computer')
+  renderExpenses([EXPENSES], api())
+
+  await userEvent.click(await screen.findByRole('button', { name: /Bolsas/ }))
+  await userEvent.type(await screen.findByLabelText('Details'), ' x')
+  await userEvent.click(screen.getByRole('button', { name: COMMON_TEXT.close }))
+
+  const question = await screen.findByText(COMMON_TEXT.discardTheChanges)
+  const capa = document.querySelector('.capa')
+  expect(capa).toHaveAttribute('role', 'presentation')
+  expect(question.closest('.capa__contenido')).not.toBeNull()
+  expect(capa?.querySelector(':scope > .capa__contenido')).toContainElement(question)
+  expect(document.querySelector('.sheet__actions')).toBeNull()
 })
