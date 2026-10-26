@@ -5,7 +5,7 @@
  */
 
 import { readdirSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import { describe, expect, test } from 'vitest'
 
 const SRC = resolve(__dirname, '..')
@@ -28,7 +28,7 @@ function walk(dir: string): string[] {
 
 function saleBillSources(): Record<string, string> {
   const files = walk(SRC).filter((path) => {
-    const name = path.slice(path.lastIndexOf('/') + 1)
+    const name = basename(path)
     const production = /\.tsx?$/.test(name) && !/\.test\./.test(name)
     const inSales = path.startsWith(join(SRC, 'sales')) && /^saleBill/.test(name)
     const inScreens = path.startsWith(join(SRC, 'screens')) && /^SaleBill/.test(name)
