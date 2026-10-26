@@ -15,34 +15,25 @@
  * actions, the delete above the main action (ADR-0053); a computer form keeps the order it had.
  */
 
-import { type FormEvent, Fragment, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ApiError, NetworkError, UNKNOWN_CODE, get } from "../api/client";
-import { invalidateResource, keys } from "../api/keys";
-import { isGone, resolveOverride, type RefusalCode } from "../api/refusals";
-import {
-  type Origin,
-  type StockEntry,
-  deleteEntry,
-  editEntry,
-  readStock,
-  recordEntry,
-} from "../api/stock";
-import { costPerGram, gramsToHundredths } from "../domain/costPerGram";
-import ConfirmDialog from "../components/ConfirmDialog";
-import ErrorGenerico, {
-  ERROR_GENERICO_MENSAJE,
-} from "../components/ErrorGenerico";
-import { SheetActions } from "../components/Sheet";
-import SinConexion from "../components/SinConexion";
-import { useViewport } from "../shell/useViewport";
-import { formatDate } from "../format/dates";
-import { formatGrams, formatMoney } from "../format/money";
-import { parseMoney, parseSignedGrams } from "../format/parse";
-import type { Variety } from "./Variedades";
-import { varietiesByName } from "./varieties/varietiesByName";
-import Boton from "../components/Boton";
+import { type FormEvent, Fragment, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
+import { invalidateResource, keys } from '../api/keys'
+import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
+import { type Origin, type StockEntry, deleteEntry, editEntry, readStock, recordEntry } from '../api/stock'
+import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
+import ConfirmDialog from '../components/ConfirmDialog'
+import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import { SheetActions } from '../components/Sheet'
+import SinConexion from '../components/SinConexion'
+import { useViewport } from '../shell/useViewport'
+import { formatDate } from '../format/dates'
+import { formatGrams, formatMoney } from '../format/money'
+import { parseMoney, parseSignedGrams } from '../format/parse'
+import type { Variety } from './Variedades'
+import { varietiesByName } from './varieties/varietiesByName'
+import Boton from '../components/Boton'
 import {
   COST_REQUIRED_HELP,
   GRAMS_INVALID,
@@ -50,77 +41,77 @@ import {
   onHandHelp,
   perGramPreview,
   STOCK_TEXT,
-} from "../copy/stock";
-import { COMMON_TEXT } from "../copy/common";
-import { GENERIC_REFUSAL_MESSAGE } from "../copy/settings";
+} from '../copy/stock'
+import { COMMON_TEXT } from '../copy/common'
+import { GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
-export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE;
-export const COST_REQUIRED = STOCK_TEXT.unaCompraNecesitaUn;
-export const COST_ON_NEGATIVE = STOCK_TEXT.unAjusteNegativoNo;
-export const DATE_IN_FUTURE = COMMON_TEXT.dateCannotBeFuture;
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
+export const COST_REQUIRED = STOCK_TEXT.unaCompraNecesitaUn
+export const COST_ON_NEGATIVE = STOCK_TEXT.unAjusteNegativoNo
+export const DATE_IN_FUTURE = COMMON_TEXT.dateCannotBeFuture
 
 const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
-  { value: "purchase", label: COMMON_TEXT.purchase },
-  { value: "harvest", label: COMMON_TEXT.harvest },
-  { value: "opening_stock", label: COMMON_TEXT.initialStock },
-  { value: "adjustment", label: COMMON_TEXT.adjustment },
-];
+  { value: 'purchase', label: COMMON_TEXT.purchase },
+  { value: 'harvest', label: COMMON_TEXT.harvest },
+  { value: 'opening_stock', label: COMMON_TEXT.initialStock },
+  { value: 'adjustment', label: COMMON_TEXT.adjustment },
+]
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
-  "stock.cost_required": COST_REQUIRED,
-  "stock.cost_on_negative_adjustment": COST_ON_NEGATIVE,
-  "stock.date_in_future": DATE_IN_FUTURE,
-  "stock.grams_invalid": GRAMS_INVALID,
-  "stock.cost_invalid": GENERIC_REFUSAL,
-  "stock.note_too_long": GENERIC_REFUSAL,
-};
+  'stock.cost_required': COST_REQUIRED,
+  'stock.cost_on_negative_adjustment': COST_ON_NEGATIVE,
+  'stock.date_in_future': DATE_IN_FUTURE,
+  'stock.grams_invalid': GRAMS_INVALID,
+  'stock.cost_invalid': GENERIC_REFUSAL,
+  'stock.note_too_long': GENERIC_REFUSAL,
+}
 
 interface CommonProps {
-  today: string;
-  entryId?: string;
+  today: string
+  entryId?: string
   /** A starting choice the person can still change. */
-  preselectedVarietyId?: number;
-  preselectedOrigin?: Origin;
+  preselectedVarietyId?: number
+  preselectedOrigin?: Origin
   /** Called after the entry is saved (and the stock queries marked stale). */
-  onSaved: () => void;
+  onSaved: () => void
   /** Called after the entry is deleted (and the stock queries marked stale). */
-  onDeleted?: () => void;
+  onDeleted?: () => void
   /** Called when the entry is no longer there (`mode="editar"`). */
-  onGone?: () => void;
+  onGone?: () => void
   /** Called with whether something is typed and not saved. */
-  onDirtyChange?: (dirty: boolean) => void;
+  onDirtyChange?: (dirty: boolean) => void
   /** Where the dialogs go; inline after the form when absent. */
-  dialogHost?: HTMLElement | null;
+  dialogHost?: HTMLElement | null
   /** The host draws the form in a `Sheet`: its last row is the pinned actions on a phone. */
-  pinned?: boolean;
+  pinned?: boolean
 }
 
 /** The owner's form: a new entry or an edit, nothing locked. */
 interface OpenProps extends CommonProps {
-  mode: "nuevo" | "editar";
+  mode: 'nuevo' | 'editar'
   /** The entry being edited (`mode="editar"`). */
-  initial?: StockEntry;
-  fixedVarietyId?: undefined;
-  fixedOrigin?: undefined;
+  initial?: StockEntry
+  fixedVarietyId?: undefined
+  fixedOrigin?: undefined
 }
 
 /** The locked form: only a new entry, with no starting entry, can lock its variety and origin. */
 interface LockedProps extends CommonProps {
-  mode: "nuevo";
-  initial?: undefined;
+  mode: 'nuevo'
+  initial?: undefined
   /** The variety is named, not chosen. */
-  fixedVarietyId: number;
+  fixedVarietyId: number
   /** The origin is a static chip, not offered. */
-  fixedOrigin: "opening_stock";
+  fixedOrigin: 'opening_stock'
 }
 
-export type StockEntryFormProps = OpenProps | LockedProps;
+export type StockEntryFormProps = OpenProps | LockedProps
 
 export default function StockEntryForm({
   mode,
   today,
   initial,
-  entryId = "",
+  entryId = '',
   preselectedVarietyId,
   preselectedOrigin,
   fixedVarietyId,
@@ -132,35 +123,31 @@ export default function StockEntryForm({
   dialogHost,
   pinned = false,
 }: StockEntryFormProps) {
-  const phone = useViewport() === "phone";
-  const Actions = pinned ? SheetActions : Fragment;
-  const queryClient = useQueryClient();
+  const phone = useViewport() === 'phone'
+  const Actions = pinned ? SheetActions : Fragment
+  const queryClient = useQueryClient()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>("/varieties"),
-  });
-  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock });
+    queryFn: () => get<Variety[]>('/varieties'),
+  })
+  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   // An entry of an archived variety keeps it: editing may keep that variety but the picker
   // offers no other archived one. Its name comes from the archived list, asked only then.
-  const listedVarieties = varietiesQuery.data;
+  const listedVarieties = varietiesQuery.data
   const entryVarietyIsListed =
-    initial === undefined ||
-    listedVarieties === undefined ||
-    listedVarieties.some((v) => v.id === initial.variety_id);
+    initial === undefined || listedVarieties === undefined || listedVarieties.some((v) => v.id === initial.variety_id)
   const archivedQuery = useQuery({
     queryKey: keys.archivedVarieties(),
-    queryFn: () => get<Variety[]>("/varieties?archived=true"),
+    queryFn: () => get<Variety[]>('/varieties?archived=true'),
     enabled: !entryVarietyIsListed,
-  });
+  })
   const pickable = [
     ...(listedVarieties ?? []),
     ...(archivedQuery.data ?? []).filter((v) => v.id === initial?.variety_id),
-  ];
+  ]
 
-  const [date, setDate] = useState(initial?.date ?? today);
-  const [grams, setGrams] = useState(
-    initial !== undefined ? String(initial.grams) : "",
-  );
+  const [date, setDate] = useState(initial?.date ?? today)
+  const [grams, setGrams] = useState(initial !== undefined ? String(initial.grams) : '')
   const [varietyId, setVarietyId] = useState(
     initial !== undefined
       ? String(initial.variety_id)
@@ -168,162 +155,145 @@ export default function StockEntryForm({
         ? String(fixedVarietyId)
         : preselectedVarietyId !== undefined
           ? String(preselectedVarietyId)
-          : "",
-  );
-  const [origin, setOrigin] = useState<Origin>(
-    initial?.origin ?? fixedOrigin ?? preselectedOrigin ?? "purchase",
-  );
+          : '',
+  )
+  const [origin, setOrigin] = useState<Origin>(initial?.origin ?? fixedOrigin ?? preselectedOrigin ?? 'purchase')
   const [totalCost, setTotalCost] = useState(
-    initial?.total_cost !== null && initial?.total_cost !== undefined
-      ? String(initial.total_cost)
-      : "",
-  );
-  const [note, setNote] = useState(initial?.note ?? "");
-  const [formError, setFormError] = useState<string | null>(null);
-  const [offline, setOffline] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [confirmingSave, setConfirmingSave] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+    initial?.total_cost !== null && initial?.total_cost !== undefined ? String(initial.total_cost) : '',
+  )
+  const [note, setNote] = useState(initial?.note ?? '')
+  const [formError, setFormError] = useState<string | null>(null)
+  const [offline, setOffline] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [confirmingSave, setConfirmingSave] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   // Something typed (or changed, on an edit) is what the host asks about before discarding.
   const dirty =
-    grams !== (initial !== undefined ? String(initial.grams) : "") ||
-    totalCost !==
-      (initial?.total_cost != null ? String(initial.total_cost) : "") ||
-    note !== (initial?.note ?? "");
+    grams !== (initial !== undefined ? String(initial.grams) : '') ||
+    totalCost !== (initial?.total_cost != null ? String(initial.total_cost) : '') ||
+    note !== (initial?.note ?? '')
   useEffect(() => {
-    onDirtyChange?.(dirty);
-  }, [dirty, onDirtyChange]);
+    onDirtyChange?.(dirty)
+  }, [dirty, onDirtyChange])
 
   // The entry is no longer there (deleted elsewhere, or never this business's).
   function entryIsGone(): void {
-    invalidateResource(queryClient, "stock", { refetchType: "none" });
-    onGone?.();
+    invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+    onGone?.()
   }
 
-  const previewGrams = parseSignedGrams(grams);
-  const previewCost = parseMoney(totalCost);
+  const previewGrams = parseSignedGrams(grams)
+  const previewCost = parseMoney(totalCost)
   // A negative adjustment carries no cost (stock.md): the preview only ever shows for
   // positive grams, the only case `cost_per_gram` (and its front mirror) accepts.
   const preview =
     previewGrams.ok && previewCost.ok && Number(previewGrams.value) > 0
       ? costPerGram(previewCost.value, gramsToHundredths(previewGrams.value))
-      : null;
+      : null
 
   const varietyGrams = (() => {
-    const variety = Number(varietyId);
-    if (varietyId === "" || !Number.isInteger(variety)) return null;
-    const found = stockQuery.data?.varieties.find(
-      (row) => row.variety_id === variety,
-    );
-    return found?.grams ?? null;
-  })();
+    const variety = Number(varietyId)
+    if (varietyId === '' || !Number.isInteger(variety)) return null
+    const found = stockQuery.data?.varieties.find((row) => row.variety_id === variety)
+    return found?.grams ?? null
+  })()
 
   function buildBody(): {
-    date: string;
-    variety_id: number;
-    origin: Origin;
-    grams: string;
-    total_cost?: number;
-    note?: string;
+    date: string
+    variety_id: number
+    origin: Origin
+    grams: string
+    total_cost?: number
+    note?: string
   } | null {
-    if (!previewGrams.ok) return null;
-    const variety = Number(varietyId);
-    if (!Number.isInteger(variety) || varietyId === "") return null;
-    const parsedCost =
-      totalCost.trim() === "" ? undefined : parseMoney(totalCost);
-    if (parsedCost !== undefined && !parsedCost.ok) return null;
+    if (!previewGrams.ok) return null
+    const variety = Number(varietyId)
+    if (!Number.isInteger(variety) || varietyId === '') return null
+    const parsedCost = totalCost.trim() === '' ? undefined : parseMoney(totalCost)
+    if (parsedCost !== undefined && !parsedCost.ok) return null
     return {
       date,
       variety_id: variety,
       origin,
       grams: previewGrams.value,
       total_cost: parsedCost?.ok ? parsedCost.value : undefined,
-      note: note.trim() === "" ? undefined : note.trim(),
-    };
+      note: note.trim() === '' ? undefined : note.trim(),
+    }
   }
 
   async function save(): Promise<void> {
-    const body = buildBody();
+    const body = buildBody()
     if (body === null) {
-      setFormError(GENERIC_REFUSAL);
-      return;
+      setFormError(GENERIC_REFUSAL)
+      return
     }
-    setFormError(null);
-    setOffline(false);
-    setSending(true);
+    setFormError(null)
+    setOffline(false)
+    setSending(true)
     try {
-      if (mode === "nuevo") {
-        await recordEntry(body);
+      if (mode === 'nuevo') {
+        await recordEntry(body)
       } else {
-        await editEntry(entryId, body);
+        await editEntry(entryId, body)
       }
       // Marked stale without refetching: this screen is leaving, and its own entry's query
       // would otherwise refetch a record that may no longer be there.
-      invalidateResource(queryClient, "stock", { refetchType: "none" });
-      onSaved();
+      invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+      onSaved()
     } catch (caught) {
-      if (
-        caught instanceof ApiError &&
-        mode === "editar" &&
-        isGone(caught.code)
-      ) {
-        entryIsGone();
-        return;
+      if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
+        entryIsGone()
+        return
       }
       if (caught instanceof ApiError) {
-        const message = resolveOverride(FIELD_OVERRIDES, caught.code);
-        setFormError(
-          message ??
-            (caught.code !== UNKNOWN_CODE
-              ? GENERIC_REFUSAL
-              : ERROR_GENERICO_MENSAJE),
-        );
+        const message = resolveOverride(FIELD_OVERRIDES, caught.code)
+        setFormError(message ?? (caught.code !== UNKNOWN_CODE ? GENERIC_REFUSAL : ERROR_GENERICO_MENSAJE))
       } else if (caught instanceof NetworkError) {
-        setOffline(true);
+        setOffline(true)
       } else {
-        setFormError(ERROR_GENERICO_MENSAJE);
+        setFormError(ERROR_GENERICO_MENSAJE)
       }
     } finally {
-      setSending(false);
-      setConfirmingSave(false);
+      setSending(false)
+      setConfirmingSave(false)
     }
   }
 
   function onSubmit(event: FormEvent<HTMLFormElement>): void {
-    event.preventDefault();
-    if (mode === "editar") {
-      setConfirmingSave(true);
-      return;
+    event.preventDefault()
+    if (mode === 'editar') {
+      setConfirmingSave(true)
+      return
     }
-    void save();
+    void save()
   }
 
   async function onConfirmDelete(): Promise<void> {
-    setDeleting(true);
-    setDeleteError(null);
+    setDeleting(true)
+    setDeleteError(null)
     try {
-      await deleteEntry(entryId);
-      invalidateResource(queryClient, "stock", { refetchType: "none" });
-      onDeleted?.();
+      await deleteEntry(entryId)
+      invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+      onDeleted?.()
     } catch (caught) {
-      setConfirmingDelete(false);
+      setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {
-        entryIsGone();
-        return;
+        entryIsGone()
+        return
       }
-      if (caught instanceof NetworkError) setOffline(true);
-      else setDeleteError(ERROR_GENERICO_MENSAJE);
+      if (caught instanceof NetworkError) setOffline(true)
+      else setDeleteError(ERROR_GENERICO_MENSAJE)
     } finally {
-      setDeleting(false);
+      setDeleting(false)
     }
   }
 
   const varietyName = (() => {
-    const found = pickable.find((variety) => String(variety.id) === varietyId);
-    return found?.name ?? "";
-  })();
+    const found = pickable.find((variety) => String(variety.id) === varietyId)
+    return found?.name ?? ''
+  })()
 
   const dialogs = (
     <>
@@ -334,7 +304,7 @@ export default function StockEntryForm({
           confirmText={STOCK_TEXT.siGuardar}
           cancelText={STOCK_TEXT.noSeguirEditando}
           onConfirm={() => {
-            if (!sending) void save();
+            if (!sending) void save()
           }}
           onCancel={() => setConfirmingSave(false)}
         />
@@ -351,23 +321,23 @@ export default function StockEntryForm({
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
-            if (!deleting) void onConfirmDelete();
+            if (!deleting) void onConfirmDelete()
           }}
           onCancel={() => setConfirmingDelete(false)}
         />
       )}
       {deleteError !== null && <ErrorGenerico />}
     </>
-  );
+  )
 
-  const deleteButton = mode === "editar" && (
+  const deleteButton = mode === 'editar' && (
     <Boton
       variant="icon"
       action="delete"
       ariaLabel={STOCK_TEXT.borrarEntrada}
       onClick={() => setConfirmingDelete(true)}
     />
-  );
+  )
 
   return (
     <>
@@ -395,9 +365,7 @@ export default function StockEntryForm({
             </label>
             <div className="campo">
               <div className="origen-pildoras">
-                <span className="pildora pildora--activa pildora--fija">
-                  {COMMON_TEXT.initialStock}
-                </span>
+                <span className="pildora pildora--activa pildora--fija">{COMMON_TEXT.initialStock}</span>
               </div>
             </div>
             <label className="campo">
@@ -465,11 +433,7 @@ export default function StockEntryForm({
                     <button
                       key={option.value}
                       type="button"
-                      className={
-                        origin === option.value
-                          ? "pildora pildora--activa"
-                          : "pildora"
-                      }
+                      className={origin === option.value ? 'pildora pildora--activa' : 'pildora'}
                       aria-pressed={origin === option.value}
                       onClick={() => setOrigin(option.value)}
                     >
@@ -516,12 +480,12 @@ export default function StockEntryForm({
           )}
           {pinned && phone && deleteButton}
           <Boton textOnly="submit" type="submit" disabled={sending}>
-            {mode === "nuevo" ? STOCK_TEXT.guardaLaEntrada : COMMON_TEXT.save}
+            {mode === 'nuevo' ? STOCK_TEXT.guardaLaEntrada : COMMON_TEXT.save}
           </Boton>
           {!(pinned && phone) && deleteButton}
         </Actions>
       </form>
       {dialogHost ? createPortal(dialogs, dialogHost) : dialogs}
     </>
-  );
+  )
 }

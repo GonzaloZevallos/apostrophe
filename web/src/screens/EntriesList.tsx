@@ -11,155 +11,125 @@
  * "Todas las entradas"); its withdrawal rows still open the withdrawal's detail.
  */
 
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useOutletContext } from "react-router";
-import { ApiError, NetworkError, get } from "../api/client";
-import { invalidateResource, keys } from "../api/keys";
-import type { Me } from "../api/me";
-import { isGone } from "../api/refusals";
-import {
-  type Movement,
-  type StockEntry,
-  deleteEntry,
-  readMovements,
-  readStock,
-} from "../api/stock";
-import ConfirmDialog from "../components/ConfirmDialog";
-import ErrorGenerico, {
-  ERROR_GENERICO_MENSAJE,
-} from "../components/ErrorGenerico";
-import GoneNotice from "../components/GoneNotice";
-import { useGoneNotice } from "../components/goneExit";
-import GoneScreen from "../components/GoneScreen";
-import InAppLink from "../components/InAppLink";
-import Loading from "../components/Loading";
-import SinConexion from "../components/SinConexion";
-import Boton from "../components/Boton";
-import BotonLink from "../components/BotonLink";
-import { useFlash } from "../flash/useFlash";
-import { formatDate } from "../format/dates";
-import { formatGrams, formatMoney } from "../format/money";
-import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from "../routes";
-import { useBackParent } from "../shell/useBackParent";
-import type { Variety } from "./Variedades";
-import { ORIGIN_LABEL } from "./originLabel";
-import {
-  EMPTY_STATE_DETAIL,
-  EMPTY_STATE_TITLE,
-  STOCK_TEXT,
-} from "../copy/stock";
-import { REASON_LABEL } from "./withdrawals/withdrawalReasons";
-import { COMMON_TEXT } from "../copy/common";
-import { OUT_OF_DATE_JOINER } from "../copy/pinnedCatalog";
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useOutletContext } from 'react-router'
+import { ApiError, NetworkError, get } from '../api/client'
+import { invalidateResource, keys } from '../api/keys'
+import type { Me } from '../api/me'
+import { isGone } from '../api/refusals'
+import { type Movement, type StockEntry, deleteEntry, readMovements, readStock } from '../api/stock'
+import ConfirmDialog from '../components/ConfirmDialog'
+import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import GoneNotice from '../components/GoneNotice'
+import { useGoneNotice } from '../components/goneExit'
+import GoneScreen from '../components/GoneScreen'
+import InAppLink from '../components/InAppLink'
+import Loading from '../components/Loading'
+import SinConexion from '../components/SinConexion'
+import Boton from '../components/Boton'
+import BotonLink from '../components/BotonLink'
+import { useFlash } from '../flash/useFlash'
+import { formatDate } from '../format/dates'
+import { formatGrams, formatMoney } from '../format/money'
+import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from '../routes'
+import { useBackParent } from '../shell/useBackParent'
+import type { Variety } from './Variedades'
+import { ORIGIN_LABEL } from './originLabel'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE, STOCK_TEXT } from '../copy/stock'
+import { REASON_LABEL } from './withdrawals/withdrawalReasons'
+import { COMMON_TEXT } from '../copy/common'
+import { OUT_OF_DATE_JOINER } from '../copy/pinnedCatalog'
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
     <main className="pantalla">
       <div className="cuerpo">{children}</div>
     </main>
-  );
+  )
 }
 
 interface Props {
-  varietyId?: number;
+  varietyId?: number
 }
 
 export default function EntriesList({ varietyId }: Props) {
-  const me = useOutletContext<Me>();
-  const queryClient = useQueryClient();
-  const flash = useFlash();
+  const me = useOutletContext<Me>()
+  const queryClient = useQueryClient()
+  const flash = useFlash()
 
-  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock });
+  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>("/varieties"),
-  });
+    queryFn: () => get<Variety[]>('/varieties'),
+  })
   const varietyQuery = useQuery({
     queryKey: keys.variety(String(varietyId)),
     queryFn: () => get<Variety>(`/varieties/${varietyId}`),
     enabled: varietyId !== undefined,
-  });
+  })
   const movementsQuery = useQuery({
     queryKey: keys.stockMovements(String(varietyId)),
     queryFn: () => readMovements(String(varietyId)),
     enabled: varietyId !== undefined,
-  });
+  })
 
-  useBackParent(
-    "variety-entries",
-    varietyQuery.data === undefined
-      ? undefined
-      : { title: varietyQuery.data.name },
-  );
+  useBackParent('variety-entries', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
 
-  const [confirming, setConfirming] = useState<StockEntry | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [offline, setOffline] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [goneNotice, setGoneNotice] = useState(false);
-  const goneExited = useGoneNotice();
+  const [confirming, setConfirming] = useState<StockEntry | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [offline, setOffline] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const [goneNotice, setGoneNotice] = useState(false)
+  const goneExited = useGoneNotice()
 
-  const error = stockQuery.error ?? varietyQuery.error ?? movementsQuery.error;
-  if (
-    varietyQuery.error instanceof ApiError &&
-    isGone(varietyQuery.error.code)
-  ) {
-    return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />;
+  const error = stockQuery.error ?? varietyQuery.error ?? movementsQuery.error
+  if (varietyQuery.error instanceof ApiError && isGone(varietyQuery.error.code)) {
+    return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
   }
   if (error !== null) {
-    return (
-      <Card>
-        {error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
-      </Card>
-    );
+    return <Card>{error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Card>
   }
   if (
     stockQuery.data === undefined ||
-    (varietyId !== undefined &&
-      (varietyQuery.data === undefined || movementsQuery.data === undefined))
+    (varietyId !== undefined && (varietyQuery.data === undefined || movementsQuery.data === undefined))
   ) {
     return (
       <Card>
         <Loading />
       </Card>
-    );
+    )
   }
 
-  const stock = stockQuery.data;
-  const readOnly = varietyQuery.data?.archived === true;
+  const stock = stockQuery.data
+  const readOnly = varietyQuery.data?.archived === true
   const rows: Movement[] =
     varietyId === undefined || movementsQuery.data === undefined
-      ? stock.entries.map((entry) => ({ ...entry, kind: "entry" as const }))
-      : movementsQuery.data;
-  const nameOf = (id: number): string =>
-    (varietiesQuery.data ?? []).find((variety) => variety.id === id)?.name ??
-    "";
+      ? stock.entries.map((entry) => ({ ...entry, kind: 'entry' as const }))
+      : movementsQuery.data
+  const nameOf = (id: number): string => (varietiesQuery.data ?? []).find((variety) => variety.id === id)?.name ?? ''
 
   async function onConfirmDelete(entry: StockEntry): Promise<void> {
-    setDeleting(true);
-    setOffline(false);
-    setFailed(false);
+    setDeleting(true)
+    setOffline(false)
+    setFailed(false)
     try {
-      await deleteEntry(String(entry.id));
-      flash.showNow(COMMON_TEXT.entryDeleted);
+      await deleteEntry(String(entry.id))
+      flash.showNow(COMMON_TEXT.entryDeleted)
     } catch (caught) {
-      if (caught instanceof ApiError && isGone(caught.code))
-        setGoneNotice(true);
-      else if (caught instanceof NetworkError) setOffline(true);
-      else setFailed(true);
+      if (caught instanceof ApiError && isGone(caught.code)) setGoneNotice(true)
+      else if (caught instanceof NetworkError) setOffline(true)
+      else setFailed(true)
     } finally {
-      setConfirming(null);
-      setDeleting(false);
+      setConfirming(null)
+      setDeleting(false)
     }
-    invalidateResource(queryClient, "stock");
+    invalidateResource(queryClient, 'stock')
   }
 
   return (
     <Card>
-      <h1 className="encabezado__titulo">
-        {varietyId === undefined ? COMMON_TEXT.allEntries : COMMON_TEXT.entries}
-      </h1>
+      <h1 className="encabezado__titulo">{varietyId === undefined ? COMMON_TEXT.allEntries : COMMON_TEXT.entries}</h1>
       {(goneNotice || goneExited) && <GoneNotice />}
       {offline && <SinConexion />}
       {failed && (
@@ -199,13 +169,13 @@ export default function EntriesList({ varietyId }: Props) {
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
-            if (!deleting) void onConfirmDelete(confirming);
+            if (!deleting) void onConfirmDelete(confirming)
           }}
           onCancel={() => setConfirming(null)}
         />
       )}
     </Card>
-  );
+  )
 }
 
 /** The list's rows, shared with the screen drawn behind the entry sheet (`EntriesBehind`). */
@@ -217,22 +187,19 @@ export function EntryRows({
   readOnly,
   onDelete,
 }: {
-  rows: Movement[];
-  today: string;
-  nameOf: (id: number) => string;
-  varietyId: number | undefined;
-  readOnly: boolean;
-  onDelete: (entry: StockEntry) => void;
+  rows: Movement[]
+  today: string
+  nameOf: (id: number) => string
+  varietyId: number | undefined
+  readOnly: boolean
+  onDelete: (entry: StockEntry) => void
 }) {
   return (
     <ul className="lista-entradas">
       {rows.map((entry) =>
-        entry.kind === "withdrawal" ? (
+        entry.kind === 'withdrawal' ? (
           <li key={`withdrawal-${entry.id}`} className="fila-entrada">
-            <InAppLink
-              to={pathTo(WITHDRAWAL, { id: entry.id })}
-              className="fila-entrada__enlace"
-            >
+            <InAppLink to={pathTo(WITHDRAWAL, { id: entry.id })} className="fila-entrada__enlace">
               <span className="fila-entrada__texto">
                 <span className="fila-entrada__linea1">
                   {formatDate(entry.date, today)}
@@ -263,14 +230,10 @@ export function EntryRows({
             </span>
             <span className="fila-entrada__cifras">
               {entry.total_cost === null ? (
-                <span className="fila-entrada__costo fila-entrada__costo--sin">
-                  {STOCK_TEXT.sinCosto}
-                </span>
+                <span className="fila-entrada__costo fila-entrada__costo--sin">{STOCK_TEXT.sinCosto}</span>
               ) : (
                 <>
-                  <span className="fila-entrada__costo">
-                    {formatMoney(entry.total_cost)}
-                  </span>
+                  <span className="fila-entrada__costo">{formatMoney(entry.total_cost)}</span>
                   {entry.cost_per_gram !== null && (
                     <span className="fila-entrada__linea2">
                       {formatMoney(entry.cost_per_gram)}
@@ -288,17 +251,12 @@ export function EntryRows({
                   ariaLabel={COMMON_TEXT.edit}
                   to={pathTo(STOCK_ENTRY, { id: entry.id })}
                 />
-                <Boton
-                  variant="icon"
-                  action="delete"
-                  ariaLabel={STOCK_TEXT.borrar}
-                  onClick={() => onDelete(entry)}
-                />
+                <Boton variant="icon" action="delete" ariaLabel={STOCK_TEXT.borrar} onClick={() => onDelete(entry)} />
               </span>
             )}
           </li>
         ),
       )}
     </ul>
-  );
+  )
 }
