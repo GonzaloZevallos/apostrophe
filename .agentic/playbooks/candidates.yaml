@@ -17,3 +17,49 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T03:26:05.389+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Measure every item the brief names on the baseline it names, and say so if you cannot. Do not change files outside the brief to clear an unrelated red gate; report it instead.
+  confidence: medium
+  seen_in:
+  - GH-113
+  sources:
+  - finding
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When the brief asks for a check before and after a change, run the baseline before editing anything and keep its output; running only the after check leaves the change unverified.
+  confidence: medium
+  seen_in:
+  - GH-116
+  sources:
+  - finding
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When a test has several asserts, prove each one with its own mutation; a test that stops at its first failing assert hides whether the later asserts can ever fail.
+  confidence: medium
+  seen_in:
+  - GH-126
+  sources:
+  - finding
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Before delivering, run every proof the brief declares under Seams, each one itself. A passing test at another seam does not stand in for it. If one cannot run, say so and leave it open.
+  confidence: medium
+  seen_in:
+  - GH-101
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: 'Before posting a written record, check each sentence against its own data table: run numbers, hashes and universal claims such as ''equal on every screen'' must hold for every row, or name the exceptions.'
+  confidence: low
+  seen_in:
+  - GH-101
+  sources:
+  - finding
+  added_at: '2026-10-26T03:35:47.322+00:00'
