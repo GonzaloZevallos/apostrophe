@@ -33,6 +33,7 @@ import {
 import type { SuccessToast } from '../../components/AvisoExito'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import { SheetActions } from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams } from '../../format/parse'
 import { guiltyKeys, keptOptions, preselected } from './goneLines'
@@ -511,15 +512,17 @@ export default function WithdrawalForm({
             onChange={(event) => setForm((previous) => ({ ...previous, note: event.target.value }))}
           />
         </label>
-        {formError !== null && (
-          <span className="campo__error" role="alert">
-            {formError}
-          </span>
-        )}
-        {offline && <SinConexion />}
-        <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          {target === 'new' ? STOCK_TEXT.guardaElRetiro : COMMON_TEXT.save}
-        </Boton>
+        <SheetActions>
+          {formError !== null && (
+            <span className="campo__error" role="alert">
+              {formError}
+            </span>
+          )}
+          {offline && <SinConexion />}
+          <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
+            {target === 'new' ? STOCK_TEXT.guardaElRetiro : COMMON_TEXT.save}
+          </Boton>
+        </SheetActions>
       </form>
       {confirmingSave && (
         <ConfirmDialog

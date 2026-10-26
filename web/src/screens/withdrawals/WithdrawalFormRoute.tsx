@@ -7,6 +7,10 @@
  *   direct link, to Variedades (new) or the withdrawal's detail (edit).
  * - A save arms "Retiro guardado" for the screen history returns to, then leaves.
  * - Leaving with something typed asks first (`useLeaveGuard`); a save never is blocked.
+ * - On a phone the form is a `Sheet` (ADR-0053). On a direct address its parent is drawn behind it,
+ *   inert and hidden (`BehindPane`): Variedades for a new withdrawal, the withdrawal's detail for an
+ *   edit. Opened from inside the app that screen is already the app's own behind, so no pane is
+ *   drawn. The computer page is the one it always was.
  * - A withdrawal that is gone shows "Eso ya no está." when opened for editing, and
  *   "Eso ya no está. La lista ya está al día." on Variedades when a save finds it gone
  *   (`useGoneExit`).
@@ -14,22 +18,27 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { type ReactNode, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router'
+import { useLocation, useParams, useSearchParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
 import { getWithdrawal } from '../../api/stock'
 import type { SuccessToast } from '../../components/AvisoExito'
+import BehindPane from '../../components/BehindPane'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
+import Sheet from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
-import { useBackOr } from '../../components/useBackOr'
+import { isInApp, useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { VARIETIES, WITHDRAWAL, pathTo } from '../../routes'
+import { useViewport } from '../../shell/useViewport'
+import VarietiesBehind from '../varieties/VarietiesBehind'
+import WithdrawalDetailBehind from './WithdrawalDetailBehind'
 import WithdrawalForm, { type WithdrawalTarget } from './WithdrawalForm'
 import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
@@ -76,6 +85,8 @@ function EditHost() {
 
 function FormHost({ target }: { target: WithdrawalTarget }) {
   const flash = useFlash()
+  const computer = useViewport() === 'computer'
+  const location = useLocation()
   const [params] = useSearchParams()
   const [dirty, setDirty] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)
@@ -99,28 +110,40 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
   }
 
   return (
-    <Frame>
-      <WithdrawalForm
-        target={target}
-        initialVarietyId={initialVarietyId}
-        onDone={onDone}
-        onCancel={leave}
-        onDirtyChange={setDirty}
-        onGone={onGone}
-      />
-      {blocker.state === 'blocked' && (
-        <LeaveConfirm
-          blocker={blocker}
-          question={editing ? COMMON_TEXT.discardTheChanges : STOCK_TEXT.descartasElRetiro}
-          detail={
-            editing
-              ? STOCK_TEXT.sePierdeLoQue
-              : COMMON_TEXT.losesWhatYouEntered
-          }
-          keepLabel={editing ? COMMON_TEXT.noKeepEditing : COMMON_TEXT.noKeepEntering}
-          discardLabel={COMMON_TEXT.yesDiscard}
-        />
+    <>
+      {!computer && !isInApp(location.state) && (
+        <BehindPane>
+          {editing ? <WithdrawalDetailBehind withdrawalId={String(target.id)} /> : <VarietiesBehind />}
+        </BehindPane>
       )}
-    </Frame>
+      <Sheet
+        computer={computer}
+        computerClass="pantalla"
+        computerDialog={false}
+        label={COMMON_TEXT.takeFromStock}
+        touched={dirty}
+        onClose={leave}
+        aside={
+          blocker.state === 'blocked' && (
+            <LeaveConfirm
+              blocker={blocker}
+              question={editing ? COMMON_TEXT.discardTheChanges : STOCK_TEXT.descartasElRetiro}
+              detail={editing ? STOCK_TEXT.sePierdeLoQue : COMMON_TEXT.losesWhatYouEntered}
+              keepLabel={editing ? COMMON_TEXT.noKeepEditing : COMMON_TEXT.noKeepEntering}
+              discardLabel={COMMON_TEXT.yesDiscard}
+            />
+          )
+        }
+      >
+        <WithdrawalForm
+          target={target}
+          initialVarietyId={initialVarietyId}
+          onDone={onDone}
+          onCancel={leave}
+          onDirtyChange={setDirty}
+          onGone={onGone}
+        />
+      </Sheet>
+    </>
   )
 }
