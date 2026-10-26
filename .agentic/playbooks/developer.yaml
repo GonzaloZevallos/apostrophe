@@ -1,0 +1,9 @@
+items:
+- id: developer-1
+  lesson: Never edit an existing test that is not exempt to fit new behaviour. Restore it, or record the invariant as unsatisfiable with the command and the failing output of the unedited test on your head.
+  category: plan-invariant
+  since: f5074093
+  seen_in:
+  - GH-135
+  added_at: '2026-10-26T04:00:21.291+00:00'
+  last_applied: '2026-10-26T04:00:21.291+00:00'

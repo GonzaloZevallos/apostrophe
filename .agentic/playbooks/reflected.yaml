@@ -67,3 +67,22 @@ tasks:
     cost_usd: 0.0102
   GH-211@review:
     cost_usd: 0.0645
+  GH-132@review:
+    cost_usd: 0.0224
+  GH-121@review:
+    cost_usd: 0.1327
+  GH-215@review:
+    cost_usd: 0.0219
+    decisions: 1
+  GH-144@review:
+    cost_usd: 0.0753
+  GH-135@review:
+    cost_usd: 0.108
+    applied:
+    - op: add
+      slug: developer
+      category: plan-invariant
+      lesson: Never edit an existing test that is not exempt to fit new behaviour. Restore it, or record the invariant as unsatisfiable with the command and the failing output of the unedited test on your head.
+      item_id: ''
+      tasks:
+      - GH-135

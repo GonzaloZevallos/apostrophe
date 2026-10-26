@@ -243,3 +243,99 @@ candidates:
   - finding
   - return
   added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When the brief asks you to align a doc with the build, edit the doc before you deliver. Do not just flag the mismatch. If you cannot align it, say so explicitly and escalate.
+  confidence: medium
+  seen_in:
+  - GH-132
+  sources:
+  - finding
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer_integrator
+  category: spec-scope
+  lesson: At integration, compare each product doc statement touched by the subtasks with the integrated build. Fix or escalate any disagreement that is still open before you close.
+  confidence: medium
+  seen_in:
+  - GH-132
+  sources:
+  - finding
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, check each plan invariant against what the page actually renders, not only the mapped file. Add a test that fails if it breaks. If it can't hold, record the invariant, the evidence and what shipped.
+  confidence: medium
+  seen_in:
+  - GH-121
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: ux_designer
+  category: design
+  lesson: Write flow steps, recoveries and touch counts only with controls the prototype draws on that screen. If a control lives in another screen or setting, say so and don't make it a step.
+  confidence: medium
+  seen_in:
+  - GH-121
+  sources:
+  - design
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When you rewrite or replace a guard or test, list the old must-flag and must-pass cases and carry each one over, or show another case that exercises the same branch in isolation.
+  confidence: medium
+  seen_in:
+  - GH-215
+  sources:
+  - finding
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When you add or edit a check that enforces a rule, also add a test that runs it on an input it must reject, next to the passing case; a check run only on valid real data proves nothing.
+  confidence: medium
+  seen_in:
+  - GH-144
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When you add copy that states several behaviours, write one test per behaviour in the same diff and map each to its invariant in Coverage, so no claim in the text goes untested.
+  confidence: medium
+  seen_in:
+  - GH-144
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When the brief asks for a by-eye check, do it for every listed screen and variant, and list each difference in the PR. After a drawing change, search all its frames for the same pattern, not just the first ones.
+  confidence: medium
+  seen_in:
+  - GH-144
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, produce every piece of evidence the brief lists, such as before and after captures with each difference listed. Attach it, and do not deliver while it is marked not done.
+  confidence: medium
+  seen_in:
+  - GH-135
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Make each new test able to fail on what it guards. Query every role the old element could have (link and button), and write the test the brief names, not a neighbouring one.
+  confidence: medium
+  seen_in:
+  - GH-135
+  sources:
+  - finding
+  added_at: '2026-10-26T04:00:21.291+00:00'
