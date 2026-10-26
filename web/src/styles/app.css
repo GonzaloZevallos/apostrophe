@@ -4548,6 +4548,9 @@ body {
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-top: 0;
+    /* The pinned actions own the bottom: nothing lies between the main action and the sheet's edge
+     * but its own padding and `--inset-abajo`. */
+    padding-bottom: 0;
   }
 
   .sheet__body .encabezado-fila,
