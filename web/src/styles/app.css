@@ -2023,6 +2023,11 @@ body {
   gap: 10px;
 }
 
+/* The sale bill's Share/Copy is the first of the actions: no tap delay or double-tap zoom. */
+.venta-detalle__acciones > .boton:first-child {
+  touch-action: manipulation;
+}
+
 /* The bill shown by hand when copying failed (`SaleBillButton`): the one place the text is
  * selectable, so a seller can copy it from the screen. */
 .sale-bill__bloque {
