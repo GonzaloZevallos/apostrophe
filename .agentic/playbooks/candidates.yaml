@@ -940,3 +940,90 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T04:39:00.111+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: After any bulk or scripted edit, grep the whole target set for every term of the invariant, read each hit, and fix the leftovers before delivering; do not assume the script caught every occurrence.
+  confidence: medium
+  seen_in:
+  - GH-335
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When you build an inventory, rerun the scan on the base and diff it against your table so every hit has a row; name the exact copy key and its exact string, never a guess or a paraphrase.
+  confidence: medium
+  seen_in:
+  - GH-335
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before delivering, check every app string you quote in docs against the copy file character for character, and use the inventory's name; never paraphrase a UI string.
+  confidence: medium
+  seen_in:
+  - GH-335
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, walk the brief's numbered invariants one by one against your diff, including tests and error messages, and fix any that your change violates.
+  confidence: medium
+  seen_in:
+  - GH-345
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When the brief says output is byte-identical without a flag, diff every output path (stdout, stderr, exit code, usage and error lines) against the base revision, and assert the exact text in a test.
+  confidence: medium
+  seen_in:
+  - GH-338
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: In every failure or unknown-outcome branch, route each render and side effect through the guarded fallback, never a bare try/except pass. Add a test that makes the dependency raise there and asserts the whole output.
+  confidence: medium
+  seen_in:
+  - GH-348
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer_integrator
+  category: standard-typing-silenced
+  lesson: Stand in for a port in tests with a typed fake that implements its methods; never widen with __getattr__ returning Any to satisfy mypy.
+  confidence: medium
+  seen_in:
+  - GH-348
+  sources:
+  - finding
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: tech_lead_platform
+  category: plan-calibration
+  lesson: Before fixing a size or fit rule in a brief, test it against the real fixtures (long lists, wide documents). If the literal rule fails them, state the exception in the brief.
+  confidence: medium
+  seen_in:
+  - GH-339
+  sources:
+  - finding
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer_integrator
+  category: spec-behaviour
+  lesson: When you integrate, grep every page.evaluate and page call in the diff, including calls inside helper modules, and confirm each one runs under the bounded timeout wrapper.
+  confidence: low
+  seen_in:
+  - GH-339
+  sources:
+  - finding
+  added_at: '2026-10-26T04:44:18.575+00:00'

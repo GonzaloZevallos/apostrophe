@@ -61,8 +61,10 @@ items:
   since: 2e64819f
   seen_in:
   - GH-274
+  - GH-345
+  - GH-338
   added_at: '2026-10-26T04:29:54.986+00:00'
-  last_applied: '2026-10-26T04:29:54.986+00:00'
+  last_applied: '2026-10-26T04:44:18.575+00:00'
 - id: developer-7
   lesson: In every test you write, find elements by role, accessible name or visible text, never by CSS class. Before delivering, grep your diff for class selectors in unit and e2e tests and replace each one.
   category: plan-invariant
