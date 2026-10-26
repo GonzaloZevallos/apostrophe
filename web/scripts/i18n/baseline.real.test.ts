@@ -4,10 +4,12 @@
  * the ones whose text depends on a count (the plural-sensitivity test).
  */
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { describe, expect, test } from 'vitest'
-import { collectEntries, driftProblems, parseBaseline, type Modules } from './baseline.ts'
+import { driftProblems, parseBaseline, type Modules } from './baseline.ts'
+import { coverageProblems, loadMappingFiles, mappedRows, mappingProblems, MAPPINGS_DIR } from './baselineKeys.ts'
+import { loadBundle } from './loadBundle.ts'
 import { pluralProblems } from './plurals.ts'
 
 const found = import.meta.glob<Record<string, unknown>>(
@@ -22,9 +24,24 @@ describe('the real copy files', () => {
     expect(driftProblems(modules, committed)).toEqual([])
   })
 
-  test('today every copy text is recorded: the baseline has no entry missing and none extra', () => {
-    const now = collectEntries(modules).map((entry) => `${entry.source} ${JSON.stringify(entry.args)}`)
-    expect(committed.map((entry) => `${entry.source} ${JSON.stringify(entry.args)}`)).toEqual(now)
+  test('every committed entry is exported by a .ts file or mapped exactly once, and none is missing', () => {
+    expect(coverageProblems(modules, committed, loadMappingFiles())).toEqual([])
+  })
+
+  test('every mapped entry renders in en equal to its baseline text, and every mapping is read', () => {
+    const files = loadMappingFiles()
+    // The expected count comes from a listing of the folder, never from the loader under test.
+    // A folder that does not exist yet counts as zero.
+    const listed = (existsSync(MAPPINGS_DIR) ? readdirSync(MAPPINGS_DIR, { withFileTypes: true }) : []).filter((item) => item.isFile() && item.name.endsWith('.json'))
+    const mapped = listed.flatMap((item) => {
+      const parsed: unknown = JSON.parse(readFileSync(join(MAPPINGS_DIR, item.name), 'utf8'))
+      return typeof parsed === 'object' && parsed !== null ? Object.keys(parsed) : []
+    })
+    const expectedRows = mapped.reduce((total, source) => total + committed.filter((entry) => entry.source === source).length, 0)
+
+    expect(files).toHaveLength(listed.length)
+    expect(mappedRows(files, committed).rows).toHaveLength(expectedRows)
+    expect(mappingProblems(files, committed, loadBundle('en'))).toEqual([])
   })
 
   test('the functions wrapped in counted() are exactly the ones whose text depends on a count', () => {
