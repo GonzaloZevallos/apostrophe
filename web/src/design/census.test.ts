@@ -155,6 +155,8 @@ describe('comparisons.mjs --census', () => {
   it('keeps the entry keys and both PNGs the same as without it', async () => {
     const on = await run('same-on', 'NegocioNuevo', ['--census'])
     const off = await run('same-off', 'NegocioNuevo', [])
+    expect(on.status, on.output).toBe(0)
+    expect(off.status, off.output).toBe(0)
     expect(Object.keys(off.entries[0] as Entry)).toEqual(['screen', 'file', 'notes', 'design', 'built'])
     expect(off.entries[0]?.census).toBeUndefined()
     const bytes = (path: string | null): Buffer => readFileSync(path as string)
