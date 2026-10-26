@@ -46,6 +46,8 @@ interface BotonCommon {
   /** For a button that opens and closes what `ariaControls` names (the price form's date chip). */
   ariaExpanded?: boolean
   ariaControls?: string
+  /** For a button whose action is waiting on data: it reads as busy to assistive technology. */
+  ariaBusy?: boolean
 }
 
 interface BotonWithText extends BotonCommon {
@@ -125,6 +127,7 @@ export default function Boton(props: BotonProps) {
       aria-describedby={props.ariaDescribedBy}
       aria-expanded={props.ariaExpanded}
       aria-controls={props.ariaControls}
+      aria-busy={props.ariaBusy}
     >
       {content}
     </button>
