@@ -242,13 +242,15 @@ def writes_pytest_cache(commands: dict[str, str]) -> list[str]:
     """The names of the pytest checks that write `.pytest_cache`.
 
     A check is pytest whatever its prefix (`pytest`, `uv run pytest`,
-    `python -m pytest`). It writes no cache only when `no:cacheprovider` is the value
-    right after `-p`; the same text anywhere else does not count."""
+    `.venv/bin/pytest`, `py.test`, `python -m pytest`). It writes no cache only when
+    `no:cacheprovider` is the value right after `-p`; the same text anywhere else does not
+    count."""
     writers: list[str] = []
     for name, command in commands.items():
         words = shlex.split(command)
         pairs = list(zip(words, words[1:], strict=False))
-        if "pytest" not in words and ("-m", "pytest") not in pairs:
+        runs_pytest = any(w.rsplit("/", 1)[-1] in {"pytest", "py.test"} for w in words)
+        if not runs_pytest and ("-m", "pytest") not in pairs:
             continue
         if ("-p", "no:cacheprovider") not in pairs:
             writers.append(name)
@@ -262,6 +264,8 @@ def writes_pytest_cache(commands: dict[str, str]) -> list[str]:
         "uv run pytest -n 8",
         "uv run --no-project pytest -n 8",
         "python -m pytest -n 8",
+        ".venv/bin/pytest -n 8",
+        "py.test -n 8",
         "pytest -n 8 no:cacheprovider",
         "pytest -n 8 --no:cacheprovider",
         "pytest -p other no:cacheprovider",
