@@ -139,6 +139,8 @@ const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set([
   'variety',
   'variety-price-new',
   'varieties-archived',
+  'stock-entry-new',
+  'stock-entry',
 ])
 
 const WITH_CUSTOMER_SEARCH: ReadonlySet<ScreenId> = new Set([

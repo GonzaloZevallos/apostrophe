@@ -10,10 +10,12 @@
  * the date is `today` and implied, and only the grams and the optional total cost are asked.
  * A host that only wants a starting point passes the `preselected*` ones.
  * Its dialogs sit inline after the form, or in `dialogHost` when the host wants them
- * elsewhere in its own markup.
+ * elsewhere in its own markup. A host that draws the form in a `Sheet` says `pinned`: on a phone
+ * the errors, the cost preview, the delete and the main action then sit in the sheet's pinned
+ * actions, the delete above the main action (ADR-0053); a computer form keeps the order it had.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
@@ -23,7 +25,9 @@ import { type Origin, type StockEntry, deleteEntry, editEntry, readStock, record
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import { SheetActions } from '../components/Sheet'
 import SinConexion from '../components/SinConexion'
+import { useViewport } from '../shell/useViewport'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
@@ -71,6 +75,8 @@ interface CommonProps {
   onDirtyChange?: (dirty: boolean) => void
   /** Where the dialogs go; inline after the form when absent. */
   dialogHost?: HTMLElement | null
+  /** The host draws the form in a `Sheet`: its last row is the pinned actions on a phone. */
+  pinned?: boolean
 }
 
 /** The owner's form: a new entry or an edit, nothing locked. */
@@ -108,7 +114,10 @@ export default function StockEntryForm({
   onGone,
   onDirtyChange,
   dialogHost,
+  pinned = false,
 }: StockEntryFormProps) {
+  const phone = useViewport() === 'phone'
+  const Actions = pinned ? SheetActions : Fragment
   const queryClient = useQueryClient()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
@@ -303,6 +312,15 @@ export default function StockEntryForm({
     </>
   )
 
+  const deleteButton = mode === 'editar' && (
+    <Boton
+      variant="icon"
+      action="delete"
+      ariaLabel={STOCK_TEXT.borrarEntrada}
+      onClick={() => setConfirmingDelete(true)}
+    />
+  )
+
   return (
     <>
       <form className="formulario" onSubmit={onSubmit}>
@@ -422,26 +440,22 @@ export default function StockEntryForm({
             </label>
           </>
         )}
-        {formError !== null && (
-          <span className="campo__error" role="alert">
-            {formError}
-          </span>
-        )}
-        {offline && <SinConexion />}
-        {preview !== null && (
-          <span className="pie" data-copy="help">{perGramPreview(formatMoney(preview))}</span>
-        )}
-        <Boton textOnly="submit" type="submit" disabled={sending}>
-          {mode === 'nuevo' ? STOCK_TEXT.guardaLaEntrada : COMMON_TEXT.save}
-        </Boton>
-        {mode === 'editar' && (
-          <Boton
-            variant="icon"
-            action="delete"
-            ariaLabel={STOCK_TEXT.borrarEntrada}
-            onClick={() => setConfirmingDelete(true)}
-          />
-        )}
+        <Actions>
+          {formError !== null && (
+            <span className="campo__error" role="alert">
+              {formError}
+            </span>
+          )}
+          {offline && <SinConexion />}
+          {preview !== null && (
+            <span className="pie" data-copy="help">{perGramPreview(formatMoney(preview))}</span>
+          )}
+          {pinned && phone && deleteButton}
+          <Boton textOnly="submit" type="submit" disabled={sending}>
+            {mode === 'nuevo' ? STOCK_TEXT.guardaLaEntrada : COMMON_TEXT.save}
+          </Boton>
+          {!(pinned && phone) && deleteButton}
+        </Actions>
       </form>
       {dialogHost ? createPortal(dialogs, dialogHost) : dialogs}
     </>
