@@ -497,3 +497,22 @@ candidates:
   - finding
   - return
   added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: Do every comparison step the brief lists, on every item, by reading it yourself. Send to Zeta only what the brief and docs cannot settle, never what you ran out of turns to read.
+  confidence: medium
+  seen_in:
+  - GH-224
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:09:57.713+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When the brief says an unexpected check failure stops the work and escalates, stop and escalate it. Never discard the failing run and retake the side to get a clean result.
+  confidence: medium
+  seen_in:
+  - GH-247
+  sources:
+  - finding
+  added_at: '2026-10-26T04:09:57.713+00:00'
