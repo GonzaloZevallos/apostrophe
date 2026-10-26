@@ -714,8 +714,18 @@ describe('the phone renders cards, one per row, month selector first', () => {
     analysisFixture.months.forEach((row, index) => {
       const card = cards[index]!
       expect(card).toHaveAccessibleName(formatMonthLong(row.month))
-      expect(figuresOf(card)[0]).toBe(formatMoney(row.sales))
-      expect(figuresOf(card).at(-1)).toBe(formatMoney(row.cash))
+      const withdrawals = [row.shortfall, row.promotion, row.own_use]
+        .filter((cost) => cost !== null)
+        .map((cost) => formatMoney(cost.amount))
+      expect(figuresOf(card)).toEqual([
+        formatMoney(row.sales),
+        formatGrams(row.grams),
+        formatMoney(row.cost_of_goods.amount),
+        ...withdrawals,
+        formatMoney(row.expenses),
+        formatMoney(row.profit.amount),
+        formatMoney(row.cash),
+      ])
       expect(card.classList.contains('analisis__tarjeta--actual')).toBe(false)
     })
   })
