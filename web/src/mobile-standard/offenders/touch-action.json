@@ -1728,42 +1728,6 @@
     "issue": 48
   },
   {
-    "screen": "GastoDesdeGastos",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 48
-  },
-  {
-    "screen": "GastoDesdeGastos",
-    "rule": "touch-action",
-    "target": "button:Create a new category",
-    "issue": 48
-  },
-  {
-    "screen": "GastoDesdeGastos",
-    "rule": "touch-action",
-    "target": "button:Save the expense",
-    "issue": 48
-  },
-  {
-    "screen": "GastoDesdeMas",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 48
-  },
-  {
-    "screen": "GastoDesdeMas",
-    "rule": "touch-action",
-    "target": "button:Create a new category",
-    "issue": 48
-  },
-  {
-    "screen": "GastoDesdeMas",
-    "rule": "touch-action",
-    "target": "button:Save the expense",
-    "issue": 48
-  },
-  {
     "screen": "GastoEditar",
     "rule": "touch-action",
     "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
@@ -1779,30 +1743,6 @@
     "screen": "GastoEditar",
     "rule": "touch-action",
     "target": "button:#/#PackagingBolsitas zip$ #.#",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "button:Delete expense",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "button:Create a new category",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-action",
-    "target": "button:Save the expense",
     "issue": 48
   },
   {
@@ -1851,24 +1791,6 @@
     "screen": "GastoEditar",
     "rule": "touch-action",
     "target": "navigation:Navigation",
-    "issue": 48
-  },
-  {
-    "screen": "GastoNuevo",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 48
-  },
-  {
-    "screen": "GastoNuevo",
-    "rule": "touch-action",
-    "target": "button:Create a new category",
-    "issue": 48
-  },
-  {
-    "screen": "GastoNuevo",
-    "rule": "touch-action",
-    "target": "button:Save the expense",
     "issue": 48
   },
   {
