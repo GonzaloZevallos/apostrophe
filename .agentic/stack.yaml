@@ -12,7 +12,7 @@ setup:
   web: npm --prefix web ci --no-fund --no-audit
   web-browsers: npx --prefix web playwright install chromium
 checks:
-  tests: uv run --no-project pytest -n auto
+  tests: uv run --no-project pytest -n 8
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests
   web-types: npm --prefix web run typecheck
@@ -22,6 +22,22 @@ checks:
   # e2e on every pull request, without gating the merge until `ci:` is back (#432).
   # Restore with the line below when the owner says so.
   # web-e2e: npm --prefix web run e2e
+# `parallel_checks`: the gate runs the six checks above at once (agentic-system ADR-0044),
+# so a gate takes the slowest check instead of the sum (passing-gate median 16.1 min, 2026-10-12
+# to 26). Shared-state inventory, 2026-10-26, 16 cores, each check run alone: every cache has one
+# writer (.ruff_cache lint, .mypy_cache types, web/node_modules/.tmp web-types,
+# web/node_modules/.vite web-tests, .pytest_cache tests; web-lint writes nothing), .venv and
+# uv.lock are only read, only `tests` binds ports (from the code; other worktrees' servers hid
+# them in `ss`), and the tests that need `web/dist` use a tmp_path. No shared state found. The
+# 5-serial/5-parallel medians were not taken: the load average was 33-148 from other worktrees the
+# whole time, far over the 2.0 cut-off. Parallel runs (checks in parallel, load 35-60): `tests`
+# took 650 s under `-n auto`, over the 600 s check timeout, so it is capped at `-n 8`: 501 s, the
+# whole gate 501 s, counts equal to alone (pytest 3480 passed; vitest 208 files, 2952 tests).
+# Three load-only reds were found and fixed in the tests' own timing (two in
+# tests/test_e2e_clock.py, one budget in tests/results/test_period_figures.py); then 30 stress
+# iterations of the load-sensitive tests, with the other checks looping at load 57-148, were green.
+# Read at a task's base, like every key here.
+parallel_checks: true
 # Affected-only forms (agentic-system ADR-0046, ours ADR-0039): the Developer's and the
 # reviewer's gates run these with `{base}` replaced by the task base sha, and rerun the
 # check in full when one fails. The merge gate and CI always run the full commands above.
