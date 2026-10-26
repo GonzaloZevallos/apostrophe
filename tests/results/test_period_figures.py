@@ -524,7 +524,9 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
         PurchaseRecord(day=TODAY - timedelta(days=i % 400), total_cost=1_000) for i in range(100)
     ]
 
-    started = time.monotonic()
+    # CPU time, not wall time: the budget is about the work done, and a busy machine
+    # stretches the wall clock without making the code slower.
+    started = time.process_time()
     figures = _figures(
         draws=draws,
         sales=sales,
@@ -533,7 +535,7 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
         purchases=purchases,
         earliest_entry_day=TODAY - timedelta(days=399),
     )
-    elapsed = time.monotonic() - started
+    elapsed = time.process_time() - started
 
     assert elapsed < 1.0, elapsed
     assert len(figures.month.varieties) > 0
