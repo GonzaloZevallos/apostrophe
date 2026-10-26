@@ -175,3 +175,71 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T03:52:52.269+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: Do not narrow a capture or comparison with a filter the brief did not allow. If the full run fails, save its output as evidence and exclude only the screens that actually failed.
+  confidence: medium
+  seen_in:
+  - GH-200
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before you deliver, check every per-item deliverable in the brief (for example one note per sheet) against what you did, and open each item. Do not stop at a sample.
+  confidence: medium
+  seen_in:
+  - GH-200
+  sources:
+  - finding
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: ux_designer
+  category: design
+  lesson: 'Write each flow step so it can be executed as written: state its preconditions (registry entries, which script version, flags to pass) and check that each expected outcome can be reached.'
+  confidence: medium
+  seen_in:
+  - GH-200
+  sources:
+  - design
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before you deliver, tick every item in the brief's Done list. If one input fails, still do each item that does not depend on it, and do not run out of turns before the cheap ones.
+  confidence: medium
+  seen_in:
+  - GH-212
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Build the Coverage map from the real locations of the evidence. Point each invariant and brief item at the section or file that holds it, not at the nearest changed line.
+  confidence: medium
+  seen_in:
+  - GH-212
+  sources:
+  - finding
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: 'Verify each plan invariant against your own new files too: run the guard or scan you built over its own test and fixture files, and confirm it passes without any accidental exemption.'
+  confidence: medium
+  seen_in:
+  - GH-211
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, walk the brief's acceptance list item by item. Finish every run and classify every failure, or route it as the brief says, instead of stopping at an unrun or unclassified item.
+  confidence: medium
+  seen_in:
+  - GH-211
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
