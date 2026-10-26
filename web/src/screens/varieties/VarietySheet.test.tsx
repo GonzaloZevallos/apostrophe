@@ -13,10 +13,11 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { act } from '@testing-library/react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import { inAppState } from '../../components/inAppState'
 import { COMMON_TEXT } from '../../copy/common'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { router as appRouter } from '../../router'
-import { VARIETY, VARIETY_NEW, pathTo } from '../../routes'
+import { VARIETIES as VARIETIES_PATH, VARIETY, VARIETY_NEW, pathTo } from '../../routes'
 import type { Viewport } from '../../routes'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
@@ -138,7 +139,7 @@ describe('New variety on a phone', () => {
   })
 
   test('opened from inside the app the sheet draws no pane: the app is already behind it', async () => {
-    renderApp({ pathname: VARIETY_NEW, state: { inApp: true } }, 'phone')
+    renderApp({ pathname: VARIETY_NEW, state: inAppState({ pathname: VARIETIES_PATH }) }, 'phone')
     await screen.findByRole('dialog', { name: COMMON_TEXT.newVariety })
     expect(document.querySelector('.behind-pane')).toBeNull()
   })
