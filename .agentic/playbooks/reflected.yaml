@@ -1,0 +1,17 @@
+started_at: '2026-10-25T20:01:08.546+00:00'
+summaries: 0
+summarised: 0
+tasks:
+  GH-349@review:
+    cost_usd: 0.0454
+  GH-375@review:
+    cost_usd: 0.02
+  GH-364@review:
+    cost_usd: 0.0515
+    decisions: 1
+  GH-378@decision:
+    cost_usd: 0.0102
+    decisions: 1
+  GH-288@decision:
+    cost_usd: 0.0174
+    decisions: 1
