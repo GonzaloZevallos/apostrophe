@@ -911,3 +911,32 @@ candidates:
   - finding
   - return
   added_at: '2026-10-26T04:32:56.270+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Once you record the evidence head SHA, commit nothing outside the evidence directory and the report; if a late fix is needed, retake the final evidence on the new head, and check the diff after that SHA before delivering.
+  confidence: medium
+  seen_in:
+  - GH-295
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:39:00.111+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When a doc or glossary entry touches a rule that has a single source of truth, name it in one sentence and point to that source; never restate its conditions. Grep your diff for such mentions before delivering.
+  confidence: medium
+  seen_in:
+  - GH-305
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:39:00.111+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: For every value the brief requires, assert it in each check that covers it, including seed-time or sample-generation checks, not only in the unit test. Add a negative case showing the wrong value stops the run.
+  confidence: medium
+  seen_in:
+  - GH-303
+  sources:
+  - finding
+  added_at: '2026-10-26T04:39:00.111+00:00'

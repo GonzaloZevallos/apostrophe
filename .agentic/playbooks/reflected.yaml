@@ -333,3 +333,29 @@ tasks:
     decisions: 1
   GH-299@review:
     cost_usd: 0.0
+  GH-295@review:
+    cost_usd: 0.0468
+  GH-305@review:
+    cost_usd: 0.0398
+  GH-334@review:
+    cost_usd: 0.0151
+  GH-303@review:
+    cost_usd: 0.0382
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-303
+  GH-333@review:
+    cost_usd: 0.0675
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-333
