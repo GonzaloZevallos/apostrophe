@@ -137,7 +137,8 @@ describe('comparisons.mjs --census', () => {
     expect(fill).toMatchObject({ ordinal: 0, before: { height: 844 }, same_node: true, pantalla: false })
     expect(built?.sizes_changed?.find((entry) => entry.path === 'div.pantalla')).toMatchObject({ pantalla: true })
     expect(fill).toMatchObject({ query_900: 'n/a' })
-    expect(fill?.after).toMatchObject({ height: built?.document?.scroll_height })
+    const document = built?.document as { scroll_height: number } | undefined
+    expect(fill?.after).toMatchObject({ height: document?.scroll_height })
     expect(built?.sizes_changed?.some((entry) => entry.path === 'div.barra')).toBe(false)
 
     const covered = layer.census?.built
