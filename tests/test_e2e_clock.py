@@ -203,11 +203,15 @@ def _run_module(*args: str) -> subprocess.CompletedProcess[str]:
 
 
 def test_module_execution_prints_only_the_offset_integer(e2e_environment: None) -> None:
+    started = time.monotonic()
     run = _run_module("offset")
+    here = offset_seconds()
 
+    # The two offsets are read at different instants: they differ by the time that really passed.
+    elapsed = time.monotonic() - started
     assert run.returncode == 0, run.stderr
     assert re.fullmatch(r"-?\d+\n", run.stdout)
-    assert abs(int(run.stdout) - offset_seconds()) <= 5
+    assert abs(int(run.stdout) - here) <= elapsed + 2
     assert run.stderr == ""
 
 
