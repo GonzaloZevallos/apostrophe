@@ -44,23 +44,27 @@ function enumOf(name: string, property: string): string[] {
   return [...values].sort()
 }
 
-/** The comparison every test below makes; exported through the rejection test so
- * a drifted list is proven to fail, not only a matching one to pass. */
-function sameSet(front: readonly string[], server: readonly string[]): boolean {
-  const left = [...front].sort()
-  const right = [...server].sort()
-  return left.length === right.length && left.every((value, index) => value === right[index])
+/** The one comparison the contract tests below make, and the rejection test runs
+ * its drifted samples through the same function, so the proof that a drift fails
+ * is about the comparison that guards the contract, not a copy of it. */
+function drift(front: readonly string[], server: readonly string[]) {
+  return {
+    missingOnFront: server.filter((value) => !front.includes(value)).sort(),
+    extraOnFront: front.filter((value) => !server.includes(value)).sort(),
+  }
 }
 
+const NO_DRIFT = { missingOnFront: [], extraOnFront: [] }
+
 test('the bill key lists equal the snapshot schemas property for property', () => {
-  expect([...SALE_BILL_KEYS].sort()).toEqual(propertyNames('SaleBillOut'))
-  expect([...SALE_BILL_LINE_KEYS].sort()).toEqual(propertyNames('SaleBillLineOut'))
-  expect([...SALE_BILL_PAYMENT_KEYS].sort()).toEqual(propertyNames('BillPaymentOut'))
+  expect(drift(SALE_BILL_KEYS, propertyNames('SaleBillOut'))).toEqual(NO_DRIFT)
+  expect(drift(SALE_BILL_LINE_KEYS, propertyNames('SaleBillLineOut'))).toEqual(NO_DRIFT)
+  expect(drift(SALE_BILL_PAYMENT_KEYS, propertyNames('BillPaymentOut'))).toEqual(NO_DRIFT)
 })
 
 test('the payment state and rule enums equal the snapshot', () => {
-  expect([...BILL_STATES].sort()).toEqual(enumOf('BillPaymentOut', 'state'))
-  expect([...BILL_RULES].sort()).toEqual(enumOf('SaleBillLineOut', 'rule'))
+  expect(drift(BILL_STATES, enumOf('BillPaymentOut', 'state'))).toEqual(NO_DRIFT)
+  expect(drift(BILL_RULES, enumOf('SaleBillLineOut', 'rule'))).toEqual(NO_DRIFT)
 })
 
 test('the sale detail carries the bill', () => {
@@ -68,8 +72,11 @@ test('the sale detail carries the bill', () => {
 })
 
 test('a front list that drifted from the snapshot is rejected', () => {
-  expect(sameSet([...SALE_BILL_KEYS, 'note'], propertyNames('SaleBillOut'))).toBe(false)
-  expect(sameSet(SALE_BILL_KEYS.slice(1), propertyNames('SaleBillOut'))).toBe(false)
-  expect(sameSet([...BILL_STATES, 'refunded'], enumOf('BillPaymentOut', 'state'))).toBe(false)
-  expect(sameSet(SALE_BILL_KEYS, propertyNames('SaleBillOut'))).toBe(true)
+  const keys = propertyNames('SaleBillOut')
+  expect(drift([...SALE_BILL_KEYS, 'note'], keys)).toEqual({ missingOnFront: [], extraOnFront: ['note'] })
+  expect(drift(SALE_BILL_KEYS.slice(1), keys)).toEqual({ missingOnFront: ['business_name'], extraOnFront: [] })
+  expect(drift([...BILL_STATES, 'refunded'], enumOf('BillPaymentOut', 'state'))).toEqual({
+    missingOnFront: [],
+    extraOnFront: ['refunded'],
+  })
 })
