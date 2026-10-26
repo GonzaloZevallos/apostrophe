@@ -29,9 +29,11 @@ checks:
 # web/node_modules/.vite web-tests, .pytest_cache tests; web-lint writes nothing), .venv and
 # uv.lock are only read, only `tests` binds ports (from the code; other worktrees' servers hid
 # them in `ss`), and the tests that need `web/dist` use a tmp_path. No shared state found. The
-# 5-serial/5-parallel timing was not taken: the load average was 68-108 from other worktrees the
-# whole time, far over the 2.0 cut-off, so no median would mean anything. Read at a task's base,
-# like every key here.
+# 5-serial/5-parallel medians were not taken: the load average was 55-124 from other worktrees the
+# whole time, far over the 2.0 cut-off. One parallel run (load ~60): 650 s, with tests 650 s,
+# web-tests 527 s, web-types 297 s; the same counts as alone, and one load-only red in
+# tests/test_e2e_clock.py (a 5 s tolerance), since fixed in the test. Read at a task's base, like
+# every key here.
 parallel_checks: true
 # Affected-only forms (agentic-system ADR-0046, ours ADR-0039): the Developer's and the
 # reviewer's gates run these with `{base}` replaced by the task base sha, and rerun the
