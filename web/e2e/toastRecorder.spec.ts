@@ -37,7 +37,7 @@ async function recorded(page: Page): Promise<string[]> {
 
 test.describe('the recorder and expectToast, on a page the test feeds', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    await page.goto(HOME)
     await expect.poll(() => page.evaluate(() => document.body.children.length)).toBeGreaterThan(0)
   })
 
