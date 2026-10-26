@@ -1,6 +1,6 @@
 started_at: '2026-10-25T20:01:08.546+00:00'
-summaries: 5
-summarised: 50
+summaries: 6
+summarised: 60
 tasks:
   GH-349@review:
     cost_usd: 0.0454
@@ -145,3 +145,22 @@ tasks:
     cost_usd: 0.0755
   GH-202@review:
     cost_usd: 0.0242
+  GH-227@review:
+    cost_usd: 0.0107
+  GH-263@review:
+    cost_usd: 0.0892
+    decisions: 1
+  GH-45@review:
+    cost_usd: 0.1752
+    applied:
+    - op: add
+      slug: developer
+      category: standard-seams
+      lesson: Never edit an enforcement checker or its allowlist outside your declared seams to turn a check green. Change your own code so the check passes unchanged, or record the limit under Decisions and leave the checker alone.
+      item_id: ''
+      tasks:
+      - GH-45
+  GH-171@review:
+    cost_usd: 0.0303
+  GH-46@review:
+    cost_usd: 0.1095

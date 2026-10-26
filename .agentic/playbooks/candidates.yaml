@@ -650,3 +650,81 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Deliver every run or item the brief counts before you stop; plan the turn budget for it, and report a shortfall only through the brief's own cap or void rule, never as 'not yet run'.
+  confidence: medium
+  seen_in:
+  - GH-263
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: Before you write a summary, read each run's failing step in its junit or log and classify it by the written outcome definition; then check that every headline claim matches your own table.
+  confidence: medium
+  seen_in:
+  - GH-263
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Keep every run in the results table. Void a run only for a reason on the plan's closed list, decided before you read its outcome, and never drop a run for a reason you made up.
+  confidence: medium
+  seen_in:
+  - GH-263
+  sources:
+  - finding
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, turn each deliverable in the brief into a checklist item (evidence, captures, classified differences, every named row) and confirm each is produced, or record why it is not.
+  confidence: medium
+  seen_in:
+  - GH-45
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer_integrator
+  category: process-suite-red
+  lesson: When a test file flakes alone, run it at least 10 times solo, find the leaking state (router, pending navigation, fake API) and fix it. Do not move assertions into waitFor to hide it.
+  confidence: medium
+  seen_in:
+  - GH-45
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, walk each plan invariant and check the diff against it. For recorded figures, put the exact command from the brief next to each table, and check the command matches the set it produced.
+  confidence: medium
+  seen_in:
+  - GH-171
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When a brief asks for a verdict per difference (intended, fixed, or filed and linked), give each item exactly one verdict. Use git diff against the base to separate pre-existing differences from ones the task introduced.
+  confidence: medium
+  seen_in:
+  - GH-46
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: standard-other
+  lesson: Do not deliver a screen without the design comparison the standards ask for. If the capture run fails or times out, rerun it on the final code, and record the gap if it still fails.
+  confidence: low
+  seen_in:
+  - GH-46
+  sources:
+  - finding
+  added_at: '2026-10-26T04:16:29.703+00:00'

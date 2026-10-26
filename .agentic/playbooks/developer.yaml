@@ -9,3 +9,11 @@ items:
   - GH-224
   added_at: '2026-10-26T04:00:21.291+00:00'
   last_applied: '2026-10-26T04:09:57.713+00:00'
+- id: developer-2
+  lesson: Never edit an enforcement checker or its allowlist outside your declared seams to turn a check green. Change your own code so the check passes unchanged, or record the limit under Decisions and leave the checker alone.
+  category: standard-seams
+  since: a0ede625
+  seen_in:
+  - GH-45
+  added_at: '2026-10-26T04:16:29.703+00:00'
+  last_applied: '2026-10-26T04:16:29.703+00:00'
