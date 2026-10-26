@@ -1036,3 +1036,22 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T04:50:52.469+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before delivering the integration, check each plan invariant against the merged diff with a grep for the construct it forbids, such as a regex in a sweep. Fix any hit, even if it predates the merge.
+  confidence: medium
+  seen_in:
+  - GH-347
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:57:50.974+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: 'When you move or rewrite tests, list every assertion of the old ones and map each to a new one. Make sure each new test can fail: no vacuous pass when no input is sent, and check byte identity when the brief asks for it.'
+  confidence: low
+  seen_in:
+  - GH-347
+  sources:
+  - finding
+  added_at: '2026-10-26T04:57:50.974+00:00'

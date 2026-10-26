@@ -414,3 +414,9 @@ tasks:
     decisions: 1
   GH-356@review:
     cost_usd: 0.0194
+  GH-347@review:
+    cost_usd: 0.0668
+    decisions: 1
+  GH-307@decision:
+    cost_usd: 0.0177
+    decisions: 1
