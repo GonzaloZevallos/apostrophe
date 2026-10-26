@@ -750,7 +750,7 @@ candidates:
   added_at: '2026-10-26T04:18:57.034+00:00'
 - slug: developer
   category: process-suite-red
-  lesson: Before delivering, run every suite the repo gates on, not only the tests you added. New files can trip existing repo-wide scans, so check them for tripping those scans.
+  lesson: New files can trip existing repo-wide scans (architecture, copy, suppression checks). Before delivering, run those scans on your new files; leave the full suites to the gate.
   confidence: medium
   seen_in:
   - GH-188
