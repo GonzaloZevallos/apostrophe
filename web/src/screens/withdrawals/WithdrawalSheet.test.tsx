@@ -13,7 +13,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import WITHDRAWAL_FIXTURE from '../../api/fixtures/withdrawal.json'
 import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
-import { WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo } from '../../routes'
+import { VARIETIES, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo } from '../../routes'
 import { flipViewport, stubViewport } from '../../test-viewport'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { jsonResponse, renderWithdrawals } from './renderWithdrawals'
@@ -103,7 +103,7 @@ test('on the new withdrawal a failing Varieties list leaves the pane empty', asy
 })
 
 test('opened from inside the app no pane is drawn', async () => {
-  const { router } = renderWithdrawals(['/varieties'], withdrawalApi())
+  const { router } = renderWithdrawals([VARIETIES], withdrawalApi())
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
 
   await screen.findByRole('dialog', { name: COMMON_TEXT.takeFromStock })
