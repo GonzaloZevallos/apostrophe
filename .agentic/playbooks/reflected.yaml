@@ -135,3 +135,13 @@ tasks:
     decisions: 1
   GH-247@review:
     cost_usd: 0.0371
+  GH-251@review:
+    cost_usd: 0.0857
+  GH-131@review:
+    cost_usd: 0.2032
+  GH-220@review:
+    cost_usd: 0.0589
+  GH-201@review:
+    cost_usd: 0.0755
+  GH-202@review:
+    cost_usd: 0.0242

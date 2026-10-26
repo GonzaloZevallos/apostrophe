@@ -516,3 +516,137 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T04:09:57.713+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: For a rejecting-input test, run the code under test on an input it must reject and assert its output. Check that the test fails if the code returns nothing. Test through the seam the brief declares.
+  confidence: medium
+  seen_in:
+  - GH-251
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When the brief asks for a set of runs or cases, run every one. If you cannot, state the gap as unmet in the evidence. Do not narrow the set quietly with exclusions or fewer runs.
+  confidence: medium
+  seen_in:
+  - GH-251
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer_integrator
+  category: spec-scope
+  lesson: Before closing, compare the evidence with what the brief asked for (every run, full test counts). Do every follow-up the plan assigns you, such as filing an issue. Record any gap as open.
+  confidence: medium
+  seen_in:
+  - GH-251
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: 'For each acceptance item in the brief, write a test that fails when the behaviour is wrong: assert the exact field or every named word, and open the window the item guards (such as a delayed step).'
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Merge origin/master as your last step before delivery, then confirm git merge-base --is-ancestor origin/master HEAD exits 0, so master moving during the work does not break the invariant.
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Edit only the files your brief names and their tests. If another file seems unavoidable, record the invariant number, the exact failing command with its output, and the version you shipped.
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before removing or editing an existing assertion that no invariant exempts, write an Integration record naming the invariant, showing the failing run and the replacement tests, and list it in the PR.
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: ui_designer
+  category: design
+  lesson: When a PRD behaviour needs a style or state no component offers, draw it from tokens (ink token, shape, light and dark values, focus, disabled) and take after-states from the PRD, not a gap.
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - design
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer_integrator
+  category: spec-scope
+  lesson: After merging in new upstream work, run the full exit-criterion check on the merged result, not a sample. Rows or cases added upstream have never been exercised with your changes.
+  confidence: medium
+  seen_in:
+  - GH-220
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: process-uncommitted
+  lesson: Commit your work on the task branch before delivering, then confirm git diff against the base lists every file you changed. A working-tree change is not a delivery.
+  confidence: medium
+  seen_in:
+  - GH-201
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Run every acceptance check the brief names, including the pre-edit baseline, and paste the output under Checks. Do not deliver with the evidence marked as not done.
+  confidence: medium
+  seen_in:
+  - GH-201
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer_integrator
+  category: spec-missing-test
+  lesson: After merging master, rerun the runtime checks the brief names on the integrated head, such as comparisons. Merged data or tooling can break a row that passed before, so paste the output lines.
+  confidence: medium
+  seen_in:
+  - GH-201
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: standard-typing-silenced
+  lesson: Type test helpers with the real known types instead of Any, and satisfy strict mypy errors properly rather than routing around them with vars() or casts that only read back your own stub.
+  confidence: medium
+  seen_in:
+  - GH-202
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: For every config-dependent behaviour, give the test under each setting an input that a wrong implementation would accept, so a mutant that flips the outcome in that setting fails the assertion.
+  confidence: medium
+  seen_in:
+  - GH-202
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
