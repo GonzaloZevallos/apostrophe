@@ -1,6 +1,6 @@
 started_at: '2026-10-25T20:01:08.546+00:00'
-summaries: 7
-summarised: 70
+summaries: 8
+summarised: 80
 tasks:
   GH-349@review:
     cost_usd: 0.0454
@@ -292,3 +292,44 @@ tasks:
       item_id: developer-4
       tasks:
       - GH-278
+  GH-279@review:
+    cost_usd: 0.0715
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-279
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-279
+    - op: bump
+      slug: developer
+      category: process-suite-red
+      lesson: ''
+      item_id: developer-5
+      tasks:
+      - GH-279
+  GH-291@review:
+    cost_usd: 0.0247
+  GH-293@review:
+    cost_usd: 0.0144
+  GH-281@review:
+    cost_usd: 0.2236
+    applied:
+    - op: add
+      slug: developer
+      category: plan-invariant
+      lesson: In every test you write, find elements by role, accessible name or visible text, never by CSS class. Before delivering, grep your diff for class selectors in unit and e2e tests and replace each one.
+      item_id: ''
+      tasks:
+      - GH-281
+    decisions: 1
+  GH-299@review:
+    cost_usd: 0.0

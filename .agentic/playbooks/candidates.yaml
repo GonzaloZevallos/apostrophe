@@ -901,3 +901,13 @@ candidates:
   - finding
   - return
   added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Cover every path and origin the brief names, at each viewport, and assert the precondition (such as scroll offset above zero) so a test cannot pass vacuously. If a cell cannot run, record why with measured evidence.
+  confidence: medium
+  seen_in:
+  - GH-281
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:32:56.270+00:00'
