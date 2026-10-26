@@ -14,10 +14,11 @@ setup:
 checks:
   tests: uv run --no-project pytest -n 8
   lint: uv run --no-project ruff check .
-  types: uv run --no-project mypy app tests
+  types: uv run --no-project mypy app tests scripts
   web-types: npm --prefix web run typecheck
   web-lint: npm --prefix web run lint
   web-tests: npm --prefix web test
+  web-build: npm --prefix web run build
   # web-e2e is off on this machine (owner, 2026-10-26) to free it; GitHub CI still runs
   # e2e on every pull request, without gating the merge until `ci:` is back (#432).
   # Restore with the line below when the owner says so.
