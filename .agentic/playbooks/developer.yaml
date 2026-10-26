@@ -8,8 +8,11 @@ items:
   - GH-219
   - GH-224
   - GH-271
+  - GH-53
+  - GH-274
+  - GH-278
   added_at: '2026-10-26T04:00:21.291+00:00'
-  last_applied: '2026-10-26T04:24:18.086+00:00'
+  last_applied: '2026-10-26T04:29:54.986+00:00'
 - id: developer-2
   lesson: Never edit an enforcement checker or its allowlist outside your declared seams to turn a check green. Change your own code so the check passes unchanged, or record the limit under Decisions and leave the checker alone.
   category: standard-seams
@@ -26,3 +29,32 @@ items:
   - GH-271
   added_at: '2026-10-26T04:24:18.086+00:00'
   last_applied: '2026-10-26T04:24:18.086+00:00'
+- id: developer-4
+  lesson: Before delivering, tick off every evidence item the brief lists. Do not ship with items under 'Not done' or 'Not viewed'; do them, or escalate the item that cannot be done.
+  category: spec-scope
+  since: 6b222b17
+  seen_in:
+  - GH-273
+  - GH-53
+  - GH-274
+  - GH-276
+  - GH-278
+  added_at: '2026-10-26T04:29:54.986+00:00'
+  last_applied: '2026-10-26T04:29:54.986+00:00'
+- id: developer-5
+  lesson: When you change a value other code reads (shared copy, labels, dates), run every suite that reads it, sister unit tests, e2e specs and phone cells, and fix the lookups before delivering.
+  category: process-suite-red
+  since: 2fa58829
+  seen_in:
+  - GH-53
+  - GH-274
+  added_at: '2026-10-26T04:29:54.986+00:00'
+  last_applied: '2026-10-26T04:29:54.986+00:00'
+- id: developer-6
+  lesson: For every guard or refusal you add, write a test at its declared seam that feeds it an input it must reject and asserts the specific refusal text, not a generic prefix.
+  category: spec-missing-test
+  since: 2e64819f
+  seen_in:
+  - GH-274
+  added_at: '2026-10-26T04:29:54.986+00:00'
+  last_applied: '2026-10-26T04:29:54.986+00:00'

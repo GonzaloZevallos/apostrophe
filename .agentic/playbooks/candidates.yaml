@@ -832,3 +832,72 @@ candidates:
   sources:
   - return
   added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: For each plan invariant, name the code path that enforces it and check that no guard signal (such as a mutation flag) is read and discarded on that path. Add a test at the seam that rejects a violation.
+  confidence: medium
+  seen_in:
+  - GH-273
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Do not add behaviour the brief does not list, such as a change to how a shot is taken, when it settles an open plan question. Raise it as a plan decision and keep the briefed version.
+  confidence: medium
+  seen_in:
+  - GH-273
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: After translating or moving a word, grep for every rendered form of it, plurals, template literals, joiners and short names, and move each into the copy module so no mixed-language text remains.
+  confidence: medium
+  seen_in:
+  - GH-53
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Never loosen an exact assertion to a prefix or regex to pass after a text change; update it to the exact new text, one assertion per line.
+  confidence: medium
+  seen_in:
+  - GH-53
+  sources:
+  - finding
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When the brief asks for a throwaway proof that a test fails on a broken answer, run it, paste the failing output, and revert. Assert against every source the brief names, not a subset.
+  confidence: medium
+  seen_in:
+  - GH-276
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When the brief limits a change to one selector family or section, touch only that. Delete or merge the old rules the new ones replace so they cannot win the cascade, and check the diff for stray selectors.
+  confidence: medium
+  seen_in:
+  - GH-278
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before claiming an invariant cannot hold, run the declared command in each state and paste the failing output lines in the record. A commit message or a summary of a run is not evidence.
+  confidence: medium
+  seen_in:
+  - GH-278
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'

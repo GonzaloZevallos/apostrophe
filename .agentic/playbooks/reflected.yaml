@@ -199,3 +199,96 @@ tasks:
     cost_usd: 0.0244
   GH-192@review:
     cost_usd: 0.097
+  GH-273@review:
+    cost_usd: 0.1311
+    applied:
+    - op: add
+      slug: developer
+      category: spec-scope
+      lesson: Before delivering, tick off every evidence item the brief lists. Do not ship with items under 'Not done' or 'Not viewed'; do them, or escalate the item that cannot be done.
+      item_id: ''
+      tasks:
+      - GH-273
+  GH-53@review:
+    cost_usd: 0.4895
+    applied:
+    - op: add
+      slug: developer
+      category: process-suite-red
+      lesson: When you change a value other code reads (shared copy, labels, dates), run every suite that reads it, sister unit tests, e2e specs and phone cells, and fix the lookups before delivering.
+      item_id: ''
+      tasks:
+      - GH-53
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-53
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-53
+    decisions: 2
+  GH-274@review:
+    cost_usd: 0.095
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-274
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-274
+    - op: bump
+      slug: developer
+      category: process-suite-red
+      lesson: ''
+      item_id: developer-5
+      tasks:
+      - GH-274
+    - op: add
+      slug: developer
+      category: spec-missing-test
+      lesson: For every guard or refusal you add, write a test at its declared seam that feeds it an input it must reject and asserts the specific refusal text, not a generic prefix.
+      item_id: ''
+      tasks:
+      - GH-274
+  GH-276@review:
+    cost_usd: 0.0832
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-276
+  GH-278@review:
+    cost_usd: 0.1675
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-278
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-278
