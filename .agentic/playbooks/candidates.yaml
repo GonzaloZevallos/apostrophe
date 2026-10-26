@@ -81,3 +81,60 @@ candidates:
   sources:
   - finding
   added_at: '2026-10-26T03:45:20.375+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: For every absence assertion, first prove the same matcher finds the element while it is present; otherwise the check may be unable to fail. Prefer stable matchers such as href over anchored names.
+  confidence: medium
+  seen_in:
+  - GH-130
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When the brief asks for a sanity proof (temporarily break the code and see the tests go red), run it and record the result in the PR description before delivering.
+  confidence: medium
+  seen_in:
+  - GH-130
+  sources:
+  - finding
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When you add or change a guard, scan or selector parser, add a negative test with an input it must reject, and show it fail before the fix.
+  confidence: medium
+  seen_in:
+  - GH-149
+  sources:
+  - finding
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: 'Before handing back, check the brief item by item against your diff: every listed guard, helper and test must exist, and no invariant fallback may remain.'
+  confidence: medium
+  seen_in:
+  - GH-149
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, check every button or element your diff edits, not just new ones, against the plan's invariants. If one cannot hold, record the evidence under Decisions and assumptions.
+  confidence: medium
+  seen_in:
+  - GH-143
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Map each acceptance bullet to a test that really exercises it. A reload or persistence bullet needs a remount or re-render, not a single render asserting state.
+  confidence: medium
+  seen_in:
+  - GH-143
+  sources:
+  - finding
+  added_at: '2026-10-26T03:48:47.756+00:00'
