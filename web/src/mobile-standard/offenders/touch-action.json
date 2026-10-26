@@ -164,12 +164,6 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 47
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-action",
     "target": "button:Edit warning",
     "issue": 47
   },
@@ -183,12 +177,6 @@
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
     "target": "button:Edit name",
-    "issue": 47
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-action",
-    "target": "button:Save the catalog",
     "issue": 47
   },
   {
@@ -237,12 +225,6 @@
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
     "target": "switch:Warn when running low",
-    "issue": 47
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-action",
-    "target": "switch:Show in the catalog",
     "issue": 47
   },
   {
@@ -3300,30 +3282,6 @@
     "issue": 47
   },
   {
-    "screen": "VariedadNueva",
-    "rule": "touch-action",
-    "target": "button:Add the variety",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadNueva",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "touch-action",
-    "target": "button:Add the variety",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadNuevaFormulario",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 47
-  },
-  {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
     "target": "button:Archive variety",
@@ -3333,12 +3291,6 @@
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
     "target": "button:Delete this price",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "touch-action",
-    "target": "button:Close",
     "issue": 47
   },
   {
@@ -3357,12 +3309,6 @@
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
     "target": "button:Edit name",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "touch-action",
-    "target": "button:Save the name",
     "issue": 47
   },
   {
@@ -3428,12 +3374,6 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "touch-action",
     "target": "button:Edit warning",
     "issue": 47
   },
@@ -3447,12 +3387,6 @@
     "screen": "VariedadUmbral",
     "rule": "touch-action",
     "target": "button:Edit name",
-    "issue": 47
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "touch-action",
-    "target": "button:Save the warning",
     "issue": 47
   },
   {
