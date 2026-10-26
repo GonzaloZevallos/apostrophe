@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -210,24 +211,36 @@ def test_module_execution_prints_only_the_offset_integer(e2e_environment: None) 
     assert run.stderr == ""
 
 
+def _expiry_printed(stdout: str, link: str) -> datetime:
+    """The expiry instant a CLI output line prints, to the minute."""
+    found = re.fullmatch(
+        link + r"/\S+\nValid once, until (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC\.\n", stdout
+    )
+    assert found, stdout
+    return datetime.strptime(found.group(1), "%Y-%m-%d %H:%M").replace(tzinfo=UTC)
+
+
 def test_module_execution_invites_a_business_on_the_anchored_clock(
     e2e_environment: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
+    started = time.monotonic()
 
     run = _run_module("invite-business")
 
+    # The clock keeps advancing, so a slow machine prints a later minute: the printed instant is
+    # the anchor plus seven days plus at most the time that really passed.
+    elapsed = timedelta(seconds=time.monotonic() - started + 1)
     assert run.returncode == 0, run.stderr
-    assert re.fullmatch(
-        r"http://localhost:9/invitation/\S+\nValid once, until 2026-10-14 15:00 UTC\.\n",
-        run.stdout,
-    )
+    printed = _expiry_printed(run.stdout, "http://localhost:9/invitation")
+    assert ANCHOR + timedelta(days=7) <= printed <= ANCHOR + timedelta(days=7) + elapsed
 
 
 def test_module_execution_issues_a_reset_link_a_day_after_the_anchor(
     e2e_environment: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
+    started = time.monotonic()
     token = _run_module("invite-business").stdout.splitlines()[0].rsplit("/", 1)[1]
     with TestClient(create_e2e_app()) as client:
         accepted = client.post(
@@ -238,10 +251,12 @@ def test_module_execution_issues_a_reset_link_a_day_after_the_anchor(
 
     run = _run_module("reset-password", "reset@example.com")
 
+    # The clock keeps advancing, so a slow machine prints a later minute: the printed instant is
+    # the anchor plus one day plus at most the time that really passed.
+    elapsed = timedelta(seconds=time.monotonic() - started + 1)
     assert run.returncode == 0, run.stderr
-    assert re.fullmatch(
-        r"http://localhost:9/reset/\S+\nValid once, until 2026-10-08 15:00 UTC\.\n", run.stdout
-    )
+    printed = _expiry_printed(run.stdout, "http://localhost:9/reset")
+    assert ANCHOR + timedelta(days=1) <= printed <= ANCHOR + timedelta(days=1) + elapsed
 
 
 def test_an_empty_offset_variable_means_the_real_clock(
