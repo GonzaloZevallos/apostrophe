@@ -2023,6 +2023,26 @@ body {
   gap: 10px;
 }
 
+/* The bill shown by hand when copying failed (`SaleBillButton`): the one place the text is
+ * selectable, so a seller can copy it from the screen. */
+.sale-bill__bloque {
+  background: var(--superficie);
+  border-radius: var(--radio-campo);
+  padding: var(--espacio-lg);
+}
+
+.sale-bill__texto {
+  margin: 0;
+  font-family: var(--fuente);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--tinta);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* One DOM for the phone and the computer (`PeriodFigures.tsx`): the period block's
  * wrappers and each list figure's `.panel-lista__item` add no box, so below 900 px the
  * headline, the list and Ganancia/Caja are laid out exactly as they were when they were

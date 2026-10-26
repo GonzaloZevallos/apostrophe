@@ -54,8 +54,9 @@ import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { GENERIC_REFUSAL } from './NuevaVenta'
 import NuevaVentaCliente from './NuevaVentaCliente'
+import SaleBillButton from './SaleBillButton'
 import { COMMON_TEXT } from '../../copy/common'
-import { SALES_TEXT } from '../../copy/sales'
+import { SALE_BILL_TEXT, SALES_TEXT } from '../../copy/sales'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = SALES_TEXT.saleHasCustomer
 const ASSIGN_TOAST_MS = 2500
@@ -156,17 +157,27 @@ function VentaDetalleScreen() {
   const assignSheet = useSheet(1)
   const [assignError, setAssignError] = useState<string | null>(null)
   const [assignOffline, setAssignOffline] = useState(false)
-  const [assigned, setAssigned] = useState(false)
+  // One notice slot: "Customer assigned" and "Bill copied" share the one `AvisoExito` and timer.
+  const [notice, setNotice] = useState<'assigned' | 'copied' | null>(null)
+  // After a successful PUT the detail is read again; the sale bill stays busy until the loaded
+  // detail shows the customer (never a timestamp: a focus refetch that began before the PUT can
+  // still answer the detail from before it).
+  const [awaitingAssigned, setAwaitingAssigned] = useState(false)
 
   const assignMutation = useMutation({
     mutationFn: (customerId: number) => assignCustomer(saleId, customerId),
   })
 
   useEffect(() => {
-    if (!assigned) return
-    const timer = setTimeout(() => setAssigned(false), ASSIGN_TOAST_MS)
+    if (notice === null) return
+    const timer = setTimeout(() => setNotice(null), ASSIGN_TOAST_MS)
     return () => clearTimeout(timer)
-  }, [assigned])
+  }, [notice])
+
+  const assignedCustomerArrived = data !== undefined && data.customer !== null
+  useEffect(() => {
+    if (awaitingAssigned && (isError || assignedCustomerArrived)) setAwaitingAssigned(false)
+  }, [awaitingAssigned, isError, assignedCustomerArrived])
 
   async function onCustomerChosen(customer: Customer | null): Promise<void> {
     if (customer === null) return // `allowNone={false}`: the sheet never offers it here.
@@ -178,8 +189,9 @@ function VentaDetalleScreen() {
       // answer: the sale bill's balance comes from the settlement pass only that read
       // runs (ADR-0053), and the PUT's `SaleOut` carries no bill and no line cost
       // (ADR-0009). `keys.sale(saleId)` shares the `sales` prefix, so this refetches it.
+      setAwaitingAssigned(true)
       invalidateResource(queryClient, 'sales')
-      setAssigned(true)
+      setNotice('assigned')
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         // The sale, or the customer just chosen, is gone (a partner deleted
@@ -261,13 +273,20 @@ function VentaDetalleScreen() {
   if (isPending || data === undefined) {
     return (
       <main className="pantalla">
-        <div className="cuerpo">
+        <div className="cuerpo" aria-busy="true">
+          <div className="encabezado__fila">
+            <span className="encabezado__titulo" />
+          </div>
           <Loading />
+          <div className="venta-detalle__acciones">
+            <SaleBillButton state={{ kind: 'loading' }} refreshing={false} onCopied={() => undefined} />
+          </div>
         </div>
       </main>
     )
   }
   const sale = data
+  const refreshing = assignMutation.isPending || (awaitingAssigned && sale.customer === null)
 
   return (
     <main className="pantalla">
@@ -335,7 +354,8 @@ function VentaDetalleScreen() {
           </div>
         )}
 
-        {assigned && <AvisoExito texto={SALES_TEXT.customerAssigned} />}
+        {notice === 'assigned' && <AvisoExito texto={SALES_TEXT.customerAssigned} />}
+        {notice === 'copied' && <AvisoExito texto={SALE_BILL_TEXT.copied} />}
         {assignOffline && <SinConexion />}
         {assignError !== null && (
           <span className="campo__error" role="alert">
@@ -344,6 +364,11 @@ function VentaDetalleScreen() {
         )}
 
         <div className="venta-detalle__acciones">
+          <SaleBillButton
+            state={{ kind: 'ready', bill: sale.bill }}
+            refreshing={refreshing}
+            onCopied={() => setNotice('copied')}
+          />
           {sale.customer === null && (
             <Boton variant="secondary" icon="personaMas" onClick={assignSheet.open}>
               {SALES_TEXT.assignCustomer}
