@@ -7,7 +7,7 @@
 
 import { ANALYSIS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -611,6 +611,33 @@ describe('one layout in the DOM, chosen by the viewport', () => {
     flipViewport('phone')
     expect(screen.queryByRole('table')).toBeNull()
     shared().forEach((node, index) => expect(node).toBe(before[index]))
+  })
+
+  test('on the phone a change of the window height alone keeps the same nodes, with no refetch or loading state', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+    const fetches = vi.mocked(fetch).mock.calls.length
+    const nodes = () => Array.from(document.querySelectorAll('.analisis *'))
+    const before = nodes()
+    const text = document.body.textContent
+    expect(before.length).toBeGreaterThan(0)
+
+    const height = window.innerHeight
+    try {
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: height + 3000 })
+      act(() => {
+        window.dispatchEvent(new Event('resize'))
+      })
+      const after = nodes()
+      expect(after).toHaveLength(before.length)
+      after.forEach((node, index) => expect(node).toBe(before[index]))
+      expect(document.body.textContent).toBe(text)
+      expect(document.querySelector('[aria-busy="true"]')).toBeNull()
+      expect(screen.queryByRole('table')).toBeNull()
+      expect(vi.mocked(fetch).mock.calls).toHaveLength(fetches)
+    } finally {
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: height })
+    }
   })
 
   test('the empty-month line shows once at both widths', async () => {

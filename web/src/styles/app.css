@@ -3250,6 +3250,23 @@ body {
     order: 3;
   }
 
+  /* `.gastos__mes` takes `flex-basis: 100%` to fill Expenses' wrapping header row. Here its
+     parent is a column (`.cuerpo`), where that basis is a height: once the page is taller
+     than its content the selector stretched with it and the arrows slid down the page. In
+     Analysis it keeps its own 48 px. */
+  .analisis .gastos__mes {
+    flex: 0 0 auto;
+  }
+
+  /* `.pantalla` asks for `min-height: 100dvh`. On a page taller than its viewport that grows
+     with the viewport and pushes the "Nueva venta" button and the bar below it down, so the
+     page changes when only its height does. Analysis fills the column's leftover room
+     instead, which keeps the bar at the bottom of a short page and moves nothing on a tall one. */
+  .analisis.pantalla {
+    min-height: 0;
+    flex: 1 0 auto;
+  }
+
   .analisis .gastos__mes-boton {
     min-width: var(--alto-tocable);
     min-height: var(--alto-tocable);

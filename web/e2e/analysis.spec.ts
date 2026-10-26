@@ -427,5 +427,37 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
     )
     expect(edges.at(-1)).not.toBe(edges[0])
   }
+
+  // Growing only the height moves nothing: the month arrows and the "Nueva venta" button keep
+  // their tops. The measure rejects the two rules that once made them slide.
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto(ANALYSIS)
+  await expect(page.getByText('You sold in the month')).toBeVisible()
+  expect(await tallerMoves(page), 'untouched page').toEqual([])
+  await page.addStyleTag({ content: '.analisis .gastos__mes { flex: 0 0 100% }' })
+  expect((await tallerMoves(page)).join(' '), 'month selector stretched again').toContain('gastos__mes-boton')
+  await page.goto(ANALYSIS)
+  await expect(page.getByText('You sold in the month')).toBeVisible()
+  await page.addStyleTag({ content: '.analisis.pantalla { min-height: 100dvh; flex: 0 1 auto }' })
+  expect((await tallerMoves(page)).join(' '), 'screen minimum height back').toContain('boton-nueva-venta')
   expect(consoleMessages).toEqual([])
 })
+
+/** The tops of the month arrows and the "Nueva venta" button at 812 px and at the document's own height; the ones that moved. */
+async function tallerMoves(page: Page): Promise<string[]> {
+  const tops = () =>
+    page.evaluate(() =>
+      Array.from(document.querySelectorAll('.gastos__mes-boton, .boton-nueva-venta')).map(
+        (node) => `${node.className}@${Math.round(node.getBoundingClientRect().top + window.scrollY)}`,
+      ),
+    )
+  const size = page.viewportSize()
+  if (size === null) throw new Error('no viewport')
+  await page.setViewportSize({ width: size.width, height: 812 })
+  const before = await tops()
+  const height = await page.evaluate(() => document.documentElement.scrollHeight)
+  await page.setViewportSize({ width: size.width, height: Math.max(height, 812) })
+  const after = await tops()
+  await page.setViewportSize(size)
+  return before.filter((top, index) => top !== after[index])
+}
