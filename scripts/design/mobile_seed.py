@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from dataclasses import asdict
 from datetime import date
 from pathlib import Path
 
@@ -73,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
     facts = {
         "email": sample_app.EMAIL,
         "password": sample_app.PASSWORD,
-        "ids": {**sample_app.asdict(sample), **links},
+        "ids": {**asdict(sample), **links},
     }
     args.facts.write_text(json.dumps(facts, indent=2), encoding="utf-8")
     return 0

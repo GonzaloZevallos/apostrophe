@@ -49,5 +49,7 @@ select = ["E", "F", "I", "B", "UP"]
 python_version = "3.13"
 strict = true
 warn_unused_configs = true
+mypy_path = "scripts/design"
+explicit_package_bases = true
 # Inputs to the architecture checker, parsed with `ast` and never imported.
 exclude = ["^tests/architecture/fixtures/"]
