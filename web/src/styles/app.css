@@ -4597,8 +4597,8 @@ body {
 }
 
 @media (min-width: 900px) {
-  .variedad-forma,
-  .variedad-forma__cuerpo {
+  .variety-form,
+  .variety-form__body {
     display: contents;
   }
 }

@@ -28,6 +28,8 @@ test('the rename sheet keeps its action at the bottom, and the page stays locked
   await signUp(page, 'sheet-edit')
   const records = await seedRecords(page, 'Carla Cobrar')
   await page.goto(pathTo(VARIETY, { id: records.variety }))
+  // Scroll the page first, so "where it was" is a real position when the page is tall enough.
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
   await page.getByRole('button', { name: 'Edit name' }).click()
 
   const dialog = page.getByRole('dialog', { name: 'Rename variety' })

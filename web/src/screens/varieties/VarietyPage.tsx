@@ -245,8 +245,8 @@ function VarietyPageView({
   const formSheet = open !== null && (
     <Sheet
       computer={computer}
-      computerClass="variedad-forma"
-      computerBodyClass="variedad-forma__cuerpo"
+      computerClass="variety-form"
+      computerBodyClass="variety-form__body"
       computerDialog={false}
       frameTag="div"
       label={open.label}
