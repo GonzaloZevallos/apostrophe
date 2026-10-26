@@ -60,13 +60,16 @@ def stack_ci_problems(stack: Data, workflow: Data, ci_only: dict[str, str]) -> l
         elif gated is not None and holders[0] not in gated:
             problems.append(f"check {name!r} runs in job {holders[0]!r}, not in ci:")
 
+    for command in ci_only:
+        if not any(command in commands for commands in runs.values()):
+            problems.append(f"CI_ONLY command ({command}) is run by no job of ci.yml")
+
     if gated is not None:
         for name in gated:
             if name not in runs:
                 problems.append(f"ci: names {name!r}, which is not a job of ci.yml")
         for command in ci_only:
             holders = [job for job, commands in runs.items() if command in commands]
-            # A CI_ONLY entry no job runs (yet) is harmless; one that runs must be gated.
             if holders and not any(job in gated for job in holders):
                 problems.append(f"CI_ONLY command ({command}) is not in a gated job")
 
@@ -113,6 +116,14 @@ def test_a_check_in_an_ungated_job_is_refused_when_ci_is_on() -> None:
 def test_a_ci_only_command_in_an_ungated_job_is_refused_when_ci_is_on() -> None:
     problems = stack_ci_problems(_with_ci(STACK, ["test", "web"]), WORKFLOW, CI_ONLY)
     assert any("npm --prefix web run e2e" in p and "gated" in p for p in problems)
+
+
+def test_a_ci_only_entry_no_job_runs_is_refused() -> None:
+    ci_only = {**CI_ONLY, "npm --prefix web run storybook": "a step nobody runs"}
+    problems = stack_ci_problems(STACK, WORKFLOW, ci_only)
+    assert problems == [
+        "CI_ONLY command (npm --prefix web run storybook) is run by no job of ci.yml"
+    ]
 
 
 def test_an_unknown_step_is_refused() -> None:
