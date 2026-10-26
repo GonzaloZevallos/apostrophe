@@ -16,7 +16,7 @@
  * `aside` renders beside the dialog, never inside it (the leave confirmation, the gone notice).
  */
 
-import { type ReactNode, type RefObject, useEffect, useRef } from 'react'
+import { type ReactNode, type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
 import { useViewport } from '../shell/useViewport'
 import { useVisualViewport } from './useVisualViewport'
 
@@ -27,6 +27,10 @@ export interface SheetProps {
   computerClass: string
   /** True when the computer frame is a modal dialog; a phone sheet always is. */
   computerDialog: boolean
+  /** The class of the dialog's body on a computer, when it is not `cuerpo` (the in-page `.capa`). */
+  computerBodyClass?: string
+  /** `div` for a sheet drawn inside a screen that already is the page's `main` (an in-page sheet). */
+  frameTag?: 'main' | 'div'
   /** The id of the element that holds the dialog's title; without one, `label` names it. */
   titleId?: string
   label?: string
@@ -43,6 +47,7 @@ export interface SheetProps {
 }
 
 const CONTROLS = 'input, select, textarea, button'
+const FIELDS = 'input, select, textarea'
 
 /** A control inside a closed details' own `summary` is still reachable. */
 function isInSummary(control: HTMLElement, details: HTMLDetailsElement): boolean {
@@ -61,10 +66,14 @@ function canTakeFocus(control: HTMLElement): boolean {
   return true
 }
 
-/** The first control of the form (the form's own Close, above it, is not one), or of the body when none. */
+/**
+ * The first control of the form (the form's own Close, above it, is not one). While the body holds
+ * no form yet (a form still loading shows only its Close), a field counts and a button does not.
+ */
 function firstControl(root: HTMLElement): HTMLElement | null {
-  const scope = root.querySelector('form') ?? root
-  for (const control of scope.querySelectorAll<HTMLElement>(CONTROLS)) {
+  const form = root.querySelector('form')
+  const scope = form ?? root
+  for (const control of scope.querySelectorAll<HTMLElement>(form === null ? FIELDS : CONTROLS)) {
     if (canTakeFocus(control)) return control
   }
   return null
@@ -74,6 +83,8 @@ export default function Sheet({
   computer,
   computerClass,
   computerDialog,
+  computerBodyClass = 'cuerpo',
+  frameTag: Frame = 'main',
   titleId,
   label,
   touched,
@@ -85,7 +96,7 @@ export default function Sheet({
   // The backdrop is a pointer convenience, not a control: a keyboard user leaves by Escape
   // or Close. So it is a native listener, not a click handler the control scan would read
   // as a control without a name, a role or a pressed state.
-  const frame = useRef<HTMLElement>(null)
+  const frame = useRef<HTMLDivElement>(null)
   const body = useRef<HTMLDivElement>(null)
   // On a phone the sheet's height and top follow the visible viewport (`--vv-alto`, `--vv-top`),
   // so the keyboard does not cover the pinned action. The hook does nothing on a computer.
@@ -101,22 +112,39 @@ export default function Sheet({
   }, [computer, computerDialog, touched, onClose])
 
   // Focus once, when the phone sheet first holds a control: the host may draw a loading state
-  // first and the form after. A sheet that mounted on a computer never takes it, so a resize
-  // across 900 px does not steal focus from what is being typed.
+  // first and the form after, and the form may arrive without the sheet rendering again, so the
+  // body is watched until it has one. A sheet that mounted on a computer never takes it, so a
+  // resize across 900 px does not steal focus from what is being typed. The first try is a layout
+  // effect: focus is in place in the commit that draws the form.
   const settled = useRef(computer)
-  useEffect(() => {
-    if (settled.current || computer || body.current === null) return
+  function takeFocus(): void {
+    if (settled.current || body.current === null) return
     const target = initialFocus?.current ?? firstControl(body.current)
     if (target === null) return
     settled.current = true
     target.focus({ preventScroll: true })
+  }
+  const latestTakeFocus = useRef(takeFocus)
+  useLayoutEffect(() => {
+    latestTakeFocus.current = takeFocus
+    if (!computer) takeFocus()
   })
+  useEffect(() => {
+    const element = body.current
+    if (settled.current || computer || element === null) return
+    const watcher = new MutationObserver(() => {
+      latestTakeFocus.current()
+      if (settled.current) watcher.disconnect()
+    })
+    watcher.observe(element, { childList: true, subtree: true })
+    return () => watcher.disconnect()
+  }, [computer])
 
   return (
-    <main ref={frame} className={computer ? computerClass : 'pantalla sheet'}>
+    <Frame ref={frame} className={computer ? computerClass : 'pantalla sheet'}>
       <div
         ref={body}
-        className={computer ? 'cuerpo' : 'cuerpo sheet__body'}
+        className={computer ? computerBodyClass : 'cuerpo sheet__body'}
         role={computer && !computerDialog ? undefined : 'dialog'}
         aria-modal={computer && !computerDialog ? undefined : true}
         aria-labelledby={computer && !computerDialog ? undefined : titleId}
@@ -125,7 +153,7 @@ export default function Sheet({
         {children}
       </div>
       {aside}
-    </main>
+    </Frame>
   )
 }
 

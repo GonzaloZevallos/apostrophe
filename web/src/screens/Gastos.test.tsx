@@ -429,6 +429,8 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
   await userEvent.click(screen.getByRole('link', { name: 'Add expense' }))
   await fillAndSave('Etiquetas', '300')
   await screen.findByText('Etiquetas')
+  // On a phone the form's sheet still draws Expenses behind it until the save has left it.
+  await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   await vi.waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.300'))
   expect(subtotalOf('Otros')).toBe('$ 700')
   expect(totalShown()).toBe('$ 7.000')

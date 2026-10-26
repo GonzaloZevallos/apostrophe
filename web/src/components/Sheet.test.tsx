@@ -6,7 +6,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createRef, type ReactNode } from 'react'
+import { createRef, type ReactNode, useState } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { flipViewport, stubViewport } from '../test-viewport'
 import Sheet, { SheetActions } from './Sheet'
@@ -275,6 +275,29 @@ describe('focus on the phone', () => {
       </Sheet>,
     )
     expect(screen.getByLabelText('second')).toHaveFocus()
+  })
+
+  test('a form still loading (only its Close drawn) takes no focus, and the field takes it when it arrives by itself', async () => {
+    // The form arrives through its own state, so the sheet itself does not render again.
+    function Arriving() {
+      const [ready, setReady] = useState(false)
+      return (
+        <div>
+          <button type="button" onClick={() => setReady(true)}>
+            Close
+          </button>
+          {ready && (
+            <form>
+              <input aria-label="first" />
+            </form>
+          )}
+        </div>
+      )
+    }
+    renderSheet(<Arriving />, { computerDialog: false })
+    expect(document.body).toHaveFocus()
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+    expect(screen.getByLabelText('first')).toHaveFocus()
   })
 
   test('is not taken on the computer, where the host decides', () => {

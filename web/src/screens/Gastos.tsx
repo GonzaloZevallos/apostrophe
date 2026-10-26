@@ -28,6 +28,7 @@ import { formatDate, formatMonthLong, parseMonth, shiftMonth } from '../format/d
 import { formatMoney } from '../format/money'
 import { isGone } from '../api/refusals'
 import ConfirmDialog from '../components/ConfirmDialog'
+import Sheet from '../components/Sheet'
 import GoneNotice from '../components/GoneNotice'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import Icono from '../components/Icono'
@@ -36,6 +37,8 @@ import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
+import MonthBody from './expenses/MonthBody'
+import { useViewport } from '../shell/useViewport'
 import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
 import { COMMON_TEXT } from '../copy/common'
 
@@ -45,12 +48,6 @@ export const YES_DELETE_TITLE = COMMON_TEXT.yesDelete
 
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
   return EXPENSES_TEXT.deleteTheExpenseOf(formatMoney(expense.amount), categoryName, formatDate(expense.spent_on, today))
-}
-
-function countLine(expenses: number, categories: number): string {
-  const spent = expenses === 1 ? EXPENSES_TEXT.expenseOne : EXPENSES_TEXT.expenseMany(expenses)
-  const inCategories = categories === 1 ? EXPENSES_TEXT.oneCategory : EXPENSES_TEXT.categoriesCount(categories)
-  return EXPENSES_TEXT.expenseCountIn(spent, inCategories)
 }
 
 function DeleteConfirm({
@@ -122,6 +119,7 @@ function DeleteConfirm({
 export default function Gastos() {
   const me = useOutletContext<Me>()
   const flash = useFlash()
+  const computer = useViewport() === 'computer'
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const month = parseMonth(searchParams, me.today)
@@ -160,18 +158,6 @@ export default function Gastos() {
     return found?.name ?? ''
   }
 
-  const latest =
-    view.data === undefined
-      ? []
-      : view.data.categories
-          .flatMap((category) => category.expenses.map((expense) => ({ expense, categoryName: category.name })))
-          // ISO dates (YYYY-MM-DD) order as text; `<` and `>` do not read the device locale.
-          .sort((a, b) => {
-            if (b.expense.spent_on < a.expense.spent_on) return -1
-            if (b.expense.spent_on > a.expense.spent_on) return 1
-            return b.expense.id - a.expense.id
-          })
-
   return (
     <main className="pantalla">
       <div className="cuerpo gastos">
@@ -207,58 +193,7 @@ export default function Gastos() {
         {view.isError && !(view.error instanceof NetworkError) && <ErrorGenerico />}
 
         {view.data !== undefined && (
-          <>
-            <div className="gastos__resumen">
-              <div className="gastos__total">
-                <span className="rotulo">{EXPENSES_TEXT.youSpentThisMonth}</span>
-                <span className="cifra-xl">{formatMoney(view.data.total)}</span>
-                {latest.length > 0 && (
-                  <span className="gastos__conteo">{countLine(latest.length, view.data.categories.length)}</span>
-                )}
-              </div>
-              {view.data.categories.length > 0 && (
-                <>
-                  <span className="gastos__seccion">{EXPENSES_TEXT.byCategory}</span>
-                  <div className="gastos__categorias">
-                    {view.data.categories.map((category) => (
-                      <div key={category.id} className="gastos__categoria">
-                        <div className="gastos__categoria-cabecera">
-                          <span className="gastos__categoria-nombre">{category.name}</span>
-                          <span className="gastos__categoria-subtotal">{formatMoney(category.subtotal)}</span>
-                        </div>
-                        <span className="gastos__barra" aria-hidden="true">
-                          <span
-                            className="gastos__barra-relleno"
-                            style={{ width: `${Math.round((category.subtotal / view.data.total) * 100)}%` }}
-                          />
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-            {latest.length > 0 && (
-              <div className="gastos__ultimos">
-                <span className="gastos__seccion">{EXPENSES_TEXT.latest}</span>
-                {latest.map(({ expense, categoryName }) => (
-                  <button
-                    key={expense.id}
-                    type="button"
-                    className="fila-gasto"
-                    onClick={() => setEditTarget(expense)}
-                  >
-                    <span className="fila-gasto__fecha">{formatDate(expense.spent_on, me.today)}</span>
-                    <span className="fila-gasto__cuerpo">
-                      <span className="fila-gasto__categoria">{categoryName}</span>
-                      <span className="fila-gasto__texto">{expense.detail}</span>
-                    </span>
-                    <span className="fila-gasto__monto">{formatMoney(expense.amount)}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
+          <MonthBody view={view.data} today={me.today} onEdit={setEditTarget} />
         )}
 
         <div className="gastos__pie">
@@ -270,27 +205,19 @@ export default function Gastos() {
       </div>
 
       {editTarget !== null && (
-        <div className="capa" role="presentation">
-          <div className="capa__contenido">
-            <ExpenseForm
-              target={editTarget}
-              onDirtyChange={setEditDirty}
-              onCancel={() => (editDirty ? setConfirmingDiscard(true) : closeEdit())}
-              onDone={(saved) => {
-                invalidateResource(queryClient, 'expenses')
-                closeEdit()
-                flash.showNow(saved)
-              }}
-              onGone={() => {
-                closeEdit()
-                flashGone()
-              }}
-              onRequestDelete={(expense) => {
-                closeEdit()
-                setDeleteTarget(expense)
-              }}
-            />
-            {confirmingDiscard && (
+        // An in-page sheet (ADR-0053): Expenses itself is behind it, so no `BehindPane`. On a
+        // computer it is the `.capa` it always was, a `div` since the screen is already the `main`.
+        <Sheet
+          computer={computer}
+          computerClass="capa"
+          computerBodyClass="capa__contenido"
+          computerDialog={false}
+          frameTag="div"
+          label={EXPENSES_TEXT.editExpense}
+          touched={editDirty}
+          onClose={() => (editDirty ? setConfirmingDiscard(true) : closeEdit())}
+          aside={
+            confirmingDiscard && (
               <ConfirmDialog
                 title={COMMON_TEXT.discardTheChanges}
                 detail={EXPENSES_TEXT.whatYouChangedIsLost}
@@ -299,9 +226,28 @@ export default function Gastos() {
                 onConfirm={closeEdit}
                 onCancel={() => setConfirmingDiscard(false)}
               />
-            )}
-          </div>
-        </div>
+            )
+          }
+        >
+          <ExpenseForm
+            target={editTarget}
+            onDirtyChange={setEditDirty}
+            onCancel={() => (editDirty ? setConfirmingDiscard(true) : closeEdit())}
+            onDone={(saved) => {
+              invalidateResource(queryClient, 'expenses')
+              closeEdit()
+              flash.showNow(saved)
+            }}
+            onGone={() => {
+              closeEdit()
+              flashGone()
+            }}
+            onRequestDelete={(expense) => {
+              closeEdit()
+              setDeleteTarget(expense)
+            }}
+          />
+        </Sheet>
       )}
       {deleteTarget !== null && (
         <DeleteConfirm
