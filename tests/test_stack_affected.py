@@ -1,10 +1,14 @@
-"""The affected forms declared in `.agentic/stack.yaml` (ADR-0039): structure only. The
-gate that reads them is another system's; what this product owes is that every form can
-be substituted and exits non-zero on an empty selection (never `--passWithNoTests`), and
-that the fallback globs never swallow what the e2e wrapper judges sound."""
+"""The affected forms and the delivery tier declared in `.agentic/stack.yaml` (ADR-0039,
+agentic-system ADR-0064): structure only. The gate that reads them is another system's;
+what this product owes is that every form can be substituted and exits non-zero on an
+empty selection (never `--passWithNoTests`), that the fallback globs never swallow what
+the e2e wrapper judges sound, and that `delivery_checks` names only declared checks,
+leaves `web-e2e` out and still runs each sweep file the fast tier must not lose."""
 
 from __future__ import annotations
 
+import shlex
+import tomllib
 from fnmatch import fnmatchcase
 from pathlib import Path
 from typing import Any, cast
@@ -21,7 +25,19 @@ STACK = cast(
 CHECKS: dict[str, str] = STACK["checks"]
 AFFECTED: dict[str, str] = STACK["affected_checks"]
 FALLBACK: list[str] = STACK["affected_fallback"]
+DELIVERY: list[str] = STACK["delivery_checks"]
 E2E = REPO_ROOT / "web" / "e2e"
+
+# Sweep files: each guards a whole-codebase rule, so the fast tier must keep running them.
+SWEEP_FILES = [
+    "tests/test_business_isolation.py",
+    "tests/test_gated_routes.py",
+    "tests/migrations/test_business_ownership.py",
+    "tests/migrations/test_naming.py",
+    "tests/architecture/test_architecture.py",
+]
+# The only pytest options that leave the selection of tests alone.
+_FLAGS = {"-q", "-x"}
 
 
 def _matched(path: str, globs: list[str]) -> bool:
@@ -108,3 +124,139 @@ def test_every_file_directly_under_e2e_that_is_not_a_spec_or_helper_is_unsound()
     assert "web/e2e/env.ts" in others
     for path in others:
         assert not is_e2e_sound(path), path
+
+
+def runs_path(command: str, path: str) -> bool:
+    """Whether `command` is a pytest run that executes every test of `path`.
+
+    Only options that never narrow the selection are allowed: `-n <N|auto>`,
+    `-p no:cacheprovider`, `-q`, `-x` and `--maxfail=<N>`. Any other option, and any
+    argument naming a single test (`::`), makes it false. A command naming no path runs
+    the whole suite, which holds only because `pyproject.toml` sets
+    `testpaths = ["tests"]` (pinned below). A path is run when a positional argument
+    equals it or is a directory above it."""
+    words = shlex.split(command)
+    if words[:3] == ["uv", "run", "--no-project"]:
+        words = words[3:]
+    if not words or words[0] != "pytest":
+        return False
+    positionals: list[str] = []
+    rest = iter(words[1:])
+    for word in rest:
+        if word == "-n":
+            value = next(rest, "")
+            if value != "auto" and not value.isdigit():
+                return False
+        elif word == "-p":
+            if next(rest, "") != "no:cacheprovider":
+                return False
+        elif word in _FLAGS:
+            continue
+        elif word.startswith("--maxfail="):
+            if not word.removeprefix("--maxfail=").isdigit():
+                return False
+        elif word.startswith("-") or "::" in word:
+            return False
+        else:
+            positionals.append(word.rstrip("/"))
+    if not positionals:
+        return True
+    return any(path == p or path.startswith(p + "/") for p in positionals)
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "pytest",
+        "uv run --no-project pytest -n 8",
+        "pytest -n auto",
+        "pytest -p no:cacheprovider",
+        "pytest -q",
+        "pytest -x",
+        "pytest --maxfail=3",
+        "pytest -n 4 -p no:cacheprovider -q -x --maxfail=1",
+        "pytest tests/architecture/test_architecture.py",
+        "pytest tests/architecture",
+        "pytest tests/architecture/",
+        "pytest tests",
+        "pytest tests/migrations tests/architecture/test_architecture.py",
+    ],
+)
+def test_runs_path_accepts_a_command_that_runs_the_file(command: str) -> None:
+    assert runs_path(command, "tests/architecture/test_architecture.py")
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "pytest tests/migrations",
+        "pytest tests/architecture/test_no_spanish.py",
+        "pytest tests/architecture_extra",
+        "ruff check .",
+        "npm --prefix web test",
+        "",
+        "pytest -k sweep",
+        "pytest -m slow",
+        "pytest --ignore=tests/architecture",
+        "pytest --ignore-glob=tests/arch*",
+        "pytest --deselect tests/architecture/test_architecture.py",
+        "pytest --lf",
+        "pytest --ff",
+        "pytest --sw",
+        "pytest --co",
+        "pytest --durations=5",
+        "pytest -n",
+        "pytest -n many",
+        "pytest -p other",
+        "pytest --maxfail=x",
+        "pytest tests/architecture/test_architecture.py::test_one",
+        "pytest tests/architecture::x",
+        "pytest -n 8 --ignore=tests/architecture/test_architecture.py",
+    ],
+)
+def test_runs_path_rejects_a_command_that_may_skip_the_file(command: str) -> None:
+    assert not runs_path(command, "tests/architecture/test_architecture.py")
+
+
+def test_the_whole_suite_rule_rests_on_pyproject_testpaths() -> None:
+    config = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    assert config["tool"]["pytest"]["ini_options"]["testpaths"] == ["tests"]
+
+
+def test_delivery_checks_name_declared_checks_only() -> None:
+    assert [name for name in DELIVERY if name not in CHECKS] == []
+
+
+def test_delivery_checks_are_not_empty_and_have_no_duplicates() -> None:
+    assert DELIVERY
+    assert len(DELIVERY) == len(set(DELIVERY))
+
+
+def test_delivery_checks_never_name_web_e2e() -> None:
+    assert "web-e2e" not in DELIVERY
+    assert "web-e2e" not in CHECKS
+    assert "web-e2e" not in AFFECTED
+
+
+def test_a_second_pytest_check_writes_no_cache() -> None:
+    pytest_checks = [c for c in CHECKS.values() if shlex.split(c)[3:4] == ["pytest"]]
+    assert pytest_checks
+    cacheless = [c for c in pytest_checks if "no:cacheprovider" in shlex.split(c)]
+    assert len(pytest_checks) - len(cacheless) <= 1
+
+
+@pytest.mark.parametrize("path", SWEEP_FILES)
+def test_the_fast_tier_runs_every_sweep_file(path: str) -> None:
+    assert (REPO_ROOT / path).is_file()
+    assert any(runs_path(CHECKS[name], path) for name in DELIVERY)
+
+
+def test_every_tests_path_a_check_names_exists() -> None:
+    named = [
+        word.rstrip("/")
+        for command in CHECKS.values()
+        for word in shlex.split(command)
+        if word.startswith("tests/")
+    ]
+    assert named
+    assert [p for p in named if not (REPO_ROOT / p).exists()] == []
