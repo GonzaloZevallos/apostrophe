@@ -1,15 +1,5 @@
 candidates:
 - slug: developer
-  category: process-suite-red
-  lesson: Before delivering, run every declared check, e2e included, to completion on the final head. Fix a red or timed-out check first, and check that a state-reset side effect does not trigger a request.
-  confidence: medium
-  seen_in:
-  - GH-349
-  sources:
-  - finding
-  - return
-  added_at: '2026-10-26T03:26:05.389+00:00'
-- slug: developer
   category: spec-missing-test
   lesson: When a test asserts that something must not appear in an output, check every field of the output (or walk the whole payload), not only the few fields that come to mind.
   confidence: low
