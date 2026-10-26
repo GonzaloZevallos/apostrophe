@@ -12,9 +12,10 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../../router'
-import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, CUSTOMERS, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, pathTo } from '../../routes'
 import type { Viewport } from '../../routes'
 import { COMMON_TEXT } from '../../copy/common'
+import { NOBODY_OWES } from '../../copy/customers'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 
@@ -71,7 +72,6 @@ function renderApp(entries: { pathname: string; state?: unknown }[], viewport: V
 
 afterEach(() => {
   vi.unstubAllGlobals()
-  Reflect.deleteProperty(window, 'scrollY')
 })
 
 describe('on a phone, a direct address', () => {
@@ -112,6 +112,19 @@ describe('on a phone, a direct address', () => {
 
     await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })
     expectBehindPaneEmpty(behindPane())
+  })
+
+  test('with nobody owing the pane draws no "Nobody owes you" wording', async () => {
+    renderApp([{ pathname: CUSTOMER_NEW }], 'phone', {
+      'GET /payments/debtors': () => jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }),
+    })
+
+    await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })
+    const pane = behindPane()
+    await waitFor(() => expect(pane).toHaveTextContent('Beto Gómez'))
+    expectBehindPane(pane)
+    expect(pane).not.toHaveTextContent(NOBODY_OWES)
+    expect(pane.querySelector('[data-place], [tabindex]')).toBeNull()
   })
 
   test('a gone customer: the pane is empty and the form shows its gone handling', async () => {
@@ -161,24 +174,6 @@ describe('a sheet kept across 900 px', () => {
 })
 
 describe('Close', () => {
-  test('from a scrolled Customers list returns to it at the same scroll position', async () => {
-    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-    Object.defineProperty(window, 'scrollY', { configurable: true, value: 480 })
-    const router = renderApp([{ pathname: CUSTOMERS }], 'phone')
-
-    await userEvent.click(await screen.findByRole('link', { name: COMMON_TEXT.newCustomer }))
-    await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })
-    expect(router.state.location.pathname).toBe(CUSTOMER_NEW)
-    await userEvent.click(screen.getByRole('button', { name: COMMON_TEXT.close }))
-
-    await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
-    await screen.findByRole('link', { name: COMMON_TEXT.newCustomer })
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    // The page was held where it was (the lock never scrolls it) and nothing moved it.
-    expect(window.scrollY).toBe(480)
-    expect(scrollTo).not.toHaveBeenCalled()
-  })
-
   test('from edit goes to the card', async () => {
     const router = renderApp([{ pathname: pathTo(CUSTOMER, { id: 1 }) }], 'phone')
 

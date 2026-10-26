@@ -5,7 +5,7 @@
  */
 
 import type { Page } from '@playwright/test'
-import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, pathTo } from '../src/routes.js'
+import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, CUSTOMERS, pathTo } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectPath } from './helpers/url.js'
@@ -61,4 +61,30 @@ test('a direct address to Edit customer opens the sheet over the card, focus in 
   await expect(page.getByRole('textbox', { name: 'Name' })).toBeFocused()
   await expect(page.locator('.behind-pane')).toContainText('Carla Cobrar')
   await expectActionAtTheBottom(page, 'Edit customer')
+})
+
+test('Close from a scrolled Customers list returns to it at the same scroll position', async ({ page }) => {
+  await signUpNewBusiness(page)
+  for (let index = 1; index <= 30; index += 1) {
+    const created = await page.request.post('/customers', {
+      data: { name: `Zeta ${String(index).padStart(2, '0')}`, phone: null, vip: false },
+    })
+    expect(created.ok()).toBe(true)
+  }
+  await page.goto(CUSTOMERS)
+  await expect(page.getByRole('link', { name: /Zeta 30/ })).toBeVisible()
+  await page.evaluate(() => window.scrollTo(0, 700))
+  const before = await page.evaluate(() => window.scrollY)
+  expect(before).toBeGreaterThan(300)
+
+  // A synthetic click: the link is at the top of the page, and a real click would scroll to it.
+  await page.getByRole('link', { name: 'New customer' }).dispatchEvent('click')
+  await expect(page.getByRole('dialog', { name: 'New customer' })).toBeVisible()
+  // The page behind is held where it was while the sheet is open.
+  expect(await page.evaluate(() => window.scrollY)).toBe(before)
+
+  await page.getByRole('button', { name: 'Close' }).click()
+  await expectPath(page, CUSTOMERS)
+  await expect(page.getByRole('link', { name: /Zeta 30/ })).toBeAttached()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(before)
 })
