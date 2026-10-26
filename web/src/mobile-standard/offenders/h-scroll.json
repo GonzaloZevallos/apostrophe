@@ -1,14 +1,5 @@
 [
   {
-    "screen": "Analisis",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "Catalogo",
     "rule": "h-scroll",
     "target": "",

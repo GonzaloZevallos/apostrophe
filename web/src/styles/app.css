@@ -3323,7 +3323,7 @@ body {
   /* The hero (GH-319): the month's sales is one unbreakable unit that shrinks with the
      width, as the sale detail's total does, so nine digits and their "$" fit at 246 px. */
   .analisis .cifra-xl {
-    font-size: clamp(24px, 10vw, 54px);
+    font-size: clamp(20px, 8.5vw, 54px);
     white-space: nowrap;
   }
 
