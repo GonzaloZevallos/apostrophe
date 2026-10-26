@@ -5,7 +5,8 @@
  * with `readdirSync`, never from the glob or loader under test; a missing folder counts zero.
  */
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { parityProblems, referenceT } from '../../src/i18n/parity.ts'
@@ -54,5 +55,45 @@ describe('the resolver over the real en folder', () => {
     const differing = rows.filter((row) => resolveKey(en, row.key, row.args) !== reference(row.key, row.args))
 
     expect(differing.map((row) => `${row.source} row ${row.index}`)).toEqual([])
+  })
+})
+
+/** Every string under a locales root that holds `$t(`, as `<tag>/<file>: <path>`, and how many
+ * files were read. The listing is `readdirSync`, a missing root counts zero. */
+function nestingIn(root: string): { files: number; problems: string[] } {
+  const problems: string[] = []
+  let files = 0
+  if (!existsSync(root)) return { files, problems }
+  const walk = (value: unknown, where: string, path: string): void => {
+    if (typeof value === 'string') {
+      if (value.includes('$t(')) problems.push(`${where}: ${path}`)
+    } else if (typeof value === 'object' && value !== null) {
+      for (const [name, item] of Object.entries(value)) walk(item, where, path === '' ? name : `${path}.${name}`)
+    }
+  }
+  for (const tag of readdirSync(root)) {
+    for (const file of readdirSync(join(root, tag)).filter((name) => name.endsWith('.json'))) {
+      files += 1
+      walk(JSON.parse(readFileSync(join(root, tag, file), 'utf8')), `${tag}/${file}`, '')
+    }
+  }
+  return { files, problems }
+}
+
+describe('no locale string holds $t(', () => {
+  test('over every file of every real folder, as many as the listing holds', () => {
+    const { files, problems } = nestingIn(LOCALES_ROOT)
+    const listed = readdirSync(LOCALES_ROOT).flatMap((tag) => readdirSync(join(LOCALES_ROOT, tag)).filter((name) => name.endsWith('.json')))
+
+    expect(problems).toEqual([])
+    expect(files).toBe(listed.length)
+  })
+
+  test('a string that nests $t( is reported with its file and path', () => {
+    const root = mkdtempSync(join(tmpdir(), 'locales-'))
+    mkdirSync(join(root, 'en'))
+    writeFileSync(join(root, 'en', 'shapes.json'), JSON.stringify({ outer: { inner: 'See $t(shapes:other)' }, fine: 'Hello' }))
+
+    expect(nestingIn(root)).toEqual({ files: 1, problems: ['en/shapes.json: outer.inner'] })
   })
 })

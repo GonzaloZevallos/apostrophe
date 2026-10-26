@@ -54,11 +54,15 @@ export function parityCases(bundle: Bundle): ParityCase[] {
   return cases
 }
 
+/** `t` as the reference uses it: a key held in a string and its arguments, not a typed key. */
+type UntypedT = (key: string, options?: Record<string, string | number>) => string
+
 /** What a fresh instance on the production options answers for a key: the reference. */
 export function referenceT(bundle: LocaleBundle, tag = 'en'): (key: string, args?: Args) => string {
   const instance = i18next.createInstance()
   void instance.init({ ...productionOptions, lng: tag, ns: Object.keys(bundle), resources: { [tag]: bundle } })
-  return (key, args) => String(instance.t(key as never, { ...args } as never))
+  const ask: UntypedT = instance.t.bind(instance)
+  return (key, args) => ask(key, { ...args })
 }
 
 type Answer = (bundle: Bundle, key: string, args: Args, tag: string) => string

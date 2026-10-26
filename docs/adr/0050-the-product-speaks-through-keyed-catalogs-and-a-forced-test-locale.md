@@ -98,8 +98,10 @@ amends ADR-0049, which assumed one language for good.
 ## Amendment: the front's key seam (GH-378, part 1)
 
 The shared words of the front move onto keys on this runtime. Part 1 builds the seam and
-moves no copy; nothing visible changes. Nothing under `web/src/copy/*.ts` or
-`web/src/copy/locales/` changes, and `baseline_exceptions.json` stays `[]`.
+moves no copy; nothing visible changes. No copy module under `web/src/copy/` and nothing
+under `web/src/copy/locales/` changes, and `baseline_exceptions.json` stays `[]`. The two
+files that hold the checks do change, because the keyed check lives in them:
+`web/src/copy/limits.ts` and `web/src/copy/copyLimits.test.ts`.
 
 - **`web/src/i18n/options.ts`** exports `productionOptions` (`lng`, `fallbackLng`,
   `initAsync: false`, `interpolation.escapeValue: false`, `react.useSuspense: false`).
@@ -119,7 +121,8 @@ moves no copy; nothing visible changes. Nothing under `web/src/copy/*.ts` or
     argument. Messages name the key and the placeholder, never a value.
   - `loadBundle(tag, root?)` (`web/scripts/i18n/loadBundle.ts`) reads
     `web/src/copy/locales/<tag>/*.json` from disk.
-  - Parity: a test pins `resolveKey` to a fresh `i18next.createInstance()` initialised with
+  - Parity: `web/src/i18n/parity.ts` is the reference. It builds a fresh instance on the
+    production options (never the app singleton) and lists the cases; a test pins `resolveKey` to a fresh `i18next.createInstance()` initialised with
     `{...productionOptions, ns, resources}`, over every plural base at count 0, 1 and 2 and
     every other leaf, over a committed fixture and over the real `en` folder.
 - **`web/src/i18n/placeholders.ts`**: `PLACEHOLDERS` maps a placeholder name to a `SAMPLES`
@@ -128,8 +131,10 @@ moves no copy; nothing visible changes. Nothing under `web/src/copy/*.ts` or
   `customer`, `date`, `amount`, `grams`); it takes a role prefix only when one string holds
   two of the same term (`fromDate`, `toDate`); the plural count is always `count`. A name
   missing from the registry is a problem for both checks below.
-- **Keyed copy limits.** `LimitedCopy` is `{kind, text}` (a module that still holds words,
-  checked exactly as before) or `{kind, key, args?}`. A keyed module exports `NAMESPACE`,
+- **Keyed copy limits.** `LimitedCopy` stays `{kind, text}` (a module that still holds
+  words, checked exactly as before); the keyed form is its own type beside it,
+  `KeyedCopy` `{kind, key, args?}`, and a module lists `LimitedCopy | KeyedCopy` entries.
+  A keyed module exports `NAMESPACE`,
   its `LONG_REFUSALS` holds keys, and `copyProblems(path, mod, locales)` resolves in `en`
   and in every real locale folder, excluding `en-XA` by name. A key missing in `en` fails;
   one missing in another real language is skipped; a key outside `NAMESPACE` fails; the
@@ -146,7 +151,14 @@ moves no copy; nothing visible changes. Nothing under `web/src/copy/*.ts` or
   `t('<ns>:fn', {p1: a, p2: b})` with the parameter names from `baselineKeys/<ns>.json`,
   and adds `useTranslation` to the enclosing component. It exits non-zero, naming the file
   and line and leaving the file byte-identical, on an alias, a spread or a computed access,
-  a use at module top level, any file under `web/src/copy/`, and a wrong argument count.
+  a use at module top level, any file under `web/src/copy/`, and a wrong argument count
+  (a spread argument and a function read without its call included), and also on:
+  a use inside a function that is neither a component (PascalCase) nor a hook (`use*`); an
+  existing local named `t`, or a `useTranslation` that is not a plain
+  `const { t } = useTranslation()` at the top of the body; a type position
+  (`typeof OBJ.x`); a copy read concatenated into a string or put in a template literal; a
+  dependency list that is not an array literal; and an anonymous `memo` or `forwardRef`
+  wrapper. It computes every file first and writes only if there is no error.
 - **Two files later parts create**, listed here so the amendment names them all:
   `refusalKeys.json` maps a refusal code to a `refusals:` key (only the refusals part
   writes it); `commonTextReaders/<area>.json` lists the files that read `COMMON_TEXT` for
