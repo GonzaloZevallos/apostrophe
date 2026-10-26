@@ -4588,6 +4588,21 @@ body {
   }
 }
 
+/* A variety's inline edit on a computer stays inline in the page: the sheet's two wrappers add no
+ * box of their own (on a phone the same two elements are the full-screen sheet). */
+@media (max-width: 899.98px) {
+  .variedades-paneles--solo > .variedades-paneles__detalle {
+    display: contents;
+  }
+}
+
+@media (min-width: 900px) {
+  .variedad-forma,
+  .variedad-forma__cuerpo {
+    display: contents;
+  }
+}
+
 /* The screen drawn behind a phone sheet on a direct address (`BehindPane`): a picture of the
  * parent, never touched or read, and clipped in width so what overflows under the sheet cannot
  * widen the page. */

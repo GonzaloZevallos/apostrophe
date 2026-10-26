@@ -18,7 +18,7 @@
  * "Editar", form or removal; its one action is "Restaurar".
  */
 
-import { useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
@@ -38,6 +38,7 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
 import SinConexion from '../../components/SinConexion'
+import Sheet from '../../components/Sheet'
 import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams, formatMoney } from '../../format/money'
@@ -60,6 +61,7 @@ import VarietyRemoval from './VarietyRemoval'
 import VarietyPricesSection from './VarietyPricesSection'
 import VarietyStockSection from './VarietyStockSection'
 import { useBackParent } from '../../shell/useBackParent'
+import { useViewport } from '../../shell/useViewport'
 import VarietyThresholdSection from './VarietyThresholdSection'
 import { useRestore } from './useRestore'
 import { COMMON_TEXT } from '../../copy/common'
@@ -109,6 +111,7 @@ function VarietyPageView({
   const location = useLocation()
   const navigate = useNavigate()
   const flash = useFlash()
+  const computer = useViewport() === 'computer'
   const openForm = useOpenForm()
   const [dirty, setDirty] = useState(false)
   const [gone, setGone] = useState(false)
@@ -187,6 +190,74 @@ function VarietyPageView({
     leaveForm()
   }
 
+  const leaveConfirm = blocker.state === 'blocked' && (
+    <LeaveConfirm
+      blocker={blocker}
+      question={COMMON_TEXT.discardTheChange}
+      detail={DISCARD_DETAIL}
+      keepLabel={COMMON_TEXT.noKeepTyping}
+      discardLabel={COMMON_TEXT.yesDiscard}
+    />
+  )
+
+  let open: { label: string; node: ReactNode } | null = null
+  if (!archived && form === 'rename') {
+    open = {
+      label: VARIETIES_TEXT.renombrarVariedad,
+      node: (
+        <RenameForm
+          variety={variety}
+          onDone={onSaved}
+          onCancel={leaveForm}
+          onDirtyChange={onDirtyChange}
+          onGone={onFormGone}
+        />
+      ),
+    }
+  } else if (!archived && form === 'threshold' && row !== undefined) {
+    open = {
+      label: VARIETIES_TEXT.avisoDeStockBajo,
+      node: (
+        <ThresholdForm
+          varietyId={varietyId}
+          threshold={row.threshold}
+          onDone={onSaved}
+          onCancel={leaveForm}
+          onDirtyChange={onDirtyChange}
+          onGone={onFormGone}
+        />
+      ),
+    }
+  } else if (!archived && form === 'catalog' && catalogRow !== null) {
+    open = {
+      label: VARIETIES_TEXT.enElCatalogo,
+      node: (
+        <CatalogAttributesForm
+          row={catalogRow}
+          onDone={onSaved}
+          onCancel={leaveForm}
+          onDirtyChange={onDirtyChange}
+          onGone={onFormGone}
+        />
+      ),
+    }
+  }
+  const formSheet = open !== null && (
+    <Sheet
+      computer={computer}
+      computerClass="variedad-forma"
+      computerBodyClass="variedad-forma__cuerpo"
+      computerDialog={false}
+      frameTag="div"
+      label={open.label}
+      touched={dirty}
+      onClose={leaveForm}
+      aside={leaveConfirm}
+    >
+      {open.node}
+    </Sheet>
+  )
+
   return (
     <main className="pantalla">
       <div className="cuerpo">
@@ -219,36 +290,7 @@ function VarietyPageView({
           </p>
         )}
 
-        {!archived && form === 'rename' && (
-          <RenameForm
-            variety={variety}
-            onDone={onSaved}
-            onCancel={leaveForm}
-            onDirtyChange={onDirtyChange}
-            onGone={onFormGone}
-          />
-        )}
-
-        {!archived && form === 'threshold' && row !== undefined && (
-          <ThresholdForm
-            varietyId={varietyId}
-            threshold={row.threshold}
-            onDone={onSaved}
-            onCancel={leaveForm}
-            onDirtyChange={onDirtyChange}
-            onGone={onFormGone}
-          />
-        )}
-
-        {!archived && form === 'catalog' && catalogRow !== null && (
-          <CatalogAttributesForm
-            row={catalogRow}
-            onDone={onSaved}
-            onCancel={leaveForm}
-            onDirtyChange={onDirtyChange}
-            onGone={onFormGone}
-          />
-        )}
+        {formSheet}
 
         {archived ? (
           <>
@@ -297,15 +339,7 @@ function VarietyPageView({
         {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />}
       </div>
-      {blocker.state === 'blocked' && (
-        <LeaveConfirm
-          blocker={blocker}
-          question={COMMON_TEXT.discardTheChange}
-          detail={DISCARD_DETAIL}
-          keepLabel={COMMON_TEXT.noKeepTyping}
-          discardLabel={COMMON_TEXT.yesDiscard}
-        />
-      )}
+      {open === null && leaveConfirm}
     </main>
   )
 }

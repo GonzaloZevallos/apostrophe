@@ -3,10 +3,11 @@
  * `VarietyNew` so the Onboarding's first step can reuse it. It knows nothing of the router:
  * its host decides what follows a save (`onSaved`, with the new variety's id and name) and
  * learns whether something was typed (`onDirtyChange`). A refusal shows under the name and
- * keeps what was typed.
+ * keeps what was typed. In a sheet (`sheet`) the connection notice and the save are the pinned
+ * actions, the form's last child; elsewhere they render as they always did.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, Fragment, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
@@ -14,6 +15,7 @@ import { kindOf, resolveOverride } from '../../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Boton from '../../components/Boton'
+import { SheetActions } from '../../components/Sheet'
 import { GENERIC_REFUSAL_MESSAGE, type Variety } from '../Variedades'
 import { VARIETY_NAME_HELP, VARIETIES_TEXT } from '../../copy/varieties'
 import { SAVE_OVERRIDES } from './varietyForms'
@@ -22,9 +24,12 @@ import { COMMON_TEXT } from '../../copy/common'
 export interface VarietyNameFormProps {
   onSaved: (saved: Pick<Variety, 'id' | 'name'>) => void
   onDirtyChange: (dirty: boolean) => void
+  /** True when a `Sheet` draws the form: its connection notice and main action are the pinned actions. */
+  sheet?: boolean
 }
 
-export default function VarietyNameForm({ onSaved, onDirtyChange }: VarietyNameFormProps) {
+export default function VarietyNameForm({ onSaved, onDirtyChange, sheet = false }: VarietyNameFormProps) {
+  const Actions = sheet ? SheetActions : Fragment
   const queryClient = useQueryClient()
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -80,10 +85,12 @@ export default function VarietyNameForm({ onSaved, onDirtyChange }: VarietyNameF
           </span>
         )}
       </label>
-      {offline && <SinConexion />}
-      <Boton textOnly="submit" type="submit" disabled={sending}>
-        {VARIETIES_TEXT.agregaLaVariedad}
-      </Boton>
+      <Actions>
+        {offline && <SinConexion />}
+        <Boton textOnly="submit" type="submit" disabled={sending}>
+          {VARIETIES_TEXT.agregaLaVariedad}
+        </Boton>
+      </Actions>
     </form>
   )
 }

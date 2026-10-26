@@ -12,17 +12,20 @@
  * The stock entry form keeps the whole width on a computer, as it always had. On a phone it is a sheet
  * (ADR-0053) over its parent on a direct address: new over Varieties, edit over All entries, drawn as
  * an inert, hidden `BehindPane`. `{!computer && …}` leaves the pane's place, so the form keeps one
- * index on both viewports and a resize across 900 px never remounts it.
+ * index on both viewports and a resize across 900 px never remounts it. New variety is the same on a
+ * phone, over Varieties, drawn only on a direct address (opened from inside the app the app is already
+ * behind it); on a computer it stays in the two panes as the design's modal.
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Outlet, useMatch, useOutletContext } from 'react-router'
+import { Outlet, useLocation, useMatch, useOutletContext } from 'react-router'
 import { get } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import type { VarietyDetail } from '../../api/varieties'
 import BehindPane from '../../components/BehindPane'
-import { ARCHIVED_VARIETIES, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETY, VARIETY_PRICE_NEW } from '../../routes'
+import { isInApp } from '../../components/useBackOr'
+import { ARCHIVED_VARIETIES, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, VARIETY_PRICE_NEW } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Variedades from '../Variedades'
 import ArchivedVarieties from './ArchivedVarieties'
@@ -44,6 +47,8 @@ export default function VarietiesLayout() {
     queryFn: () => get<VarietyDetail>(`/varieties/${varietyId}`),
     enabled: computer && varietyId !== undefined && /^[0-9]+$/.test(varietyId),
   })
+  const onVarietyNew = useMatch(VARIETY_NEW) !== null
+  const direct = !isInApp(useLocation().state)
   const onStockNew = useMatch(STOCK_ENTRY_NEW) !== null
   const editedEntry = useMatch(STOCK_ENTRY)?.params.id
   const onStockEdit = !onStockNew && editedEntry !== undefined && /^[0-9]+$/.test(editedEntry)
@@ -74,10 +79,23 @@ export default function VarietiesLayout() {
       </>
     )
   }
-  if (!computer) return <Outlet context={me} />
+  // New variety and a variety's page (which opens its inline edits as sheets) keep the computer's
+  // two-pane tree on a phone too (the behind-pane takes the list's place, `--solo` and its detail
+  // add no box), so their `Outlet` keeps one place across 900 px and what was typed stays.
+  const onVarietyPage = varietyId !== undefined && /^[0-9]+$/.test(varietyId)
+  if (!computer && !onVarietyNew && !onVarietyPage) return <Outlet context={me} />
   return (
-    <div className="variedades-paneles">
-      <div className="variedades-paneles__lista">{archivedPane ? <ArchivedVarieties /> : <Variedades />}</div>
+    <div className={computer ? 'variedades-paneles' : 'variedades-paneles variedades-paneles--solo'}>
+      {computer ? (
+        <div className="variedades-paneles__lista">{archivedPane ? <ArchivedVarieties /> : <Variedades />}</div>
+      ) : (
+        onVarietyNew &&
+        direct && (
+          <BehindPane>
+            <VarietiesBehind />
+          </BehindPane>
+        )
+      )}
       <div className="variedades-paneles__detalle">
         <Outlet context={me} />
       </div>
