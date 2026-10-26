@@ -3,9 +3,11 @@
  * The catalog task's own end-to-end run (plan, "Testing": the Playwright main flow
  * Más → Catálogo → edit → Copiar). A seller adds a variety with a price and stock,
  * opens Catálogo, edits that variety's attributes and, in Configuración, the
- * business's header and footer, then copies the result — all through the built front, against the real
+ * business's header and footer, then copies and shares the result — all through the built front, against the real
  * backend (PRD, M1: "no `curl` at any point"; "No curl" metric: "the clipboard
- * equals the API's text, and the preview with markers removed equals it too").
+ * and the share sheet get the API's text with its paired `**` removed and every line
+ * break kept, and the preview shows the same text"). The server's own text keeps its
+ * markers: this spec reads it too, and asserts they are still there.
  *
  * Runs on `127.0.0.1` (this config's default project base URL), which Chromium
  * treats as a secure context regardless of the plain-http scheme (the one carve-out
@@ -22,12 +24,31 @@ import { watchConsole } from './console.js'
 import { openCatalog } from './helpers/openMas.js'
 import { uniqueTag } from './helpers/unique.js'
 
-test('a seller edits a variety, the header and footer, then copies today\'s catalog', async ({
+// What Copiar and Compartir must hand out for the data below, written by hand: the header's
+// pair and Rosa's name pair lose their `**`, every `\n` and blank line stays.
+const EXPECTED_PLAIN_TEXT =
+  '🌸 Catálogo de Flores 🌸\n\n' +
+  '🌹 Rosa\n• 30% indica / 70% sativa\n• Aroma/flavor: floral, dulce\n• Price per gram: $9.000\n\n' +
+  'Pedidos por privado.'
+
+test('a seller edits a variety, the header and footer, then copies and shares today\'s catalog', async ({
   page,
   context,
 }) => {
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
+  // The share sheet is not driven by Playwright: a stub records what it is handed.
+  await page.addInitScript(() => {
+    const shared: string[] = []
+    ;(window as unknown as { __shared: string[] }).__shared = shared
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: (data: ShareData): Promise<void> => {
+        shared.push(data.text ?? '')
+        return Promise.resolve()
+      },
+    })
+  })
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
 
   const ownerEmail = `duena-catalogo-${uniqueTag()}@example.com`
@@ -75,7 +96,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   // to the catalog screen, which only links out to it and shows neither value.
   await page.getByRole('link', { name: 'Edit header and footer' }).click()
   await expectPath(page, SETTINGS_CATALOG_MESSAGE)
-  await page.getByLabel('Header').fill('🌸 Catálogo de Flores del Catálogo 🌸')
+  await page.getByLabel('Header').fill('🌸 Catálogo de **Flores** 🌸')
   await page.getByLabel('Footer').fill('Pedidos por privado.')
   await page.getByRole('button', { name: 'Save the message' }).click()
   await expect(page.getByText('Catalog saved')).toBeVisible()
@@ -83,23 +104,34 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expectPath(page, CATALOG)
   await expect(page.getByLabel('Footer')).toHaveCount(0)
 
-  // The API's own text is what both the preview and the clipboard must match.
+  // The API's own text keeps its markers; the preview, the clipboard and the share sheet
+  // show it without them.
   const apiText = await page.evaluate(() =>
     fetch('/catalog', { credentials: 'include' })
       .then((response) => response.json() as Promise<{ text: string | null }>)
       .then((body) => body.text),
   )
   expect(apiText).not.toBeNull()
-  if (apiText === null) throw new Error('unreachable: asserted above')
+  expect(apiText).toContain('**')
+  expect(apiText).toBe(
+    '🌸 Catálogo de **Flores** 🌸\n\n' +
+      '🌹 **Rosa**\n• 30% indica / 70% sativa\n• Aroma/flavor: floral, dulce\n• Price per gram: $9.000\n\n' +
+      'Pedidos por privado.',
+  )
 
   await expect
     .poll(() => page.locator('.catalogo__vista-previa').textContent())
-    .toBe(apiText.replaceAll('**', ''))
+    .toBe(EXPECTED_PLAIN_TEXT)
 
   await page.getByRole('button', { name: 'Copy' }).click()
   await expect(page.getByText('Catalog copied')).toBeVisible()
   const clipboardText = await page.evaluate(() => navigator.clipboard.readText())
-  expect(clipboardText).toBe(apiText)
+  expect(clipboardText).toBe(EXPECTED_PLAIN_TEXT)
+
+  await page.getByRole('button', { name: 'Share' }).click()
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __shared: string[] }).__shared))
+    .toEqual([EXPECTED_PLAIN_TEXT])
 
   expect(consoleMessages).toEqual([])
 })

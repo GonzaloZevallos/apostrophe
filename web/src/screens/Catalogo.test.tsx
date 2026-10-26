@@ -1,7 +1,7 @@
 /**
  * `Catalogo` at the screen seam (plan, "Front"): the preview built only from
  * `telegramPreview(text)`, Compartir and Copiar gated on the open's fetch and handed
- * exactly the API's text, "What does not go out and why" told by one word per variety, the
+ * the API's text without its paired `**`, "What does not go out and why" told by one word per variety, the
  * links out. It edits no variety attribute (that is the variety's own page). The API is faked at `fetch`, never
  * mocked deeper (CODING_STANDARDS §10).
  */
@@ -80,6 +80,10 @@ afterEach(() => {
   vi.clearAllMocks()
   vi.mocked(share.canShare).mockReturnValue(true)
 })
+
+// `CATALOG.text` with its paired `**` removed by hand: what Copiar and Compartir hand out.
+const CATALOG_PLAIN =
+  '🌿 CATÁLOGO 🌿\n\n🥇 24K Gold\n• 60% índica / 40% sativa\n• Aroma/flavor: cítrico\n• Precio x gramo: $11.000\n• From 10 g: $10.000 c/u\n\n📩 Consultas y pedidos por privado.'
 
 const CATALOG = {
   text: '🌿 **CATÁLOGO** 🌿\n\n🥇 **24K Gold**\n• 60% índica / 40% sativa\n• Aroma/flavor: cítrico\n• Precio x gramo: $11.000\n• From 10 g: $10.000 c/u\n\n📩 Consultas y pedidos por privado.',
@@ -288,14 +292,16 @@ test('the shell\'s "‹ Varieties" is the only back and goes to the list, by his
   expect(router.state.location.pathname).toBe(VARIETIES)
 })
 
-test('Compartir hands the share sheet exactly the API text, byte for byte, and shows nothing after', async () => {
+test('Compartir hands the share sheet the API text without its paired markers, line breaks and spaces kept, and shows nothing after', async () => {
   const text = '🌿 **CATÁLOGO** 🌿\n\n  🥇 **24K Gold**  \n• Precio x gramo: $11.000\n\n'
   renderCatalogo(catalogFetch({ ...CATALOG, text }))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
 
   expect(share.shareText).toHaveBeenCalledTimes(1)
-  expect(vi.mocked(share.shareText).mock.calls[0]?.[0]).toBe(text)
+  expect(vi.mocked(share.shareText).mock.calls[0]?.[0]).toBe(
+    '🌿 CATÁLOGO 🌿\n\n  🥇 24K Gold  \n• Precio x gramo: $11.000\n\n',
+  )
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(screen.queryByText('Catalog copied')).not.toBeInTheDocument()
   expect(screen.queryByRole('status')).not.toBeInTheDocument()
@@ -323,7 +329,7 @@ test('a failed share shows only the fixed message and leaves Copiar available', 
   expect(alert).toHaveTextContent(/^Could not share\.$/)
   expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled()
   await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
-  expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG.text)
+  expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG_PLAIN)
 })
 
 test('where the browser cannot share, Compartir is not shown and Copiar remains', async () => {
@@ -352,13 +358,24 @@ test('sharing and copying write nothing to the console or to browser storage', a
   vi.restoreAllMocks()
 })
 
-test('Copiar copies the raw API text through copyText and shows the toast', async () => {
+test('Copiar copies the API text without its paired markers through copyText and shows the toast', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
 
-  expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG.text)
+  expect(clipboard.copyText).toHaveBeenCalledTimes(1)
+  expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG_PLAIN)
   expect(await screen.findByText('Catalog copied')).toBeInTheDocument()
+})
+
+test('Compartir hands out the same plain text as Copiar while the preview still reads bold', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
+
+  expect(share.shareText).toHaveBeenCalledWith(CATALOG_PLAIN)
+  const preview = document.querySelector('.catalogo__vista-previa') as HTMLElement
+  expect(within(preview).getByText('24K Gold').tagName).toBe('STRONG')
 })
 
 test('a failed copy shows the fixed message and no toast', async () => {
