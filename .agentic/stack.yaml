@@ -21,7 +21,7 @@ checks:
   web-tests: npm --prefix web test
   web-build: npm --prefix web run build
   # web-e2e is off on this machine (owner, 2026-10-26) to free it; GitHub CI still runs
-  # e2e on every pull request, without gating the merge until `ci:` is back (#432).
+  # e2e on every pull request and gates nothing (`ci:` below names test and web; #428).
   # Restore with the line below when the owner says so.
   # web-e2e: npm --prefix web run e2e
 # `parallel_checks`: the gate runs the checks above at once (agentic-system ADR-0044),
@@ -128,8 +128,8 @@ forbidden:
       code instead; nothing is silenced in this product, front included.
 # `ci`: the check-run names of ci.yml that gate a merge (agentic-system ADR-0045, GH-216
 # amendment): with it, `agentic merge` decides from GitHub's CI on the reviewed head instead of
-# rerunning every check locally. The three jobs of `.github/workflows/ci.yml` together run every
-# check above in full (pytest, ruff, mypy; web typecheck, lint, test, build; e2e).
-# Off while GitHub Actions is blocked by billing (Zeta, 2026-10-14): merges decide from the
-# local checks above. Uncomment when CI runs again.
-# ci: [test, web, e2e]
+# rerunning every check locally. `test` and `web` of `.github/workflows/ci.yml` gate the merge and
+# together run every check above in full (pytest, ruff, mypy; web typecheck, lint, test, build);
+# the `e2e` job runs on every pull request and gates nothing (tests/test_stack_ci.py, PARKED).
+# e2e joins `ci:` when the owner turns local e2e back on and #428 has fixed the flake.
+ci: [test, web]

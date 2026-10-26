@@ -29,3 +29,16 @@ type-checked locally failed on GitHub's runner.
 
 - **Reading `ci.yml` by hand at review.** It is the drift this ADR closes; a test does not forget.
 - **`exclude = ["scripts"]` for mypy.** It hides the file instead of checking it.
+
+## Amendment (GH-444): `PARKED` commands run in CI and gate nothing
+
+- **`PARKED` beside `CI_ONLY`.** `tests/test_stack_ci.py` gets a second dict, `PARKED`, in the same shape
+  (command, reason). A parked command is a known `run:` step of `ci.yml` that some job must run, so it is
+  never dead; it runs on every pull request and gates nothing. With `ci:` set, the test refuses a parked
+  command that sits in a gated job, and refuses a command listed in both dicts. `CI_ONLY` keeps its rule:
+  with `ci:` set, its command is in a gated job.
+- **e2e moves from `CI_ONLY` to `PARKED`.** By the owner's decision of 2026-10-26 (local e2e off, PR #434)
+  and because `flow.spec.ts` flakes (#428), `npm --prefix web run e2e` stays out of `ci:`. It joins `ci:`
+  when the owner turns local e2e back on and #428 has fixed the flake; the entry then leaves `PARKED`.
+- **Superseded.** The bullet "A CI-only check gates every merge" no longer holds for e2e: `ci: [test, web]`
+  gates the merge, and `test` and `web` together run every check of `.agentic/stack.yaml`.
