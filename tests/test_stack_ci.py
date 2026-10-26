@@ -112,6 +112,10 @@ def _with_ci(stack: Data, gated: list[str]) -> Data:
     return {**copy.deepcopy(stack), "ci": gated}
 
 
+def _without_ci(stack: Data) -> Data:
+    return {key: copy.deepcopy(value) for key, value in stack.items() if key != "ci"}
+
+
 def _renamed(workflow: Data, old: str, new: str) -> Data:
     jobs = {(new if job == old else job): body for job, body in workflow["jobs"].items()}
     return {**copy.deepcopy(workflow), "jobs": copy.deepcopy(jobs)}
@@ -160,7 +164,7 @@ def test_a_parked_command_no_job_runs_is_refused() -> None:
 def test_a_command_in_both_dicts_is_refused() -> None:
     e2e = "npm --prefix web run e2e"
     ci_only = {**CI_ONLY, e2e: "also listed as CI_ONLY"}
-    problems = stack_ci_problems(STACK, WORKFLOW, ci_only, PARKED)
+    problems = stack_ci_problems(_without_ci(STACK), WORKFLOW, ci_only, PARKED)
     assert problems == [f"command ({e2e}) is in both CI_ONLY and PARKED"]
 
 
