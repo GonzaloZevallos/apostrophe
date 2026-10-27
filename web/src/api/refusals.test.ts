@@ -1,12 +1,24 @@
 import { describe, expect, test } from 'vitest'
+import enRefusals from '../copy/locales/en/refusals.json' with { type: 'json' }
+import { NOT_READY_LINE, OUT_OF_DATE_LINES, OUT_OF_DATE_TOO_LONG_LINE } from '../copy/pinnedCatalog'
+import { resolveKey } from '../i18n/resolve'
 import {
   GONE_DETAIL,
   GONE_NOTICE,
   isGone,
   kindOf,
+  PINNED_CATALOG_NOT_READY_REASON,
+  PINNED_CATALOG_REFUSAL_OVERRIDES,
+  PIN_REASON_KEY,
+  REFUSAL_KEY,
   resolveOverride,
+  VARIETY_REFUSAL_TEXT,
+  WITHDRAWAL_REFUSAL_MESSAGES,
+  type PinReason,
   type RefusalCode,
 } from './refusals'
+
+const en = { refusals: enRefusals }
 
 describe('kindOf', () => {
   test('reads a refusal code\'s kind from the shared contract', () => {
@@ -34,8 +46,65 @@ describe('isGone', () => {
 
 describe('the fixed copy', () => {
   test('carries no data of its own', () => {
-    expect(GONE_NOTICE).toBe('That is gone. The list is up to date.')
-    expect(GONE_DETAIL).toBe('That is gone.')
+    expect(resolveKey(en, GONE_NOTICE.key)).toBe('That is gone. The list is up to date.')
+    expect(resolveKey(en, GONE_DETAIL.key)).toBe('That is gone.')
+  })
+})
+
+describe('the exported tables hold the key of their code', () => {
+  test('each pinned catalog override is REFUSAL_KEY of its code', () => {
+    const codes = [
+      'pinned_catalog.token_required',
+      'pinned_catalog.own_chat_required',
+      'pinned_catalog.not_ready',
+      'pinned_catalog.too_long',
+      'pinned_catalog.telegram_unreachable',
+      'pinned_catalog.bot_cannot_post',
+      'pinned_catalog.token_invalid',
+      'pinned_catalog.own_chat_not_started',
+      'pinned_catalog.own_chat_not_found',
+      'pinned_catalog.test_failed',
+      'pinned_catalog.no_messages',
+      'pinned_catalog.several_chats',
+      'pinned_catalog.updates_unreadable',
+    ] satisfies RefusalCode[]
+    for (const code of codes) {
+      expect(PINNED_CATALOG_REFUSAL_OVERRIDES[code]).toEqual({ key: REFUSAL_KEY[code] })
+    }
+  })
+
+  test('each withdrawal message is REFUSAL_KEY of its code', () => {
+    const codes = [
+      'stock.withdrawal_reason_required',
+      'stock.withdrawal_date_in_future',
+      'stock.withdrawal_no_lines',
+      'stock.withdrawal_grams_not_positive',
+      'stock.withdrawal_grams_too_precise',
+      'stock.withdrawal_note_too_long',
+      'stock.withdrawal_variety_not_found',
+    ] satisfies RefusalCode[]
+    for (const code of codes) {
+      expect(WITHDRAWAL_REFUSAL_MESSAGES[code]).toEqual({ key: REFUSAL_KEY[code] })
+    }
+  })
+
+  test('the VIP price rule is REFUSAL_KEY of its code', () => {
+    expect(VARIETY_REFUSAL_TEXT['variety.vip_price_not_below_list']).toEqual({
+      key: REFUSAL_KEY['variety.vip_price_not_below_list'],
+    })
+  })
+})
+
+describe('copy/pinnedCatalog.ts inlines the English of the refusals', () => {
+  test('the not-ready line starts with the not-ready reason', () => {
+    expect(NOT_READY_LINE.startsWith(`${resolveKey(en, PINNED_CATALOG_NOT_READY_REASON.key)} · `)).toBe(true)
+  })
+
+  test('each out-of-date line ends with the English of its reason key', () => {
+    expect(OUT_OF_DATE_TOO_LONG_LINE.endsWith(resolveKey(en, PIN_REASON_KEY.too_long))).toBe(true)
+    for (const reason of ['telegram_unreachable', 'bot_cannot_post', 'message_gone', 'missing_publish'] satisfies PinReason[]) {
+      expect(OUT_OF_DATE_LINES[reason].endsWith(resolveKey(en, PIN_REASON_KEY[reason]))).toBe(true)
+    }
   })
 })
 

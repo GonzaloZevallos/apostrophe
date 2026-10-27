@@ -8,6 +8,7 @@ import { expect, test } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import {
   clearSaleJustSaved,
+  gone,
   newSaleFor,
   readFeedback,
   readNewSaleState,
@@ -48,10 +49,14 @@ test.each([
   expect(readFeedback(state)).toBeNull()
 })
 
-// The gone text is the one English value accepted from history state until part 3 moves it to
-// `refusals:goneNotice`; a stale English toast, by contrast, renders nothing (intended).
-test('accepts the fixed gone notice', () => {
-  expect(readFeedback({ notice: GONE_NOTICE })).toEqual({ kind: 'notice', message: GONE_NOTICE })
+// A stale English toast renders nothing (intended); the gone notice is accepted only as its key.
+test('accepts the fixed gone notice, carried as its key string', () => {
+  expect(gone()).toEqual({ notice: 'refusals:goneNotice' })
+  expect(readFeedback(gone())).toEqual({ kind: 'notice', refusal: GONE_NOTICE })
+})
+
+test('reads the gone notice back after a structured clone of history state', () => {
+  expect(readFeedback(structuredClone(gone()))).toEqual({ kind: 'notice', refusal: GONE_NOTICE })
 })
 
 test('rejects a state with neither key, and a non-object state', () => {

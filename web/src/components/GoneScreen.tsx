@@ -8,6 +8,7 @@
 import { useTranslation } from 'react-i18next'
 import BotonLink from './BotonLink'
 import { GONE_DETAIL } from '../api/refusals'
+import { refusalText } from '../i18n/refusalKeys'
 
 export default function GoneScreen({ label, to }: { label: string; to: string }) {
   const { t } = useTranslation()
@@ -15,7 +16,7 @@ export default function GoneScreen({ label, to }: { label: string; to: string })
     <main className="pantalla">
       <div className="cuerpo">
         <div className="estado-vacio">
-          <span className="estado-vacio__titulo">{GONE_DETAIL}</span>
+          <span className="estado-vacio__titulo">{refusalText(t, GONE_DETAIL)}</span>
           <BotonLink variant="primary" icon="atras" to={to}>
             {t('common:backTo', { parent: label })}
           </BotonLink>

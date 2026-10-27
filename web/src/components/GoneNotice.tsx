@@ -13,12 +13,15 @@
  * `GoneNotice` hard-coding one placement for every screen (review finding, e2e).
  */
 
+import { useTranslation } from 'react-i18next'
 import { GONE_NOTICE } from '../api/refusals'
+import { refusalText } from '../i18n/refusalKeys'
 
 export default function GoneNotice() {
+  const { t } = useTranslation()
   return (
     <div className="aviso-neutro" role="status">
-      <span className="aviso-neutro__texto">{GONE_NOTICE}</span>
+      <span className="aviso-neutro__texto">{refusalText(t, GONE_NOTICE)}</span>
     </div>
   )
 }

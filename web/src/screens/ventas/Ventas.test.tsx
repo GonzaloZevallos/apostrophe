@@ -12,12 +12,12 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import saleFixture from '../../api/fixtures/sale.json'
-import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import Ventas from './Ventas'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
+import { gone } from '../../components/feedback'
 
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -256,7 +256,7 @@ test('arriving back from Delete sale or Deshacer shows "Sale deleted · the gram
 
 test('arriving back after deleting an already-gone sale shows the gone notice', async () => {
   api.mockResolvedValue(jsonResponse(200, []))
-  renderVentas({ notice: GONE_NOTICE })
+  renderVentas(gone())
 
-  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
 })
