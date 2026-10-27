@@ -13,6 +13,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SALE_NEW } from '../../routes'
+import { stubViewport } from '../../test-viewport'
 import NuevaVenta from './NuevaVenta'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -33,7 +34,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-function renderForm() {
+function renderForm(viewport: 'phone' | 'computer' = 'phone') {
+  stubViewport(viewport)
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
     [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
@@ -64,4 +66,13 @@ test('Save is the secondary button until a payment is chosen, then the primary o
   expect(after).toBeEnabled()
   expect(after).not.toHaveClass('boton--suave')
   expect(after).toHaveClass('boton')
+})
+
+test('on a computer Save is the primary button before the choice too, as it always was', async () => {
+  renderForm('computer')
+  const save = await screen.findByRole('button', { name: 'Save sale' })
+
+  expect(save).toBeEnabled()
+  expect(save).not.toHaveClass('boton--suave')
+  expect(save).toHaveClass('boton')
 })

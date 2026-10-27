@@ -12,33 +12,6 @@
     "issue": 48
   },
   {
-    "screen": "Archivadas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Archivadas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Archivadas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "Catalogo",
     "rule": "touch-target",
     "target": "link:Edit header and footer",
@@ -71,33 +44,6 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CatalogoAtributos",
-    "rule": "touch-target",
     "target": "switch:Warn when running low",
     "issue": 47
   },
@@ -108,33 +54,6 @@
     "issue": 47
   },
   {
-    "screen": "ClienteFicha",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "ClienteFicha",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "InicioChecklist",
     "rule": "touch-target",
     "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
@@ -161,33 +80,6 @@
     "target": "link:Owed to you",
     "issue": 45,
     "reason": "the \"Owed to you\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "Configuracion",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 60,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Configuracion",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 60,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Configuracion",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 60,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "ConfiguracionApariencia",
@@ -217,87 +109,6 @@
     ]
   },
   {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGone",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGone",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGone",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosReintento",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosReintento",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosReintento",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "GastoConfirmarBorrado",
     "rule": "touch-target",
     "target": "button:Next month",
@@ -428,33 +239,6 @@
     "rule": "touch-target",
     "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
     "issue": 45
-  },
-  {
-    "screen": "Mas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Mas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Mas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 48,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "NuevaVentaCliente",
@@ -527,33 +311,6 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-target",
     "target": "switch:Warn when running low",
     "issue": 47
   },
@@ -564,87 +321,6 @@
     "issue": 49
   },
   {
-    "screen": "RetiroDetalle",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "RetiroDetalle",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "RetiroDetalle",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "TodasLasEntradasVariedad",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "TodasLasEntradasVariedad",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "TodasLasEntradasVariedad",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadArchivada",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadArchivada",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadArchivada",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "VariedadDetalle",
     "rule": "touch-target",
     "target": "link:#/# · Own use−# g",
@@ -667,33 +343,6 @@
     "rule": "touch-target",
     "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
-  },
-  {
-    "screen": "VariedadDetalle",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadDetalle",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadDetalle",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "VariedadDetalle",
@@ -728,33 +377,6 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadRenombrar",
-    "rule": "touch-target",
     "target": "switch:Warn when running low",
     "issue": 47
   },
@@ -781,33 +403,6 @@
     "rule": "touch-target",
     "target": "link:#/# · Promotion−# g@#/# · Promotion−# g[2]",
     "issue": 47
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VariedadUmbral",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
   },
   {
     "screen": "VariedadUmbral",
@@ -827,417 +422,14 @@
     "target": "button:New customer",
     "issue": 78,
     "sizes": [
-      "320x568",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaDetalle",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaDetalle",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaDetalle",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VerTodas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VerTodas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VerTodas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 47,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 46,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 46,
-    "sizes": [
-      "246x437"
+      "320x568"
     ]
   },
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-target",
-    "target": "link:Home",
+    "target": "button:New customer",
     "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "reason": "the bottom bar link \"Home\" measures under 44px in width or height",
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "reason": "the bottom bar link \"More\" measures under 44px in width or height",
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "reason": "the bottom bar link \"More\" measures under 44px in width or height",
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "reason": "the bottom bar link \"Sales\" measures under 44px in width or height",
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-target",
-    "target": "link:More",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "reason": "the bottom bar link \"Sales\" measures under 44px in width or height",
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Ventas",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 45,
-    "reason": "the bottom bar link \"Home\" measures under 44px in width or height",
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "touch-target",
-    "target": "link:Home",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-target",
-    "target": "link:Sales",
-    "issue": 45,
     "sizes": [
       "246x437"
     ]

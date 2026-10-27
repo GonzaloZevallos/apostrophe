@@ -618,6 +618,42 @@
     "issue": 78
   },
   {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "autocomplete",
+    "target": "combobox:Line # variety",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "autocomplete",
+    "target": "textbox:Date",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "autocomplete",
+    "target": "textbox:Line # grams",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "autocomplete",
+    "target": "textbox:Line # special price",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "autocomplete",
+    "target": "textbox:Note",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "autocomplete",
+    "target": "textbox:Shipping",
+    "issue": 78
+  },
+  {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
     "target": "combobox:Line # variety",
@@ -861,7 +897,21 @@
     "screen": "VentaAsignarCliente",
     "rule": "autocomplete",
     "target": "textbox:Search",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "autocomplete",
+    "target": "textbox:Search",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
   },
   {
     "screen": "VentasFechas",
@@ -873,42 +923,6 @@
     "screen": "VentasFechas",
     "rule": "autocomplete",
     "target": "textbox:To",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "autocomplete",
-    "target": "textbox:Line # grams",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "autocomplete",
-    "target": "textbox:Line # special price",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "autocomplete",
-    "target": "textbox:Shipping",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "autocomplete",
-    "target": "combobox:Line # variety",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
     "issue": 78
   }
 ]

@@ -49,6 +49,7 @@ import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { useViewport } from '../../shell/useViewport'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
@@ -173,6 +174,8 @@ function NuevaVentaForm() {
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
+  // Save looks unready before the choice on the phone only; the computer draws it as it always did.
+  const onPhone = useViewport() === 'phone'
 
   const initialCustomerId = readNewSaleState(location.state)
 
@@ -693,7 +696,7 @@ function NuevaVentaForm() {
               <Boton
                 textOnly="submit"
                 type="submit"
-                variant={method === null ? 'secondary' : 'primary'}
+                variant={onPhone && method === null ? 'secondary' : 'primary'}
                 disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
                 {SALES_TEXT.saveSale}
               </Boton>

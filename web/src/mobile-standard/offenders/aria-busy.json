@@ -46,6 +46,24 @@
     "rule": "aria-busy",
     "target": "",
     "issue": 45,
+    "sizes": [
+      "320x568"
+    ],
+    "themes": [
+      "claro"
+    ],
+    "reason": "with the API held, neither the content area nor anything in it carries aria-busy=\"true\""
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45,
+    "sizes": [
+      "375x812",
+      "430x932",
+      "246x437"
+    ],
     "reason": "with the API held, neither the content area nor anything in it carries aria-busy=\"true\""
   },
   {

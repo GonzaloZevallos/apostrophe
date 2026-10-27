@@ -5889,6 +5889,35 @@ body {
     white-space: nowrap;
   }
 
+  /* Ganancia and Caja stack, each a card as wide as the screen, so a signed nine-digit figure
+     has the room to stay on one line. */
+  .nueva-venta__linea-detalle {
+    flex-wrap: wrap;
+  }
+
+  .nueva-venta__linea-preciogramo,
+  .nueva-venta__linea-total {
+    white-space: nowrap;
+  }
+
+  .panel-resultados {
+    flex-direction: column;
+  }
+
+  .panel-resultados__celda {
+    container-type: inline-size;
+  }
+
+  .panel-resultados__valor {
+    font-size: min(25px, 13cqw);
+    white-space: nowrap;
+  }
+
+  .bar-inferior,
+  .bar-inferior a {
+    touch-action: manipulation;
+  }
+
   .fila-venta__texto {
     min-width: 0;
     overflow: hidden;
@@ -5941,5 +5970,18 @@ body {
   .fila-venta__cuerpo {
     order: 3;
     flex: 1 0 100%;
+  }
+}
+
+/* At 246 px the five items need the whole bar: no side padding beyond the insets, and each
+ * item at least 44 px wide (its label can still make it wider). */
+@media (max-width: 299.98px) {
+  .bar-inferior {
+    padding-inline: var(--inset-izquierda) var(--inset-derecha);
+  }
+
+  .bar-inferior__item {
+    flex: 1 1 44px;
+    min-width: min-content;
   }
 }

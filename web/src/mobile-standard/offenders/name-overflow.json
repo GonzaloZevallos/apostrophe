@@ -198,6 +198,20 @@
     "screen": "VentaAsignarCliente",
     "rule": "name-overflow",
     "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 78
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
   }
 ]

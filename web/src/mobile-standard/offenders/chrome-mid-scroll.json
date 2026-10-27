@@ -64,27 +64,5 @@
     "rule": "chrome-mid-scroll",
     "target": "navigation:Navigation",
     "issue": 47
-  },
-  {
-    "screen": "Inicio",
-    "rule": "chrome-mid-scroll",
-    "target": "navigation:Navigation",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "chrome-mid-scroll",
-    "target": "link:New sale",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
   }
 ]

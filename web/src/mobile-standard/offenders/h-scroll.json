@@ -63,17 +63,6 @@
     "issue": 48
   },
   {
-    "screen": "Inicio",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
     "screen": "Invitacion",
     "rule": "h-scroll",
     "target": "",
