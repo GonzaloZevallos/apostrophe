@@ -45,7 +45,7 @@ test('the server-error retry is an alert with its fixed text and no data', () =>
 })
 
 test('the notice for a gone record is announced like a toast, with no Deshacer and no Reintentar', () => {
-  render(<Notice kind="notice" message="That is gone. The list is up to date." />)
+  render(<Notice feedback={{ kind: 'notice', message: 'That is gone. The list is up to date.' }} />)
 
   expect(screen.getByRole('status')).toHaveTextContent('That is gone. The list is up to date.')
   expect(screen.queryByText(/Deshacer|Reintentar/)).toBeNull()
@@ -53,7 +53,7 @@ test('the notice for a gone record is announced like a toast, with no Deshacer a
 })
 
 test('a plain success toast is a status with its fixed text, never an action and never data', () => {
-  const { container } = render(<Notice kind="toast" message="Sale deleted · the grams go back to stock" />)
+  const { container } = render(<Notice feedback={{ kind: 'toast', key: 'common:saleDeletedGramsBack' }} />)
 
   expect(screen.getByRole('status')).toHaveTextContent(
     'Sale deleted · the grams go back to stock',

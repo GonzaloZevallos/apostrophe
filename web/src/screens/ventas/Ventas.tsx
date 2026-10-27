@@ -133,7 +133,7 @@ export default function Ventas() {
           )}
         </div>
 
-        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
+        {feedback !== null && <Notice feedback={feedback} />}
 
         {period === 'fechas' && (
           <div className="periodos__fechas">
