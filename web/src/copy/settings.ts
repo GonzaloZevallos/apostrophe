@@ -7,7 +7,6 @@
 import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './settings.ts'
 import { SAMPLES, type LimitedCopy } from './limits'
-import { REFUSAL_TEXT } from './refusals'
 import { STOCK_TEXT } from './stock'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -15,7 +14,7 @@ export const LANGUAGE: 'es' | 'en' = 'en'
 export const RENAME_SUCCESS = 'Business renamed'
 export const PASSWORD_CHANGED_SUCCESS = 'Password changed · we signed out your other sessions'
 export const BUSINESS_NAME_INVALID_MESSAGE = 'Give the business a name, without extra spaces'
-export const GENERIC_REFUSAL_MESSAGE = REFUSAL_TEXT.pinnedGeneric
+export const GENERIC_REFUSAL_MESSAGE = 'Check the details and try again.'
 export const CATALOG_SAVED = 'Catalog saved'
 export const PRICES_SAVED = 'Prices saved'
 export const HEADER_TOO_LONG_MESSAGE = 'The header is too long'

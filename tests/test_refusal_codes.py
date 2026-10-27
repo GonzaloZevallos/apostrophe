@@ -220,105 +220,109 @@ def test_the_overlap_check_rejects_a_segment_with_no_shared_path() -> None:
         )
 
 
-REFUSALS_COPY_PATH = Path(__file__).resolve().parent.parent / "web" / "src" / "copy" / "refusals.ts"
+WEB_COPY_PATH = Path(__file__).resolve().parent.parent / "web" / "src" / "copy"
+REFUSAL_KEYS_PATH = WEB_COPY_PATH / "refusalKeys.json"
+LOCALES_PATH = WEB_COPY_PATH / "locales"
+KEY_PREFIX = "refusals:"
+ENGLISH = "en"
 
 
-def copy_codes_of(source: str) -> set[str]:
-    """The refusal codes `REFUSAL_BY_CODE` (web/src/copy/refusals.ts) has a key for."""
-    start = source.index("export const REFUSAL_BY_CODE")
-    return set(re.findall(r"^\s*'([A-Za-z_]+(?:\.[a-z_]+)?)':", source[start:], re.MULTILINE))
+def refusal_locales() -> dict[str, dict[str, object]]:
+    """Every `locales/<tag>/refusals.json`, `en-XA` included, by tag."""
+    return {
+        path.parent.name: json.loads(path.read_text())
+        for path in sorted(LOCALES_PATH.glob("*/refusals.json"))
+    }
 
 
-def check_copy_covers(contract_codes: set[str], copy_codes: set[str]) -> None:
-    """Raises `AssertionError` naming a contract code `copy/refusals` has no key for, or a
+def check_keys_cover(contract_codes: set[str], key_codes: set[str]) -> None:
+    """Raises `AssertionError` naming a contract code `refusalKeys.json` has no key for, or a
     key for a code the contract does not list."""
-    missing = contract_codes - copy_codes
+    missing = contract_codes - key_codes
     if missing:
-        raise AssertionError(f"copy/refusals has no key for {sorted(missing)}")
-    extra = copy_codes - contract_codes
+        raise AssertionError(f"refusalKeys.json has no key for {sorted(missing)}")
+    extra = key_codes - contract_codes
     if extra:
-        raise AssertionError(f"copy/refusals has keys for {sorted(extra)}, not in contract.json")
+        raise AssertionError(f"refusalKeys.json has keys for {sorted(extra)}, not in contract.json")
 
 
-def test_every_contract_code_has_a_key_in_the_refusal_copy() -> None:
+def check_keys_resolve(keys: dict[str, str], locales: dict[str, dict[str, object]]) -> None:
+    """Raises `AssertionError` unless every value is `refusals:<leaf>` and the leaf walks to a
+    `str` in every locale (a missing leaf, or an object where a text belongs, fails)."""
+    for code, key in sorted(keys.items()):
+        if not key.startswith(KEY_PREFIX):
+            raise AssertionError(f"{code!r}: its key does not start with {KEY_PREFIX!r}")
+        leaf = key[len(KEY_PREFIX) :]
+        for tag, bundle in sorted(locales.items()):
+            if leaf not in bundle:
+                raise AssertionError(f"{code!r}: {tag}/refusals.json has no leaf {leaf!r}")
+            if not isinstance(bundle[leaf], str):
+                raise AssertionError(f"{code!r}: {tag}/refusals.json leaf {leaf!r} is not a text")
+
+
+def test_every_contract_code_has_a_key_that_walks_to_a_text_in_every_locale() -> None:
     contract = json.loads(CONTRACT_PATH.read_text())
+    keys: dict[str, str] = json.loads(REFUSAL_KEYS_PATH.read_text())
+    locales = refusal_locales()
 
-    check_copy_covers(set(contract["refusalCodes"]), copy_codes_of(REFUSALS_COPY_PATH.read_text()))
+    assert ENGLISH in locales
+    assert "en-XA" in locales
+    check_keys_cover(set(contract["refusalCodes"]), set(keys))
+    check_keys_resolve(keys, locales)
 
 
-def test_the_copy_check_fails_for_a_code_with_no_key_and_for_a_key_with_no_code() -> None:
+def test_the_key_check_fails_for_a_code_with_no_key_and_for_a_key_with_no_code() -> None:
     with pytest.raises(AssertionError, match="no key for.*a.code"):
-        check_copy_covers({"a.code", "b.code"}, {"b.code"})
+        check_keys_cover({"a.code", "b.code"}, {"b.code"})
     with pytest.raises(AssertionError, match="c.code.*not in contract.json"):
-        check_copy_covers({"a.code"}, {"a.code", "c.code"})
+        check_keys_cover({"a.code"}, {"a.code", "c.code"})
 
 
-REFUSAL_TEXT_LINE = re.compile(
-    r"^(?:\s+(?:\w+|'[^']+'): |const \w+ = )'((?:[^'\\]|\\.)+)',?$", re.MULTILINE
-)
+def test_the_key_check_fails_for_a_missing_leaf_and_for_an_object_leaf() -> None:
+    keys = {"a.code": "refusals:alpha"}
+
+    check_keys_resolve(keys, {"en": {"alpha": "Alpha"}, "en-XA": {"alpha": "Ålphå"}})
+    with pytest.raises(AssertionError, match="en-XA.*no leaf 'alpha'"):
+        check_keys_resolve(keys, {"en": {"alpha": "Alpha"}, "en-XA": {"beta": "Bétå"}})
+    with pytest.raises(AssertionError, match="en.*'alpha' is not a text"):
+        check_keys_resolve(keys, {"en": {"alpha": {"deep": "Alpha"}}})
+    with pytest.raises(AssertionError, match="does not start with"):
+        check_keys_resolve({"a.code": "common:alpha"}, {"en": {"alpha": "Alpha"}})
+
+
 REFUSAL_LENGTH_LIMIT = 80
 
 
-def refusal_texts_of(source: str) -> list[str]:
-    """Every quoted refusal text in `copy/refusals.ts`, the quoted-key entries included."""
-    head = source[: source.index("export const REFUSAL_BY_CODE")]
-    return [text.replace("\\'", "'") for text in REFUSAL_TEXT_LINE.findall(head)]
-
-
-def long_refusals_of(source: str) -> set[str]:
-    """The refusals `LONG_REFUSALS` lists as allowed past the limit."""
-    match = re.search(r"export const LONG_REFUSALS[^=]*= \[(.*?)\]", source, re.DOTALL)
-    return set(re.findall(r"'((?:[^'\\]|\\.)*)'", match.group(1))) if match else set()
-
-
-def refusal_problems(source: str) -> list[str]:
-    """What is wrong with the refusal texts: a Spanish letter, a `${` hole (it would repeat
-    input), or a text past 80 characters that `LONG_REFUSALS` does not list."""
-    long_ones = long_refusals_of(source)
-    problems: list[str] = []
-    texts = refusal_texts_of(source)
+def refusal_problems(texts: list[str]) -> list[str]:
+    """What is wrong with the English refusal texts: a Spanish letter, a `${` hole (it would
+    repeat input), or a text past 80 characters. There is no allow-list for a long one."""
     if not texts:
         return ["no refusal text found"]
+    problems: list[str] = []
     for text in texts:
         if re.search(r"[áéíóúñ¿¡]", text):
             problems.append(f"a Spanish letter in {text!r}")
         if "${" in text:
             problems.append(f"{text!r} repeats input")
-        if len(text) > REFUSAL_LENGTH_LIMIT and text not in long_ones:
+        if len(text) > REFUSAL_LENGTH_LIMIT:
             problems.append(f"{text!r} is {len(text)} characters, over {REFUSAL_LENGTH_LIMIT}")
     return problems
 
 
 def test_the_refusal_copy_is_english_and_repeats_no_input() -> None:
-    source = REFUSALS_COPY_PATH.read_text()
+    english = json.loads((LOCALES_PATH / ENGLISH / "refusals.json").read_text())
+    texts = [text for text in english.values() if isinstance(text, str)]
 
-    assert len(refusal_texts_of(source)) > 20
-    assert refusal_problems(source) == []
+    assert len(texts) > 20
+    assert len(texts) == len(english)
+    assert refusal_problems(texts) == []
 
 
-def test_the_refusal_check_reads_quoted_keys_and_rejects_each_rule() -> None:
-    long_text = "x" * 81
-    fixture = (
-        "const GENERIC_REFUSAL = 'Revisá los datos'\n"
-        "export const REFUSAL_TEXT = {\n"
-        "  fine: 'Fine.',\n"
-        "  withdrawal: {\n"
-        f"    'stock.a': '{long_text}',\n"
-        "    'stock.b': 'Hello ${name}',\n"
-        "  },\n"
-        "}\n"
-        "export const LONG_REFUSALS: readonly string[] = []\n"
-        "export const REFUSAL_BY_CODE = {\n"
-        "  'a.b': REFUSAL_TEXT.fine,\n"
-        "}\n"
-    )
-
-    problems = refusal_problems(fixture)
+def test_the_refusal_check_rejects_each_rule_and_an_empty_input() -> None:
+    problems = refusal_problems(["Revisá los datos", "x" * 81, "Hello ${name}", "Fine."])
 
     assert any("Spanish letter" in problem for problem in problems)
     assert any("repeats input" in problem for problem in problems)
     assert any("81 characters" in problem for problem in problems)
-    listed = fixture.replace(
-        "LONG_REFUSALS: readonly string[] = []", f"LONG_REFUSALS = ['{long_text}']"
-    )
-    assert not any("81 characters" in problem for problem in refusal_problems(listed))
+    assert refusal_problems(["Fine."]) == []
+    assert refusal_problems([]) == ["no refusal text found"]

@@ -414,7 +414,6 @@
   {"source":"pinnedCatalog.ts:PINNED_CATALOG_TEXT.publish","args":null,"text":"Publish"},
   {"source":"pinnedCatalog.ts:PINNED_CATALOG_TEXT.theLastOneWasOn","args":null,"text":"· The last one was on "},
   {"source":"pinnedCatalog.ts:PINNED_CATALOG_TEXT.upToDate","args":null,"text":"Up to date"},
-  {"source":"refusals.ts:LANGUAGE","args":null,"text":"en"},
   {"source":"refusals.ts:REFUSAL_BY_CODE.RequestInvalid","args":null,"text":"Check the details and try again."},
   {"source":"refusals.ts:REFUSAL_BY_CODE[\"account.business_name_invalid\"]","args":null,"text":"Check the details and try again."},
   {"source":"refusals.ts:REFUSAL_BY_CODE[\"account.current_password_wrong\"]","args":null,"text":"Check the details and try again."},

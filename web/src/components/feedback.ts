@@ -29,6 +29,7 @@
 
 import { GONE_NOTICE } from '../api/refusals'
 import { COMMON_TEXT } from '../copy/common'
+import type { Refusal } from '../i18n/refusalKeys'
 
 /** Every plain success toast a screen can show by navigating away (PRD,
  * "Feedback"; sales.md round 3). "Venta guardada" is deliberately not here —
@@ -53,16 +54,17 @@ function isToastMessage(value: unknown): value is ToastMessage {
  * Deshacer) — exported so that screen never invents the copy itself. */
 export const SALE_SAVED = COMMON_TEXT.saleSaved
 
-export interface Feedback {
-  kind: 'toast' | 'notice' | 'saved'
-  message: string
-}
+/** A banner to show: a toast or the saved marker carry their fixed text, the gone notice a
+ * `Refusal` the banner resolves at render (it is never a string here). */
+export type Feedback =
+  | { kind: 'toast' | 'saved'; message: string }
+  | { kind: 'notice'; refusal: Refusal }
 
 export function readFeedback(state: unknown): Feedback | null {
   if (state === null || typeof state !== 'object') return null
   const record = state as Record<string, unknown>
   if (isToastMessage(record.toast)) return { kind: 'toast', message: record.toast }
-  if (record.notice === GONE_NOTICE) return { kind: 'notice', message: GONE_NOTICE }
+  if (record.notice === GONE_NOTICE.key) return { kind: 'notice', refusal: GONE_NOTICE }
   if (record.saleJustSaved === true) return { kind: 'saved', message: SALE_SAVED }
   return null
 }
@@ -78,9 +80,10 @@ export function toast(message: ToastMessage): { toast: ToastMessage } {
 
 /** Writes the gone notice into history state — `toast`'s counterpart for
  * `GONE_NOTICE`, so a screen that lands on a gone record after navigating
- * away never builds `{ notice: GONE_NOTICE }` by hand either. */
-export function gone(): { notice: typeof GONE_NOTICE } {
-  return { notice: GONE_NOTICE }
+ * away never builds `{ notice: ... }` by hand either. Only the key string rides in history
+ * state, never a `Refusal` object: `readFeedback` compares it with `===`. */
+export function gone(): { notice: typeof GONE_NOTICE.key } {
+  return { notice: GONE_NOTICE.key }
 }
 
 /** Written once, by `NuevaVenta` on a successful save, alongside

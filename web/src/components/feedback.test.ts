@@ -5,9 +5,9 @@
  */
 
 import { expect, test } from 'vitest'
-import { GONE_NOTICE } from '../api/refusals'
 import {
   clearSaleJustSaved,
+  gone,
   newSaleFor,
   readFeedback,
   readNewSaleState,
@@ -29,15 +29,20 @@ test('accepts "Sale deleted · the grams go back to stock", added to the closed 
   })
 })
 
-test('accepts the fixed gone notice', () => {
-  expect(readFeedback({ notice: GONE_NOTICE })).toEqual({ kind: 'notice', message: GONE_NOTICE })
+test('accepts the fixed gone notice, carried as its key string', () => {
+  expect(gone()).toEqual({ notice: 'refusals:goneNotice' })
+  expect(readFeedback(gone())).toEqual({ kind: 'notice', refusal: { key: 'refusals:goneNotice' } })
 })
 
 test('rejects a toast string outside the closed set — never renders an arbitrary message', () => {
   expect(readFeedback({ toast: 'Cliente eliminado' })).toBeNull()
 })
 
-test('rejects a notice that is not the fixed gone text', () => {
+test('reads the gone notice back after a structured clone of history state', () => {
+  expect(readFeedback(structuredClone(gone()))).toEqual({ kind: 'notice', refusal: { key: 'refusals:goneNotice' } })
+})
+
+test('rejects a notice that is not the fixed gone key', () => {
   expect(readFeedback({ notice: 'cualquier cosa' })).toBeNull()
 })
 

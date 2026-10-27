@@ -7,18 +7,20 @@
  * silent pass. Writes are stubbed, never sent (invariant 6).
  */
 
+import { GONE_NOTICE as GONE_NOTICE_REFUSAL } from '../api/refusals.ts'
 import { AUTH_TEXT, BRAKE_MESSAGE, DEAD_LINK_MESSAGE, NOT_USABLE_TITLE } from '../copy/auth.ts'
 import { COMMON_TEXT, ERROR_GENERICO_MENSAJE } from '../copy/common.ts'
-import { REFUSAL_TEXT } from '../copy/refusals.ts'
+import enRefusals from '../copy/locales/en/refusals.json' with { type: 'json' }
 import { SALES_TEXT } from '../copy/sales.ts'
 import { INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
+import { resolveKey } from '../i18n/resolve.ts'
 import type { WalkState } from './states.ts'
 
 const BRAKE = BRAKE_MESSAGE
 const INVITATION_DEAD = NOT_USABLE_TITLE
 const LINK_DEAD = DEAD_LINK_MESSAGE
 const RETRY = ERROR_GENERICO_MENSAJE
-const GONE_NOTICE = REFUSAL_TEXT.goneNotice
+const GONE_NOTICE = resolveKey({ refusals: enRefusals }, GONE_NOTICE_REFUSAL.key)
 
 /** A token no invitation or reset link was ever minted with: the backend answers it as gone. */
 const NEVER_MINTED = 'no-such-link-0000000000000000'

@@ -15,7 +15,6 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
-import { GONE_NOTICE } from '../api/refusals'
 import { useGoneNotice } from '../components/goneExit'
 import InAppLink from '../components/InAppLink'
 import { inAppState } from '../components/inAppState'
@@ -44,7 +43,7 @@ function Where({ label, opens }: { label: string; opens?: string }) {
       <span>{label}</span>
       <span data-testid="where">{location.pathname}</span>
       {opens !== undefined && <InAppLink to={opens}>Abrir la entrada</InAppLink>}
-      {goneShown && <span role="status">{GONE_NOTICE}</span>}
+      {goneShown && <span role="status">{'That is gone. The list is up to date.'}</span>}
     </div>
   )
 }
@@ -640,10 +639,10 @@ test('a gone delete, opened from All entries, goes back: the list is in history 
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(STOCK)
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
 })
 
 test('a gone delete, opened from the variety list, replaces the entry with the list and leaves the screen behind alone', async () => {
@@ -657,10 +656,10 @@ test('a gone delete, opened from the variety list, replaces the entry with the l
 
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('REPLACE')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
 })
 
 test('a gone delete on a direct link replaces the entry with All entries and shows the notice', async () => {
@@ -671,7 +670,7 @@ test('a gone delete on a direct link replaces the entry with All entries and sho
 
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('REPLACE')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 test('after a reload of the form (a fresh mount of the same history), the gone exit still goes back once', async () => {
@@ -689,7 +688,7 @@ test('after a reload of the form (a fresh mount of the same history), the gone e
 
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 test('a resize across 900 px between opening and leaving does not change where the exit goes', async () => {
@@ -724,7 +723,7 @@ test.each([
 
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 test('editing an entry of an archived variety shows it as the chosen one, and offers no other archived variety', async () => {

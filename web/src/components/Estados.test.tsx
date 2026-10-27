@@ -1,8 +1,8 @@
 import { SALES } from '../routes'
+import { GONE_NOTICE } from '../api/refusals'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
-import { GONE_DETAIL } from '../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from './ErrorGenerico'
 import GoneScreen from './GoneScreen'
 import Notice from './Notice'
@@ -16,7 +16,7 @@ test('the gone screen says one fixed line and offers one way back, with no data'
     </MemoryRouter>,
   )
 
-  expect(screen.getByText(GONE_DETAIL)).toBeInTheDocument()
+  expect(screen.getByText('That is gone.')).toBeInTheDocument()
   const links = screen.getAllByRole('link')
   expect(links).toHaveLength(1)
   expect(links[0]).toHaveTextContent('Back to Sales')
@@ -45,7 +45,7 @@ test('the server-error retry is an alert with its fixed text and no data', () =>
 })
 
 test('the notice for a gone record is announced like a toast, with no Deshacer and no Reintentar', () => {
-  render(<Notice kind="notice" message="That is gone. The list is up to date." />)
+  render(<Notice kind="notice" refusal={GONE_NOTICE} />)
 
   expect(screen.getByRole('status')).toHaveTextContent('That is gone. The list is up to date.')
   expect(screen.queryByText(/Deshacer|Reintentar/)).toBeNull()
