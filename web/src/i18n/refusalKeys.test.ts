@@ -1,9 +1,10 @@
 import { createInstance } from 'i18next'
 import { describe, expect, test } from 'vitest'
+import baselineKeys from '../copy/baselineKeys/refusals.json'
+import baseline from '../copy/en.baseline.json'
 import enRefusals from '../copy/locales/en/refusals.json'
 import { buildRefusalKeys, isComplete, isKeyOf, isRefusalKey, refusalText, type RefusalKey } from './refusalKeys'
 import { productionOptions } from './options'
-import { resolveKey } from './resolve'
 
 const fixture = { alpha: 'Alpha', beta: 'Beta' }
 
@@ -78,6 +79,11 @@ describe('refusalText with a language that lacks the refusals', () => {
     resources: { en: { refusals: enRefusals }, xx: { refusals: {} } },
   })
   const t = (key: RefusalKey): string => instance.t(key)
+  // The expected English comes from the recorded baseline, through the mapping, never from the bundle rendered.
+  const expectedOf = (wanted: string): string | undefined => {
+    const source = Object.entries(baselineKeys).find(([, mapping]) => mapping['key'] === wanted)?.[0]
+    return baseline.find((entry) => entry.source === source)?.text
+  }
 
   test('has a key for every leaf', () => {
     expect(keys.length).toBeGreaterThan(20)
@@ -89,7 +95,8 @@ describe('refusalText with a language that lacks the refusals', () => {
 
     const text = refusalText(t, { key })
 
-    expect(text).toBe(resolveKey({ refusals: enRefusals }, key))
+    expect(expectedOf(key)).toEqual(expect.any(String))
+    expect(text).toBe(expectedOf(key))
     expect(text).not.toBe('')
     expect(text).not.toBe(key)
   })
