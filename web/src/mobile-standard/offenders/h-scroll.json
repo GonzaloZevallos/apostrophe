@@ -4,14 +4,5 @@
     "rule": "h-scroll",
     "target": "",
     "issue": 48
-  },
-  {
-    "screen": "ConfiguracionCategoriaRenombrar",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 60,
-    "sizes": [
-      "246x437"
-    ]
   }
 ]

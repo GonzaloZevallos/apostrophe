@@ -41,7 +41,7 @@ import SinConexion from '../../components/SinConexion'
 import Sheet from '../../components/Sheet'
 import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams, formatMoney, keepMoneyTogether } from '../../format/money'
 import {
   CATALOG_SECTION_ID,
   STOCK_ENTRY_NEW,
@@ -272,7 +272,7 @@ function VarietyPageView({
             <p className="variedad-resumen variedad-resumen--archivada">
               {formatGrams(row.grams)}
               {' · '}
-              {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
+              {variety.current_price === null ? NO_PRICE_TODAY : keepMoneyTogether(COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price)))}
             </p>
             <div className="variedad-marcas">
               <Insignia>{VARIETIES_TEXT.archivada}</Insignia>
@@ -286,7 +286,7 @@ function VarietyPageView({
             {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_JOINER}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
             {row.days_left !== null && <>{OUT_OF_DATE_JOINER}{row.days_left}{VARIETIES_TEXT.dias}</>}
             {' · '}
-            {variety.current_price === null ? NO_PRICE_TODAY : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
+            {variety.current_price === null ? NO_PRICE_TODAY : keepMoneyTogether(COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price)))}
           </p>
         )}
 

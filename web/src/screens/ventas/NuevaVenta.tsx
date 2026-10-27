@@ -587,7 +587,7 @@ function NuevaVentaForm() {
                   <div className="nueva-venta__cliente">
                     <div className="nueva-venta__cliente-texto">
                       <span className="lista-clientes__nombre">
-                        {customer.name}
+                        <span className="lista-clientes__nombre-texto">{customer.name}</span>
                         {settings.vip && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                       </span>
                       {customer.phone !== null && (
