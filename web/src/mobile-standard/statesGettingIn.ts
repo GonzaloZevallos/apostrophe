@@ -9,18 +9,16 @@
 
 import { GONE_NOTICE as GONE_NOTICE_REFUSAL } from '../api/refusals.ts'
 import { AUTH_TEXT, BRAKE_MESSAGE, DEAD_LINK_MESSAGE, NOT_USABLE_TITLE } from '../copy/auth.ts'
-import { COMMON_TEXT, ERROR_GENERICO_MENSAJE } from '../copy/common.ts'
-import enRefusals from '../copy/locales/en/refusals.json' with { type: 'json' }
 import { SALES_TEXT } from '../copy/sales.ts'
 import { INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
-import { resolveKey } from '../i18n/resolve.ts'
+import { common, refusal } from './copy.ts'
 import type { WalkState } from './states.ts'
 
 const BRAKE = BRAKE_MESSAGE
 const INVITATION_DEAD = NOT_USABLE_TITLE
 const LINK_DEAD = DEAD_LINK_MESSAGE
-const RETRY = ERROR_GENERICO_MENSAJE
-const GONE_NOTICE = resolveKey({ refusals: enRefusals }, GONE_NOTICE_REFUSAL.key)
+const RETRY = common('common:genericError')
+const GONE_NOTICE = refusal(GONE_NOTICE_REFUSAL)
 
 /** A token no invitation or reset link was ever minted with: the backend answers it as gone. */
 const NEVER_MINTED = 'no-such-link-0000000000000000'
@@ -50,7 +48,7 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
   {
     screen: 'EstadosGoneAviso',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: SALES_TEXT.deleteSale }, { click: COMMON_TEXT.yesDelete }],
+    steps: [{ click: SALES_TEXT.deleteSale }, { click: common('common:yesDelete') }],
     visible: GONE_NOTICE,
     writes: [{ method: 'DELETE', path: /^\/sales\/\d+$/, status: 404, body: { code: 'sale.not_found' } }],
   },

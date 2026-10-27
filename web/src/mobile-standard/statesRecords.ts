@@ -19,7 +19,7 @@ import {
   VARIETY,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
-import { COMMON_TEXT } from '../copy/common.ts'
+import { common } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
 import { VARIETIES_TEXT } from '../copy/varieties.ts'
@@ -55,12 +55,12 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'EntradasTodas',
     route: STOCK,
     steps: [],
-    visible: COMMON_TEXT.allEntries,
+    visible: common('common:allEntries'),
   },
   {
     screen: 'EntradaStockConfirmarCambios',
     route: ENTRY_ROUTE,
-    steps: [{ wait: STOCK_TEXT.editarEntrada }, { click: COMMON_TEXT.save }],
+    steps: [{ wait: STOCK_TEXT.editarEntrada }, { click: common('common:save') }],
     visible: STOCK_TEXT.guardasLosCambios,
   },
   {
@@ -73,21 +73,21 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'PrecioNuevoFormulario',
     route: LOW_VARIETY,
-    steps: [{ click: COMMON_TEXT.newPrice }],
+    steps: [{ click: common('common:newPrice') }],
     visible: VARIETIES_TEXT.guardaElPrecio,
   },
   {
     screen: 'PrecioConfirmarBorrado',
     route: LOW_VARIETY,
     steps: [{ press: VARIETIES_TEXT.borrarEstePrecio }],
-    visible: COMMON_TEXT.yesDelete,
+    visible: common('common:yesDelete'),
   },
-  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: COMMON_TEXT.newVariety }], visible: VARIETIES_TEXT.agregaLaVariedad },
+  { screen: 'VariedadNuevaFormulario', route: VARIETIES, steps: [{ click: common('common:newVariety') }], visible: VARIETIES_TEXT.agregaLaVariedad },
   {
     screen: 'VariedadRenombrar',
     route: LOW_VARIETY,
     steps: [{ press: VARIETIES_TEXT.editarNombre }],
-    visible: COMMON_TEXT.saveTheName,
+    visible: common('common:saveTheName'),
   },
   { screen: 'VariedadUmbral', route: LOW_VARIETY, steps: [{ press: VARIETIES_TEXT.editarAviso }], visible: VARIETIES_TEXT.guardaElAviso },
 
@@ -101,13 +101,13 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'GastoDesdeMas',
     route: MORE,
-    steps: [{ click: COMMON_TEXT.addExpense }],
+    steps: [{ click: common('common:addExpense') }],
     visible: 'Save the expense',
   },
   {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
-    steps: [{ activate: COMMON_TEXT.addExpense }],
+    steps: [{ activate: common('common:addExpense') }],
     visible: 'Save the expense',
   },
   {
@@ -127,7 +127,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'ConfiguracionCategoriaRenombrar',
     route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Rename' }],
-    visible: COMMON_TEXT.save,
+    visible: common('common:save'),
   },
   {
     screen: 'ConfiguracionCategoriaConfirmarBorrado',
@@ -138,7 +138,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'ConfiguracionContrasena',
     route: SETTINGS_ACCOUNT,
-    steps: [{ click: COMMON_TEXT.changePassword }],
+    steps: [{ click: common('common:changePassword') }],
     visible: AUTH_TEXT.currentPassword,
   },
 ]

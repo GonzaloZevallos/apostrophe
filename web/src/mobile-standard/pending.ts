@@ -8,7 +8,7 @@
 
 import { CUSTOMERS, LOGIN, SALE_NEW } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
-import { COMMON_TEXT } from '../copy/common.ts'
+import { common } from './copy.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkStep } from './states.ts'
 
@@ -40,11 +40,11 @@ export const PENDING_TAPS: readonly PendingTap[] = [
     route: CUSTOMERS,
     steps: [
       { click: 'Nico Parra' },
-      { click: COMMON_TEXT.recordPayment },
-      { fill: { label: COMMON_TEXT.amount, value: '1000' } },
-      { click: COMMON_TEXT.cash },
+      { click: common('common:recordPayment') },
+      { fill: { label: common('common:amount'), value: '1000' } },
+      { click: common('common:cash') },
     ],
-    button: COMMON_TEXT.save,
+    button: common('common:save'),
     write: { method: 'POST', path: /^\/customers\/\d+\/payments$/ },
   },
   {
