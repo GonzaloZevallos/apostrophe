@@ -6,24 +6,6 @@
     "issue": 48
   },
   {
-    "screen": "Catalogo",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 47
-  },
-  {
-    "screen": "Clientes",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 46
-  },
-  {
-    "screen": "ConfiguracionCategoriaConfirmarBorrado",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 60
-  },
-  {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "h-scroll",
     "target": "",
@@ -31,65 +13,5 @@
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "ConfiguracionCategorias",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 60
-  },
-  {
-    "screen": "EntradasTodas",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 47
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 48
-  },
-  {
-    "screen": "Invitacion",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingCategorias",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingCategoriasTexto130",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 49
-  },
-  {
-    "screen": "TodasLasEntradas",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 47
-  },
-  {
-    "screen": "Variedades",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 47
   }
 ]

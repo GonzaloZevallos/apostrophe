@@ -1285,7 +1285,6 @@ body {
 }
 
 .gastos__mes {
-  order: 3;
   flex-basis: 100%;
   display: flex;
   align-items: center;
@@ -1294,6 +1293,10 @@ body {
   padding: 0 8px;
   border-radius: var(--radio-pildora);
   background: var(--superficie);
+}
+
+:where(.gastos__cabecera) > .gastos__mes {
+  order: 3;
 }
 
 .gastos__mes-boton {
@@ -5983,5 +5986,127 @@ body {
   .bar-inferior__item {
     flex: 1 1 44px;
     min-width: min-content;
+  }
+}
+
+/* Fit on Customers, Expenses, Varieties, entries, Settings and the invitation (GH-319): a long
+ * name is cut with an ellipsis (or, in a sentence, broken anywhere), a figure stays on one line,
+ * and no row is wider than the screen. */
+@media (max-width: 899.98px) {
+  .lista-clientes__fila,
+  .lista-clientes__fila-contenido > * {
+    min-width: 0;
+  }
+
+  .lista-clientes__nombre {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lista-clientes__nombre > .vip-insignia {
+    margin-left: 7px;
+  }
+
+  .lista-clientes__telefono {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lista-clientes__balance .monto-deuda {
+    white-space: nowrap;
+  }
+
+  .variedad-fila__encabezado,
+  .variedad-fila__pie {
+    min-width: 0;
+  }
+
+  .variedad-fila__nombre {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fila-entrada__linea1,
+  .fila-entrada__linea2,
+  .fila-gasto__categoria,
+  .fila-gasto__texto,
+  .catalogo__fila-detalle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fila-entrada__cifras,
+  .fila-entrada__costo,
+  .fila-gasto__monto,
+  .fila-gasto__fecha {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .fila-entrada__fecha {
+    flex-shrink: 0;
+  }
+
+  .catalogo__fila-nombre {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 44px;
+  }
+
+  .gastos__total {
+    container-type: inline-size;
+  }
+
+  .gastos__total .cifra-xl {
+    font-size: min(54px, 13cqw);
+    white-space: nowrap;
+  }
+
+  .gastos__categoria .gastos__categoria-cabecera {
+    min-width: 0;
+  }
+
+  .gastos__categoria .gastos__categoria-nombre {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gastos__categoria .gastos__categoria-subtotal {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .categoria-fila__nombre {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .panel__titulo,
+  .panel__detalle,
+  .confirmacion__titulo,
+  .confirmacion__detalle,
+  .auth-page__titulo {
+    overflow-wrap: anywhere;
+  }
+
+  .auth-page .boton {
+    height: auto;
+    min-height: var(--alto-tocable);
+    padding-block: var(--espacio-sm);
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }

@@ -89,42 +89,6 @@
     ]
   },
   {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[1]",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[2]",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[1]",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[2]",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[1]",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#[2]",
-    "issue": 48
-  },
-  {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
     "target": "p:# g · low · # days · $ #.# x g",

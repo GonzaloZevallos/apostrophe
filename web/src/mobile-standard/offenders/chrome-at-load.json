@@ -1,53 +1,5 @@
 [
   {
-    "screen": "Clientes",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 46
-  },
-  {
-    "screen": "Clientes",
-    "rule": "chrome-at-load",
-    "target": "link:New sale",
-    "issue": 46
-  },
-  {
-    "screen": "TodasLasEntradas",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 47
-  },
-  {
-    "screen": "Variedades",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 47
-  },
-  {
-    "screen": "Variedades",
-    "rule": "chrome-at-load",
-    "target": "link:New sale",
-    "issue": 47
-  },
-  {
-    "screen": "Gastos",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "chrome-at-load",
-    "target": "link:New sale",
-    "issue": 48
-  },
-  {
-    "screen": "Catalogo",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 47
-  },
-  {
     "screen": "Analisis",
     "rule": "chrome-at-load",
     "target": "navigation:Navigation",
@@ -58,11 +10,5 @@
     "rule": "chrome-at-load",
     "target": "link:New sale",
     "issue": 48
-  },
-  {
-    "screen": "EntradasTodas",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 47
   }
 ]
