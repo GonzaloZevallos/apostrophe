@@ -54,6 +54,36 @@ function readerProblems(sources: readonly Source[], lists: Lists): string[] {
   return problems
 }
 
+const SHELL_OWNS = [
+  'web/src/shell/',
+  'web/src/routes.ts',
+  'web/src/format/',
+  'web/src/stock/detail.ts',
+  'web/src/mobile-standard/',
+  'web/src/screens/originLabel.ts',
+  'web/src/screens/priceDeleteNotice.ts',
+  'web/src/screens/onboarding/steps.ts',
+  // The one shared component still reading: it re-exports ERROR_GENERICO_MENSAJE for the screens.
+  'web/src/components/ErrorGenerico.tsx',
+]
+
+/** The paths of a shell list that the shell does not own. */
+function shellStrays(paths: readonly string[]): string[] {
+  return paths.filter((path) => !SHELL_OWNS.some((owned) => path === owned || (owned.endsWith('/') && path.startsWith(owned))))
+}
+
+describe('shellStrays over fixtures', () => {
+  test('accepts what the shell owns', () => {
+    expect(shellStrays(['web/src/shell/Shell.tsx', 'web/src/routes.ts', 'web/src/components/ErrorGenerico.tsx'])).toEqual([])
+  })
+
+  test('rejects a screen, another component and a lookalike prefix', () => {
+    const strays = ['web/src/screens/Gastos.tsx', 'web/src/components/Loading.tsx', 'web/src/routes.ts.bak', 'web/src/shellish/X.ts']
+
+    expect(shellStrays(['web/src/shell/Shell.tsx', ...strays])).toEqual(strays)
+  })
+})
+
 describe('readerProblems over fixtures', () => {
   const reader = { path: 'web/src/screens/A.tsx', content: "import { COMMON_TEXT } from '../copy/common'" }
   const other = { path: 'web/src/screens/B.tsx', content: "import { SIN_CONEXION_MENSAJE } from '../copy/common'" }
@@ -129,24 +159,13 @@ describe('the real tree', () => {
     expect(Object.keys(lists)).toContain('shell')
   })
 
-  test('every reader is listed once, in the list of its area, and every listed file still reads', () => {
+  // Which area a list belongs to is the area parts' call, as they delete their own list: only
+  // `shell.json` is closed, by the test below.
+  test('every reader is listed once, and every listed file still reads', () => {
     expect(readerProblems(sources, lists)).toEqual([])
   })
 
   test('shell.json holds only the directories and files the shell owns, and the one shared component', () => {
-    const allowed = [
-      'web/src/shell/',
-      'web/src/routes.ts',
-      'web/src/format/',
-      'web/src/stock/detail.ts',
-      'web/src/mobile-standard/',
-      'web/src/screens/originLabel.ts',
-      'web/src/screens/priceDeleteNotice.ts',
-      'web/src/screens/onboarding/steps.ts',
-      'web/src/components/ErrorGenerico.tsx',
-    ]
-    const strays = (lists['shell'] ?? []).filter((path) => !allowed.some((owned) => path.startsWith(owned)))
-
-    expect(strays).toEqual([])
+    expect(shellStrays(lists['shell'] ?? [])).toEqual([])
   })
 })

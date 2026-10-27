@@ -6,17 +6,17 @@
  * colour token used (`--boton`/`--boton-texto` for a success toast, the amber
  * `aviso-ambar` for the gone notice), never a loose hex.
  *
- * It takes the whole `Feedback` as one prop, not spread: a `key` field would be swallowed by
- * React if it were passed as a prop. A toast (and the saved marker) carries a `common:` key,
- * resolved here with `t`; the gone notice is still text until the refusals part moves it to a key.
+ * It keeps its props shape, a spread `Feedback` (`kind` and `message`). A toast (and the saved
+ * marker) carries a `common:` key in `message`, resolved here with `t`; the gone notice is still
+ * text until the refusals part moves it to a key.
  */
 
 import { useTranslation } from 'react-i18next'
 import type { Feedback } from './feedback'
 
-export default function Notice({ feedback }: { feedback: Feedback }) {
+export default function Notice(feedback: Feedback) {
   const { t } = useTranslation()
-  const text = feedback.kind === 'notice' ? feedback.message : t(feedback.key)
+  const text = feedback.kind === 'notice' ? feedback.message : t(feedback.message)
   return (
     <div className={feedback.kind === 'toast' ? 'toast' : 'aviso-ambar'} role="status">
       <span className={feedback.kind === 'toast' ? 'toast__texto' : 'aviso-ambar__titulo'}>{text}</span>

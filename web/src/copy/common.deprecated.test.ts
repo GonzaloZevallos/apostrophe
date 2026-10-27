@@ -13,20 +13,34 @@ import * as common from './common.ts'
 
 const en = loadBundle('en')
 const { mappings } = parseMappings('common.json', mappingRaw)
-const table = common.BASELINE_ARGS as Readonly<Record<string, readonly (readonly (string | number)[])[]>>
 
-const moved: Record<string, unknown> = Object.fromEntries(common.MOVED_TO_KEYS.map((name) => [name, (common as Record<string, unknown>)[name]]))
+type Row = readonly (string | number)[]
+type Text = string | ((...args: Row) => string)
+
+/** The `BASELINE_ARGS` rows by baseline source path, kept only where they are rows of strings and numbers. */
+const table = new Map<string, readonly Row[]>()
+for (const [path, rows] of Object.entries(common.BASELINE_ARGS)) {
+  if (!Array.isArray(rows)) continue
+  table.set(path, rows.filter((row): row is Row => Array.isArray(row)))
+}
+
+const moved: Record<string, unknown> = {
+  COMMON_TEXT: common.COMMON_TEXT,
+  SIN_CONEXION_MENSAJE: common.SIN_CONEXION_MENSAJE,
+  ERROR_GENERICO_MENSAJE: common.ERROR_GENERICO_MENSAJE,
+}
 
 /** Every string leaf and function of an export, by baseline source path. */
-function leaves(path: string, value: unknown): [string, string | ((...args: (string | number)[]) => string)][] {
-  if (typeof value === 'string' || typeof value === 'function') return [[path, value as string]]
+function leaves(path: string, value: unknown): [string, Text][] {
+  if (typeof value === 'string') return [[path, value]]
+  if (typeof value === 'function') return [[path, (...args: Row) => String(Reflect.apply(value, undefined, args))]]
   if (typeof value === 'object' && value !== null) return Object.entries(value).flatMap(([name, item]) => leaves(`${path}.${name}`, item))
   return []
 }
 
 describe('MOVED_TO_KEYS', () => {
   test('names the three exports that are kept for their readers', () => {
-    expect([...common.MOVED_TO_KEYS]).toEqual(['COMMON_TEXT', 'SIN_CONEXION_MENSAJE', 'ERROR_GENERICO_MENSAJE'])
+    expect([...common.MOVED_TO_KEYS]).toEqual(Object.getOwnPropertyNames(moved))
   })
 
   test('every moved leaf is mapped, and every mapping points at a moved leaf', () => {
@@ -43,7 +57,7 @@ describe('MOVED_TO_KEYS', () => {
       expect(value).toBe(resolveKey(en, mapping.key, mapping.fill))
       return
     }
-    const rows = table[path] ?? []
+    const rows = table.get(path) ?? []
     expect(rows.length).toBeGreaterThan(0)
     for (const row of rows) {
       const args: Record<string, string | number> = {}

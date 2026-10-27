@@ -56,16 +56,16 @@ export const SALE_SAVED = 'common:saleSaved'
 /** What `Notice` renders: a keyed toast, the keyed "just saved" marker, or the gone
  * notice, which stays text until the refusals part moves it to `refusals:goneNotice`. */
 export type Feedback =
-  | { kind: 'toast'; key: SuccessToast }
-  | { kind: 'saved'; key: typeof SALE_SAVED }
+  | { kind: 'toast'; message: SuccessToast }
+  | { kind: 'saved'; message: typeof SALE_SAVED }
   | { kind: 'notice'; message: string }
 
 export function readFeedback(state: unknown): Feedback | null {
   if (state === null || typeof state !== 'object') return null
   const record = state as Record<string, unknown>
-  if (isSuccessToast(record.toast)) return { kind: 'toast', key: record.toast }
+  if (isSuccessToast(record.toast)) return { kind: 'toast', message: record.toast }
   if (record.notice === GONE_NOTICE) return { kind: 'notice', message: GONE_NOTICE }
-  if (record.saleJustSaved === true) return { kind: 'saved', key: SALE_SAVED }
+  if (record.saleJustSaved === true) return { kind: 'saved', message: SALE_SAVED }
   return null
 }
 

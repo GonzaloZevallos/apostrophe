@@ -33,7 +33,7 @@ function VentasProbe() {
   return (
     <span>
       lista de ventas
-      {feedback !== null && <Notice feedback={feedback} />}
+      {feedback !== null && <Notice {...feedback} />}
     </span>
   )
 }

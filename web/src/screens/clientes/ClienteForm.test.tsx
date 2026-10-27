@@ -33,7 +33,7 @@ function ListStub() {
   return (
     <div>
       <span>la lista</span>
-      {feedback?.kind === 'toast' && <Notice feedback={feedback} />}
+      {feedback?.kind === 'toast' && <Notice {...feedback} />}
       {goneShown && <span>{GONE_NOTICE}</span>}
     </div>
   )
@@ -46,7 +46,7 @@ function FichaStub() {
   return (
     <div>
       <span>la ficha</span>
-      {feedback?.kind === 'toast' && <Notice feedback={feedback} />}
+      {feedback?.kind === 'toast' && <Notice {...feedback} />}
       {goneShown && <span>{GONE_NOTICE}</span>}
     </div>
   )

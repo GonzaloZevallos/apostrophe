@@ -85,7 +85,7 @@ export default function Clientes() {
             {COMMON_TEXT.newCustomer}
           </BotonLink>
         </div>
-        {feedback !== null && <Notice feedback={feedback} />}
+        {feedback !== null && <Notice {...feedback} />}
         <label className="campo">
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>
           <input

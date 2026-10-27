@@ -26,7 +26,7 @@ const TOAST_KEYS = [
 ] as const
 
 test.each(TOAST_KEYS)('round-trips the toast key %s through toast() and readFeedback', (key) => {
-  expect(readFeedback(toast(key))).toEqual({ kind: 'toast', key })
+  expect(readFeedback(toast(key))).toEqual({ kind: 'toast', message: key })
 })
 
 test('the closed set is exactly the five success keys', () => {
@@ -62,7 +62,7 @@ test('rejects a state with neither key, and a non-object state', () => {
 })
 
 test('saleJustSaved writes a marker readFeedback turns into the "saved" kind', () => {
-  expect(readFeedback(saleJustSaved())).toEqual({ kind: 'saved', key: SALE_SAVED })
+  expect(readFeedback(saleJustSaved())).toEqual({ kind: 'saved', message: SALE_SAVED })
 })
 
 test('rejects a falsy or wrongly-typed "just saved" marker — never shows Deshacer from a guess', () => {
