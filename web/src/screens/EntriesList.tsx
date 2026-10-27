@@ -12,6 +12,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../api/client'
@@ -37,7 +38,6 @@ import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
 import { STOCK_TEXT } from '../copy/stock'
-import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 import { COMMON_TEXT } from '../copy/common'
@@ -169,7 +169,7 @@ export default function EntriesList({ varietyId }: Props) {
                     {formatDate(entry.date, me.today)}{OUT_OF_DATE_JOINER}{nameOf(entry.variety_id)}
                   </span>
                   <span className="fila-entrada__linea2">
-                    {ORIGIN_LABEL[entry.origin]}{OUT_OF_DATE_JOINER}{formatGrams(entry.grams)}
+                    {t(ORIGIN_LABEL[entry.origin])}{OUT_OF_DATE_JOINER}{formatGrams(entry.grams)}
                   </span>
                 </span>
                 <span className="fila-entrada__cifras">

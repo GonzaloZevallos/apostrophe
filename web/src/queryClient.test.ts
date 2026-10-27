@@ -7,7 +7,7 @@
 import { CUSTOMERS, HOME, LOGIN } from './routes'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { ApiError } from './api/client'
-import i18n from './i18n'
+import { shownLanguage } from './i18n/testing'
 import { applyShownLanguage, resetToBootLanguage, setLocaleLoader } from './i18n/language'
 import { loadLocale } from './i18n/resources'
 import { queryClient, setCurrentPath, setNavigate } from './queryClient'
@@ -102,7 +102,7 @@ test('a 401 from a gated query restores the boot language, never the last one sh
   setNavigate(vi.fn())
   setLocaleLoader(() => Promise.resolve({ common: { hello: 'Hallo' } }))
   await applyShownLanguage('de')
-  expect(i18n.language).toBe('de')
+  expect(shownLanguage()).toBe('de')
 
   await expect(
     queryClient.fetchQuery({
@@ -112,6 +112,6 @@ test('a 401 from a gated query restores the boot language, never the last one sh
     }),
   ).rejects.toMatchObject({ status: 401 })
 
-  expect(i18n.language).toBe('en')
+  expect(shownLanguage()).toBe('en')
   expect(document.documentElement.lang).toBe('en')
 })

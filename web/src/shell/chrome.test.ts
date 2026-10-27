@@ -77,7 +77,7 @@ test('a two-pane detail is a card: no "+ Nueva venta" in the rail and its rail s
     id: 'customer',
     path: '/x',
     kind: 'card',
-    title: 'X',
+    titleKey: 'common:home',
     pane: 'detail',
     parent: 'customers',
   })
@@ -90,11 +90,11 @@ test('only the explicit modalOnComputer hides the rail, and only on a computer',
     id: 'sale-new',
     path: '/x',
     kind: 'form',
-    title: 'X',
+    titleKey: 'common:home',
     parent: 'sales',
     modalOnComputer: true,
   })
-  const plainForm = declare({ id: 'sale-new', path: '/x', kind: 'form', title: 'X', parent: 'sales' })
+  const plainForm = declare({ id: 'sale-new', path: '/x', kind: 'form', titleKey: 'common:home', parent: 'sales' })
 
   expect(chromeOf(modal, 'computer').rail).toBe(false)
   expect(chromeOf(modal, 'phone').rail).toBe(true)

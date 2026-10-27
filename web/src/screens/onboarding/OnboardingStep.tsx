@@ -44,6 +44,7 @@ import {
   stepInfo,
   stepNumber,
 } from './steps'
+import { useLabel } from '../../i18n/label'
 import { HOME } from '../../routes'
 import { COMMON_TEXT } from '../../copy/common'
 import { CHECKLIST_REQUIRED, CHECKLIST_OPTIONAL } from '../../copy/inicio'
@@ -70,6 +71,7 @@ export default function OnboardingStep({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const info = stepInfo(slug)
+  const resolve = useLabel()
   const [dirty, setDirty] = useState(false)
   const [partlySaved, setPartlySaved] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)
@@ -134,7 +136,7 @@ export default function OnboardingStep({
         </div>
 
         <div className="onboarding__titulos">
-          <h1 className="onboarding__titulo">{info.title}</h1>
+          <h1 className="onboarding__titulo">{resolve(info.title)}</h1>
           <p className="onboarding__porque">{info.why}</p>
         </div>
 
@@ -157,7 +159,7 @@ export default function OnboardingStep({
                 </Boton>
               )}
             </div>
-            <span className="pie onboarding__pista">{laterHint(info)}</span>
+            <span className="pie onboarding__pista">{laterHint(info, resolve)}</span>
           </div>
         )}
       </div>

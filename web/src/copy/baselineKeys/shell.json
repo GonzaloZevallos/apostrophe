@@ -1,0 +1,6 @@
+{
+  "shell.ts:SHELL_TEXT.customer": { "key": "shell:customer" },
+  "shell.ts:SHELL_TEXT.newExpense": { "key": "shell:newExpense" },
+  "shell.ts:SHELL_TEXT.gettingStarted": { "key": "shell:gettingStarted" },
+  "shell.ts:SHELL_TEXT.navigation": { "key": "shell:navigation" }
+}

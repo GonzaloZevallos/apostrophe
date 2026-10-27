@@ -5,6 +5,7 @@ export type Resources = {
   "common": typeof import('../copy/locales/en/common.json')
   "emptyStates": typeof import('../copy/locales/en/emptyStates.json')
   "refusals": typeof import('../copy/locales/en/refusals.json')
+  "shell": typeof import('../copy/locales/en/shell.json')
 }
 
 /** Every key `t` accepts, as `ns:key`. */
