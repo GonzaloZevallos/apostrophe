@@ -52,7 +52,10 @@ import { chromeOf } from './chrome'
 import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useViewport } from './useViewport'
-import { COMMON_TEXT } from '../copy/common'
+import type { CopyKey } from '../i18n/resources.generated'
+
+/** A destination's word is a key of the common namespace, resolved on every render. */
+type CommonKey = Extract<CopyKey, `common:${string}`>
 
 type Placement = 'bar' | 'rail' | 'both'
 
@@ -61,7 +64,7 @@ type Group = 'main' | 'more'
 
 interface Item {
   to: string
-  label: string
+  labelKey: CommonKey
   /** The bar's glyph; the rail draws one only above its divider (`GastosCompu.dc.html`). */
   icono?: NombreIcono
   placement: Placement
@@ -70,12 +73,12 @@ interface Item {
   place: RailPlace
 }
 
-const ITEMS: Item[] = [
-  { to: HOME, label: COMMON_TEXT.home, icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
-  { to: SALES, label: COMMON_TEXT.sales, icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
+const NAV_ITEMS: Item[] = [
+  { to: HOME, labelKey: 'common:home', icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
+  { to: SALES, labelKey: 'common:sales', icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
   {
     to: CUSTOMERS,
-    label: COMMON_TEXT.customers,
+    labelKey: 'common:customers',
     icono: 'clientes',
     placement: 'both',
     group: 'main',
@@ -83,19 +86,19 @@ const ITEMS: Item[] = [
   },
   {
     to: VARIETIES,
-    label: COMMON_TEXT.varieties,
+    labelKey: 'common:varieties',
     icono: 'variedades',
     placement: 'both',
     group: 'main',
     place: 'varieties',
   },
-  { to: EXPENSES, label: COMMON_TEXT.expenses, icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
-  { to: ANALYSIS, label: COMMON_TEXT.analysis, icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
-  { to: MORE, label: COMMON_TEXT.more, icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
+  { to: EXPENSES, labelKey: 'common:expenses', icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
+  { to: ANALYSIS, labelKey: 'common:analysis', icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
+  { to: MORE, labelKey: 'common:more', icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
 ]
 
-const BAR_ITEMS = ITEMS.filter((item) => item.placement !== 'rail')
-const RAIL_ITEMS = ITEMS.filter((item) => item.placement !== 'bar')
+const BAR_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'rail')
+const RAIL_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'bar')
 
 /** The registry entry of the leaf route: the deepest match that names a screen. */
 function leafScreen(matches: readonly { handle: unknown }[]): Screen {
@@ -118,6 +121,7 @@ function railClassName(item: Item, active: boolean): string {
 
 /** One bottom-bar entry; `active` is the registry's mark, not a path comparison. */
 function BarItem({ item, active }: { item: Item; active: boolean }) {
+  const { t } = useTranslation()
   return (
     <Link
       to={item.to}
@@ -125,7 +129,7 @@ function BarItem({ item, active }: { item: Item; active: boolean }) {
       className={active ? 'bar-inferior__item bar-inferior__item--activo' : 'bar-inferior__item'}
     >
       {item.icono !== undefined && <Icono nombre={item.icono} />}
-      <span>{item.label}</span>
+      <span>{t(item.labelKey)}</span>
     </Link>
   )
 }
@@ -181,7 +185,7 @@ export default function Shell() {
                 className={NUEVA_VENTA_ESCRITORIO_CLASS}
                 ariaDescribedBy={railDescribedBy}
               >
-                {COMMON_TEXT.newSale}
+                {t('common:newSale')}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta nueva-venta__falta--escritorio" id={RAIL_MISSING_ID}>
@@ -203,14 +207,14 @@ export default function Shell() {
                   className={railClassName(item, active)}
                 >
                   {item.icono !== undefined && <Icono nombre={item.icono} />}
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               </Fragment>
             )
           })}
           <InAppLink
             to={SETTINGS}
-            aria-label={COMMON_TEXT.settingsFor(me.business_name)}
+            aria-label={t('common:settingsFor', { business: me.business_name })}
             aria-current={railPlace === 'business' ? 'page' : undefined}
             className={
               railPlace === 'business'
@@ -231,7 +235,7 @@ export default function Shell() {
           {chrome.barNuevaVenta && (
             <>
               <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
-                {COMMON_TEXT.newSale}
+                {t('common:newSale')}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta" id={NUEVA_VENTA_MISSING_ID}>

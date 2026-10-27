@@ -156,6 +156,14 @@ test('the accessible name is the visible text', async () => {
   expect(screen.queryByRole('button', { name: 'Volver' })).not.toBeInTheDocument()
 })
 
+test("a record's own name that looks like a key is drawn verbatim, never resolved", async () => {
+  fakeApi({ 1: json({ id: 1, name: 'common:save', archived: false }) })
+  renderAt([pathTo(VARIETY_ENTRIES, { id: 1 })])
+
+  expect(await screen.findByRole('button', { name: '‹ common:save' })).toHaveTextContent('‹ common:save')
+  expect(screen.queryByText('‹ Save')).not.toBeInTheDocument()
+})
+
 test("from variety A's prices to variety B's entries, '‹ A' is gone while B loads and exactly '‹ B' shows after", async () => {
   const b = deferred()
   fakeApi({ 1: json({ id: 1, name: 'Alpha', archived: false }), 2: b })
