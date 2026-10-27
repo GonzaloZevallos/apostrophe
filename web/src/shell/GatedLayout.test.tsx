@@ -23,8 +23,7 @@ import {
 import { logOut } from '../session'
 import { missingKeys } from '../i18n/missingKeys'
 import { loadLocale, type LocaleBundle } from '../i18n/resources'
-import { SIN_CONEXION_MENSAJE } from '../copy/common'
-import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import common from '../copy/locales/en/common.json'
 import GatedLayout from './GatedLayout'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -63,7 +62,7 @@ test('a dropped network on GET /auth/me shows "Sin conexión", not a blank page'
 
   renderGated()
 
-  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText(common.offline)).toBeInTheDocument()
   expect(screen.queryByText('contenido del negocio')).not.toBeInTheDocument()
 })
 
@@ -72,7 +71,7 @@ test('a server error on GET /auth/me shows the generic retry, not a blank page',
 
   renderGated()
 
-  expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText(common.genericError)).toBeInTheDocument()
   expect(screen.queryByText('contenido del negocio')).not.toBeInTheDocument()
 })
 
