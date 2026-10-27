@@ -7,7 +7,9 @@
  * Copiar copies (`clipboard.ts`, the one path that works over the home network's plain
  * http, ADR-0002) `plainCopy(text)`: the API's `text` with its paired `**` removed and
  * every line break kept, so it pastes into Telegram with its line breaks; both are enabled only once
- * this mount's own fetch has resolved, so neither can hand over a text a cache kept.
+ * this mount's own fetch has resolved, so neither can hand over a text a cache kept. A share
+ * or copy still pending (an iOS sheet that never finishes) holds neither button: another tap
+ * starts a new one, and only the latest tap's outcome shows. No timer, nothing copied on its own.
  * "Qué no sale y por qué" words every variety the server says is out, one reason each
  * (`REASON_LABEL`), never by color alone; each name opens that variety's "En el catálogo"
  * section. The header and footer are edited in Configuración → Mensaje del catálogo, the
@@ -19,7 +21,7 @@
  * and never refetched on focus or reconnect.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
 import { catalogQueryOptions, type CatalogVarietyState } from '../api/catalog'
@@ -61,8 +63,10 @@ export default function Catalogo() {
   const [toast, setToast] = useState<SuccessToast | null>(null)
   const [copyFailed, setCopyFailed] = useState(false)
   const [shareFailed, setShareFailed] = useState(false)
-  const [sharing, setSharing] = useState(false)
-  const [copying, setCopying] = useState(false)
+  // One counter per action: a tap takes the next number and applies its outcome only while
+  // it is still the latest, so a share or copy that settles late shows nothing.
+  const latestShare = useRef(0)
+  const latestCopy = useRef(0)
 
   useEffect(() => {
     if (toast === null) return
@@ -70,26 +74,22 @@ export default function Catalogo() {
     return () => clearTimeout(timer)
   }, [toast])
 
+  // `copyText` and `shareText` are called before any await: the share sheet and the
+  // `execCommand` fallback need the tap's own user activation. Neither rejects.
   async function onCopy(text: string): Promise<void> {
     setCopyFailed(false)
-    setCopying(true)
-    try {
-      const ok = await copyText(text)
-      if (ok) setToast(CATALOG_COPIED)
-      else setCopyFailed(true)
-    } finally {
-      setCopying(false)
-    }
+    const mine = ++latestCopy.current
+    const ok = await copyText(text)
+    if (mine !== latestCopy.current) return
+    if (ok) setToast(CATALOG_COPIED)
+    else setCopyFailed(true)
   }
 
   async function onShare(text: string): Promise<void> {
     setShareFailed(false)
-    setSharing(true)
-    try {
-      setShareFailed((await shareText(text)) === 'failed')
-    } finally {
-      setSharing(false)
-    }
+    const mine = ++latestShare.current
+    const outcome = await shareText(text)
+    if (mine === latestShare.current) setShareFailed(outcome === 'failed')
   }
 
   if (catalogQuery.isError) {
@@ -152,7 +152,7 @@ export default function Catalogo() {
               {canShare() && (
                 <Boton
                   icon="compartir"
-                  disabled={!settled || sharing}
+                  disabled={!settled}
                   onClick={() => void onShare(plainCopy(catalog.text as string))}
                 >
                   {COMMON_TEXT.share}
@@ -161,7 +161,7 @@ export default function Catalogo() {
               <Boton
                 variant="secondary"
                 icon="copiar"
-                disabled={!settled || copying}
+                disabled={!settled}
                 onClick={() => void onCopy(plainCopy(catalog.text as string))}
               >
                 {COMMON_TEXT.copy}
