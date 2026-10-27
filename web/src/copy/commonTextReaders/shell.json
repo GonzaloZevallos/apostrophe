@@ -3,7 +3,5 @@
   "web/src/mobile-standard/pending.ts",
   "web/src/mobile-standard/statesGettingIn.ts",
   "web/src/mobile-standard/statesRecords.ts",
-  "web/src/mobile-standard/statesSales.ts",
-  "web/src/screens/onboarding/steps.ts",
-  "web/src/stock/detail.ts"
+  "web/src/mobile-standard/statesSales.ts"
 ]

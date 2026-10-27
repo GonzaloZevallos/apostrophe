@@ -15,7 +15,7 @@ import type { Status } from '../api/stock'
 import { formatDate } from '../format/dates'
 import { formatGrams } from '../format/money'
 import { STOCK_TEXT } from '../copy/stock'
-import { COMMON_TEXT } from '../copy/common'
+import type { Label } from '../i18n/label'
 
 export interface StockDetailSubject {
   status: Status
@@ -52,9 +52,11 @@ export function sideNoteFor(variety: StockSideNoteSubject): string | null {
 }
 
 /** The warning line next to a variety's status mark (`stock.md`, "On screen"): told from
- * the same `GET /stock` row `MarcaEstado` reads, never a figure the front works out itself. */
-export function warningFor(row: StockDetailSubject & { grams: number }): string {
-  if (row.threshold === null) return COMMON_TEXT.warningOff
-  if (row.status === 'low') return STOCK_TEXT.warningLow(formatGrams(row.grams))
-  return STOCK_TEXT.warnMeBelow(formatGrams(row.threshold))
+ * the same `GET /stock` row `MarcaEstado` reads, never a figure the front works out itself.
+ * "Warning off" is a key the component resolves on every render (`useLabel`), so a language
+ * switch re-renders it in place; the figure lines stay text until the stock area moves them. */
+export function warningFor(row: StockDetailSubject & { grams: number }): Label {
+  if (row.threshold === null) return { kind: 'key', key: 'common:warningOff' }
+  if (row.status === 'low') return { kind: 'text', text: STOCK_TEXT.warningLow(formatGrams(row.grams)) }
+  return { kind: 'text', text: STOCK_TEXT.warnMeBelow(formatGrams(row.threshold)) }
 }
