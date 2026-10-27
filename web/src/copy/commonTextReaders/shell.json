@@ -1,7 +1,3 @@
 [
-  "web/src/components/ErrorGenerico.tsx",
-  "web/src/mobile-standard/pending.ts",
-  "web/src/mobile-standard/statesGettingIn.ts",
-  "web/src/mobile-standard/statesRecords.ts",
-  "web/src/mobile-standard/statesSales.ts"
+  "web/src/components/ErrorGenerico.tsx"
 ]
