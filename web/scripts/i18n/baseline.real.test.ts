@@ -25,7 +25,25 @@ describe('the real copy files', () => {
   })
 
   test('every committed entry is exported by a .ts file or mapped exactly once, and none is missing', () => {
-    expect(coverageProblems(modules, committed, loadMappingFiles())).toEqual([])
+    // Transitional: the area copy files and `copy/emptyStates.ts` still export the empty-state
+    // wordings beside their mapping until the screens subtask removes them; that subtask also
+    // deletes this filter. Every other problem, for these sources too (neither exported nor
+    // mapped, mapped twice, not in the baseline), still fails.
+    const files = loadMappingFiles()
+    const moving = new Set(files.filter((file) => file.file === 'emptyStates.json').flatMap((file) => Object.keys(file.mappings)))
+    const bothWhileMoving = (problem: string): boolean =>
+      problem.endsWith(': both exported and mapped') && moving.has(problem.slice(0, -': both exported and mapped'.length))
+    expect(coverageProblems(modules, committed, files).filter((problem) => !bothWhileMoving(problem))).toEqual([])
+  })
+
+  test('two sources mapped to one key both render equal to their baseline text', () => {
+    const owes = ['customers.ts:NOBODY_OWES', 'inicio.ts:NOBODY_OWES']
+    const files = loadMappingFiles().filter((file) => file.file === 'emptyStates.json')
+    const picked = files.map((file) => ({ file: file.file, mappings: Object.fromEntries(owes.flatMap((source) => (file.mappings[source] ? [[source, file.mappings[source]]] : []))) }))
+
+    expect(picked.flatMap((file) => Object.values(file.mappings).map((mapping) => mapping.key))).toEqual(['emptyStates:nobodyOwes', 'emptyStates:nobodyOwes'])
+    expect(mappedRows(picked, committed).rows.map((row) => row.text)).toEqual(['Nobody owes you', 'Nobody owes you'])
+    expect(mappingProblems(picked, committed, loadBundle('en'))).toEqual([])
   })
 
   test('every mapped entry renders in en equal to its baseline text, and every mapping is read', () => {
