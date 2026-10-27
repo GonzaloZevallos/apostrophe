@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom/vitest'
 import { configure } from '@testing-library/react'
 import { afterEach, beforeEach } from 'vitest'
+// Starts the i18n instance (English, bundled) so a component's `useTranslation` answers texts, not keys.
+import './i18n/testing'
 import { assertNoEnglishMisses, clearMissingKeys, missingKeys } from './i18n/missingKeys'
 
 // The ceiling of every `findBy*` and `waitFor`: the library's own 1000 ms only holds

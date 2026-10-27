@@ -362,7 +362,7 @@ export default function WithdrawalForm({
           invalidateResource(queryClient, 'stock')
           onGone()
         } else if (message !== undefined) {
-          setFormError(message)
+          setFormError(refusalText(t, message))
         } else {
           setFormError(
             caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal'

@@ -32,7 +32,9 @@ function VentasProbe() {
   return (
     <span>
       lista de ventas
-      {feedback !== null && <span>{feedback.message}</span>}
+      {feedback !== null && (
+        <span>{feedback.kind === 'notice' ? 'That is gone. The list is up to date.' : feedback.message}</span>
+      )}
     </span>
   )
 }
