@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom/vitest'
 import { configure } from '@testing-library/react'
 import { afterEach, beforeEach } from 'vitest'
+// The real instance, as main.tsx installs it: a component under test answers in English through it.
+import './i18n'
 import { assertNoEnglishMisses, clearMissingKeys, missingKeys } from './i18n/missingKeys'
 
 // The ceiling of every `findBy*` and `waitFor`: the library's own 1000 ms only holds
