@@ -23,9 +23,18 @@ export interface Entry {
 export type Mode = 'default' | 'update'
 
 /** `limits.ts` is the length checker, not copy; the names below are registries of the files
- * that hold the copy, which the baseline reads but does not record. */
+ * that hold the copy (the empty-state keys and their limit kinds hold no wording), which the
+ * baseline reads but does not record. */
 const SKIPPED_FILES: ReadonlySet<string> = new Set(['limits.ts'])
-const SKIPPED_EXPORTS: ReadonlySet<string> = new Set(['LIMITED_COPY', 'LONG_REFUSALS', 'BASELINE_ARGS', 'NAMESPACE', 'MOVED_TO_KEYS'])
+const SKIPPED_EXPORTS: ReadonlySet<string> = new Set([
+  'LIMITED_COPY',
+  'LONG_REFUSALS',
+  'BASELINE_ARGS',
+  'NAMESPACE',
+  'MOVED_TO_KEYS',
+  'EMPTY_STATE_KEYS',
+  'EMPTY_STATE_LIMITS',
+])
 
 /** The exports a module has moved to keys but still holds (deprecated): the names in its
  * `MOVED_TO_KEYS` array. The keyed check (`baselineKeys.ts`) owns them, so the walker leaves

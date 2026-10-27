@@ -10,9 +10,6 @@ import { COMMON_TEXT } from './common.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const EMPTY_STATE_TITLE = 'No stock entries'
-export const EMPTY_STATE_DETAIL = 'Enter your initial stock or a purchase'
-
 export const COST_REQUIRED_HELP = 'Required for a purchase'
 
 /** The locked (Onboarding) form's line under the cost: the cost is optional and, left out,
@@ -36,8 +33,6 @@ export function perGramPreview(perGram: string): string {
 
 /** Checked by `copy/copyLimits.test.ts`: placeholders filled from `SAMPLES`. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },
-  { kind: 'emptyLine', text: EMPTY_STATE_DETAIL },
   { kind: 'help', text: COST_REQUIRED_HELP },
   { kind: 'help', text: OPENING_COST_HINT },
   { kind: 'help', text: GRAMS_INVALID },

@@ -28,7 +28,9 @@ import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
-import { EMPTY_CUSTOMERS, EVERYONE, CUSTOMERS_TEXT } from '../../copy/customers'
+import { EVERYONE, CUSTOMERS_TEXT } from '../../copy/customers'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
 import { COMMON_TEXT } from '../../copy/common'
@@ -43,6 +45,7 @@ function owedOrSearch(root: HTMLElement): HTMLElement | null {
 }
 
 export default function Clientes() {
+  const { t } = useTranslation()
   const { query, setQuery } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
   const [debounced, setDebounced] = useState(query)
@@ -110,7 +113,7 @@ export default function Clientes() {
               {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
               {!isPlaceholderData && customers.length === 0 && (
                 <span className="campo__rotulo" data-copy="emptyTitle">
-                  {EMPTY_CUSTOMERS}
+                  {t(EMPTY_STATE_KEYS.customersList)}
                 </span>
               )}
               {customers.map((customer) => (

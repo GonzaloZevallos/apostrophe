@@ -12,7 +12,7 @@ import { textsOf } from '../design/copyTexts'
 
 type CopyFile = Record<string, unknown>
 
-const files = import.meta.glob<CopyFile>(['/src/copy/*.ts', '!/src/copy/limits.ts', '!/src/copy/baselineArgs.ts', '!/src/copy/*.test.ts'], {
+const files = import.meta.glob<CopyFile>(['/src/copy/*.ts', '!/src/copy/limits.ts', '!/src/copy/baselineArgs.ts', '!/src/copy/emptyStates.ts', '!/src/copy/*.test.ts'], {
   eager: true,
 })
 

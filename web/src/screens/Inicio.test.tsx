@@ -34,8 +34,13 @@ import { consumePaymentReturn } from '../paymentReturn'
 import { invalidateResource } from '../api/keys'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import type { OnboardingProgress } from '../api/onboarding'
-import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
+import Inicio, { PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
+import { baselineText } from '../i18n/testing'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
+
+const EMPTY_TITLE = baselineText('inicio.ts:EMPTY_TITLE')
+const EMPTY_DETAIL = baselineText('inicio.ts:EMPTY_DETAIL')
+const NOBODY_OWES = baselineText('inicio.ts:NOBODY_OWES')
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -433,7 +438,7 @@ test('"Nobody owes you" with nothing to tap when nobody owes', async () => {
   stubFetch(empty)
   renderInicio()
 
-  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
+  expect(await screen.findByText(NOBODY_OWES)).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
 
@@ -603,6 +608,7 @@ test('with /first-run answering last, slot 1 stays empty: Arrancá never flashes
   await screen.findByText('You sold today')
 
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+  expect(screen.queryByText('emptyStates:homeVarietiesTitle')).not.toBeInTheDocument()
   release(jsonResponse(200, ONBOARDING_ANSWER))
   expect(await screen.findByText('Go on to the setup')).toBeInTheDocument()
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
@@ -904,7 +910,7 @@ test('when nobody owes any more Home focuses the "Nobody owes you" line', async 
   stubFetch({ ...PANEL, debts: { total_owed: 0, sales_owing_count: 0, oldest: null, teaser: [] } })
   renderInicio()
 
-  const line = await screen.findByText('Nobody owes you')
+  const line = await screen.findByText(NOBODY_OWES)
 
   await waitFor(() => expect(line).toHaveFocus())
 })

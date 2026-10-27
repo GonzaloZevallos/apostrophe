@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import i18n from '.'
+import baselineEntries from '../copy/en.baseline.json'
 
 /**
  * Test helper: adds a fixture namespace to the instance. The typed `t` knows only the
@@ -33,4 +34,22 @@ export const testT: TFunction = i18n.t
 /** The language the instance shows now, for a test outside `i18n/` that asserts on a switch. */
 export function shownLanguage(): string {
   return i18n.language
+}
+
+interface BaselineEntry {
+  readonly source: string
+  readonly text: string
+}
+
+const baseline: readonly BaselineEntry[] = baselineEntries
+
+/**
+ * The English a screen test expects, by the id of the copy file export it came from
+ * (`copy/en.baseline.json`, e.g. `customers.ts:NOBODY_OWES`). It never resolves a key: the
+ * test must fail if the key the screen renders points at the wrong text.
+ */
+export function baselineText(source: string): string {
+  const found = baseline.filter((entry) => entry.source === source)
+  if (found.length !== 1) throw new Error(`en.baseline.json has ${found.length} entries for ${source}`)
+  return found[0]!.text
 }
