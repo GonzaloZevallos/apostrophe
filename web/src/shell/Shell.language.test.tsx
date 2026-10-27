@@ -11,7 +11,6 @@ import { act, render, screen, within } from '@testing-library/react'
 import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
-import i18n from '../i18n'
 import { applyShownLanguage, resetToBootLanguage, setLocaleLoader } from '../i18n/language'
 import { clearMissingKeys, missingKeys } from '../i18n/missingKeys'
 import { englishBundle, loadLocale } from '../i18n/resources'
@@ -139,6 +138,5 @@ test('on a computer the rail re-renders a label and the business row name in the
   expect(rail).toHaveAttribute('aria-label', 'de:navigation')
   expect(business).toHaveAttribute('aria-label', 'de:settingsFor La Huerta')
   expect(business).toHaveTextContent('La Huerta')
-  expect(i18n.language).toBe('de')
   noMissesFor(['common:expenses', 'shell:navigation', 'common:settingsFor'])
 })

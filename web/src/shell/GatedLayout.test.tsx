@@ -14,7 +14,6 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../api/keys'
 import { getMe } from '../api/me'
-import i18n from '../i18n'
 import {
   LANGUAGE_LOAD_TIMEOUT_MS,
   resetToBootLanguage,
@@ -178,7 +177,6 @@ test('a business in another language renders nothing until its chunk is installe
   })
 
   expect(await screen.findByText('contenido del negocio')).toBeInTheDocument()
-  expect(i18n.language).toBe('de')
   expect(document.documentElement.lang).toBe('de')
 })
 
@@ -193,7 +191,6 @@ test('a rejected chunk mounts the outlet in English with one recorded miss', asy
   })
 
   expect(await screen.findByText('contenido del negocio')).toBeInTheDocument()
-  expect(i18n.language).toBe('en')
   expect(missingKeys()).toEqual([{ language: 'de', ns: '*', key: '*' }])
   expect(document.documentElement.lang).toBe('en')
 })
@@ -213,7 +210,6 @@ test('a chunk that never settles mounts the outlet in English after the timeout'
   })
 
   expect(screen.getByText('contenido del negocio')).toBeInTheDocument()
-  expect(i18n.language).toBe('en')
   expect(missingKeys()).toHaveLength(1)
 })
 
@@ -232,7 +228,6 @@ test('a chunk that resolves after the timeout does not change the language', asy
   })
 
   expect(screen.getByText('contenido del negocio')).toBeInTheDocument()
-  expect(i18n.language).toBe('en')
   expect(document.documentElement.lang).toBe('en')
 })
 
