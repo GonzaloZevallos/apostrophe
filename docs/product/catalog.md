@@ -44,7 +44,7 @@ Success criteria:
 2. **Today, only what can be sold**: a variety appears only when it is unarchived, shown, has a current price on today's Argentina date and has stock above zero right now.
    - Archived, hidden, unpriced, sold-out and never-stocked varieties are out.
    - Low stock is still in.
-3. **Fast, from the phone**: from Varieties → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Share hands the native share sheet exactly Copy's plain version; without a share sheet, Copy remains. This includes the phone on the home network over plain http. There is no API call by hand.
+3. **Fast, from the phone**: from Varieties → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Share hands the native share sheet exactly Copy's plain version; without a share sheet, Copy remains. A share sheet that never finishes never leaves the screen stuck: Share and Copy stay usable. This includes the phone on the home network over plain http. There is no API call by hand.
 4. **No guessing why**: every unarchived variety that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
 5. **Businesses never mix** (ADR-0004): attributes, header and footer belong to one business. The text and the list never include another business's data.
 6. **Customers never see the VIP price**: the text never carries it, whatever the switches.
@@ -129,7 +129,11 @@ Success criteria:
   - where the browser offers no share sheet, it is not shown, and Copy remains;
   - success, or closing the share sheet without sending, shows nothing and changes nothing: the share sheet is its own feedback, and there is no toast;
   - a real failure (not the seller cancelling) shows the fixed "Could not share." and leaves Copy available;
-  - neither carries any of the catalog text, a name or an amount.
+  - a share sheet waiting to finish never holds the screen: Share and Copy are never disabled or held busy by it, so a sheet that never finishes (it spins, or it was closed without the browser telling the app) never leaves the screen stuck;
+  - a share that never finishes counts as closing the sheet without sending: it shows nothing and changes nothing. There is no time limit;
+  - tapping Share again while an earlier share has not finished starts a new share with the same text. If the browser refuses it, that is a real failure ("Could not share.", Copy available). Only the latest share's outcome shows; an earlier one that finishes late shows nothing;
+  - nothing is ever copied on its own when sharing fails or does not finish: Copy stays on screen for the seller to tap;
+  - neither message carries any of the catalog text, a name or an amount.
 - **Copy**, the fallback, puts the catalog on the clipboard so it pastes into any chat app as the preview shows it:
   - **Plain version**, always present: the catalog text with every paired `**` removed, every line break and blank line kept. It never carries a paired `**`. Every plain-text target reads it.
   - **Rich version**, a bonus where the browser allows it: the plain version plus bold between paired markers (the app's around names and the seller's own alike), with real line breaks and blank lines. The seller's text is put in as text, never read as markup: a `<`, `>` or `&` pastes as typed. Bold never outranks pasting right in every target: if the rich version cannot be shown to survive Telegram's paste on iPhone with every line break intact, Copy puts only the plain version.
@@ -137,6 +141,7 @@ Success criteria:
   - It no longer copies the raw text with its `**` markers: the pinned catalog still sends that text, through Telegram's API, not through a paste.
   - On success it shows the toast "Catalog copied", whichever versions went to the clipboard.
   - It works from the phone over the home network's plain http, with at least the plain version; where the rich version cannot be written, the plain one alone is a success.
+  - It works whatever state Share is in, a share that has not finished included.
   - A failure shows a fixed "Could not copy." and no toast. No message carries catalog text, and there is no state telling which version was copied.
 - **The pinned catalog's status and Publish** (pinned-catalog.md): "Up to date" or "Out of date" with its fixed reason, and Publish. When Publish is unavailable, it says why in words and links to where the bot settings are: Settings → Integrations, or the temporary place until that exists.
 - **What does not go out, and why**: every unarchived variety out of today's catalog, by name, each with one reason, the first that applies:
@@ -192,7 +197,17 @@ Success criteria:
   100% passing.
 - **Survives Telegram's paste (criterion 9)**: the PR carries a written statement of why the result survives Telegram iOS's paste parsing. It reproduces the collapse (Markdown in pasted plain text: `**…**` to bold, a lone line break to a space), rules out other causes with a text with no `**`, and covers a text with an unpaired `**`. A case that still collapses is a finding brought back, never a new rule.
 - **Pastes as shown (criterion 9)**: before merge, the owner taps Copy on the iPhone and pastes into a Telegram chat, a WhatsApp chat and a plain-text note. Every line break and blank line matches the preview, no `**` shows, and nothing needs editing. The result is recorded on the PR.
-- **Share = Copy's plain version (criterion 3)**: with a stubbed share sheet, Share hands exactly Copy's plain version; with none available, Share is not shown and Copy works; a cancel shows nothing; a forced failure shows "Could not share." and leaves Copy; no message holds catalog text.
+- **Share = Copy's plain version (criterion 3)**: with a stubbed share sheet, 100% passing:
+  - Share hands exactly Copy's plain version, as text only;
+  - with none available, Share is not shown and Copy works;
+  - a resolve and a cancel show nothing;
+  - a forced failure shows "Could not share." and leaves Copy;
+  - a share that never settles shows nothing, leaves Share enabled and Copy working, and a second tap calls the share sheet again with the same text;
+  - a refused second call shows "Could not share." and leaves Copy;
+  - an earlier share settling after a newer tap shows nothing;
+  - nothing is written to the clipboard by Share in any outcome;
+  - no message holds catalog text.
+- **Share on the iPhone (criterion 3)**: before merge, the owner shares from the iPhone over the HTTPS link to a Telegram contact, a WhatsApp contact and a note; where the sheet spins, they close it and confirm Share and Copy both still work. The result is recorded on the PR, and a sheet that hangs only for some payload is a finding brought back, never a change to the payload.
 - **Always opens**: the catalog screen opens with nothing qualifying outside first run, and "Send catalog" is disabled only while the checklist shows and nothing qualifies.
 - **Address**: `/varieties/catalog` opens the catalog screen, also on reload; `/catalogo` answers a permanent redirect to it.
 - **Temporary place**: while Settings's groups do not exist, a front test shows the bot settings and the header and footer save from it, both links open it, it shows no pin status and no Publish, and no tab, More or Settings entry points to it.
@@ -212,6 +227,9 @@ Success criteria:
 - Changing the preview "How it looks in Telegram".
 - A rich version for Share.
 - New feedback states or wording for Copy or Share, or telling the seller which version was copied.
+- A time limit on the share sheet, or copying the catalog on its own when sharing fails or does not finish.
+- Adding a title or a link to what Share hands the share sheet, or shortening or rewriting its text for a share target.
+- Making a share target (Telegram's or another app's share extension) finish when it hangs on its own side.
 - A custom variety order.
 - Restoring the default header or footer.
 - Rewriting a business's stored header or footer when its language changes, or backfilling defaults for existing businesses.
