@@ -12,6 +12,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../api/client'
@@ -55,6 +56,7 @@ interface Props {
 }
 
 export default function EntriesList({ varietyId }: Props) {
+  const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -166,7 +168,7 @@ export default function EntriesList({ varietyId }: Props) {
                     {formatDate(entry.date, me.today)}{OUT_OF_DATE_JOINER}{nameOf(entry.variety_id)}
                   </span>
                   <span className="fila-entrada__linea2">
-                    {ORIGIN_LABEL[entry.origin]}{OUT_OF_DATE_JOINER}{formatGrams(entry.grams)}
+                    {t(ORIGIN_LABEL[entry.origin])}{OUT_OF_DATE_JOINER}{formatGrams(entry.grams)}
                   </span>
                 </span>
                 <span className="fila-entrada__cifras">

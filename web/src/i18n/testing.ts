@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import i18n from '.'
 
 /**
@@ -22,3 +23,9 @@ type LooseOptions = Readonly<Record<string, string | number>>
 export function looseT(key: string, options?: LooseOptions): string {
   return String(i18n.t(key as never, { ...options } as never))
 }
+
+/**
+ * The instance's `t`, for a test of a helper that takes `t` from its caller (a rendered
+ * component gets its own from `useTranslation`).
+ */
+export const testT: TFunction = i18n.t

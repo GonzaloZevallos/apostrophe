@@ -145,7 +145,7 @@ export default function PriceForm({
               ariaControls={choiceId}
               onClick={() => setChoosingDate((open) => !open)}
             >
-              {chipDate(effectiveFrom, today)}
+              {chipDate(effectiveFrom, today, t)}
             </Boton>
           </span>
           {choosingDate && (

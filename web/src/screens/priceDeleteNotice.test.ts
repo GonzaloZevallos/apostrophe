@@ -6,6 +6,7 @@
  */
 
 import { describe, expect, test } from 'vitest'
+import { testT } from '../i18n/testing'
 import { deleteNotice } from './priceDeleteNotice'
 
 const E1 = { id: 1, effective_from: '2026-07-05', list_price: 9800, bulk_price: null, bulk_minimum: null }
@@ -14,19 +15,19 @@ const E3 = { id: 3, effective_from: '2026-09-25', list_price: 11000, bulk_price:
 
 describe('deleteNotice', () => {
   test('with an earlier entry, says the price that applies again and its date', () => {
-    expect(deleteNotice([E3, E2, E1], 3)).toBe('Back to $ 10.500 x g from 01/09')
+    expect(deleteNotice([E3, E2, E1], 3, testT)).toBe('Back to $ 10.500 x g from 01/09')
   })
 
   test('for the first (oldest) entry, says there is no price before the next one', () => {
-    expect(deleteNotice([E3, E2, E1], 1)).toBe('There will be no price before 01/09')
+    expect(deleteNotice([E3, E2, E1], 1, testT)).toBe('There will be no price before 01/09')
   })
 
   test('for the only entry, says the variety is left with no price', () => {
-    expect(deleteNotice([E1], 1)).toBe('No price: cannot be sold')
+    expect(deleteNotice([E1], 1, testT)).toBe('No price: cannot be sold')
   })
 
   test('never mentions sales', () => {
-    const notice = deleteNotice([E3, E2, E1], 3)
+    const notice = deleteNotice([E3, E2, E1], 3, testT)
     expect(notice.toLowerCase()).not.toContain('venta')
   })
 })
