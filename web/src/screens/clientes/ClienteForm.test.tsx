@@ -8,6 +8,8 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo } from '../../routes'
 import { GONE_NOTICE } from '../../api/refusals'
 import { useGoneNotice } from '../../components/goneExit'
+import { readFeedback } from '../../components/feedback'
+import Notice from '../../components/Notice'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { stubViewport } from '../../test-viewport'
 import { StrictMode } from 'react'
@@ -26,12 +28,12 @@ import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
 function ListStub() {
   const location = useLocation()
-  const state = location.state as { toast?: string } | null
+  const feedback = readFeedback(location.state)
   const goneShown = useGoneNotice()
   return (
     <div>
       <span>la lista</span>
-      {state?.toast !== undefined && <span>{state.toast}</span>}
+      {feedback?.kind === 'toast' && <Notice feedback={feedback} />}
       {goneShown && <span>{GONE_NOTICE}</span>}
     </div>
   )
@@ -39,12 +41,12 @@ function ListStub() {
 
 function FichaStub() {
   const location = useLocation()
-  const state = location.state as { toast?: string } | null
+  const feedback = readFeedback(location.state)
   const goneShown = useGoneNotice()
   return (
     <div>
       <span>la ficha</span>
-      {state?.toast !== undefined && <span>{state.toast}</span>}
+      {feedback?.kind === 'toast' && <Notice feedback={feedback} />}
       {goneShown && <span>{GONE_NOTICE}</span>}
     </div>
   )

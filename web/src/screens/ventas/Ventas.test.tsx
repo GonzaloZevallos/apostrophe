@@ -247,7 +247,7 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
 
 test('arriving back from Delete sale or Deshacer shows "Sale deleted · the grams go back to stock"', async () => {
   api.mockResolvedValue(jsonResponse(200, []))
-  renderVentas({ toast: 'Sale deleted · the grams go back to stock' })
+  renderVentas({ toast: 'common:saleDeletedGramsBack' })
 
   expect(
     await screen.findByText('Sale deleted · the grams go back to stock'),

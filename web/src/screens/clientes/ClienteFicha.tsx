@@ -188,8 +188,8 @@ export default function ClienteFicha() {
           <span className="encabezado__titulo" tabIndex={-1} data-place="card-heading">{data.name}</span>
           <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
         </div>
-        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
-        {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
+        {feedback !== null && <Notice feedback={feedback} />}
+        {accountGone && <Notice feedback={{ kind: 'notice', message: GONE_NOTICE }} />}
         {deletedToast && (
           <div className="toast" role="status">
             <span className="toast__texto">{CUSTOMERS_TEXT.paymentDeleted}</span>
