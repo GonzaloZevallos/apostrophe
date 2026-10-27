@@ -575,7 +575,8 @@ body {
 }
 
 /* Inicio's header on the phone (`Inicio.dc.html`): the name and title, and the business
- * avatar as a 44px touch target drawn at 38px. The computer has the rail's row instead. */
+ * avatar as a 44px touch target drawn at 38px (a transparent border the fill does not paint
+ * under, in the phone block at the end of this file). The computer has the rail's row instead. */
 .inicio__cabecera {
   display: flex;
   align-items: center;
