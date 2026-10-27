@@ -29,3 +29,8 @@ export function looseT(key: string, options?: LooseOptions): string {
  * component gets its own from `useTranslation`).
  */
 export const testT: TFunction = i18n.t
+
+/** The language the instance shows now, for a test outside `i18n/` that asserts on a switch. */
+export function shownLanguage(): string {
+  return i18n.language
+}
