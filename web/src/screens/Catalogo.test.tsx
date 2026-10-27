@@ -8,7 +8,7 @@
 
 import { CATALOG as CATALOG_PATH, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, RouterProvider, Route, Routes, createMemoryRouter, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -490,4 +490,120 @@ test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Edi
   // The variety name links of "What does not go out and why" are plain row links, not controls of the rule.
   const problems = iconAndTextProblems(document.body).filter((problem) => !problem.includes('catalogo__fila-nombre'))
   expect(problems).toEqual([])
+})
+
+// A share or copy promise the test settles by hand: what the iOS sheet that spins forever
+// (never) or that closes late (later) looks like from the screen.
+function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
+  let resolve: (value: T) => void = () => {}
+  const promise = new Promise<T>((done) => {
+    resolve = done
+  })
+  return { promise, resolve }
+}
+
+test('a share that never settles holds neither Compartir nor Copiar, and another tap shares again', async () => {
+  vi.mocked(share.shareText)
+    .mockReturnValueOnce(new Promise(() => {}))
+    .mockReturnValueOnce(new Promise(() => {}))
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
+
+  expect(screen.getByRole('button', { name: 'Share' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled()
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }))
+  expect(share.shareText).toHaveBeenCalledTimes(2)
+  expect(vi.mocked(share.shareText).mock.calls.map(([text]) => text)).toEqual([CATALOG_PLAIN, CATALOG_PLAIN])
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+test('an earlier share that fails after a newer one shared shows nothing', async () => {
+  const first = deferred<'shared' | 'cancelled' | 'failed'>()
+  vi.mocked(share.shareText).mockReturnValueOnce(first.promise).mockResolvedValueOnce('shared')
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }))
+  first.resolve('failed')
+  await act(async () => {
+    await first.promise
+  })
+
+  expect(share.shareText).toHaveBeenCalledTimes(2)
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+test('an earlier share that shares after a newer one failed leaves the alert shown', async () => {
+  const first = deferred<'shared' | 'cancelled' | 'failed'>()
+  vi.mocked(share.shareText).mockReturnValueOnce(first.promise).mockResolvedValueOnce('failed')
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent(/^Could not share\.$/)
+  first.resolve('shared')
+  await act(async () => {
+    await first.promise
+  })
+
+  expect(screen.getByRole('alert')).toHaveTextContent(/^Could not share\.$/)
+})
+
+test('with a share pending, Copiar copies the plain text and shows the toast', async () => {
+  vi.mocked(share.shareText).mockReturnValueOnce(new Promise(() => {}))
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Share' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
+
+  expect(clipboard.copyText).toHaveBeenCalledWith(CATALOG_PLAIN)
+  expect(await screen.findByText('Catalog copied')).toBeInTheDocument()
+})
+
+test('a copy that never settles holds nothing, and the next copy shows its toast', async () => {
+  vi.mocked(clipboard.copyText).mockReturnValueOnce(new Promise(() => {})).mockResolvedValueOnce(true)
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
+  expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled()
+  await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
+
+  expect(clipboard.copyText).toHaveBeenCalledTimes(2)
+  expect(await screen.findByText('Catalog copied')).toBeInTheDocument()
+})
+
+test('an earlier copy that fails after a newer one succeeded shows no error', async () => {
+  const first = deferred<boolean>()
+  vi.mocked(clipboard.copyText).mockReturnValueOnce(first.promise).mockResolvedValueOnce(true)
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Copy' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
+  expect(await screen.findByText('Catalog copied')).toBeInTheDocument()
+  first.resolve(false)
+  await act(async () => {
+    await first.promise
+  })
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(screen.getByText('Catalog copied')).toBeInTheDocument()
+})
+
+test('Compartir calls shareText inside the tap itself, before any await', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+  const button = await screen.findByRole('button', { name: 'Share' })
+
+  fireEvent.click(button)
+
+  expect(share.shareText).toHaveBeenCalledTimes(1)
+})
+
+test('Copiar calls copyText inside the tap itself, before any await', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+  const button = await screen.findByRole('button', { name: 'Copy' })
+
+  fireEvent.click(button)
+
+  expect(clipboard.copyText).toHaveBeenCalledTimes(1)
 })
