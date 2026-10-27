@@ -1,27 +1,11 @@
 /**
- * Every fixed empty or no-activity wording of the screens. The screens resolve `EMPTY_STATE_KEYS`
- * at render; `EMPTY_STATES` (English literals, byte-equal to `locales/en/emptyStates.json`) stays
- * only until the mobile standard reads the wordings from a bundle, and goes with it. A literal copy
- * in a screen fails `screens/emptyStates.test.ts`.
+ * Every fixed empty or no-activity wording of the screens, as keys and limits, with no wording
+ * here (the English is `locales/en/emptyStates.json`). The screens resolve `EMPTY_STATE_KEYS` at
+ * render and the mobile standard resolves them from the run's bundle; a literal copy in a screen
+ * fails `screens/emptyStates.test.ts`.
  */
 
 import type { CopyKind } from './limits.ts'
-
-export const LANGUAGE: 'es' | 'en' = 'en'
-
-export const EMPTY_STATES = {
-  salesList: "You haven't recorded any sales in this period yet.",
-  customersList: 'You have not added any customers yet.',
-  homeNobodyOwes: 'Nobody owes you',
-  homeVarietiesTitle: 'Start with your varieties',
-  homeVarietiesDetail: 'Add your first variety with its price. Without a price it cannot be sold.',
-  stockTitle: 'No stock entries',
-  stockDetail: 'Enter your initial stock or a purchase',
-  catalogTitle: 'Nothing in the catalog today',
-  catalogDetail: 'Nothing to copy yet',
-  analysisNoHistory: 'There is nothing to analyze yet.',
-  analysisEmptyMonth: 'You did not sell or give away anything this month.',
-} as const
 
 /**
  * The eleven wordings as keys of the `emptyStates` namespace (`locales/<tag>/emptyStates.json`).
@@ -55,6 +39,3 @@ export const EMPTY_STATE_LIMITS = {
   analysisNoHistory: 'emptyLine',
   analysisEmptyMonth: 'emptyLine',
 } as const satisfies Record<keyof typeof EMPTY_STATE_KEYS, CopyKind>
-
-/** Every wording a loading screen is forbidden from showing. */
-export const EMPTY_STATE_WORDINGS: readonly string[] = Object.values(EMPTY_STATES)

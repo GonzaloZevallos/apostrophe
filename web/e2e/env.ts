@@ -80,8 +80,24 @@ export function mobileDbPath(): string {
   return `web/e2e/.tmp/e2e-mobile-${mobilePort()}.db`
 }
 
+const LANGUAGE_VARIABLE = 'APOSTROPHE_FORCED_LANGUAGE'
+
+/**
+ * The language the phone check runs in: the one `playwright.config.ts` passes the backend as
+ * `APOSTROPHE_FORCED_LANGUAGE`, mirroring `app/settings.py` `_forced_language`. Unset or empty
+ * is `en`; exactly `en-XA` is `en-XA`; anything else (`en` and whitespace included, nothing
+ * is trimmed) throws an error naming the variable and never its value.
+ */
+export function mobileLanguage(): 'en' | 'en-XA' {
+  const raw = process.env[LANGUAGE_VARIABLE]
+  if (raw === undefined || raw === '') return 'en'
+  if (raw === 'en-XA') return 'en-XA'
+  throw new Error(`${LANGUAGE_VARIABLE} must be unset, empty or exactly en-XA.`)
+}
+
 export function mobileEnv(): Record<string, string> {
   return {
+    ...(mobileLanguage() === 'en-XA' ? { [LANGUAGE_VARIABLE]: 'en-XA' } : {}),
     APOSTROPHE_SECRET_KEY: E2E_SECRET_KEY,
     APOSTROPHE_DATABASE_URL: `sqlite:///${mobileDbPath()}`,
     APOSTROPHE_PUBLIC_URL: mobileBaseUrl(),

@@ -273,7 +273,6 @@
   {"source":"emptyStates.ts:EMPTY_STATE_WORDINGS[7]","args":null,"text":"Nothing in the catalog today"},
   {"source":"emptyStates.ts:EMPTY_STATE_WORDINGS[8]","args":null,"text":"Nothing to copy yet"},
   {"source":"emptyStates.ts:EMPTY_STATE_WORDINGS[9]","args":null,"text":"There is nothing to analyze yet."},
-  {"source":"emptyStates.ts:LANGUAGE","args":null,"text":"en"},
   {"source":"expenses.ts:EXPENSES_TEXT.addExpenseFromMore","args":null,"text":"Add expense from More"},
   {"source":"expenses.ts:EXPENSES_TEXT.byCategory","args":null,"text":"By category"},
   {"source":"expenses.ts:EXPENSES_TEXT.categories","args":null,"text":"Categories"},
