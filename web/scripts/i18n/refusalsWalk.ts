@@ -3,7 +3,7 @@
  * against `en.baseline.json` and `locales/en/refusals.json`. It reads the baseline, never the
  * copy module, so it outlives `copy/refusals.ts`. Problems name a source or a leaf, never a text.
  *
- * - a `refusals.ts:*` baseline source with no mapping (`LANGUAGE` is the locale tag, not a text);
+ * - a `refusals.ts:*` baseline source with no mapping;
  * - a leaf of `refusals.json` that no mapping points at;
  * - a mapped row whose `en` text is not byte-equal to its baseline text.
  */
@@ -13,13 +13,12 @@ import type { Entry } from './baseline.ts'
 import type { Mappings } from './baselineKeys.ts'
 
 const SOURCE_PREFIX = 'refusals.ts:'
-const LOCALE_TAG_SOURCE = 'refusals.ts:LANGUAGE'
 const KEY_PREFIX = 'refusals:'
 
 export function refusalWalkProblems(committed: readonly Entry[], mappings: Mappings, en: Bundle): string[] {
   const problems: string[] = []
   const sources = new Set(
-    committed.filter((entry) => entry.source.startsWith(SOURCE_PREFIX) && entry.source !== LOCALE_TAG_SOURCE).map((entry) => entry.source),
+    committed.filter((entry) => entry.source.startsWith(SOURCE_PREFIX)).map((entry) => entry.source),
   )
   for (const source of sources) {
     if (!Object.hasOwn(mappings, source)) problems.push(`${source}: not mapped`)

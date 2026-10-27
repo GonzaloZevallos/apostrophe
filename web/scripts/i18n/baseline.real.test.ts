@@ -25,12 +25,7 @@ describe('the real copy files', () => {
   })
 
   test('every committed entry is exported by a .ts file or mapped exactly once, and none is missing', () => {
-    // Transitional: `copy/refusals.ts` still exports the refusal texts beside their mapping until
-    // the refusal-readers subtask deletes it; that subtask also deletes this filter. Every other
-    // problem, for refusals.ts too (neither exported nor mapped, not in the baseline), still fails.
-    const bothWhileMoving = (problem: string): boolean =>
-      problem.startsWith('refusals.ts:') && problem.endsWith(': both exported and mapped')
-    expect(coverageProblems(modules, committed, loadMappingFiles()).filter((problem) => !bothWhileMoving(problem))).toEqual([])
+    expect(coverageProblems(modules, committed, loadMappingFiles())).toEqual([])
   })
 
   test('every mapped entry renders in en equal to its baseline text, and every mapping is read', () => {

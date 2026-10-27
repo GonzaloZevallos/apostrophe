@@ -65,6 +65,11 @@ export function buildRefusalKeys<B extends object, C extends string>(
   return built
 }
 
+/** A screen's message for a code: a `Refusal` resolves through `refusalText`, a fixed text stays. */
+export function messageText(t: Translate, message: Refusal | string): string {
+  return typeof message === 'string' ? message : refusalText(t, message)
+}
+
 /** The text of a refusal in the language `t` answers in; English when that language lacks it. */
 export function refusalText(t: Translate, refusal: Refusal): string {
   return t(refusal.key)

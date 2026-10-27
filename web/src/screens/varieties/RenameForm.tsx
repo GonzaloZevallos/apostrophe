@@ -29,8 +29,10 @@ import {
 } from '../Variedades'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
+import { useTranslation } from 'react-i18next'
+import { messageText, type Refusal } from '../../i18n/refusalKeys'
 
-const RENAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {
+const RENAME_OVERRIDES: Partial<Record<RefusalCode, Refusal | string>> = {
   'variety.name_taken': NAME_TAKEN_MESSAGE,
   'variety.name_archived': NAME_ARCHIVED_MESSAGE,
   'variety.name_invalid': NAME_INVALID_MESSAGE,
@@ -46,6 +48,7 @@ export interface RenameFormProps {
 
 export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, onGone }: RenameFormProps) {
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const [name, setName] = useState(variety.name)
   const [error, setError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
@@ -71,7 +74,7 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
         onGone()
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(RENAME_OVERRIDES, caught.code)
-        if (message !== undefined) setError(message)
+        if (message !== undefined) setError(messageText(t, message))
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') setError(GENERIC_REFUSAL_MESSAGE)
         else setError(ERROR_GENERICO_MENSAJE)
       } else if (caught instanceof NetworkError) {

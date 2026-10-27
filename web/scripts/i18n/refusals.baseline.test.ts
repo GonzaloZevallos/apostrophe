@@ -17,7 +17,7 @@ const refusals = loadMappingFiles().find((file) => file.file === 'refusals.json'
 
 const entry = (source: string, text: string) => ({ source, args: null, text })
 const fixtureEn = { refusals: { alpha: 'Alpha text', beta: 'Beta text' } }
-const fixtureBaseline = [entry('refusals.ts:A', 'Alpha text'), entry('refusals.ts:B', 'Beta text'), entry('refusals.ts:LANGUAGE', 'en')]
+const fixtureBaseline = [entry('refusals.ts:A', 'Alpha text'), entry('refusals.ts:B', 'Beta text')]
 const fixtureMap = { 'refusals.ts:A': { key: 'refusals:alpha' }, 'refusals.ts:B': { key: 'refusals:beta' } }
 
 describe('the real refusals mapping', () => {

@@ -49,7 +49,7 @@ export default function Clientes() {
   const location = useLocation()
   const [stateFeedback] = useState(() => readFeedback(location.state))
   const goneShown = useGoneNotice()
-  const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
+  const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, refusal: GONE_NOTICE } : null)
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query), 150)
@@ -85,7 +85,7 @@ export default function Clientes() {
             {COMMON_TEXT.newCustomer}
           </BotonLink>
         </div>
-        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
+        {feedback !== null && <Notice {...feedback} />}
         <label className="campo">
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>
           <input
