@@ -54,11 +54,13 @@ export default defineConfig({
     // through; component imports of CSS stay empty.
     css: { include: [/styles\/tokens\.css/, /[?&]raw(?:&|$)/] },
     // The census test drives real browsers, and the script it runs bounds every browser step by
-    // wall-clock time (8 s a step, 30 s for the network). Run beside ~15 jsdom workers it is
-    // slowed 4 to 6 times and a step misses its bound, so it is a project of its own, in a later
-    // group: it starts when the other files are done and has the CPU to itself. Measured: one
-    // design page load, starved of CPU, takes 8 to 20 s (document, stylesheet, then the lazy font
-    // files, each seconds apart), so no request hangs and the bounds are only a measure of load.
+    // wall-clock time. Run beside ~15 jsdom workers it is slowed 4 to 6 times, so it is a project of
+    // its own, in a later group: it starts when the other files are done. That group does NOT have the
+    // CPU to itself under `parallel_checks`: `web-tests` then runs next to pytest, mypy, tsc and the
+    // build. Measured: one design page load, starved of CPU, takes 8 to 20 s (document, stylesheet,
+    // then the lazy font files, each seconds apart), so no request hangs and a bound only measures
+    // load. The step bound therefore comes from the census test itself (`--step-timeout`, 60 s),
+    // not from the script's 8 s default.
     // Everything else (the 40 s ceiling above included) is inherited unchanged.
     projects: [
       { extends: true, test: { name: 'unit', exclude: [...CONFIG_EXCLUDE, CENSUS] } },
