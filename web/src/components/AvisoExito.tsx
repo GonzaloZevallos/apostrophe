@@ -28,6 +28,9 @@ import type { STOCK_TEXT } from '../copy/stock'
 import type { CATALOG_TEXT } from '../copy/catalog'
 import { isSuccessToast } from './feedback'
 
+/** The flash union: not `feedback.ts`'s `SuccessToast` (the closed set of five keys that rides in
+ * history state). The `common:` members here are keys; the rest are still English until their
+ * area part moves them, and only a key is ever handed to `t` (`isSuccessToast` narrows first). */
 export type SuccessToast =
   | 'common:customerSaved'
   | 'common:entrySaved'
