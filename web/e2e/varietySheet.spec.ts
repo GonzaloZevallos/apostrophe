@@ -28,9 +28,13 @@ test('the rename sheet keeps its action at the bottom, and the page stays locked
   await signUp(page, 'sheet-edit')
   const records = await seedRecords(page, 'Carla Cobrar')
   await page.goto(pathTo(VARIETY, { id: records.variety }))
-  // Scroll the page first, so "where it was" is a real position when the page is tall enough.
+  // A short window makes the page scroll; scroll it to the bottom first, so "where it was" is a
+  // real, non-zero position. The opener is clicked without scrolling it into view.
+  await page.setViewportSize({ width: 390, height: 480 })
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
-  await page.getByRole('button', { name: 'Edit name' }).click()
+  const startedAt = await page.evaluate(() => window.scrollY)
+  expect(startedAt).toBeGreaterThan(0)
+  await page.getByRole('button', { name: 'Edit name' }).dispatchEvent('click')
 
   const dialog = page.getByRole('dialog', { name: 'Rename variety' })
   await expect(dialog).toBeVisible()
@@ -49,6 +53,7 @@ test('the rename sheet keeps its action at the bottom, and the page stays locked
   const locked = () => page.evaluate(() => getComputedStyle(document.documentElement).overflow === 'hidden')
   const scrollY = () => page.evaluate(() => window.scrollY)
   const before = await scrollY()
+  expect(before).toBe(startedAt)
   expect(await locked()).toBe(true)
 
   // Something typed, then Close: the question is on screen over the sheet.
