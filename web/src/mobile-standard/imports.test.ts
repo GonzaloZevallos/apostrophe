@@ -24,25 +24,27 @@ const SPECIFIER = /(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g
 const GLOB = /import\.meta\.glob/
 const ANY = /(?:[:<,|&]|\bas|=>)\s*any\b/
 
+const SLASH = '\u002f'
+
 type Rule = 'node' | 'react' | 'dom' | 'glob' | 'any' | 'scripts'
 
 /** `a/b/../c` as `a/c`; a leading `..` is kept. */
 function normalize(path: string): string {
   const out: string[] = []
-  for (const part of path.split('/')) {
+  for (const part of path.split(SLASH)) {
     if (part === '' || part === '.') continue
     if (part === '..' && out.length > 0 && out[out.length - 1] !== '..') out.pop()
     else out.push(part)
   }
-  return out.join('/')
+  return out.join(SLASH)
 }
 
 /** Whether a relative import from `path` (a file of this folder) lands in `web/scripts/`. */
 function importsWebScripts(path: string, code: string): boolean {
-  const folder = path.split('/').slice(0, -1).join('/')
+  const folder = path.split(SLASH).slice(0, -1).join(SLASH)
   return [...code.matchAll(SPECIFIER)].some((match) => {
     const specifier = match[1] ?? ''
-    return specifier.startsWith('.') && normalize(`${folder}/${specifier}`).startsWith('../../scripts/')
+    return specifier.startsWith('.') && normalize([folder, specifier].join(SLASH)).startsWith('../../scripts/')
   })
 }
 
