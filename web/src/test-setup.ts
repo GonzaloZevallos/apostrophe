@@ -1,7 +1,9 @@
 import '@testing-library/jest-dom/vitest'
 import { configure } from '@testing-library/react'
 import { afterEach, beforeEach } from 'vitest'
-// Starts the i18n instance (English, bundled) so a component's `useTranslation` answers texts, not keys.
+// The app's one i18next instance, installed through the i18n folder's own test helper (as
+// `main.tsx` installs it for the app): a component test renders keys
+// through it without any module outside `i18n/` importing the instance.
 import './i18n/testing'
 import { assertNoEnglishMisses, clearMissingKeys, missingKeys } from './i18n/missingKeys'
 

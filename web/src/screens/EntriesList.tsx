@@ -120,7 +120,7 @@ export default function EntriesList({ varietyId }: Props) {
     setFailed(false)
     try {
       await deleteEntry(String(entry.id))
-      flash.showNow(COMMON_TEXT.entryDeleted)
+      flash.showNow('common:entryDeleted')
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) setGoneNotice(true)
       else if (caught instanceof NetworkError) setOffline(true)

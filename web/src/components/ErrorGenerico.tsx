@@ -5,15 +5,20 @@
  * unrecognised error body means.
  */
 
+import { useTranslation } from 'react-i18next'
 import AvisoAmbar from './AvisoAmbar'
-import { ERROR_GENERICO_MENSAJE } from '../copy/common'
 
-export { ERROR_GENERICO_MENSAJE }
+/**
+ * Re-exported for the screens that still set it as a form error; each area part moves its
+ * own onto `t('common:genericError')`, and the last one deletes this line.
+ */
+export { ERROR_GENERICO_MENSAJE } from '../copy/common'
 
 export default function ErrorGenerico() {
+  const { t } = useTranslation()
   return (
     <AvisoAmbar attention role="alert">
-      <span className="aviso-ambar__titulo">{ERROR_GENERICO_MENSAJE}</span>
+      <span className="aviso-ambar__titulo">{t('common:genericError')}</span>
     </AvisoAmbar>
   )
 }

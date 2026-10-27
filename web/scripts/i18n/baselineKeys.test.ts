@@ -12,6 +12,7 @@ import {
   coverageProblems,
   loadMappingFiles,
   mappedRows,
+  parseMappings,
   mappingProblems,
   type MappingFile,
 } from './baselineKeys.ts'
@@ -141,5 +142,55 @@ describe('coverage problems', () => {
     const lacking = committed.filter((entry) => entry.source !== 'sample.ts:LANGUAGE')
 
     expect(coverageProblems(AFTER, lacking, files)).toEqual(['sample.ts:LANGUAGE: not in the committed baseline'])
+  })
+})
+
+describe('fill: the placeholders of a fragment, which has no args', () => {
+  const fragment: Entry = { source: 'a.ts:backTo', args: null, text: 'Back to ' }
+  const withArgs: Entry = { source: 'a.ts:f', args: ['Ana'], text: 'Hi Ana' }
+  const bundle = { x: { back: 'Back to {{parent}}', hi: 'Hi {{name}}' } }
+  const file = (mappings: MappingFile['mappings']): MappingFile[] => [{ file: 'x.json', mappings }]
+
+  test('is parsed with the mapping', () => {
+    const parsed = parseMappings('x.json', '{"a.ts:backTo":{"key":"x:back","fill":{"parent":""}}}')
+
+    expect(parsed.mappings['a.ts:backTo']).toEqual({ key: 'x:back', fill: { parent: '' } })
+  })
+
+  test.each([
+    ['a list', '[]'],
+    ['a value that is not a string', '{"parent":3}'],
+  ])('is refused when it is %s', (_name, fill) => {
+    expect(() => parseMappings('x.json', `{"a.ts:backTo":{"key":"x:back","fill":${fill}}}`)).toThrow('a.ts:backTo fill is not a record of texts')
+  })
+
+  test('fills the placeholder, so the fragment equals its baseline text', () => {
+    const files = file({ 'a.ts:backTo': { key: 'x:back', fill: { parent: '' } } })
+
+    expect(mappingProblems(files, [fragment], bundle)).toEqual([])
+  })
+
+  test('a fragment mapped without its fill cannot be rendered', () => {
+    const files = file({ 'a.ts:backTo': { key: 'x:back' } })
+
+    expect(mappingProblems(files, [fragment], bundle)).toEqual(['a.ts:backTo row 0: x:back: no argument for the placeholder parent'])
+  })
+
+  test('a fill that renders another text in en', () => {
+    const files = file({ 'a.ts:backTo': { key: 'x:back', fill: { parent: 'home' } } })
+
+    expect(mappingProblems(files, [fragment], bundle)).toEqual(['a.ts:backTo row 0: renders another text in en'])
+  })
+
+  test('a fill name not in PLACEHOLDERS', () => {
+    const files = file({ 'a.ts:backTo': { key: 'x:back', fill: { stranger: '' } } })
+
+    expect(mappingProblems(files, [fragment], bundle)).toEqual(['a.ts:backTo: the fill stranger is not in PLACEHOLDERS'])
+  })
+
+  test('a fill on an entry that has args', () => {
+    const files = file({ 'a.ts:f': { key: 'x:hi', params: ['name'], fill: { name: 'Ana' } } })
+
+    expect(mappingProblems(files, [withArgs], bundle)).toEqual(['a.ts:f: fill on a key with args'])
   })
 })

@@ -5,13 +5,14 @@
  * toast, never the generic server-error retry.
  */
 
+import { useTranslation } from 'react-i18next'
 import AvisoAmbar from './AvisoAmbar'
-import { SIN_CONEXION_MENSAJE } from '../copy/common'
 
 export default function SinConexion() {
+  const { t } = useTranslation()
   return (
     <AvisoAmbar attention role="status">
-      <span className="aviso-ambar__titulo">{SIN_CONEXION_MENSAJE}</span>
+      <span className="aviso-ambar__titulo">{t('common:offline')}</span>
     </AvisoAmbar>
   )
 }

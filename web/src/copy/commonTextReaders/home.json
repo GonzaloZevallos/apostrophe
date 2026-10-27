@@ -1,0 +1,7 @@
+[
+  "web/src/copy/inicio.ts",
+  "web/src/screens/Inicio.test.tsx",
+  "web/src/screens/Inicio.tsx",
+  "web/src/screens/inicio/InicioPanel.tsx",
+  "web/src/screens/inicio/PeriodFigures.tsx"
+]
