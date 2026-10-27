@@ -6,6 +6,9 @@
  */
 
 import { REFUSAL_TEXT } from '../copy/refusals.ts'
+import enRefusals from '../copy/locales/en/refusals.json' with { type: 'json' }
+import refusalKeys from '../copy/refusalKeys.json' with { type: 'json' }
+import { buildRefusalKeys, type RefusalKey } from '../i18n/refusalKeys.ts'
 import contract from './contract.json' with { type: 'json' }
 
 export type RefusalKind = 'refusal' | 'gone'
@@ -24,6 +27,15 @@ const refusalCodes = contract.refusalCodes as Record<RefusalCode, { kind: Refusa
 function isRefusalCode(code: string): code is RefusalCode {
   return code in refusalCodes
 }
+
+/** The key of every code in `copy/refusalKeys.json`, the one hand-kept code-to-key table:
+ * built at import, so a code with no key, or a key `locales/en/refusals.json` lacks, stops the
+ * app at load instead of showing the wrong words. */
+export const REFUSAL_KEY: Record<RefusalCode, RefusalKey> = buildRefusalKeys(
+  refusalKeys,
+  enRefusals,
+  Object.keys(refusalCodes).filter(isRefusalCode),
+)
 
 /** Shown after a save or a delete lands on a record that is gone (plan, "Gone
  * records"): no id, name, date or amount, so it reads the same whatever was
@@ -85,6 +97,16 @@ export type PinReason =
   | 'message_gone'
   | 'missing_publish'
   | 'too_long'
+
+/** The key of each status reason; `too_long`, `telegram_unreachable` and `bot_cannot_post` are
+ * also codes, and a test holds them equal to `REFUSAL_KEY`. */
+export const PIN_REASON_KEY: Record<PinReason, RefusalKey> = {
+  telegram_unreachable: 'refusals:pinReasonTelegramUnreachable',
+  bot_cannot_post: 'refusals:pinReasonBotCannotPost',
+  message_gone: 'refusals:pinReasonMessageGone',
+  missing_publish: 'refusals:pinReasonMissingPublish',
+  too_long: 'refusals:pinReasonTooLong',
+}
 
 export const PINNED_CATALOG_REASON_LABEL: Record<PinReason, string> = REFUSAL_TEXT.pinReason
 
