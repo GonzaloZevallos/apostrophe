@@ -1,0 +1,1057 @@
+candidates:
+- slug: developer
+  category: spec-missing-test
+  lesson: When a test asserts that something must not appear in an output, check every field of the output (or walk the whole payload), not only the few fields that come to mind.
+  confidence: low
+  seen_in:
+  - GH-375
+  sources:
+  - finding
+  added_at: '2026-10-26T03:26:05.389+00:00'
+- slug: developer_integrator
+  category: spec-missing-test
+  lesson: For each adapter you add, write a direct test for every edge behaviour the plan states, such as a missing row returning None, and do not rely on the happy-path integration test.
+  confidence: low
+  seen_in:
+  - GH-375
+  sources:
+  - finding
+  added_at: '2026-10-26T03:26:05.389+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Measure every item the brief names on the baseline it names, and say so if you cannot. Do not change files outside the brief to clear an unrelated red gate; report it instead.
+  confidence: medium
+  seen_in:
+  - GH-113
+  sources:
+  - finding
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When the brief asks for a check before and after a change, run the baseline before editing anything and keep its output; running only the after check leaves the change unverified.
+  confidence: medium
+  seen_in:
+  - GH-116
+  sources:
+  - finding
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When a test has several asserts, prove each one with its own mutation; a test that stops at its first failing assert hides whether the later asserts can ever fail.
+  confidence: medium
+  seen_in:
+  - GH-126
+  sources:
+  - finding
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Before delivering, run every proof the brief declares under Seams, each one itself. A passing test at another seam does not stand in for it. If one cannot run, say so and leave it open.
+  confidence: medium
+  seen_in:
+  - GH-101
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: 'Before posting a written record, check each sentence against its own data table: run numbers, hashes and universal claims such as ''equal on every screen'' must hold for every row, or name the exceptions.'
+  confidence: low
+  seen_in:
+  - GH-101
+  sources:
+  - finding
+  added_at: '2026-10-26T03:35:47.322+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When a measurement needs a temporary override that departs from the brief, record the override with the figures and carry it into the PR description, together with the SHAs, versions and date.
+  confidence: low
+  seen_in:
+  - GH-156
+  sources:
+  - finding
+  added_at: '2026-10-26T03:45:20.375+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When a doc records measured figures, name the exact commit they were measured at, and after merging the base branch re-check that the base and tree claims still describe the head.
+  confidence: medium
+  seen_in:
+  - GH-112
+  sources:
+  - finding
+  added_at: '2026-10-26T03:45:20.375+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: For every absence assertion, first prove the same matcher finds the element while it is present; otherwise the check may be unable to fail. Prefer stable matchers such as href over anchored names.
+  confidence: medium
+  seen_in:
+  - GH-130
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When the brief asks for a sanity proof (temporarily break the code and see the tests go red), run it and record the result in the PR description before delivering.
+  confidence: medium
+  seen_in:
+  - GH-130
+  sources:
+  - finding
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When you add or change a guard, scan or selector parser, add a negative test with an input it must reject, and show it fail before the fix.
+  confidence: medium
+  seen_in:
+  - GH-149
+  sources:
+  - finding
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: 'Before handing back, check the brief item by item against your diff: every listed guard, helper and test must exist, and no invariant fallback may remain.'
+  confidence: medium
+  seen_in:
+  - GH-149
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, check every button or element your diff edits, not just new ones, against the plan's invariants. If one cannot hold, record the evidence under Decisions and assumptions.
+  confidence: medium
+  seen_in:
+  - GH-143
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Map each acceptance bullet to a test that really exercises it. A reload or persistence bullet needs a remount or re-render, not a single render asserting state.
+  confidence: medium
+  seen_in:
+  - GH-143
+  sources:
+  - finding
+  added_at: '2026-10-26T03:48:47.756+00:00'
+- slug: developer_integrator
+  category: spec-missing-test
+  lesson: For every new branch or rule at a declared seam, add a fixture that feeds it an input it must reject, plus one it accepts. A positive-only fixture would still pass if the branch were removed.
+  confidence: medium
+  seen_in:
+  - GH-102
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:52:52.269+00:00'
+- slug: tech_lead_platform
+  category: plan-calibration
+  lesson: Before fixing a detection marker or heuristic in a brief, test it against the real tree; if it breaks other invariants, specify the exact exemption and its limits in the plan instead of leaving it to the Developer.
+  confidence: medium
+  seen_in:
+  - GH-165
+  sources:
+  - finding
+  added_at: '2026-10-26T03:52:52.269+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Before delivering, build a checklist from the brief's required design comparisons (every screen, theme, viewport, text scale, before/after) and check each one. Attach the evidence instead of sampling.
+  confidence: medium
+  seen_in:
+  - GH-164
+  sources:
+  - finding
+  added_at: '2026-10-26T03:52:52.269+00:00'
+- slug: tech_lead
+  category: integration-crosscut
+  lesson: After a merge, grep for every selector or identifier that master's changes target and confirm each still matches a rendered element. Renamed markup silently orphans rules, so add a test for it.
+  confidence: medium
+  seen_in:
+  - GH-164
+  sources:
+  - finding
+  added_at: '2026-10-26T03:52:52.269+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: Do not narrow a capture or comparison with a filter the brief did not allow. If the full run fails, save its output as evidence and exclude only the screens that actually failed.
+  confidence: medium
+  seen_in:
+  - GH-200
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before you deliver, check every per-item deliverable in the brief (for example one note per sheet) against what you did, and open each item. Do not stop at a sample.
+  confidence: medium
+  seen_in:
+  - GH-200
+  sources:
+  - finding
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: ux_designer
+  category: design
+  lesson: 'Write each flow step so it can be executed as written: state its preconditions (registry entries, which script version, flags to pass) and check that each expected outcome can be reached.'
+  confidence: medium
+  seen_in:
+  - GH-200
+  sources:
+  - design
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before you deliver, tick every item in the brief's Done list. If one input fails, still do each item that does not depend on it, and do not run out of turns before the cheap ones.
+  confidence: medium
+  seen_in:
+  - GH-212
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Build the Coverage map from the real locations of the evidence. Point each invariant and brief item at the section or file that holds it, not at the nearest changed line.
+  confidence: medium
+  seen_in:
+  - GH-212
+  sources:
+  - finding
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: 'Verify each plan invariant against your own new files too: run the guard or scan you built over its own test and fixture files, and confirm it passes without any accidental exemption.'
+  confidence: medium
+  seen_in:
+  - GH-211
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, walk the brief's acceptance list item by item. Finish every run and classify every failure, or route it as the brief says, instead of stopping at an unrun or unclassified item.
+  confidence: medium
+  seen_in:
+  - GH-211
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T03:56:57.807+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When the brief asks you to align a doc with the build, edit the doc before you deliver. Do not just flag the mismatch. If you cannot align it, say so explicitly and escalate.
+  confidence: medium
+  seen_in:
+  - GH-132
+  sources:
+  - finding
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer_integrator
+  category: spec-scope
+  lesson: At integration, compare each product doc statement touched by the subtasks with the integrated build. Fix or escalate any disagreement that is still open before you close.
+  confidence: medium
+  seen_in:
+  - GH-132
+  sources:
+  - finding
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, check each plan invariant against what the page actually renders, not only the mapped file. Add a test that fails if it breaks. If it can't hold, record the invariant, the evidence and what shipped.
+  confidence: medium
+  seen_in:
+  - GH-121
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: ux_designer
+  category: design
+  lesson: Write flow steps, recoveries and touch counts only with controls the prototype draws on that screen. If a control lives in another screen or setting, say so and don't make it a step.
+  confidence: medium
+  seen_in:
+  - GH-121
+  sources:
+  - design
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When you rewrite or replace a guard or test, list the old must-flag and must-pass cases and carry each one over, or show another case that exercises the same branch in isolation.
+  confidence: medium
+  seen_in:
+  - GH-215
+  sources:
+  - finding
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When you add or edit a check that enforces a rule, also add a test that runs it on an input it must reject, next to the passing case; a check run only on valid real data proves nothing.
+  confidence: medium
+  seen_in:
+  - GH-144
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When you add copy that states several behaviours, write one test per behaviour in the same diff and map each to its invariant in Coverage, so no claim in the text goes untested.
+  confidence: medium
+  seen_in:
+  - GH-144
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When the brief asks for a by-eye check, do it for every listed screen and variant, and list each difference in the PR. After a drawing change, search all its frames for the same pattern, not just the first ones.
+  confidence: medium
+  seen_in:
+  - GH-144
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, produce every piece of evidence the brief lists, such as before and after captures with each difference listed. Attach it, and do not deliver while it is marked not done.
+  confidence: medium
+  seen_in:
+  - GH-135
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Make each new test able to fail on what it guards. Query every role the old element could have (link and button), and write the test the brief names, not a neighbouring one.
+  confidence: medium
+  seen_in:
+  - GH-135
+  sources:
+  - finding
+  added_at: '2026-10-26T04:00:21.291+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: For every new branch, such as an undefined or empty state, add a test at the real screen seam that fails when the branch's guard is removed. Never weaken an existing assertion to make a change pass.
+  confidence: medium
+  seen_in:
+  - GH-166
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When a guard iterates over cards or files, check that each item runs in its real loaded state, and that its scan globs every file type. Seed what each item reads, or list it as exempt with a reason.
+  confidence: medium
+  seen_in:
+  - GH-166
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering evidence, list every capture the brief names (each theme, device and state, such as archived records) and check that each one exists. Add the missing entries to the capture config.
+  confidence: medium
+  seen_in:
+  - GH-166
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: When a merge brings code that breaks an invariant, fix the code to satisfy the invariant. Do not add it to an exemption list unless you record the invariant as unsatisfiable.
+  confidence: medium
+  seen_in:
+  - GH-166
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer_integrator
+  category: spec-scope
+  lesson: Run every check the plan assigns to the integration pass (before/after comparisons, throwaway captures) on the final head and attach the output. If one cannot run, record the command and why.
+  confidence: medium
+  seen_in:
+  - GH-237
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When you write a static checker, list every syntactic form of what it must catch (aliased, relative, from-import, attribute access) and add a flagged test case for each before delivering.
+  confidence: medium
+  seen_in:
+  - GH-216
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, tick each acceptance line against your report, including requested counts, and recount any numbers you state against the actual files.
+  confidence: medium
+  seen_in:
+  - GH-216
+  sources:
+  - finding
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, tick off every deliverable the brief lists, including PR-body evidence. Produce each one, or write down which is missing and why. File an issue for every defect you find.
+  confidence: medium
+  seen_in:
+  - GH-142
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: 'Before you declare an invariant unsatisfiable, show it: run the command, quote its output, and check that the case is not just the empty set. Cover every item the invariant names, not a sample.'
+  confidence: medium
+  seen_in:
+  - GH-150
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before you deliver, tick off each step of the brief's Record and Done-when list. Quote the decisive evidence (the failing assertion, not the build noise) inside the deliverable, not in a temporary log.
+  confidence: medium
+  seen_in:
+  - GH-150
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:03:02.436+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Before delivering, list every assertion and test the brief names, including null cases and e2e extensions, and point each one to a test that fails if the behaviour breaks.
+  confidence: medium
+  seen_in:
+  - GH-141
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer
+  category: standard-seams
+  lesson: Do not edit a file outside the declared seam. If a test or guard must change, record in Decisions which check fails without it and its output, and ask for the seam to be widened.
+  confidence: medium
+  seen_in:
+  - GH-141
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Run git fetch and check that master is not ahead against origin/master, never the local master, before you declare the branch integrated.
+  confidence: medium
+  seen_in:
+  - GH-141
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Deliver the acceptance evidence the brief names (full runs, captures) on the final head. If some part cannot pass, run the rest and list each exclusion with its error line. Do not stop at targeted tests.
+  confidence: medium
+  seen_in:
+  - GH-244
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: In evidence documents, re-read the quoted lines and describe exactly what they show; never restate an invariant's wording as fact when the code differs (e.g. two instances called one shared instance).
+  confidence: low
+  seen_in:
+  - GH-218
+  sources:
+  - finding
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before delivering, check the branch diff against every plan invariant's file list. If a file outside it must change, record the invariant, the failing command with its output and the version shipped.
+  confidence: medium
+  seen_in:
+  - GH-219
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:06:14.751+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: Do every comparison step the brief lists, on every item, by reading it yourself. Send to Zeta only what the brief and docs cannot settle, never what you ran out of turns to read.
+  confidence: medium
+  seen_in:
+  - GH-224
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:09:57.713+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When the brief says an unexpected check failure stops the work and escalates, stop and escalate it. Never discard the failing run and retake the side to get a clean result.
+  confidence: medium
+  seen_in:
+  - GH-247
+  sources:
+  - finding
+  added_at: '2026-10-26T04:09:57.713+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: For a rejecting-input test, run the code under test on an input it must reject and assert its output. Check that the test fails if the code returns nothing. Test through the seam the brief declares.
+  confidence: medium
+  seen_in:
+  - GH-251
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When the brief asks for a set of runs or cases, run every one. If you cannot, state the gap as unmet in the evidence. Do not narrow the set quietly with exclusions or fewer runs.
+  confidence: medium
+  seen_in:
+  - GH-251
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer_integrator
+  category: spec-scope
+  lesson: Before closing, compare the evidence with what the brief asked for (every run, full test counts). Do every follow-up the plan assigns you, such as filing an issue. Record any gap as open.
+  confidence: medium
+  seen_in:
+  - GH-251
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: 'For each acceptance item in the brief, write a test that fails when the behaviour is wrong: assert the exact field or every named word, and open the window the item guards (such as a delayed step).'
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Merge origin/master as your last step before delivery, then confirm git merge-base --is-ancestor origin/master HEAD exits 0, so master moving during the work does not break the invariant.
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Edit only the files your brief names and their tests. If another file seems unavoidable, record the invariant number, the exact failing command with its output, and the version you shipped.
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before removing or editing an existing assertion that no invariant exempts, write an Integration record naming the invariant, showing the failing run and the replacement tests, and list it in the PR.
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: ui_designer
+  category: design
+  lesson: When a PRD behaviour needs a style or state no component offers, draw it from tokens (ink token, shape, light and dark values, focus, disabled) and take after-states from the PRD, not a gap.
+  confidence: medium
+  seen_in:
+  - GH-131
+  sources:
+  - design
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer_integrator
+  category: spec-scope
+  lesson: After merging in new upstream work, run the full exit-criterion check on the merged result, not a sample. Rows or cases added upstream have never been exercised with your changes.
+  confidence: medium
+  seen_in:
+  - GH-220
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: process-uncommitted
+  lesson: Commit your work on the task branch before delivering, then confirm git diff against the base lists every file you changed. A working-tree change is not a delivery.
+  confidence: medium
+  seen_in:
+  - GH-201
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Run every acceptance check the brief names, including the pre-edit baseline, and paste the output under Checks. Do not deliver with the evidence marked as not done.
+  confidence: medium
+  seen_in:
+  - GH-201
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer_integrator
+  category: spec-missing-test
+  lesson: After merging master, rerun the runtime checks the brief names on the integrated head, such as comparisons. Merged data or tooling can break a row that passed before, so paste the output lines.
+  confidence: medium
+  seen_in:
+  - GH-201
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: standard-typing-silenced
+  lesson: Type test helpers with the real known types instead of Any, and satisfy strict mypy errors properly rather than routing around them with vars() or casts that only read back your own stub.
+  confidence: medium
+  seen_in:
+  - GH-202
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: For every config-dependent behaviour, give the test under each setting an input that a wrong implementation would accept, so a mutant that flips the outcome in that setting fails the assertion.
+  confidence: medium
+  seen_in:
+  - GH-202
+  sources:
+  - finding
+  added_at: '2026-10-26T04:12:18.967+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Deliver every run or item the brief counts before you stop; plan the turn budget for it, and report a shortfall only through the brief's own cap or void rule, never as 'not yet run'.
+  confidence: medium
+  seen_in:
+  - GH-263
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: Before you write a summary, read each run's failing step in its junit or log and classify it by the written outcome definition; then check that every headline claim matches your own table.
+  confidence: medium
+  seen_in:
+  - GH-263
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Keep every run in the results table. Void a run only for a reason on the plan's closed list, decided before you read its outcome, and never drop a run for a reason you made up.
+  confidence: medium
+  seen_in:
+  - GH-263
+  sources:
+  - finding
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, turn each deliverable in the brief into a checklist item (evidence, captures, classified differences, every named row) and confirm each is produced, or record why it is not.
+  confidence: medium
+  seen_in:
+  - GH-45
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer_integrator
+  category: process-suite-red
+  lesson: When a test file flakes alone, run it at least 10 times solo, find the leaking state (router, pending navigation, fake API) and fix it. Do not move assertions into waitFor to hide it.
+  confidence: medium
+  seen_in:
+  - GH-45
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, walk each plan invariant and check the diff against it. For recorded figures, put the exact command from the brief next to each table, and check the command matches the set it produced.
+  confidence: medium
+  seen_in:
+  - GH-171
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When a brief asks for a verdict per difference (intended, fixed, or filed and linked), give each item exactly one verdict. Use git diff against the base to separate pre-existing differences from ones the task introduced.
+  confidence: medium
+  seen_in:
+  - GH-46
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: standard-other
+  lesson: Do not deliver a screen without the design comparison the standards ask for. If the capture run fails or times out, rerun it on the final code, and record the gap if it still fails.
+  confidence: low
+  seen_in:
+  - GH-46
+  sources:
+  - finding
+  added_at: '2026-10-26T04:16:29.703+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, check each new file against every plan invariant on location and imports. Make the guard mapped to the invariant reject a sibling breaking it, with a rejecting fixture.
+  confidence: medium
+  seen_in:
+  - GH-80
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Commit a test that feeds each new enforcement path an input it must reject, at the declared seam. A hand-run negative check that was reverted is not evidence.
+  confidence: medium
+  seen_in:
+  - GH-80
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: process-suite-red
+  lesson: New files can trip existing repo-wide scans (architecture, copy, suppression checks). Before delivering, run those scans on your new files; leave the full suites to the gate.
+  confidence: medium
+  seen_in:
+  - GH-188
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Tick off each numbered step and evidence item of the brief before delivery. Run every hand mutation it names, or state explicitly which ones you did not run and why.
+  confidence: medium
+  seen_in:
+  - GH-188
+  sources:
+  - finding
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Give every new function, main-level guard and written output a test that actually runs. Never wrap a required guard in a skip condition; a test the brief lets fail until a merge must fail, not skip.
+  confidence: medium
+  seen_in:
+  - GH-189
+  sources:
+  - finding
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer_integrator
+  category: spec-missing-test
+  lesson: Before delivering the integration, list the new functions and guards the merged subtasks added and check each is called by a test. Add the missing test, or record why none is possible.
+  confidence: low
+  seen_in:
+  - GH-189
+  sources:
+  - finding
+  added_at: '2026-10-26T04:18:57.034+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Produce every evidence item the brief's acceptance lists before you deliver. If one was not run, say so and leave out any text that reports an outcome for it, such as an ADR paragraph.
+  confidence: medium
+  seen_in:
+  - GH-261
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Before delivering, grep the final diff to confirm each deletion the brief lists is gone and that no block was pasted twice or left unscoped; do not report a change as done unverified.
+  confidence: medium
+  seen_in:
+  - GH-271
+  sources:
+  - finding
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Produce every evidence artifact the brief requires (measured runs, screenshots, listed outputs) before delivering; if one cannot be produced, say so under Decisions rather than claiming the invariant holds by construction.
+  confidence: medium
+  seen_in:
+  - GH-272
+  sources:
+  - finding
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When an invariant asks for a before capture or judgement, record the output path and build SHA of that capture and the fixing commit of each dropped item; never map it to a test or a post-change run.
+  confidence: medium
+  seen_in:
+  - GH-192
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: product_analyst
+  category: definition
+  lesson: Reproduce every item of a ruling and measure each one against the written product docs, not only against code or frames; never rule on a single item and generalise it to the rest.
+  confidence: low
+  seen_in:
+  - GH-192
+  sources:
+  - return
+  added_at: '2026-10-26T04:24:18.086+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: For each plan invariant, name the code path that enforces it and check that no guard signal (such as a mutation flag) is read and discarded on that path. Add a test at the seam that rejects a violation.
+  confidence: medium
+  seen_in:
+  - GH-273
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: Do not add behaviour the brief does not list, such as a change to how a shot is taken, when it settles an open plan question. Raise it as a plan decision and keep the briefed version.
+  confidence: medium
+  seen_in:
+  - GH-273
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: After translating or moving a word, grep for every rendered form of it, plurals, template literals, joiners and short names, and move each into the copy module so no mixed-language text remains.
+  confidence: medium
+  seen_in:
+  - GH-53
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Never loosen an exact assertion to a prefix or regex to pass after a text change; update it to the exact new text, one assertion per line.
+  confidence: medium
+  seen_in:
+  - GH-53
+  sources:
+  - finding
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: When the brief asks for a throwaway proof that a test fails on a broken answer, run it, paste the failing output, and revert. Assert against every source the brief names, not a subset.
+  confidence: medium
+  seen_in:
+  - GH-276
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-scope
+  lesson: When the brief limits a change to one selector family or section, touch only that. Delete or merge the old rules the new ones replace so they cannot win the cascade, and check the diff for stray selectors.
+  confidence: medium
+  seen_in:
+  - GH-278
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before claiming an invariant cannot hold, run the declared command in each state and paste the failing output lines in the record. A commit message or a summary of a run is not evidence.
+  confidence: medium
+  seen_in:
+  - GH-278
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:29:54.986+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: Cover every path and origin the brief names, at each viewport, and assert the precondition (such as scroll offset above zero) so a test cannot pass vacuously. If a cell cannot run, record why with measured evidence.
+  confidence: medium
+  seen_in:
+  - GH-281
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:32:56.270+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Once you record the evidence head SHA, commit nothing outside the evidence directory and the report; if a late fix is needed, retake the final evidence on the new head, and check the diff after that SHA before delivering.
+  confidence: medium
+  seen_in:
+  - GH-295
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:39:00.111+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When a doc or glossary entry touches a rule that has a single source of truth, name it in one sentence and point to that source; never restate its conditions. Grep your diff for such mentions before delivering.
+  confidence: medium
+  seen_in:
+  - GH-305
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:39:00.111+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: For every value the brief requires, assert it in each check that covers it, including seed-time or sample-generation checks, not only in the unit test. Add a negative case showing the wrong value stops the run.
+  confidence: medium
+  seen_in:
+  - GH-303
+  sources:
+  - finding
+  added_at: '2026-10-26T04:39:00.111+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: After any bulk or scripted edit, grep the whole target set for every term of the invariant, read each hit, and fix the leftovers before delivering; do not assume the script caught every occurrence.
+  confidence: medium
+  seen_in:
+  - GH-335
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer
+  category: spec-behaviour
+  lesson: When you build an inventory, rerun the scan on the base and diff it against your table so every hit has a row; name the exact copy key and its exact string, never a guess or a paraphrase.
+  confidence: medium
+  seen_in:
+  - GH-335
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before delivering, check every app string you quote in docs against the copy file character for character, and use the inventory's name; never paraphrase a UI string.
+  confidence: medium
+  seen_in:
+  - GH-335
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: Before delivering, walk the brief's numbered invariants one by one against your diff, including tests and error messages, and fix any that your change violates.
+  confidence: medium
+  seen_in:
+  - GH-345
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer
+  category: plan-invariant
+  lesson: When the brief says output is byte-identical without a flag, diff every output path (stdout, stderr, exit code, usage and error lines) against the base revision, and assert the exact text in a test.
+  confidence: medium
+  seen_in:
+  - GH-338
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: In every failure or unknown-outcome branch, route each render and side effect through the guarded fallback, never a bare try/except pass. Add a test that makes the dependency raise there and asserts the whole output.
+  confidence: medium
+  seen_in:
+  - GH-348
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer_integrator
+  category: standard-typing-silenced
+  lesson: Stand in for a port in tests with a typed fake that implements its methods; never widen with __getattr__ returning Any to satisfy mypy.
+  confidence: medium
+  seen_in:
+  - GH-348
+  sources:
+  - finding
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: tech_lead_platform
+  category: plan-calibration
+  lesson: Before fixing a size or fit rule in a brief, test it against the real fixtures (long lists, wide documents). If the literal rule fails them, state the exception in the brief.
+  confidence: medium
+  seen_in:
+  - GH-339
+  sources:
+  - finding
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer_integrator
+  category: spec-behaviour
+  lesson: When you integrate, grep every page.evaluate and page call in the diff, including calls inside helper modules, and confirm each one runs under the bounded timeout wrapper.
+  confidence: low
+  seen_in:
+  - GH-339
+  sources:
+  - finding
+  added_at: '2026-10-26T04:44:18.575+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: In a migration test, seed a row for every entity the brief names, child tables included. After the upgrade, assert each row survived and still joins to its parent.
+  confidence: medium
+  seen_in:
+  - GH-346
+  sources:
+  - finding
+  added_at: '2026-10-26T04:50:52.469+00:00'
+- slug: developer_integrator
+  category: plan-invariant
+  lesson: Before delivering the integration, check each plan invariant against the merged diff with a grep for the construct it forbids, such as a regex in a sweep. Fix any hit, even if it predates the merge.
+  confidence: medium
+  seen_in:
+  - GH-347
+  sources:
+  - finding
+  - return
+  added_at: '2026-10-26T04:57:50.974+00:00'
+- slug: developer
+  category: spec-missing-test
+  lesson: 'When you move or rewrite tests, list every assertion of the old ones and map each to a new one. Make sure each new test can fail: no vacuous pass when no input is sent, and check byte identity when the brief asks for it.'
+  confidence: low
+  seen_in:
+  - GH-347
+  sources:
+  - finding
+  added_at: '2026-10-26T04:57:50.974+00:00'
