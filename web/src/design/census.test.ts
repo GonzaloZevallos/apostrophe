@@ -16,7 +16,8 @@ const FONT = resolve(
 )
 
 // The step bound every case runs at (--step-timeout). Measured: one design page load starved of CPU
-// takes 8 to 20 s (see web/vite.config.ts); 60 s is 3 times the worst of them.
+// takes 8 to 20 s (web/vite.config.ts; measured with the load average at 15 to 20, last re-measured
+// 2026-10-27: slowest whole case 8.2 s); 60 s is 3 times the worst page load of 20 s.
 const CENSUS_STEP_MS = 60_000
 // The ceiling of one case. Measured 2026-10-27 (three runs of `vitest run --project census` beside
 // `pytest -n 8` and `npm run typecheck` in loops; load average 15 to 20 at the start of each run):
