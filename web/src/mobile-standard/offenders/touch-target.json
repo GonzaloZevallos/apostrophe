@@ -81,78 +81,6 @@
     ]
   },
   {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "button:Next month",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "button:Previous month",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:Add expense",
-    "issue": 48
-  },
-  {
-    "screen": "GastoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "link:Categories",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-target",
-    "target": "button:Next month",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-target",
-    "target": "button:Previous month",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-target",
-    "target": "link:Add expense",
-    "issue": 48
-  },
-  {
-    "screen": "GastoEditar",
-    "rule": "touch-target",
-    "target": "link:Categories",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "touch-target",
-    "target": "button:Next month",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "touch-target",
-    "target": "button:Previous month",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "touch-target",
-    "target": "link:Add expense",
-    "issue": 48
-  },
-  {
-    "screen": "Gastos",
-    "rule": "touch-target",
-    "target": "link:Categories",
-    "issue": 48
-  },
-  {
     "screen": "NuevaVentaCliente",
     "rule": "touch-target",
     "target": "button:New customer",
@@ -320,12 +248,6 @@
     "screen": "VariedadUmbral",
     "rule": "touch-target",
     "target": "switch:Warn when running low",
-    "issue": 47
-  },
-  {
-    "screen": "Variedades",
-    "rule": "touch-target",
-    "target": "link:New variety",
     "issue": 47
   },
   {

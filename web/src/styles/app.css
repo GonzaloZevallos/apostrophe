@@ -6143,3 +6143,26 @@ body {
     min-height: var(--alto-tocable);
   }
 }
+
+/* Tap targets on Varieties and Expenses (GH-319): "New variety", the Expenses "Add expense" and
+ * month arrows, and "Categories" are each at least 44 x 44 on the phone. The computer keeps
+ * its sizes (the Expenses rules at 900 px and up set their own). */
+@media (max-width: 899.98px) {
+  .variedades__nueva .boton--enlace,
+  .gastos__pie .boton--enlace {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--alto-tocable);
+  }
+
+  .gastos__cargar {
+    width: var(--alto-tocable);
+    height: var(--alto-tocable);
+  }
+
+  /* Scoped to Expenses' header: Analysis reuses the month pill and its arrows (part 2). */
+  .gastos__cabecera .gastos__mes-boton {
+    width: var(--alto-tocable);
+    height: var(--alto-tocable);
+  }
+}
