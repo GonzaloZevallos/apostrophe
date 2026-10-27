@@ -42,18 +42,6 @@
     "issue": 46
   },
   {
-    "screen": "Clientes",
-    "rule": "autocomplete",
-    "target": "textbox:Search customer",
-    "issue": 46
-  },
-  {
-    "screen": "ClientesBusqueda",
-    "rule": "autocomplete",
-    "target": "textbox:Search customer",
-    "issue": 46
-  },
-  {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "autocomplete",
     "target": "textbox:New category",
@@ -352,30 +340,6 @@
     "rule": "autocomplete",
     "target": "textbox:Note",
     "issue": 47
-  },
-  {
-    "screen": "Entrar",
-    "rule": "autocomplete",
-    "target": "textbox:Password",
-    "issue": 49
-  },
-  {
-    "screen": "Entrar",
-    "rule": "autocomplete",
-    "target": "textbox:Email address",
-    "issue": 49
-  },
-  {
-    "screen": "EntrarFreno",
-    "rule": "autocomplete",
-    "target": "textbox:Password",
-    "issue": 49
-  },
-  {
-    "screen": "EntrarFreno",
-    "rule": "autocomplete",
-    "target": "textbox:Email address",
-    "issue": 49
   },
   {
     "screen": "GastoDesdeGastos",

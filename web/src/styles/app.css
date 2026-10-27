@@ -6122,3 +6122,24 @@ body {
     overflow-wrap: anywhere;
   }
 }
+
+/* Tap targets on Home (GH-319): the business avatar is a 44 px box that still draws the
+ * 38 px disc (a transparent border the background does not paint under), and the
+ * "Owed to you" title is a full-width, 44 px tall link. Phone only: the computer hides the
+ * avatar and keeps the title as it is. */
+@media (max-width: 899.98px) {
+  .inicio__avatar {
+    box-sizing: border-box;
+    flex: none;
+    width: var(--alto-tocable);
+    height: var(--alto-tocable);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .bloque-deben__titulo {
+    display: flex;
+    align-items: center;
+    min-height: var(--alto-tocable);
+  }
+}

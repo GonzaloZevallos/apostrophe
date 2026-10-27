@@ -54,34 +54,6 @@
     "issue": 47
   },
   {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45,
-    "reason": "the business-name settings link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-target",
-    "target": "link:Owed to you",
-    "issue": 45,
-    "reason": "the \"Owed to you\" link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45,
-    "reason": "the business-name settings link measures under 44px in width or height"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-target",
-    "target": "link:Owed to you",
-    "issue": 45,
-    "reason": "the \"Owed to you\" link measures under 44px in width or height"
-  },
-  {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-target",
     "target": "radio:Light",
@@ -179,66 +151,6 @@
     "rule": "touch-target",
     "target": "link:Categories",
     "issue": 48
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-target",
-    "target": "link:Owed to you",
-    "issue": 45
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "touch-target",
-    "target": "link:Owed to you",
-    "issue": 45
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-target",
-    "target": "link:Owed to you",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-target",
-    "target": "link:Owed to you",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-target",
-    "target": "link:Owed to you",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-target",
-    "target": "link:Settings for Negocio LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 45
   },
   {
     "screen": "NuevaVentaCliente",
