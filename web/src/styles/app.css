@@ -6166,3 +6166,43 @@ body {
     height: var(--alto-tocable);
   }
 }
+
+/* Tap targets on Catalog, Settings, a variety's page and the dead reset link (GH-319): each
+ * is at least 44 x 44 on the phone. The computer keeps its sizes. */
+@media (max-width: 899.98px) {
+  .catalogo__panel > .boton--enlace,
+  .ajustes-grupo__cuerpo > .boton--enlace,
+  .auth-page__columna > .boton--enlace {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: var(--alto-tocable);
+  }
+
+  .ajustes-tema__opcion {
+    min-height: var(--alto-tocable);
+  }
+
+  /* The switch keeps its 44 x 26 look: the track is the padding box, the rest is a
+   * transparent border that still takes the tap. */
+  .interruptor {
+    height: var(--alto-tocable);
+    border-block: 9px solid transparent;
+    background-clip: padding-box;
+  }
+
+  /* A stock entry's or withdrawal's row link on a variety's page. */
+  .fila-entrada__enlace {
+    min-height: var(--alto-tocable);
+  }
+
+  /* "Your chat" and its search button: on a narrow screen the button wraps under the field
+   * so the field keeps a tappable width. */
+  .campo__fila {
+    flex-wrap: wrap;
+  }
+
+  .campo__fila > .campo__input {
+    flex: 1 1 8rem;
+  }
+}

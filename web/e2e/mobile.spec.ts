@@ -233,6 +233,27 @@ test.describe('the geometry checkers', () => {
     expect(targetsOf(found, 'input-type')).toEqual([])
   })
 
+  test('a current-password field is expected to say current-password, and a new one new-password', async ({ browser }) => {
+    const field = (label: string, autocomplete: string | null): string =>
+      `<label style="display:block">${label}
+         <input type="password" ${autocomplete === null ? '' : `autocomplete="${autocomplete}"`} style="font-size:16px;width:200px;height:48px">
+       </label>`
+    const wrongOnes = await violationsOn(
+      browser,
+      field('Current password', 'new-password') + field('New password', 'current-password') + field('Current password', null),
+    )
+    expect(targetsOf(wrongOnes, 'autocomplete')).toEqual([
+      'textbox:Current password[1]',
+      'textbox:New password',
+      'textbox:Current password[2]',
+    ])
+    const rightOnes = await violationsOn(
+      browser,
+      field('Current password', 'current-password') + field('New password', 'new-password'),
+    )
+    expect(targetsOf(rightOnes, 'autocomplete')).toEqual([])
+  })
+
   test('a page that keeps them is not reported', async ({ browser }) => {
     expect(await rulesOn(browser, CLEAN)).toEqual([])
   })
