@@ -1,9 +1,10 @@
 import '@testing-library/jest-dom/vitest'
 import { configure } from '@testing-library/react'
 import { afterEach, beforeEach } from 'vitest'
-// The app's one i18next instance, as `main.tsx` installs it: a component test renders keys
-// through it without importing it (no module under `src/` outside `i18n/` does).
-import './i18n'
+// The app's one i18next instance, installed through the i18n folder's own test helper (as
+// `main.tsx` installs it for the app): a component test renders keys
+// through it without any module outside `i18n/` importing the instance.
+import './i18n/testing'
 import { assertNoEnglishMisses, clearMissingKeys, missingKeys } from './i18n/missingKeys'
 
 // The ceiling of every `findBy*` and `waitFor`: the library's own 1000 ms only holds
