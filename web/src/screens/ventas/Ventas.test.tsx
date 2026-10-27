@@ -18,6 +18,7 @@ import Ventas from './Ventas'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { gone } from '../../components/feedback'
+import { baselineText } from '../../i18n/testing'
 
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -232,7 +233,7 @@ test('an empty period shows the empty-list text, not a blank list', async () => 
   api.mockResolvedValue(jsonResponse(200, []))
   renderVentas()
 
-  expect(await screen.findByText("You haven't recorded any sales in this period yet.")).toBeInTheDocument()
+  expect(await screen.findByText(baselineText('sales.ts:EMPTY_LIST'))).toBeInTheDocument()
 })
 
 test('a dropped network shows Sin conexión, never the empty-list text', async () => {
@@ -241,7 +242,7 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(
-    screen.queryByText("You haven't recorded any sales in this period yet."),
+    screen.queryByText(baselineText('sales.ts:EMPTY_LIST')),
   ).not.toBeInTheDocument()
 })
 

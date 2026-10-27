@@ -32,7 +32,10 @@ import customerNoPhoneFixture from '../../api/fixtures/customer-no-phone.json'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
-import { EMPTY_CUSTOMERS, NOBODY_OWES } from '../../copy/customers'
+import { baselineText } from '../../i18n/testing'
+
+const EMPTY_CUSTOMERS = baselineText('customers.ts:EMPTY_CUSTOMERS')
+const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 
 function jsonResponse(status: number, body: unknown): Response {

@@ -1,33 +1,26 @@
 /**
- * Every fixed empty or no-activity wording of the screens, listed once. The screens
- * render from here (and re-export what their tests import), and the mobile standard
- * imports `EMPTY_STATE_WORDINGS` as the list a loading screen must never show: adding a
- * key here is enough for the check to forbid it while data loads. A literal copy in a
- * screen fails `emptyStates.test.ts`. Most wordings are written in their own area's copy
- * file and only referenced here, so each value has one owner.
+ * Every fixed empty or no-activity wording of the screens. The screens resolve `EMPTY_STATE_KEYS`
+ * at render; `EMPTY_STATES` (English literals, byte-equal to `locales/en/emptyStates.json`) stays
+ * only until the mobile standard reads the wordings from a bundle, and goes with it. A literal copy
+ * in a screen fails `screens/emptyStates.test.ts`.
  */
 
-import { EMPTY_MONTH_LINE, NO_HISTORY_LINE } from './analysis.ts'
 import type { CopyKind } from './limits.ts'
-import { EMPTY_STATE_DETAIL as CATALOG_EMPTY_DETAIL, EMPTY_STATE_TITLE as CATALOG_EMPTY_TITLE } from './catalog.ts'
-import { EMPTY_CUSTOMERS, NOBODY_OWES } from './customers.ts'
-import { EMPTY_DETAIL, EMPTY_TITLE } from './inicio.ts'
-import { EMPTY_STATE_DETAIL as STOCK_EMPTY_DETAIL, EMPTY_STATE_TITLE as STOCK_EMPTY_TITLE } from './stock.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const EMPTY_STATES = {
   salesList: "You haven't recorded any sales in this period yet.",
-  customersList: EMPTY_CUSTOMERS,
-  homeNobodyOwes: NOBODY_OWES,
-  homeVarietiesTitle: EMPTY_TITLE,
-  homeVarietiesDetail: EMPTY_DETAIL,
-  stockTitle: STOCK_EMPTY_TITLE,
-  stockDetail: STOCK_EMPTY_DETAIL,
-  catalogTitle: CATALOG_EMPTY_TITLE,
-  catalogDetail: CATALOG_EMPTY_DETAIL,
-  analysisNoHistory: NO_HISTORY_LINE,
-  analysisEmptyMonth: EMPTY_MONTH_LINE,
+  customersList: 'You have not added any customers yet.',
+  homeNobodyOwes: 'Nobody owes you',
+  homeVarietiesTitle: 'Start with your varieties',
+  homeVarietiesDetail: 'Add your first variety with its price. Without a price it cannot be sold.',
+  stockTitle: 'No stock entries',
+  stockDetail: 'Enter your initial stock or a purchase',
+  catalogTitle: 'Nothing in the catalog today',
+  catalogDetail: 'Nothing to copy yet',
+  analysisNoHistory: 'There is nothing to analyze yet.',
+  analysisEmptyMonth: 'You did not sell or give away anything this month.',
 } as const
 
 /**

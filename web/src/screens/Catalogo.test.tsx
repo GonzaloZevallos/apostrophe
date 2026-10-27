@@ -19,7 +19,10 @@ import * as share from '../share'
 import Shell from '../shell/Shell'
 import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/catalog'
+import { baselineText } from '../i18n/testing'
+
+const EMPTY_STATE_TITLE = baselineText('catalog.ts:EMPTY_STATE_TITLE')
+const EMPTY_STATE_DETAIL = baselineText('catalog.ts:EMPTY_STATE_DETAIL')
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 vi.mock('../share', () => ({
