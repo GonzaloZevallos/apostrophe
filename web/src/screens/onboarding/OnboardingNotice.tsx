@@ -20,6 +20,7 @@ import SinConexion from '../../components/SinConexion'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import { STEP_COUNT, stepInfo } from './steps'
+import { useLabel } from '../../i18n/label'
 import { HOME } from '../../routes'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
 
@@ -28,6 +29,7 @@ export const NOTICE_TITLE = ONBOARDING_TEXT.goOnToTheSetup
 export default function OnboardingNotice({ progress }: { progress: OnboardingProgress }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const resolve = useLabel()
   const [failure, setFailure] = useState<'offline' | 'error' | null>(null)
   const resume = progress.resume
   const current = resume === 'finish' || resume === null ? null : resume
@@ -41,7 +43,7 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
       <span className="aviso-onboarding__conteo">{ONBOARDING_TEXT.stepsCount(progress.count, STEP_COUNT)}</span>
       <StepIndicator steps={progress.steps} current={current} />
       {current !== null && (
-        <span className="aviso-onboarding__falta">{ONBOARDING_TEXT.missing(stepInfo(current).shortName)}</span>
+        <span className="aviso-onboarding__falta">{ONBOARDING_TEXT.missing(resolve(stepInfo(current).shortName))}</span>
       )}
     </>
   )

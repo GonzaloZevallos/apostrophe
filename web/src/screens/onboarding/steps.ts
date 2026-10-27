@@ -15,83 +15,89 @@ import {
   ONBOARDING_VARIETY,
 } from '../../routes'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
-import { COMMON_TEXT } from '../../copy/common'
+import type { CopyKey } from '../../i18n/resources.generated'
+import type { Label } from '../../i18n/label'
 import { STEP_STOCK_ENTRY } from '../../copy/inicio'
 
 export interface StepInfo {
   slug: StepSlug
   path: string
   required: boolean
-  title: string
+  /** A key where the shared words own the text, the step's own text otherwise. */
+  title: Label
+  /** Stays a plain string (ONBOARDING_TEXT) until the onboarding area moves it to a key. */
   why: string
   /** How the notice names it after "Falta:". */
-  shortName: string
-  /** How "Listo" names it. */
-  name: string
+  shortName: Label
+  /** How "Listo" names it: a key, resolved on every render. */
+  nameKey: CopyKey
   /** Where a skipped step is done later: "Configuración → <group>". */
-  later: string
+  later: Label
 }
+
+const key = (value: CopyKey): Label => ({ kind: 'key', key: value })
+const text = (value: string): Label => ({ kind: 'text', text: value })
 
 export const STEPS: readonly StepInfo[] = [
   {
     slug: 'variety',
     path: ONBOARDING_VARIETY,
     required: true,
-    title: ONBOARDING_TEXT.addYourFirstVariety,
+    title: text(ONBOARDING_TEXT.addYourFirstVariety),
     why: ONBOARDING_TEXT.toSellEachVarietyNeeds,
-    shortName: ONBOARDING_TEXT.varietyWithPriceLower,
-    name: COMMON_TEXT.varietyWithPrice,
-    later: COMMON_TEXT.varieties,
+    shortName: text(ONBOARDING_TEXT.varietyWithPriceLower),
+    nameKey: 'common:varietyWithPrice',
+    later: key('common:varieties'),
   },
   {
     slug: 'stock',
     path: ONBOARDING_STOCK,
     required: true,
-    title: STEP_STOCK_ENTRY,
+    title: text(STEP_STOCK_ENTRY),
     why: ONBOARDING_TEXT.withoutStockItCannotBeSold,
-    shortName: ONBOARDING_TEXT.initialStockLower,
-    name: COMMON_TEXT.initialStock,
-    later: COMMON_TEXT.varieties,
+    shortName: text(ONBOARDING_TEXT.initialStockLower),
+    nameKey: 'common:initialStock',
+    later: key('common:varieties'),
   },
   {
     slug: 'header_footer',
     path: ONBOARDING_CATALOG_MESSAGE,
     required: false,
-    title: ONBOARDING_TEXT.howYourCatalogLooks,
+    title: text(ONBOARDING_TEXT.howYourCatalogLooks),
     why: ONBOARDING_TEXT.headerAndFooterGoOnEveryCatalog,
-    shortName: ONBOARDING_TEXT.catalogMessageLower,
-    name: COMMON_TEXT.catalogMessage,
-    later: ONBOARDING_TEXT.settingsCatalogMessage,
+    shortName: text(ONBOARDING_TEXT.catalogMessageLower),
+    nameKey: 'common:catalogMessage',
+    later: text(ONBOARDING_TEXT.settingsCatalogMessage),
   },
   {
     slug: 'bot',
     path: ONBOARDING_BOT,
     required: false,
-    title: ONBOARDING_TEXT.connectYourTelegramBot,
+    title: text(ONBOARDING_TEXT.connectYourTelegramBot),
     why: ONBOARDING_TEXT.withTheBot,
-    shortName: COMMON_TEXT.telegramBot,
-    name: COMMON_TEXT.telegramBot,
-    later: ONBOARDING_TEXT.settingsIntegrations,
+    shortName: key('common:telegramBot'),
+    nameKey: 'common:telegramBot',
+    later: text(ONBOARDING_TEXT.settingsIntegrations),
   },
   {
     slug: 'partner',
     path: ONBOARDING_PARTNER,
     required: false,
-    title: ONBOARDING_TEXT.sendTheLinkToYourPartner,
+    title: text(ONBOARDING_TEXT.sendTheLinkToYourPartner),
     why: ONBOARDING_TEXT.withTheLinkYourPartner,
-    shortName: ONBOARDING_TEXT.partnerLower,
-    name: COMMON_TEXT.partner,
-    later: ONBOARDING_TEXT.settingsUsers,
+    shortName: text(ONBOARDING_TEXT.partnerLower),
+    nameKey: 'common:partner',
+    later: text(ONBOARDING_TEXT.settingsUsers),
   },
   {
     slug: 'categories',
     path: ONBOARDING_CATEGORIES,
     required: false,
-    title: COMMON_TEXT.expenseCategories,
+    title: key('common:expenseCategories'),
     why: ONBOARDING_TEXT.theyOrganiseWhatYouSpend,
-    shortName: ONBOARDING_TEXT.expenseCategoriesLower,
-    name: COMMON_TEXT.expenseCategories,
-    later: ONBOARDING_TEXT.settingsExpenseCategories,
+    shortName: text(ONBOARDING_TEXT.expenseCategoriesLower),
+    nameKey: 'common:expenseCategories',
+    later: text(ONBOARDING_TEXT.settingsExpenseCategories),
   },
 ]
 
@@ -127,6 +133,6 @@ export function previousPath(slug: StepSlug): string | undefined {
 }
 
 /** The sentence under a skippable step's buttons, saying where it can be done later. */
-export function laterHint(info: StepInfo): string {
-  return ONBOARDING_TEXT.ifYouSkipIt(info.later)
+export function laterHint(info: StepInfo, resolve: (label: Label) => string): string {
+  return ONBOARDING_TEXT.ifYouSkipIt(resolve(info.later))
 }

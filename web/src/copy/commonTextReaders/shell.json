@@ -5,11 +5,9 @@
   "web/src/mobile-standard/statesGettingIn.ts",
   "web/src/mobile-standard/statesRecords.ts",
   "web/src/mobile-standard/statesSales.ts",
-  "web/src/screens/onboarding/steps.ts",
   "web/src/screens/originLabel.ts",
   "web/src/screens/priceDeleteNotice.ts",
   "web/src/shell/BackArrow.tsx",
   "web/src/shell/GatedLayout.test.tsx",
-  "web/src/shell/Shell.tsx",
-  "web/src/stock/detail.ts"
+  "web/src/shell/Shell.tsx"
 ]
