@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -35,14 +35,14 @@ const PAGES: Record<string, string> = {
      <div class="barra" style="position:fixed;bottom:0;left:0;right:0;height:60px"></div>`,
   ),
   // A layer over a document taller than the screen: the shot never grows it, the census does, and
-  // the page is calm at the shot's height and never calm once the census has grown it.
+  // the page is calm at the shot's height and never calm once the census has grown it. The timer is
+  // installed at load and reads `innerHeight` on each tick, so the page does not depend on when the
+  // browser delivers a `resize` event (on GitHub's runner it came after the settle's calm frames).
   'r': page(
     `<div style="height:2000px">Nueva venta</div>
      <div class="capa" style="position:fixed;inset:0;background:#fff"></div>
-     <script>addEventListener('resize', () => {
-       let ticks = 0
-       if (innerHeight > 1500) setInterval(() => { document.body.dataset.t = String((ticks += 1)) }, 5)
-     })</script>`,
+     <script>let ticks = 0
+     setInterval(() => { if (innerHeight > 1500) document.body.dataset.t = String((ticks += 1)) }, 5)</script>`,
   ),
   'j': page(
     `<div class="fondo">Nueva venta</div>
@@ -108,7 +108,11 @@ async function run(name: string, only: string, extra: string[]): Promise<Run> {
   child.stdout.on('data', (chunk: Buffer) => (output += chunk.toString()))
   child.stderr.on('data', (chunk: Buffer) => (output += chunk.toString()))
   const status = await new Promise<number>((done) => child.on('close', (code) => done(code ?? -1)))
-  return { entries: JSON.parse(readFileSync(join(out, 'index.json'), 'utf-8')), status, output }
+  const index = join(out, 'index.json')
+  // A child that died before writing the index (a missing browser, say) fails with its own exit
+  // status and output, not with an ENOENT on a file it never wrote.
+  if (!existsSync(index)) throw new Error(`comparisons.mjs exited with status ${status} and wrote no index.json:\n${output}`)
+  return { entries: JSON.parse(readFileSync(index, 'utf-8')), status, output }
 }
 
 describe('comparisons.mjs --census', () => {
@@ -133,6 +137,8 @@ describe('comparisons.mjs --census', () => {
     expect(fill).toMatchObject({ ordinal: 0, before: { height: 844 }, same_node: true, pantalla: false })
     expect(built?.sizes_changed?.find((entry) => entry.path === 'div.pantalla')).toMatchObject({ pantalla: true })
     expect(fill).toMatchObject({ query_900: 'n/a' })
+    const document = built?.document as { scroll_height: number } | undefined
+    expect(fill?.after).toMatchObject({ height: document?.scroll_height })
     expect(built?.sizes_changed?.some((entry) => entry.path === 'div.barra')).toBe(false)
 
     const covered = layer.census?.built
@@ -151,6 +157,8 @@ describe('comparisons.mjs --census', () => {
   it('keeps the entry keys and both PNGs the same as without it', async () => {
     const on = await run('same-on', 'NegocioNuevo', ['--census'])
     const off = await run('same-off', 'NegocioNuevo', [])
+    expect(on.status, on.output).toBe(0)
+    expect(off.status, off.output).toBe(0)
     expect(Object.keys(off.entries[0] as Entry)).toEqual(['screen', 'file', 'notes', 'design', 'built'])
     expect(off.entries[0]?.census).toBeUndefined()
     const bytes = (path: string | null): Buffer => readFileSync(path as string)

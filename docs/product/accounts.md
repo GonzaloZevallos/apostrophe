@@ -486,6 +486,12 @@ These groups of Settings (navigation.md) replace the former Business screen, whi
 - **Users**:
   - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
   - "Invite a partner": each tap creates one fresh join link, to copy or share with the phone's share sheet.
+  - **Sharing the join link** follows the same outcome rule as the catalog's Share (catalog.md):
+    - success, or closing the share sheet without sending, shows nothing and changes nothing;
+    - a share sheet waiting to finish never holds the screen: "Invite a partner", sharing again and copying the link are never disabled or held busy by it, and a share that never finishes counts as closing the sheet, with no time limit;
+    - a real failure, a refused second share included, shows the screen's existing fixed failure message and leaves copying the link available; no new message is added;
+    - only the latest share's outcome shows; an earlier one that finishes late shows nothing;
+    - nothing is copied on its own, and no message carries the link.
 - **Appearance**: Light and Dark, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Close" always closes at once.
 - **Your account**:
   - "Change password", above "Sign out", opens a sheet:
@@ -569,6 +575,13 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 ## Metrics
 
 - **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a new-business invitation, renames the business from Settings → Business, creates a join link from Users and accepts it as a second user.
+- **Sharing the join link**: with a stubbed share sheet, in Settings → Users, 100% passing:
+  - a resolve and a cancel show nothing;
+  - a forced failure shows the existing failure message and leaves copying the link;
+  - a share that never settles shows nothing and leaves "Invite a partner", sharing and copying usable, and a second share calls the share sheet again;
+  - a refused second share shows the existing failure message;
+  - an earlier share settling after a newer one shows nothing;
+  - nothing is written to the clipboard by sharing, and no message carries the link.
 - **Isolation (criteria 1, 6)**:
   - the business routes sit in the isolation sweep and the gated-route test;
   - serving tests prove no path reaches outside `web/dist`;
@@ -712,6 +725,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - Braking the reset routes or the invitation routes.
 - The reset command reporting earlier or retired links.
 - Listing past or pending invitations; revoking an invitation.
+- A time limit on sharing the join link, or copying it on its own when sharing fails or does not finish.
 - Exporting a business without removing it (a backup of an active one).
 - Importing an export back.
 - Removing a business from the app.

@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -201,32 +202,51 @@ def _run_module(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _assert_link_valid_until(stdout: str, link: str, expiry: datetime, started: float) -> None:
+    """The child's anchored clock keeps advancing from the offset the test read at `started`
+    (`time.monotonic()`), so its printed expiry is `expiry` plus at most the time the test has
+    run since, however slow a busy machine made the children."""
+    printed = re.fullmatch(rf"{link}\nValid once, until (\S+ \S+) UTC\.\n", stdout)
+    assert printed, stdout
+    until = datetime.strptime(printed[1], "%Y-%m-%d %H:%M").replace(tzinfo=UTC)
+    elapsed = timedelta(seconds=time.monotonic() - started + 1)
+    assert expiry <= until <= expiry + elapsed
+
+
 def test_module_execution_prints_only_the_offset_integer(e2e_environment: None) -> None:
+    # The child reads the clock somewhere between these two reads, however long an
+    # interpreter takes to start on a busy machine, and the offset only falls as time goes.
+    before = offset_seconds()
     run = _run_module("offset")
+    after = offset_seconds()
 
     assert run.returncode == 0, run.stderr
     assert re.fullmatch(r"-?\d+\n", run.stdout)
-    assert abs(int(run.stdout) - offset_seconds()) <= 5
+    assert after <= int(run.stdout) <= before
     assert run.stderr == ""
 
 
 def test_module_execution_invites_a_business_on_the_anchored_clock(
     e2e_environment: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    started = time.monotonic()
     monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
 
     run = _run_module("invite-business")
 
     assert run.returncode == 0, run.stderr
-    assert re.fullmatch(
-        r"http://localhost:9/invitation/\S+\nValid once, until 2026-10-14 15:00 UTC\.\n",
+    _assert_link_valid_until(
         run.stdout,
+        r"http://localhost:9/invitation/\S+",
+        datetime(2026, 10, 14, 15, 0, tzinfo=UTC),
+        started,
     )
 
 
 def test_module_execution_issues_a_reset_link_a_day_after_the_anchor(
     e2e_environment: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    started = time.monotonic()
     monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
     token = _run_module("invite-business").stdout.splitlines()[0].rsplit("/", 1)[1]
     with TestClient(create_e2e_app()) as client:
@@ -239,8 +259,11 @@ def test_module_execution_issues_a_reset_link_a_day_after_the_anchor(
     run = _run_module("reset-password", "reset@example.com")
 
     assert run.returncode == 0, run.stderr
-    assert re.fullmatch(
-        r"http://localhost:9/reset/\S+\nValid once, until 2026-10-08 15:00 UTC\.\n", run.stdout
+    _assert_link_valid_until(
+        run.stdout,
+        r"http://localhost:9/reset/\S+",
+        datetime(2026, 10, 8, 15, 0, tzinfo=UTC),
+        started,
     )
 
 

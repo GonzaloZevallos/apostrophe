@@ -20,6 +20,9 @@ const API_SEGMENTS = [
   'openapi.json',
 ]
 
+const CENSUS = 'src/design/census.test.ts'
+const CONFIG_EXCLUDE = ['**/node_modules/**', 'e2e/**']
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -44,11 +47,22 @@ export default defineConfig({
     // `web/e2e/` is Playwright's own suite (`playwright.config.ts`'s `testDir`),
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.
-    exclude: ['**/node_modules/**', 'e2e/**'],
+    exclude: CONFIG_EXCLUDE,
     // Vitest turns every `.css` import into an empty module, `?raw` ones included, so
     // the architecture tests that read stylesheets as text (`import.meta.glob(...,
     // { query: '?raw' })`) saw '' and passed on nothing. Only `?raw` loads are let
     // through; component imports of CSS stay empty.
     css: { include: [/styles\/tokens\.css/, /[?&]raw(?:&|$)/] },
+    // The census test drives real browsers, and the script it runs bounds every browser step by
+    // wall-clock time (8 s a step, 30 s for the network). Run beside ~15 jsdom workers it is
+    // slowed 4 to 6 times and a step misses its bound, so it is a project of its own, in a later
+    // group: it starts when the other files are done and has the CPU to itself. Measured: one
+    // design page load, starved of CPU, takes 8 to 20 s (document, stylesheet, then the lazy font
+    // files, each seconds apart), so no request hangs and the bounds are only a measure of load.
+    // Everything else (the 40 s ceiling above included) is inherited unchanged.
+    projects: [
+      { extends: true, test: { name: 'unit', exclude: [...CONFIG_EXCLUDE, CENSUS] } },
+      { extends: true, test: { name: 'census', include: [CENSUS], sequence: { groupOrder: 1 } } },
+    ],
   },
 })

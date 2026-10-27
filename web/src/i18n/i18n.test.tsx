@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n, { installLocale } from '.'
 import { clearMissingKeys, missingKeys } from './missingKeys'
+import { productionOptions } from './options'
 import { addFixtureNamespace, looseT, removeFixtureNamespace } from './testing'
 import fixture from './__fixtures__/locales/en/fixture.json'
 
@@ -34,6 +35,11 @@ describe('the i18n instance', () => {
     expect(i18n.options.react?.useSuspense).toBe(false)
     expect(i18n.options.fallbackLng).toEqual(['en'])
     expect(i18n.isInitialized).toBe(true)
+  })
+
+  it('runs on the shared production options', () => {
+    // i18next keeps `fallbackLng` as a list once initialised; every other option is as given.
+    expect(i18n.options).toMatchObject({ ...productionOptions, fallbackLng: [productionOptions.fallbackLng] })
   })
 
   it('records a missing key as language, namespace and key only', () => {

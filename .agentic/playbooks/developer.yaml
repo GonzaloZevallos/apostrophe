@@ -1,0 +1,84 @@
+items:
+- id: developer-1
+  lesson: Never edit an existing test that is not exempt to fit new behaviour. Restore it, or record the invariant as unsatisfiable with the command and the failing output of the unedited test on your head.
+  category: plan-invariant
+  since: f5074093
+  seen_in:
+  - GH-135
+  - GH-219
+  - GH-224
+  - GH-271
+  - GH-53
+  - GH-274
+  - GH-278
+  - GH-279
+  added_at: '2026-10-26T04:00:21.291+00:00'
+  last_applied: '2026-10-26T04:32:56.270+00:00'
+- id: developer-2
+  lesson: Never edit an enforcement checker or its allowlist outside your declared seams to turn a check green. Change your own code so the check passes unchanged, or record the limit under Decisions and leave the checker alone.
+  category: standard-seams
+  since: a0ede625
+  seen_in:
+  - GH-45
+  added_at: '2026-10-26T04:16:29.703+00:00'
+  last_applied: '2026-10-26T04:16:29.703+00:00'
+- id: developer-3
+  lesson: Open and view every comparison image the task requires, one per screen, before delivering, and record what you saw for each; never deliver with screens unviewed.
+  category: standard-other
+  since: 7a4a6735
+  seen_in:
+  - GH-271
+  added_at: '2026-10-26T04:24:18.086+00:00'
+  last_applied: '2026-10-26T04:24:18.086+00:00'
+- id: developer-4
+  lesson: Before delivering, tick off every evidence item the brief lists. Do not ship with items under 'Not done' or 'Not viewed'; do them, or escalate the item that cannot be done.
+  category: spec-scope
+  since: 6b222b17
+  seen_in:
+  - GH-273
+  - GH-53
+  - GH-274
+  - GH-276
+  - GH-278
+  - GH-279
+  - GH-303
+  - GH-333
+  - GH-363
+  added_at: '2026-10-26T04:29:54.986+00:00'
+  last_applied: '2026-10-26T04:50:52.469+00:00'
+- id: developer-5
+  lesson: When you change a value other code reads (shared copy, labels, dates), grep every test that reads it (sister unit tests, e2e specs, phone cells) and fix each lookup before delivering. Run the unit tests you touched; do not run the e2e suite by hand, the gate and CI run it.
+  category: process-suite-red
+  since: 2fa58829
+  seen_in:
+  - GH-53
+  - GH-274
+  - GH-279
+  added_at: '2026-10-26T04:29:54.986+00:00'
+  last_applied: '2026-10-26T04:32:56.270+00:00'
+- id: developer-6
+  lesson: For every guard or refusal you add, write a test at its declared seam that feeds it an input it must reject and asserts the specific refusal text, not a generic prefix.
+  category: spec-missing-test
+  since: 2e64819f
+  seen_in:
+  - GH-274
+  - GH-345
+  - GH-338
+  added_at: '2026-10-26T04:29:54.986+00:00'
+  last_applied: '2026-10-26T04:44:18.575+00:00'
+- id: developer-7
+  lesson: In every test you write, find elements by role, accessible name or visible text, never by CSS class. Before delivering, grep your diff for class selectors in unit and e2e tests and replace each one.
+  category: plan-invariant
+  since: 523dce35
+  seen_in:
+  - GH-281
+  added_at: '2026-10-26T04:32:56.270+00:00'
+  last_applied: '2026-10-26T04:32:56.270+00:00'
+- id: developer-8
+  lesson: 'Never add noqa, type: ignore or any silencing directive. Fix the cause, or record the limit under Decisions. Before delivering, grep your diff and the code for noqa and type: ignore, and remove any you find.'
+  category: standard-typing-silenced
+  since: aa68cf9c
+  seen_in:
+  - GH-346
+  added_at: '2026-10-26T04:50:52.469+00:00'
+  last_applied: '2026-10-26T04:50:52.469+00:00'
