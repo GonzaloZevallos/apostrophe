@@ -1,0 +1,13 @@
+[
+  "web/src/screens/clientes/ClienteFicha.test.tsx",
+  "web/src/screens/clientes/ClienteFicha.tsx",
+  "web/src/screens/clientes/ClienteFila.tsx",
+  "web/src/screens/clientes/ClienteForm.tsx",
+  "web/src/screens/clientes/Clientes.test.tsx",
+  "web/src/screens/clientes/Clientes.tsx",
+  "web/src/screens/clientes/Cobro.tsx",
+  "web/src/screens/clientes/CobroRoute.tsx",
+  "web/src/screens/clientes/CustomerFields.tsx",
+  "web/src/screens/clientes/TeDeben.test.tsx",
+  "web/src/screens/clientes/TeDeben.tsx"
+]
