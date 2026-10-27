@@ -19,6 +19,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import SALE from '../../api/fixtures/sale-detail.json'
+import Notice from '../../components/Notice'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import VentaDetalle from './VentaDetalle'
@@ -32,9 +33,7 @@ function VentasProbe() {
   return (
     <span>
       lista de ventas
-      {feedback !== null && (
-        <span>{feedback.kind === 'notice' ? 'That is gone. The list is up to date.' : feedback.message}</span>
-      )}
+      {feedback !== null && <Notice {...feedback} />}
     </span>
   )
 }

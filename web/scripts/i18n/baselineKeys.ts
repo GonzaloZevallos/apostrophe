@@ -1,7 +1,8 @@
 /**
  * The keyed baseline check. When a copy text moves to a locale key, its entry of
  * `src/copy/en.baseline.json` stays and a mapping in `src/copy/baselineKeys/<ns>.json` says
- * where it went: `{ "<baseline source>": { "key": "ns:path", "params"?: ["name", …] } }`.
+ * where it went: `{ "<baseline source>": { "key": "ns:path", "params"?: ["name", …], "fill"?: {"name": "text"} } }`.
+ * `fill` is for a fragment (a baseline entry with no args) whose key holds placeholders.
  *
  * - Every `(source, args)` row of a mapped source renders `args[i]` into `params[i]` and must
  *   equal its baseline `text` in `en` (`mappingProblems`).
@@ -23,6 +24,9 @@ import { collectEntries, renderEntry, type Entry, type Modules } from './baselin
 export interface Mapping {
   key: string
   params?: string[]
+  /** The placeholders of a fragment (a baseline text with no args): name to the text it is
+   * filled with, so `Back to ` is proved equal to `Back to {{parent}}` filled with an empty text. */
+  fill?: Record<string, string>
 }
 
 /** The mappings of one `baselineKeys/<ns>.json`, by baseline source. */
@@ -47,10 +51,21 @@ export function parseMappings(file: string, raw: string): MappingFile {
   for (const [source, item] of Object.entries(parsed)) {
     if (!isRecord(item) || typeof item['key'] !== 'string') throw new Error(`${file}: ${source} is not {key, params?}`)
     const params = item['params']
-    if (params === undefined) mappings[source] = { key: item['key'] }
-    else if (Array.isArray(params) && params.every((param) => typeof param === 'string')) {
-      mappings[source] = { key: item['key'], params: params.map(String) }
-    } else throw new Error(`${file}: ${source} params is not a list of names`)
+    const fill = item['fill']
+    const mapping: Mapping = { key: item['key'] }
+    if (params !== undefined) {
+      if (!Array.isArray(params) || !params.every((param) => typeof param === 'string')) {
+        throw new Error(`${file}: ${source} params is not a list of names`)
+      }
+      mapping.params = params.map(String)
+    }
+    if (fill !== undefined) {
+      if (!isRecord(fill) || !Object.values(fill).every((text) => typeof text === 'string')) {
+        throw new Error(`${file}: ${source} fill is not a record of texts`)
+      }
+      mapping.fill = Object.fromEntries(Object.entries(fill).map(([name, text]) => [name, String(text)]))
+    }
+    mappings[source] = mapping
   }
   return { file, mappings }
 }
@@ -80,15 +95,21 @@ export function mappedRows(files: readonly MappingFile[], committed: readonly En
   const rows: MappedRow[] = []
   const problems: string[] = []
   for (const { mappings } of files) {
-    for (const [source, { key, params }] of Object.entries(mappings)) {
+    for (const [source, { key, params, fill }] of Object.entries(mappings)) {
       const entries = rowsOf(committed, source)
       if (entries.length === 0) {
         problems.push(`${source}: not in the baseline`)
         continue
       }
       if (entries.every((entry) => entry.args === null)) {
+        const unknown = Object.keys(fill ?? {}).filter((name) => PLACEHOLDERS[name] === undefined)
+        for (const name of unknown) problems.push(`${source}: the fill ${name} is not in PLACEHOLDERS`)
         if (params !== undefined) problems.push(`${source}: params on a key with no args`)
-        else entries.forEach((entry, index) => rows.push({ source, index, key, args: {}, text: entry.text }))
+        else if (unknown.length === 0) entries.forEach((entry, index) => rows.push({ source, index, key, args: fill ?? {}, text: entry.text }))
+        continue
+      }
+      if (fill !== undefined) {
+        problems.push(`${source}: fill on a key with args`)
         continue
       }
       const names = params ?? []
