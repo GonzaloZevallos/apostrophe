@@ -38,7 +38,6 @@ const EMPTY_CUSTOMERS = baselineText('customers.ts:EMPTY_CUSTOMERS')
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 
-
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,

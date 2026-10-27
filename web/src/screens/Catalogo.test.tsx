@@ -21,7 +21,6 @@ import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
 import { baselineText } from '../i18n/testing'
 
-
 const EMPTY_STATE_TITLE = baselineText('catalog.ts:EMPTY_STATE_TITLE')
 const EMPTY_STATE_DETAIL = baselineText('catalog.ts:EMPTY_STATE_DETAIL')
 
