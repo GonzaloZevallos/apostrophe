@@ -45,18 +45,6 @@
     "issue": 47
   },
   {
-    "screen": "EstadosGoneAviso",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 49
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 49
-  },
-  {
     "screen": "GastoConfirmarBorrado",
     "rule": "h-scroll",
     "target": "",
@@ -76,74 +64,6 @@
   },
   {
     "screen": "Inicio",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ],
-    "reason": "the page scrolls sideways: its scroll width is wider than the viewport"
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ],
-    "reason": "the page scrolls sideways: its scroll width is wider than the viewport"
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 45,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioPrimeraVez",
     "rule": "h-scroll",
     "target": "",
     "issue": 45,
@@ -182,17 +102,5 @@
     "rule": "h-scroll",
     "target": "",
     "issue": 47
-  },
-  {
-    "screen": "Ventas",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 78
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "h-scroll",
-    "target": "",
-    "issue": 78
   }
 ]

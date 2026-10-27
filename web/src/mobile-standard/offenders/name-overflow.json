@@ -54,50 +54,6 @@
     "issue": 47
   },
   {
-    "screen": "EstadosGoneAviso",
-    "rule": "name-overflow",
-    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 49,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
-    "issue": 49,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "name-overflow",
-    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 49,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
-    "issue": 49,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
     "screen": "GastoConfirmarBorrado",
     "rule": "name-overflow",
     "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
@@ -189,50 +145,6 @@
       "375x812",
       "430x932"
     ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45,
-    "reason": "the business name, a word of 30 characters or more, is not cut with an ellipsis and runs wider than the viewport or its container"
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45,
-    "reason": "the business name, a word of 30 characters or more, is not cut with an ellipsis and runs wider than the viewport or its container"
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "name-overflow",
-    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 45
   },
   {
     "screen": "Invitacion",
@@ -286,55 +198,6 @@
     "screen": "VentaAsignarCliente",
     "rule": "name-overflow",
     "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 78,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "Ventas",
-    "rule": "name-overflow",
-    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 78,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "Ventas",
-    "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
-    "issue": 78,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "name-overflow",
-    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
-    "issue": 78,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "name-overflow",
-    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
-    "issue": 78,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
+    "issue": 78
   }
 ]

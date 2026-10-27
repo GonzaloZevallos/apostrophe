@@ -105,11 +105,18 @@
     "screen": "VentaAsignarCliente",
     "rule": "contrast",
     "target": "textbox:Search::placeholder",
-    "issue": 78,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "contrast",
+    "target": "textbox:Line # special price::placeholder",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "contrast",
+    "target": "textbox:Date",
+    "issue": 78
   }
 ]

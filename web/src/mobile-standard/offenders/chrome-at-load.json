@@ -60,18 +60,6 @@
     "issue": 48
   },
   {
-    "screen": "EstadosSinConexion",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 49
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "chrome-at-load",
-    "target": "link:New sale",
-    "issue": 49
-  },
-  {
     "screen": "EntradasTodas",
     "rule": "chrome-at-load",
     "target": "navigation:Navigation",
@@ -83,7 +71,9 @@
     "target": "navigation:Navigation",
     "issue": 45,
     "sizes": [
-      "375x812"
+      "320x568",
+      "375x812",
+      "246x437"
     ]
   },
   {
@@ -92,24 +82,8 @@
     "target": "link:New sale",
     "issue": 45,
     "sizes": [
-      "375x812"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "chrome-at-load",
-    "target": "navigation:Navigation",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "chrome-at-load",
-    "target": "link:New sale",
-    "issue": 49,
-    "sizes": [
+      "320x568",
+      "375x812",
       "246x437"
     ]
   }

@@ -827,7 +827,8 @@
     "target": "button:New customer",
     "issue": 78,
     "sizes": [
-      "320x568"
+      "320x568",
+      "246x437"
     ]
   },
   {
@@ -934,6 +935,309 @@
     "rule": "touch-target",
     "target": "link:More",
     "issue": 46,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "reason": "the bottom bar link \"Home\" measures under 44px in width or height",
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "reason": "the bottom bar link \"More\" measures under 44px in width or height",
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioHoy",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "reason": "the bottom bar link \"More\" measures under 44px in width or height",
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "reason": "the bottom bar link \"Sales\" measures under 44px in width or height",
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-target",
+    "target": "link:More",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioImportado",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "reason": "the bottom bar link \"Sales\" measures under 44px in width or height",
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioChecklist",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 45,
+    "reason": "the bottom bar link \"Home\" measures under 44px in width or height",
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "touch-target",
+    "target": "link:Home",
+    "issue": 49,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "rule": "touch-target",
+    "target": "link:Sales",
+    "issue": 45,
     "sizes": [
       "246x437"
     ]

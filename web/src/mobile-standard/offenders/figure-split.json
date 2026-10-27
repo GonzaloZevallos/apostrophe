@@ -89,46 +89,6 @@
     ]
   },
   {
-    "screen": "EstadosGoneAviso",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosGoneAviso",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 49,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#",
-    "issue": 49,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "EstadosSinConexion",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 49,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
-    ]
-  },
-  {
     "screen": "GastoConfirmarBorrado",
     "rule": "figure-split",
     "target": "span:$ #.#.#.#[1]",
@@ -163,21 +123,6 @@
     "rule": "figure-split",
     "target": "span:$ #.#.#.#[2]",
     "issue": 48
-  },
-  {
-    "screen": "Inicio",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Inicio",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 45
   },
   {
     "screen": "Inicio",
@@ -189,100 +134,6 @@
     "screen": "Inicio",
     "rule": "figure-split",
     "target": "span:−$ #.#.#.#[2]",
-    "issue": 45
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ],
-    "reason": "the figure \"$ #.#\" breaks over more than one line"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 45,
-    "reason": "the figure \"$ #.#.#.#\" breaks over more than one line"
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ],
-    "reason": "the figure \"$ #.#\" breaks over more than one line"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 45,
-    "reason": "the figure \"$ #.#.#.#\" breaks over more than one line"
-  },
-  {
-    "screen": "InicioHoy",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "figure-split",
-    "target": "span:$ #.#",
-    "issue": 45,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
     "issue": 45
   },
   {
@@ -376,36 +227,6 @@
     ]
   },
   {
-    "screen": "Ventas",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "Ventas",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 78
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentasFechas",
-    "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
-    "issue": 78
-  },
-  {
     "screen": "VerTodas",
     "rule": "figure-split",
     "target": "span:$ #.#",
@@ -419,6 +240,15 @@
     "rule": "figure-split",
     "target": "span:Delete the payment of $ #.# (cash) from #/#?",
     "issue": 46,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "NuevaVentaConLineaYPago",
+    "rule": "figure-split",
+    "target": "span:$ #.#",
+    "issue": 78,
     "sizes": [
       "246x437"
     ]
