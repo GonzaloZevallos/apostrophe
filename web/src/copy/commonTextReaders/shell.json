@@ -5,7 +5,6 @@
   "web/src/mobile-standard/statesGettingIn.ts",
   "web/src/mobile-standard/statesRecords.ts",
   "web/src/mobile-standard/statesSales.ts",
-  "web/src/routes.ts",
   "web/src/screens/onboarding/steps.ts",
   "web/src/screens/originLabel.ts",
   "web/src/screens/priceDeleteNotice.ts",

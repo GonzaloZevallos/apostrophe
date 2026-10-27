@@ -22,6 +22,7 @@
 
 import { Fragment, useCallback, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
 import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import type { Me } from '../api/me'
@@ -51,7 +52,6 @@ import { chromeOf } from './chrome'
 import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useViewport } from './useViewport'
-import { SHELL_TEXT } from '../copy/shell'
 import { COMMON_TEXT } from '../copy/common'
 
 type Placement = 'bar' | 'rail' | 'both'
@@ -157,6 +157,7 @@ function useNuevaVentaMissing(enabled: boolean): boolean {
 }
 
 export default function Shell() {
+  const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const leaf = leafScreen(useMatches())
   const barPlace = placeOf(leaf.id, 'phone').bar
@@ -171,7 +172,7 @@ export default function Shell() {
     <BackParentContext.Provider value={backParent}>
     <div className="disposicion">
       {chrome.rail && (
-        <nav className="riel-lateral" aria-label={SHELL_TEXT.navigation} data-menu>
+        <nav className="riel-lateral" aria-label={t('shell:navigation')} data-menu>
           {chrome.railNuevaVenta && (
             <>
               <BotonLink
@@ -240,7 +241,7 @@ export default function Shell() {
             </>
           )}
           {chrome.bar && (
-            <nav className="bar-inferior" aria-label={SHELL_TEXT.navigation} data-menu>
+            <nav className="bar-inferior" aria-label={t('shell:navigation')} data-menu>
               {BAR_ITEMS.map((item) => (
                 <BarItem key={item.to} item={item} active={barPlace === item.place} />
               ))}

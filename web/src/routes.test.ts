@@ -7,6 +7,10 @@ import { describe, expect, test } from "vitest";
 import screensJson from "../../scripts/design/screens.json";
 import { router } from "./router";
 import { consumePaymentReturn, peekPaymentReturn } from "./paymentReturn";
+import { SHELL_TEXT } from "./copy/shell";
+import { INTEGRATIONS_LINK_WORD } from "./copy/pinnedCatalog";
+import { englishBundle } from "./i18n/resources";
+import { resolveKey } from "./i18n/resolve";
 import * as routes from "./routes";
 import {
   isPublicPath,
@@ -133,7 +137,7 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
       expect(parent).toEqual({
         id: parentId,
         path: declared?.path,
-        title: declared?.title,
+        titleKey: declared?.titleKey,
       });
     }
     expect(placeOf(id, viewport)).toEqual(expected.place);
@@ -161,11 +165,11 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
 
   test("the label and the back fallback are one result: Configuración says Más on the phone, Inicio on a computer", () => {
     expect(parentOf("settings", "phone")).toMatchObject({
-      title: "More",
+      titleKey: "common:more",
       path: routes.MORE,
     });
     expect(parentOf("settings", "computer")).toMatchObject({
-      title: "Home",
+      titleKey: "common:home",
       path: routes.HOME,
     });
   });
@@ -179,12 +183,12 @@ describe("the screens that are a modal on a computer", () => {
 });
 
 describe("the new stock entry form's parent", () => {
-  const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", title: "Varieties" };
+  const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", titleKey: "common:varieties" };
 
   test("is Variedades, and editing an entry keeps Todas las entradas", () => {
     expect(parentOf("stock-entry-new", "phone")).toEqual(VARIEDADES);
     expect(parentOf("stock-entry-new", "computer")).toEqual(VARIEDADES);
-    expect(parentOf("stock-entry", "phone")).toEqual({ id: "stock", path: "/varieties/entries", title: "All entries" });
+    expect(parentOf("stock-entry", "phone")).toEqual({ id: "stock", path: "/varieties/entries", titleKey: "common:allEntries" });
   });
 });
 
@@ -585,7 +589,7 @@ describe("screens.json against the English routes", () => {
   test("/varieties/entries shows today's entries list, as a card under Variedades", () => {
     const leaf = matchRoutes(router.routes, "/varieties/entries")?.at(-1);
     expect(screenIdOf(leaf?.route ?? {})).toBe("stock");
-    expect(parentOf("stock", "phone")?.title).toBe("Varieties");
+    expect(parentOf("stock", "phone")?.titleKey).toBe("common:varieties");
   });
 
   test("routes.ts keeps no legacy list: the old paths live only in app/legacy_front_paths.json", () => {
@@ -941,5 +945,63 @@ describe("source scan for path literals", () => {
     expect(findPathLiterals(files)).toEqual([]);
     expect(findPathFunctions(files)).toEqual([]);
     expect(findMatchMediaCalls(files)).toEqual([]);
+  });
+});
+
+describe("the registry holds keys, and English resolves each to today's title", () => {
+  const TITLES: Record<ScreenId, string> = {
+    home: "Home",
+    more: "More",
+    sales: "Sales",
+    "sale-new": "New sale",
+    sale: "Sale",
+    customers: "Customers",
+    "customer-new": "New customer",
+    customer: "Customer",
+    "customer-edit": "Edit customer",
+    "customer-payment": "Record payment",
+    varieties: "Varieties",
+    variety: "Variety",
+    "variety-new": "New variety",
+    "variety-prices": "Prices",
+    "variety-price-new": "New price",
+    "variety-entries": "Entries",
+    catalog: "Catalog",
+    stock: "All entries",
+    "stock-entry-new": "Stock entry",
+    "stock-entry": "Stock entry",
+    "varieties-archived": "Archived",
+    "withdrawal-new": "Take from stock",
+    withdrawal: "Withdrawal",
+    "withdrawal-edit": "Take from stock",
+    expenses: "Expenses",
+    "expense-new": "New expense",
+    analysis: "Analysis",
+    settings: "Settings",
+    "settings-business": "Business",
+    "settings-users": "Users",
+    "settings-prices": "Prices",
+    "settings-integrations": "Integrations",
+    "settings-catalog-message": "Catalog message",
+    "settings-expense-categories": "Expense categories",
+    "settings-appearance": "Appearance",
+    "settings-account": "Your account",
+    onboarding: "Getting started",
+    "onboarding-variety": "Variety with price",
+    "onboarding-stock": "Initial stock",
+    "onboarding-catalog-message": "Catalog message",
+    "onboarding-bot": "Telegram bot",
+    "onboarding-partner": "Partner",
+    "onboarding-categories": "Expense categories",
+    "onboarding-done": "Done",
+  };
+
+  test.each(SCREENS.map((entry) => entry.id))("%s", (id) => {
+    expect(resolveKey(englishBundle(), screenOf(id).titleKey)).toBe(TITLES[id]);
+  });
+
+  test("shell:sale and shell:integrations equal the English still exported", () => {
+    expect(resolveKey(englishBundle(), "shell:sale")).toBe(SHELL_TEXT.sale);
+    expect(resolveKey(englishBundle(), "shell:integrations")).toBe(INTEGRATIONS_LINK_WORD);
   });
 });
