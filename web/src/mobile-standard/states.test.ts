@@ -56,6 +56,12 @@ describe('the walk reads the shared words from the English bundle', () => {
     expect(payment?.button).toBe('Save')
   })
 
+  it('leaves no unfilled placeholder in any state or pending tap', () => {
+    const dump = JSON.stringify({ STATES, PENDING_TAPS }, (_key, value: unknown) => (value instanceof RegExp ? value.source : value))
+    expect(dump).not.toContain('{{')
+    expect(dump).not.toContain('common:')
+  })
+
   it('refuses a key the English bundle does not have', () => {
     expect(() => common('common:noSuchWord' as Parameters<typeof common>[0])).toThrow(MissingKeyError)
   })
