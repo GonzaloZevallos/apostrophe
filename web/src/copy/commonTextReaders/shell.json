@@ -8,8 +8,6 @@
   "web/src/screens/onboarding/steps.ts",
   "web/src/screens/originLabel.ts",
   "web/src/screens/priceDeleteNotice.ts",
-  "web/src/shell/BackArrow.tsx",
   "web/src/shell/GatedLayout.test.tsx",
-  "web/src/shell/Shell.tsx",
   "web/src/stock/detail.ts"
 ]

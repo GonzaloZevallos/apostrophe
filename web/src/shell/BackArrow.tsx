@@ -16,9 +16,8 @@ import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 import Boton from '../components/Boton'
-import { COMMON_TEXT } from '../copy/common'
 import { useBackOr } from '../components/useBackOr'
-import type { Label } from '../i18n/label'
+import { useLabel, type Label } from '../i18n/label'
 import { HOME, parentOf, pathTo, screenOf, type ScreenId } from '../routes'
 import { BackParentContext, type BackOverride } from './useBackParent'
 import { useViewport } from './useViewport'
@@ -48,6 +47,7 @@ function targetOf(declared: BackOverride, registryPath: string | undefined): Tar
 
 export default function BackArrow({ id }: { id: ScreenId }) {
   const { t } = useTranslation()
+  const resolve = useLabel()
   const params = filled(useParams())
   const slot = useContext(BackParentContext)?.slot
   const registryParent = parentOf(id, useViewport())
@@ -60,11 +60,11 @@ export default function BackArrow({ id }: { id: ScreenId }) {
       ? override?.title
       : registryParent && { kind: 'key', key: registryParent.titleKey }
   if (label === undefined) return null
-  const word = label.kind === 'key' ? t(label.key) : label.text
+  const word = resolve(label)
   return (
     <div className="flecha-atras">
       <Boton variant="back" onClick={back}>
-        {COMMON_TEXT.backArrow(word)}
+        {t('common:backArrow', { parent: word })}
       </Boton>
     </div>
   )
