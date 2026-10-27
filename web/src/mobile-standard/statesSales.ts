@@ -18,6 +18,18 @@ export const SALES_STATES: readonly WalkState[] = [
     visible: '$ 120.000',
   },
   {
+    // The same form once Cash is chosen: Save is drawn as the primary button, not the secondary one.
+    screen: 'NuevaVentaConLineaYPago',
+    route: SALE_NEW,
+    steps: [
+      { fill: { label: SALES_TEXT.lineVariety(1), value: 'Golden Cookies' } },
+      { fill: { label: SALES_TEXT.lineGrams(1), value: '10' } },
+      { click: COMMON_TEXT.addAnotherVariety },
+      { click: COMMON_TEXT.cashMethod },
+    ],
+    visible: '$ 120.000',
+  },
+  {
     screen: 'ElegirCliente',
     route: SALE_NEW,
     steps: [{ click: SALES_TEXT.pickCustomer }, { fill: { label: SALES_TEXT.search, value: 'Nico' } }],

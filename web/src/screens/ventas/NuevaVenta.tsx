@@ -690,7 +690,11 @@ function NuevaVentaForm() {
                 {totals.gramsGiftedHundredths > 0 &&
                   SALES_TEXT.giftGrams(formatGrams(fromHundredths(totals.gramsGiftedHundredths)))}
               </span>
-              <Boton textOnly="submit" type="submit" disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
+              <Boton
+                textOnly="submit"
+                type="submit"
+                variant={method === null ? 'secondary' : 'primary'}
+                disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
                 {SALES_TEXT.saveSale}
               </Boton>
             </div>

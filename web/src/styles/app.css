@@ -4374,6 +4374,13 @@ body {
     margin-top: var(--espacio-sm);
   }
 
+  /* Save before the payment choice (GH-319): enabled and at full text contrast, but outlined
+     where the ready one is filled, so it differs by shape and not by colour or opacity. */
+  .nueva-venta__pie > .boton--suave {
+    box-sizing: border-box;
+    border: 2px solid var(--tinta);
+  }
+
   .nueva-venta[data-teclado='abierto'] .nueva-venta__gramos {
     display: none;
   }
@@ -5841,4 +5848,98 @@ body {
  * ring. A real link that carries the marker keeps its own ring. */
 [data-place]:not(a):focus {
   outline: none;
+}
+
+/* Fit on Home, Sales and New sale (GH-319): no page wider than the viewport down to 246 px, a
+ * long name cut with an ellipsis, a figure kept on one line at a size that follows the width it
+ * has (a container query, so it also follows a larger text size), and "$" never alone. */
+@media (max-width: 899.98px) {
+  .inicio__cabecera-titulos {
+    min-width: 0;
+  }
+
+  .inicio__cabecera .encabezado__negocio {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .panel-ventas,
+  .bloque-deben,
+  .ventas__cabecera .ventas__resumen {
+    container-type: inline-size;
+  }
+
+  .panel-ventas .cifra-xl,
+  .bloque-deben .cifra-xl {
+    font-size: min(54px, 13cqw);
+    white-space: nowrap;
+  }
+
+  .ventas__cabecera .ventas__resumen {
+    flex-wrap: wrap;
+  }
+
+  .ventas__cabecera .ventas__total {
+    font-size: min(30px, 12cqw);
+    white-space: nowrap;
+  }
+
+  .nueva-venta__pie > .cifra-xl {
+    white-space: nowrap;
+  }
+
+  .fila-venta__texto {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fila-venta__nombre > :not(.fila-venta__texto) {
+    flex-shrink: 0;
+  }
+
+  .fila-venta__detalle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fila-venta__cifra {
+    white-space: nowrap;
+  }
+
+  .fila-venta__monto {
+    flex-shrink: 0;
+  }
+}
+
+/* Under 360 px the amount and the date share the first line and the name takes the second, so
+ * a long name and a nine-digit amount both fit. */
+@media (max-width: 359.98px) {
+  .fila-venta {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .fila-venta__fecha {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .fila-venta__monto {
+    order: 2;
+  }
+
+  .fila-venta > svg {
+    order: 2;
+  }
+
+  .fila-venta__cuerpo {
+    order: 3;
+    flex: 1 0 100%;
+  }
 }
