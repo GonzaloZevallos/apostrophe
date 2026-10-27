@@ -22,10 +22,21 @@ export interface Entry {
 
 export type Mode = 'default' | 'update'
 
-/** `limits.ts` is the length checker, not copy; the three names below are registries of
- * the files that hold the copy, which the baseline reads but does not record. */
+/** `limits.ts` is the length checker, not copy; the names below are registries of the files
+ * that hold the copy, which the baseline reads but does not record. */
 const SKIPPED_FILES: ReadonlySet<string> = new Set(['limits.ts'])
-const SKIPPED_EXPORTS: ReadonlySet<string> = new Set(['LIMITED_COPY', 'LONG_REFUSALS', 'BASELINE_ARGS'])
+const SKIPPED_EXPORTS: ReadonlySet<string> = new Set(['LIMITED_COPY', 'LONG_REFUSALS', 'BASELINE_ARGS', 'NAMESPACE', 'MOVED_TO_KEYS'])
+
+/** The exports a module has moved to keys but still holds (deprecated): the names in its
+ * `MOVED_TO_KEYS` array. The keyed check (`baselineKeys.ts`) owns them, so the walker leaves
+ * them out; a module without the array moves nothing. */
+export function movedExports(mod: Readonly<Record<string, unknown>>): ReadonlySet<string> {
+  const names: unknown = mod['MOVED_TO_KEYS']
+  return new Set(Array.isArray(names) ? names.filter((name): name is string => typeof name === 'string') : [])
+}
+
+/** The export a path starts at: `COMMON_TEXT` for `COMMON_TEXT.home` and `LIST` for `LIST[0]`. */
+const exportOf = (path: string): string => path.split(/[.[]/)[0] ?? ''
 
 /** JSON has no `undefined`: it is written as this object so it stays apart from `null`. */
 const UNDEFINED_MARK = { $undefined: true }
@@ -78,6 +89,7 @@ export function walkModules(modules: Modules): Walked {
     const table: unknown = mod['BASELINE_ARGS'] ?? {}
     if (!isPlainObject(table)) throw new Error(`${file}:BASELINE_ARGS is not a table of rows`)
     const used = new Set<string>()
+    const moved = movedExports(mod)
     const visit = (path: string, value: unknown): void => {
       const source = `${file}:${path}`
       if (typeof value === 'string') walked.texts.push({ source, text: value })
@@ -94,10 +106,10 @@ export function walkModules(modules: Modules): Walked {
       } else throw new Error(`${source}: an export of kind ${value === null ? 'null' : typeof value} is not copy`)
     }
     for (const [name, value] of Object.entries(mod)) {
-      if (!SKIPPED_EXPORTS.has(name)) visit(name, value)
+      if (!SKIPPED_EXPORTS.has(name) && !moved.has(name)) visit(name, value)
     }
     for (const path of Object.keys(table)) {
-      if (!used.has(path)) throw new Error(`${file}:${path}: a BASELINE_ARGS row for something that is not a function`)
+      if (!used.has(path) && !moved.has(exportOf(path))) throw new Error(`${file}:${path}: a BASELINE_ARGS row for something that is not a function`)
     }
   }
   return walked
@@ -190,7 +202,7 @@ function resolve(modules: Modules, source: string): Found {
   const colon = source.indexOf(':')
   const mod = modules[source.slice(0, colon)]
   const path = source.slice(colon + 1)
-  if (mod === undefined || SKIPPED_EXPORTS.has(path.split(/[.[]/)[0] ?? '')) return undefined
+  if (mod === undefined || SKIPPED_EXPORTS.has(exportOf(path)) || movedExports(mod).has(exportOf(path))) return undefined
   let value: unknown = mod
   for (const token of steps(path)) {
     if (typeof value !== 'object' || value === null || !Object.hasOwn(value, token)) return undefined
