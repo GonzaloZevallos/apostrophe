@@ -211,7 +211,7 @@ export function IntegrationsForm({
             <input
               className="campo__input"
               type="password"
-              autoComplete="off"
+              autoComplete="new-password"
               value={tokenInput}
               onChange={(event) => setTokenInput(event.target.value)}
             />
@@ -238,6 +238,7 @@ export function IntegrationsForm({
             id={`${fieldId}-channel`}
             className="campo__input"
             type="text"
+            autoComplete="off"
             aria-describedby={`${fieldId}-channel-help`}
             value={channelChatInput}
             onChange={(event) => setChannelChatInput(event.target.value)}
@@ -256,6 +257,7 @@ export function IntegrationsForm({
               id={`${fieldId}-own`}
               className="campo__input"
               type="text"
+              autoComplete="off"
               aria-describedby={`${fieldId}-own-help`}
               value={ownChatInput}
               onChange={(event) => setOwnChatInput(event.target.value)}

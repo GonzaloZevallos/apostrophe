@@ -42,78 +42,6 @@
     "issue": 46
   },
   {
-    "screen": "ConfiguracionCategoriaConfirmarBorrado",
-    "rule": "autocomplete",
-    "target": "textbox:New category",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionCategoriaRenombrar",
-    "rule": "autocomplete",
-    "target": "textbox:Name of Categoría LarguísimoLarguísimoLarguísimoLarg",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionCategoriaRenombrar",
-    "rule": "autocomplete",
-    "target": "textbox:New category",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionCategorias",
-    "rule": "autocomplete",
-    "target": "textbox:New category",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionContrasena",
-    "rule": "autocomplete",
-    "target": "textbox:Current password",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionContrasena",
-    "rule": "autocomplete",
-    "target": "textbox:New password",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionIntegraciones",
-    "rule": "autocomplete",
-    "target": "textbox:Channel chat",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionIntegraciones",
-    "rule": "autocomplete",
-    "target": "textbox:Bot token",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionIntegraciones",
-    "rule": "autocomplete",
-    "target": "textbox:Your chat",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMensaje",
-    "rule": "autocomplete",
-    "target": "textbox:Header",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMensaje",
-    "rule": "autocomplete",
-    "target": "textbox:Footer",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionNegocio",
-    "rule": "autocomplete",
-    "target": "textbox:Business name",
-    "issue": 60
-  },
-  {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
     "target": "combobox:Line # variety",
@@ -672,66 +600,6 @@
     "issue": 78
   },
   {
-    "screen": "OnboardingBot",
-    "rule": "autocomplete",
-    "target": "textbox:Channel chat",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBot",
-    "rule": "autocomplete",
-    "target": "textbox:Bot token",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBot",
-    "rule": "autocomplete",
-    "target": "textbox:Your chat",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBotTexto130",
-    "rule": "autocomplete",
-    "target": "textbox:Channel chat",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBotTexto130",
-    "rule": "autocomplete",
-    "target": "textbox:Bot token",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingBotTexto130",
-    "rule": "autocomplete",
-    "target": "textbox:Your chat",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingMensaje",
-    "rule": "autocomplete",
-    "target": "textbox:Header",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingMensaje",
-    "rule": "autocomplete",
-    "target": "textbox:Footer",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingMensajeTexto130",
-    "rule": "autocomplete",
-    "target": "textbox:Header",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingMensajeTexto130",
-    "rule": "autocomplete",
-    "target": "textbox:Footer",
-    "issue": 49
-  },
-  {
     "screen": "OnboardingStock",
     "rule": "autocomplete",
     "target": "textbox:Total cost Optional · if you leave it out, the lot c",
@@ -802,12 +670,6 @@
     "rule": "autocomplete",
     "target": "textbox:List price $ Per gram, in whole pesos",
     "issue": 47
-  },
-  {
-    "screen": "Reset",
-    "rule": "autocomplete",
-    "target": "textbox:New password",
-    "issue": 49
   },
   {
     "screen": "SacarDelStock",

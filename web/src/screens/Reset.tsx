@@ -139,7 +139,13 @@ export default function Reset() {
   return (
     <AuthPage title={AUTH_TEXT.chooseYourNewPassword}>
       <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
-        <PasswordField label={AUTH_TEXT.newPassword} value={password} onChange={setPassword} error={error} />
+        <PasswordField
+          label={AUTH_TEXT.newPassword}
+          autoComplete="new-password"
+          value={password}
+          onChange={setPassword}
+          error={error}
+        />
         <Boton textOnly="submit" type="submit" disabled={sending}>
           {AUTH_TEXT.saveAndSignIn}
         </Boton>

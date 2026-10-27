@@ -148,6 +148,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SUBMIT_LAB
           <textarea
             id="catalog-header"
             className="campo__input"
+            autoComplete="off"
             aria-describedby={fieldError?.field === 'header' ? 'catalog-header-error' : undefined}
             value={header}
             onChange={(event) => {
@@ -168,6 +169,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SUBMIT_LAB
           <textarea
             id="catalog-footer"
             className="campo__input"
+            autoComplete="off"
             aria-describedby={fieldError?.field === 'footer' ? 'catalog-footer-error' : undefined}
             value={footer}
             onChange={(event) => {
