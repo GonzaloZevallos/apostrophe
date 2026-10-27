@@ -25,12 +25,14 @@ describe('the real copy files', () => {
   })
 
   test('every committed entry is exported by a .ts file or mapped exactly once, and none is missing', () => {
-    // Transitional: `copy/emptyStates.ts` still exports `EMPTY_STATES` and `EMPTY_STATE_WORDINGS` beside
-    // their mapping until the check subtask deletes them; that subtask also deletes this filter. The
-    // area copy files no longer export their wordings, so any of those sources still fails here.
+    // Transitional: the area copy files and `copy/emptyStates.ts` still export the empty-state
+    // wordings beside their mapping until the screens subtask removes them; that subtask also
+    // deletes this filter. Every other problem, for these sources too (neither exported nor
+    // mapped, mapped twice, not in the baseline), still fails.
     const files = loadMappingFiles()
+    const moving = new Set(files.filter((file) => file.file === 'emptyStates.json').flatMap((file) => Object.keys(file.mappings)))
     const bothWhileMoving = (problem: string): boolean =>
-      problem.startsWith('emptyStates.ts:') && problem.endsWith(': both exported and mapped')
+      problem.endsWith(': both exported and mapped') && moving.has(problem.slice(0, -': both exported and mapped'.length))
     expect(coverageProblems(modules, committed, files).filter((problem) => !bothWhileMoving(problem))).toEqual([])
   })
 

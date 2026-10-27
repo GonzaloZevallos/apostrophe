@@ -38,6 +38,7 @@ const EMPTY_CUSTOMERS = baselineText('customers.ts:EMPTY_CUSTOMERS')
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 
+
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -194,7 +195,7 @@ test('a dropped network on the list shows Sin conexión, never the empty-list te
   renderClientes()
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
-  expect(screen.queryByText('You have not added any customers yet.')).not.toBeInTheDocument()
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
 })
 
 test('a server error on the list shows the generic retry, never the empty-list text', async () => {
@@ -202,7 +203,7 @@ test('a server error on the list shows the generic retry, never the empty-list t
   renderClientes()
 
   expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
-  expect(screen.queryByText('You have not added any customers yet.')).not.toBeInTheDocument()
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
 })
 
 test('Te deben sits above everyone A–Z, and the header carries no debt figure', async () => {
@@ -336,7 +337,7 @@ test('with nobody owing, a fixed "Nobody owes you" with nothing to tap sits abov
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED])))
   renderClientes()
 
-  const nobody = await screen.findByText('Nobody owes you')
+  const nobody = await screen.findByText(NOBODY_OWES)
   expect(nobody.closest('a, button')).toBeNull()
   const section = screen.getByRole('region', { name: 'Owed to you' })
   expect(within(section).queryByRole('link')).not.toBeInTheDocument()

@@ -21,6 +21,7 @@ import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
 import { baselineText } from '../i18n/testing'
 
+
 const EMPTY_STATE_TITLE = baselineText('catalog.ts:EMPTY_STATE_TITLE')
 const EMPTY_STATE_DETAIL = baselineText('catalog.ts:EMPTY_STATE_DETAIL')
 
@@ -200,7 +201,7 @@ test('shows the empty state and no Copiar when nothing qualifies', async () => {
     ),
   )
 
-  expect(await screen.findByText('Nothing in the catalog today')).toBeInTheDocument()
+  expect(await screen.findByText(EMPTY_STATE_TITLE)).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })
