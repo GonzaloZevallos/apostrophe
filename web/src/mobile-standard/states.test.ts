@@ -41,6 +41,7 @@ describe('the walk reads the shared words from the English bundle', () => {
   it('waits on the retry and the gone notice as the screens say them', () => {
     expect(state('EstadosReintento').visible).toBe('Something went wrong. Try again.')
     expect(state('EstadosGoneAviso').visible).toBe(refusal(GONE_NOTICE))
+    expect(refusal(GONE_NOTICE)).toBe('That is gone. The list is up to date.')
     expect(state('EstadosGoneAviso').steps).toContainEqual({ click: 'Yes, delete it' })
   })
 
