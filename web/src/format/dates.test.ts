@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { describe, expect, test } from 'vitest'
 import {
   chipDate,
@@ -40,6 +41,12 @@ describe('chipDate', () => {
 
   test('a day with the same month and day in a different year is not today', () => {
     expect(chipDate('2025-10-15', '2026-10-15', testT)).toBe('15/10')
+  })
+
+  test('words today with the `t` it is given, and leaves another day to the digits', () => {
+    const marker = ((key: string) => `<${key}>`) as unknown as TFunction
+    expect(chipDate('2026-10-15', '2026-10-15', marker)).toBe('<common:todayWith>')
+    expect(chipDate('2026-10-02', '2026-10-15', marker)).toBe('02/10')
   })
 
   test('rejects a string that is not an API date', () => {
