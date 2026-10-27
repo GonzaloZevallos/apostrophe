@@ -36,7 +36,9 @@ import Insignia, { type InsigniaTono } from '../components/Insignia'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE, CATALOG_TEXT } from '../copy/catalog'
+import { CATALOG_TEXT } from '../copy/catalog'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import { plainCopy } from './catalogCopy'
 import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
@@ -57,6 +59,7 @@ const REASON_LABEL: Record<Exclude<CatalogVarietyState, 'in'>, { word: string; t
 }
 
 export default function Catalogo() {
+  const { t } = useTranslation()
   useOutletContext<Me>()
   const catalogQuery = useQuery(catalogQueryOptions())
 
@@ -129,8 +132,8 @@ export default function Catalogo() {
           <div className="catalogo__vista-previa" />
         ) : catalog.text === null ? (
           <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{EMPTY_STATE_TITLE}</span>
-            <span className="estado-vacio__detalle">{EMPTY_STATE_DETAIL}</span>
+            <span className="estado-vacio__titulo">{t(EMPTY_STATE_KEYS.catalogTitle)}</span>
+            <span className="estado-vacio__detalle">{t(EMPTY_STATE_KEYS.catalogDetail)}</span>
           </div>
         ) : (
           <div className="catalogo__vista-previa">

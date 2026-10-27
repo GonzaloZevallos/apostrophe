@@ -3,6 +3,7 @@ import type { KeysOf } from './keys'
 
 export type Resources = {
   "common": typeof import('../copy/locales/en/common.json')
+  "emptyStates": typeof import('../copy/locales/en/emptyStates.json')
   "refusals": typeof import('../copy/locales/en/refusals.json')
 }
 

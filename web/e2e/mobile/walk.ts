@@ -3,6 +3,8 @@
 import type { Locator, Page } from '@playwright/test'
 import { resolvePlaceholders, type RegistryScreen } from '../../src/mobile-standard/registry.ts'
 import type { WalkStep } from '../../src/mobile-standard/states.ts'
+import { judgeLanguage } from '../../src/mobile-standard/language.ts'
+import { mobileLanguage } from '../env.js'
 
 export const STEP_TIMEOUT_MS = 3_000
 
@@ -59,6 +61,15 @@ export async function settle(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready)
 }
 
+/**
+ * Fails the step when `<html lang>` is not the run's locale. The reason is its own error, not a
+ * `Violation`: no offender list can absorb it, and it is never a pass or a skip.
+ */
+export async function assertLanguage(page: Page): Promise<void> {
+  const reason = judgeLanguage(await page.evaluate(() => document.documentElement.lang), mobileLanguage())
+  if (reason !== null) throw new Error(reason)
+}
+
 export async function open(page: Page, screen: WalkScreen, facts: Facts): Promise<void> {
   if (screen.route === null) throw new Error(`${screen.screen} has no route`)
   // A screen opens from a blank entry, never over the last walk's: going to the same URL again
@@ -66,6 +77,9 @@ export async function open(page: Page, screen: WalkScreen, facts: Facts): Promis
   // asking (`location.key` is no longer 'default').
   await page.goto('about:blank')
   await page.goto(resolvePlaceholders(screen.route, facts))
+  // The app has rendered; a held API (fetch/xhr only) does not change the document's language.
+  await painted(page)
+  await assertLanguage(page)
 }
 
 /** Runs the registry's steps; answers whether every one was reachable. */

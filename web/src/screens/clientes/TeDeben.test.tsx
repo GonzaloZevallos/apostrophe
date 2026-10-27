@@ -13,6 +13,9 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
+import { baselineText } from '../../i18n/testing'
+
+const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -94,7 +97,7 @@ test('nobody owing shows the fixed "Nobody owes you"', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }))
   renderTeDeben()
 
-  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
+  expect(await screen.findByText(NOBODY_OWES)).toBeInTheDocument()
   expect(screen.getByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
 })
 

@@ -36,7 +36,9 @@ import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from '../routes'
 import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE, STOCK_TEXT } from '../copy/stock'
+import { STOCK_TEXT } from '../copy/stock'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 import { COMMON_TEXT } from '../copy/common'
 import { OUT_OF_DATE_JOINER } from '../copy/pinnedCatalog'
@@ -55,6 +57,7 @@ interface Props {
 }
 
 export default function EntriesList({ varietyId }: Props) {
+  const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -140,8 +143,8 @@ export default function EntriesList({ varietyId }: Props) {
 
       {rows.length === 0 ? (
         <div className="estado-vacio">
-          <span className="estado-vacio__titulo" data-copy="emptyTitle">{EMPTY_STATE_TITLE}</span>
-          <span className="estado-vacio__detalle" data-copy="emptyLine">{EMPTY_STATE_DETAIL}</span>
+          <span className="estado-vacio__titulo" data-copy="emptyTitle">{t(EMPTY_STATE_KEYS.stockTitle)}</span>
+          <span className="estado-vacio__detalle" data-copy="emptyLine">{t(EMPTY_STATE_KEYS.stockDetail)}</span>
         </div>
       ) : (
         <ul className="lista-entradas">
