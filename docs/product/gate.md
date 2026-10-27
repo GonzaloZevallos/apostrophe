@@ -140,7 +140,6 @@ A target's ordinal (`[n]`) counts only the failing nodes on the screen with the 
   4. **The node is untouched.** The renumbered node's own markup is not in the change's code diff.
 - **Otherwise it is growth.** A key change that fails any of these is an added entry like any other. It is fixed in the same change or escalated, never listed.
 - **On record.** GH-297 part 1 (Analysis) is the first case: by-variety amounts left untouched could renumber when the summary strip, cost rows and "since the first record" block stopped failing. Those swaps keep #48 and are listed in the change's moved targets as `old key → new key`.
-- **On record, GH-319 part 1 (New variety).** `VariedadNueva` lists `aria-busy` and `data-while-loading` (`span:Up to # characters · cannot repeat another variety's na`, issue 47) because a direct `/varieties/new` now draws Varieties behind the sheet (`BehindPane`), and that pane's read makes the held walk judge the form's own `main`: no `aria-busy`, and the form's static help line has digits. Removing the two entries makes the phone check report exactly them as unlisted. The pane may not carry `aria-busy` and the help text may not change; a clean fix is a walk that ignores reads made only for an inert pane, which would also change `ClienteNuevo`, `GastoNuevo` and `EntradaStock`, and is left for its own change.
 
 #### Common to all three
 
