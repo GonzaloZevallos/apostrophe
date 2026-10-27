@@ -22,6 +22,7 @@ import {
 import { clearMissingKeys, missingKeys } from '../../i18n/missingKeys'
 import { loadLocale } from '../../i18n/resources'
 import { addFixtureNamespace, removeFixtureNamespace } from '../../i18n/testing'
+import { HOME } from '../../routes'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import Listo from './Listo'
 import OnboardingStep from './OnboardingStep'
@@ -50,8 +51,8 @@ function progress(states: StepState[]): OnboardingProgress {
 
 function inRouter(element: React.ReactNode, answer: OnboardingProgress) {
   const router = createMemoryRouter(
-    [{ path: '/', element: <Outlet context={{ me: ME, progress: answer }} />, children: [{ index: true, element }] }],
-    { initialEntries: ['/'] },
+    [{ path: HOME, element: <Outlet context={{ me: ME, progress: answer }} />, children: [{ index: true, element }] }],
+    { initialEntries: [HOME] },
   )
   render(
     <QueryClientProvider client={new QueryClient()}>
