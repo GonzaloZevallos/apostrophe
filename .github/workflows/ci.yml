@@ -1,3 +1,8 @@
+# What runs on GitHub, and why (ADR-0054, ADR-0055). `changes` decides which suites a pull
+# request affects (scripts/ci_changes.py); a suite it does not select is skipped, and `ci-ok`
+# passes when every other job passed or was skipped. A push to `master` selects everything.
+# Matrices come from the outputs of `changes` and are never written here. tests/test_stack_ci.py
+# pins this file against .agentic/stack.yaml.
 name: CI
 
 on:
@@ -5,7 +10,32 @@ on:
     branches: [master]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      pytest: ${{ steps.select.outputs.pytest }}
+      vitest: ${{ steps.select.outputs.vitest }}
+      e2e: ${{ steps.select.outputs.e2e }}
+    steps:
+      # The merge ref, two commits deep: the diff against its first parent is the change.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - run: uv venv --python 3.13
+      - run: uv sync --locked --extra dev
+      - id: select
+        run: uv run --no-project python scripts/ci_changes.py
   test:
     runs-on: ubuntu-24.04
     steps:
@@ -15,11 +45,25 @@ jobs:
           version: "0.12.13"
       - run: uv venv --python 3.13
       - run: uv sync --locked --extra dev
-      - run: uv run --no-project pytest -n 8
-      - run: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_ci_changes.py tests/test_ci_verdict.py tests/test_ci_coverage.py
+      - run: uv run --no-project actionlint .github/workflows/ci.yml
       - run: uv run --no-project ruff check .
       - run: uv run --no-project mypy app tests scripts
+      # The "always" paths: the whole-codebase rules, run on every change.
+      - run: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_ci_changes.py tests/test_ci_verdict.py tests/test_ci_coverage.py
+        env:
+          COVERAGE_FILE: .coverage.always
+          PYTEST_ADDOPTS: --cov --cov-report=
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: coverage-pytest-always
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
   web:
+    needs: changes
+    if: needs.changes.outputs.vitest == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -29,13 +73,76 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm --prefix web ci --no-fund --no-audit
-      - run: npx --prefix web playwright install --with-deps chromium
       - run: npm --prefix web run typecheck
       - run: npm --prefix web run lint
-      - run: npm --prefix web test
-      - run: npm --prefix web run build
-  e2e:
+      - run: npm --prefix web test -- --coverage
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: coverage-vitest
+          path: web/coverage/
+          if-no-files-found: ignore
+          retention-days: 14
+  build:
+    needs: changes
+    if: needs.changes.outputs.vitest == 'true' || fromJSON(needs.changes.outputs.e2e).mode != 'skip'
     runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm --prefix web ci --no-fund --no-audit
+      - run: npm --prefix web run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: web/dist/
+          if-no-files-found: error
+          retention-days: 1
+  pytest:
+    needs: changes
+    if: needs.changes.outputs.pytest != '[]'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        group: ${{ fromJSON(needs.changes.outputs.pytest) }}
+    env:
+      COVERAGE_FILE: .coverage.${{ matrix.group }}
+      # On master the data keeps the test that ran each line: the area map is derived from it.
+      PYTEST_ADDOPTS: --cov --cov-report= ${{ github.ref == 'refs/heads/master' && '--cov-context=test' || '' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - run: uv venv --python 3.13
+      - run: uv sync --locked --extra dev
+      - run: uv run --no-project python scripts/ci_changes.py args "$GROUP" | xargs uv run --no-project pytest -n 8
+        env:
+          GROUP: ${{ matrix.group }}
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: coverage-pytest-${{ matrix.group }}
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
+  e2e:
+    needs: [changes, build]
+    if: fromJSON(needs.changes.outputs.e2e).mode != 'skip'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.changes.outputs.e2e).shards }}
+    env:
+      # `dist` comes from the `build` job: the run does not build it again.
+      E2E_DIST_READY: "1"
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.2.0
@@ -50,10 +157,88 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm --prefix web ci --no-fund --no-audit
       - run: npx --prefix web playwright install --with-deps chromium
-      - run: npm --prefix web run e2e
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: web/dist
+      - run: echo "$SPECS" | xargs npm --prefix web run e2e -- --shard "$SHARD"
+        env:
+          SHARD: ${{ matrix.shard }}
+          SPECS: ${{ join(fromJSON(needs.changes.outputs.e2e).specs, ' ') }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: e2e-test-results
+          name: e2e-test-results-${{ strategy.job-index }}
           path: web/test-results/
           retention-days: 14
+  coverage:
+    needs: [test, web, pytest]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - run: uv venv --python 3.13
+      - run: uv sync --locked --extra dev
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: coverage-artifacts
+      - run: uv run --no-project python -m scripts.ci_coverage --artifacts coverage-artifacts --vitest coverage-artifacts/coverage-vitest/coverage-summary.json --scratch "$RUNNER_TEMP/combined" --derived "$RUNNER_TEMP/pytest_areas.json" > coverage.md
+      # On master every test ran with its context: the committed area map is checked against it.
+      - run: uv run --no-project python scripts/ci_changes.py derive "$RUNNER_TEMP/combined/.coverage" "$RUNNER_TEMP/pytest_areas.json"
+        if: github.ref == 'refs/heads/master'
+      - run: uv run --no-project python -m scripts.ci_coverage --artifacts coverage-artifacts --vitest coverage-artifacts/coverage-vitest/coverage-summary.json --scratch "$RUNNER_TEMP/combined" --derived "$RUNNER_TEMP/pytest_areas.json" > coverage.md
+        if: github.ref == 'refs/heads/master'
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/master'
+        with:
+          name: pytest-areas
+          path: ${{ runner.temp }}/pytest_areas.json
+          retention-days: 90
+      - run: cat coverage.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.md
+            ${{ runner.temp }}/combined/coverage.json
+          retention-days: 14
+      # One comment per pull request, found by its marker and updated in place. A fork's token
+      # cannot write, so its summary is all it gets.
+      - uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('coverage.md', 'utf8');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            });
+            const mine = comments.find(
+              (comment) => comment.user.type === 'Bot' && comment.body.includes('<!-- ci-coverage -->'),
+            );
+            if (mine) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+  ci-ok:
+    name: ci-ok
+    needs: [changes, test, web, build, pytest, e2e, coverage]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 scripts/ci_verdict.py "$NEEDS"
+        env:
+          NEEDS: ${{ toJSON(needs) }}

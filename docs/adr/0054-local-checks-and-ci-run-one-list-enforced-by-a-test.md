@@ -42,3 +42,15 @@ type-checked locally failed on GitHub's runner.
   when the owner turns local e2e back on and #428 has fixed the flake; the entry then leaves `PARKED`.
 - **Superseded.** The bullet "A CI-only check gates every merge" no longer holds for e2e: `ci: [test, web]`
   gates the merge, and `test` and `web` together run every check of `.agentic/stack.yaml`.
+
+## Amendment (GH-448): `SPLIT`, the aggregator, and the end of `PARKED`
+
+- **`SPLIT`.** `tests`, `web-tests` and `web-e2e` are not one verbatim step: each is a (job, step
+  template) entry where `{check}` is the declared command, so `pytest` runs per group, vitest with
+  coverage and e2e per shard, and a change to the command still reaches the step.
+- **The aggregator.** `ci: [ci-ok]`. The test requires that `ci-ok` needs every other job, runs with
+  `if: always()` and has the verdict script as its only step; the jobs it needs cover every check and
+  every `CI_ONLY` command. Matrices must read from `changes`, e2e shards need only `changes` and `build`,
+  and only `coverage` may write to a pull request (ADR-0055).
+- **`PARKED` is gone.** e2e is a merge condition again (owner, 2026-10-27): `web-e2e` is in `checks`,
+  and the flake of #428 is fixed at its cause, in #428, #429 and #430, never retried away.
