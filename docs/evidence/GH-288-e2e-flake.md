@@ -149,3 +149,8 @@ e2e runs sharded; a red there is a finding to fix. Nothing in this section measu
 `npm --prefix web test -- e2eToastRule Clientes` first: `SUCCESS_TOASTS` must still equal
 `SuccessToast` (the guard's `Equal` check fails the type-check otherwise), and the Clientes test must
 still see one saved toast.
+
+**Diff scope** (`git diff --stat fbc4fdc0..HEAD`, from the base this branch started on): 22 files
+changed, 1353 insertions, 84 deletions. Under `web/src` only `screens/clientes/Clientes.tsx` and its
+test (the Cause's fix) and the guard `architecture/e2eToastRule.test.ts` changed; nothing under
+`app/`; no product timer.
