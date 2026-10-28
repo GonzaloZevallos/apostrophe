@@ -61,3 +61,15 @@ double-posting or recording a stale result over a fresher one.
 - **Running the trigger inside the triggering transaction**: a failed sync would then
   share that transaction's fate, breaking "the triggering save never waits for
   Telegram" outright.
+
+## Amendment (GH-384): a pin is due on the business's own day
+
+Planned in GH-318, not yet in the code. One sentence of this ADR is narrowed by docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md, in the time-zone
+part; until that part ships the sentence describes what runs.
+
+> - **A 300-second ticker** (the `upkeep` subtask) calls `sync_all_published` for every
+>   business with a pin published and not yet checked today,
+
+Narrowed: a pin is due when its `last_checked_on` is null or differs from the business's own today,
+worked out from the business's time zone. "Today" is no longer one Argentina day for every business.
+The ticker, the lock and the three phases are unchanged.

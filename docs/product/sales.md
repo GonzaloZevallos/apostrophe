@@ -356,3 +356,53 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - Building New customer's unsaved-changes confirmation (customers.md): its own issue, with its own copy, for Customers and Pick a customer alike.
 - Other VIP rules (a percent off list); price promotions by date.
 - Refusing or warning a sale because the pricing settings changed mid-sale.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### Units
+
+Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
+
+- A line's quantity will be in its product's unit, stored as a whole number of hundredths whatever the unit; the unit's 0 to 2 decimals only validate what is typed and decide display. The sale's footer and total will show the quantity sold and the quantity gifted as one amount per unit, each with its label, never added across units.
+- It will replace: "It has a variety of the same business and grams above zero, with at most two decimals, whatever its rule." and "**The sale's total** shows with the grams sold and the grams gifted."
+
+### Customer types and pricing rules
+
+Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; delivered by the customer-type prices part.
+
+- Customer types will replace the single VIP mark. A line's rules will be list, bulk or the customer type's price, from effective-dated rows; bulk and customer-type prices stay switchable per business. The `vip` mark and `vip_price` columns stay frozen in place, so a sale keeps the price it charged.
+- It will replace: "**VIP**: Customers VIP is on, the customer is VIP at recording time, and the current price has a VIP price." and the naming rule "On a tie between VIP and bulk, the line is stored as VIP."
+
+### Money
+
+Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
+
+- Amounts will cross the wire in currency units as Decimal and be stored at the business's scale (0 or 2). Half-up rounding of a line goes through one helper, `round_half_up`, which the money part creates in `app/shared/money.py`; raising a business's decimals changes no recorded amount's value.
+- It will replace: "**Special price**: the total typed for the line, in whole pesos and above $0.", "grams × the stored price per gram, rounded to the nearest whole peso, with exactly half rounding up" and "**Shipping charged**: whole pesos, zero or more, $0 by default."
+
+### Payment methods
+
+Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the payment methods part.
+
+- Payment methods will be the business's own list; a new business starts with "Cash" and "Transfer", and an existing one keeps both.
+- It will replace: "how it was paid: Cash · Transfer · Owing." and "**Paid in full on the spot, by cash or transfer.**" ("Owing" stays a state, not a method.)
+
+### The business day
+
+Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; delivered by the time-zone part.
+
+- It will replace: "Defaults to today, the business day in Argentina time." and "**Periods**: Today · Week · Month · Dates, in Argentina time."; both will read the business's own time zone.
+
+### Applied promotions
+
+Decided in docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; delivered by the promotions-at-sale-time part.
+
+- The seller will define the business's own promotions (a discount, a set price per unit, take N pay M, a combo, a gift, a threshold), each with what it applies to and when. Those that qualify apply on their own at sale time; the seller sees every applied promotion and can remove any before saving.
+- A line keeps its pricing rule and the discount is recorded on top of it. A line with a special price, and a gift line, gets no promotion. A promotion's free item is recorded as a gift line.
+- The sale will record which promotions applied and how much each discounted, as they stood when it was saved, as typed `sale_promotion` rows, which the promotions-at-sale-time part creates (ADR-0060). Editing, pausing or archiving a promotion never touches past sales; deleting a sale gives its use back.
+- It will replace, in Out of scope: "Other VIP rules (a percent off list); price promotions by date." (the "price promotions by date" half).
+- The withdrawal reason "Promotion" is renamed "Marketing" before any applied-promotion code ships (`stock.md`), so the two words never meet on one screen.
