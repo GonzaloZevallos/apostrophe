@@ -1,27 +1,49 @@
-"""Chooses the newest daily backup copy from a GitHub Actions artifact listing, so
-every restore path (`deploy/README.md` section 6) and the go-live gate (section 8)
-pick the same copy -- never `gh run list` (the plan's invariant: the newest copy is
-chosen only here).
+"""Chooses the newest daily backup copy, and lists the expired ones, from the text
+`git ls-remote --heads <repo>` prints (lines `<sha>\\t<ref>`). Every copy is its own
+branch, named exactly like its file: `backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age`.
 
-Standard library only: no import from `app`, no network call, no subprocess. The CLI
-reads the listing from stdin -- the text `gh api
-"repos/{owner}/{repo}/actions/artifacts?per_page=100"` prints -- and never calls `gh`
-itself.
+This module is the only place that knows the name format, the newest rule and the
+30-day expiry rule. Only refs `refs/heads/<name>` whose name fully matches the format,
+with a real calendar date, are copies; `main`, tags, foreign branches and impossible
+dates are ignored silently. A line that is not `<sha>\\t<ref>` is a malformed listing.
+
+Newest means the latest timestamp in the name, then the greater run_id, then the name
+itself; the commit time is never read and the listing's order never matters. Run_ids
+are ordered numerically from their digits and never through `int()`: leading zeros are
+dropped, then the shorter number is the smaller, then the digits compare as text.
+
+A copy is expired when it is more than 30 days older than `--now`; the newest copy is
+never listed. The clock is never read: `--now` is always given.
+
+CLI: no argument prints `name:`, `run_id:` and `created_at:` of the newest copy;
+`expired --now <YYYYmmddTHHMMSSZ>` prints the expired names, oldest first. Exit 0 on
+success, 1 when the listing holds no valid copy (in both modes, so an empty or failed
+listing never reads as "nothing to delete"), 2 on a malformed listing, undecodable
+stdin or bad arguments. Error messages are fixed and name no line content.
+
+Standard library only: no import from `app`, no network call, no subprocess.
 """
 
 from __future__ import annotations
 
-import json
 import re
 import sys
-from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 # `backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age` -- the one format the workflow, the
 # README and this filter all share (the plan's invariant).
-_NAME_PATTERN = re.compile(r"^backup-\d{8}T\d{6}Z-\d+\.db\.age$")
+_NAME_PATTERN = re.compile(r"backup-(\d{8})T(\d{6})Z-(\d+)\.db\.age", re.ASCII)
+_LINE_PATTERN = re.compile(r"[0-9a-f]{40}(?:[0-9a-f]{24})?\t(\S+)", re.ASCII)
+_NOW_PATTERN = re.compile(r"(\d{8})T(\d{6})Z", re.ASCII)
+_HEADS_PREFIX = "refs/heads/"
+_RETENTION = timedelta(days=30)
+
+_BAD_LISTING = "error: the listing is not lines of '<sha><TAB><ref>'"
+_NO_VALID_COPY = "error: no valid backup copy found in the listing"
+_BAD_NOW = "error: --now must be a UTC time like 20261031T040000Z"
+_USAGE = "usage: newest_backup.py [expired --now <YYYYmmddTHHMMSSZ>] < listing"
 
 
 class _Readable(Protocol):
@@ -30,110 +52,132 @@ class _Readable(Protocol):
 
     def read(self) -> str: ...
 
-_BAD_LISTING = "error: the artifact listing is not a JSON object with an 'artifacts' list"
-_NO_VALID_ARTIFACT = "error: no valid backup artifact found in the listing"
 
-
-class InvalidArtifactListing(ValueError):
-    """`listing` is not a mapping, or its `artifacts` entry is missing or not a list."""
+class MalformedListing(ValueError):
+    """A line of the listing is not `<sha>\\t<ref>`."""
 
 
 @dataclass(frozen=True)
-class NewestArtifact:
+class BackupCopy:
     name: str
-    run_id: int
+    run_id: str  # the digits exactly as written in the name
+    run_order: tuple[int, str]  # (length, digits) once leading zeros are dropped
     created_at: datetime
 
 
-def _parse_created_at(value: object) -> datetime | None:
-    if not isinstance(value, str):
+def _order_key(copy: BackupCopy) -> tuple[datetime, tuple[int, str], str]:
+    return (copy.created_at, copy.run_order, copy.name)
+
+
+def _utc_time(date_digits: str, time_digits: str) -> datetime:
+    """Builds the UTC time from `YYYYmmdd` and `HHMMSS`; `ValueError` when it is not a
+    real calendar time."""
+    return datetime(
+        int(date_digits[0:4]),
+        int(date_digits[4:6]),
+        int(date_digits[6:8]),
+        int(time_digits[0:2]),
+        int(time_digits[2:4]),
+        int(time_digits[4:6]),
+        tzinfo=UTC,
+    )
+
+
+def _copy_from_name(name: str) -> BackupCopy | None:
+    matched = _NAME_PATTERN.fullmatch(name)
+    if matched is None:
         return None
     try:
-        parsed = datetime.fromisoformat(value)
+        created_at = _utc_time(matched.group(1), matched.group(2))
     except ValueError:
         return None
-    if parsed.tzinfo is None or parsed.tzinfo.utcoffset(parsed) is None:
-        return None
-    return parsed.astimezone(UTC)
+    run_id = matched.group(3)
+    stripped = run_id.lstrip("0") or "0"
+    return BackupCopy(
+        name=name, run_id=run_id, run_order=(len(stripped), stripped), created_at=created_at
+    )
 
 
-def _valid_artifact(entry: object) -> tuple[str, int, int, datetime] | None:
-    """`(name, artifact_id, run_id, created_at)` for an entry that passes every
-    check, else `None`. The artifact's own `id` travels through only to break a tie
-    on `created_at`; it never appears in `NewestArtifact` itself."""
-    if not isinstance(entry, Mapping):
-        return None
-    name = entry.get("name")
-    if not isinstance(name, str) or not _NAME_PATTERN.fullmatch(name):
-        return None
-    if entry.get("expired") is not False:
-        return None
-    artifact_id = entry.get("id")
-    # `True`/`False` are `int` in Python; an artifact or run id is never a bool.
-    if not isinstance(artifact_id, int) or isinstance(artifact_id, bool):
-        return None
-    workflow_run = entry.get("workflow_run")
-    if not isinstance(workflow_run, Mapping):
-        return None
-    run_id = workflow_run.get("id")
-    if not isinstance(run_id, int) or isinstance(run_id, bool):
-        return None
-    created_at = _parse_created_at(entry.get("created_at"))
-    if created_at is None:
-        return None
-    return name, artifact_id, run_id, created_at
+def _parse(listing: str) -> list[BackupCopy]:
+    """Every valid copy of `listing`, once per name. `MalformedListing` when a line is
+    not `<sha>\\t<ref>`. The one parse behind `newest` and `expired`."""
+    text = listing.removesuffix("\n")
+    if text == "":
+        return []
+    copies: dict[str, BackupCopy] = {}
+    for line in text.split("\n"):
+        matched = _LINE_PATTERN.fullmatch(line)
+        if matched is None:
+            raise MalformedListing("a line is not '<sha><TAB><ref>'")
+        ref = matched.group(1)
+        if not ref.startswith(_HEADS_PREFIX):
+            continue
+        copy = _copy_from_name(ref.removeprefix(_HEADS_PREFIX))
+        if copy is not None:
+            copies[copy.name] = copy
+    return list(copies.values())
 
 
-def newest_artifact(listing: Mapping[str, object]) -> NewestArtifact | None:
-    """The valid artifact with the newest `created_at`, ties broken by the greater
-    `id` -- never by the listing's own order (the API's order is not a seam).
-    `None` when nothing in the listing is valid.
+def _newest_of(copies: list[BackupCopy]) -> BackupCopy | None:
+    return max(copies, key=_order_key) if copies else None
 
-    `listing["artifacts"]` must be a list; anything else -- `listing` not a mapping,
-    `artifacts` missing or not a list -- is `InvalidArtifactListing`, not "no
-    artifact found": a malformed listing is a different failure than an empty one,
-    and the CLI reports them with different exit codes."""
-    if not isinstance(listing, Mapping):
-        raise InvalidArtifactListing("the listing is not a JSON object")
-    artifacts = listing.get("artifacts")
-    if not isinstance(artifacts, list):
-        raise InvalidArtifactListing("listing['artifacts'] is missing or not a list")
-    candidates = [parsed for entry in artifacts if (parsed := _valid_artifact(entry)) is not None]
-    if not candidates:
+
+def _expired_of(copies: list[BackupCopy], now: datetime) -> list[str]:
+    latest = _newest_of(copies)
+    old = [c for c in copies if c is not latest and now - c.created_at > _RETENTION]
+    return [c.name for c in sorted(old, key=_order_key)]
+
+
+def newest(listing: str) -> BackupCopy | None:
+    """The newest valid copy of `listing`, or `None` when it holds none."""
+    return _newest_of(_parse(listing))
+
+
+def expired(listing: str, now: datetime) -> list[str]:
+    """Names of the copies more than 30 days older than `now`, oldest first, never the
+    newest copy of the same parse. A copy exactly 30 days old is kept. `[]` when the
+    listing holds no copy at all."""
+    return _expired_of(_parse(listing), now)
+
+
+def _parse_now(value: str) -> datetime | None:
+    matched = _NOW_PATTERN.fullmatch(value)
+    if matched is None:
         return None
-    name, _artifact_id, run_id, created_at = max(candidates, key=lambda c: (c[3], c[1]))
-    return NewestArtifact(name=name, run_id=run_id, created_at=created_at)
+    try:
+        return _utc_time(matched.group(1), matched.group(2))
+    except ValueError:
+        return None
 
 
 def main(argv: list[str], stdin: _Readable) -> int:
-    """Reads exactly one JSON document from `stdin` and prints the newest artifact's
-    `name`, `run_id` and `created_at`. `argv` takes no arguments; it is kept only so
-    this CLI has the same shape as `scripts/drill.py`'s."""
-    del argv
-    try:
-        raw = stdin.read()
-    except UnicodeDecodeError:
-        print(_BAD_LISTING, file=sys.stderr)
+    """Reads the listing from `stdin` and prints the newest copy (no argument) or the
+    expired names (`expired --now <YYYYmmddTHHMMSSZ>`). Never raises on any input."""
+    now: datetime | None = None
+    if len(argv) == 3 and argv[0] == "expired" and argv[1] == "--now":
+        now = _parse_now(argv[2])
+        if now is None:
+            print(_BAD_NOW, file=sys.stderr)
+            return 2
+    elif argv:
+        print(_USAGE, file=sys.stderr)
         return 2
     try:
-        document = json.loads(raw)
-    except json.JSONDecodeError:
+        copies = _parse(stdin.read())
+    except (UnicodeDecodeError, MalformedListing):
         print(_BAD_LISTING, file=sys.stderr)
         return 2
-    if not isinstance(document, Mapping):
-        print(_BAD_LISTING, file=sys.stderr)
-        return 2
-    try:
-        found = newest_artifact(document)
-    except InvalidArtifactListing:
-        print(_BAD_LISTING, file=sys.stderr)
-        return 2
-    if found is None:
-        print(_NO_VALID_ARTIFACT, file=sys.stderr)
+    latest = _newest_of(copies)
+    if latest is None:
+        print(_NO_VALID_COPY, file=sys.stderr)
         return 1
-    print(f"name: {found.name}")
-    print(f"run_id: {found.run_id}")
-    print(f"created_at: {found.created_at.isoformat()}")
+    if now is not None:
+        for name in _expired_of(copies, now):
+            print(name)
+        return 0
+    print(f"name: {latest.name}")
+    print(f"run_id: {latest.run_id}")
+    print(f"created_at: {latest.created_at.isoformat()}")
     return 0
 
 
