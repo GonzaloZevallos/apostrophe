@@ -190,7 +190,9 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
     # chosen month, so it reads the same off either response). Unaffected: an
     # earlier week, the one containing Otra's own sale (2026-08-05), which draws no
     # cost from Flor's new lot.
-    current_week_before = next(w for w in before_october["weeks"] if w["last_day"] >= sale["date"])
+    current_week_before = next(
+        w for w in before_october["weeks"] if w["last_day"] >= sale["date"]
+    )
     current_week_after = next(w for w in after_october["weeks"] if w["last_day"] >= sale["date"])
     assert current_week_after["profit"]["amount"] > current_week_before["profit"]["amount"]
 

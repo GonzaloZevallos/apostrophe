@@ -1,6 +1,6 @@
 """The `Draws` port over `sale_line ⨝ sale ⨝ variety` (CODING_STANDARDS section 1:
 stock adapters may import sales' and varieties' adapters; nothing under `app/sales/`
-or `app/varieties/` ever imports back). Read only: a sale's own repository owns the
+or `app/products/` ever imports back). Read only: a sale's own repository owns the
 write, this is stock reading what already left (ADR-0009). Built for one business;
 every statement — and every join's ON clause — filters on it (CODING_STANDARDS
 section 9).

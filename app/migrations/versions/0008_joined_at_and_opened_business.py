@@ -72,7 +72,9 @@ def upgrade() -> None:
             ).scalar_one_or_none()
             if first_user is not None:
                 connection.execute(
-                    app_user.update().where(app_user.c.id == first_user).values(joined_at=used_at)
+                    app_user.update()
+                    .where(app_user.c.id == first_user)
+                    .values(joined_at=used_at)
                 )
                 first_user_of[business_id] = first_user
 

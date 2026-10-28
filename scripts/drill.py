@@ -61,7 +61,8 @@ def row_counts(db_path: Path) -> dict[str, int]:
         tables = [
             name
             for (name,) in connection.execute(
-                "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+                "SELECT name FROM sqlite_master WHERE type = 'table' "
+                "AND name NOT LIKE 'sqlite_%'"
             ).fetchall()
         ]
         return {
@@ -81,7 +82,8 @@ def latest_change(db_path: Path) -> datetime | None:
         existing = {
             name
             for (name,) in connection.execute(
-                f"SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ({placeholders})",
+                f"SELECT name FROM sqlite_master WHERE type = 'table' "
+                f"AND name IN ({placeholders})",
                 RECENCY_TABLES,
             ).fetchall()
         }
@@ -150,7 +152,9 @@ def _load_dotenv(path: Path) -> dict[str, str]:
     return values
 
 
-def resolve_live_database_url(env: Mapping[str, str], dotenv_path: Path) -> str:
+def resolve_live_database_url(
+    env: Mapping[str, str], dotenv_path: Path
+) -> str:
     """The database URL the running app would actually use, in the same order
     `scripts/serve.sh` gives it precedence: `.env` first — sourcing it with `set -a;
     . ./.env; set +a` makes any assignment there overwrite a pre-existing export of

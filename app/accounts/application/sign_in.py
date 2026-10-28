@@ -50,7 +50,9 @@ def refuse_attempt(
     address_failures = accounts.count_address_failure(address_digest, now, cutoff)
     email_failures = accounts.count_email_failure(email, now) if email is not None else None
     if not already_locked:
-        if email is not None and email_failures is not None and email_guard.reached(email_failures):
+        if email is not None and email_failures is not None and email_guard.reached(
+            email_failures
+        ):
             accounts.lock_email(email, now, email_guard.lock_until(now), MAX_FAILURES)
         if address_guard.reached(address_failures):
             accounts.lock_address(address_digest, now, address_guard.lock_until(now))
