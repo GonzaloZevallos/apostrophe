@@ -43,7 +43,12 @@ def _entry(
     total_cost: int | None = None,
     on: str,
 ) -> int:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": origin, "grams": quantity, "date": on}
+    body: dict[str, Any] = {
+        "variety_id": variety_id,
+        "origin": origin,
+        "grams": quantity,
+        "date": on,
+    }
     if total_cost is not None:
         body["total_cost"] = total_cost
     response = client.post("/stock/entries", json=body)
@@ -96,8 +101,8 @@ def test_the_panel_matches_the_fixture_s_shape(client: TestClient, clock: Movabl
     day = date(2026, 10, 15)
     clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
     variety_id = _variety(client, "Criolla")
-    _entry(client, variety_id, grams="10", total_cost=1_000, on=day.isoformat())
-    _sale(client, variety_id, grams="5", on=day.isoformat())
+    _entry(client, variety_id, quantity="10", total_cost=1_000, on=day.isoformat())
+    _sale(client, variety_id, quantity="5", on=day.isoformat())
 
     answer = client.get("/panel")
 
@@ -144,7 +149,7 @@ def test_a_payment_is_counted_on_its_own_paid_on_date_not_the_sale_s_date(
     _sale(
         client,
         variety_id,
-        grams="5",
+        quantity="5",
         on=old_day.isoformat(),
         customer_id=customer_id,
         payment="owing",
@@ -170,7 +175,7 @@ def test_a_backdated_purchase_turns_pending_cost_into_a_real_one(
     clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
     variety_id = _variety(client, "Indica")
     # No stock at all yet: the sale's grams have no lot behind them.
-    _sale(client, variety_id, grams="5", on=day.isoformat())
+    _sale(client, variety_id, quantity="5", on=day.isoformat())
 
     pending_answer = client.get("/panel").json()["periods"]["today"]
     assert pending_answer["cost_of_goods"] == 0
@@ -178,7 +183,7 @@ def test_a_backdated_purchase_turns_pending_cost_into_a_real_one(
 
     # A purchase backdated before the sale (ADR-0010): `allocate` reruns over the
     # whole history, so the same sale line now costs something real.
-    _entry(client, variety_id, grams="10", total_cost=500, on=day.replace(day=13).isoformat())
+    _entry(client, variety_id, quantity="10", total_cost=500, on=day.replace(day=13).isoformat())
 
     costed_answer = client.get("/panel").json()["periods"]["today"]
     assert costed_answer["pending_cost"] is False
@@ -192,8 +197,8 @@ def test_editing_a_stock_entry_s_cost_moves_cost_of_goods_and_profit(
     day = date(2026, 10, 15)
     clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
     variety_id = _variety(client, "Criolla edit")
-    entry_id = _entry(client, variety_id, grams="10", total_cost=1_000, on=day.isoformat())
-    _sale(client, variety_id, grams="5", on=day.isoformat())
+    entry_id = _entry(client, variety_id, quantity="10", total_cost=1_000, on=day.isoformat())
+    _sale(client, variety_id, quantity="5", on=day.isoformat())
 
     before = client.get("/panel").json()["periods"]["today"]
     assert before["cost_of_goods"] == 500  # 5g at 100/g
@@ -220,7 +225,7 @@ def test_a_negative_adjustment_s_grams_are_never_summed_into_cost_of_goods(
 ) -> None:
     clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
     variety_id = _variety(client, "Ajustada")
-    _entry(client, variety_id, grams="10", total_cost=1_000, on="2026-10-13")
+    _entry(client, variety_id, quantity="10", total_cost=1_000, on="2026-10-13")
     adjustment = client.post(
         "/stock/entries",
         json={
@@ -231,7 +236,7 @@ def test_a_negative_adjustment_s_grams_are_never_summed_into_cost_of_goods(
         },
     )
     assert adjustment.status_code == 201, adjustment.text
-    _sale(client, variety_id, grams="5", on="2026-10-15")
+    _sale(client, variety_id, quantity="5", on="2026-10-15")
 
     panel = client.get("/panel").json()["periods"]
     today = panel["today"]
@@ -279,20 +284,20 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
     # sold out, and one low with a threshold.
     no_entries_id = _variety(client, "Sin entradas")
     ok_id = _variety(client, "Con stock")
-    _entry(client, ok_id, grams="100", total_cost=1_000, on=day.isoformat())
+    _entry(client, ok_id, quantity="100", total_cost=1_000, on=day.isoformat())
     sold_out_id = _variety(client, "Agotada")
-    _entry(client, sold_out_id, grams="10", total_cost=500, on=day.isoformat())
+    _entry(client, sold_out_id, quantity="10", total_cost=500, on=day.isoformat())
     low_id = _variety(client, "Poca")
-    _entry(client, low_id, grams="10", total_cost=500, on=day.isoformat())
+    _entry(client, low_id, quantity="10", total_cost=500, on=day.isoformat())
     threshold = client.put(f"/stock/varieties/{low_id}/threshold", json={"grams": "20"})
     assert threshold.status_code == 200, threshold.text
 
-    _sale(client, ok_id, grams="5", on=day.isoformat())
-    _sale(client, sold_out_id, grams="10", on=day.isoformat())
-    _sale(client, low_id, grams="5", on=day.isoformat())
+    _sale(client, ok_id, quantity="5", on=day.isoformat())
+    _sale(client, sold_out_id, quantity="10", on=day.isoformat())
+    _sale(client, low_id, quantity="5", on=day.isoformat())
 
     customer_id = _customer(client, "Deudora")
-    _sale(client, ok_id, grams="1", on=day.isoformat(), customer_id=customer_id, payment="owing")
+    _sale(client, ok_id, quantity="1", on=day.isoformat(), customer_id=customer_id, payment="owing")
 
     # A sale in the month but outside the week (the Monday-Sunday week containing
     # 2026-12-31 runs 2026-12-28..2027-01-03, so 2026-12-01 falls in the month only),
@@ -300,10 +305,10 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
     # January — so today, week and month each hold a different set of sales, and a
     # wrong bound at the year boundary cannot pass unnoticed.
     boundary_id = _variety(client, "Año nuevo", price=5_000)
-    _entry(client, boundary_id, grams="50", total_cost=500, on="2026-12-01")
-    _sale(client, boundary_id, grams="2", on="2026-12-01")
+    _entry(client, boundary_id, quantity="50", total_cost=500, on="2026-12-01")
+    _sale(client, boundary_id, quantity="2", on="2026-12-01")
     clock.set(datetime(2027, 1, 2, 18, 0, tzinfo=UTC))
-    _sale(client, boundary_id, grams="3", on="2027-01-02")
+    _sale(client, boundary_id, quantity="3", on="2027-01-02")
     clock.set(datetime(2026, 12, 31, 18, 0, tzinfo=UTC))
 
     panel = client.get("/panel").json()
@@ -371,8 +376,8 @@ def test_a_negative_adjustment_beyond_every_lot_is_shortfall_only_pending(
     own figure, never combined (plan invariant)."""
     clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
     variety_id = _variety(client, "Sin lote")
-    _entry(client, variety_id, grams="10", total_cost=1_000, on="2026-10-15")
-    _sale(client, variety_id, grams="10", on="2026-10-15")
+    _entry(client, variety_id, quantity="10", total_cost=1_000, on="2026-10-15")
+    _sale(client, variety_id, quantity="10", on="2026-10-15")
     # Same day as the sale, so only recording order (not the date) tells the two
     # apart; `LotOrder` compares `recorded_at` ahead of `rank` (`app/stock/domain/
     # lot_order.py`), so the clock must actually advance here for the sale to draw
@@ -409,10 +414,10 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     customer_id = _customer(client, "Deudora GH-70")
 
     # 2026-09-20: X bought, 10g for $5.000 -> $500/g.
-    _entry(client, x_id, grams="10", total_cost=5_000, on="2026-09-20")
+    _entry(client, x_id, quantity="10", total_cost=5_000, on="2026-09-20")
     # 27/09: a 1g sale of X (owing, so there is something to pay on 01/10). Outside the
     # week (which starts 28/09) and outside the month.
-    _sale(client, x_id, grams="1", on="2026-09-27", customer_id=customer_id, payment="owing")
+    _sale(client, x_id, quantity="1", on="2026-09-27", customer_id=customer_id, payment="owing")
     # 29/09 (inside the week): a -2g adjustment, then a 7g sale — both costed off the
     # same lot, which is used up exactly: 10 - 1 - 2 - 7 = 0.
     adjustment_29 = client.post(
@@ -420,12 +425,12 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
         json={"variety_id": x_id, "origin": "adjustment", "grams": "-2", "date": "2026-09-29"},
     )
     assert adjustment_29.status_code == 201, adjustment_29.text
-    _sale(client, x_id, grams="7", on="2026-09-29")
+    _sale(client, x_id, quantity="7", on="2026-09-29")
 
     # 01/10 (inside the week and the month, outside Hoy): Z bought and sold, an
     # expense, and a payment against the 27/09 debt.
-    _entry(client, z_id, grams="20", total_cost=2_000, on="2026-10-01")
-    _sale(client, z_id, grams="5", on="2026-10-01")
+    _entry(client, z_id, quantity="20", total_cost=2_000, on="2026-10-01")
+    _sale(client, z_id, quantity="5", on="2026-10-01")
     _expense(client, amount=800, on="2026-10-01")
     payment = client.post(
         f"/customers/{customer_id}/payments",
@@ -435,7 +440,7 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
 
     # 02/10 = Hoy: a 3g sale of Y, which has no entry at all (wholly pending), and a
     # -1g adjustment of X, whose lot is already empty (wholly pending too).
-    _sale(client, y_id, grams="3", on="2026-10-02")
+    _sale(client, y_id, quantity="3", on="2026-10-02")
     adjustment_today = client.post(
         "/stock/entries",
         json={"variety_id": x_id, "origin": "adjustment", "grams": "-1", "date": "2026-10-02"},
@@ -518,11 +523,11 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
     a_id = _variety(client, "A", price=1_000)
     b_id = _variety(client, "B", price=1_000)
     # A: 100 g for $10.000 = $100/g. B has no entry at all, so all B's sales are pending.
-    _entry(client, a_id, grams="100", total_cost=10_000, on="2026-09-01")
-    _sale(client, a_id, grams="1", on="2026-09-15")
-    _sale(client, a_id, grams="2", on="2026-09-29")
-    _sale(client, a_id, grams="3", on=TODAY.isoformat())
-    _sale(client, b_id, grams="1", on="2026-09-29")
+    _entry(client, a_id, quantity="100", total_cost=10_000, on="2026-09-01")
+    _sale(client, a_id, quantity="1", on="2026-09-15")
+    _sale(client, a_id, quantity="2", on="2026-09-29")
+    _sale(client, a_id, quantity="3", on=TODAY.isoformat())
+    _sale(client, b_id, quantity="1", on="2026-09-29")
 
     panel = client.get("/panel").json()["periods"]
     analysis = client.get("/analysis").json()
@@ -602,16 +607,16 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     pending shortfall and promotion."""
     a_id = _variety(client, "A", price=1_000)
     b_id = _variety(client, "B", price=1_000)
-    _entry(client, a_id, grams="100", total_cost=10_000, on="2026-09-01")
-    _sale(client, a_id, grams="1", on="2026-09-22")
-    _sale(client, a_id, grams="2", on="2026-09-29")
-    _sale(client, b_id, grams="1", on="2026-09-29")
-    _sale(client, a_id, grams="3", on=TODAY.isoformat())
+    _entry(client, a_id, quantity="100", total_cost=10_000, on="2026-09-01")
+    _sale(client, a_id, quantity="1", on="2026-09-22")
+    _sale(client, a_id, quantity="2", on="2026-09-29")
+    _sale(client, b_id, quantity="1", on="2026-09-29")
+    _sale(client, a_id, quantity="3", on=TODAY.isoformat())
     _adjust(client, a_id, quantity="-2", on="2026-09-30")
     _adjust(client, b_id, quantity="-1", on=TODAY.isoformat())
-    _withdraw(client, a_id, reason="promotion", grams="4", on="2026-09-29")
-    _withdraw(client, b_id, reason="promotion", grams="2", on=TODAY.isoformat())
-    _withdraw(client, a_id, reason="own_use", grams="3", on="2026-10-01")
+    _withdraw(client, a_id, reason="promotion", quantity="4", on="2026-09-29")
+    _withdraw(client, b_id, reason="promotion", quantity="2", on=TODAY.isoformat())
+    _withdraw(client, a_id, reason="own_use", quantity="3", on="2026-10-01")
 
     panel = client.get("/panel").json()["periods"]
     analysis = client.get("/analysis").json()
@@ -688,7 +693,7 @@ def test_a_wholly_pending_shortfall_reads_all_pending_on_the_row_header_and_sinc
     answers its grams as a positive magnitude and `all_pending` true everywhere the
     shortfall appears; the sale of the same variety is pending too."""
     b_id = _variety(client, "B", price=1_000)
-    _sale(client, b_id, grams="4", on=TODAY.isoformat())
+    _sale(client, b_id, quantity="4", on=TODAY.isoformat())
     _adjust(client, b_id, quantity="-3", on=TODAY.isoformat())
 
     analysis = client.get("/analysis").json()
@@ -709,8 +714,8 @@ def test_a_zero_cost_lot_with_pending_overflow_is_not_fully_pending(client: Test
     """A harvest lot costs $0 yet is costed: a 1 g sale leaves 4 g, so a shortfall of 8 g
     is $0 with 4 g pending, and `all_pending` is false because the lot's 4 g are costed."""
     harvest_id = _variety(client, "Cosecha", price=1_000)
-    _entry(client, harvest_id, grams="5", origin="harvest", on="2026-09-01")
-    _sale(client, harvest_id, grams="1", on="2026-09-29")
+    _entry(client, harvest_id, quantity="5", origin="harvest", on="2026-09-01")
+    _sale(client, harvest_id, quantity="1", on="2026-09-29")
     _adjust(client, harvest_id, quantity="-8", on=TODAY.isoformat())
 
     analysis = client.get("/analysis").json()
@@ -734,8 +739,8 @@ def test_a_current_week_and_month_without_a_negative_adjustment_read_shortfall_n
     so are the Análisis rows' and the header's (absent, never a $0 line), while cost of
     goods still reads a real figure."""
     a_id = _variety(client, "A", price=1_000)
-    _entry(client, a_id, grams="10", total_cost=1_000, on="2026-09-01")
-    _sale(client, a_id, grams="2", on=TODAY.isoformat())
+    _entry(client, a_id, quantity="10", total_cost=1_000, on="2026-09-01")
+    _sale(client, a_id, quantity="2", on=TODAY.isoformat())
 
     panel = client.get("/panel").json()["periods"]
     analysis = client.get("/analysis").json()
@@ -766,10 +771,10 @@ def _seed_small_panel_history(client: TestClient) -> None:
     expense and one negative adjustment."""
     day = TODAY.isoformat()
     variety_id = _variety(client, "Chica")
-    _entry(client, variety_id, grams="10", total_cost=500, on=day)
-    _sale(client, variety_id, grams="1", on=day)
+    _entry(client, variety_id, quantity="10", total_cost=500, on=day)
+    _sale(client, variety_id, quantity="1", on=day)
     customer_id = _customer(client, "Deudora chica")
-    _sale(client, variety_id, grams="1", on=day, customer_id=customer_id, payment="owing")
+    _sale(client, variety_id, quantity="1", on=day, customer_id=customer_id, payment="owing")
     _expense(client, amount=100, on=day)
     adjustment = client.post(
         "/stock/entries",
@@ -796,7 +801,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
         _entry(
             client,
             variety_id,
-            grams="5000",
+            quantity="5000",
             total_cost=100_000 + i * 1_000,
             on=(TODAY - timedelta(days=360)).isoformat(),
         )
@@ -814,13 +819,13 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
             _sale(
                 client,
                 variety_id,
-                grams="1",
+                quantity="1",
                 on=day,
                 customer_id=customer_ids[i % len(customer_ids)],
                 payment="owing",
             )
         else:
-            _sale(client, variety_id, grams="1", on=day, payment="cash")
+            _sale(client, variety_id, quantity="1", on=day, payment="cash")
         client.post(
             "/expenses",
             json={
@@ -876,7 +881,7 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
     kept = _variety(client, "Kept")
     gone = _variety(client, "Gone")
     for variety_id in (kept, gone):
-        _entry(client, variety_id, grams="100", total_cost=None, on="2026-10-01")
+        _entry(client, variety_id, quantity="100", total_cost=None, on="2026-10-01")
         sold = client.post(
             "/sales",
             json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},

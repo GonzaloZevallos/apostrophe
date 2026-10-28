@@ -18,8 +18,8 @@ from app.customers.adapters.tables import CustomerRow
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import PriceQuote, PricingRule
 from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, PaymentMethod, Sale
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.varieties.adapters.tables import VarietyRow
 
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
@@ -405,5 +405,3 @@ def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
         event.remove(engine, "before_cursor_execute", _record)
 
     assert len(statements) == 2, statements
-
-

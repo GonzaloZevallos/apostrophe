@@ -38,7 +38,7 @@ class LotDraw:
 @dataclass(frozen=True)
 class DrawCost:
     """One draw's answer. `costed` is `None` exactly when none of the draw's grams
-    came from a lot — pending is carried as `Grams`, never a $0 cost; a costed part
+    came from a lot — pending is carried as `Quantity`, never a $0 cost; a costed part
     of `0` only ever comes from a lot with no recorded cost. `pending` is the part of
     the draw past every lot's grams."""
 

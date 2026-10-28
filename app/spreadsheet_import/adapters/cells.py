@@ -1,5 +1,5 @@
 """Turns a workbook into `ParsedWorkbook` (the plan's invariant: every cell value
-becomes `Grams`, a peso int, a date or text only here; no float reaches `Grams.of` or
+becomes `Quantity`, a peso int, a date or text only here; no float reaches `Quantity.of` or
 an `int()` cast without a whole-number check first).
 
 A row whose typed columns are all blank is skipped before any formula cell of it is
@@ -28,7 +28,7 @@ from openpyxl import load_workbook
 if TYPE_CHECKING:
     from openpyxl.cell import _CellGetValue
 
-from app.shared.quantity import Quantity, InvalidQuantity
+from app.shared.quantity import InvalidQuantity, Quantity
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
@@ -54,9 +54,7 @@ class _SizableWorksheet(Protocol):
     structurally rather than by that one concrete class."""
 
     def reset_dimensions(self) -> None: ...
-    def iter_rows(
-        self, *, values_only: Literal[True]
-    ) -> Generator[tuple[_CellGetValue, ...]]: ...
+    def iter_rows(self, *, values_only: Literal[True]) -> Generator[tuple[_CellGetValue, ...]]: ...
 
 
 class _CellError(Exception):
@@ -175,7 +173,7 @@ def _require_date(value: _CellGetValue) -> date:
 
 
 def _to_indica(value: _CellGetValue) -> int | str | None:
-    """`% índica` is neither Grams, pesos, a date nor text, so it is read as the
+    """`% índica` is neither Quantity, pesos, a date nor text, so it is read as the
     plain value it is: a true `int` or a whole float stays the whole number;
     anything else present becomes its own text, left for the owner's check to
     refuse (CatalogRow's own type, fixed by `contract`). A `bool`, like in every
@@ -356,7 +354,11 @@ def _read_price_history(grid: _Grid, problems: list[CellProblem]) -> tuple[Price
             row_problems, ref, layout.PRICE_HISTORY_BULK_PRICE_LABEL, _to_pesos, raw_bulk_price
         )
         bulk_minimum = _field(
-            row_problems, ref, layout.PRICE_HISTORY_BULK_MINIMUM_LABEL, _to_quantity, raw_bulk_minimum
+            row_problems,
+            ref,
+            layout.PRICE_HISTORY_BULK_MINIMUM_LABEL,
+            _to_quantity,
+            raw_bulk_minimum,
         )
         problems.extend(row_problems)
         if variety is None or effective is None or list_price is None:
@@ -563,7 +565,9 @@ def _read_entradas(grid: _Grid, problems: list[CellProblem]) -> tuple[EntradaRow
         )
         revisar_value = _at(grid, row_number, columns[layout.ENTRADAS_REVISAR_TITLE])
         revisar = _field(problems, ref, layout.ENTRADAS_REVISAR_TITLE, _to_text, revisar_value)
-        rows.append(EntradaRow(ref, entry_date, variety, quantity, origin, total_cost, note, revisar))
+        rows.append(
+            EntradaRow(ref, entry_date, variety, quantity, origin, total_cost, note, revisar)
+        )
     return tuple(rows)
 
 

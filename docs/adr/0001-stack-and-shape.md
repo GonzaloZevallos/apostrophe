@@ -127,6 +127,8 @@ hundredths, and a unit's decimals only validate input and decide display. The gr
 among the seller's own; its stored values are unchanged. `app/shared/grams.py` stays where it is until
 that part decides what becomes of it.
 
+GH-385: the type now lives in `app/shared/quantity.py` as `Quantity` (its refusal code is unchanged).
+
 > - **Shape**: one hexagon per capability under `app/<capability>/`:
 
 Narrowed by docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md, in the parts that build the configuration: a business's configuration (units,

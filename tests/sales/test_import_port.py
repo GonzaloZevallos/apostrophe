@@ -19,8 +19,8 @@ from app.sales.adapters.import_port import SalesImport
 from app.sales.adapters.price_book import PlannedPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import price_line
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
@@ -169,7 +169,10 @@ def test_check_sales_prices_list_bulk_and_vip_falling_back_to_list(
     business_id = _business_id(engine, "uno@example.com")
     history = [
         _price_row(
-            effective=date(2026, 1, 1), list_price=1_000, bulk_price=800, bulk_minimum=Quantity.of(10)
+            effective=date(2026, 1, 1),
+            list_price=1_000,
+            bulk_price=800,
+            bulk_minimum=Quantity.of(10),
         ),
         _price_row(effective=date(2026, 7, 1), list_price=1_000, variety="Blue Dream"),
     ]
@@ -206,7 +209,10 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
     business_id = _business_id(engine, "uno@example.com")
     history = [
         _price_row(
-            effective=date(2026, 1, 1), list_price=1_000, bulk_price=600, bulk_minimum=Quantity.of(10)
+            effective=date(2026, 1, 1),
+            list_price=1_000,
+            bulk_price=600,
+            bulk_minimum=Quantity.of(10),
         )
     ]
     keys = {"Blue Dream": "blue dream"}
@@ -276,12 +282,21 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
         amigo_fallback_date = date(2026, 7, 15)
         vip_date = date(2026, 6, 3)
         cases = [
-            (bulk_date, _sale_input(has_customer=True, quantity=Quantity.of(20), sale_date=bulk_date)),
-            (list_date, _sale_input(has_customer=True, quantity=Quantity.of(1), sale_date=list_date)),
+            (
+                bulk_date,
+                _sale_input(has_customer=True, quantity=Quantity.of(20), sale_date=bulk_date),
+            ),
+            (
+                list_date,
+                _sale_input(has_customer=True, quantity=Quantity.of(1), sale_date=list_date),
+            ),
             (
                 amigo_fallback_date,
                 _sale_input(
-                    has_customer=True, vip=True, quantity=Quantity.of(1), sale_date=amigo_fallback_date
+                    has_customer=True,
+                    vip=True,
+                    quantity=Quantity.of(1),
+                    sale_date=amigo_fallback_date,
                 ),
             ),
             (
@@ -336,7 +351,10 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
     run_today = date(2026, 8, 1)
     history = [
         _price_row(
-            effective=date(2026, 1, 1), list_price=1_000, bulk_price=800, bulk_minimum=Quantity.of(10)
+            effective=date(2026, 1, 1),
+            list_price=1_000,
+            bulk_price=800,
+            bulk_minimum=Quantity.of(10),
         )
     ]
     keys = {"Blue Dream": "blue dream"}
@@ -347,7 +365,9 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
     vip_sale = _sale_input(
         has_customer=True, vip=True, quantity=Quantity.of(20), sale_date=date(2026, 6, 3)
     )
-    gift_sale = _sale_input(gift=True, quantity=Quantity.of(5), sale_date=date(2026, 6, 4), method=None)
+    gift_sale = _sale_input(
+        gift=True, quantity=Quantity.of(5), sale_date=date(2026, 6, 4), method=None
+    )
     cases = [bulk_sale, list_sale, vip_sale, gift_sale]
 
     book = PlannedPriceBook(history, keys, ordinals)

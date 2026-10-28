@@ -36,8 +36,8 @@ from app.sales.domain.sale import (
     SaleDateInFuture,
     SaleLine,
 )
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
@@ -58,7 +58,11 @@ def _line(
     special_price: int | None = None,
 ) -> LineRequest:
     return LineRequest(
-        variety_id=variety_id, quantity=quantity, quote=quote, gift=gift, special_price=special_price
+        variety_id=variety_id,
+        quantity=quantity,
+        quote=quote,
+        gift=gift,
+        special_price=special_price,
     )
 
 

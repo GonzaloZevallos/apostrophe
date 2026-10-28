@@ -21,8 +21,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Protocol
 
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import (
@@ -165,7 +165,9 @@ class StockImport(Protocol):
         """`row` under stock.md's rules, as if recorded on `today`."""
         ...
 
-    def write_threshold(self, variety_id: int, quantity: Quantity, transaction: Transaction) -> None: ...
+    def write_threshold(
+        self, variety_id: int, quantity: Quantity, transaction: Transaction
+    ) -> None: ...
 
     def write_entry(
         self,

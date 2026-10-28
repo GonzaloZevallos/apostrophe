@@ -42,7 +42,7 @@ from app.sales.domain.sale import (
     UnknownCustomer,
     UnknownVariety,
 )
-from app.shared.quantity import Quantity, InvalidQuantity
+from app.shared.quantity import InvalidQuantity, Quantity
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 

@@ -439,7 +439,9 @@ def variety_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
         rest = [p for p in window if p not in details]
         quantity = first_matching(rest, QUANTITY)
         if quantity is None or minus(quantity) != row["Gramos"]:
-            problems.append(_problem(name, f"{where} has {quantity}, muestra.md says {row['Gramos']}"))
+            problems.append(
+                _problem(name, f"{where} has {quantity}, muestra.md says {row['Gramos']}")
+            )
         days = first_matching(rest, re.compile(r"^\d+ días$"))
         want_days = None if row["Días restantes"] == "—" else row["Días restantes"]
         if days != want_days:
@@ -1015,7 +1017,9 @@ def archived_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
             problems.append(_problem(name, f"{where} says Oculta, muestra.md says it is shown"))
         quantity = first_matching(window, QUANTITY)
         if quantity is not None and minus(quantity) != row["Gramos"]:
-            problems.append(_problem(name, f"{where} has {quantity}, muestra.md says {row['Gramos']}"))
+            problems.append(
+                _problem(name, f"{where} has {quantity}, muestra.md says {row['Gramos']}")
+            )
         price = first_matching(window, re.compile(r"^\$ [\d.]+ (?:x g|por gramo)$"))
         if price is not None and _price_per_gram(price) != row["Precio hoy"]:
             problems.append(

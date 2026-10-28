@@ -32,8 +32,8 @@ from app.stock.domain.errors import (
     EntryCostOnNegativeAdjustment,
     EntryCostRequired,
     EntryDateInFuture,
-    EntryQuantityInvalid,
     EntryNoteTooLong,
+    EntryQuantityInvalid,
 )
 from app.stock.domain.threshold import Threshold, ThresholdInvalid
 
@@ -77,9 +77,7 @@ class SqlStockImport:
 
     def has_records(self) -> bool:
         statement = (
-            select(StockEntryRow.id)
-            .where(StockEntryRow.business_id == self._business_id)
-            .limit(1)
+            select(StockEntryRow.id).where(StockEntryRow.business_id == self._business_id).limit(1)
         )
         return self._session.scalar(statement) is not None
 
@@ -91,7 +89,12 @@ class SqlStockImport:
         return None
 
     def check_entry(self, row: EntradaRow, today: date) -> Refusal | None:
-        if row.entry_date is None or row.variety is None or row.quantity is None or row.origin is None:
+        if (
+            row.entry_date is None
+            or row.variety is None
+            or row.quantity is None
+            or row.origin is None
+        ):
             return Refusal("import.field_missing")
         origin = ORIGEN_WORDS.get(row.origin)
         if origin is None:
@@ -111,7 +114,9 @@ class SqlStockImport:
             return Refusal(exc.code)
         return None
 
-    def write_threshold(self, variety_id: int, quantity: Quantity, transaction: Transaction) -> None:
+    def write_threshold(
+        self, variety_id: int, quantity: Quantity, transaction: Transaction
+    ) -> None:
         self._thresholds.set(variety_id, Threshold.of(quantity))
         transaction.commit()
 

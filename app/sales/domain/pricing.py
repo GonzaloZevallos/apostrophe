@@ -16,8 +16,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import ClassVar
 
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 
 
 class SaleRuleBroken(ValueError):
@@ -157,7 +157,9 @@ def price_line(
     if special_price is not None:
         if special_price <= 0:
             raise InvalidSpecialPrice()
-        return LinePricing(PricingRule.SPECIAL, special_rate(special_price, quantity), special_price)
+        return LinePricing(
+            PricingRule.SPECIAL, special_rate(special_price, quantity), special_price
+        )
     if quote is None:
         raise NoPriceThatDay()
     # Candidates in the order a tie is settled: VIP, then bulk, then list.

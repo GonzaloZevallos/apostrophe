@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.shared.quantity import Quantity, InvalidQuantity
+from app.shared.quantity import InvalidQuantity, Quantity
 
 
 def test_grams_keep_up_to_two_decimals() -> None:

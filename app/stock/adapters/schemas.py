@@ -1,6 +1,6 @@
 """The HTTP shapes of a stock entry. Bare: no pydantic length or value constraint, so
-every rule stays the domain's and its message is a fixed string (ADR-0005). Grams are
-typed `Decimal` here and become `Grams` only through `Grams.of`, at the router; every
+every rule stays the domain's and its message is a fixed string (ADR-0005). Quantity are
+typed `Decimal` here and become `Quantity` only through `Quantity.of`, at the router; every
 grams value out uses the shared `GramsOut` (CODING_STANDARDS: no second grams format).
 """
 

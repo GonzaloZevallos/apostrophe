@@ -6,7 +6,7 @@ from pydantic import BaseModel, PlainSerializer
 
 from app.varieties.domain.variety import PriceEntry, Variety
 
-# Grams go out as a JSON number; they never carry more than two decimals.
+# Quantity go out as a JSON number; they never carry more than two decimals.
 QuantityOut = Annotated[Decimal, PlainSerializer(float, return_type=float, when_used="json")]
 
 

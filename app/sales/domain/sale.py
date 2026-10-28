@@ -15,8 +15,8 @@ from enum import StrEnum
 from typing import ClassVar
 
 from app.sales.domain.pricing import PriceQuote, PricingRule, SaleRuleBroken, price_line
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 
 NOTE_MAX_LENGTH = 200
 

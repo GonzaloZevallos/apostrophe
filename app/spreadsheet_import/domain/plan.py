@@ -38,9 +38,9 @@ from datetime import date
 from decimal import Decimal
 from typing import Literal
 
-from app.shared.quantity import Quantity
 from app.shared.names import collapse_spaces
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
     CategoryRow,

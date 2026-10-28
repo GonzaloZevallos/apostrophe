@@ -30,7 +30,7 @@ def exact_segments() -> tuple[str, ...]:
         _PSEUDO("catalog.indica_line").format(indica="60", sativa="40"),
         _PSEUDO("catalog.aroma_line").format(aroma=AROMA),
         _PSEUDO("catalog.price_per_gram_line").format(price="$11.000"),
-        _PSEUDO("catalog.bulk_line").format(quantity="2,5 g", price="$9.000"),
+        _PSEUDO("catalog.bulk_line").format(grams="2,5 g", price="$9.000"),
     )
 
 

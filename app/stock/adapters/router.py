@@ -8,7 +8,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
-from app.shared.quantity import Quantity, InvalidQuantity
+from app.shared.quantity import InvalidQuantity, Quantity
 from app.stock.adapters.schemas import (
     EntryIn,
     EntryOut,
@@ -35,15 +35,15 @@ from app.stock.domain.errors import (
     EntryCostOnNegativeAdjustment,
     EntryCostRequired,
     EntryDateInFuture,
-    EntryQuantityInvalid,
     EntryNoteTooLong,
     EntryNotFound,
+    EntryQuantityInvalid,
     WithdrawalDateInFuture,
-    WithdrawalQuantityNotPositive,
-    WithdrawalQuantityTooPrecise,
     WithdrawalNoLines,
     WithdrawalNoteTooLong,
     WithdrawalNotFound,
+    WithdrawalQuantityNotPositive,
+    WithdrawalQuantityTooPrecise,
     WithdrawalReasonRequired,
     WithdrawalVarietyNotFound,
 )
@@ -308,7 +308,15 @@ def set_threshold(
         quantity = Quantity.of(body.grams) if body.grams is not None else None
         try:
             view = set_threshold_uc.set_threshold(
-                entries, draws, withdrawals, thresholds, catalog, session, variety_id, quantity, today
+                entries,
+                draws,
+                withdrawals,
+                thresholds,
+                catalog,
+                session,
+                variety_id,
+                quantity,
+                today,
             )
         except (_UnknownVariety, _ArchivedVariety) as exc:
             raise _or_variety_not_found(exc, variety_id) from exc

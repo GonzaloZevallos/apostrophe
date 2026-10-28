@@ -22,8 +22,8 @@ from app.shared.transaction import Transaction
 
 @dataclass(frozen=True)
 class LineInput:
-    """One line as the request gave it, grams already turned into `Grams` by
-    `Grams.of` at the HTTP edge; nothing here builds a `Grams` any other way."""
+    """One line as the request gave it, grams already turned into `Quantity` by
+    `Quantity.of` at the HTTP edge; nothing here builds a `Quantity` any other way."""
 
     variety_id: int
     quantity: Quantity

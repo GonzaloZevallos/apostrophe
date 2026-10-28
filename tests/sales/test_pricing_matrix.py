@@ -23,8 +23,8 @@ from app.sales.domain.pricing import (
     SaleRuleBroken,
     price_line,
 )
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 
 MATRIX_PATH = (
     Path(__file__).resolve().parent.parent.parent / "web" / "src" / "sales" / "pricing-matrix.json"

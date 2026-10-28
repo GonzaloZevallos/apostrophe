@@ -25,8 +25,8 @@ from app.sales.domain.pricing import (
     price_line,
     special_rate,
 )
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 
 LIST_ONLY = PriceQuote(list_price=1_000)
 WITH_BULK = PriceQuote(list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)))
@@ -121,9 +121,9 @@ def test_every_price_quote_refusal_message_carries_no_input_value() -> None:
     ],
 )
 def test_line_total_rounds_half_up_to_the_peso(
-    price_per_gram: int, quantity: str, expected: int
+    price_per_gram: int, grams: str, expected: int
 ) -> None:
-    assert line_total(price_per_gram, Quantity.of(quantity)) == expected
+    assert line_total(price_per_gram, Quantity.of(grams)) == expected
 
 
 # -- special_rate -----------------------------------------------------------------------
@@ -139,43 +139,43 @@ def test_line_total_rounds_half_up_to_the_peso(
         (3, "2.00", 2),
     ],
 )
-def test_special_rate_rounds_half_up(total: int, quantity: str, expected: int) -> None:
-    assert special_rate(total, Quantity.of(quantity)) == expected
+def test_special_rate_rounds_half_up(total: int, grams: str, expected: int) -> None:
+    assert special_rate(total, Quantity.of(grams)) == expected
 
 
 # -- price_line: each rule, in the order it wins ---------------------------------------
 
 
 def test_list_price_applies_when_nothing_else_does() -> None:
-    priced = _price(quote=LIST_ONLY, grams=Quantity.of(1))
+    priced = _price(quote=LIST_ONLY, quantity=Quantity.of(1))
 
     assert priced.rule == PricingRule.LIST
     assert priced.price_per_gram == 1_000
 
 
 def test_bulk_price_applies_at_the_minimum_grams_measured_per_line() -> None:
-    priced = _price(quote=WITH_BULK, grams=Quantity.of(10))
+    priced = _price(quote=WITH_BULK, quantity=Quantity.of(10))
 
     assert priced.rule == PricingRule.BULK
     assert priced.price_per_gram == 700
 
 
 def test_below_the_minimum_stays_list() -> None:
-    priced = _price(quote=WITH_BULK, grams=Quantity.of("9.99"))
+    priced = _price(quote=WITH_BULK, quantity=Quantity.of("9.99"))
 
     assert priced.rule == PricingRule.LIST
 
 
 def test_vip_takes_its_own_price_below_the_minimum() -> None:
-    priced = _price(vip=True, quote=WITH_VIP, grams=Quantity.of(1))
+    priced = _price(vip=True, quote=WITH_VIP, quantity=Quantity.of(1))
 
     assert priced.rule == PricingRule.VIP
     assert priced.price_per_gram == 600
 
 
 def test_vip_without_a_vip_price_pays_like_anyone_else() -> None:
-    below = _price(vip=True, quote=WITH_BULK, grams=Quantity.of(1))
-    at_minimum = _price(vip=True, quote=WITH_BULK, grams=Quantity.of(10))
+    below = _price(vip=True, quote=WITH_BULK, quantity=Quantity.of(1))
+    at_minimum = _price(vip=True, quote=WITH_BULK, quantity=Quantity.of(10))
 
     assert (below.rule, below.price_per_gram) == (PricingRule.LIST, 1_000)
     assert (at_minimum.rule, at_minimum.price_per_gram) == (PricingRule.BULK, 700)
@@ -184,13 +184,13 @@ def test_vip_without_a_vip_price_pays_like_anyone_else() -> None:
 def test_vip_with_the_switch_off_pays_like_anyone_else() -> None:
     settings = PricingSettings(is_bulk_pricing=True, is_vip_customers=False)
 
-    priced = _price(vip=True, settings=settings, quote=WITH_VIP, grams=Quantity.of(1))
+    priced = _price(vip=True, settings=settings, quote=WITH_VIP, quantity=Quantity.of(1))
 
     assert priced.rule == PricingRule.LIST
 
 
 def test_bulk_with_the_switch_off_is_not_applied_at_the_minimum() -> None:
-    priced = _price(settings=BOTH_OFF, quote=WITH_VIP, grams=Quantity.of(10))
+    priced = _price(settings=BOTH_OFF, quote=WITH_VIP, quantity=Quantity.of(10))
 
     assert priced.rule == PricingRule.LIST
 
@@ -200,7 +200,7 @@ def test_a_vip_tie_with_bulk_is_stored_as_vip() -> None:
         list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), vip_price=700
     )
 
-    assert _price(vip=True, quote=quote, grams=Quantity.of(10)).rule == PricingRule.VIP
+    assert _price(vip=True, quote=quote, quantity=Quantity.of(10)).rule == PricingRule.VIP
 
 
 def test_a_vip_price_above_bulk_at_the_minimum_is_stored_as_bulk() -> None:
@@ -208,13 +208,13 @@ def test_a_vip_price_above_bulk_at_the_minimum_is_stored_as_bulk() -> None:
         list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), vip_price=800
     )
 
-    priced = _price(vip=True, quote=quote, grams=Quantity.of(10))
+    priced = _price(vip=True, quote=quote, quantity=Quantity.of(10))
 
     assert (priced.rule, priced.price_per_gram) == (PricingRule.BULK, 700)
 
 
 def test_gift_is_zero_and_wins_over_vip() -> None:
-    priced = _price(gift=True, vip=True, quote=WITH_VIP, grams=Quantity.of(5))
+    priced = _price(gift=True, vip=True, quote=WITH_VIP, quantity=Quantity.of(5))
 
     assert priced.rule == PricingRule.GIFT
     assert priced.price_per_gram == 0
@@ -222,14 +222,14 @@ def test_gift_is_zero_and_wins_over_vip() -> None:
 
 
 def test_special_wins_over_vip() -> None:
-    priced = _price(special_price=50, vip=True, quote=WITH_VIP, grams=Quantity.of(2))
+    priced = _price(special_price=50, vip=True, quote=WITH_VIP, quantity=Quantity.of(2))
 
     assert priced.rule == PricingRule.SPECIAL
     assert priced.line_total == 50
 
 
 def test_special_line_total_is_the_typed_total_regardless_of_the_rate() -> None:
-    priced = _price(special_price=7, grams=Quantity.of(2))
+    priced = _price(special_price=7, quantity=Quantity.of(2))
 
     assert priced.line_total == 7
     assert priced.price_per_gram == special_rate(7, Quantity.of(2))
@@ -241,7 +241,7 @@ def test_no_price_that_day_without_a_special_price_is_refused() -> None:
 
 
 def test_no_price_that_day_with_a_special_price_still_prices() -> None:
-    priced = _price(quote=None, special_price=12, grams=Quantity.of(3))
+    priced = _price(quote=None, special_price=12, quantity=Quantity.of(3))
 
     assert priced.rule == PricingRule.SPECIAL
     assert priced.line_total == 12
@@ -261,7 +261,7 @@ def test_a_special_price_must_be_above_zero(special_price: int) -> None:
 @pytest.mark.parametrize("grams", ["0", "-1"])
 def test_grams_must_be_positive(grams: str) -> None:
     with pytest.raises(NonPositiveQuantity):
-        _price(grams=Quantity.of(grams))
+        _price(quantity=Quantity.of(grams))
 
 
 def test_every_pricing_refusal_message_carries_no_input_value() -> None:
@@ -269,7 +269,7 @@ def test_every_pricing_refusal_message_carries_no_input_value() -> None:
         (GiftWithSpecialPrice, lambda: _price(gift=True, special_price=12)),
         (InvalidSpecialPrice, lambda: _price(special_price=0)),
         (NoPriceThatDay, lambda: _price(quote=None)),
-        (NonPositiveQuantity, lambda: _price(grams=Quantity.of("0"))),
+        (NonPositiveQuantity, lambda: _price(quantity=Quantity.of("0"))),
     ]
     for exc_type, action in cases:
         with pytest.raises(exc_type) as excinfo:

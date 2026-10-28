@@ -51,7 +51,7 @@ def _entry(
 
 
 def test_a_positive_entry_is_a_lot() -> None:
-    grouped = lots_and_draws([_entry(id=1, grams="10")], [], [])
+    grouped = lots_and_draws([_entry(id=1, quantity="10")], [], [])
 
     lots, draws = grouped[1]
     assert len(lots) == 1
@@ -60,9 +60,7 @@ def test_a_positive_entry_is_a_lot() -> None:
 
 
 def test_a_negative_adjustment_is_a_draw_carried_as_a_positive_magnitude() -> None:
-    grouped = lots_and_draws(
-        [_entry(id=1, grams="-4", origin=Origin.ADJUSTMENT)], [], []
-    )
+    grouped = lots_and_draws([_entry(id=1, quantity="-4", origin=Origin.ADJUSTMENT)], [], [])
 
     lots, draws = grouped[1]
     assert lots == []
@@ -85,7 +83,9 @@ def test_a_sale_line_is_always_a_draw_gifts_included() -> None:
 
 def test_varieties_are_grouped_separately() -> None:
     grouped = lots_and_draws(
-        [_entry(id=1, variety_id=1, grams="10"), _entry(id=2, variety_id=2, grams="20")], [], []
+        [_entry(id=1, variety_id=1, quantity="10"), _entry(id=2, variety_id=2, quantity="20")],
+        [],
+        [],
     )
 
     assert set(grouped) == {1, 2}
@@ -94,8 +94,8 @@ def test_varieties_are_grouped_separately() -> None:
 
 
 def test_a_group_is_sorted_by_date_first() -> None:
-    later = _entry(id=1, grams="10", entry_date=LATER, recorded_at=AT)
-    earlier = _entry(id=2, grams="5", entry_date=DAY, recorded_at=LATER_AT)
+    later = _entry(id=1, quantity="10", entry_date=LATER, recorded_at=AT)
+    earlier = _entry(id=2, quantity="5", entry_date=DAY, recorded_at=LATER_AT)
 
     lots, _ = lots_and_draws([later, earlier], [], [])[1]
 
@@ -103,8 +103,8 @@ def test_a_group_is_sorted_by_date_first() -> None:
 
 
 def test_same_day_breaks_the_tie_by_recorded_order() -> None:
-    recorded_second = _entry(id=1, grams="10", recorded_at=LATER_AT)
-    recorded_first = _entry(id=2, grams="5", recorded_at=AT)
+    recorded_second = _entry(id=1, quantity="10", recorded_at=LATER_AT)
+    recorded_first = _entry(id=2, quantity="5", recorded_at=AT)
 
     lots, _ = lots_and_draws([recorded_second, recorded_first], [], [])[1]
 
@@ -119,7 +119,7 @@ def test_a_variety_with_nothing_is_simply_absent() -> None:
 
 def test_draws_are_sorted_too_oldest_first() -> None:
     later_adjustment = _entry(
-        id=1, grams="-10", origin=Origin.ADJUSTMENT, entry_date=LATER, recorded_at=LATER_AT
+        id=1, quantity="-10", origin=Origin.ADJUSTMENT, entry_date=LATER, recorded_at=LATER_AT
     )
     earlier_sale = SaleLineDraw(
         variety_id=1, day=DAY, recorded_at=AT, sale_id=5, position=0, quantity=Quantity.of("3")
@@ -138,7 +138,9 @@ def test_a_negative_adjustment_and_a_sale_line_on_the_same_moment_break_the_tie_
     larger than the sale's (1), and `lots_and_draws` always appends entry-draws before
     sale draws internally, so a `LotOrder` that dropped `rank` and fell back to
     `ref_id` — or to the stable sort's insertion order — would read this backwards."""
-    adjustment = _entry(id=9, grams="-2", origin=Origin.ADJUSTMENT, entry_date=DAY, recorded_at=AT)
+    adjustment = _entry(
+        id=9, quantity="-2", origin=Origin.ADJUSTMENT, entry_date=DAY, recorded_at=AT
+    )
     sale_draw = SaleLineDraw(
         variety_id=1, day=DAY, recorded_at=AT, sale_id=1, position=0, quantity=Quantity.of("3")
     )
@@ -171,8 +173,8 @@ def _withdrawal_line(
 def test_an_exact_tie_orders_adjustment_then_sale_line_then_withdrawal_lines_by_position() -> None:
     """The withdrawal's id (1) is smaller than the adjustment's (9) and its lines are
     handed in reversed, so only `rank` then `position` can produce this order."""
-    lot = _entry(id=5, grams="3", total_cost=300)
-    adjustment = _entry(id=9, grams="-1", origin=Origin.ADJUSTMENT)
+    lot = _entry(id=5, quantity="3", total_cost=300)
+    adjustment = _entry(id=9, quantity="-1", origin=Origin.ADJUSTMENT)
     sale_draw = SaleLineDraw(
         variety_id=1, day=DAY, recorded_at=AT, sale_id=7, position=0, quantity=Quantity.of("1")
     )
@@ -204,7 +206,7 @@ def test_an_exact_tie_orders_adjustment_then_sale_line_then_withdrawal_lines_by_
 
 
 def test_a_withdrawal_line_past_every_lot_is_pending_never_costed_zero() -> None:
-    lot = _entry(id=1, grams="2", total_cost=200)
+    lot = _entry(id=1, quantity="2", total_cost=200)
     line = _withdrawal_line(1, 0, "5")
 
     lots, draws = lots_and_draws([lot], [], [line])[1]
@@ -215,7 +217,7 @@ def test_a_withdrawal_line_past_every_lot_is_pending_never_costed_zero() -> None
 
 
 def test_total_pending_equals_negative_stock_with_a_withdrawal_involved() -> None:
-    lot = _entry(id=1, grams="4", total_cost=400)
+    lot = _entry(id=1, quantity="4", total_cost=400)
     sale_draw = SaleLineDraw(
         variety_id=1, day=DAY, recorded_at=AT, sale_id=7, position=0, quantity=Quantity.of("3")
     )

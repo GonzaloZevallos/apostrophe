@@ -18,10 +18,10 @@ from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
 from app.stock.domain.errors import (
     WithdrawalDateInFuture,
-    WithdrawalQuantityNotPositive,
-    WithdrawalQuantityTooPrecise,
     WithdrawalNoLines,
     WithdrawalNoteTooLong,
+    WithdrawalQuantityNotPositive,
+    WithdrawalQuantityTooPrecise,
     WithdrawalReasonRequired,
 )
 

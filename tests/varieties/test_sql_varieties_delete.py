@@ -23,8 +23,8 @@ from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import UnknownVariety
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_thresholds import SqlThresholds

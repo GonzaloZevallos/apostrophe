@@ -57,9 +57,9 @@ class Lot:
 
 @dataclass(frozen=True)
 class Draw:
-    """Grams going out of a variety: a sale line (gifts included), a negative
+    """Quantity going out of a variety: a sale line (gifts included), a negative
     adjustment or a stock withdrawal's line, always carried as a positive magnitude —
-    the direction is already `Draw` itself, never a signed `Grams`. `source` says which
+    the direction is already `Draw` itself, never a signed `Quantity`. `source` says which
     of them, and is the only way a draw's kind is told.
 
     `sale_id`, `line_total`, `pricing_rule` and `variety_name` ride along from the

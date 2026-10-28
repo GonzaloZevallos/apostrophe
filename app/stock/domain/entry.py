@@ -20,8 +20,8 @@ from app.stock.domain.errors import (
     EntryCostOnNegativeAdjustment,
     EntryCostRequired,
     EntryDateInFuture,
-    EntryQuantityInvalid,
     EntryNoteTooLong,
+    EntryQuantityInvalid,
 )
 
 NOTE_MAX_LENGTH = 200

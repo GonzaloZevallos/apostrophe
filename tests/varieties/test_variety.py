@@ -75,7 +75,12 @@ def test_a_bulk_price_and_a_bulk_minimum_go_together(
 
 @pytest.mark.parametrize(
     ("bulk_price", "bulk_minimum"),
-    [(11_000, Quantity.of(10)), (12_000, Quantity.of(10)), (0, Quantity.of(10)), (10_000, Quantity(0))],
+    [
+        (11_000, Quantity.of(10)),
+        (12_000, Quantity.of(10)),
+        (0, Quantity.of(10)),
+        (10_000, Quantity(0)),
+    ],
 )
 def test_a_bulk_price_is_positive_and_lower_than_the_list_price_from_some_grams(
     bulk_price: int, bulk_minimum: Quantity
@@ -170,6 +175,8 @@ def test_a_vip_price_at_or_above_the_list_price_is_refused_with_its_own_code(
 def test_a_vip_price_must_be_positive(vip_price: int) -> None:
     with pytest.raises(InvalidPriceEntry):
         PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=vip_price)
+
+
 def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
     from datetime import UTC, datetime
 

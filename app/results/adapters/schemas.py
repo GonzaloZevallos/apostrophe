@@ -9,7 +9,7 @@ Pinned ahead of `period_figures` and the route so the front (`analysis-front`) a
 backend (`results-backend`) build against the same frozen contract. Bare (ADR-0005):
 no length or pattern constraint, so a refusal is always the domain's, never pydantic's.
 
-Money is `int`. Grams reuse `GramsOut` (`app/varieties/adapters/schemas.py`) rather than
+Money is `int`. Quantity reuse `GramsOut` (`app/varieties/adapters/schemas.py`) rather than
 a second float-serialising decimal. Percentages are `int | None`, never a float: this
 file answers results figures (CODING_STANDARDS.md's "no float ... in any results money,
 grams or percentage path"), it does not compute them.

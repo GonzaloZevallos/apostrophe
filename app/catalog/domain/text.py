@@ -66,7 +66,9 @@ def _block(words: CatalogWords, entry: CatalogEntry) -> str:
         lines.append(words.aroma(entry.attributes.aroma.text))
     lines.append(words.price_per_gram(_money(entry.price.list_price)))
     if entry.price.bulk_price is not None and entry.price.bulk_minimum is not None:
-        lines.append(words.bulk(_quantity(entry.price.bulk_minimum), _money(entry.price.bulk_price)))
+        lines.append(
+            words.bulk(_quantity(entry.price.bulk_minimum), _money(entry.price.bulk_price))
+        )
     return "\n".join(lines)
 
 
@@ -84,7 +86,7 @@ def _money(amount: int) -> str:
 
 def _quantity(quantity: Quantity) -> str:
     """`10 g` when whole; otherwise a comma with the trailing zero dropped: `2,5 g`,
-    `2,25 g`. Reads `Grams.hundredths`, never a float."""
+    `2,25 g`. Reads `Quantity.hundredths`, never a float."""
     whole, remainder = divmod(quantity.hundredths, 100)
     if remainder == 0:
         return f"{whole} g"

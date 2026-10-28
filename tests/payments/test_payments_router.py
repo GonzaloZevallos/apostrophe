@@ -204,9 +204,7 @@ def test_deleting_an_on_the_spot_payment_is_refused(client: TestClient, engine: 
         json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]},
     ).json()
     with Session(engine) as session:
-        payment_id = session.scalar(
-            select(PaymentRow.id).where(PaymentRow.sale_id == sale["id"])
-        )
+        payment_id = session.scalar(select(PaymentRow.id).where(PaymentRow.sale_id == sale["id"]))
     assert payment_id is not None
 
     response = client.delete(f"/payments/{payment_id}")

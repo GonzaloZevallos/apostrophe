@@ -1,6 +1,6 @@
 """A variety's low-stock threshold (CONTEXT.md: Low-stock threshold).
 
-Optional, per variety, above zero, with the same two-decimal precision `Grams.of`
+Optional, per variety, above zero, with the same two-decimal precision `Quantity.of`
 already enforces at the parsing boundary. `Threshold.of` only adds "above zero": zero
 or a negative threshold would mean "never low", which turning the threshold off
 already means — the one it is set to is never one of those two values.

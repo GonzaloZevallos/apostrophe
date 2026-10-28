@@ -28,7 +28,9 @@ def _lot(ref_id: int, quantity: str, total_cost: int | None, day: date = DAY) ->
 
 
 def _draw(ref_id: int, quantity: str, day: date = DAY, position: int = 0) -> Draw:
-    return Draw(LotOrder(day, AT, 1, ref_id, position), 1, Quantity.of(quantity), DrawSource.SALE_LINE)
+    return Draw(
+        LotOrder(day, AT, 1, ref_id, position), 1, Quantity.of(quantity), DrawSource.SALE_LINE
+    )
 
 
 def test_a_draw_entirely_within_one_lot_is_costed_in_full() -> None:
@@ -206,7 +208,9 @@ def _assert_pending_is_never_a_zero_cost(results: list[DrawCost]) -> None:
             assert result.costed is None
 
 
-def _assert_draw_quantity_are_fully_accounted_for(draws: list[Draw], results: list[DrawCost]) -> None:
+def _assert_draw_quantity_are_fully_accounted_for(
+    draws: list[Draw], results: list[DrawCost]
+) -> None:
     for draw, result in zip(draws, results, strict=True):
         taken = sum(lot_draw.quantity.hundredths for lot_draw in result.lot_draws)
         assert taken + result.pending.hundredths == draw.quantity.hundredths

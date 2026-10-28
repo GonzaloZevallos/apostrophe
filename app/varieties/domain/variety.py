@@ -11,8 +11,8 @@ from datetime import date, datetime
 from enum import Enum
 from typing import ClassVar
 
-from app.shared.quantity import Quantity
 from app.shared.names import NameProblem, collapse_spaces, name_key, name_problem
+from app.shared.quantity import Quantity
 
 NAME_MAX_LENGTH = 60
 

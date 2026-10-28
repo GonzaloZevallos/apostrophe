@@ -13,7 +13,7 @@ from app.shared.transaction import Transaction
 
 @dataclass(frozen=True)
 class ReturnedQuantity:
-    """Grams a deleted sale gives back to one variety's stock."""
+    """Quantity a deleted sale gives back to one variety's stock."""
 
     variety_id: int
     quantity: Quantity

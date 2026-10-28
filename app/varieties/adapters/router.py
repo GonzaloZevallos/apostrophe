@@ -9,7 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
-from app.shared.quantity import Quantity, InvalidQuantity
+from app.shared.quantity import InvalidQuantity, Quantity
 from app.varieties.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,

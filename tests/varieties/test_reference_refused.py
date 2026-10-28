@@ -16,8 +16,8 @@ from app.db import flush_or_refuse
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import PriceQuote, VarietyPricing
 from app.sales.domain.sale import Sale, UnknownVariety
-from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyArchived as StockArchived
@@ -129,7 +129,9 @@ class RefusingEntries:
         self._own = own_variety_id
 
     def by_id(self, entry_id: int) -> StockEntry | None:
-        return StockEntry(DAY, self._own, Origin.HARVEST, Quantity.of("5"), None, None, NOW, entry_id)
+        return StockEntry(
+            DAY, self._own, Origin.HARVEST, Quantity.of("5"), None, None, NOW, entry_id
+        )
 
     def add(self, entry: StockEntry) -> StockEntry:
         raise ReferenceRefused

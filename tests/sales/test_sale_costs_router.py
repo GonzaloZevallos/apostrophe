@@ -167,9 +167,7 @@ def test_a_sale_detail_carries_still_owing_from_settlement(client: TestClient) -
     on this merged branch (Tech Lead finding, plan scope, `test_sale_costs_router.py:90`
     and `:109`)."""
     variety_id = _variety(client)
-    customer = client.post(
-        "/customers", json={"name": "Juana", "phone": "11 2345-6789"}
-    ).json()
+    customer = client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}).json()
 
     owing = client.post(
         "/sales",

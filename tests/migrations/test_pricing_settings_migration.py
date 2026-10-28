@@ -62,7 +62,12 @@ def _gift_or_special(gift: bool, special_price: int | None, quantity: int) -> Ou
 
 
 def _old_rule(
-    *, vip: bool, bulk: int | None, quantity: int, gift: bool = False, special_price: int | None = None
+    *,
+    vip: bool,
+    bulk: int | None,
+    quantity: int,
+    gift: bool = False,
+    special_price: int | None = None,
 ) -> Outcome:
     """The rule before this change, frozen here: a VIP customer with a bulk price pays
     it at any grams, stored VIP; otherwise bulk at or above the minimum; otherwise list."""

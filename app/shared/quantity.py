@@ -1,4 +1,4 @@
-"""Grams, to the hundredth (docs/adr/0001).
+"""Quantity, to the hundredth (docs/adr/0001).
 
 Stored and compared as whole hundredths so sums never drift the way floats do. Signed:
 an adjustment may take grams away. Whether a quantity must be positive is the caller's
@@ -15,9 +15,10 @@ HUNDREDTHS_PER_UNIT = 100
 
 
 class InvalidQuantity(ValueError):
-    """Grams were invalid. The message is a fixed literal, built from no constructor
+    """A quantity was invalid. The message is a fixed literal, built from no constructor
     argument, so it never repeats what was submitted (CODING_STANDARDS.md section 9)."""
 
+    # The wire code moves with the Product rename on the wire (ADR-0061); it stays until then.
     code: ClassVar[str] = "grams.invalid"
 
 
