@@ -16,7 +16,7 @@ jobs:
       - run: uv venv --python 3.13
       - run: uv sync --locked --extra dev
       - run: uv run --no-project pytest -n 8
-      - run: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py
+      - run: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_ci_changes.py tests/test_ci_verdict.py
       - run: uv run --no-project ruff check .
       - run: uv run --no-project mypy app tests scripts
   web:
