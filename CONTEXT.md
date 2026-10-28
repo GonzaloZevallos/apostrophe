@@ -514,7 +514,7 @@ _Avoid_: invoice, receipt, statement, ticket
 These terms are not entries of the present glossary. Code, tests and screens keep the present terms until the part named on each line ships; only that part moves its term into the glossary proper and amends the entry it replaces. Each line gives the term, the ADR that decides it, and its owning part by capability.
 
 **Product**:
-What a business sells, in code and in the API, whatever the business calls it on screen; it replaces Variety in code, and the columns that reference it stay `variety_id` until #75. Decided in docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; owned by the Product rename on the wire.
+What a business sells, in code and in the API, whatever the business calls it on screen; it replaces Variety in code, and the columns that reference it stay `variety_id` until #75. Decided in docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; owned by the Product rename on the wire. The Python names of the products hexagon (its modules, classes, ports, use-case parameters and domain attributes) and `app/catalog/domain/product.py` say Product from GH-386. Other hexagons' own fields, the wire, tables, columns and screens keep Variety until their parts (ADR-0061).
 _Avoid_: item, SKU, article
 
 **Unit**:

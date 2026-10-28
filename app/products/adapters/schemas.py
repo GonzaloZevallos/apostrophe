@@ -10,6 +10,7 @@ from app.products.domain.product import PriceEntry, Product
 QuantityOut = Annotated[Decimal, PlainSerializer(float, return_type=float, when_used="json")]
 
 
+# Keeps its wire name until the Product rename on the wire (ADR-0061).
 class VarietyIn(BaseModel):
     name: str
 
@@ -43,6 +44,7 @@ class PriceEntryOut(BaseModel):
         )
 
 
+# Keeps its wire name until the Product rename on the wire (ADR-0061).
 class VarietyOut(BaseModel):
     id: int
     name: str
@@ -63,6 +65,7 @@ class VarietyOut(BaseModel):
         )
 
 
+# Keeps its wire name until the Product rename on the wire (ADR-0061).
 class VarietyDetailOut(VarietyOut):
     """One variety's page: also the one removal action it offers, worked out from history
     when it is read (`null` for an archived variety)."""
