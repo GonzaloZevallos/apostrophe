@@ -46,6 +46,8 @@ export default function VarietiesLayout() {
   })
   const onStockNew = useMatch(STOCK_ENTRY_NEW) !== null
   const editedEntry = useMatch(STOCK_ENTRY)?.params.id
+  // Any address of the entry form is the form alone on a computer; only a numeric id has a pane.
+  const onStockForm = onStockNew || editedEntry !== undefined
   const onStockEdit = !onStockNew && editedEntry !== undefined && /^[0-9]+$/.test(editedEntry)
   const archivedPane = onArchivedCard || opened?.archived === true
   if (priceFormFor !== undefined) {
@@ -66,10 +68,12 @@ export default function VarietiesLayout() {
       </div>
     )
   }
-  if (onStockNew || onStockEdit) {
+  if (onStockForm) {
     return (
       <>
-        {!computer && <BehindPane>{onStockNew ? <VarietiesBehind /> : <EntriesBehind />}</BehindPane>}
+        {!computer && (onStockNew || onStockEdit) && (
+          <BehindPane>{onStockNew ? <VarietiesBehind /> : <EntriesBehind />}</BehindPane>
+        )}
         <Outlet context={me} />
       </>
     )

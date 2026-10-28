@@ -205,4 +205,13 @@ describe('on a computer', () => {
     expect(document.querySelector('.sheet__actions')).toBeNull()
     expect(screen.queryByRole('dialog')).toBeNull()
   })
+
+  test('an entry address with a non-numeric id keeps the whole width: no two panes, no pane behind', async () => {
+    renderApp([{ pathname: pathTo(STOCK_ENTRY, { id: 'abc' }) }], 'computer')
+
+    await waitFor(() => expect(document.querySelector('.pantalla')).not.toBeNull())
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    expect(document.querySelector('.variedades-paneles')).toBeNull()
+    expect(document.querySelector('.behind-pane')).toBeNull()
+  })
 })
