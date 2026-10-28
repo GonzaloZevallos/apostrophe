@@ -400,15 +400,15 @@ Each passage names the ADR that decides it, the part that will deliver it, and t
 
 Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
 
-- Entries, withdrawals, the threshold and every stock figure will be in the product's own unit, stored as a whole number of hundredths. Withdrawal and gift totals will show one amount per unit, each with its label, and are never added across units.
+- Entries, withdrawals, the threshold and every stock figure will be in the product's own unit, stored as a whole number of hundredths. Withdrawal and gift totals will show one amount per unit, each with its label, and will never be added across units.
 - It will replace: "one or more lines of variety and grams" and "grams above zero with at most two decimals".
 
 ### The withdrawal reasons and the Marketing rename
 
 Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the withdrawal reasons part.
 
-- Withdrawal reasons will be the business's own list. A new business starts with "Marketing" and "Own use". The reason now called "Promotion" will be called "Marketing", on screen, in the glossary and in its cost line on Home and Analysis. This is the only change an existing business sees; no stored withdrawal is rewritten.
-- The rename comes before any applied-promotion code (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`), so "promotion" always means the sale-side offer afterwards.
+- Withdrawal reasons will be the business's own list. A new business will start with "Marketing" and "Own use". The reason now called "Promotion" will be called "Marketing", on screen, in the glossary and in its cost line on Home and Analysis. This will be the only change an existing business sees; no stored withdrawal will be rewritten.
+- The rename will come before any applied-promotion code (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`), so "promotion" will always mean the sale-side offer afterwards.
 - It will replace: "**Reason**: Promotion (to make the business known) or Own use (the seller's own consumption)." and, in Out of scope, "a per-variety breakdown of promotion or own-use cost" and "tying a promotion to later sales".
 
 ### The business day
@@ -421,5 +421,5 @@ Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is
 
 Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
 
-- A lot's cost and the cost figures will be stored at the business's money scale and cross the wire in currency units; half-up rounding of a cost allocation goes through `round_half_up`, which the money part creates in `app/shared/money.py` (ADR-0058).
+- A lot's cost and the cost figures will be stored at the business's money scale and cross the wire in currency units; half-up rounding of a cost allocation will go through `round_half_up`, which the money part creates in `app/shared/money.py` (ADR-0058).
 - It will replace: "**Total cost**: whole pesos." and "Its cost per gram is the total cost over its grams." (the allocation rounds through the one helper).

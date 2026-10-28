@@ -253,14 +253,14 @@ Each passage names the ADR that decides it, the part that will deliver it, and t
 
 Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the catalog template part.
 
-- The blocks, the lines and their order between the header and footer will be the business's own, kept per business. A new business starts with name and price, and the header "**CATALOG**".
+- The blocks, the lines and their order between the header and footer will be the business's own, kept per business. A new business will start with name and price, and the header "**CATALOG**".
 - It will replace: "**Layout**: header, then one block per qualifying variety sorted by name, then footer." and the fixed lines "`• Price per gram: <money>`" and "`• From <grams>: <money> each`".
 
 ### Attributes shown in the catalog
 
 Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the categories part.
 
-- The attributes a subcategory defines, for each field whether it shows in the catalog, will take the place of the three fixed ones. Emoji, indica share and aroma become attributes of the migrated business's one subcategory, with today's catalog text unchanged for it. An archived attribute's line leaves the catalog and its values are kept. Whether a product is hidden stays a flag on the product.
+- The attributes a subcategory defines, for each field whether it shows in the catalog, will take the place of the three fixed ones. Emoji, indica share and aroma will become attributes of the migrated business's one subcategory, with today's catalog text unchanged for it. An archived attribute's line will leave the catalog and its values will be kept. Whether a product is hidden will stay a flag on the product.
 - It will replace: "### Catalog attributes, per variety" (**Emoji**, **Indica share**, **Aroma/flavor**) and "**Shown**: yes or no."
 
 ### Money format

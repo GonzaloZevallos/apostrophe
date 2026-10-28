@@ -122,7 +122,7 @@ Each passage names the ADR that decides it, the part that will deliver it, and t
 
 Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; delivered by the customer-type prices part.
 
-- Customer types will replace the single VIP mark. Each type has its own price per product, kept as effective-dated rows; the `vip` mark and `vip_price` columns stay frozen in place. List, bulk and customer-type prices stay switchable per business, as the Pricing settings are today. A new business starts with no customer types.
-- Existing businesses keep VIP as a customer type, so every VIP customer pays exactly what they paid before.
+- Customer types will replace the single VIP mark. Each type will have its own price per product, kept as effective-dated rows; the `vip` mark and `vip_price` columns will stay frozen in place. List, bulk and customer-type prices will stay switchable per business, as the Pricing settings are today. A new business will start with no customer types.
+- Existing businesses will keep VIP as a customer type, so every VIP customer will pay exactly what they paid before.
 - It will replace: "**Two per business**, independent of each other: Bulk price and VIP customers." (the VIP switch becomes the customer-types switch) and "Every price entry with a bulk price gets VIP price = bulk price, so every VIP customer pays exactly what they paid before."
-- Out of scope: "Other VIP rules, such as a percent off list." stays out. "Price promotions by date." is reversed by the promotions part (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`).
+- Out of scope: "Other VIP rules, such as a percent off list." will stay out. "Price promotions by date." will be reversed by the promotions part (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`).

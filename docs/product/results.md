@@ -236,14 +236,14 @@ Each passage names the ADR that decides it, the part that will deliver it, and t
 
 Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
 
-- A figure that totals quantities across products will show one amount per unit, each with its label (a `QuantityByUnit`, which the units part creates), because quantities of different units are never added. This covers the quantity sold, the quantity gifted ("You gave away") and the withdrawal totals.
+- A figure that totals quantities across products will show one amount per unit, each with its label (a `QuantityByUnit`, which the units part creates), because quantities of different units will never be added. This covers the quantity sold, the quantity gifted ("You gave away") and the withdrawal totals.
 - It will replace: "**Grams sold**: the grams of the period's lines that are not gifts." and "**Grams gifted** ("You gave away"): the grams of the period's gift lines. Withdrawn grams are never gifted grams."
 
 ### Money
 
 Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
 
-- Sales, costs, Profit and Cash will keep their definitions and be worked out from amounts stored at the business's scale; half-up rounding goes through `round_half_up`, which the money part creates in `app/shared/money.py`. Raising a business's money decimals leaves every figure equal in value.
+- Sales, costs, Profit and Cash will keep their definitions and be worked out from amounts stored at the business's scale; half-up rounding will go through `round_half_up`, which the money part creates in `app/shared/money.py`. Raising a business's money decimals leaves every figure equal in value.
 - It will replace: "**Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales."
 
 ### The business day
@@ -257,6 +257,6 @@ Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is
 
 Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the withdrawal reasons part.
 
-- The cost line of the withdrawal reason now called "Promotion" will read "Marketing", with the reason's rename (`stock.md`). It sits where it does today, right after Stock shortfall and before Expenses.
+- The cost line of the withdrawal reason now called "Promotion" will read "Marketing", with the reason's rename (`stock.md`). It will sit where it does today, right after Stock shortfall and before Expenses.
 - It will replace: "**Promotion cost** ("Promotion") and **own-use cost** ("Own use")" and "Promotion and Own use sit right after Stock shortfall and before Expenses.", and in Out of scope "promotion or own-use cost per variety" keeps holding under the new name.
-- The "Flower purchases" label and "What you have left" quantities follow the product word and the unit of each product.
+- The "Flower purchases" label and "What you have left" quantities will follow the product word and the unit of each product.

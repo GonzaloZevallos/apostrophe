@@ -243,14 +243,14 @@ Each passage names the ADR that decides it, the part that will deliver it, and t
 
 Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
 
-- Quantities of different units are never added. A pending quantity will be counted per unit, so a figure reads "and N <label> without cost" once for each unit it has pending, and the grams of a week, a month and a variety become one amount per unit, each with its label.
+- Quantities of different units will never be added. A pending quantity will be counted per unit, so a figure will read "and N <label> without cost" once for each unit it has pending, and the grams of a week, a month and a variety will become one amount per unit, each with its label.
 - It will replace: "It carries "and N g without cost", where N adds every pending gram behind it" and "**Grams**: grams sold and grams gifted, as two figures."
 
 ### Money
 
 Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
 
-- Sales, margins and profit will be worked out from amounts stored at the business's scale; the rounding of sales of costed quantity goes through `round_half_up`, which the money part creates in `app/shared/money.py` (ADR-0058). Raising a business's money decimals leaves every figure equal in value.
+- Sales, margins and profit will be worked out from amounts stored at the business's scale; the rounding of sales of costed quantity will go through `round_half_up`, which the money part creates in `app/shared/money.py` (ADR-0058). Raising a business's money decimals will leave every figure equal in value.
 - It will replace: "**Sales of costed grams**: per sale line, line total × costed grams ÷ line grams, rounded half up to the peso."
 
 ### The business day
@@ -273,4 +273,4 @@ Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-
 
 - The withdrawal reason now called "Promotion" will be called "Marketing", in its cost line in the month header, the week and month rows and since the first record, with its own pending mark kept (`stock.md`).
 - It will replace: "**Promotion cost ("Promotion") and own-use cost ("Own use")**" and ""Promotion $ X" and "Own use $ X" when the month has a withdrawal of that reason".
-- In Out of scope, "Tying a promotion to later sales." stays out: applied promotions are recorded on the sale itself (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`), not tied afterwards.
+- In Out of scope, "Tying a promotion to later sales." will stay out: applied promotions will be recorded on the sale itself (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`), not tied afterwards.
