@@ -253,6 +253,7 @@ class SaleDetailOut(BaseModel):
         )
 
 
+# Keeps its wire name until the Product rename on the wire (ADR-0061).
 class ReturnedGramsOut(BaseModel):
     variety_id: int
     grams: QuantityOut
