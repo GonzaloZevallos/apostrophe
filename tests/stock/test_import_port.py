@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.domain.rows import EntradaRow, SheetRef
 from app.stock.adapters.import_port import SqlStockImport
@@ -22,7 +22,7 @@ from app.stock.adapters.import_port import SqlStockImport
 BUSINESS_ID = 1
 TODAY = date(2026, 10, 2)
 REF = SheetRef(sheet="Entradas", row=5)
-TEN_GRAMS = Grams.of("10")
+TEN_QUANTITY = Quantity.of("10")
 
 
 def _variety_id(client: TestClient, name: str = "Zkittlez") -> int:
@@ -33,7 +33,7 @@ def _row(
     *,
     entry_date: date | None = TODAY,
     variety: str | None = "Zkittlez",
-    grams: Grams | None = TEN_GRAMS,
+    quantity: Quantity | None = TEN_QUANTITY,
     origin: str | None = "Compra",
     total_cost: int | None = 10_000,
     note: str | None = None,
@@ -42,7 +42,7 @@ def _row(
         ref=REF,
         entry_date=entry_date,
         variety=variety,
-        grams=grams,
+        quantity=quantity,
         origin=origin,
         total_cost=total_cost,
         note=note,
@@ -56,13 +56,13 @@ def _row(
 def test_check_threshold_accepts_a_positive_threshold(engine: Engine, client: TestClient) -> None:
     with Session(engine) as session:
         port = SqlStockImport(session, BUSINESS_ID)
-        assert port.check_threshold(Grams.of("5")) is None
+        assert port.check_threshold(Quantity.of("5")) is None
 
 
 def test_check_threshold_refuses_a_zero_threshold(engine: Engine, client: TestClient) -> None:
     with Session(engine) as session:
         port = SqlStockImport(session, BUSINESS_ID)
-        refusal = port.check_threshold(Grams.of("0"))
+        refusal = port.check_threshold(Quantity.of("0"))
         assert refusal is not None
         assert refusal.code == "stock.threshold_invalid"
 
@@ -89,7 +89,7 @@ def test_revisar_falta_variedad_blocks(engine: Engine, client: TestClient) -> No
 def test_revisar_faltan_gramos_blocks(engine: Engine, client: TestClient) -> None:
     with Session(engine) as session:
         port = SqlStockImport(session, BUSINESS_ID)
-        refusal = port.check_entry(_row(grams=None), TODAY)
+        refusal = port.check_entry(_row(quantity=None), TODAY)
         assert refusal is not None
         assert refusal.code == "import.field_missing"
 
@@ -107,7 +107,7 @@ def test_revisar_gramos_negativos_blocks(engine: Engine, client: TestClient) -> 
     with Session(engine) as session:
         port = SqlStockImport(session, BUSINESS_ID)
         refusal = port.check_entry(
-            _row(origin="Compra", grams=Grams.of("-5"), total_cost=None), TODAY
+            _row(origin="Compra", quantity=Quantity.of("-5"), total_cost=None), TODAY
         )
         assert refusal is not None
         assert refusal.code == "stock.grams_invalid"
@@ -147,7 +147,7 @@ def test_a_non_positive_cost_blocks(engine: Engine, client: TestClient) -> None:
     with Session(engine) as session:
         port = SqlStockImport(session, BUSINESS_ID)
         refusal = port.check_entry(
-            _row(origin="Cosecha", grams=Grams.of("5"), total_cost=-5), TODAY
+            _row(origin="Cosecha", quantity=Quantity.of("5"), total_cost=-5), TODAY
         )
         assert refusal is not None
         assert refusal.code == "stock.cost_invalid"
@@ -157,7 +157,7 @@ def test_a_cost_on_a_negative_adjustment_blocks(engine: Engine, client: TestClie
     with Session(engine) as session:
         port = SqlStockImport(session, BUSINESS_ID)
         refusal = port.check_entry(
-            _row(origin="Ajuste", grams=Grams.of("-5"), total_cost=100), TODAY
+            _row(origin="Ajuste", quantity=Quantity.of("-5"), total_cost=100), TODAY
         )
         assert refusal is not None
         assert refusal.code == "stock.cost_on_negative_adjustment"
@@ -184,7 +184,7 @@ def test_has_records_is_false_with_only_a_threshold(engine: Engine, client: Test
     variety_id = _variety_id(client)
     with Session(engine) as session:
         port = SqlStockImport(session, BUSINESS_ID)
-        port.write_threshold(variety_id, Grams.of("5"), NoCommit())
+        port.write_threshold(variety_id, Quantity.of("5"), NoCommit())
         session.commit()
         assert port.has_records() is False
 
@@ -209,7 +209,7 @@ def test_has_records_is_true_after_one_entry(engine: Engine, client: TestClient)
 
 @pytest.mark.parametrize(
     "unchecked_row",
-    [_row(entry_date=None), _row(grams=None), _row(origin=None)],
+    [_row(entry_date=None), _row(quantity=None), _row(origin=None)],
     ids=["no_date", "no_grams", "no_origin"],
 )
 def test_write_entry_rejects_a_row_that_was_never_checked(

@@ -17,13 +17,13 @@ from app.sales.domain.pricing import (
     GiftWithSpecialPrice,
     InvalidSpecialPrice,
     LinePricing,
-    NonPositiveGrams,
+    NonPositiveQuantity,
     NoPriceThatDay,
     PriceQuote,
     SaleRuleBroken,
     price_line,
 )
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
 
 MATRIX_PATH = (
@@ -31,7 +31,7 @@ MATRIX_PATH = (
 )
 
 ERRORS: dict[str, type[SaleRuleBroken]] = {
-    "NonPositiveGrams": NonPositiveGrams,
+    "NonPositiveGrams": NonPositiveQuantity,
     "GiftWithSpecialPrice": GiftWithSpecialPrice,
     "InvalidSpecialPrice": InvalidSpecialPrice,
     "NoPriceThatDay": NoPriceThatDay,
@@ -50,7 +50,7 @@ def _quote(raw: dict[str, Any] | None) -> PriceQuote | None:
     bulk = (
         None
         if bulk_raw is None
-        else BulkQuote(price=bulk_raw["price"], minimum=Grams(bulk_raw["minimumHundredths"]))
+        else BulkQuote(price=bulk_raw["price"], minimum=Quantity(bulk_raw["minimumHundredths"]))
     )
     return PriceQuote(list_price=raw["listPrice"], bulk=bulk, vip_price=raw["vipPrice"])
 
@@ -64,7 +64,7 @@ def _price(raw: dict[str, Any]) -> LinePricing:
             is_bulk_pricing=raw["settings"]["bulk"], is_vip_customers=raw["settings"]["vip"]
         ),
         quote=_quote(raw["quote"]),
-        grams=Grams(raw["gramsHundredths"]),
+        quantity=Quantity(raw["gramsHundredths"]),
     )
 
 

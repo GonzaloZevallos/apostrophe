@@ -14,13 +14,13 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from enum import StrEnum
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.errors import (
     EntryCostInvalid,
     EntryCostOnNegativeAdjustment,
     EntryCostRequired,
     EntryDateInFuture,
-    EntryGramsInvalid,
+    EntryQuantityInvalid,
     EntryNoteTooLong,
 )
 
@@ -39,7 +39,7 @@ class StockEntry:
     entry_date: date
     variety_id: int
     origin: Origin
-    grams: Grams
+    quantity: Quantity
     total_cost: int | None
     note: str | None
     recorded_at: datetime
@@ -51,7 +51,7 @@ class StockEntry:
         entry_date: date,
         variety_id: int,
         origin: Origin,
-        grams: Grams,
+        quantity: Quantity,
         total_cost: int | None,
         note: str | None,
         today: date,
@@ -60,16 +60,16 @@ class StockEntry:
     ) -> StockEntry:
         if entry_date > today:
             raise EntryDateInFuture("a stock entry is not dated after today")
-        if grams.hundredths == 0:
-            raise EntryGramsInvalid("grams are never zero")
-        if origin is not Origin.ADJUSTMENT and not grams.is_positive:
-            raise EntryGramsInvalid(f"{origin.value} grams are above zero")
+        if quantity.hundredths == 0:
+            raise EntryQuantityInvalid("grams are never zero")
+        if origin is not Origin.ADJUSTMENT and not quantity.is_positive:
+            raise EntryQuantityInvalid(f"{origin.value} grams are above zero")
         if origin is Origin.PURCHASE:
             if total_cost is None:
                 raise EntryCostRequired("a purchase needs a total cost")
             if total_cost <= 0:
                 raise EntryCostInvalid("a total cost is above zero")
-        elif not grams.is_positive:
+        elif not quantity.is_positive:
             # The only way grams can be negative here is a negative adjustment: every
             # other origin was already refused above.
             if total_cost is not None:
@@ -83,7 +83,7 @@ class StockEntry:
             entry_date=entry_date,
             variety_id=variety_id,
             origin=origin,
-            grams=grams,
+            quantity=quantity,
             total_cost=total_cost,
             note=trimmed or None,
             recorded_at=recorded_at,

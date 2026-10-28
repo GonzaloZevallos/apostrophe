@@ -15,7 +15,7 @@ from app.sales.application.ports import (
     Sales,
 )
 from app.sales.domain.sale import LineRequest, PaymentMethod, Sale, UnknownCustomer, UnknownVariety
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
 
@@ -26,7 +26,7 @@ class LineInput:
     `Grams.of` at the HTTP edge; nothing here builds a `Grams` any other way."""
 
     variety_id: int
-    grams: Grams
+    quantity: Quantity
     gift: bool = False
     special_price: int | None = None
 
@@ -89,7 +89,7 @@ def _resolve_line(price_book: PriceBook, sale_date: date, line: LineInput) -> Li
         raise UnknownVariety()
     return LineRequest(
         variety_id=line.variety_id,
-        grams=line.grams,
+        quantity=line.quantity,
         quote=pricing.current,
         gift=line.gift,
         special_price=line.special_price,

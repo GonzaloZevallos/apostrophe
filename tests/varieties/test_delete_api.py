@@ -26,8 +26,8 @@ def _price(client: TestClient, variety_id: int) -> None:
     assert response.status_code == 201, response.text
 
 
-def _entry(client: TestClient, variety_id: int, origin: str, grams: str) -> int:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": origin, "grams": grams}
+def _entry(client: TestClient, variety_id: int, origin: str, quantity: str) -> int:
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": origin, "grams": quantity}
     if origin == "purchase":
         body["total_cost"] = 5_000
     response = client.post("/stock/entries", json=body)

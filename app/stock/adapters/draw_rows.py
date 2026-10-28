@@ -38,7 +38,7 @@ def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
                 variety_name=draw.variety_name,
                 sale_id=draw.sale_id,
                 line_total=draw.line_total,
-                grams=draw.grams,
+                quantity=draw.quantity,
                 costed=cost.costed,
                 pending=cost.pending,
             )
@@ -57,7 +57,7 @@ def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
         variety_name=None,
         sale_id=None,
         line_total=None,
-        grams=draw.grams,
+        quantity=draw.quantity,
         costed=cost.costed,
         pending=cost.pending,
     )

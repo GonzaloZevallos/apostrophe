@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.tables import StockWithdrawalLineRow
 from app.stock.domain.draw_source import WithdrawalReason
@@ -42,7 +42,7 @@ def _withdrawal(
         reason,
         DAY,
         None,
-        tuple(WithdrawalLine.of(variety_id, grams) for variety_id, grams in lines),
+        tuple(WithdrawalLine.of(variety_id, quantity) for variety_id, quantity in lines),
         TODAY,
         recorded_at,
         id=withdrawal_id,
@@ -64,9 +64,9 @@ def test_a_withdrawal_reads_back_with_its_lines_in_the_given_order(
         read = repository.by_id(stored.id)
 
     assert read is not None
-    assert [(line.variety_id, line.grams) for line in read.lines] == [
-        (second, Grams.of("2")),
-        (first, Grams.of("3.5")),
+    assert [(line.variety_id, line.quantity) for line in read.lines] == [
+        (second, Quantity.of("2")),
+        (first, Quantity.of("3.5")),
     ]
     assert (read.reason, read.withdrawn_on, read.recorded_at) == (
         WithdrawalReason.PROMOTION,
@@ -174,9 +174,9 @@ def test_for_varieties_answers_one_draw_per_line_and_narrows(
         everything = repository.for_varieties(None)
         narrowed = repository.for_varieties({second})
 
-    assert [(d.variety_id, d.position, d.grams, d.reason) for d in everything] == [
-        (first, 0, Grams.of("1"), WithdrawalReason.OWN_USE),
-        (second, 1, Grams.of("2"), WithdrawalReason.OWN_USE),
+    assert [(d.variety_id, d.position, d.quantity, d.reason) for d in everything] == [
+        (first, 0, Quantity.of("1"), WithdrawalReason.OWN_USE),
+        (second, 1, Quantity.of("2"), WithdrawalReason.OWN_USE),
     ]
     assert [(d.variety_id, d.withdrawal_id, d.day, d.recorded_at) for d in narrowed] == [
         (second, stored.id, DAY, AT)
@@ -197,6 +197,6 @@ def test_movements_of_a_variety_sum_that_variety_grams_per_withdrawal(
 
         movements = repository.movements_of(first)
 
-    assert [(m.reason, m.grams) for m in movements] == [
-        (WithdrawalReason.PROMOTION, Grams.of("3.5"))
+    assert [(m.reason, m.quantity) for m in movements] == [
+        (WithdrawalReason.PROMOTION, Quantity.of("3.5"))
     ]

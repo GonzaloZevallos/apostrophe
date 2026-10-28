@@ -39,8 +39,8 @@ def _variety(client: TestClient, name: str, price: int) -> int:
     return int(variety["id"])
 
 
-def _entry(client: TestClient, variety_id: int, grams: str, on: str, **more: Any) -> int:
-    body = {"variety_id": variety_id, "origin": "opening_stock", "grams": grams, "date": on, **more}
+def _entry(client: TestClient, variety_id: int, quantity: str, on: str, **more: Any) -> int:
+    body = {"variety_id": variety_id, "origin": "opening_stock", "grams": quantity, "date": on, **more}
     return int(_ok(client.post("/stock/entries", json=body), 201)["id"])
 
 

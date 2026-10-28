@@ -227,10 +227,10 @@ def _write_sale(
     settings: PricingSettings,
 ) -> None:
     row = ventas_by_ref[planned.ref]
-    assert row.grams is not None, "write_import takes only a writable plan"
+    assert row.quantity is not None, "write_import takes only a writable plan"
     sale_input = ports.SaleCheckInput(
         variety_key=planned.variety_key,
-        grams=row.grams,
+        quantity=row.quantity,
         has_customer=planned.customer_identity is not None,
         vip=planned.vip,
         gift=planned.gift,

@@ -18,7 +18,7 @@ from app.customers.adapters.tables import CustomerRow
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import PriceQuote, PricingRule
 from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, PaymentMethod, Sale
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
 from app.varieties.adapters.tables import VarietyRow
 
@@ -26,7 +26,7 @@ BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
 RECORDED_AT = datetime(2026, 6, 15, 12, 0, tzinfo=UTC)
 QUOTE = PriceQuote(list_price=1_000)
-ONE_GRAM = Grams.of(1)
+ONE_GRAM = Quantity.of(1)
 
 
 def _variety_id(client: TestClient) -> int:
@@ -62,7 +62,7 @@ def _sale(
     sale_date: date = TODAY,
     method: PaymentMethod | None = PaymentMethod.CASH,
     left_owing: bool = False,
-    grams: Grams = ONE_GRAM,
+    quantity: Quantity = ONE_GRAM,
 ) -> Sale:
     return Sale.record(
         sale_date=sale_date,
@@ -72,7 +72,7 @@ def _sale(
         settings=BOTH_ON,
         shipping_charged=100,
         note="a note",
-        lines=[LineRequest(variety_id=variety_id, grams=grams, quote=QUOTE)],
+        lines=[LineRequest(variety_id=variety_id, quantity=quantity, quote=QUOTE)],
         method=method,
         left_owing=left_owing,
         recorded_at=RECORDED_AT,
@@ -371,8 +371,8 @@ def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
     session = Session(engine)
     sales = SqlSales(session, business_id)
     two_lines = [
-        LineRequest(variety_id=variety_id, grams=ONE_GRAM, quote=QUOTE),
-        LineRequest(variety_id=variety_id, grams=ONE_GRAM, quote=QUOTE),
+        LineRequest(variety_id=variety_id, quantity=ONE_GRAM, quote=QUOTE),
+        LineRequest(variety_id=variety_id, quantity=ONE_GRAM, quote=QUOTE),
     ]
     for _ in range(4):
         sales.add(

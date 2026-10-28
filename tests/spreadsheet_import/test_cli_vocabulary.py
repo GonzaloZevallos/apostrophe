@@ -133,7 +133,7 @@ def _vocabulary_workbook() -> Workbook:
     #      the bulk minimum).
     #   3: the one row with no Pago word at all (`PAGO_WORDS` runs one entry short):
     #      a $0 total, so the owner's own $0 rule leaves it with no method either way.
-    _GRAMS = (2, 1, 5, 1)
+    _QUANTITY = (2, 1, 5, 1)
     _TOTAL = (2000, 1000, 4000, 0)
     _NEEDS_CUSTOMER = (False, True, True, False)
 
@@ -145,7 +145,7 @@ def _vocabulary_workbook() -> Workbook:
 
         ventas.cell(row=row, column=1, value=date(2026, 2, 1 + index))
         ventas.cell(row=row, column=2, value=VARIETY)
-        ventas.cell(row=row, column=3, value=_GRAMS[index])
+        ventas.cell(row=row, column=3, value=_QUANTITY[index])
         if pago_word is not None:
             ventas.cell(row=row, column=4, value=pago_word)
         ventas.cell(row=row, column=5, value=_TOTAL[index])

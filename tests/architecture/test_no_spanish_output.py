@@ -194,7 +194,7 @@ def test_the_import_report_prints_no_spanish_beyond_what_the_sheet_wrote(
         "plain": _workbook(),
         "unfinished and blocked": _unfinished_and_blocked(),
         "threshold and price refused": _threshold_and_price_refused(),
-        "both switches": _priced_workbook(bulk=True, kind="Amigo", grams=10, total=8000),
+        "both switches": _priced_workbook(bulk=True, kind="Amigo", quantity=10, total=8000),
     }
     business_id = _business_id(engine)
     with Session(engine) as session:

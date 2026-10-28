@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Protocol
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import StockEntry
 from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
@@ -62,7 +62,7 @@ class WithdrawalMovement:
     withdrawn_on: date
     recorded_at: datetime
     reason: WithdrawalReason
-    grams: Grams
+    quantity: Quantity
 
 
 class Withdrawals(Protocol):

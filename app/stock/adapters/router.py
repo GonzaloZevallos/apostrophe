@@ -8,7 +8,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
-from app.shared.grams import Grams, InvalidGrams
+from app.shared.quantity import Quantity, InvalidQuantity
 from app.stock.adapters.schemas import (
     EntryIn,
     EntryOut,
@@ -35,12 +35,12 @@ from app.stock.domain.errors import (
     EntryCostOnNegativeAdjustment,
     EntryCostRequired,
     EntryDateInFuture,
-    EntryGramsInvalid,
+    EntryQuantityInvalid,
     EntryNoteTooLong,
     EntryNotFound,
     WithdrawalDateInFuture,
-    WithdrawalGramsNotPositive,
-    WithdrawalGramsTooPrecise,
+    WithdrawalQuantityNotPositive,
+    WithdrawalQuantityTooPrecise,
     WithdrawalNoLines,
     WithdrawalNoteTooLong,
     WithdrawalNotFound,
@@ -101,19 +101,19 @@ as_http = TranslateErrors(
         (
             422,
             (
-                EntryGramsInvalid,
+                EntryQuantityInvalid,
                 EntryCostRequired,
                 EntryCostInvalid,
                 EntryCostOnNegativeAdjustment,
                 EntryDateInFuture,
                 EntryNoteTooLong,
-                InvalidGrams,
+                InvalidQuantity,
                 ThresholdInvalid,
                 WithdrawalReasonRequired,
                 WithdrawalDateInFuture,
                 WithdrawalNoLines,
-                WithdrawalGramsNotPositive,
-                WithdrawalGramsTooPrecise,
+                WithdrawalQuantityNotPositive,
+                WithdrawalQuantityTooPrecise,
                 WithdrawalNoteTooLong,
             ),
         ),
@@ -152,7 +152,7 @@ def record_entry(
                 entry_date=body.date or today,
                 variety_id=body.variety_id,
                 origin=body.origin,
-                grams=Grams.of(body.grams),
+                quantity=Quantity.of(body.grams),
                 total_cost=body.total_cost,
                 note=body.note,
                 today=today,
@@ -188,7 +188,7 @@ def edit_entry(
                 entry_date=body.date or today,
                 variety_id=body.variety_id,
                 origin=body.origin,
-                grams=Grams.of(body.grams),
+                quantity=Quantity.of(body.grams),
                 total_cost=body.total_cost,
                 note=body.note,
                 today=today,
@@ -305,10 +305,10 @@ def set_threshold(
     today: TodayDep,
 ) -> VarietyStockOut:
     with as_http:
-        grams = Grams.of(body.grams) if body.grams is not None else None
+        quantity = Quantity.of(body.grams) if body.grams is not None else None
         try:
             view = set_threshold_uc.set_threshold(
-                entries, draws, withdrawals, thresholds, catalog, session, variety_id, grams, today
+                entries, draws, withdrawals, thresholds, catalog, session, variety_id, quantity, today
             )
         except (_UnknownVariety, _ArchivedVariety) as exc:
             raise _or_variety_not_found(exc, variety_id) from exc

@@ -15,7 +15,7 @@ from enum import StrEnum
 from typing import ClassVar
 
 from app.sales.domain.pricing import PriceQuote, PricingRule, SaleRuleBroken, price_line
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
 
 NOTE_MAX_LENGTH = 200
@@ -114,7 +114,7 @@ class SaleLine:
     per gram it was sold at, the rule that priced it, and the authoritative line total."""
 
     variety_id: int
-    grams: Grams
+    quantity: Quantity
     pricing_rule: PricingRule
     price_per_gram: int
     line_total: int
@@ -124,7 +124,7 @@ class SaleLine:
         # These never fail from `Sale.record` (`price_line` already enforces them);
         # they guard the persistence adapter, which rebuilds a `SaleLine` straight
         # from a stored row with no pricing pass in between.
-        assert self.grams.is_positive, "a sale line always has grams above zero"
+        assert self.quantity.is_positive, "a sale line always has grams above zero"
         assert self.price_per_gram >= 0, "a sale line's price per gram is never negative"
         assert self.line_total >= 0, "a sale line's total is never negative"
 
@@ -151,7 +151,7 @@ class LineRequest:
     day). Reference resolution (does the variety exist) happens before this is built."""
 
     variety_id: int
-    grams: Grams
+    quantity: Quantity
     quote: PriceQuote | None
     gift: bool = False
     special_price: int | None = None
@@ -182,12 +182,12 @@ class Sale:
         return sum((line.line_total for line in self.lines), 0) + self.shipping_charged
 
     @property
-    def total_grams(self) -> Grams:
+    def total_quantity(self) -> Quantity:
         """Every line's grams summed, gifts included (sales.md: a sale's delete
         confirmation and its Deshacer name the grams returning to stock)."""
-        total = Grams(0)
+        total = Quantity(0)
         for line in self.lines:
-            total = total + line.grams
+            total = total + line.quantity
         return total
 
     def assign_customer(self, customer_id: int) -> None:
@@ -262,11 +262,11 @@ class Sale:
             customer_is_vip=vip,
             settings=settings,
             quote=request.quote,
-            grams=request.grams,
+            quantity=request.quantity,
         )
         return SaleLine(
             variety_id=request.variety_id,
-            grams=request.grams,
+            quantity=request.quantity,
             pricing_rule=priced.rule,
             price_per_gram=priced.price_per_gram,
             line_total=priced.line_total,

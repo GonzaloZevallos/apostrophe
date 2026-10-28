@@ -7,13 +7,13 @@ from decimal import Decimal
 
 import pytest
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
 from app.stock.domain.errors import (
     WithdrawalDateInFuture,
-    WithdrawalGramsNotPositive,
-    WithdrawalGramsTooPrecise,
+    WithdrawalQuantityNotPositive,
+    WithdrawalQuantityTooPrecise,
     WithdrawalNoLines,
     WithdrawalNoteTooLong,
     WithdrawalNotFound,
@@ -26,8 +26,8 @@ type Refusal = (
     WithdrawalReasonRequired
     | WithdrawalDateInFuture
     | WithdrawalNoLines
-    | WithdrawalGramsNotPositive
-    | WithdrawalGramsTooPrecise
+    | WithdrawalQuantityNotPositive
+    | WithdrawalQuantityTooPrecise
     | WithdrawalNoteTooLong
     | WithdrawalNotFound
     | WithdrawalVarietyNotFound
@@ -37,8 +37,8 @@ TODAY = date(2026, 10, 6)
 RECORDED_AT = datetime(2026, 10, 6, 12, 0)
 
 
-def _line(variety_id: int = 1, grams: str = "5") -> WithdrawalLine:
-    return WithdrawalLine.of(variety_id, grams)
+def _line(variety_id: int = 1, quantity: str = "5") -> WithdrawalLine:
+    return WithdrawalLine.of(variety_id, quantity)
 
 
 def _withdrawal(
@@ -101,35 +101,35 @@ def test_the_same_variety_in_several_lines_is_kept_unmerged() -> None:
     withdrawal = _withdrawal(lines=lines)
 
     assert withdrawal.lines == lines
-    assert withdrawal.total_grams == Grams.of("6.5")
+    assert withdrawal.total_quantity == Quantity.of("6.5")
 
 
 def test_a_line_of_one_hundredth_of_a_gram_is_accepted() -> None:
-    assert _line(grams="0.01").grams == Grams(1)
+    assert _line(quantity="0.01").quantity == Quantity(1)
 
 
 def test_a_line_takes_grams_as_a_decimal_or_an_int() -> None:
-    assert WithdrawalLine.of(1, Decimal("2.5")).grams == Grams(250)
-    assert WithdrawalLine.of(1, 3).grams == Grams(300)
+    assert WithdrawalLine.of(1, Decimal("2.5")).quantity == Quantity(250)
+    assert WithdrawalLine.of(1, 3).quantity == Quantity(300)
 
 
 @pytest.mark.parametrize("raw", ["0", "0.00", "-1", "-0.01", "abc", "", "NaN", "Infinity"])
 def test_a_line_with_grams_not_above_zero_is_refused(raw: str) -> None:
-    with pytest.raises(WithdrawalGramsNotPositive):
-        _line(grams=raw)
+    with pytest.raises(WithdrawalQuantityNotPositive):
+        _line(quantity=raw)
 
 
 @pytest.mark.parametrize("raw", ["0.001", "1.005", "12.345"])
 def test_a_line_with_more_than_two_decimals_is_refused(raw: str) -> None:
-    with pytest.raises(WithdrawalGramsTooPrecise):
-        _line(grams=raw)
+    with pytest.raises(WithdrawalQuantityTooPrecise):
+        _line(quantity=raw)
 
 
 def test_a_line_built_from_zero_grams_directly_is_refused() -> None:
-    with pytest.raises(WithdrawalGramsNotPositive):
-        WithdrawalLine(variety_id=1, grams=Grams(0))
-    with pytest.raises(WithdrawalGramsNotPositive):
-        WithdrawalLine(variety_id=1, grams=Grams(-100))
+    with pytest.raises(WithdrawalQuantityNotPositive):
+        WithdrawalLine(variety_id=1, quantity=Quantity(0))
+    with pytest.raises(WithdrawalQuantityNotPositive):
+        WithdrawalLine(variety_id=1, quantity=Quantity(-100))
 
 
 def test_a_note_of_exactly_the_limit_is_kept() -> None:
@@ -182,8 +182,8 @@ def test_every_refusal_carries_its_code() -> None:
         WithdrawalReasonRequired: "stock.withdrawal_reason_required",
         WithdrawalDateInFuture: "stock.withdrawal_date_in_future",
         WithdrawalNoLines: "stock.withdrawal_no_lines",
-        WithdrawalGramsNotPositive: "stock.withdrawal_grams_not_positive",
-        WithdrawalGramsTooPrecise: "stock.withdrawal_grams_too_precise",
+        WithdrawalQuantityNotPositive: "stock.withdrawal_grams_not_positive",
+        WithdrawalQuantityTooPrecise: "stock.withdrawal_grams_too_precise",
         WithdrawalNoteTooLong: "stock.withdrawal_note_too_long",
         WithdrawalNotFound: "stock.withdrawal_not_found",
         WithdrawalVarietyNotFound: "stock.withdrawal_variety_not_found",
@@ -196,13 +196,13 @@ def test_a_refusal_never_repeats_the_input() -> None:
     note = "secreto-del-festejo" + "x" * NOTE_MAX_LENGTH
     attempts: list[Callable[[], object]] = [
         lambda: _withdrawal(note=note),
-        lambda: _line(grams="12.3456"),
-        lambda: _line(grams="-7.77"),
-        lambda: _line(grams="grams-abc"),
+        lambda: _line(quantity="12.3456"),
+        lambda: _line(quantity="-7.77"),
+        lambda: _line(quantity="grams-abc"),
         lambda: _withdrawal(reason="reason-xyz"),
         lambda: _withdrawal(withdrawn_on=date(2030, 1, 2)),
         lambda: _withdrawal(lines=()),
-        lambda: _withdrawal(lines=(WithdrawalLine(variety_id=4242, grams=Grams(-1)),)),
+        lambda: _withdrawal(lines=(WithdrawalLine(variety_id=4242, quantity=Quantity(-1)),)),
     ]
     messages = []
     for attempt in attempts:

@@ -5,7 +5,7 @@ check results built by hand (CODING_STANDARDS.md section 5).
 
 from __future__ import annotations
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.domain.plan import VarietyKey, sale_inputs
 from app.spreadsheet_import.domain.rows import CellProblem
 from tests.spreadsheet_import.factories import venta_row
@@ -134,10 +134,10 @@ def test_has_customer_reflects_a_non_blank_customer_cell() -> None:
 
 
 def test_grams_and_variety_key_and_note_pass_through() -> None:
-    row = venta_row(2, grams=Grams.of("3.5"), note="una nota")
+    row = venta_row(2, quantity=Quantity.of("3.5"), note="una nota")
     [result] = sale_inputs((row,), VARIETY_NAMES)
 
     assert not isinstance(result, CellProblem)
     assert result.variety_key == "variedad a"
-    assert result.grams == Grams.of("3.5")
+    assert result.quantity == Quantity.of("3.5")
     assert result.note == "una nota"

@@ -16,7 +16,7 @@ from app.stock.application.read_stock import StockView, VarietyStock
 from app.stock.domain.costing import cost_per_gram
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
-from app.varieties.adapters.schemas import GramsOut
+from app.varieties.adapters.schemas import QuantityOut
 
 # The four values `stock_level` (stock-domain) answers; declared here so every
 # subtask that reads or writes a status reads the one literal type, never a bare str.
@@ -41,7 +41,7 @@ class EntryOut(BaseModel):
     date: EntryDate
     variety_id: int
     origin: Origin
-    grams: GramsOut
+    grams: QuantityOut
     total_cost: int | None
     cost_per_gram: int | None
     note: str | None
@@ -51,8 +51,8 @@ class EntryOut(BaseModel):
         assert entry.id is not None, "only stored entries go out"
         total_cost = entry.total_cost
         per_gram = (
-            cost_per_gram(total_cost, entry.grams)
-            if total_cost is not None and entry.grams.is_positive
+            cost_per_gram(total_cost, entry.quantity)
+            if total_cost is not None and entry.quantity.is_positive
             else None
         )
         return cls(
@@ -60,7 +60,7 @@ class EntryOut(BaseModel):
             date=entry.entry_date,
             variety_id=entry.variety_id,
             origin=entry.origin,
-            grams=entry.grams.as_decimal(),
+            grams=entry.quantity.as_decimal(),
             total_cost=entry.total_cost,
             cost_per_gram=per_gram,
             note=entry.note,
@@ -81,10 +81,10 @@ class VarietyStockOut(BaseModel):
     SQL aggregate or front code."""
 
     variety_id: int
-    grams: GramsOut
+    grams: QuantityOut
     status: Status
     sold_out_since: date | None
-    threshold: GramsOut | None
+    threshold: QuantityOut | None
     days_left: int | None
 
     @classmethod
@@ -92,10 +92,10 @@ class VarietyStockOut(BaseModel):
         level = view.level
         return cls(
             variety_id=view.variety_id,
-            grams=level.grams.as_decimal(),
+            grams=level.quantity.as_decimal(),
             status=level.status,
             sold_out_since=level.sold_out_since,
-            threshold=view.threshold.grams.as_decimal() if view.threshold is not None else None,
+            threshold=view.threshold.quantity.as_decimal() if view.threshold is not None else None,
             days_left=level.days_left,
         )
 
@@ -104,7 +104,7 @@ class StockOut(BaseModel):
     """`GET /stock`'s own shape: the business's total grams, every variety's own row,
     and its entries, newest date first then most recently recorded first."""
 
-    total: GramsOut
+    total: QuantityOut
     varieties: list[VarietyStockOut]
     entries: list[EntryOut]
 
@@ -135,7 +135,7 @@ class WithdrawalIn(BaseModel):
 class WithdrawalLineOut(BaseModel):
     variety_id: int
     variety_name: str
-    grams: GramsOut
+    grams: QuantityOut
 
 
 class WithdrawalOut(BaseModel):
@@ -143,7 +143,7 @@ class WithdrawalOut(BaseModel):
     reason: WithdrawalReason
     date: EntryDate
     note: str | None
-    total_grams: GramsOut
+    total_grams: QuantityOut
     lines: list[WithdrawalLineOut]
 
     @classmethod
@@ -155,12 +155,12 @@ class WithdrawalOut(BaseModel):
             reason=withdrawal.reason,
             date=withdrawal.withdrawn_on,
             note=withdrawal.note,
-            total_grams=withdrawal.total_grams.as_decimal(),
+            total_grams=withdrawal.total_quantity.as_decimal(),
             lines=[
                 WithdrawalLineOut(
                     variety_id=line.variety_id,
                     variety_name=view.variety_names[line.variety_id],
-                    grams=line.grams.as_decimal(),
+                    grams=line.quantity.as_decimal(),
                 )
                 for line in withdrawal.lines
             ],
@@ -176,7 +176,7 @@ class WithdrawalMovementOut(BaseModel):
     id: int
     date: EntryDate
     reason: WithdrawalReason
-    grams: GramsOut
+    grams: QuantityOut
 
 
 MovementOut = EntryMovementOut | WithdrawalMovementOut
@@ -188,6 +188,6 @@ def movement_out(movement: Movement) -> MovementOut:
             id=movement.withdrawal_id,
             date=movement.withdrawn_on,
             reason=movement.reason,
-            grams=movement.grams.as_decimal(),
+            grams=movement.quantity.as_decimal(),
         )
     return EntryMovementOut(**EntryOut.of(movement).model_dump())

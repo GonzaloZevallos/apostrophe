@@ -38,12 +38,12 @@ def _entry(
     client: TestClient,
     variety_id: int,
     *,
-    grams: str,
+    quantity: str,
     origin: str = "opening_stock",
     total_cost: int | None = None,
     on: str,
 ) -> int:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": origin, "grams": grams, "date": on}
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": origin, "grams": quantity, "date": on}
     if total_cost is not None:
         body["total_cost"] = total_cost
     response = client.post("/stock/entries", json=body)
@@ -55,7 +55,7 @@ def _sale(
     client: TestClient,
     variety_id: int,
     *,
-    grams: str,
+    quantity: str,
     on: str,
     gift: bool = False,
     customer_id: int | None = None,
@@ -64,7 +64,7 @@ def _sale(
     body: dict[str, Any] = {
         "date": on,
         "payment": payment,
-        "lines": [{"variety_id": variety_id, "grams": grams, "gift": gift}],
+        "lines": [{"variety_id": variety_id, "grams": quantity, "gift": gift}],
     }
     if customer_id is not None:
         body["customer_id"] = customer_id
@@ -573,21 +573,21 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
     assert since["profit"] == {"amount": 6_000 - 600, "pending_grams": 1.0}
 
 
-def _adjust(client: TestClient, variety_id: int, *, grams: str, on: str) -> None:
+def _adjust(client: TestClient, variety_id: int, *, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "grams": grams, "date": on},
+        json={"variety_id": variety_id, "origin": "adjustment", "grams": quantity, "date": on},
     )
     assert response.status_code == 201, response.text
 
 
-def _withdraw(client: TestClient, variety_id: int, *, reason: str, grams: str, on: str) -> None:
+def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/withdrawals",
         json={
             "reason": reason,
             "date": on,
-            "lines": [{"variety_id": variety_id, "grams": grams}],
+            "lines": [{"variety_id": variety_id, "grams": quantity}],
         },
     )
     assert response.status_code == 201, response.text
@@ -607,8 +607,8 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     _sale(client, a_id, grams="2", on="2026-09-29")
     _sale(client, b_id, grams="1", on="2026-09-29")
     _sale(client, a_id, grams="3", on=TODAY.isoformat())
-    _adjust(client, a_id, grams="-2", on="2026-09-30")
-    _adjust(client, b_id, grams="-1", on=TODAY.isoformat())
+    _adjust(client, a_id, quantity="-2", on="2026-09-30")
+    _adjust(client, b_id, quantity="-1", on=TODAY.isoformat())
     _withdraw(client, a_id, reason="promotion", grams="4", on="2026-09-29")
     _withdraw(client, b_id, reason="promotion", grams="2", on=TODAY.isoformat())
     _withdraw(client, a_id, reason="own_use", grams="3", on="2026-10-01")
@@ -689,7 +689,7 @@ def test_a_wholly_pending_shortfall_reads_all_pending_on_the_row_header_and_sinc
     shortfall appears; the sale of the same variety is pending too."""
     b_id = _variety(client, "B", price=1_000)
     _sale(client, b_id, grams="4", on=TODAY.isoformat())
-    _adjust(client, b_id, grams="-3", on=TODAY.isoformat())
+    _adjust(client, b_id, quantity="-3", on=TODAY.isoformat())
 
     analysis = client.get("/analysis").json()
     pending = {"amount": 0, "pending_grams": 3.0, "all_pending": True}
@@ -711,7 +711,7 @@ def test_a_zero_cost_lot_with_pending_overflow_is_not_fully_pending(client: Test
     harvest_id = _variety(client, "Cosecha", price=1_000)
     _entry(client, harvest_id, grams="5", origin="harvest", on="2026-09-01")
     _sale(client, harvest_id, grams="1", on="2026-09-29")
-    _adjust(client, harvest_id, grams="-8", on=TODAY.isoformat())
+    _adjust(client, harvest_id, quantity="-8", on=TODAY.isoformat())
 
     analysis = client.get("/analysis").json()
 

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from app.catalog.domain.attributes import CatalogAttributes
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 StockStatus = Literal["no_entries", "sold_out", "low", "ok"]
 CatalogState = Literal["in", "hidden", "no_price", "sold_out", "no_entries"]
@@ -25,7 +25,7 @@ class CatalogPrice:
 
     list_price: int
     bulk_price: int | None
-    bulk_minimum: Grams | None
+    bulk_minimum: Quantity | None
 
     def __post_init__(self) -> None:
         if (self.bulk_price is None) != (self.bulk_minimum is None):

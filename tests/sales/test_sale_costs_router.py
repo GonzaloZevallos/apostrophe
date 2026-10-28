@@ -27,10 +27,10 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
     assert response.status_code == 201, response.text
 
 
-def _sale(client: TestClient, variety_id: int, grams: str = "10") -> int:
+def _sale(client: TestClient, variety_id: int, quantity: str = "10") -> int:
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": grams}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": quantity}]},
     )
     assert response.status_code == 201, response.text
     return int(response.json()["id"])

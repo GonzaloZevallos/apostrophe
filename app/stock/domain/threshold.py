@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 
 class ThresholdInvalid(ValueError):
@@ -20,12 +20,12 @@ class ThresholdInvalid(ValueError):
 
 @dataclass(frozen=True)
 class Threshold:
-    grams: Grams
+    quantity: Quantity
 
     def __post_init__(self) -> None:
-        if not self.grams.is_positive:
+        if not self.quantity.is_positive:
             raise ThresholdInvalid("a low-stock threshold is above zero")
 
     @classmethod
-    def of(cls, grams: Grams) -> Threshold:
-        return cls(grams)
+    def of(cls, quantity: Quantity) -> Threshold:
+        return cls(quantity)

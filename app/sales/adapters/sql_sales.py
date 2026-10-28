@@ -32,7 +32,7 @@ from app.sales.domain.sale import (
     Sale,
     SaleLine,
 )
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.varieties.adapters.tables import VarietyRow
 
 
@@ -273,7 +273,7 @@ class SqlSales:
             business_id=self._business_id,
             sale_id=sale_id,
             variety_id=line.variety_id,
-            grams_hundredths=line.grams.hundredths,
+            grams_hundredths=line.quantity.hundredths,
             pricing_rule=line.pricing_rule.value,
             price_per_gram=line.price_per_gram,
             line_total=line.line_total,
@@ -315,7 +315,7 @@ def _dated_conditions(
 def _sale_line(row: SaleLineRow) -> SaleLine:
     return SaleLine(
         variety_id=row.variety_id,
-        grams=Grams(row.grams_hundredths),
+        quantity=Quantity(row.grams_hundredths),
         pricing_rule=PricingRule(row.pricing_rule),
         price_per_gram=row.price_per_gram,
         line_total=row.line_total,

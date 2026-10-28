@@ -7,7 +7,7 @@ from datetime import date, datetime
 
 import pytest
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.allocation import allocate
 from app.stock.domain.draw_source import DrawSource, WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
@@ -31,7 +31,7 @@ def _entry(
     *,
     id: int,
     variety_id: int = 1,
-    grams: str = "10",
+    quantity: str = "10",
     origin: Origin = Origin.OPENING_STOCK,
     entry_date: date = DAY,
     recorded_at: datetime = AT,
@@ -41,7 +41,7 @@ def _entry(
         entry_date,
         variety_id,
         origin,
-        Grams.of(grams),
+        Quantity.of(quantity),
         total_cost,
         None,
         today=LATER,
@@ -55,7 +55,7 @@ def test_a_positive_entry_is_a_lot() -> None:
 
     lots, draws = grouped[1]
     assert len(lots) == 1
-    assert lots[0].grams == Grams.of("10")
+    assert lots[0].quantity == Quantity.of("10")
     assert draws == []
 
 
@@ -67,12 +67,12 @@ def test_a_negative_adjustment_is_a_draw_carried_as_a_positive_magnitude() -> No
     lots, draws = grouped[1]
     assert lots == []
     assert len(draws) == 1
-    assert draws[0].grams == Grams.of("4")
+    assert draws[0].quantity == Quantity.of("4")
 
 
 def test_a_sale_line_is_always_a_draw_gifts_included() -> None:
     sale_draw = SaleLineDraw(
-        variety_id=1, day=DAY, recorded_at=AT, sale_id=5, position=0, grams=Grams.of("3")
+        variety_id=1, day=DAY, recorded_at=AT, sale_id=5, position=0, quantity=Quantity.of("3")
     )
 
     grouped = lots_and_draws([], [sale_draw], [])
@@ -80,7 +80,7 @@ def test_a_sale_line_is_always_a_draw_gifts_included() -> None:
     lots, draws = grouped[1]
     assert lots == []
     assert len(draws) == 1
-    assert draws[0].grams == Grams.of("3")
+    assert draws[0].quantity == Quantity.of("3")
 
 
 def test_varieties_are_grouped_separately() -> None:
@@ -89,8 +89,8 @@ def test_varieties_are_grouped_separately() -> None:
     )
 
     assert set(grouped) == {1, 2}
-    assert grouped[1][0][0].grams == Grams.of("10")
-    assert grouped[2][0][0].grams == Grams.of("20")
+    assert grouped[1][0][0].quantity == Quantity.of("10")
+    assert grouped[2][0][0].quantity == Quantity.of("20")
 
 
 def test_a_group_is_sorted_by_date_first() -> None:
@@ -122,7 +122,7 @@ def test_draws_are_sorted_too_oldest_first() -> None:
         id=1, grams="-10", origin=Origin.ADJUSTMENT, entry_date=LATER, recorded_at=LATER_AT
     )
     earlier_sale = SaleLineDraw(
-        variety_id=1, day=DAY, recorded_at=AT, sale_id=5, position=0, grams=Grams.of("3")
+        variety_id=1, day=DAY, recorded_at=AT, sale_id=5, position=0, quantity=Quantity.of("3")
     )
 
     _, draws = lots_and_draws([later_adjustment], [earlier_sale], [])[1]
@@ -140,21 +140,21 @@ def test_a_negative_adjustment_and_a_sale_line_on_the_same_moment_break_the_tie_
     `ref_id` — or to the stable sort's insertion order — would read this backwards."""
     adjustment = _entry(id=9, grams="-2", origin=Origin.ADJUSTMENT, entry_date=DAY, recorded_at=AT)
     sale_draw = SaleLineDraw(
-        variety_id=1, day=DAY, recorded_at=AT, sale_id=1, position=0, grams=Grams.of("3")
+        variety_id=1, day=DAY, recorded_at=AT, sale_id=1, position=0, quantity=Quantity.of("3")
     )
 
     _, draws = lots_and_draws([adjustment], [sale_draw], [])[1]
 
     assert [draw.order.rank for draw in draws] == [0, 1]
     assert [draw.source for draw in draws] == [DrawSource.ADJUSTMENT, DrawSource.SALE_LINE]
-    assert draws[0].grams == Grams.of("2")
-    assert draws[1].grams == Grams.of("3")
+    assert draws[0].quantity == Quantity.of("2")
+    assert draws[1].quantity == Quantity.of("3")
 
 
 def _withdrawal_line(
     withdrawal_id: int,
     position: int,
-    grams: str,
+    quantity: str,
     reason: WithdrawalReason = WithdrawalReason.PROMOTION,
 ) -> WithdrawalLineDraw:
     return WithdrawalLineDraw(
@@ -163,7 +163,7 @@ def _withdrawal_line(
         recorded_at=AT,
         withdrawal_id=withdrawal_id,
         position=position,
-        grams=Grams.of(grams),
+        quantity=Quantity.of(quantity),
         reason=reason,
     )
 
@@ -174,7 +174,7 @@ def test_an_exact_tie_orders_adjustment_then_sale_line_then_withdrawal_lines_by_
     lot = _entry(id=5, grams="3", total_cost=300)
     adjustment = _entry(id=9, grams="-1", origin=Origin.ADJUSTMENT)
     sale_draw = SaleLineDraw(
-        variety_id=1, day=DAY, recorded_at=AT, sale_id=7, position=0, grams=Grams.of("1")
+        variety_id=1, day=DAY, recorded_at=AT, sale_id=7, position=0, quantity=Quantity.of("1")
     )
     second_line = _withdrawal_line(1, 1, "1", WithdrawalReason.OWN_USE)
     first_line = _withdrawal_line(1, 0, "1", WithdrawalReason.PROMOTION)
@@ -196,10 +196,10 @@ def test_an_exact_tie_orders_adjustment_then_sale_line_then_withdrawal_lines_by_
     costs = allocate(lots, draws)
     assert [cost.costed for cost in costs] == [100, 100, 100, None]
     assert [cost.pending for cost in costs] == [
-        Grams.of("0"),
-        Grams.of("0"),
-        Grams.of("0"),
-        Grams.of("1"),
+        Quantity.of("0"),
+        Quantity.of("0"),
+        Quantity.of("0"),
+        Quantity.of("1"),
     ]
 
 
@@ -211,20 +211,20 @@ def test_a_withdrawal_line_past_every_lot_is_pending_never_costed_zero() -> None
     [cost] = allocate(lots, draws)
 
     assert cost.costed == 200
-    assert cost.pending == Grams.of("3")
+    assert cost.pending == Quantity.of("3")
 
 
 def test_total_pending_equals_negative_stock_with_a_withdrawal_involved() -> None:
     lot = _entry(id=1, grams="4", total_cost=400)
     sale_draw = SaleLineDraw(
-        variety_id=1, day=DAY, recorded_at=AT, sale_id=7, position=0, grams=Grams.of("3")
+        variety_id=1, day=DAY, recorded_at=AT, sale_id=7, position=0, quantity=Quantity.of("3")
     )
     line = _withdrawal_line(1, 0, "5", WithdrawalReason.OWN_USE)
 
     lots, draws = lots_and_draws([lot], [sale_draw], [line])[1]
     pending = sum(cost.pending.hundredths for cost in allocate(lots, draws))
 
-    stock = sum(lot.grams.hundredths for lot in lots) - sum(d.grams.hundredths for d in draws)
+    stock = sum(lot.quantity.hundredths for lot in lots) - sum(d.quantity.hundredths for d in draws)
     assert pending == max(0, -stock) == 400
 
 
@@ -248,10 +248,10 @@ def test_a_withdrawal_draw_carries_no_sale_data() -> None:
 def test_a_lot_refuses_non_positive_grams() -> None:
     order = LotOrder(DAY, AT, 0, 1, 0)
     with pytest.raises(ValueError):
-        Lot(order, 1, Grams.of("0"), None)
+        Lot(order, 1, Quantity.of("0"), None)
 
 
 def test_a_draw_refuses_non_positive_grams() -> None:
     order = LotOrder(DAY, AT, 1, 1, 0)
     with pytest.raises(ValueError):
-        Draw(order, 1, Grams.of("-1"), DrawSource.SALE_LINE)
+        Draw(order, 1, Quantity.of("-1"), DrawSource.SALE_LINE)

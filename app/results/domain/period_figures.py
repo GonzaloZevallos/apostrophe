@@ -42,22 +42,22 @@ from app.results.domain.ledger import (
 )
 from app.results.domain.rounding import percent
 from app.shared.calendar import Month, Week
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
-ZERO = Grams(0)
+ZERO = Quantity(0)
 
 WithdrawalKind = Literal["promotion", "own_use"]
 CostLine = Literal["shortfall", "promotion", "own_use"]
 
 
-def row_cost(amount: int, pending_grams: Grams, grams: Grams) -> RowCost:
+def row_cost(amount: int, pending_quantity: Quantity, quantity: Quantity) -> RowCost:
     """A cost line's costed amount and pending grams, with `all_pending` set exactly
     when there are grams and every one is pending. The only place that rule exists:
     a lot costed at $0 (a harvest) is costed, so "amount == 0" is not the test."""
     return RowCost(
         amount=amount,
-        pending_grams=pending_grams,
-        all_pending=grams.is_positive and pending_grams == grams,
+        pending_quantity=pending_quantity,
+        all_pending=quantity.is_positive and pending_quantity == quantity,
     )
 
 
@@ -71,22 +71,22 @@ def _days(start: date, end_inclusive: date) -> list[date]:
 @dataclass
 class _DayTotals:
     sales_without_shipping: int = 0
-    grams: Grams = ZERO
-    grams_sold: Grams = ZERO
-    grams_gifted: Grams = ZERO
+    quantity: Quantity = ZERO
+    quantity_sold: Quantity = ZERO
+    quantity_gifted: Quantity = ZERO
     costed_cost: int = 0
     sales_of_costed: int = 0
-    pending_grams: Grams = ZERO
+    pending_quantity: Quantity = ZERO
 
 
 @dataclass
 class _VarietyDayTotals:
     sales_without_shipping: int = 0
-    grams_sold: Grams = ZERO
-    grams_gifted: Grams = ZERO
+    quantity_sold: Quantity = ZERO
+    quantity_gifted: Quantity = ZERO
     costed_cost: int = 0
     sales_of_costed: int = 0
-    pending_grams: Grams = ZERO
+    pending_quantity: Quantity = ZERO
 
 
 @dataclass
@@ -95,8 +95,8 @@ class _CostDayTotals:
     or one withdrawal reason."""
 
     costed: int = 0
-    pending_grams: Grams = ZERO
-    grams: Grams = ZERO
+    pending_quantity: Quantity = ZERO
+    quantity: Quantity = ZERO
 
 
 @dataclass
@@ -147,28 +147,28 @@ class Buckets:
                 total += totals.sales_without_shipping
         return total
 
-    def grams(self, start: date, end: date) -> Grams:
+    def quantity(self, start: date, end: date) -> Quantity:
         total = ZERO
         for d in _days(start, end):
             totals = self.day_totals.get(d)
             if totals is not None:
-                total = total + totals.grams
+                total = total + totals.quantity
         return total
 
-    def grams_sold(self, start: date, end: date) -> Grams:
+    def quantity_sold(self, start: date, end: date) -> Quantity:
         total = ZERO
         for d in _days(start, end):
             totals = self.day_totals.get(d)
             if totals is not None:
-                total = total + totals.grams_sold
+                total = total + totals.quantity_sold
         return total
 
-    def grams_gifted(self, start: date, end: date) -> Grams:
+    def quantity_gifted(self, start: date, end: date) -> Quantity:
         total = ZERO
         for d in _days(start, end):
             totals = self.day_totals.get(d)
             if totals is not None:
-                total = total + totals.grams_gifted
+                total = total + totals.quantity_gifted
         return total
 
     def costed_cost(self, start: date, end: date) -> int:
@@ -187,12 +187,12 @@ class Buckets:
                 total += totals.sales_of_costed
         return total
 
-    def pending_grams(self, start: date, end: date) -> Grams:
+    def pending_quantity(self, start: date, end: date) -> Quantity:
         total = ZERO
         for d in _days(start, end):
             totals = self.day_totals.get(d)
             if totals is not None:
-                total = total + totals.pending_grams
+                total = total + totals.pending_quantity
         return total
 
     def _cost_line(self, line: CostLine, start: date, end: date) -> RowCost | None:
@@ -212,11 +212,11 @@ class Buckets:
         if not days:
             return None
         pending = ZERO
-        grams = ZERO
+        quantity = ZERO
         for day_totals in days:
-            pending = pending + day_totals.pending_grams
-            grams = grams + day_totals.grams
-        return row_cost(sum(t.costed for t in days), pending, grams)
+            pending = pending + day_totals.pending_quantity
+            quantity = quantity + day_totals.quantity
+        return row_cost(sum(t.costed for t in days), pending, quantity)
 
     def shortfall(self, start: date, end: date) -> RowCost | None:
         return self._cost_line("shortfall", start, end)
@@ -232,8 +232,8 @@ class Buckets:
         grams of the sold and gifted grams in `[start, end]`, never `None`."""
         return row_cost(
             self.costed_cost(start, end),
-            self.pending_grams(start, end),
-            self.grams(start, end),
+            self.pending_quantity(start, end),
+            self.quantity(start, end),
         )
 
     def profit(self, start: date, end: date) -> AmountWithPending:
@@ -244,7 +244,7 @@ class Buckets:
         cost = self.costed_cost(start, end)
         spent = self.expenses(start, end)
         amount = sales_total - sales_pending - cost - spent
-        pending = self.pending_grams(start, end)
+        pending = self.pending_quantity(start, end)
         for line in (
             self.shortfall(start, end),
             self.promotion(start, end),
@@ -252,7 +252,7 @@ class Buckets:
         ):
             if line is not None:
                 amount -= line.amount
-                pending = pending + line.pending_grams
+                pending = pending + line.pending_quantity
         return AmountWithPending(amount, pending)
 
     def cash(self, start: date, end: date) -> int:
@@ -279,34 +279,34 @@ def _add_sale_line(buckets: Buckets, row: DrawRow, kind: Literal["sold", "gifted
         raise ValueError("a sale-line draw row always carries its variety and line total")
     if row.variety_name is not None:
         buckets.variety_names[row.variety_id] = row.variety_name
-    sold_amount = costed_sales(row.line_total, row.grams, row.pending)
+    sold_amount = costed_sales(row.line_total, row.quantity, row.pending)
 
     day = buckets.day_totals.setdefault(row.day, _DayTotals())
     day.sales_without_shipping += row.line_total
-    day.grams = day.grams + row.grams
+    day.quantity = day.quantity + row.quantity
     match kind:
         case "sold":
-            day.grams_sold = day.grams_sold + row.grams
+            day.quantity_sold = day.quantity_sold + row.quantity
         case "gifted":
-            day.grams_gifted = day.grams_gifted + row.grams
+            day.quantity_gifted = day.quantity_gifted + row.quantity
         case _:
             assert_never(kind)
     day.costed_cost += row.costed or 0
     day.sales_of_costed += sold_amount
-    day.pending_grams = day.pending_grams + row.pending
+    day.pending_quantity = day.pending_quantity + row.pending
 
     vday = buckets.variety_day_totals.setdefault((row.day, row.variety_id), _VarietyDayTotals())
     vday.sales_without_shipping += row.line_total
     match kind:
         case "sold":
-            vday.grams_sold = vday.grams_sold + row.grams
+            vday.quantity_sold = vday.quantity_sold + row.quantity
         case "gifted":
-            vday.grams_gifted = vday.grams_gifted + row.grams
+            vday.quantity_gifted = vday.quantity_gifted + row.quantity
         case _:
             assert_never(kind)
     vday.costed_cost += row.costed or 0
     vday.sales_of_costed += sold_amount
-    vday.pending_grams = vday.pending_grams + row.pending
+    vday.pending_quantity = vday.pending_quantity + row.pending
 
 
 def scan(
@@ -329,8 +329,8 @@ def scan(
             case "shortfall":
                 agg = buckets.shortfall_totals.setdefault(row.day, _CostDayTotals())
                 agg.costed += row.costed or 0
-                agg.pending_grams = agg.pending_grams + row.pending
-                agg.grams = agg.grams + row.grams
+                agg.pending_quantity = agg.pending_quantity + row.pending
+                agg.quantity = agg.quantity + row.quantity
             case "promotion" | "own_use":
                 # A withdrawal is neither a sale nor a shortfall: it writes only its
                 # own bucket, and its date counts as a first record.
@@ -338,8 +338,8 @@ def scan(
                     (row.day, row.kind), _CostDayTotals()
                 )
                 withdrawn.costed += row.costed or 0
-                withdrawn.pending_grams = withdrawn.pending_grams + row.pending
-                withdrawn.grams = withdrawn.grams + row.grams
+                withdrawn.pending_quantity = withdrawn.pending_quantity + row.pending
+                withdrawn.quantity = withdrawn.quantity + row.quantity
                 if first_record is None or row.day < first_record:
                     first_record = row.day
             case "sold" | "gifted":
@@ -395,11 +395,11 @@ def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
     return PeriodTotals(
         sales=buckets.sales(start, end),
         sales_count=buckets.sales_count(start, end),
-        grams_sold=buckets.grams_sold(start, end),
-        grams_gifted=buckets.grams_gifted(start, end),
+        quantity_sold=buckets.quantity_sold(start, end),
+        quantity_gifted=buckets.quantity_gifted(start, end),
         cost_of_goods=CostFigure(
             costed=buckets.costed_cost(start, end),
-            pending_grams=buckets.pending_grams(start, end),
+            pending_quantity=buckets.pending_quantity(start, end),
         ),
         cost_of_goods_row=buckets.cost_of_goods_row(start, end),
         shortfall=buckets.shortfall(start, end),
@@ -419,11 +419,11 @@ def _variety_rows(buckets: Buckets, month: Month) -> tuple[VarietyRow, ...]:
             continue
         totals = totals_by_variety.setdefault(variety_id, _VarietyDayTotals())
         totals.sales_without_shipping += vday.sales_without_shipping
-        totals.grams_sold = totals.grams_sold + vday.grams_sold
-        totals.grams_gifted = totals.grams_gifted + vday.grams_gifted
+        totals.quantity_sold = totals.quantity_sold + vday.quantity_sold
+        totals.quantity_gifted = totals.quantity_gifted + vday.quantity_gifted
         totals.costed_cost += vday.costed_cost
         totals.sales_of_costed += vday.sales_of_costed
-        totals.pending_grams = totals.pending_grams + vday.pending_grams
+        totals.pending_quantity = totals.pending_quantity + vday.pending_quantity
 
     month_sales_without_shipping = sum(t.sales_without_shipping for t in totals_by_variety.values())
 
@@ -436,13 +436,13 @@ def _variety_rows(buckets: Buckets, month: Month) -> tuple[VarietyRow, ...]:
                 name=buckets.variety_names.get(variety_id, ""),
                 sales_without_shipping=totals.sales_without_shipping,
                 share_percent=percent(totals.sales_without_shipping, month_sales_without_shipping),
-                grams_sold=totals.grams_sold,
-                grams_gifted=totals.grams_gifted,
-                cost=CostFigure(totals.costed_cost, totals.pending_grams),
+                quantity_sold=totals.quantity_sold,
+                quantity_gifted=totals.quantity_gifted,
+                cost=CostFigure(totals.costed_cost, totals.pending_quantity),
                 margin=MarginFigure(
                     amount=margin_amount,
                     percent=percent(margin_amount, totals.sales_of_costed),
-                    pending_grams=totals.pending_grams,
+                    pending_quantity=totals.pending_quantity,
                 ),
             )
         )
@@ -461,7 +461,7 @@ def _month_figures(
     total_sales_costed = sum(v.margin.amount + v.cost.costed for v in varieties)
     pending_sold_gifted = ZERO
     for v in varieties:
-        pending_sold_gifted = pending_sold_gifted + v.margin.pending_grams
+        pending_sold_gifted = pending_sold_gifted + v.margin.pending_quantity
 
     previous = (
         None
@@ -476,12 +476,12 @@ def _month_figures(
         next=following,
         sales=buckets.sales(month.first_day, month.last_day),
         sales_without_shipping=sum(v.sales_without_shipping for v in varieties),
-        grams_sold=sum((v.grams_sold for v in varieties), ZERO),
-        grams_gifted=sum((v.grams_gifted for v in varieties), ZERO),
+        quantity_sold=sum((v.quantity_sold for v in varieties), ZERO),
+        quantity_gifted=sum((v.quantity_gifted for v in varieties), ZERO),
         average_margin=MarginFigure(
             amount=total_margin,
             percent=percent(total_margin, total_sales_costed),
-            pending_grams=pending_sold_gifted,
+            pending_quantity=pending_sold_gifted,
         ),
         shortfall=buckets.shortfall(month.first_day, month.last_day),
         promotion=buckets.promotion(month.first_day, month.last_day),
@@ -511,7 +511,7 @@ def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[We
                 first_day=w.first_day,
                 last_day=w.last_day,
                 sales=totals.sales,
-                grams=totals.grams_sold + totals.grams_gifted,
+                quantity=totals.quantity_sold + totals.quantity_gifted,
                 expenses=totals.expenses,
                 cost_of_goods=totals.cost_of_goods_row,
                 shortfall=totals.shortfall,
@@ -564,7 +564,7 @@ def _months(
                 first_day=m.first_day,
                 last_day=m.last_day,
                 sales=totals.sales,
-                grams=totals.grams_sold + totals.grams_gifted,
+                quantity=totals.quantity_sold + totals.quantity_gifted,
                 expenses=totals.expenses,
                 cost_of_goods=totals.cost_of_goods_row,
                 shortfall=totals.shortfall,

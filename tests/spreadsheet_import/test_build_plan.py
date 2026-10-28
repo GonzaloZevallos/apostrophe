@@ -11,7 +11,7 @@ from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.domain.plan import (
     ByName,
@@ -876,7 +876,7 @@ def test_a_mapping_phone_refusal_uses_the_caller_given_mapping_sheet_label() -> 
 
 
 def test_a_threshold_refusal_blocks_with_its_code() -> None:
-    split = _split(varieties=(variety_row(7, "Variedad A", threshold=Grams.of("-1")),))
+    split = _split(varieties=(variety_row(7, "Variedad A", threshold=Quantity.of("-1")),))
     checks = Checks(
         variety_names={"Variedad A": VARIEDAD_A},
         thresholds={SheetRef("Ajustes", 7): Refusal("stock.threshold_not_positive")},
@@ -960,7 +960,7 @@ def test_a_sale_refusal_blocks_with_its_code() -> None:
 def _bulk_and_amigo_split() -> Split:
     return _split(
         varieties=(variety_row(7, "Variedad A"),),
-        price_history=(price_row(2, "Variedad A", date(2026, 1, 1), 1000, 800, Grams.of(10)),),
+        price_history=(price_row(2, "Variedad A", date(2026, 1, 1), 1000, 800, Quantity.of(10)),),
         ventas=(venta_row(2, customer="Juana", kind="Amigo", total=1000),),
     )
 

@@ -20,7 +20,7 @@ NOW = "2026-01-01 12:00:00"
 LIST_PRICE = 1000
 BULK_PRICE = 800
 BULK_MINIMUM = 10000  # hundredths: 100 g
-GRAMS_BELOW, GRAMS_AT, GRAMS_ABOVE = 5000, 10000, 20000
+QUANTITY_BELOW, QUANTITY_AT, QUANTITY_ABOVE = 5000, 10000, 20000
 
 
 def _upgrade_to(engine: Engine, revision: str) -> None:
@@ -52,28 +52,28 @@ def _total(price: int, grams_hundredths: int) -> int:
     return (price * grams_hundredths + 50) // 100
 
 
-def _gift_or_special(gift: bool, special_price: int | None, grams: int) -> Outcome | None:
+def _gift_or_special(gift: bool, special_price: int | None, quantity: int) -> Outcome | None:
     """Both rules put a gift, then a special price, before every other rule."""
     if gift:
         return Outcome("gift", 0, 0)
     if special_price is not None:
-        return Outcome("special", (200 * special_price + grams) // (2 * grams), special_price)
+        return Outcome("special", (200 * special_price + quantity) // (2 * quantity), special_price)
     return None
 
 
 def _old_rule(
-    *, vip: bool, bulk: int | None, grams: int, gift: bool = False, special_price: int | None = None
+    *, vip: bool, bulk: int | None, quantity: int, gift: bool = False, special_price: int | None = None
 ) -> Outcome:
     """The rule before this change, frozen here: a VIP customer with a bulk price pays
     it at any grams, stored VIP; otherwise bulk at or above the minimum; otherwise list."""
-    first = _gift_or_special(gift, special_price, grams)
+    first = _gift_or_special(gift, special_price, quantity)
     if first is not None:
         return first
     if vip and bulk is not None:
-        return Outcome("vip", bulk, _total(bulk, grams))
-    if bulk is not None and grams >= BULK_MINIMUM:
-        return Outcome("bulk", bulk, _total(bulk, grams))
-    return Outcome("list", LIST_PRICE, _total(LIST_PRICE, grams))
+        return Outcome("vip", bulk, _total(bulk, quantity))
+    if bulk is not None and quantity >= BULK_MINIMUM:
+        return Outcome("bulk", bulk, _total(bulk, quantity))
+    return Outcome("list", LIST_PRICE, _total(LIST_PRICE, quantity))
 
 
 def _new_rule_both_on(
@@ -81,21 +81,21 @@ def _new_rule_both_on(
     vip: bool,
     bulk: int | None,
     vip_price: int | None,
-    grams: int,
+    quantity: int,
     gift: bool = False,
     special_price: int | None = None,
 ) -> Outcome:
     """The rule of docs/adr/0034 with both switches on, written out as data: gift, then
     special price, then the lowest of list, bulk (at the minimum) and VIP (a VIP customer
     with a VIP price); a VIP-bulk tie is stored as VIP."""
-    first = _gift_or_special(gift, special_price, grams)
+    first = _gift_or_special(gift, special_price, quantity)
     if first is not None:
         return first
-    candidates: list[Outcome] = [Outcome("list", LIST_PRICE, _total(LIST_PRICE, grams))]
-    if bulk is not None and grams >= BULK_MINIMUM:
-        candidates.append(Outcome("bulk", bulk, _total(bulk, grams)))
+    candidates: list[Outcome] = [Outcome("list", LIST_PRICE, _total(LIST_PRICE, quantity))]
+    if bulk is not None and quantity >= BULK_MINIMUM:
+        candidates.append(Outcome("bulk", bulk, _total(bulk, quantity)))
     if vip and vip_price is not None:
-        candidates.append(Outcome("vip", vip_price, _total(vip_price, grams)))
+        candidates.append(Outcome("vip", vip_price, _total(vip_price, quantity)))
     lowest = min(candidate.price_per_gram for candidate in candidates)
     named = [c for c in candidates if c.price_per_gram == lowest]
     return next((c for c in named if c.rule == "vip"), named[0])
@@ -224,7 +224,7 @@ def test_stored_sale_lines_are_identical_before_and_after(tmp_path: Path) -> Non
 
 
 @pytest.mark.parametrize("vip", [True, False])
-@pytest.mark.parametrize("grams", [GRAMS_BELOW, GRAMS_AT, GRAMS_ABOVE])
+@pytest.mark.parametrize("grams", [QUANTITY_BELOW, QUANTITY_AT, QUANTITY_ABOVE])
 @pytest.mark.parametrize("has_bulk", [True, False])
 @pytest.mark.parametrize(
     ("gift", "special_price"),
@@ -247,12 +247,12 @@ def test_an_existing_customer_pays_what_they_paid_before(
     )
     assert isinstance(bulk, int | None) and isinstance(vip_price, int | None)
 
-    old = _old_rule(vip=vip, bulk=bulk, grams=grams, gift=gift, special_price=special_price)
+    old = _old_rule(vip=vip, bulk=bulk, quantity=grams, gift=gift, special_price=special_price)
     new = _new_rule_both_on(
         vip=vip,
         bulk=bulk,
         vip_price=vip_price,
-        grams=grams,
+        quantity=grams,
         gift=gift,
         special_price=special_price,
     )
@@ -264,9 +264,9 @@ def test_an_existing_customer_pays_what_they_paid_before(
 def test_the_matrix_checker_rejects_a_changed_rule() -> None:
     # The comparison above must be able to fail: a VIP price above the bulk price (what a
     # seller may set later) is a different outcome from the frozen old rule.
-    old = _old_rule(vip=True, bulk=BULK_PRICE, grams=GRAMS_ABOVE)
+    old = _old_rule(vip=True, bulk=BULK_PRICE, quantity=QUANTITY_ABOVE)
     changed = _new_rule_both_on(
-        vip=True, bulk=BULK_PRICE, vip_price=BULK_PRICE + 50, grams=GRAMS_ABOVE
+        vip=True, bulk=BULK_PRICE, vip_price=BULK_PRICE + 50, quantity=QUANTITY_ABOVE
     )
 
     assert changed != old

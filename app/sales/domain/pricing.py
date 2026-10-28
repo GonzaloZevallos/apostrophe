@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import ClassVar
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
 
 
@@ -33,7 +33,7 @@ class InvalidPriceQuote(SaleRuleBroken):
         super().__init__("that is not a valid price quote")
 
 
-class NonPositiveGrams(SaleRuleBroken):
+class NonPositiveQuantity(SaleRuleBroken):
     # Distinct from the shared `grams.invalid` (not a number, or more than two
     # decimals): this is a sale rule, grams that parsed fine but are not above zero.
     code: ClassVar[str] = "sale.grams_invalid"
@@ -77,7 +77,7 @@ class BulkQuote:
     Bulk minimum)."""
 
     price: int
-    minimum: Grams
+    minimum: Quantity
 
     def __post_init__(self) -> None:
         if self.price <= 0:
@@ -114,16 +114,16 @@ class VarietyPricing:
     current: PriceQuote | None
 
 
-def line_total(price_per_gram: int, grams: Grams) -> int:
+def line_total(price_per_gram: int, quantity: Quantity) -> int:
     """`price_per_gram x grams`, rounded to the whole peso, half up (PM clarification,
     round 1): `(price*h + 50) // 100`, with `h` the grams in hundredths."""
-    return (price_per_gram * grams.hundredths + 50) // 100
+    return (price_per_gram * quantity.hundredths + 50) // 100
 
 
-def special_rate(total: int, grams: Grams) -> int:
+def special_rate(total: int, quantity: Quantity) -> int:
     """The price per gram implied by a special price's whole-peso total, half up. This
     figure is stored for reference only: it never feeds back into a total (ADR-0003)."""
-    h = grams.hundredths
+    h = quantity.hundredths
     return (200 * total + h) // (2 * h)
 
 
@@ -141,15 +141,15 @@ def price_line(
     customer_is_vip: bool,
     settings: PricingSettings,
     quote: PriceQuote | None,
-    grams: Grams,
+    quantity: Quantity,
 ) -> LinePricing:
     """Price one sale line. Refuses grams <= 0, a gift combined with a special price,
     a special price <= 0, and a missing quote with no special price to replace it.
 
     Otherwise the lowest applicable rule names the line; a VIP price that ties with the
     bulk price is stored as VIP, and any other strictly lowest rule keeps its name."""
-    if not grams.is_positive:
-        raise NonPositiveGrams()
+    if not quantity.is_positive:
+        raise NonPositiveQuantity()
     if gift and special_price is not None:
         raise GiftWithSpecialPrice()
     if gift:
@@ -157,7 +157,7 @@ def price_line(
     if special_price is not None:
         if special_price <= 0:
             raise InvalidSpecialPrice()
-        return LinePricing(PricingRule.SPECIAL, special_rate(special_price, grams), special_price)
+        return LinePricing(PricingRule.SPECIAL, special_rate(special_price, quantity), special_price)
     if quote is None:
         raise NoPriceThatDay()
     # Candidates in the order a tie is settled: VIP, then bulk, then list.
@@ -167,9 +167,9 @@ def price_line(
     if (
         settings.is_bulk_pricing
         and quote.bulk is not None
-        and grams.hundredths >= quote.bulk.minimum.hundredths
+        and quantity.hundredths >= quote.bulk.minimum.hundredths
     ):
         candidates.append((PricingRule.BULK, quote.bulk.price))
     candidates.append((PricingRule.LIST, quote.list_price))
     rule, price = min(candidates, key=lambda candidate: candidate[1])
-    return LinePricing(rule, price, line_total(price, grams))
+    return LinePricing(rule, price, line_total(price, quantity))

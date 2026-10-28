@@ -41,7 +41,7 @@ WEEKDAYS = ("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
 GROUPED_SECTION = "Desde el primer registro"
 
 MONEY = re.compile(r"^[−-]?\$ \d[\d.]*$")
-GRAMS = re.compile(r"^[−-]?\d+(?:,\d+)? g$")
+QUANTITY = re.compile(r"^[−-]?\d+(?:,\d+)? g$")
 DATE_PART = re.compile(r"^\d\d/\d\d$")
 DATE_LITERAL = re.compile(r"(?<![\d/])\d{1,2}/\d{1,2}(?![\d/])")
 FULL_DATE_LITERAL = re.compile(r"(?<![\d/])\d{1,2}/\d{1,2}/\d{4}(?!\d)")
@@ -218,7 +218,7 @@ def labelled(parts: tuple[str, ...], start: int, end: int, labels: tuple[str, ..
         if parts[i] not in labels or i + 1 >= len(parts):
             continue
         value = parts[i + 1]
-        if not (MONEY.match(value) or GRAMS.match(value)):
+        if not (MONEY.match(value) or QUANTITY.match(value)):
             continue
         after = parts[i + 2] if i + 2 < len(parts) else ""
         note = after if NOTE_PART.match(after) else None
@@ -269,7 +269,7 @@ def _headline(parts: tuple[str, ...], start: int, end: int) -> list[Found]:
             count_at = i
         elif (average := re.match(r"^promedio (\$ [\d.]+)$", part)) is not None:
             found.append(Found("Promedio", average.group(1), None, i))
-            if GRAMS.match(nxt):
+            if QUANTITY.match(nxt):
                 found.append(Found("Gramos vendidos", nxt, None, i + 1))
     if count_at is not None and not any(f.label == "Vendiste" for f in found):
         following = parts[count_at + 1] if count_at + 1 < len(parts) else ""
@@ -437,9 +437,9 @@ def variety_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
                     _problem(name, f"{where} says '{detail}', muestra.md says '{row['Detalle']}'")
                 )
         rest = [p for p in window if p not in details]
-        grams = first_matching(rest, GRAMS)
-        if grams is None or minus(grams) != row["Gramos"]:
-            problems.append(_problem(name, f"{where} has {grams}, muestra.md says {row['Gramos']}"))
+        quantity = first_matching(rest, QUANTITY)
+        if quantity is None or minus(quantity) != row["Gramos"]:
+            problems.append(_problem(name, f"{where} has {quantity}, muestra.md says {row['Gramos']}"))
         days = first_matching(rest, re.compile(r"^\d+ días$"))
         want_days = None if row["Días restantes"] == "—" else row["Días restantes"]
         if days != want_days:
@@ -466,20 +466,20 @@ def _movement_problems(
             continue
         near = screen.parts[i + 1 : i + 4]
         kind = next((p for p in near if p in kinds), None)
-        grams = first_matching(near, GRAMS)
-        if kind is None or grams is None:
+        quantity = first_matching(near, QUANTITY)
+        if kind is None or quantity is None:
             continue
         if not any(
             m["Variedad"] == variety
             and m["Fecha"] == part
             and m["Tipo"] == kind
-            and m["Gramos"] == minus(grams)
+            and m["Gramos"] == minus(quantity)
             for m in movements
         ):
             problems.append(
                 _problem(
                     name,
-                    f"movement {part} {kind} {grams} of '{variety}' is not in muestra.md",
+                    f"movement {part} {kind} {quantity} of '{variety}' is not in muestra.md",
                 )
             )
     return problems
@@ -642,19 +642,19 @@ def _line_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
     for i, part in enumerate(parts):
         if i < 2 or not re.match(r"^\$ [\d.]+ (?:por gramo|x g)$", part):
             continue
-        variety, grams = parts[i - 2], parts[i - 1]
-        if variety not in varieties or not GRAMS.match(grams):
+        variety, quantity = parts[i - 2], parts[i - 1]
+        if variety not in varieties or not QUANTITY.match(quantity):
             continue
         total = first_matching(parts[i + 1 : i + 4], MONEY)
         if not any(
             line["Variedad"] == variety
-            and line["Gramos"] == grams
+            and line["Gramos"] == quantity
             and line["Precio x g"] == _price_per_gram(part)
             and line["Total"] == total
             for line in lines
         ):
             problems.append(
-                _problem(name, f"line {variety} {grams} {part} {total} is not in muestra.md")
+                _problem(name, f"line {variety} {quantity} {part} {total} is not in muestra.md")
             )
     return problems
 
@@ -798,12 +798,12 @@ def _header_problems(name: str, screen: Screen, muestra: Muestra, heading: str) 
     sold = next((f for f in found if f.label == "Vendiste en el mes"), None)
     if sold is not None:
         after = parts[sold.index + 2 : sold.index + 5]
-        grams = first_matching(after, GRAMS)
-        if grams is not None and minus(grams) != rows["Gramos vendidos"]["Valor"]:
+        quantity = first_matching(after, QUANTITY)
+        if quantity is not None and minus(quantity) != rows["Gramos vendidos"]["Valor"]:
             problems.append(
                 _problem(
                     name,
-                    f"header grams {grams}, muestra.md says {rows['Gramos vendidos']['Valor']}",
+                    f"header grams {quantity}, muestra.md says {rows['Gramos vendidos']['Valor']}",
                 )
             )
         margin = next(
@@ -874,7 +874,7 @@ def _variety_row_problems(name: str, screen: Screen, muestra: Muestra) -> list[s
         window = _window(parts, i, set(rows) | {"Semana a semana"}, size=8)
         checks = (
             ("sales", first_matching(window, MONEY), row["Ventas"]),
-            ("grams", first_matching(window, GRAMS), row["Gramos vendidos"]),
+            ("grams", first_matching(window, QUANTITY), row["Gramos vendidos"]),
             (
                 "share",
                 next((m.group(1) for p in window if (m := re.match(r"^(\d+%) del mes$", p))), None),
@@ -1013,9 +1013,9 @@ def archived_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
             problems.append(_problem(name, f"{where} lacks Oculta, muestra.md says it is hidden"))
         if not hidden and "Oculta" in window:
             problems.append(_problem(name, f"{where} says Oculta, muestra.md says it is shown"))
-        grams = first_matching(window, GRAMS)
-        if grams is not None and minus(grams) != row["Gramos"]:
-            problems.append(_problem(name, f"{where} has {grams}, muestra.md says {row['Gramos']}"))
+        quantity = first_matching(window, QUANTITY)
+        if quantity is not None and minus(quantity) != row["Gramos"]:
+            problems.append(_problem(name, f"{where} has {quantity}, muestra.md says {row['Gramos']}"))
         price = first_matching(window, re.compile(r"^\$ [\d.]+ (?:x g|por gramo)$"))
         if price is not None and _price_per_gram(price) != row["Precio hoy"]:
             problems.append(

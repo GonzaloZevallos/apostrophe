@@ -11,7 +11,7 @@ from datetime import date, datetime
 from enum import Enum
 from typing import ClassVar
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.names import NameProblem, collapse_spaces, name_key, name_problem
 
 NAME_MAX_LENGTH = 60
@@ -81,7 +81,7 @@ class VarietyName:
 @dataclass(frozen=True)
 class BulkTerms:
     price: int
-    minimum: Grams
+    minimum: Quantity
 
 
 @dataclass(frozen=True)
@@ -121,7 +121,7 @@ class PriceEntry:
         effective_from: date,
         list_price: int,
         bulk_price: int | None = None,
-        bulk_minimum: Grams | None = None,
+        bulk_minimum: Quantity | None = None,
         id: int | None = None,
         vip_price: int | None = None,
     ) -> PriceEntry:

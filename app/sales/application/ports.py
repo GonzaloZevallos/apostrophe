@@ -13,7 +13,7 @@ from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale, SaleLine
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.pricing_settings import PricingSettings
 
 
@@ -170,7 +170,7 @@ class LineCost:
     `pending_grams` is the part of the line with no lot behind it."""
 
     costed: int | None
-    pending_grams: Grams
+    pending_quantity: Quantity
 
 
 class LineCosts(Protocol):

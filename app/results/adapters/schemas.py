@@ -24,7 +24,7 @@ from pydantic import BaseModel
 from app.results.application.ports import DebtorRow, StockRow
 from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
 from app.stock.adapters.schemas import VarietyStockOut
-from app.varieties.adapters.schemas import GramsOut
+from app.varieties.adapters.schemas import QuantityOut
 
 
 class PanelVarietyOut(VarietyStockOut):
@@ -41,7 +41,7 @@ class PanelVarietyOut(VarietyStockOut):
         return cls(
             variety_id=row.variety_id,
             name=row.name,
-            grams=row.grams.as_decimal(),
+            grams=row.quantity.as_decimal(),
             status=row.status,
             sold_out_since=row.sold_out_since,
             threshold=row.threshold.as_decimal() if row.threshold is not None else None,
@@ -100,8 +100,8 @@ class PeriodOut(BaseModel):
     sales: int
     sales_count: int
     average_sale: int | None
-    grams_sold: GramsOut
-    grams_gifted: GramsOut
+    grams_sold: QuantityOut
+    grams_gifted: QuantityOut
     cost_of_goods: int
     pending_cost: bool
     shortfall: CostLineOut | None
@@ -121,8 +121,8 @@ class PeriodOut(BaseModel):
             sales=figures.sales,
             sales_count=figures.sales_count,
             average_sale=figures.average_sale,
-            grams_sold=figures.grams_sold.as_decimal(),
-            grams_gifted=figures.grams_gifted.as_decimal(),
+            grams_sold=figures.quantity_sold.as_decimal(),
+            grams_gifted=figures.quantity_gifted.as_decimal(),
             cost_of_goods=figures.cost_of_goods,
             pending_cost=figures.pending_cost,
             shortfall=CostLineOut.of(figures.shortfall),
@@ -168,12 +168,12 @@ class MarginOut(BaseModel):
 
     amount: int
     percent: int | None
-    pending_grams: GramsOut
+    pending_grams: QuantityOut
 
 
 class CostOut(BaseModel):
     costed: int
-    pending_grams: GramsOut
+    pending_grams: QuantityOut
 
 
 class AmountWithPendingOut(BaseModel):
@@ -181,7 +181,7 @@ class AmountWithPendingOut(BaseModel):
     period."""
 
     amount: int
-    pending_grams: GramsOut
+    pending_grams: QuantityOut
 
 
 class RowCostOut(BaseModel):
@@ -191,7 +191,7 @@ class RowCostOut(BaseModel):
     screen says "N g sin costo" and never "$ 0"."""
 
     amount: int
-    pending_grams: GramsOut
+    pending_grams: QuantityOut
     all_pending: bool
 
 
@@ -200,8 +200,8 @@ class VarietyRowOut(BaseModel):
     name: str
     sales_without_shipping: int
     share_percent: int | None
-    grams_sold: GramsOut
-    grams_gifted: GramsOut
+    grams_sold: QuantityOut
+    grams_gifted: QuantityOut
     cost: CostOut
     margin: MarginOut
 
@@ -212,8 +212,8 @@ class AnalysisMonthOut(BaseModel):
     next: str | None
     sales: int
     sales_without_shipping: int
-    grams_sold: GramsOut
-    grams_gifted: GramsOut
+    grams_sold: QuantityOut
+    grams_gifted: QuantityOut
     average_margin: MarginOut
     shortfall: RowCostOut | None
     promotion: RowCostOut | None
@@ -225,7 +225,7 @@ class WeekOut(BaseModel):
     first_day: date
     last_day: date
     sales: int
-    grams: GramsOut
+    grams: QuantityOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
     promotion: RowCostOut | None
@@ -241,7 +241,7 @@ class MonthRowOut(BaseModel):
     first_day: date
     last_day: date
     sales: int
-    grams: GramsOut
+    grams: QuantityOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
     promotion: RowCostOut | None

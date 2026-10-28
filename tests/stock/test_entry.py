@@ -4,20 +4,20 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.errors import (
     EntryCostInvalid,
     EntryCostOnNegativeAdjustment,
     EntryCostRequired,
     EntryDateInFuture,
-    EntryGramsInvalid,
+    EntryQuantityInvalid,
     EntryNoteTooLong,
 )
 
 TODAY = date(2026, 10, 2)
 RECORDED_AT = datetime(2026, 10, 2, 12, 0)
-TEN_GRAMS = Grams.of("10")
+TEN_QUANTITY = Quantity.of("10")
 
 
 def _entry(
@@ -25,7 +25,7 @@ def _entry(
     entry_date: date = TODAY,
     variety_id: int = 1,
     origin: Origin = Origin.OPENING_STOCK,
-    grams: Grams = TEN_GRAMS,
+    quantity: Quantity = TEN_QUANTITY,
     total_cost: int | None = None,
     note: str | None = None,
     today: date = TODAY,
@@ -35,7 +35,7 @@ def _entry(
         entry_date,
         variety_id,
         origin,
-        grams,
+        quantity,
         total_cost,
         note,
         today,
@@ -47,7 +47,7 @@ def test_an_opening_stock_entry_with_no_cost_is_recorded() -> None:
     entry = _entry()
 
     assert entry.total_cost is None
-    assert entry.grams == Grams.of("10")
+    assert entry.quantity == Quantity.of("10")
 
 
 def test_a_purchase_needs_a_total_cost() -> None:
@@ -67,30 +67,30 @@ def test_a_purchase_with_a_positive_cost_is_recorded() -> None:
 
 
 def test_grams_are_never_zero() -> None:
-    with pytest.raises(EntryGramsInvalid):
-        _entry(grams=Grams.of("0"))
+    with pytest.raises(EntryQuantityInvalid):
+        _entry(grams=Quantity.of("0"))
 
 
 def test_a_harvest_cannot_be_negative() -> None:
-    with pytest.raises(EntryGramsInvalid):
-        _entry(origin=Origin.HARVEST, grams=Grams.of("-5"))
+    with pytest.raises(EntryQuantityInvalid):
+        _entry(origin=Origin.HARVEST, grams=Quantity.of("-5"))
 
 
 def test_only_an_adjustment_may_be_negative() -> None:
-    entry = _entry(origin=Origin.ADJUSTMENT, grams=Grams.of("-5"), total_cost=None)
+    entry = _entry(origin=Origin.ADJUSTMENT, grams=Quantity.of("-5"), total_cost=None)
 
-    assert entry.grams == Grams.of("-5")
+    assert entry.quantity == Quantity.of("-5")
 
 
 def test_a_negative_adjustment_refuses_a_cost() -> None:
     """The enforcement artefact: a negative adjustment is the one place a cost is
     always refused, whatever amount is given."""
     with pytest.raises(EntryCostOnNegativeAdjustment):
-        _entry(origin=Origin.ADJUSTMENT, grams=Grams.of("-5"), total_cost=1_000)
+        _entry(origin=Origin.ADJUSTMENT, grams=Quantity.of("-5"), total_cost=1_000)
 
 
 def test_a_positive_adjustment_may_carry_a_cost() -> None:
-    entry = _entry(origin=Origin.ADJUSTMENT, grams=Grams.of("5"), total_cost=1_000)
+    entry = _entry(origin=Origin.ADJUSTMENT, grams=Quantity.of("5"), total_cost=1_000)
 
     assert entry.total_cost == 1_000
 

@@ -31,7 +31,7 @@ def _customer(client: TestClient, name: str = "Customer", phone: str = "11 2000-
 
 
 def _owing_sale(
-    client: TestClient, customer_id: int, variety_id: int, *, grams: str = "10", sale_date: str
+    client: TestClient, customer_id: int, variety_id: int, *, quantity: str = "10", sale_date: str
 ) -> int:
     body = client.post(
         "/sales",
@@ -39,7 +39,7 @@ def _owing_sale(
             "customer_id": customer_id,
             "payment": "owing",
             "date": sale_date,
-            "lines": [{"variety_id": variety_id, "grams": grams}],
+            "lines": [{"variety_id": variety_id, "grams": quantity}],
         },
     )
     assert body.status_code == 201, body.text
@@ -112,7 +112,7 @@ def test_above_balance_is_refused_on_preview_and_record_with_nothing_leaked(
 ) -> None:
     variety_id = _priced_variety(client, price=1_000)
     customer_id = _customer(client, name="Secret Name")
-    _owing_sale(client, customer_id, variety_id, grams="1", sale_date="2026-09-01")
+    _owing_sale(client, customer_id, variety_id, quantity="1", sale_date="2026-09-01")
 
     preview = client.post(
         f"/customers/{customer_id}/payments/preview",
@@ -221,7 +221,7 @@ def test_deleting_an_on_the_spot_payment_is_refused(client: TestClient, engine: 
 def test_a_cash_sale_s_payment_never_settles_an_owed_sale(client: TestClient) -> None:
     variety_id = _priced_variety(client, price=1_000)
     customer_id = _customer(client)
-    _owing_sale(client, customer_id, variety_id, grams="1", sale_date="2026-09-01")
+    _owing_sale(client, customer_id, variety_id, quantity="1", sale_date="2026-09-01")
     cash_sale = client.post(
         "/sales",
         json={
@@ -242,7 +242,7 @@ def test_a_cash_sale_s_payment_never_settles_an_owed_sale(client: TestClient) ->
 def test_preview_answers_exactly_what_recording_would_settle(client: TestClient) -> None:
     variety_id = _priced_variety(client, price=1_000)
     customer_id = _customer(client)
-    _owing_sale(client, customer_id, variety_id, grams="10", sale_date="2026-09-01")
+    _owing_sale(client, customer_id, variety_id, quantity="10", sale_date="2026-09-01")
 
     preview = client.post(
         f"/customers/{customer_id}/payments/preview",
@@ -266,7 +266,7 @@ def test_debtors_tie_order_matches_customers_sort_order(client: TestClient) -> N
     for index, name in enumerate(names):
         customer_id = _customer(client, name=name, phone=f"11 300{index}-000{index}")
         ids.append(customer_id)
-        _owing_sale(client, customer_id, variety_id, grams="1", sale_date="2026-09-01")
+        _owing_sale(client, customer_id, variety_id, quantity="1", sale_date="2026-09-01")
 
     debtors = client.get("/payments/debtors").json()["debtors"]
     debtor_names = [d["customer"]["name"] for d in debtors if d["customer"]["id"] in ids]
@@ -282,8 +282,8 @@ def test_a_payment_s_fields_are_unchanged_after_a_sale_is_later_deleted(
 ) -> None:
     variety_id = _priced_variety(client, price=1_000)
     customer_id = _customer(client)
-    _owing_sale(client, customer_id, variety_id, grams="10", sale_date="2026-09-01")
-    sale2 = _owing_sale(client, customer_id, variety_id, grams="5", sale_date="2026-09-10")
+    _owing_sale(client, customer_id, variety_id, quantity="10", sale_date="2026-09-01")
+    sale2 = _owing_sale(client, customer_id, variety_id, quantity="5", sale_date="2026-09-10")
 
     recorded = client.post(
         f"/customers/{customer_id}/payments",

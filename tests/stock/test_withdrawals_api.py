@@ -23,8 +23,8 @@ def _variety(client: TestClient, name: str = "Zkittlez") -> int:
     return int(client.post("/varieties", json={"name": name}).json()["id"])
 
 
-def _stock_in(client: TestClient, variety_id: int, grams: str = "50", **extra: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "opening_stock", "grams": grams}
+def _stock_in(client: TestClient, variety_id: int, quantity: str = "50", **extra: Any) -> None:
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": "opening_stock", "grams": quantity}
     response = client.post("/stock/entries", json=body | extra)
     assert response.status_code == 201, response.text
 
@@ -38,8 +38,8 @@ def _body(variety_id: int, **overrides: Any) -> dict[str, Any]:
     return body
 
 
-def _line(variety_id: int, grams: str = "5") -> dict[str, Any]:
-    return {"variety_id": variety_id, "grams": grams}
+def _line(variety_id: int, quantity: str = "5") -> dict[str, Any]:
+    return {"variety_id": variety_id, "grams": quantity}
 
 
 def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, Any]:
@@ -49,7 +49,7 @@ def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, 
     return answer
 
 
-def _grams_of(client: TestClient, variety_id: int) -> float:
+def _quantity_of(client: TestClient, variety_id: int) -> float:
     rows = client.get("/stock").json()["varieties"]
     return float(next(row["grams"] for row in rows if row["variety_id"] == variety_id))
 
@@ -101,7 +101,7 @@ def test_stock_moves_exactly_on_record_edit_and_delete(client: TestClient) -> No
     _stock_in(client, variety_id, "50")
 
     withdrawal = _record(client, variety_id, lines=[{"variety_id": variety_id, "grams": "5.25"}])
-    assert _grams_of(client, variety_id) == 44.75
+    assert _quantity_of(client, variety_id) == 44.75
 
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
@@ -110,11 +110,11 @@ def test_stock_moves_exactly_on_record_edit_and_delete(client: TestClient) -> No
     assert edited.status_code == 200, edited.text
     assert edited.json()["id"] == withdrawal["id"]
     assert edited.json()["reason"] == "own_use"
-    assert _grams_of(client, variety_id) == 43.0
+    assert _quantity_of(client, variety_id) == 43.0
 
     deleted = client.delete(f"/stock/withdrawals/{withdrawal['id']}")
     assert deleted.status_code == 204
-    assert _grams_of(client, variety_id) == 50.0
+    assert _quantity_of(client, variety_id) == 50.0
     assert client.get(f"/stock/withdrawals/{withdrawal['id']}").status_code == 404
 
 

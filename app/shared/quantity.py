@@ -11,10 +11,10 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from typing import ClassVar
 
-HUNDREDTHS_PER_GRAM = 100
+HUNDREDTHS_PER_UNIT = 100
 
 
-class InvalidGrams(ValueError):
+class InvalidQuantity(ValueError):
     """Grams were invalid. The message is a fixed literal, built from no constructor
     argument, so it never repeats what was submitted (CODING_STANDARDS.md section 9)."""
 
@@ -22,20 +22,20 @@ class InvalidGrams(ValueError):
 
 
 @dataclass(frozen=True, order=True)
-class Grams:
+class Quantity:
     hundredths: int
 
     @classmethod
-    def of(cls, value: Decimal | int | str) -> Grams:
+    def of(cls, value: Decimal | int | str) -> Quantity:
         try:
             amount = Decimal(value)
         except InvalidOperation as exc:
-            raise InvalidGrams("grams must be a number") from exc
+            raise InvalidQuantity("grams must be a number") from exc
         if not amount.is_finite():
-            raise InvalidGrams("grams must be a number")
-        scaled = amount * HUNDREDTHS_PER_GRAM
+            raise InvalidQuantity("grams must be a number")
+        scaled = amount * HUNDREDTHS_PER_UNIT
         if scaled != scaled.to_integral_value():
-            raise InvalidGrams("grams allow at most two decimals")
+            raise InvalidQuantity("grams allow at most two decimals")
         return cls(int(scaled))
 
     @property
@@ -43,10 +43,10 @@ class Grams:
         return self.hundredths > 0
 
     def as_decimal(self) -> Decimal:
-        return Decimal(self.hundredths) / HUNDREDTHS_PER_GRAM
+        return Decimal(self.hundredths) / HUNDREDTHS_PER_UNIT
 
-    def __add__(self, other: Grams) -> Grams:
-        return Grams(self.hundredths + other.hundredths)
+    def __add__(self, other: Quantity) -> Quantity:
+        return Quantity(self.hundredths + other.hundredths)
 
-    def __sub__(self, other: Grams) -> Grams:
-        return Grams(self.hundredths - other.hundredths)
+    def __sub__(self, other: Quantity) -> Quantity:
+        return Quantity(self.hundredths - other.hundredths)
