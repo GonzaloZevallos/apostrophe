@@ -12,8 +12,8 @@ from app.shared.quantity import Quantity
 
 
 def costed_sales(line_total: int, quantity: Quantity, pending: Quantity) -> int:
-    """`line_total x costed_grams / grams`, half up. A fully costed line (`pending`
-    zero) counts its whole total; a fully pending line (`pending == grams`, a gift
+    """`line_total x costed_quantity / quantity`, half up. A fully costed line (`pending`
+    zero) counts its whole total; a fully pending line (`pending == quantity`, a gift
     included, since a gift's `line_total` is already 0) counts $0."""
     costed_hundredths = quantity.hundredths - pending.hundredths
     if costed_hundredths == quantity.hundredths:
