@@ -16,7 +16,6 @@ Which packages, layers and children get a diagram is read from the filesystem.
 
 from __future__ import annotations
 
-import re
 import sys
 import tempfile
 from collections.abc import Callable, Sequence
@@ -51,6 +50,7 @@ LAYERS = ("domain", "application", "adapters")
 GENERATED = PurePosixPath("docs/architecture/generated")
 API = PurePosixPath("docs/api")
 SPLIT_NOTE = "Edges between children are not drawn."
+PACKAGES_SPLIT_NOTE = "Edges between layers are not drawn."
 NO_LAYER = "No such layer in this package."
 NO_CLASSES_IN_LAYER = "No classes in this layer."
 NO_CLASSES = "No classes in this diagram."
@@ -58,9 +58,6 @@ SCOPE_NOTE = (
     "A diagram shows only its own package: classes of other packages, and the edges that "
     "reach them, are not drawn."
 )
-
-
-_NODE = re.compile(r"^\s*class\s+(\S+)\s*\{\s*$")
 
 
 @dataclass(frozen=True)
@@ -76,31 +73,6 @@ DEFAULT_LIMITS = Limits()
 
 def _fence(body: str) -> str:
     return f"```mermaid\n{body.strip()}\n```"
-
-
-def _unique_nodes(body: str) -> str:
-    """A packages diagram with each node defined once.
-
-    pyreverse names a module by its short name, so `errors` in `domain` and in
-    `application` is two `class errors` nodes. Mermaid draws both as the one node `errors`,
-    so keeping the first definition changes nothing in the picture and keeps every class
-    name in the block unique.
-    """
-    seen: set[str] = set()
-    kept: list[str] = []
-    skipping = False
-    for line in body.splitlines():
-        match = _NODE.match(line)
-        if skipping:
-            skipping = line.strip() != "}"
-            continue
-        if match is not None:
-            if match.group(1) in seen:
-                skipping = True
-                continue
-            seen.add(match.group(1))
-        kept.append(line)
-    return "\n".join(kept)
 
 
 def _has_classes(body: str) -> bool:
@@ -180,11 +152,28 @@ def _plan(repo_root: Path) -> tuple[list[ToolCall], dict[str, list[str]]]:
 
 def _split_calls(
     repo_root: Path, results: dict[str, str], hexagons: dict[str, list[str]], limits: Limits
-) -> tuple[list[ToolCall], dict[tuple[str, str], list[str]]]:
-    """The per-child calls for every layer whose block is too big or names a class twice."""
+) -> tuple[list[ToolCall], dict[tuple[str, str], list[str]], set[str]]:
+    """The calls that replace a block which is too big or names a class twice.
+
+    A layer's class block becomes one block per child of the layer. A hexagon's packages
+    block becomes one packages block per layer. Nothing is dropped or renamed: a block that
+    still fails after the split is reported by the validation stage.
+    """
     calls: list[ToolCall] = []
     split: dict[tuple[str, str], list[str]] = {}
+    packages_split: set[str] = set()
     for package, layers in hexagons.items():
+        if _breaks(results[f"class/{package}/packages"], limits):
+            packages_split.add(package)
+            for layer in layers:
+                calls.append(
+                    pyreverse_call(
+                        f"layerpk/{package}/{layer}",
+                        f"{package}_{layer}",
+                        [_rel(repo_root / "app" / package / layer, repo_root)],
+                        "packages",
+                    )
+                )
         for layer in layers:
             if not _breaks(results[f"class/{package}/{layer}"], limits):
                 continue
@@ -201,7 +190,7 @@ def _split_calls(
                         "classes",
                     )
                 )
-    return calls, split
+    return calls, split, packages_split
 
 
 def _class_section(body: str, empty: str) -> str:
@@ -213,14 +202,15 @@ def _hexagon_file(
     layers: Sequence[str],
     results: dict[str, str],
     split: dict[tuple[str, str], list[str]],
+    packages_split: set[str],
 ) -> str:
-    parts = [
-        f"# {package}",
-        "",
-        "## Packages",
-        "",
-        _fence(_unique_nodes(results[f"class/{package}/packages"])),
-    ]
+    parts = [f"# {package}", "", "## Packages", ""]
+    if package in packages_split:
+        parts.append(PACKAGES_SPLIT_NOTE)
+        for layer in layers:
+            parts += ["", f"#### {layer}", "", _fence(results[f"layerpk/{package}/{layer}"])]
+    else:
+        parts.append(_fence(results[f"class/{package}/packages"]))
     for layer in LAYERS:
         parts += ["", f"## {layer}", ""]
         if layer not in layers:
@@ -258,14 +248,14 @@ def produce(
     """Every generated file as repo-relative path to final text; nothing is written."""
     calls, hexagons = _plan(repo_root)
     results = run_all(calls, run_tool)
-    child_calls, split = _split_calls(repo_root, results, hexagons, limits)
+    child_calls, split, packages_split = _split_calls(repo_root, results, hexagons, limits)
     results.update(run_all(child_calls, run_tool))
 
     classes: dict[PurePosixPath, tuple[Kind, str]] = {}
     for package in discover(repo_root / "app"):
         path = GENERATED / "classes" / f"{package}.md"
         if package in hexagons:
-            text = _hexagon_file(package, hexagons[package], results, split)
+            text = _hexagon_file(package, hexagons[package], results, split, packages_split)
         else:
             body = _class_section(results[f"class/{package}"], NO_CLASSES)
             text = f"# {package}\n\n{body}"

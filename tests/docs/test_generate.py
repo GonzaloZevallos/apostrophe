@@ -491,6 +491,7 @@ def test_produce_splits_a_layer_that_breaks_the_limit_into_children(tmp_path: Pa
     repo = _fake_repo(tmp_path)
     tools_ = FakeTools(
         {
+            "class/alpha/packages": "classDiagram\n  class a {\n  }",
             "child/alpha/domain/one": _classes("One"),
             "child/alpha/domain/two": _classes("Two"),
         }
@@ -604,6 +605,7 @@ def test_a_child_still_over_the_limit_exits_1_and_names_the_rule(tmp_path: Path)
     repo = _fake_repo(tmp_path)
     tools_ = FakeTools(
         {
+            "class/alpha/packages": "classDiagram\n  class a {\n  }",
             "child/alpha/domain/one": _classes("One", "Uno"),
             "child/alpha/domain/two": _classes("Two"),
         }
@@ -797,14 +799,43 @@ def test_node_validator_reports_a_parser_that_cannot_start(
     assert report.problems[0].message == "could not start node: node"
 
 
-def test_a_packages_diagram_defines_each_module_node_once(tmp_path: Path) -> None:
+def test_a_packages_diagram_with_a_repeated_node_is_split_per_layer(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
-    packages = (
-        "classDiagram\n  class alpha {\n  }\n  class domain {\n  }\n  class errors {\n  }\n"
-        "  class application {\n  }\n  class errors {\n  }\n  application --> errors"
+    packages = "classDiagram\n  class a {\n  }\n  class errors {\n  }\n  class errors {\n  }"
+    tools_ = FakeTools(
+        {
+            "class/alpha/packages": packages,
+            "layerpk/alpha/domain": "classDiagram\n  class domain {\n  }\n  class errors {\n  }",
+            "layerpk/alpha/application": (
+                "classDiagram\n  class application {\n  }\n  class errors {\n  }"
+            ),
+        }
     )
-    out = produce(repo, FakeTools({"class/alpha/packages": packages}), Limits(), _openapi)
+    out = produce(repo, tools_, Limits(), _openapi)
     alpha = out[GEN / "classes" / "alpha.md"]
-    assert alpha.count("class errors {") == 1
-    assert "application --> errors" in alpha
+    assert "## Packages\n\nEdges between layers are not drawn.\n" in alpha
+    assert alpha.index("#### domain") < alpha.index("#### application")
+    assert alpha.count("class errors {") == 2
     assert duplicate_classes(alpha) == []
+
+
+def test_a_packages_diagram_still_repeating_a_node_after_the_split_exits_1(
+    tmp_path: Path,
+) -> None:
+    repo = _fake_repo(tmp_path)
+    repeated = "classDiagram\n  class errors {\n  }\n  class errors {\n  }"
+    tools_ = FakeTools(
+        {
+            "class/alpha/packages": repeated,
+            "layerpk/alpha/domain": repeated,
+            "layerpk/alpha/application": "classDiagram\n  class application {\n  }",
+        }
+    )
+    lines: list[str] = []
+    code = run(repo, run_tool=tools_, validate=_accepting, openapi=_openapi, report=lines.append)
+    assert code == 1
+    assert lines == [
+        "docs/architecture/generated/classes/alpha.md: block 1: "
+        "duplicate-class: class errors is defined twice"
+    ]
+    assert not (repo / "docs").exists()
