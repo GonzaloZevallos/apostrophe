@@ -1,0 +1,762 @@
+{
+ "total": {
+  "lines": {
+   "total": 6559,
+   "covered": 300,
+   "skipped": 0,
+   "pct": 4.57
+  },
+  "statements": {
+   "total": 7391,
+   "covered": 313,
+   "skipped": 0,
+   "pct": 4.23
+  },
+  "functions": {
+   "total": 1790,
+   "covered": 45,
+   "skipped": 0,
+   "pct": 2.51
+  },
+  "branches": {
+   "total": 4990,
+   "covered": 67,
+   "skipped": 0,
+   "pct": 1.34
+  },
+  "branchesTrue": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/App.tsx": {
+  "lines": {
+   "total": 1,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 1,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 1,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/Root.tsx": {
+  "lines": {
+   "total": 10,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 4,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 11,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 2,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/clipboard.ts": {
+  "lines": {
+   "total": 19,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 2,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 19,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 4,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/main.tsx": {
+  "lines": {
+   "total": 9,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 11,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 8,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/paymentReturn.ts": {
+  "lines": {
+   "total": 7,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 4,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 7,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 6,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/queryClient.ts": {
+  "lines": {
+   "total": 7,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 3,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 7,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 5,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/router.tsx": {
+  "lines": {
+   "total": 14,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 9,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 14,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 3,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/routes.ts": {
+  "lines": {
+   "total": 92,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 22,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 103,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 34,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/session.ts": {
+  "lines": {
+   "total": 22,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 9,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 23,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 4,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/share.ts": {
+  "lines": {
+   "total": 5,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 2,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 5,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 6,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/test-viewport.ts": {
+  "lines": {
+   "total": 14,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 8,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 15,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/theme.ts": {
+  "lines": {
+   "total": 13,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 5,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 15,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 8,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/useOnline.ts": {
+  "lines": {
+   "total": 10,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 6,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 11,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/domain/costPerGram.ts": {
+  "lines": {
+   "total": 6,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 2,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 6,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 2,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/domain/costPerGram.vectors.json": {
+  "lines": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  },
+  "functions": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  },
+  "branches": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/format/breakpoints.ts": {
+  "lines": {
+   "total": 1,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 1,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/format/counts.ts": {
+  "lines": {
+   "total": 2,
+   "covered": 2,
+   "skipped": 0,
+   "pct": 100
+  },
+  "functions": {
+   "total": 2,
+   "covered": 2,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 2,
+   "covered": 2,
+   "skipped": 0,
+   "pct": 100
+  },
+  "branches": {
+   "total": 2,
+   "covered": 2,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/format/dates.ts": {
+  "lines": {
+   "total": 72,
+   "covered": 72,
+   "skipped": 0,
+   "pct": 100
+  },
+  "functions": {
+   "total": 21,
+   "covered": 21,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 76,
+   "covered": 75,
+   "skipped": 0,
+   "pct": 98.68
+  },
+  "branches": {
+   "total": 34,
+   "covered": 27,
+   "skipped": 0,
+   "pct": 79.41
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/format/initials.ts": {
+  "lines": {
+   "total": 3,
+   "covered": 3,
+   "skipped": 0,
+   "pct": 100
+  },
+  "functions": {
+   "total": 3,
+   "covered": 3,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 3,
+   "covered": 3,
+   "skipped": 0,
+   "pct": 100
+  },
+  "branches": {
+   "total": 2,
+   "covered": 1,
+   "skipped": 0,
+   "pct": 50
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/format/money.ts": {
+  "lines": {
+   "total": 10,
+   "covered": 10,
+   "skipped": 0,
+   "pct": 100
+  },
+  "functions": {
+   "total": 5,
+   "covered": 5,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 10,
+   "covered": 10,
+   "skipped": 0,
+   "pct": 100
+  },
+  "branches": {
+   "total": 4,
+   "covered": 4,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/format/parse.ts": {
+  "lines": {
+   "total": 23,
+   "covered": 23,
+   "skipped": 0,
+   "pct": 100
+  },
+  "functions": {
+   "total": 4,
+   "covered": 4,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 29,
+   "covered": 29,
+   "skipped": 0,
+   "pct": 100
+  },
+  "branches": {
+   "total": 23,
+   "covered": 23,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/format/periods.vectors.json": {
+  "lines": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  },
+  "functions": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  },
+  "branches": {
+   "total": 0,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 100
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/format/phone.ts": {
+  "lines": {
+   "total": 6,
+   "covered": 6,
+   "skipped": 0,
+   "pct": 100
+  },
+  "functions": {
+   "total": 1,
+   "covered": 1,
+   "skipped": 0,
+   "pct": 100
+  },
+  "statements": {
+   "total": 7,
+   "covered": 7,
+   "skipped": 0,
+   "pct": 100
+  },
+  "branches": {
+   "total": 6,
+   "covered": 4,
+   "skipped": 0,
+   "pct": 66.66
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/screens/inicio/FirstRunChecklist.tsx": {
+  "lines": {
+   "total": 3,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 2,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 3,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 8,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/screens/inicio/ImportNotice.tsx": {
+  "lines": {
+   "total": 9,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 3,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 9,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 6,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/screens/inicio/InicioFondo.tsx": {
+  "lines": {
+   "total": 6,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 2,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 7,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 4,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/screens/inicio/InicioPanel.tsx": {
+  "lines": {
+   "total": 17,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 7,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 20,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 10,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ },
+ "/home/runner/work/apostrophe/apostrophe/web/src/screens/inicio/PeriodFigures.tsx": {
+  "lines": {
+   "total": 23,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "functions": {
+   "total": 10,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "statements": {
+   "total": 23,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  },
+  "branches": {
+   "total": 14,
+   "covered": 0,
+   "skipped": 0,
+   "pct": 0
+  }
+ }
+}

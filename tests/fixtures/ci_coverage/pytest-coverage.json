@@ -1,0 +1,1127 @@
+{
+ "meta": {
+  "format": 3,
+  "version": "7.17.0",
+  "timestamp": "2026-10-28T03:02:44.377835",
+  "branch_coverage": false,
+  "show_contexts": false
+ },
+ "files": {
+  "app/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/clock.py": {
+   "summary": {
+    "covered_lines": 14,
+    "num_statements": 15,
+    "percent_covered": 93.33333333333333,
+    "percent_covered_display": "93",
+    "missing_lines": 1,
+    "excluded_lines": 0,
+    "percent_statements_covered": 93.33333333333333,
+    "percent_statements_covered_display": "93"
+   }
+  },
+  "app/customers/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/customers/adapters/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/customers/adapters/import_port.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 36,
+    "percent_covered": 0.0,
+    "percent_covered_display": "0",
+    "missing_lines": 36,
+    "excluded_lines": 0,
+    "percent_statements_covered": 0.0,
+    "percent_statements_covered_display": "0"
+   }
+  },
+  "app/customers/adapters/router.py": {
+   "summary": {
+    "covered_lines": 39,
+    "num_statements": 52,
+    "percent_covered": 75.0,
+    "percent_covered_display": "75",
+    "missing_lines": 13,
+    "excluded_lines": 0,
+    "percent_statements_covered": 75.0,
+    "percent_statements_covered_display": "75"
+   }
+  },
+  "app/customers/adapters/schemas.py": {
+   "summary": {
+    "covered_lines": 28,
+    "num_statements": 37,
+    "percent_covered": 75.67567567567568,
+    "percent_covered_display": "76",
+    "missing_lines": 9,
+    "excluded_lines": 0,
+    "percent_statements_covered": 75.67567567567568,
+    "percent_statements_covered_display": "76"
+   }
+  },
+  "app/customers/adapters/sql_customers.py": {
+   "summary": {
+    "covered_lines": 25,
+    "num_statements": 50,
+    "percent_covered": 50.0,
+    "percent_covered_display": "50",
+    "missing_lines": 25,
+    "excluded_lines": 0,
+    "percent_statements_covered": 50.0,
+    "percent_statements_covered_display": "50"
+   }
+  },
+  "app/customers/adapters/tables.py": {
+   "summary": {
+    "covered_lines": 14,
+    "num_statements": 14,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/customers/application/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/customers/application/errors.py": {
+   "summary": {
+    "covered_lines": 11,
+    "num_statements": 13,
+    "percent_covered": 84.61538461538461,
+    "percent_covered_display": "85",
+    "missing_lines": 2,
+    "excluded_lines": 0,
+    "percent_statements_covered": 84.61538461538461,
+    "percent_statements_covered_display": "85"
+   }
+  },
+  "app/customers/application/manage_customers.py": {
+   "summary": {
+    "covered_lines": 24,
+    "num_statements": 51,
+    "percent_covered": 47.05882352941177,
+    "percent_covered_display": "47",
+    "missing_lines": 27,
+    "excluded_lines": 0,
+    "percent_statements_covered": 47.05882352941177,
+    "percent_statements_covered_display": "47"
+   }
+  },
+  "app/customers/application/ports.py": {
+   "summary": {
+    "covered_lines": 16,
+    "num_statements": 16,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 18,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/customers/domain/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/customers/domain/customer.py": {
+   "summary": {
+    "covered_lines": 52,
+    "num_statements": 120,
+    "percent_covered": 43.333333333333336,
+    "percent_covered_display": "43",
+    "missing_lines": 68,
+    "excluded_lines": 0,
+    "percent_statements_covered": 43.333333333333336,
+    "percent_statements_covered_display": "43"
+   }
+  },
+  "app/db.py": {
+   "summary": {
+    "covered_lines": 44,
+    "num_statements": 58,
+    "percent_covered": 75.86206896551724,
+    "percent_covered_display": "76",
+    "missing_lines": 14,
+    "excluded_lines": 0,
+    "percent_statements_covered": 75.86206896551724,
+    "percent_statements_covered_display": "76"
+   }
+  },
+  "app/http_errors.py": {
+   "summary": {
+    "covered_lines": 23,
+    "num_statements": 24,
+    "percent_covered": 95.83333333333333,
+    "percent_covered_display": "96",
+    "missing_lines": 1,
+    "excluded_lines": 0,
+    "percent_statements_covered": 95.83333333333333,
+    "percent_statements_covered_display": "96"
+   }
+  },
+  "app/main.py": {
+   "summary": {
+    "covered_lines": 181,
+    "num_statements": 190,
+    "percent_covered": 95.26315789473684,
+    "percent_covered_display": "95",
+    "missing_lines": 9,
+    "excluded_lines": 6,
+    "percent_statements_covered": 95.26315789473684,
+    "percent_statements_covered_display": "95"
+   }
+  },
+  "app/results/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/results/adapters/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/results/adapters/assemble.py": {
+   "summary": {
+    "covered_lines": 17,
+    "num_statements": 20,
+    "percent_covered": 85.0,
+    "percent_covered_display": "85",
+    "missing_lines": 3,
+    "excluded_lines": 0,
+    "percent_statements_covered": 85.0,
+    "percent_statements_covered_display": "85"
+   }
+  },
+  "app/results/adapters/router.py": {
+   "summary": {
+    "covered_lines": 50,
+    "num_statements": 56,
+    "percent_covered": 89.28571428571429,
+    "percent_covered_display": "89",
+    "missing_lines": 6,
+    "excluded_lines": 0,
+    "percent_statements_covered": 89.28571428571429,
+    "percent_statements_covered_display": "89"
+   }
+  },
+  "app/results/adapters/schemas.py": {
+   "summary": {
+    "covered_lines": 153,
+    "num_statements": 159,
+    "percent_covered": 96.22641509433963,
+    "percent_covered_display": "96",
+    "missing_lines": 6,
+    "excluded_lines": 0,
+    "percent_statements_covered": 96.22641509433963,
+    "percent_statements_covered_display": "96"
+   }
+  },
+  "app/results/application/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/results/application/analyse.py": {
+   "summary": {
+    "covered_lines": 25,
+    "num_statements": 30,
+    "percent_covered": 83.33333333333333,
+    "percent_covered_display": "83",
+    "missing_lines": 5,
+    "excluded_lines": 0,
+    "percent_statements_covered": 83.33333333333333,
+    "percent_statements_covered_display": "83"
+   }
+  },
+  "app/results/application/ports.py": {
+   "summary": {
+    "covered_lines": 42,
+    "num_statements": 42,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 28,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/results/application/read_panel.py": {
+   "summary": {
+    "covered_lines": 47,
+    "num_statements": 57,
+    "percent_covered": 82.45614035087719,
+    "percent_covered_display": "82",
+    "missing_lines": 10,
+    "excluded_lines": 0,
+    "percent_statements_covered": 82.45614035087719,
+    "percent_statements_covered_display": "82"
+   }
+  },
+  "app/results/domain/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/results/domain/arithmetic.py": {
+   "summary": {
+    "covered_lines": 2,
+    "num_statements": 5,
+    "percent_covered": 40.0,
+    "percent_covered_display": "40",
+    "missing_lines": 3,
+    "excluded_lines": 0,
+    "percent_statements_covered": 40.0,
+    "percent_statements_covered_display": "40"
+   }
+  },
+  "app/results/domain/costed_sales.py": {
+   "summary": {
+    "covered_lines": 5,
+    "num_statements": 11,
+    "percent_covered": 45.45454545454545,
+    "percent_covered_display": "45",
+    "missing_lines": 6,
+    "excluded_lines": 0,
+    "percent_statements_covered": 45.45454545454545,
+    "percent_statements_covered_display": "45"
+   }
+  },
+  "app/results/domain/figures.py": {
+   "summary": {
+    "covered_lines": 126,
+    "num_statements": 132,
+    "percent_covered": 95.45454545454545,
+    "percent_covered_display": "95",
+    "missing_lines": 6,
+    "excluded_lines": 0,
+    "percent_statements_covered": 95.45454545454545,
+    "percent_statements_covered_display": "95"
+   }
+  },
+  "app/results/domain/ledger.py": {
+   "summary": {
+    "covered_lines": 39,
+    "num_statements": 50,
+    "percent_covered": 78.0,
+    "percent_covered_display": "78",
+    "missing_lines": 11,
+    "excluded_lines": 0,
+    "percent_statements_covered": 78.0,
+    "percent_statements_covered_display": "78"
+   }
+  },
+  "app/results/domain/period_figures.py": {
+   "summary": {
+    "covered_lines": 157,
+    "num_statements": 353,
+    "percent_covered": 44.475920679886684,
+    "percent_covered_display": "44",
+    "missing_lines": 196,
+    "excluded_lines": 0,
+    "percent_statements_covered": 44.475920679886684,
+    "percent_statements_covered_display": "44"
+   }
+  },
+  "app/results/domain/periods.py": {
+   "summary": {
+    "covered_lines": 18,
+    "num_statements": 23,
+    "percent_covered": 78.26086956521739,
+    "percent_covered_display": "78",
+    "missing_lines": 5,
+    "excluded_lines": 0,
+    "percent_statements_covered": 78.26086956521739,
+    "percent_statements_covered_display": "78"
+   }
+  },
+  "app/results/domain/rounding.py": {
+   "summary": {
+    "covered_lines": 7,
+    "num_statements": 9,
+    "percent_covered": 77.77777777777777,
+    "percent_covered_display": "78",
+    "missing_lines": 2,
+    "excluded_lines": 0,
+    "percent_statements_covered": 77.77777777777777,
+    "percent_statements_covered_display": "78"
+   }
+  },
+  "app/results/domain/sorting.py": {
+   "summary": {
+    "covered_lines": 11,
+    "num_statements": 15,
+    "percent_covered": 73.33333333333333,
+    "percent_covered_display": "73",
+    "missing_lines": 4,
+    "excluded_lines": 16,
+    "percent_statements_covered": 73.33333333333333,
+    "percent_statements_covered_display": "73"
+   }
+  },
+  "app/sales/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/sales/adapters/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/sales/adapters/business_name.py": {
+   "summary": {
+    "covered_lines": 8,
+    "num_statements": 9,
+    "percent_covered": 88.88888888888889,
+    "percent_covered_display": "89",
+    "missing_lines": 1,
+    "excluded_lines": 0,
+    "percent_statements_covered": 88.88888888888889,
+    "percent_statements_covered_display": "89"
+   }
+  },
+  "app/sales/adapters/customer_facts.py": {
+   "summary": {
+    "covered_lines": 6,
+    "num_statements": 11,
+    "percent_covered": 54.54545454545455,
+    "percent_covered_display": "55",
+    "missing_lines": 5,
+    "excluded_lines": 0,
+    "percent_statements_covered": 54.54545454545455,
+    "percent_statements_covered_display": "55"
+   }
+  },
+  "app/sales/adapters/import_port.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 74,
+    "percent_covered": 0.0,
+    "percent_covered_display": "0",
+    "missing_lines": 74,
+    "excluded_lines": 0,
+    "percent_statements_covered": 0.0,
+    "percent_statements_covered_display": "0"
+   }
+  },
+  "app/sales/adapters/price_book.py": {
+   "summary": {
+    "covered_lines": 20,
+    "num_statements": 61,
+    "percent_covered": 32.78688524590164,
+    "percent_covered_display": "33",
+    "missing_lines": 41,
+    "excluded_lines": 0,
+    "percent_statements_covered": 32.78688524590164,
+    "percent_statements_covered_display": "33"
+   }
+  },
+  "app/sales/adapters/router.py": {
+   "summary": {
+    "covered_lines": 69,
+    "num_statements": 94,
+    "percent_covered": 73.40425531914893,
+    "percent_covered_display": "73",
+    "missing_lines": 25,
+    "excluded_lines": 0,
+    "percent_statements_covered": 73.40425531914893,
+    "percent_statements_covered_display": "73"
+   }
+  },
+  "app/sales/adapters/sales_ledger.py": {
+   "summary": {
+    "covered_lines": 13,
+    "num_statements": 13,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/sales/adapters/schemas.py": {
+   "summary": {
+    "covered_lines": 115,
+    "num_statements": 135,
+    "percent_covered": 85.18518518518519,
+    "percent_covered_display": "85",
+    "missing_lines": 20,
+    "excluded_lines": 0,
+    "percent_statements_covered": 85.18518518518519,
+    "percent_statements_covered_display": "85"
+   }
+  },
+  "app/sales/adapters/sql_sales.py": {
+   "summary": {
+    "covered_lines": 60,
+    "num_statements": 116,
+    "percent_covered": 51.724137931034484,
+    "percent_covered_display": "52",
+    "missing_lines": 56,
+    "excluded_lines": 0,
+    "percent_statements_covered": 51.724137931034484,
+    "percent_statements_covered_display": "52"
+   }
+  },
+  "app/sales/adapters/tables.py": {
+   "summary": {
+    "covered_lines": 29,
+    "num_statements": 29,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/sales/application/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/sales/application/assign_customer.py": {
+   "summary": {
+    "covered_lines": 5,
+    "num_statements": 17,
+    "percent_covered": 29.41176470588235,
+    "percent_covered_display": "29",
+    "missing_lines": 12,
+    "excluded_lines": 0,
+    "percent_statements_covered": 29.41176470588235,
+    "percent_statements_covered_display": "29"
+   }
+  },
+  "app/sales/application/delete_sale.py": {
+   "summary": {
+    "covered_lines": 10,
+    "num_statements": 19,
+    "percent_covered": 52.63157894736842,
+    "percent_covered_display": "53",
+    "missing_lines": 9,
+    "excluded_lines": 0,
+    "percent_statements_covered": 52.63157894736842,
+    "percent_statements_covered_display": "53"
+   }
+  },
+  "app/sales/application/errors.py": {
+   "summary": {
+    "covered_lines": 5,
+    "num_statements": 5,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/sales/application/ports.py": {
+   "summary": {
+    "covered_lines": 53,
+    "num_statements": 54,
+    "percent_covered": 98.14814814814815,
+    "percent_covered_display": "98",
+    "missing_lines": 1,
+    "excluded_lines": 36,
+    "percent_statements_covered": 98.14814814814815,
+    "percent_statements_covered_display": "98"
+   }
+  },
+  "app/sales/application/record_sale.py": {
+   "summary": {
+    "covered_lines": 17,
+    "num_statements": 38,
+    "percent_covered": 44.73684210526316,
+    "percent_covered_display": "45",
+    "missing_lines": 21,
+    "excluded_lines": 0,
+    "percent_statements_covered": 44.73684210526316,
+    "percent_statements_covered_display": "45"
+   }
+  },
+  "app/sales/application/sale_bill.py": {
+   "summary": {
+    "covered_lines": 5,
+    "num_statements": 20,
+    "percent_covered": 25.0,
+    "percent_covered_display": "25",
+    "missing_lines": 15,
+    "excluded_lines": 0,
+    "percent_statements_covered": 25.0,
+    "percent_statements_covered_display": "25"
+   }
+  },
+  "app/sales/application/view_sales.py": {
+   "summary": {
+    "covered_lines": 21,
+    "num_statements": 30,
+    "percent_covered": 70.0,
+    "percent_covered_display": "70",
+    "missing_lines": 9,
+    "excluded_lines": 0,
+    "percent_statements_covered": 70.0,
+    "percent_statements_covered_display": "70"
+   }
+  },
+  "app/sales/domain/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/sales/domain/pricing.py": {
+   "summary": {
+    "covered_lines": 52,
+    "num_statements": 90,
+    "percent_covered": 57.77777777777778,
+    "percent_covered_display": "58",
+    "missing_lines": 38,
+    "excluded_lines": 0,
+    "percent_statements_covered": 57.77777777777778,
+    "percent_statements_covered_display": "58"
+   }
+  },
+  "app/sales/domain/sale.py": {
+   "summary": {
+    "covered_lines": 90,
+    "num_statements": 140,
+    "percent_covered": 64.28571428571429,
+    "percent_covered_display": "64",
+    "missing_lines": 50,
+    "excluded_lines": 0,
+    "percent_statements_covered": 64.28571428571429,
+    "percent_statements_covered_display": "64"
+   }
+  },
+  "app/sales/domain/sale_bill.py": {
+   "summary": {
+    "covered_lines": 36,
+    "num_statements": 69,
+    "percent_covered": 52.17391304347826,
+    "percent_covered_display": "52",
+    "missing_lines": 33,
+    "excluded_lines": 0,
+    "percent_statements_covered": 52.17391304347826,
+    "percent_statements_covered_display": "52"
+   }
+  },
+  "app/settings.py": {
+   "summary": {
+    "covered_lines": 55,
+    "num_statements": 80,
+    "percent_covered": 68.75,
+    "percent_covered_display": "69",
+    "missing_lines": 25,
+    "excluded_lines": 0,
+    "percent_statements_covered": 68.75,
+    "percent_statements_covered_display": "69"
+   }
+  },
+  "app/shared/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/shared/calendar.py": {
+   "summary": {
+    "covered_lines": 43,
+    "num_statements": 59,
+    "percent_covered": 72.88135593220339,
+    "percent_covered_display": "73",
+    "missing_lines": 16,
+    "excluded_lines": 0,
+    "percent_statements_covered": 72.88135593220339,
+    "percent_statements_covered_display": "73"
+   }
+  },
+  "app/shared/copy/__init__.py": {
+   "summary": {
+    "covered_lines": 7,
+    "num_statements": 7,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/shared/copy/catalog.py": {
+   "summary": {
+    "covered_lines": 36,
+    "num_statements": 45,
+    "percent_covered": 80.0,
+    "percent_covered_display": "80",
+    "missing_lines": 9,
+    "excluded_lines": 0,
+    "percent_statements_covered": 80.0,
+    "percent_statements_covered_display": "80"
+   }
+  },
+  "app/shared/copy/completeness.py": {
+   "summary": {
+    "covered_lines": 41,
+    "num_statements": 46,
+    "percent_covered": 89.1304347826087,
+    "percent_covered_display": "89",
+    "missing_lines": 5,
+    "excluded_lines": 0,
+    "percent_statements_covered": 89.1304347826087,
+    "percent_statements_covered_display": "89"
+   }
+  },
+  "app/shared/copy/messages.py": {
+   "summary": {
+    "covered_lines": 19,
+    "num_statements": 37,
+    "percent_covered": 51.351351351351354,
+    "percent_covered_display": "51",
+    "missing_lines": 18,
+    "excluded_lines": 0,
+    "percent_statements_covered": 51.351351351351354,
+    "percent_statements_covered_display": "51"
+   }
+  },
+  "app/shared/copy/negotiation.py": {
+   "summary": {
+    "covered_lines": 14,
+    "num_statements": 48,
+    "percent_covered": 29.166666666666668,
+    "percent_covered_display": "29",
+    "missing_lines": 34,
+    "excluded_lines": 0,
+    "percent_statements_covered": 29.166666666666668,
+    "percent_statements_covered_display": "29"
+   }
+  },
+  "app/shared/copy/operator.py": {
+   "summary": {
+    "covered_lines": 15,
+    "num_statements": 22,
+    "percent_covered": 68.18181818181819,
+    "percent_covered_display": "68",
+    "missing_lines": 7,
+    "excluded_lines": 0,
+    "percent_statements_covered": 68.18181818181819,
+    "percent_statements_covered_display": "68"
+   }
+  },
+  "app/shared/copy/pseudo.py": {
+   "summary": {
+    "covered_lines": 16,
+    "num_statements": 65,
+    "percent_covered": 24.615384615384617,
+    "percent_covered_display": "25",
+    "missing_lines": 49,
+    "excluded_lines": 0,
+    "percent_statements_covered": 24.615384615384617,
+    "percent_statements_covered_display": "25"
+   }
+  },
+  "app/shared/copy/report.py": {
+   "summary": {
+    "covered_lines": 5,
+    "num_statements": 19,
+    "percent_covered": 26.31578947368421,
+    "percent_covered_display": "26",
+    "missing_lines": 14,
+    "excluded_lines": 0,
+    "percent_statements_covered": 26.31578947368421,
+    "percent_statements_covered_display": "26"
+   }
+  },
+  "app/shared/grams.py": {
+   "summary": {
+    "covered_lines": 18,
+    "num_statements": 31,
+    "percent_covered": 58.064516129032256,
+    "percent_covered_display": "58",
+    "missing_lines": 13,
+    "excluded_lines": 0,
+    "percent_statements_covered": 58.064516129032256,
+    "percent_statements_covered_display": "58"
+   }
+  },
+  "app/shared/language.py": {
+   "summary": {
+    "covered_lines": 23,
+    "num_statements": 34,
+    "percent_covered": 67.6470588235294,
+    "percent_covered_display": "68",
+    "missing_lines": 11,
+    "excluded_lines": 0,
+    "percent_statements_covered": 67.6470588235294,
+    "percent_statements_covered_display": "68"
+   }
+  },
+  "app/shared/names.py": {
+   "summary": {
+    "covered_lines": 17,
+    "num_statements": 23,
+    "percent_covered": 73.91304347826087,
+    "percent_covered_display": "74",
+    "missing_lines": 6,
+    "excluded_lines": 0,
+    "percent_statements_covered": 73.91304347826087,
+    "percent_statements_covered_display": "74"
+   }
+  },
+  "app/shared/pricing_settings.py": {
+   "summary": {
+    "covered_lines": 6,
+    "num_statements": 6,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/shared/reference.py": {
+   "summary": {
+    "covered_lines": 2,
+    "num_statements": 3,
+    "percent_covered": 66.66666666666667,
+    "percent_covered_display": "67",
+    "missing_lines": 1,
+    "excluded_lines": 0,
+    "percent_statements_covered": 66.66666666666667,
+    "percent_statements_covered_display": "67"
+   }
+  },
+  "app/shared/transaction.py": {
+   "summary": {
+    "covered_lines": 2,
+    "num_statements": 2,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 4,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/static_spa.py": {
+   "summary": {
+    "covered_lines": 170,
+    "num_statements": 191,
+    "percent_covered": 89.00523560209425,
+    "percent_covered_display": "89",
+    "missing_lines": 21,
+    "excluded_lines": 3,
+    "percent_statements_covered": 89.00523560209425,
+    "percent_statements_covered_display": "89"
+   }
+  },
+  "app/tables.py": {
+   "summary": {
+    "covered_lines": 15,
+    "num_statements": 15,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/varieties/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/varieties/adapters/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/varieties/adapters/import_port.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 54,
+    "percent_covered": 0.0,
+    "percent_covered_display": "0",
+    "missing_lines": 54,
+    "excluded_lines": 0,
+    "percent_statements_covered": 0.0,
+    "percent_statements_covered_display": "0"
+   }
+  },
+  "app/varieties/adapters/onboarding_facts.py": {
+   "summary": {
+    "covered_lines": 8,
+    "num_statements": 11,
+    "percent_covered": 72.72727272727273,
+    "percent_covered_display": "73",
+    "missing_lines": 3,
+    "excluded_lines": 0,
+    "percent_statements_covered": 72.72727272727273,
+    "percent_statements_covered_display": "73"
+   }
+  },
+  "app/varieties/adapters/router.py": {
+   "summary": {
+    "covered_lines": 57,
+    "num_statements": 90,
+    "percent_covered": 63.333333333333336,
+    "percent_covered_display": "63",
+    "missing_lines": 33,
+    "excluded_lines": 0,
+    "percent_statements_covered": 63.333333333333336,
+    "percent_statements_covered_display": "63"
+   }
+  },
+  "app/varieties/adapters/schemas.py": {
+   "summary": {
+    "covered_lines": 32,
+    "num_statements": 37,
+    "percent_covered": 86.48648648648648,
+    "percent_covered_display": "86",
+    "missing_lines": 5,
+    "excluded_lines": 0,
+    "percent_statements_covered": 86.48648648648648,
+    "percent_statements_covered_display": "86"
+   }
+  },
+  "app/varieties/adapters/sql_varieties.py": {
+   "summary": {
+    "covered_lines": 35,
+    "num_statements": 74,
+    "percent_covered": 47.2972972972973,
+    "percent_covered_display": "47",
+    "missing_lines": 39,
+    "excluded_lines": 0,
+    "percent_statements_covered": 47.2972972972973,
+    "percent_statements_covered_display": "47"
+   }
+  },
+  "app/varieties/adapters/tables.py": {
+   "summary": {
+    "covered_lines": 27,
+    "num_statements": 27,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/varieties/application/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/varieties/application/errors.py": {
+   "summary": {
+    "covered_lines": 15,
+    "num_statements": 18,
+    "percent_covered": 83.33333333333333,
+    "percent_covered_display": "83",
+    "missing_lines": 3,
+    "excluded_lines": 0,
+    "percent_statements_covered": 83.33333333333333,
+    "percent_statements_covered_display": "83"
+   }
+  },
+  "app/varieties/application/manage_prices.py": {
+   "summary": {
+    "covered_lines": 13,
+    "num_statements": 41,
+    "percent_covered": 31.70731707317073,
+    "percent_covered_display": "32",
+    "missing_lines": 28,
+    "excluded_lines": 0,
+    "percent_statements_covered": 31.70731707317073,
+    "percent_statements_covered_display": "32"
+   }
+  },
+  "app/varieties/application/manage_varieties.py": {
+   "summary": {
+    "covered_lines": 19,
+    "num_statements": 62,
+    "percent_covered": 30.64516129032258,
+    "percent_covered_display": "31",
+    "missing_lines": 43,
+    "excluded_lines": 0,
+    "percent_statements_covered": 30.64516129032258,
+    "percent_statements_covered_display": "31"
+   }
+  },
+  "app/varieties/application/ports.py": {
+   "summary": {
+    "covered_lines": 12,
+    "num_statements": 12,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 27,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/varieties/domain/__init__.py": {
+   "summary": {
+    "covered_lines": 0,
+    "num_statements": 0,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100"
+   }
+  },
+  "app/varieties/domain/variety.py": {
+   "summary": {
+    "covered_lines": 65,
+    "num_statements": 116,
+    "percent_covered": 56.03448275862069,
+    "percent_covered_display": "56",
+    "missing_lines": 51,
+    "excluded_lines": 0,
+    "percent_statements_covered": 56.03448275862069,
+    "percent_statements_covered_display": "56"
+   }
+  }
+ }
+}
