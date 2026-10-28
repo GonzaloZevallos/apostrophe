@@ -37,13 +37,18 @@ business's screen word; Product is the name of the thing.
   `product_id` / `product`, never `variety_id`. The only place the two names meet is the repository
   adapter, which maps `product_id` to the `variety_id` column and back. No use case and no router
   imports a table class.
-- **The API path becomes `/api/products`.** The Product rename on the wire moves the router that is mounted
-  at `/varieties` today. That changes the URLs the front's `fetch` calls and nothing else: no screen,
-  no stored value, no front route.
+- **The API path becomes `/api/products`.** The Product rename on the wire moves the API routes that are
+  mounted at `/varieties` today (the varieties router, the stock entries router and the catalog
+  router's `/varieties/{variety_id}`), and puts them under `/api`, under which no route sits today.
+  That changes the URLs the front's `fetch` calls and nothing else: no screen, no stored value,
+  no front route.
 - **Front paths stay `/varieties/*`.** They are screen routes, shown to people in the address bar
   and listed in `scripts/design/screens.json`. docs/adr/0024-a-front-path-may-share-its-first-segment-with-the-api-only-through-an-exact-allowlist-served-to-browser-navigations.md (the allowlist of front paths that share a
   first segment with the API) and docs/adr/0033-front-paths-are-id-templates-the-legacy-rows-live-once-in-app-and-screens-json-is-cross-checked.md are untouched, and so is `scripts/design/screens.json`. No
-  front path starts with `/products`, so ADR-0024's allowlist is not affected by the new API path.
+  front path starts with `/products` or `/api`. Once the API leaves `/varieties`, the `/varieties`
+  rows of `SHARED_FRONT_PATHS` (today in app/static_spa.py) no longer share a first segment with
+  an API route; whether the Product rename on the wire prunes them is that part's call, and this
+  ADR changes none of them.
 - **Docs.** CONTEXT.md keeps the **Variety** entry as it is and carries Product only in its closing
   "Planned in GH-318 (not yet in the code)" block; the Product rename on the wire moves it into the
   glossary proper. Until then, a doc that describes what is true today still says Variety where it
