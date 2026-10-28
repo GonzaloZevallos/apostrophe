@@ -89,17 +89,9 @@ export default defineConfig({
   // every other spec shares. It needs no real DNS entry: the spec itself proxies
   // every request for that host to its own worker's real server.
   projects: [
-    // The phone check runs on its own server and clock (the `mobile` project below), so the
-    // original specs, which keep the first server and the real clock, never match it.
-    {
-      name: 'secure-origin',
-      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /mobile\.(spec|setup)\.ts/],
-    },
-    {
-      name: 'insecure-origin',
-      testMatch: /catalogInsecureOrigin\.spec\.ts/,
-      use: { baseURL: 'http://apostrophe.test' },
-    },
+    // Listed first on purpose: Playwright queues projects in this order, and the eight phone cells are
+    // the longest tests by far (about 4 min each alone, 6 under load), so queued last they left two
+    // workers idle while the last round of cells ran, and the whole run crossed the gate's 1500 s.
     // GH-80: the phone check. The setup project seeds the second server once (the walk only
     // reads, so every cell shares that business); `npm run e2e` runs this project with its
     // own worker count (its cells are independent), the others stay at `workers: 1`.
@@ -116,6 +108,17 @@ export default defineConfig({
       fullyParallel: true,
       timeout: MOBILE_TEST_TIMEOUT_MS,
       use: { baseURL: mobileBaseUrl(), isMobile: true, hasTouch: true },
+    },
+    // The phone check runs on its own server and clock (the `mobile` project above), so the
+    // original specs, which keep the first server and the real clock, never match it.
+    {
+      name: 'secure-origin',
+      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /mobile\.(spec|setup)\.ts/],
+    },
+    {
+      name: 'insecure-origin',
+      testMatch: /catalogInsecureOrigin\.spec\.ts/,
+      use: { baseURL: 'http://apostrophe.test' },
     },
   ],
   // Only the phone check's second server starts here: the first is each worker's own
