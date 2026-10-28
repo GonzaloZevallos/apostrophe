@@ -150,3 +150,28 @@ def test_a_listing_that_git_did_not_print_is_rejected_before_any_delete() -> Non
     # "nothing to delete" -- it exits 1, and a mangled one exits 2, both with no names.
     assert _run_main(["expired", "--now", NOW], "") == (1, "")
     assert _run_main(["expired", "--now", NOW], "fatal: repository not found\n") == (2, "")
+
+
+def test_the_workflows_push_and_prune_sequence_adds_a_copy_and_keeps_the_rest(
+    remote: str, tmp_path: Path
+) -> None:
+    # The command shapes of `backup.yml`'s push and prune steps, over file:// instead of
+    # SSH (the SSH options and the pinned host key are proven by the first live run only).
+    new = "backup-20261101T000000Z-106.db.age"
+    work = tmp_path / "copy"
+    _git("init", "-b", "main", str(work), cwd=tmp_path)
+    (work / new).write_text("ciphertext stand-in\n")
+    _git("add", "--", new, cwd=work)
+    _git(*COMMIT_FLAGS, "commit", "-q", "-m", new, cwd=work)
+    _git("push", remote, f"HEAD:refs/heads/{new}", cwd=work)
+
+    bare = tmp_path / "remote.git"
+    assert _git("ls-tree", "-r", "--name-only", f"refs/heads/{new}", cwd=bare) == f"{new}\n"
+
+    code, out = _run_main(["expired", "--now", NOW], _heads(remote, tmp_path))
+
+    assert code == 0
+    expired = out.split()
+    assert expired == [OLD_AUG, OLD_SEP]
+    _git("push", "--atomic", remote, "--delete", *expired, cwd=work)
+    assert _head_names(remote, tmp_path) == {"main", EDGE, INSIDE, NEWEST, MALFORMED, new}
