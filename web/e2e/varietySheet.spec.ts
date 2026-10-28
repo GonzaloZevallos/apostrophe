@@ -76,3 +76,18 @@ test('the rename sheet keeps its action at the bottom, and the page stays locked
   await expect.poll(locked).toBe(false)
   expect(Math.abs((await scrollY()) - before)).toBeLessThanOrEqual(2)
 })
+
+test('Back closes the rename sheet first and leaves the variety page where it was', async ({ page }) => {
+  await signUp(page, 'sheet-back')
+  const records = await seedRecords(page, 'Carla Cobrar')
+  const address = pathTo(VARIETY, { id: records.variety })
+  await page.goto(address)
+  await page.getByRole('button', { name: 'Edit name' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Rename variety' })
+  await expect(dialog).toBeVisible()
+
+  await page.goBack()
+  await expect(dialog).toBeHidden()
+  await expect(page).toHaveURL(new RegExp(`${address}$`))
+  await expect(page.getByRole('button', { name: 'Edit name' })).toBeVisible()
+})
