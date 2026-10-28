@@ -59,6 +59,8 @@ test('a direct address to the new expense shows the sheet over Expenses, focus i
   await waitFor(() => expect(pane).toHaveTextContent('Packaging'))
   expect(pane).toHaveTextContent('Bolsas')
   expect(pane).not.toContainElement(dialog)
+  // The first check ran before the data arrived; on the loaded pane it must still hold.
+  expectBehindPane(pane)
 })
 
 test('while Expenses is pending, and when it fails, the pane is empty', async () => {
