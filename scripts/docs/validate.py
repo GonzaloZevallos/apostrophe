@@ -63,7 +63,9 @@ def parse_node_output(stdout: str, shown: Mapping[str, Path]) -> ParseReport:
             continue
         file = found.group("file")
         problems.append(
-            ParseProblem(shown.get(file, Path(file)), int(found.group("block")), found.group("message"))
+            ParseProblem(
+                shown.get(file, Path(file)), int(found.group("block")), found.group("message")
+            )
         )
     return ParseReport(tuple(problems), checked)
 

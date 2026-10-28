@@ -16,6 +16,7 @@ Which packages, layers and children get a diagram is read from the filesystem.
 
 from __future__ import annotations
 
+import re
 import sys
 import tempfile
 from collections.abc import Callable, Sequence
@@ -59,6 +60,9 @@ SCOPE_NOTE = (
 )
 
 
+_NODE = re.compile(r"^\s*class\s+(\S+)\s*\{\s*$")
+
+
 @dataclass(frozen=True)
 class Limits:
     """A block with `max_chars` characters or `max_edges` edges, or more, is too big."""
@@ -67,8 +71,36 @@ class Limits:
     max_edges: int = MAX_BLOCK_EDGES
 
 
+DEFAULT_LIMITS = Limits()
+
+
 def _fence(body: str) -> str:
     return f"```mermaid\n{body.strip()}\n```"
+
+
+def _unique_nodes(body: str) -> str:
+    """A packages diagram with each node defined once.
+
+    pyreverse names a module by its short name, so `errors` in `domain` and in
+    `application` is two `class errors` nodes. Mermaid draws both as the one node `errors`,
+    so keeping the first definition changes nothing in the picture and keeps every class
+    name in the block unique.
+    """
+    seen: set[str] = set()
+    kept: list[str] = []
+    skipping = False
+    for line in body.splitlines():
+        match = _NODE.match(line)
+        if skipping:
+            skipping = line.strip() != "}"
+            continue
+        if match is not None:
+            if match.group(1) in seen:
+                skipping = True
+                continue
+            seen.add(match.group(1))
+        kept.append(line)
+    return "\n".join(kept)
 
 
 def _has_classes(body: str) -> bool:
@@ -82,9 +114,7 @@ def _count_fences(text: str) -> int:
 def _breaks(body: str, limits: Limits) -> bool:
     """Whether a class block breaks `limits` or names a class twice, once finalized."""
     text = finalize("class", _fence(body))
-    return bool(
-        block_problems(text, limits.max_chars, limits.max_edges) or duplicate_classes(text)
-    )
+    return bool(block_problems(text, limits.max_chars, limits.max_edges) or duplicate_classes(text))
 
 
 def layers_present(package_dir: Path) -> list[str]:
@@ -117,7 +147,9 @@ def _plan(repo_root: Path) -> tuple[list[ToolCall], dict[str, list[str]]]:
         layers = layers_present(package_dir)
         if not layers:
             calls.append(
-                pyreverse_call(f"class/{package}", package, [_rel(package_dir, repo_root)], "classes")
+                pyreverse_call(
+                    f"class/{package}", package, [_rel(package_dir, repo_root)], "classes"
+                )
             )
             continue
         hexagons[package] = layers
@@ -138,7 +170,9 @@ def _plan(repo_root: Path) -> tuple[list[ToolCall], dict[str, list[str]]]:
     modules = sorted(p for p in app_dir.glob("*.py") if p.name != "__init__.py")
     if modules:
         calls.append(
-            pyreverse_call("class/app-root", "app_root", [_rel(m, repo_root) for m in modules], "classes")
+            pyreverse_call(
+                "class/app-root", "app_root", [_rel(m, repo_root) for m in modules], "classes"
+            )
         )
     calls.append(paracelsus_call("er/data-model"))
     return calls, hexagons
@@ -180,7 +214,13 @@ def _hexagon_file(
     results: dict[str, str],
     split: dict[tuple[str, str], list[str]],
 ) -> str:
-    parts = [f"# {package}", "", "## Packages", "", _fence(results[f"class/{package}/packages"])]
+    parts = [
+        f"# {package}",
+        "",
+        "## Packages",
+        "",
+        _fence(_unique_nodes(results[f"class/{package}/packages"])),
+    ]
     for layer in LAYERS:
         parts += ["", f"## {layer}", ""]
         if layer not in layers:
@@ -212,7 +252,7 @@ def _real_openapi() -> str:
 def produce(
     repo_root: Path,
     run_tool: RunTool,
-    limits: Limits = Limits(),
+    limits: Limits = DEFAULT_LIMITS,
     openapi: Callable[[], str] = _real_openapi,
 ) -> dict[PurePosixPath, str]:
     """Every generated file as repo-relative path to final text; nothing is written."""
@@ -279,7 +319,11 @@ def _staged_findings(
         )
     report: ParseReport = validate(markdown)
     for problem in report.problems:
-        shown = problem.path.relative_to(stage).as_posix() if problem.path.is_relative_to(stage) else str(problem.path)
+        shown = (
+            problem.path.relative_to(stage).as_posix()
+            if problem.path.is_relative_to(stage)
+            else str(problem.path)
+        )
         findings.append(f"{shown}: block {problem.block}: mermaid-parse: {problem.message}")
     if report.blocks_checked is None:
         findings.append("<parser>: block 0: parser-silent: the parser printed no count line")
@@ -296,7 +340,7 @@ def run(
     *,
     run_tool: RunTool,
     validate: Validator,
-    limits: Limits = Limits(),
+    limits: Limits = DEFAULT_LIMITS,
     openapi: Callable[[], str] = _real_openapi,
     report: Callable[[str], None] = print,
 ) -> int:
