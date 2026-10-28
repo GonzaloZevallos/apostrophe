@@ -61,8 +61,22 @@ def alias_problems(mermaid_source: str, linked_sources: Iterable[str]) -> list[s
     return problems
 
 
+def adr_status(adr_markdown: str) -> str | None:
+    """The value of the `status:` line in an ADR's front matter, or None without one."""
+    lines = adr_markdown.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+    for line in lines[1:]:
+        if line.strip() == "---":
+            return None
+        key, _, value = line.partition(":")
+        if key.strip() == "status":
+            return value.strip()
+    return None
+
+
 def adr_index_problems(
-    linked_marks: Mapping[str, str | None], adr_statuses: Mapping[str, str]
+    linked_marks: Mapping[str, str | None], adr_statuses: Mapping[str, str | None]
 ) -> list[str]:
     """`linked_marks` maps each ADR file the index links to the number its mark says
     replaced it (`reemplazada por NNNN`), or None for no mark. `adr_statuses` maps each
@@ -75,9 +89,8 @@ def adr_index_problems(
         problems.append(f"{name} is in the index but not in docs/adr/")
     for name in sorted(set(linked_marks) & set(adr_statuses)):
         status = adr_statuses[name]
-        expected = (
-            status.removeprefix("superseded by ") if status.startswith("superseded by ") else None
-        )
+        superseded = status is not None and status.startswith("superseded by ")
+        expected = status.removeprefix("superseded by ") if superseded and status else None
         if linked_marks[name] != expected:
             problems.append(
                 f"{name}: index mark {linked_marks[name]!r} does not match status {status!r}"
@@ -215,3 +228,16 @@ def test_an_alias_undefined_underscored_or_only_in_a_comment_is_rejected() -> No
         "alias `_Hidden` starts with an underscore",
         "alias `Noted` is not defined in a file linked on the page",
     ]
+
+
+def test_adr_status_reads_only_the_front_matter() -> None:
+    assert (
+        adr_status("---\nstatus: superseded by 0033\ndate: 1\n---\n# T\n") == "superseded by 0033"
+    )
+    assert adr_status("---\ndate: 1\n---\nstatus: accepted\n") is None
+    assert adr_status("# T\nstatus: accepted\n") is None
+
+
+def test_an_adr_without_a_status_line_carries_no_mark() -> None:
+    assert adr_index_problems({"0032-a.md": None}, {"0032-a.md": None}) == []
+    assert adr_index_problems({"0032-a.md": "0033"}, {"0032-a.md": None}) != []
