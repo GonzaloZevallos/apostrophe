@@ -242,3 +242,43 @@ Success criteria:
 - Redesigning the bot settings or the header and footer editing.
 - A VIP price in the catalog, or a separate catalog for VIP customers.
 - Listing archived varieties on the catalog screen.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### The catalog template
+
+Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the catalog template part.
+
+- The blocks, the lines and their order between the header and footer will be the business's own, kept per business. A new business will start with name and price, and the header "**CATALOG**".
+- It will replace: "**Layout**: header, then one block per qualifying variety sorted by name, then footer." and the fixed lines "`• Price per gram: <money>`" and "`• From <grams>: <money> each`".
+
+### Attributes shown in the catalog
+
+Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the categories part.
+
+- The attributes a subcategory defines, for each field whether it shows in the catalog, will take the place of the three fixed ones. Emoji, indica share and aroma will become attributes of the migrated business's one subcategory, with today's catalog text unchanged for it. An archived attribute's line will leave the catalog and its values will be kept. Whether a product is hidden will stay a flag on the product.
+- It will replace: "### Catalog attributes, per variety" (**Emoji**, **Indica share**, **Aroma/flavor**) and "**Shown**: yes or no."
+
+### Money format
+
+Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
+
+- The catalog's money format will follow the business's currency symbol and money decimals.
+- It will replace: "**Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`." and "Money and grams formats are the same in every language."
+
+### The product word and the unit
+
+Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md and docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md and docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; delivered by the product word part, the units part and the Product rename on the wire.
+
+- The catalog, the bot and the reports will use the seller's product word, shown as typed and never translated, and each product's unit label in place of "g".
+- It will replace: "Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`)." and, in Out of scope, "A custom variety order."
+
+### The business day
+
+Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; delivered by the time-zone part.
+
+- It will replace: "has a current price today in Argentina time".

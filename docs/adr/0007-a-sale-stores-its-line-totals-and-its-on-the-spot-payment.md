@@ -51,3 +51,24 @@ count a sale paid on the spot as money received without migrating anything.
   payment shapes and a join on every balance read.
 - **A field on the sale instead of a payment row**: #4 would have to migrate it into
   payments.
+
+## Amendment (GH-384): line totals in the business's smallest unit, and the promotions a sale applied
+
+Planned in GH-318, not yet in the code. Two sentences of this ADR are narrowed; each describes what runs
+until the part named after it ships.
+
+> - **A sale line stores `line_total` in whole pesos, and it is the authoritative figure.**
+
+Narrowed by docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md, in the money part: a line total is stored in the business's smallest unit (whole
+pesos at scale 0, hundredths at scale 2) and is still the authoritative figure, computed once. The
+half-up rounding that `line_total` and `special_rate` do then goes through `round_half_up` in
+`app/shared/money.py`, which the first money part creates, and the amounts stay integers in a column
+declared with `money_column()`, also created there.
+
+> A sale's total is the sum of its stored line totals plus shipping charged.
+
+Narrowed by docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md, in the promotions-at-sale-time part: a sale may also have typed `sale_promotion`
+rows, which that part creates, recorded as they stood when the sale was saved and never recomputed, and
+a discounted line records its promotion discount in a typed column. The total is still the sum of the
+stored line totals plus shipping, and it must agree with the recorded discounts. A sale with no applied
+promotion is unchanged.
