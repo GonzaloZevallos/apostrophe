@@ -137,8 +137,7 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams').fill('50')
@@ -160,4 +159,6 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   await page.getByLabel('Name').fill('Noe Registro')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
+  // No product timer on this one (history state): the page check stays next to the recorder's.
+  await expect(page.getByText('Customer saved')).toBeVisible()
 })
