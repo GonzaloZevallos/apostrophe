@@ -48,6 +48,9 @@ change affects, the suites run in parallel, and one job says whether the pull re
   task's pull request; they are not written before it exists. The baseline is the Markdown
   `scripts/ci_coverage.py` rendered for that run, committed as it is; until it exists the output says so and
   compares nothing.
+  The owner decided (2026-10-28) that the pull request's own CI verifies them: the baseline and the wall
+  time are taken from its first green run, and a red run is a finding to fix, not a question. Local e2e
+  stays off.
 - **Coverage is reported, not enforced.** Totals come from `scripts/ci_coverage.py` alone. No threshold.
 
 ## Rejected
