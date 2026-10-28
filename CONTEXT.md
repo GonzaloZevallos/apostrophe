@@ -29,7 +29,7 @@ _Avoid_: product, strain, item, SKU
 _In the app_: Variety
 
 **Price entry**:
-A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. Planned in GH-318 (not yet in the code): a customer type's price becomes a separate effective-dated row, and the price entry keeps its VIP price as it is, frozen; the customer-type prices part builds it (docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md). _In the app_: Price (price history).
+A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. Planned in GH-318 (not yet in the code): what changes beside this entry is told in the closing block below. _In the app_: Price (price history).
 _Avoid_: price change, price update, tariff
 _In the app_: Price (price history)
 
@@ -406,7 +406,7 @@ Finding the seller's own chat number among the private chats that wrote to the b
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. Planned in GH-318 (not yet in the code): customer-type prices replace it for new writes, and the stored VIP prices and VIP marks stay in place, frozen with the values they hold; the customer-type prices part builds it (docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md). _In the app_: VIP price.
+An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. Planned in GH-318 (not yet in the code): what changes beside this entry is told in the closing block below. _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
@@ -542,7 +542,7 @@ A seller-defined kind of customer, at most one per customer, that can have its o
 _Avoid_: tier, segment, group
 
 **Customer-type price**:
-The price a customer type pays for a product, an effective-dated row. Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; owned by the customer-type prices part.
+The price a customer type pays for a product, an effective-dated row. It replaces the VIP price for new writes; the price entry keeps its VIP price as it is, and the stored VIP prices and VIP marks stay in place, frozen with the values they hold. Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; owned by the customer-type prices part.
 _Avoid_: tier price, discount
 
 **Payment method**:

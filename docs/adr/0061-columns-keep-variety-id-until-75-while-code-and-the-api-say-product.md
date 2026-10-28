@@ -37,11 +37,12 @@ business's screen word; Product is the name of the thing.
   `product_id` / `product`, never `variety_id`. The only place the two names meet is the repository
   adapter, which maps `product_id` to the `variety_id` column and back. No use case and no router
   imports a table class.
-- **The API path becomes `/api/products`.** The Product rename on the wire moves the API routes that are
-  mounted at `/varieties` today (the varieties router, the stock entries router and the catalog
-  router's `/varieties/{variety_id}`), and puts them under `/api`, under which no route sits today.
-  That changes the URLs the front's `fetch` calls and nothing else: no screen, no stored value,
-  no front route.
+- **The API path becomes `/api/products`.** The Product rename on the wire moves the varieties
+  router, the only one mounted at `/varieties` today, to `/api/products`; no route sits under `/api`
+  today. The routes that carry a variety in their path under another segment (`/stock/varieties/{variety_id}/…`,
+  `/catalog/varieties/{variety_id}`) keep their first segment, and that part decides how their path
+  parameter is named. That changes the URLs the front's `fetch` calls and nothing else: no screen,
+  no stored value, no front route.
 - **Front paths stay `/varieties/*`.** They are screen routes, shown to people in the address bar
   and listed in `scripts/design/screens.json`. docs/adr/0024-a-front-path-may-share-its-first-segment-with-the-api-only-through-an-exact-allowlist-served-to-browser-navigations.md (the allowlist of front paths that share a
   first segment with the API) and docs/adr/0033-front-paths-are-id-templates-the-legacy-rows-live-once-in-app-and-screens-json-is-cross-checked.md are untouched, and so is `scripts/design/screens.json`. No

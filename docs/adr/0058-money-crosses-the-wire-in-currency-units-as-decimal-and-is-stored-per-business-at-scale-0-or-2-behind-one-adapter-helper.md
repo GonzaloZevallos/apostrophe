@@ -53,7 +53,7 @@ This records it. No code changes here.
   value of a column that existed before it) is untouched, because no migration rescales: the
   migration that adds the scale writes scale 0 for every existing business and rewrites nothing. And a
   use case never reads the scale, the rescale included: it calls a port, for example
-  `MoneyScale.raise_to_two()`, and the scale is read and written only inside that adapter's SQL.
+  `MoneyScale.raise_to_two()` (a name that does not exist yet; the money part creates it), and the scale is read and written only inside that adapter's SQL.
 - **A use case never reads the scale.** Domain and application code hold amounts in the business's
   stored integer unit only as opaque integers and never convert them. The scale is applied only
   inside an adapter's SQL statement, through the one money adapter helper, so a sum, a product or a
