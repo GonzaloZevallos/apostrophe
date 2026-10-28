@@ -11,7 +11,7 @@ from app.products.domain.product import NameHolder, PriceEntry, Product, Product
 
 
 class SqlProducts:
-    """The `Varieties` port over SQLAlchemy, for one business. Every statement filters
+    """The `Products` port over SQLAlchemy, for one business. Every statement filters
     on that business; a variety of another business is, from here, a variety that does
     not exist (docs/adr/0004). Writes flush; the use case commits."""
 
@@ -19,18 +19,18 @@ class SqlProducts:
         self._session = session
         self._business_id = business_id
 
-    def add(self, variety: Product) -> Product:
+    def add(self, product: Product) -> Product:
         row = ProductRow(
-            business_id=self._business_id, name=variety.name.value, name_key=variety.name.key
+            business_id=self._business_id, name=product.name.value, name_key=product.name.key
         )
-        row.price_entries = [self._entry_row(e) for e in variety.price_entries]
+        row.price_entries = [self._entry_row(e) for e in product.price_entries]
         self._session.add(row)
         self._session.flush()
-        return _variety(row)
+        return _product(row)
 
-    def get(self, variety_id: int) -> Product | None:
-        row = self._row(variety_id)
-        return None if row is None else _variety(row)
+    def get(self, product_id: int) -> Product | None:
+        row = self._row(product_id)
+        return None if row is None else _product(row)
 
     def listed(self) -> list[Product]:
         return self._by_name(ProductRow.archived_at.is_(None))
@@ -45,24 +45,24 @@ class SqlProducts:
             .options(selectinload(ProductRow.price_entries))
             .order_by(ProductRow.name_key)
         )
-        return [_variety(row) for row in self._session.scalars(statement)]
+        return [_product(row) for row in self._session.scalars(statement)]
 
-    def save(self, variety: Product) -> Product:
-        assert variety.id is not None, "save takes a variety that was added"
-        row = self._row(variety.id)
+    def save(self, product: Product) -> Product:
+        assert product.id is not None, "save takes a variety that was added"
+        row = self._row(product.id)
         if row is None:
             # Deleted by a partner since it was read: the caller asks its own lookup.
             raise ReferenceRefused
-        row.name = variety.name.value
-        row.name_key = variety.name.key
-        row.archived_at = variety.archived_at
-        kept = {e.id for e in variety.price_entries if e.id is not None}
+        row.name = product.name.value
+        row.name_key = product.name.key
+        row.archived_at = product.archived_at
+        kept = {e.id for e in product.price_entries if e.id is not None}
         row.price_entries = [
             *(r for r in row.price_entries if r.id in kept),
-            *(self._entry_row(e) for e in variety.price_entries if e.id is None),
+            *(self._entry_row(e) for e in product.price_entries if e.id is None),
         ]
         flush_or_refuse(self._session)
-        return _variety(row)
+        return _product(row)
 
     def name_holder(self, name: ProductName, *, other_than: int | None = None) -> NameHolder | None:
         statement = select(ProductRow.archived_at).where(
@@ -75,27 +75,27 @@ class SqlProducts:
             return None
         return NameHolder.LIVE if found.archived_at is None else NameHolder.ARCHIVED
 
-    def has_history(self, variety_id: int) -> bool:
-        return bool(self._session.scalar(select(self._history_exists(variety_id))))
+    def has_history(self, product_id: int) -> bool:
+        return bool(self._session.scalar(select(self._history_exists(product_id))))
 
-    def remove_price_entries(self, variety_id: int) -> None:
+    def remove_price_entries(self, product_id: int) -> None:
         self._session.execute(
             delete(PriceEntryRow).where(
-                PriceEntryRow.variety_id == variety_id,
+                PriceEntryRow.variety_id == product_id,
                 PriceEntryRow.business_id == self._business_id,
             )
         )
         self._session.expire_all()
 
-    def remove_unused(self, variety_id: int) -> bool:
+    def remove_unused(self, product_id: int) -> bool:
         """One statement: the history check and the delete cannot be pulled apart by a
         sale, an entry or a withdrawal recorded in between (the foreign keys close the rest)."""
         statement = (
             delete(ProductRow)
             .where(
-                ProductRow.id == variety_id,
+                ProductRow.id == product_id,
                 ProductRow.business_id == self._business_id,
-                ~self._history_exists(variety_id),
+                ~self._history_exists(product_id),
             )
             .returning(ProductRow.id)
         )
@@ -103,22 +103,22 @@ class SqlProducts:
         self._session.expire_all()
         return removed is not None
 
-    def _history_exists(self, variety_id: int) -> ColumnElement[bool]:
+    def _history_exists(self, product_id: int) -> ColumnElement[bool]:
         lines = exists().where(
-            SaleLineRow.variety_id == variety_id, SaleLineRow.business_id == self._business_id
+            SaleLineRow.variety_id == product_id, SaleLineRow.business_id == self._business_id
         )
         entries = exists().where(
-            StockEntryRow.variety_id == variety_id, StockEntryRow.business_id == self._business_id
+            StockEntryRow.variety_id == product_id, StockEntryRow.business_id == self._business_id
         )
         withdrawn = exists().where(
-            StockWithdrawalLineRow.variety_id == variety_id,
+            StockWithdrawalLineRow.variety_id == product_id,
             StockWithdrawalLineRow.business_id == self._business_id,
         )
         return lines | entries | withdrawn
 
-    def _row(self, variety_id: int) -> ProductRow | None:
+    def _row(self, product_id: int) -> ProductRow | None:
         statement = select(ProductRow).where(
-            ProductRow.id == variety_id, ProductRow.business_id == self._business_id
+            ProductRow.id == product_id, ProductRow.business_id == self._business_id
         )
         return self._session.scalar(statement)
 
@@ -133,7 +133,7 @@ class SqlProducts:
         )
 
 
-def _variety(row: ProductRow) -> Product:
+def _product(row: ProductRow) -> Product:
     return Product(
         name=ProductName(row.name),
         price_entries=tuple(_entry(r) for r in row.price_entries),
