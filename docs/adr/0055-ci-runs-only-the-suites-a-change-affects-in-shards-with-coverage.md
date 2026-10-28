@@ -51,6 +51,12 @@ change affects, the suites run in parallel, and one job says whether the pull re
   The owner decided (2026-10-28) that the pull request's own CI verifies them: the baseline and the wall
   time are taken from its first green run, and a red run is a finding to fix, not a question. Local e2e
   stays off.
+  What the first pull request runs showed (PR #470, 2026-10-28): the split `web` job needs the Chromium
+  install the old single job had, because the `census` vitest project drives a real browser (it failed
+  without it; `tests/test_stack_ci.py` now refuses a `web` job without the step). With that fixed, `ci-ok`
+  is red only on the "Customer saved" toast, which matches two elements in `customers.spec.ts` and
+  `clientesCobrar.spec.ts`; that flake is carried by #428, #429 and #430 and is deliberately not hidden here.
+  The baseline and the wall time wait for the first run on which `ci-ok` is green.
 - **Coverage is reported, not enforced.** Totals come from `scripts/ci_coverage.py` alone. No threshold.
 
 ## Rejected
