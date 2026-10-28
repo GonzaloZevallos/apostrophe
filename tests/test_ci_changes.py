@@ -35,6 +35,7 @@ from scripts.ci_changes import (
     pytest_args,
     read_areas_map,
     select,
+    web_readers,
 )
 
 STACK = load_stack()
@@ -186,7 +187,40 @@ def test_a_front_path_no_screen_owns_runs_the_whole_e2e(path: str) -> None:
     selection = sel(path)
     assert selection["e2e"] == {"mode": "all", "specs": [], "shards": ALL_SHARDS}
     assert selection["vitest"] is True
-    assert selection["pytest"] == ["rest"]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "web/src/sales/pricing-matrix.json",
+        "web/src/format/periods.vectors.json",
+        "web/src/api/fixtures/sale.json",
+    ],
+)
+def test_shared_data_under_web_src_runs_the_groups_whose_tests_read_it(path: str) -> None:
+    pytest_groups = sel(path)["pytest"]
+    assert {"sales", "results", "rest"} <= set(pytest_groups)
+    assert "stock" not in pytest_groups
+
+
+@pytest.mark.parametrize(
+    "path", ["web/src/screens/ventas/X.tsx", "web/e2e/sales.spec.ts", "web/e2e/helpers/seed.ts"]
+)
+def test_a_screen_or_an_e2e_path_runs_no_area_group(path: str) -> None:
+    assert sel(path)["pytest"] == ["rest"]
+
+
+def test_web_readers_are_found_from_the_tests_themselves(tmp_path: Path) -> None:
+    for name in ("a", "b"):
+        (tmp_path / "app" / name).mkdir(parents=True)
+        (tmp_path / "tests" / name).mkdir(parents=True)
+    (tmp_path / "tests" / "a" / "test_reads.py").write_text('ROOT / "web" / "src" / "x.json"\n')
+    (tmp_path / "tests" / "b" / "test_pure.py").write_text("def test_it() -> None: ...\n")
+    (tmp_path / "tests" / "b" / "test_web_only.py").write_text('ROOT / "web" / "dist"\n')
+    (tmp_path / "tests" / "test_root.py").write_text('ROOT / "web" / "src"\n')
+    (tmp_path / "tests" / "architecture").mkdir()
+    (tmp_path / "tests" / "architecture" / "test_a.py").write_text("web/src\n'web'\n")
+    assert web_readers(["tests/architecture"], ["a", "b"], tmp_path) == {"a", "rest"}
 
 
 def test_a_changed_spec_selects_itself() -> None:
@@ -625,7 +659,21 @@ def test_every_screen_change_selects_the_specs_of_its_directory() -> None:
 # --- pin: what the front reads outside web/ ----------------------------------------------------
 
 _RELATIVE = re.compile(r"""(?:from|import|glob)\s*\(?\s*['"](\.{1,2}/[^'"]+)['"]""")
-_FROM_CWD = re.compile(r"""['"]\.\.['"]\s*,\s*['"]([^'"]+)['"]""")
+_FROM_CWD = re.compile(r"""['"]\.\.['"]\s*,\s*['"]([^'".][^'"]*)['"]""")
+_UP = re.compile(r"""['"](\.\.(?:/[^'"]*)?)['"]""")
+_UP_SEGMENTS = re.compile(r"""((?:['"]\.\.['"]\s*,\s*)+)['"]([^'"]*)['"]""")
+
+
+def _outside(directory: PurePosixPath, specifier: str) -> str | None:
+    """`specifier` resolved from `directory`, or None while it stays inside `web/`."""
+    parts: list[str] = []
+    for part in [*directory.parts, *PurePosixPath(specifier).parts]:
+        if part == "..":
+            if parts:
+                parts.pop()
+        elif part != ".":
+            parts.append(part)
+    return "/".join(parts) if parts and parts[0] != "web" else None
 
 
 def outside_reads(files: Mapping[str, str]) -> list[str]:
@@ -634,16 +682,13 @@ def outside_reads(files: Mapping[str, str]) -> list[str]:
     reached: set[str] = set()
     for name, text in files.items():
         directory = PurePosixPath(name).parent
-        for specifier in _RELATIVE.findall(text):
-            parts: list[str] = []
-            for part in [*directory.parts, *PurePosixPath(specifier).parts]:
-                if part == "..":
-                    if parts:
-                        parts.pop()
-                elif part != ".":
-                    parts.append(part)
-            if parts and parts[0] != "web":
-                reached.add("/".join(parts))
+        specifiers = list(_RELATIVE.findall(text))
+        if "__dirname" in text or "import.meta.url" in text:
+            specifiers += _UP.findall(text)
+            specifiers += [
+                "../" * ups.count("..") + tail for ups, tail in _UP_SEGMENTS.findall(text)
+            ]
+        reached.update(path for s in specifiers if (path := _outside(directory, s)) is not None)
         reached.update(_FROM_CWD.findall(text))
     return sorted(reached)
 
@@ -671,15 +716,27 @@ def test_the_outside_reads_pin_rejects_a_front_file_that_reads_app() -> None:
     files = {
         "web/src/x/a.test.ts": "import f from '../../../app/some_table.json'\n",
         "web/src/y/b.test.ts": "resolve(process.cwd(), '..', 'app/stock/domain.py')\n",
+        "web/src/w/d.test.ts": "resolve(__dirname, '../../../app/other.json')\n",
+        "web/src/v/e.test.ts": "new URL('../../../app/viaurl.json', import.meta.url)\n"
+        "join(__dirname, '..', '..', '..', 'app/joined.json')\n",
         "web/src/z/c.test.ts": "import g from '../../../tests/fixtures/spanish_copy.json'\n"
         "const l = resolve(process.cwd(), '..', 'app/legacy_front_paths.json')\n"
         "import d from '../d'\n",
     }
     reads = outside_reads(files)
     assert reads == [
+        "app/joined.json",
         "app/legacy_front_paths.json",
+        "app/other.json",
         "app/some_table.json",
         "app/stock/domain.py",
+        "app/viaurl.json",
         "tests/fixtures/spanish_copy.json",
     ]
-    assert app_reads(reads) == ["app/some_table.json", "app/stock/domain.py"]
+    assert app_reads(reads) == [
+        "app/joined.json",
+        "app/other.json",
+        "app/some_table.json",
+        "app/stock/domain.py",
+        "app/viaurl.json",
+    ]

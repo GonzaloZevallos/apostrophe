@@ -13,6 +13,7 @@ matching `affected_fallback` and a push to `master` all select everything, never
   `tests/<d>` that has an `app/<d>`, plus `rest` (every other test). `rest` runs on every
   change that affects pytest; a change under `app/<X>/` also runs every group that executes
   X, according to the area map. The root modules of `app/` and `app/shared` select all.
+  A `web/src` path outside `screens/` also runs the groups whose tests read `web/src`.
 - vitest: skipped only when every changed path is under `app/` and none is a fallback path.
 - e2e: `web/src/screens/<Dir>` selects the specs of `SCREEN_SPECS[Dir]`, and any `web/src`
   change adds `mobile.spec.ts`; any other `web/src` path, a spec helper and a file of
@@ -24,6 +25,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shlex
 import sqlite3
 import subprocess
@@ -246,11 +248,31 @@ def _e2e(paths: Sequence[str], root: Path) -> E2ESelection:
     return {"mode": "list", "specs": listed, "shards": _shards(min(MAX_SHARDS, len(listed)))}
 
 
+_QUOTED_WEB = re.compile(r"""["']web["']""")
+_QUOTED_SRC = re.compile(r"""["']src["']|web/src""")
+
+
+def web_readers(always: Sequence[str], areas: Sequence[str], root: Path) -> set[str]:
+    """The groups with a test that names `web` and `src` (a shared fixture, a vectors file):
+    found from the tests themselves on every run, never listed by hand. Errs toward
+    running: an extra group costs minutes, a skipped one hides a failure."""
+    readers: set[str] = set()
+    for test in (root / "tests").rglob("test_*.py"):
+        text = test.read_text(encoding="utf-8")
+        if _QUOTED_WEB.search(text) is None or _QUOTED_SRC.search(text) is None:
+            continue
+        group = _test_group(test.relative_to(root).as_posix(), always, areas)
+        if group is not None:
+            readers.add(group)
+    return readers
+
+
 def _pytest_groups(
     paths: Sequence[str],
     always: Sequence[str],
     groups: Sequence[str],
     areas_map: Mapping[str, Sequence[str]],
+    root: Path,
 ) -> set[str] | None:
     """The groups the paths affect; None when they affect all."""
     areas = [group for group in groups if group != REST]
@@ -272,6 +294,9 @@ def _pytest_groups(
                 chosen.add(group)
         else:
             chosen.add(REST)
+            # Data under web/src (not a screen) may be read by a test of any area.
+            if parts[:2] == ("web", "src") and parts[2:3] != ("screens",):
+                chosen |= web_readers(always, areas, root)
     return {REST, *chosen} if chosen else chosen
 
 
@@ -293,7 +318,7 @@ def select(
     for path in paths:
         if any(fnmatchcase(path, glob) for glob in fallback) or not path.startswith(known):
             return _everything(groups)
-    chosen = _pytest_groups(paths, always, groups, areas_map)
+    chosen = _pytest_groups(paths, always, groups, areas_map, root)
     if chosen is None:
         chosen = set(groups)
     return {
