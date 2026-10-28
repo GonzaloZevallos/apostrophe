@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.db import flush_or_refuse
 from app.sales.adapters.tables import SaleLineRow
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.stock.adapters.tables import StockEntryRow, StockWithdrawalLineRow
 from app.varieties.adapters.tables import PriceEntryRow, VarietyRow
@@ -148,7 +148,7 @@ def _entry(row: PriceEntryRow) -> PriceEntry:
         effective_from=row.effective_from,
         list_price=row.list_price,
         bulk_price=row.bulk_price,
-        bulk_minimum=None if minimum is None else Grams(minimum),
+        bulk_minimum=None if minimum is None else Quantity(minimum),
         vip_price=row.vip_price,
         id=row.id,
     )

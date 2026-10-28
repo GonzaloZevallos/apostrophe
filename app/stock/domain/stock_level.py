@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Literal, assert_never
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import Draw, Lot
 from app.stock.domain.threshold import Threshold
@@ -25,7 +25,7 @@ DAYS_LEFT_WINDOW = 30
 
 @dataclass(frozen=True)
 class StockLevel:
-    grams: Grams
+    quantity: Quantity
     status: Status
     sold_out_since: date | None
     days_left: int | None
@@ -39,13 +39,13 @@ def stock_level(
     no entries (no lot and no draw at all), sold out (grams <= 0), low (under the
     threshold), ok."""
     if not lots and not draws:
-        return StockLevel(Grams(0), "no_entries", None, None)
+        return StockLevel(Quantity(0), "no_entries", None, None)
 
     by_day: dict[date, int] = {}
     for lot in lots:
-        by_day[lot.order.day] = by_day.get(lot.order.day, 0) + lot.grams.hundredths
+        by_day[lot.order.day] = by_day.get(lot.order.day, 0) + lot.quantity.hundredths
     for draw in draws:
-        by_day[draw.order.day] = by_day.get(draw.order.day, 0) - draw.grams.hundredths
+        by_day[draw.order.day] = by_day.get(draw.order.day, 0) - draw.quantity.hundredths
 
     days = sorted(by_day)
     balances: list[int] = []
@@ -53,21 +53,21 @@ def stock_level(
     for day in days:
         running += by_day[day]
         balances.append(running)
-    grams = Grams(running)
+    quantity = Quantity(running)
 
-    if grams.hundredths <= 0:
+    if quantity.hundredths <= 0:
         status: Status = "sold_out"
         sold_out_since = _sold_out_since(days, balances)
-    elif threshold is not None and grams.hundredths < threshold.grams.hundredths:
+    elif threshold is not None and quantity.hundredths < threshold.quantity.hundredths:
         status = "low"
         sold_out_since = None
     else:
         status = "ok"
         sold_out_since = None
 
-    days_left = _days_left(grams, draws, today)
+    days_left = _days_left(quantity, draws, today)
 
-    return StockLevel(grams, status, sold_out_since, days_left)
+    return StockLevel(quantity, status, sold_out_since, days_left)
 
 
 def _sold_out_since(days: list[date], balances: list[int]) -> date:
@@ -80,21 +80,21 @@ def _sold_out_since(days: list[date], balances: list[int]) -> date:
     return days[index]
 
 
-def _days_left(grams: Grams, draws: list[Draw], today: date) -> int | None:
+def _days_left(quantity: Quantity, draws: list[Draw], today: date) -> int | None:
     """`stock / (grams out in the last 30 days / 30)`, floored to a whole day. Only
     sale lines and both withdrawal sources pace it: a negative adjustment is a count
     correcting the figure, not grams going out. `None` with nothing to pace from."""
-    if grams.hundredths <= 0:
+    if quantity.hundredths <= 0:
         return None
     window_start = today - timedelta(days=DAYS_LEFT_WINDOW - 1)
     out_hundredths = sum(
-        draw.grams.hundredths
+        draw.quantity.hundredths
         for draw in draws
         if _paces(draw) and window_start <= draw.order.day <= today
     )
     if out_hundredths == 0:
         return None
-    return (grams.hundredths * DAYS_LEFT_WINDOW) // out_hundredths
+    return (quantity.hundredths * DAYS_LEFT_WINDOW) // out_hundredths
 
 
 def _paces(draw: Draw) -> bool:

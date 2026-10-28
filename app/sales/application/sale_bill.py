@@ -45,7 +45,7 @@ def _bill_line(line: SaleLine, product: str) -> SaleBillLine:
     rule = bill_rule(line.pricing_rule)
     return SaleBillLine(
         product=product,
-        quantity=line.grams,
+        quantity=line.quantity,
         amount=line.line_total,
         rule=rule,
         unit_price=line.price_per_gram if rule == "bulk" else None,

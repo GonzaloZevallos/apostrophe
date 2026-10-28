@@ -13,7 +13,7 @@ from datetime import date, datetime
 from app.sales.application.ports import LineCost
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import Sale, SaleLine
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.adapters.line_costs import costs_for_sale
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
@@ -68,12 +68,12 @@ class FakeWithdrawalDraws:
         return [d for d in self._draws if d.variety_id in variety_ids]
 
 
-def _entry(variety_id: int, grams: str, total_cost: int | None, entry_id: int) -> StockEntry:
+def _entry(variety_id: int, quantity: str, total_cost: int | None, entry_id: int) -> StockEntry:
     return StockEntry(
         entry_date=date(2026, 9, 1),
         variety_id=variety_id,
         origin=Origin.PURCHASE if total_cost is not None else Origin.OPENING_STOCK,
-        grams=Grams.of(grams),
+        quantity=Quantity.of(quantity),
         total_cost=total_cost,
         note=None,
         recorded_at=AT,
@@ -81,24 +81,24 @@ def _entry(variety_id: int, grams: str, total_cost: int | None, entry_id: int) -
     )
 
 
-def _line(variety_id: int, grams: str) -> SaleLine:
+def _line(variety_id: int, quantity: str) -> SaleLine:
     return SaleLine(
         variety_id=variety_id,
-        grams=Grams.of(grams),
+        quantity=Quantity.of(quantity),
         pricing_rule=PricingRule.LIST,
         price_per_gram=10_000,
-        line_total=int(Grams.of(grams).as_decimal() * 10_000),
+        line_total=int(Quantity.of(quantity).as_decimal() * 10_000),
     )
 
 
-def _draw(variety_id: int, sale_id: int, position: int, grams: str) -> SaleLineDraw:
+def _draw(variety_id: int, sale_id: int, position: int, quantity: str) -> SaleLineDraw:
     return SaleLineDraw(
         variety_id=variety_id,
         day=TODAY,
         recorded_at=AT,
         sale_id=sale_id,
         position=position,
-        grams=Grams.of(grams),
+        quantity=Quantity.of(quantity),
     )
 
 
@@ -122,7 +122,7 @@ def test_a_line_fully_covered_by_one_lot_is_costed_from_it() -> None:
 
     costs = costs_for_sale(entries, draws, FakeWithdrawalDraws(), sale)
 
-    assert costs == [LineCost(costed=10_000, pending_grams=Grams(0))]
+    assert costs == [LineCost(costed=10_000, pending_quantity=Quantity(0))]
 
 
 def test_a_line_past_every_lot_is_pending_never_a_zero_cost() -> None:
@@ -135,7 +135,7 @@ def test_a_line_past_every_lot_is_pending_never_a_zero_cost() -> None:
 
     costs = costs_for_sale(entries, draws, FakeWithdrawalDraws(), sale)
 
-    assert costs == [LineCost(costed=None, pending_grams=Grams.of("10"))]
+    assert costs == [LineCost(costed=None, pending_quantity=Quantity.of("10"))]
 
 
 def test_a_line_spanning_two_lots_is_split_between_costed_and_pending() -> None:
@@ -147,7 +147,7 @@ def test_a_line_spanning_two_lots_is_split_between_costed_and_pending() -> None:
 
     # 8 g drawn across both lots, $5 000 + $6 000 = $11 000 exactly; the other 2 g of
     # the 10 g line have no lot behind them, so they are pending, never a $0 cost.
-    assert costs == [LineCost(costed=11_000, pending_grams=Grams.of("2"))]
+    assert costs == [LineCost(costed=11_000, pending_quantity=Quantity.of("2"))]
 
 
 def test_two_lines_of_different_varieties_are_matched_back_by_position() -> None:
@@ -160,8 +160,8 @@ def test_two_lines_of_different_varieties_are_matched_back_by_position() -> None
     costs = costs_for_sale(entries, draws, FakeWithdrawalDraws(), sale)
 
     assert costs == [
-        LineCost(costed=10_000, pending_grams=Grams(0)),
-        LineCost(costed=20_000, pending_grams=Grams(0)),
+        LineCost(costed=10_000, pending_quantity=Quantity(0)),
+        LineCost(costed=20_000, pending_quantity=Quantity(0)),
     ]
 
 
@@ -177,10 +177,10 @@ def test_an_earlier_withdrawal_takes_the_lot_first_so_the_sale_line_is_pending()
         recorded_at=AT,
         withdrawal_id=3,
         position=0,
-        grams=Grams.of("10"),
+        quantity=Quantity.of("10"),
         reason=WithdrawalReason.PROMOTION,
     )
 
     costs = costs_for_sale(entries, draws, FakeWithdrawalDraws([withdrawal]), sale)
 
-    assert costs == [LineCost(costed=None, pending_grams=Grams.of("10"))]
+    assert costs == [LineCost(costed=None, pending_quantity=Quantity.of("10"))]

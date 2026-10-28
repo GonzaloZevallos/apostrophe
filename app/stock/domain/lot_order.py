@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.draw_source import DrawSource, WithdrawalReason, draw_source_of
 from app.stock.domain.entry import StockEntry
 
@@ -47,19 +47,19 @@ class Lot:
 
     order: LotOrder
     variety_id: int
-    grams: Grams
+    quantity: Quantity
     total_cost: int | None
 
     def __post_init__(self) -> None:
-        if not self.grams.is_positive:
+        if not self.quantity.is_positive:
             raise ValueError("a lot's grams are always above zero")
 
 
 @dataclass(frozen=True)
 class Draw:
-    """Grams going out of a variety: a sale line (gifts included), a negative
+    """Quantity going out of a variety: a sale line (gifts included), a negative
     adjustment or a stock withdrawal's line, always carried as a positive magnitude —
-    the direction is already `Draw` itself, never a signed `Grams`. `source` says which
+    the direction is already `Draw` itself, never a signed `Quantity`. `source` says which
     of them, and is the only way a draw's kind is told.
 
     `sale_id`, `line_total`, `pricing_rule` and `variety_name` ride along from the
@@ -71,7 +71,7 @@ class Draw:
 
     order: LotOrder
     variety_id: int
-    grams: Grams
+    quantity: Quantity
     source: DrawSource
     sale_id: int | None = None
     line_total: int | None = None
@@ -79,7 +79,7 @@ class Draw:
     variety_name: str | None = None
 
     def __post_init__(self) -> None:
-        if not self.grams.is_positive:
+        if not self.quantity.is_positive:
             raise ValueError("a draw's grams are always above zero")
 
 
@@ -102,7 +102,7 @@ class SaleLineDraw:
     recorded_at: datetime
     sale_id: int
     position: int
-    grams: Grams
+    quantity: Quantity
     variety_name: str = ""
     line_total: int = 0
     pricing_rule: str = "list"
@@ -121,7 +121,7 @@ class WithdrawalLineDraw:
     recorded_at: datetime
     withdrawal_id: int
     position: int
-    grams: Grams
+    quantity: Quantity
     reason: WithdrawalReason
 
 
@@ -153,16 +153,16 @@ def lots_and_draws(
     draws: dict[int, list[Draw]] = {}
     for entry in entries:
         order = _entry_order(entry)
-        if entry.grams.is_positive:
+        if entry.quantity.is_positive:
             lots.setdefault(entry.variety_id, []).append(
-                Lot(order, entry.variety_id, entry.grams, entry.total_cost)
+                Lot(order, entry.variety_id, entry.quantity, entry.total_cost)
             )
         else:
             draws.setdefault(entry.variety_id, []).append(
                 Draw(
                     order,
                     entry.variety_id,
-                    Grams(-entry.grams.hundredths),
+                    Quantity(-entry.quantity.hundredths),
                     DrawSource.ADJUSTMENT,
                 )
             )
@@ -171,7 +171,7 @@ def lots_and_draws(
             Draw(
                 _sale_draw_order(sale_draw),
                 sale_draw.variety_id,
-                sale_draw.grams,
+                sale_draw.quantity,
                 DrawSource.SALE_LINE,
                 sale_id=sale_draw.sale_id,
                 line_total=sale_draw.line_total,
@@ -184,7 +184,7 @@ def lots_and_draws(
             Draw(
                 _withdrawal_draw_order(withdrawal_draw),
                 withdrawal_draw.variety_id,
-                withdrawal_draw.grams,
+                withdrawal_draw.quantity,
                 draw_source_of(withdrawal_draw.reason),
             )
         )

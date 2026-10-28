@@ -4,7 +4,7 @@ from datetime import UTC, date, datetime
 
 import pytest
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.varieties.domain.variety import (
     DuplicateEffectiveDate,
     InvalidName,
@@ -64,10 +64,10 @@ def test_a_price_entry_needs_a_positive_list_price() -> None:
 
 @pytest.mark.parametrize(
     ("bulk_price", "bulk_minimum"),
-    [(10_000, None), (None, Grams.of(10))],
+    [(10_000, None), (None, Quantity.of(10))],
 )
 def test_a_bulk_price_and_a_bulk_minimum_go_together(
-    bulk_price: int | None, bulk_minimum: Grams | None
+    bulk_price: int | None, bulk_minimum: Quantity | None
 ) -> None:
     with pytest.raises(InvalidPriceEntry):
         PriceEntry.of(date(2026, 1, 1), 11_000, bulk_price, bulk_minimum)
@@ -75,10 +75,15 @@ def test_a_bulk_price_and_a_bulk_minimum_go_together(
 
 @pytest.mark.parametrize(
     ("bulk_price", "bulk_minimum"),
-    [(11_000, Grams.of(10)), (12_000, Grams.of(10)), (0, Grams.of(10)), (10_000, Grams(0))],
+    [
+        (11_000, Quantity.of(10)),
+        (12_000, Quantity.of(10)),
+        (0, Quantity.of(10)),
+        (10_000, Quantity(0)),
+    ],
 )
 def test_a_bulk_price_is_positive_and_lower_than_the_list_price_from_some_grams(
-    bulk_price: int, bulk_minimum: Grams
+    bulk_price: int, bulk_minimum: Quantity
 ) -> None:
     with pytest.raises(InvalidPriceEntry):
         PriceEntry.of(date(2026, 1, 1), 11_000, bulk_price, bulk_minimum)
@@ -86,7 +91,7 @@ def test_a_bulk_price_is_positive_and_lower_than_the_list_price_from_some_grams(
 
 def _gold() -> Variety:
     variety = Variety(VarietyName.of("24K Gold"))
-    variety.record_price(PriceEntry.of(date(2026, 1, 1), 11_000, 10_000, Grams.of(10), id=1))
+    variety.record_price(PriceEntry.of(date(2026, 1, 1), 11_000, 10_000, Quantity.of(10), id=1))
     variety.record_price(PriceEntry.of(date(2026, 3, 1), 12_000, id=2))
     return variety
 
@@ -142,14 +147,14 @@ def test_a_vip_price_below_the_list_price_is_kept() -> None:
 
 def test_a_vip_price_needs_no_bulk_terms_and_a_bulk_price_needs_no_vip_price() -> None:
     only_vip = PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=9_000)
-    only_bulk = PriceEntry.of(date(2026, 1, 1), 11_000, 10_000, Grams.of(10))
+    only_bulk = PriceEntry.of(date(2026, 1, 1), 11_000, 10_000, Quantity.of(10))
 
     assert only_vip.bulk is None
     assert only_bulk.vip_price is None
 
 
 def test_a_vip_price_is_never_compared_with_the_bulk_price() -> None:
-    entry = PriceEntry.of(date(2026, 1, 1), 11_000, 8_000, Grams.of(10), vip_price=10_500)
+    entry = PriceEntry.of(date(2026, 1, 1), 11_000, 8_000, Quantity.of(10), vip_price=10_500)
 
     assert (entry.bulk is not None and entry.bulk.price, entry.vip_price) == (8_000, 10_500)
 
@@ -170,6 +175,8 @@ def test_a_vip_price_at_or_above_the_list_price_is_refused_with_its_own_code(
 def test_a_vip_price_must_be_positive(vip_price: int) -> None:
     with pytest.raises(InvalidPriceEntry):
         PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=vip_price)
+
+
 def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
     from datetime import UTC, datetime
 

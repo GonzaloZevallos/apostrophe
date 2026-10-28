@@ -16,8 +16,8 @@ from app.db import flush_or_refuse
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import PriceQuote, VarietyPricing
 from app.sales.domain.sale import Sale, UnknownVariety
-from app.shared.grams import Grams
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyArchived as StockArchived
@@ -99,7 +99,7 @@ def _record_sale(present: bool, transaction: CountingTransaction) -> Sale:
         customer_id=None,
         shipping_charged=0,
         note=None,
-        lines=[LineInput(variety_id=7, grams=Grams.of("1"), gift=True)],
+        lines=[LineInput(variety_id=7, quantity=Quantity.of("1"), gift=True)],
         method=None,
         left_owing=False,
         recorded_at=NOW,
@@ -129,7 +129,9 @@ class RefusingEntries:
         self._own = own_variety_id
 
     def by_id(self, entry_id: int) -> StockEntry | None:
-        return StockEntry(DAY, self._own, Origin.HARVEST, Grams.of("5"), None, None, NOW, entry_id)
+        return StockEntry(
+            DAY, self._own, Origin.HARVEST, Quantity.of("5"), None, None, NOW, entry_id
+        )
 
     def add(self, entry: StockEntry) -> StockEntry:
         raise ReferenceRefused
@@ -179,7 +181,7 @@ def _record_entry(then: str, transaction: CountingTransaction) -> StockEntry:
         entry_date=DAY,
         variety_id=7,
         origin=Origin.HARVEST,
-        grams=Grams.of("5"),
+        quantity=Quantity.of("5"),
         total_cost=None,
         note=None,
         today=DAY,
@@ -196,7 +198,7 @@ def _edit_entry(then: str, transaction: CountingTransaction) -> StockEntry:
         entry_date=DAY,
         variety_id=7,
         origin=Origin.HARVEST,
-        grams=Grams.of("5"),
+        quantity=Quantity.of("5"),
         total_cost=None,
         note=None,
         today=DAY,

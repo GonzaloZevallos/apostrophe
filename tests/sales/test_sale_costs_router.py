@@ -27,10 +27,10 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
     assert response.status_code == 201, response.text
 
 
-def _sale(client: TestClient, variety_id: int, grams: str = "10") -> int:
+def _sale(client: TestClient, variety_id: int, quantity: str = "10") -> int:
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": grams}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": quantity}]},
     )
     assert response.status_code == 201, response.text
     return int(response.json()["id"])
@@ -167,9 +167,7 @@ def test_a_sale_detail_carries_still_owing_from_settlement(client: TestClient) -
     on this merged branch (Tech Lead finding, plan scope, `test_sale_costs_router.py:90`
     and `:109`)."""
     variety_id = _variety(client)
-    customer = client.post(
-        "/customers", json={"name": "Juana", "phone": "11 2345-6789"}
-    ).json()
+    customer = client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}).json()
 
     owing = client.post(
         "/sales",

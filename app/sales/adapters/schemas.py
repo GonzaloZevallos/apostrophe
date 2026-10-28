@@ -1,6 +1,6 @@
 """The HTTP shapes of a sale. Bare: no pydantic length or value constraint, so every
-rule stays the domain's and its message is a fixed string (ADR-0005). Grams are typed
-`Decimal` here and become `Grams` only through `Grams.of`, at the router."""
+rule stays the domain's and its message is a fixed string (ADR-0005). Quantity are typed
+`Decimal` here and become `Quantity` only through `Quantity.of`, at the router."""
 
 from datetime import date
 from decimal import Decimal
@@ -13,7 +13,7 @@ from app.sales.application.view_sales import SaleDetail
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import PaymentMethod, Sale
 from app.sales.domain.sale_bill import BillPayment, BillRule, BillState, SaleBill, SaleBillLine
-from app.varieties.adapters.schemas import GramsOut
+from app.varieties.adapters.schemas import QuantityOut
 
 # "Owing" and "none" are adapter-only words for a sale with no `OnTheSpotPayment`;
 # `PaymentMethod` is still the only declaration of the methods themselves (cash,
@@ -63,7 +63,7 @@ class SaleCustomerOut(BaseModel):
 class SaleLineOut(BaseModel):
     variety_id: int
     variety_name: str
-    grams: GramsOut
+    grams: QuantityOut
     pricing_rule: PricingRule
     price_per_gram: int
     line_total: int
@@ -74,7 +74,7 @@ class SaleLineOut(BaseModel):
         return cls(
             variety_id=line.variety_id,
             variety_name=view_line.variety_name,
-            grams=line.grams.as_decimal(),
+            grams=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
             price_per_gram=line.price_per_gram,
             line_total=line.line_total,
@@ -121,11 +121,11 @@ class LineCostOut(BaseModel):
     never folded into `costed` as a $0 cost."""
 
     costed: int | None
-    pending_grams: GramsOut
+    pending_grams: QuantityOut
 
     @classmethod
     def of(cls, cost: LineCost) -> "LineCostOut":
-        return cls(costed=cost.costed, pending_grams=cost.pending_grams.as_decimal())
+        return cls(costed=cost.costed, pending_grams=cost.pending_quantity.as_decimal())
 
 
 class SaleLineDetailOut(BaseModel):
@@ -133,7 +133,7 @@ class SaleLineDetailOut(BaseModel):
 
     variety_id: int
     variety_name: str
-    grams: GramsOut
+    grams: QuantityOut
     pricing_rule: PricingRule
     price_per_gram: int
     line_total: int
@@ -145,7 +145,7 @@ class SaleLineDetailOut(BaseModel):
         return cls(
             variety_id=line.variety_id,
             variety_name=view_line.variety_name,
-            grams=line.grams.as_decimal(),
+            grams=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
             price_per_gram=line.price_per_gram,
             line_total=line.line_total,
@@ -168,7 +168,7 @@ class SaleBillLineOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     product: str
-    quantity: GramsOut
+    quantity: QuantityOut
     amount: int
     rule: BillRule | None
     unit_price: int | None
@@ -225,7 +225,7 @@ class SaleDetailOut(BaseModel):
     payment: PaymentOut
     total: int
     lines: list[SaleLineDetailOut]
-    total_grams: GramsOut
+    total_grams: QuantityOut
     still_owing: bool
     bill: SaleBillOut | None
 
@@ -247,15 +247,16 @@ class SaleDetailOut(BaseModel):
                 SaleLineDetailOut.of(line, cost)
                 for line, cost in zip(view.lines, costs, strict=True)
             ],
-            total_grams=sale.total_grams.as_decimal(),
+            total_grams=sale.total_quantity.as_decimal(),
             still_owing=detail.still_owing,
             bill=None if detail.bill is None else SaleBillOut.of(detail.bill),
         )
 
 
+# Keeps its wire name until the Product rename on the wire (ADR-0061).
 class ReturnedGramsOut(BaseModel):
     variety_id: int
-    grams: GramsOut
+    grams: QuantityOut
 
 
 class DeleteSaleOut(BaseModel):

@@ -81,10 +81,10 @@ def _price(client: TestClient, variety_id: int, effective_from: str = "2026-10-0
     return int(entry.json()["id"])
 
 
-def _stock(client: TestClient, variety_id: int, grams: str = "50") -> None:
+def _stock(client: TestClient, variety_id: int, quantity: str = "50") -> None:
     entry = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": grams},
+        json={"variety_id": variety_id, "origin": "opening_stock", "grams": quantity},
     )
     assert entry.status_code == 201, entry.text
 
@@ -327,7 +327,7 @@ def _year_checklist(client: TestClient) -> None:
         for day in range(3, 28):
             _price(client, variety_id, effective_from=f"2026-11-{day:02d}")
         for _ in range(9):
-            _stock(client, variety_id, grams="100")
+            _stock(client, variety_id, quantity="100")
 
 
 def _statement_count(engine: Engine, client: TestClient) -> int:
@@ -507,7 +507,7 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
 
     sold_out = _variety(client, "Agotada")
     _price(client, sold_out)
-    _stock(client, sold_out, grams="10")
+    _stock(client, sold_out, quantity="10")
     sold = client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": sold_out, "grams": "10"}]}
     )
@@ -545,7 +545,7 @@ def _build_sold_out(client: TestClient, engine: Engine) -> None:
     _without_onboarding(engine)
     variety_id = _variety(client)
     _price(client, variety_id)
-    _stock(client, variety_id, grams="10")
+    _stock(client, variety_id, quantity="10")
     sold = client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]}
     )

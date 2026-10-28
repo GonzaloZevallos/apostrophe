@@ -28,7 +28,7 @@ def _words(translations: Translations) -> CatalogWords:
         indica=lambda share, other: indica.format(indica=share, sativa=other),
         aroma=lambda text: aroma.format(aroma=text),
         price_per_gram=lambda price: price_per_gram.format(price=price),
-        bulk=lambda grams, price: bulk.format(grams=grams, price=price),
+        bulk=lambda quantity, price: bulk.format(grams=quantity, price=price),
     )
 
 

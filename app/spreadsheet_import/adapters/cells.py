@@ -1,5 +1,5 @@
 """Turns a workbook into `ParsedWorkbook` (the plan's invariant: every cell value
-becomes `Grams`, a peso int, a date or text only here; no float reaches `Grams.of` or
+becomes `Quantity`, a peso int, a date or text only here; no float reaches `Quantity.of` or
 an `int()` cast without a whole-number check first).
 
 A row whose typed columns are all blank is skipped before any formula cell of it is
@@ -28,7 +28,7 @@ from openpyxl import load_workbook
 if TYPE_CHECKING:
     from openpyxl.cell import _CellGetValue
 
-from app.shared.grams import Grams, InvalidGrams
+from app.shared.quantity import InvalidQuantity, Quantity
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
@@ -54,9 +54,7 @@ class _SizableWorksheet(Protocol):
     structurally rather than by that one concrete class."""
 
     def reset_dimensions(self) -> None: ...
-    def iter_rows(
-        self, *, values_only: Literal[True]
-    ) -> Generator[tuple[_CellGetValue, ...]]: ...
+    def iter_rows(self, *, values_only: Literal[True]) -> Generator[tuple[_CellGetValue, ...]]: ...
 
 
 class _CellError(Exception):
@@ -121,17 +119,17 @@ def _number_text(value: int | float) -> str:
     return format(amount, "f").replace(".", ",")
 
 
-def _to_grams(value: _CellGetValue) -> Grams | None:
+def _to_quantity(value: _CellGetValue) -> Quantity | None:
     if _is_blank(value):
         return None
     if isinstance(value, bool):
         raise _CellError("grams_not_numeric")
     if isinstance(value, int):
-        return Grams.of(value)
+        return Quantity.of(value)
     if isinstance(value, float):
         try:
-            return Grams.of(Decimal(repr(value)))
-        except InvalidGrams as exc:
+            return Quantity.of(Decimal(repr(value)))
+        except InvalidQuantity as exc:
             raise _CellError("grams_too_precise") from exc
     raise _CellError("grams_not_numeric")
 
@@ -175,7 +173,7 @@ def _require_date(value: _CellGetValue) -> date:
 
 
 def _to_indica(value: _CellGetValue) -> int | str | None:
-    """`% índica` is neither Grams, pesos, a date nor text, so it is read as the
+    """`% índica` is neither Quantity, pesos, a date nor text, so it is read as the
     plain value it is: a true `int` or a whole float stays the whole number;
     anything else present becomes its own text, left for the owner's check to
     refuse (CatalogRow's own type, fixed by `contract`). A `bool`, like in every
@@ -297,7 +295,7 @@ def _read_varieties(grid: _Grid, problems: list[CellProblem]) -> tuple[VarietyRo
             row_problems, ref, layout.VARIETY_NAME_LABEL, _require_text_or_number, raw_name
         )
         threshold = _field(
-            row_problems, ref, layout.VARIETY_THRESHOLD_LABEL, _to_grams, raw_threshold
+            row_problems, ref, layout.VARIETY_THRESHOLD_LABEL, _to_quantity, raw_threshold
         )
         problems.extend(row_problems)
         if name is None:
@@ -356,7 +354,11 @@ def _read_price_history(grid: _Grid, problems: list[CellProblem]) -> tuple[Price
             row_problems, ref, layout.PRICE_HISTORY_BULK_PRICE_LABEL, _to_pesos, raw_bulk_price
         )
         bulk_minimum = _field(
-            row_problems, ref, layout.PRICE_HISTORY_BULK_MINIMUM_LABEL, _to_grams, raw_bulk_minimum
+            row_problems,
+            ref,
+            layout.PRICE_HISTORY_BULK_MINIMUM_LABEL,
+            _to_quantity,
+            raw_bulk_minimum,
         )
         problems.extend(row_problems)
         if variety is None or effective is None or list_price is None:
@@ -432,8 +434,8 @@ def _read_ventas(grid: _Grid, problems: list[CellProblem]) -> tuple[VentaRow, ..
             _to_text_or_number,
             typed_raw[layout.VENTAS_VARIEDAD],
         )
-        grams = _field(
-            problems, ref, layout.VENTAS_GRAMOS, _to_grams, typed_raw[layout.VENTAS_GRAMOS]
+        quantity = _field(
+            problems, ref, layout.VENTAS_GRAMOS, _to_quantity, typed_raw[layout.VENTAS_GRAMOS]
         )
         payment = _field(
             problems, ref, layout.VENTAS_PAGO, _to_text_or_number, typed_raw[layout.VENTAS_PAGO]
@@ -474,7 +476,7 @@ def _read_ventas(grid: _Grid, problems: list[CellProblem]) -> tuple[VentaRow, ..
                 ref,
                 sale_date,
                 variety,
-                grams,
+                quantity,
                 payment,
                 customer,
                 kind,
@@ -541,8 +543,8 @@ def _read_entradas(grid: _Grid, problems: list[CellProblem]) -> tuple[EntradaRow
             _to_text_or_number,
             typed_raw[layout.ENTRADAS_VARIEDAD],
         )
-        grams = _field(
-            problems, ref, layout.ENTRADAS_GRAMOS, _to_grams, typed_raw[layout.ENTRADAS_GRAMOS]
+        quantity = _field(
+            problems, ref, layout.ENTRADAS_GRAMOS, _to_quantity, typed_raw[layout.ENTRADAS_GRAMOS]
         )
         origin = _field(
             problems,
@@ -563,7 +565,9 @@ def _read_entradas(grid: _Grid, problems: list[CellProblem]) -> tuple[EntradaRow
         )
         revisar_value = _at(grid, row_number, columns[layout.ENTRADAS_REVISAR_TITLE])
         revisar = _field(problems, ref, layout.ENTRADAS_REVISAR_TITLE, _to_text, revisar_value)
-        rows.append(EntradaRow(ref, entry_date, variety, grams, origin, total_cost, note, revisar))
+        rows.append(
+            EntradaRow(ref, entry_date, variety, quantity, origin, total_cost, note, revisar)
+        )
     return tuple(rows)
 
 

@@ -32,7 +32,7 @@ from app.sales.domain.sale import (
     Sale,
     SaleLine,
 )
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.varieties.adapters.tables import VarietyRow
 
 
@@ -158,16 +158,13 @@ class SqlSales:
             )
             .outerjoin(
                 PaymentRow,
-                (PaymentRow.sale_id == SaleRow.id)
-                & (PaymentRow.business_id == self._business_id),
+                (PaymentRow.sale_id == SaleRow.id) & (PaymentRow.business_id == self._business_id),
             )
             .where(SaleRow.business_id == self._business_id)
         )
         if sale_ids is not None:
             statement = statement.where(SaleRow.id.in_(sale_ids))
-        statement = statement.where(
-            *_dated_conditions(SaleRow.sale_date, date_from, date_to)
-        )
+        statement = statement.where(*_dated_conditions(SaleRow.sale_date, date_from, date_to))
         statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
 
         rows = self._session.execute(statement).all()
@@ -273,7 +270,7 @@ class SqlSales:
             business_id=self._business_id,
             sale_id=sale_id,
             variety_id=line.variety_id,
-            grams_hundredths=line.grams.hundredths,
+            grams_hundredths=line.quantity.hundredths,
             pricing_rule=line.pricing_rule.value,
             price_per_gram=line.price_per_gram,
             line_total=line.line_total,
@@ -315,7 +312,7 @@ def _dated_conditions(
 def _sale_line(row: SaleLineRow) -> SaleLine:
     return SaleLine(
         variety_id=row.variety_id,
-        grams=Grams(row.grams_hundredths),
+        quantity=Quantity(row.grams_hundredths),
         pricing_rule=PricingRule(row.pricing_rule),
         price_per_gram=row.price_per_gram,
         line_total=row.line_total,

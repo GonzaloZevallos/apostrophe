@@ -17,7 +17,7 @@ from app.sales.application.sale_bill import sale_bill
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import OnTheSpotPayment, PaymentMethod, Sale, SaleLine
 from app.sales.domain.sale_bill import BillPayment, SaleBill, SaleBillLine
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 SALE_ID = 7
 CUSTOMER = SaleViewCustomer(id=3, name="Juana", vip=True)
@@ -37,9 +37,9 @@ def _view(
     *, customer: bool = True, method: PaymentMethod | None = None, shipping: int = 500
 ) -> SaleView:
     lines = (
-        SaleLine(1, Grams.of("2.5"), PricingRule.BULK, 3_000, 7_500, id=11),
-        SaleLine(2, Grams.of(1), PricingRule.GIFT, 0, 0, id=12),
-        SaleLine(3, Grams.of("0.5"), PricingRule.VIP, 4_000, 2_000, id=13),
+        SaleLine(1, Quantity.of("2.5"), PricingRule.BULK, 3_000, 7_500, id=11),
+        SaleLine(2, Quantity.of(1), PricingRule.GIFT, 0, 0, id=12),
+        SaleLine(3, Quantity.of("0.5"), PricingRule.VIP, 4_000, 2_000, id=13),
     )
     total = 9_500 + shipping
     sale = Sale(
@@ -75,9 +75,9 @@ def test_a_consistent_owed_sale_gives_the_whole_bill() -> None:
         shipping_charged=500,
         total=10_000,
         lines=(
-            SaleBillLine("Lavanda", Grams.of("2.5"), 7_500, "bulk", 3_000),
-            SaleBillLine("Romero", Grams.of(1), 0, "gift", None),
-            SaleBillLine("Menta", Grams.of("0.5"), 2_000, None, None),
+            SaleBillLine("Lavanda", Quantity.of("2.5"), 7_500, "bulk", 3_000),
+            SaleBillLine("Romero", Quantity.of(1), 0, "gift", None),
+            SaleBillLine("Menta", Quantity.of("0.5"), 2_000, None, None),
         ),
         payment=BillPayment("owed", 10_000),
         balance=12_000,

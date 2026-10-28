@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
 from app.stock.application.errors import VarietyNotFound
@@ -34,7 +34,7 @@ def record_entry(
     entry_date: date,
     variety_id: int,
     origin: Origin,
-    grams: Grams,
+    quantity: Quantity,
     total_cost: int | None,
     note: str | None,
     today: date,
@@ -44,7 +44,7 @@ def record_entry(
     foreign or unknown variety never reaches the grams, cost or date rules."""
     _check_variety(catalog, variety_id)
     entry = StockEntry.of(
-        entry_date, variety_id, origin, grams, total_cost, note, today, recorded_at
+        entry_date, variety_id, origin, quantity, total_cost, note, today, recorded_at
     )
     try:
         stored = entries.add(entry)
@@ -65,7 +65,7 @@ def edit_entry(
     entry_date: date,
     variety_id: int,
     origin: Origin,
-    grams: Grams,
+    quantity: Quantity,
     total_cost: int | None,
     note: str | None,
     today: date,
@@ -79,7 +79,7 @@ def edit_entry(
         entry_date,
         variety_id,
         origin,
-        grams,
+        quantity,
         total_cost,
         note,
         today,

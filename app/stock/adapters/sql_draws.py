@@ -18,7 +18,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.sales.adapters.tables import SaleLineRow, SaleRow
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.lot_order import SaleLineDraw
 from app.varieties.adapters.tables import VarietyRow
 
@@ -33,8 +33,7 @@ class SqlDraws:
             select(SaleLineRow, SaleRow, VarietyRow.name)
             .join(
                 SaleRow,
-                (SaleRow.id == SaleLineRow.sale_id)
-                & (SaleRow.business_id == self._business_id),
+                (SaleRow.id == SaleLineRow.sale_id) & (SaleRow.business_id == self._business_id),
             )
             .join(
                 VarietyRow,
@@ -53,7 +52,7 @@ class SqlDraws:
                 recorded_at=sale.recorded_at,
                 sale_id=sale.id,
                 position=line.position,
-                grams=Grams(line.grams_hundredths),
+                quantity=Quantity(line.grams_hundredths),
                 variety_name=variety_name,
                 line_total=line.line_total,
                 pricing_rule=line.pricing_rule,
