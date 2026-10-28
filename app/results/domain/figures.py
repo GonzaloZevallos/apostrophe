@@ -15,7 +15,7 @@ from app.shared.quantity import Quantity
 @dataclass(frozen=True)
 class MarginFigure:
     """A margin in pesos, worked out over costed grams only. `percent` is `None` when
-    the sales it is taken over are $0; `pending_grams` is the sold-or-gifted grams
+    the sales it is taken over are $0; `pending_quantity` is the sold-or-gifted grams
     behind it that are not costed yet."""
 
     amount: int
