@@ -22,7 +22,6 @@ from pathlib import Path
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine, create_engine
 
-
 COPY_FAILED = "error: the copy failed; see the restore drill section of deploy/README.md"
 
 
