@@ -20,6 +20,8 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-xdist",
+    "pytest-cov",
+    "actionlint-py",
     "httpx2",
     "ruff",
     "mypy",
@@ -53,3 +55,10 @@ mypy_path = "scripts/design"
 explicit_package_bases = true
 # Inputs to the architecture checker, parsed with `ast` and never imported.
 exclude = ["^tests/architecture/fixtures/"]
+
+# Coverage data is written with paths relative to the checkout and one file per process, so the
+# data files of the CI shards combine on another runner (scripts/ci_coverage.py).
+[tool.coverage.run]
+relative_files = true
+parallel = true
+source = ["app"]
