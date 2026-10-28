@@ -89,6 +89,8 @@ export default defineConfig({
   // every other spec shares. It needs no real DNS entry: the spec itself proxies
   // every request for that host to its own worker's real server.
   projects: [
+    // The order is pinned by src/architecture/e2eShape.test.ts. The phone cells (the longest tests,
+    // about 4 min each alone) run last; queueing them first was tried and broke that test.
     // The phone check runs on its own server and clock (the `mobile` project below), so the
     // original specs, which keep the first server and the real clock, never match it.
     {
