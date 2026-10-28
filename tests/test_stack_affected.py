@@ -3,7 +3,8 @@ agentic-system ADR-0064): structure only. The gate that reads them is another sy
 what this product owes is that every form can be substituted and exits non-zero on an
 empty selection (never `--passWithNoTests`), that the fallback globs never swallow what
 the e2e wrapper judges sound, and that `delivery_checks` names only declared checks,
-leaves `web-e2e` out (it runs on GitHub) and still runs each sweep file the fast tier must not lose."""
+leaves `web-e2e` out (it runs on GitHub) and still runs each sweep file the fast tier must
+not lose."""
 
 from __future__ import annotations
 
