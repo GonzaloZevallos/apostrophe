@@ -117,11 +117,11 @@ changed.
 The guard (`web/src/architecture/e2eToastRule.test.ts`) prints, from `npm --prefix web test -- e2eToastRule`:
 
 ```
-e2eToastRule: 27 sites observed in the page, 5 kept on page text, 87 pending
+e2eToastRule: 27 sites observed in the page, 6 kept on page text, 86 pending
 ```
 
 `panel.spec.ts`, `flow.spec.ts`, `sales.spec.ts`, `helpers/seed.ts` and `helpers/ledger.ts` are migrated
-(27 `expectToast` calls in those five files; the recorder's own spec is not counted). The 87 sites in the other specs wait on `PENDING` for parts 2 and 3; the list only shrinks.
+(27 `expectToast` calls in those five files; the recorder's own spec is not counted). The 86 sites in the other specs wait on `PENDING` for parts 2 and 3; the list only shrinks.
 
 Kept on page text, with the reason (each is also a `KEPT` line in the guard):
 
@@ -129,6 +129,7 @@ Kept on page text, with the reason (each is also a `KEPT` line in the guard):
 |---|---|---|
 | `flow.spec.ts:50` | Customer saved | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
 | `panel.spec.ts:210` | Customer saved | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
+| `toastRecorder.spec.ts:163` | Customer saved | no product timer: page visibility is the stronger check (`expectToast` runs on the click at :160; the recorder's own spec, so not counted above) |
 | `flow.spec.ts:176` | Category saved | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:180` | Category deleted | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:188` | Business renamed | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |

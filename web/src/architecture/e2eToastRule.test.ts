@@ -446,6 +446,7 @@ export const KEPT: readonly string[] = [
   `flow.spec.ts:180 — ${CATEGORY_TOAST}`,
   `flow.spec.ts:188 — ${NO_TIMER}`,
   `panel.spec.ts:210 — ${NO_TIMER}`,
+  `toastRecorder.spec.ts:163 — ${NO_TIMER}`,
 ]
 
 /**
@@ -525,7 +526,6 @@ export const PENDING: readonly string[] = [
   'settings.spec.ts:111',
   'settings.spec.ts:130',
   'tapBudget.spec.ts:106',
-  'toastRecorder.spec.ts:163',
   'varietiesAutoSelect.spec.ts:31',
   'ventasLinea.spec.ts:26',
   'ventasLinea.spec.ts:31',
@@ -543,7 +543,7 @@ export const PENDING: readonly string[] = [
 ]
 
 /** The most `PENDING` may hold; lowered with each migration, never raised. */
-export const PENDING_CEILING = 87
+export const PENDING_CEILING = 86
 
 // ---------------------------------------------------------------------------------------------
 // The tests
