@@ -28,6 +28,11 @@ _PATTERNS = {
         r"eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{10,}"
     ),
     "render api key": re.compile(r"\brnd_[A-Za-z0-9]{20,}\b"),
+    # The header followed by key material (a raw newline, or an escaped `\n` in a
+    # one-line value): prose that only names the header in backticks is not a key.
+    "openssh private key": re.compile(
+        r"-----BEGIN OPENSSH PRIVATE KEY-----(?:\s|\\+[nr])*[A-Za-z0-9+/=]{20,}"
+    ),
     # A generic env-style assignment with a real-looking value.
     "generic token or secret assignment": re.compile(
         r"(?i)\b[A-Z0-9_]*_(TOKEN|SECRET)\s*=\s*\S{6,}"
@@ -128,6 +133,35 @@ def test_the_scanner_flags_a_render_api_key() -> None:
     bad = "RENDER_API_KEY=rnd_" "abcdefghijklmnopqrstuvwxyz0123456789"
 
     assert "render api key" in find_secrets(bad)
+
+
+_OPENSSH_HEADER = "-----BEGIN OPENSSH " "PRIVATE KEY-----"
+_BASE64_BODY = "b3BlbnNzaC1rZXktdjEAAAAABG5vbmU"
+
+
+def test_the_scanner_flags_a_multi_line_openssh_private_key() -> None:
+    # The header is split for the same reason as the age identity example above.
+    bad = _OPENSSH_HEADER + "\n" + _BASE64_BODY + "\n"
+
+    assert "openssh private key" in find_secrets(bad)
+
+
+def test_the_scanner_flags_a_one_line_openssh_private_key_with_a_literal_newline() -> None:
+    bad = _OPENSSH_HEADER + "\\n" + _BASE64_BODY
+
+    assert "openssh private key" in find_secrets(bad)
+
+
+def test_the_scanner_flags_an_openssh_private_key_with_a_doubled_escaped_newline() -> None:
+    bad = _OPENSSH_HEADER + "\\\\n" + _BASE64_BODY
+
+    assert "openssh private key" in find_secrets(bad)
+
+
+def test_the_scanner_lets_prose_naming_the_openssh_header_through() -> None:
+    fine = f"The `{_OPENSSH_HEADER}` header is scanned for; see docs/product/accounts.md."
+
+    assert find_secrets(fine) == []
 
 
 def test_the_scanner_flags_a_generic_token_assignment_outside_python() -> None:
