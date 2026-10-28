@@ -111,3 +111,16 @@ The business export (accounts.md) holds the two switches as stored.
 - A warning or count of varieties without a VIP price.
 - Roles or permissions for changing the switches.
 - Applying on tap, as Appearance does: the switches reprice every new sale for every partner, so they are saved explicitly.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### Customer types and pricing rules (ADR-0058; a later part of GH-318)
+
+- Customer types will replace the single VIP mark. Each type has its own price per product, kept as effective-dated rows; the `vip` mark and `vip_price` columns stay frozen in place. List, bulk and customer-type prices stay switchable per business, as the Pricing settings are today. A new business starts with no customer types.
+- Existing businesses keep VIP as a customer type, so every VIP customer pays exactly what they paid before.
+- It will replace: "**Two per business**, independent of each other: Bulk price and VIP customers." (the VIP switch becomes the customer-types switch) and "Every price entry with a bulk price gets VIP price = bulk price, so every VIP customer pays exactly what they paid before."
+- Out of scope: "Other VIP rules, such as a percent off list." stays out. "Price promotions by date." is reversed by the promotions part (ADR-0059; `sales.md`).

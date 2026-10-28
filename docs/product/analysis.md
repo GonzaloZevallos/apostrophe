@@ -232,3 +232,35 @@ Success criteria:
 - Live updates between partners while the screen is open.
 - Forecasts beyond stock's days left.
 - Tying a promotion to later sales.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### Units: "and N … without cost" per unit (ADR-0055; a later part of GH-318)
+
+- Quantities of different units are never added. A pending quantity will be counted per unit, so a figure reads "and N <label> without cost" once for each unit it has pending, and the grams of a week, a month and a variety become one amount per unit, each with its label.
+- It will replace: "It carries "and N g without cost", where N adds every pending gram behind it" and "**Grams**: grams sold and grams gifted, as two figures."
+
+### Money (ADR-0057; a later part of GH-318)
+
+- Sales, margins and profit will be worked out from amounts stored at the business's scale; the rounding of sales of costed quantity goes through `round_half_up` (ADR-0057). Raising a business's money decimals leaves every figure equal in value.
+- It will replace: "**Sales of costed grams**: per sale line, line total × costed grams ÷ line grams, rounded half up to the peso."
+
+### The business day (ADR-0056; a later part of GH-318)
+
+- Windows, weeks and the weekday table will follow the business's own time zone.
+- It will replace: "**Chosen month**: opens on the current month in Argentina time" and "**Each weekday, Monday to Sunday**: the sales total and the number of sales, by each sale's date in Argentina time."
+
+### Grouping by category (ADR-0054; a later part of GH-318)
+
+- The chosen month's table will be groupable by category and subcategory, in addition to by product.
+- It will replace: "### The chosen month, by variety" and "the screen states that the variety table adds up to the month's sales minus shipping".
+
+### The Marketing cost line (ADR-0054; a later part of GH-318)
+
+- The withdrawal reason now called "Promotion" will be called "Marketing", in its cost line in the month header, the week and month rows and since the first record, with its own pending mark kept (`stock.md`).
+- It will replace: "**Promotion cost ("Promotion") and own-use cost ("Own use")**" and ""Promotion $ X" and "Own use $ X" when the month has a withdrawal of that reason".
+- In Out of scope, "Tying a promotion to later sales." stays out: applied promotions are recorded on the sale itself (ADR-0059; `sales.md`), not tied afterwards.

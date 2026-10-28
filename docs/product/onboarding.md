@@ -260,3 +260,17 @@ There is no telemetry.
 - Usage tracking, a dashboard or an operator script for its metrics.
 - Illustrations, animation, marketing copy, new colours or new components.
 - Live updates between partners while it is open.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### Setup (ADR-0054, ADR-0056, ADR-0057; a later part of GH-318)
+
+- Setup will be the Onboarding, extended. The required steps stay a product priced today and its opening stock. Confirming the time zone is one tap inside the flow, with the accepting phone's time zone suggested.
+- The product word, units, currency, categories, attributes and catalog template will be optional steps with their defaults filled in ("Product" / "Products", "unit" with 0 decimals, "$" with 0 decimals, "Products" and "General"). The flow stays phone first, with icons and big buttons.
+- The first-run checklist for businesses that existed before the Onboarding does not change.
+- It will replace: "### The six steps, in order" (the table of six steps), "A variety with today's price" (step 1's wording), and "Per-variety catalog attributes and the low-stock threshold in the Onboarding." in Out of scope.
+- It will also replace, in Step 2, "Its opening stock": the opening stock will be entered in the product's unit (ADR-0055).

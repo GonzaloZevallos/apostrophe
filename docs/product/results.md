@@ -225,3 +225,30 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Putting low varieties first in What you have left.
 - Restyling Record payment to `Cobro.dc.html`: the payments screen's own work.
 - A checklist for a brand-new business: it gets the Onboarding.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### Units: quantities by unit (ADR-0055; a later part of GH-318)
+
+- A figure that totals quantities across products will show one amount per unit, each with its label (a `QuantityByUnit`), because quantities of different units are never added. This covers the quantity sold, the quantity gifted ("You gave away") and the withdrawal totals.
+- It will replace: "**Grams sold**: the grams of the period's lines that are not gifts." and "**Grams gifted** ("You gave away"): the grams of the period's gift lines. Withdrawn grams are never gifted grams."
+
+### Money (ADR-0057; a later part of GH-318)
+
+- Sales, costs, Profit and Cash will keep their definitions and be worked out from amounts stored at the business's scale; half-up rounding goes through `round_half_up`. Raising a business's money decimals leaves every figure equal in value.
+- It will replace: "**Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales."
+
+### The business day (ADR-0056; a later part of GH-318)
+
+- Today, Week and Month will follow the business's own time zone.
+- It will replace: "Today, Week and Month, in Argentina time, with the same definitions as Sales. There is no Dates."
+
+### The Marketing cost line (ADR-0054; a later part of GH-318)
+
+- The cost line of the withdrawal reason now called "Promotion" will read "Marketing", with the reason's rename (`stock.md`). It sits where it does today, right after Stock shortfall and before Expenses.
+- It will replace: "**Promotion cost** ("Promotion") and **own-use cost** ("Own use")" and "Promotion and Own use sit right after Stock shortfall and before Expenses.", and in Out of scope "promotion or own-use cost per variety" keeps holding under the new name.
+- The "Flower purchases" label and "What you have left" quantities follow the product word and the unit of each product.

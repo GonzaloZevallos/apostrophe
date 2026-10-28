@@ -207,3 +207,33 @@ Success criteria:
 - Redesigning the bot settings or the header and footer editing.
 - A VIP price in the catalog, or a separate catalog for VIP customers.
 - Listing archived varieties on the catalog screen.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### The catalog template (ADR-0054; a later part of GH-318)
+
+- The blocks, the lines and their order between the header and footer will be the business's own, kept per business. A new business starts with name and price, and the header "**CATALOG**".
+- It will replace: "**Layout**: header, then one block per qualifying variety sorted by name, then footer." and the fixed lines "`• Price per gram: <money>`" and "`• From <grams>: <money> each`".
+
+### Attributes shown in the catalog (ADR-0054; a later part of GH-318)
+
+- The attributes a subcategory defines, for each field whether it shows in the catalog, will take the place of the three fixed ones. Emoji, indica share and aroma become attributes of the migrated business's one subcategory, with today's catalog text unchanged for it. An archived attribute's line leaves the catalog and its values are kept. Whether a product is hidden stays a flag on the product.
+- It will replace: "### Catalog attributes, per variety" (**Emoji**, **Indica share**, **Aroma/flavor**) and "**Shown**: yes or no."
+
+### Money format (ADR-0057; a later part of GH-318)
+
+- The catalog's money format will follow the business's currency symbol and money decimals.
+- It will replace: "**Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`." and "Money and grams formats are the same in every language."
+
+### The product word and the unit (ADR-0054, ADR-0055, ADR-0060; a later part of GH-318)
+
+- The catalog, the bot and the reports will use the seller's product word, shown as typed and never translated, and each product's unit label in place of "g".
+- It will replace: "Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`)." and, in Out of scope, "A custom variety order."
+
+### The business day (ADR-0056; a later part of GH-318)
+
+- It will replace: "has a current price today in Argentina time".
