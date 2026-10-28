@@ -20,7 +20,11 @@ fi
 PLAYWRIGHT_OUTPUT_DIR="test-results/$(git rev-parse --short HEAD 2>/dev/null || echo nogit)-$(date -u +%Y%m%dT%H%M%SZ)"
 export PLAYWRIGHT_OUTPUT_DIR
 
-npx vite build || exit 1
+# CI builds `dist` once in its own job and hands it to every shard: E2E_DIST_READY=1 skips the
+# build here and nothing else changes. Unset, the run builds as always.
+if [ "${E2E_DIST_READY:-}" != "1" ]; then
+  npx vite build || exit 1
+fi
 
 npx playwright test "$@"
 status=$?
