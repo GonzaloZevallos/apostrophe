@@ -243,7 +243,7 @@ Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whate
 
 Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
 
-- Sales, costs, Profit and Cash will keep their definitions and be worked out from amounts stored at the business's scale; half-up rounding will go through `round_half_up`, which the money part creates in `app/shared/money.py`. Raising a business's money decimals leaves every figure equal in value.
+- Sales, costs, Profit and Cash will keep their definitions and be worked out from amounts stored at the business's scale; half-up rounding will go through `round_half_up`, which the money part creates in `app/shared/money.py`. Raising a business's money decimals will leave every figure equal in value.
 - It will replace: "**Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales."
 
 ### The business day
