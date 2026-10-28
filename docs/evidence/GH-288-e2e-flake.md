@@ -158,8 +158,8 @@ test (the Cause's fix) and the guard `architecture/e2eToastRule.test.ts` changed
 **Gate timeouts on `web-e2e`.** The delivery gate's `npm --prefix web run e2e` was cut off at 1500 s on
 `86dbc93d` and `4b159a40`, every test it printed green, while the host's load average was 22 to 23 (other
 worktrees' Playwright runs). The mobile walk cells took about 4.7 min each; `web/playwright.config.ts`
-(the comment above the `mobile` project) records 239 to 246 s for them at 3 workers on two cores, so
-the slow part is the walk under load, not this branch. This branch's only change on that path is
+(the comment above the `mobile` project) records 239 to 246 s for them at 3 workers on two cores and 294 to 305 s on a loaded 16-core box, so
+the 4.7 min seen (about 282 s) is inside the loaded range and the slow part is the walk under load, not this branch. This branch's only change on that path is
 `withToastRecorder` around `newContext` in `web/e2e/mobile/cells.ts`; the recorder does constant work
 per mutation record (`matches`, `querySelectorAll` on added nodes, `closest`). Not measured: local e2e is
 off, so this is read from the code and the config. `11dc1586` passed the full run in 995.6 s.
