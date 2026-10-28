@@ -55,7 +55,7 @@ Method: `npx playwright test e2e/panel.spec.ts --workers=3 --trace on` (the file
 
 Four runs, not 20: the loop stopped once a failure classified, and the machine was too loaded to go on
 (run 4 never started). Run 3 timing out later shows the loaded runs measure nothing about the step
-itself. **The five loaded runs measure no rate**: a count of reds out of these runs says nothing about how
+itself. **The four loaded runs measure no rate**: a count of reds out of these runs says nothing about how
 often the flake happens.
 
 Instrumentation (local, uncommitted, **reverted**; `git status` shows only the fix, its test and `docs/**`):
@@ -114,5 +114,30 @@ changed.
 
 ## Kept sites and proofs
 
-To fill in by the guard and migration subtask (the kept-sites list with reasons; the throttled
-red/green on "Entry saved"; the five smoke runs).
+The guard (`web/src/architecture/e2eToastRule.test.ts`) prints, from `npm --prefix web test -- e2eToastRule`:
+
+```
+e2eToastRule: 27 sites observed in the page, 4 kept on page text, 87 pending
+```
+
+`panel.spec.ts`, `flow.spec.ts`, `sales.spec.ts`, `helpers/seed.ts` and `helpers/ledger.ts` are migrated
+(27 `expectToast` calls in those five files; the recorder's own spec is not counted). The 87 sites in the other specs wait on `PENDING` for parts 2 and 3; the list only shrinks.
+
+Kept on page text, with the reason (each is also a `KEPT` line in the guard):
+
+| Site | Text | Reason |
+|---|---|---|
+| `flow.spec.ts:50` | Customer saved | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
+| `panel.spec.ts:210` | Customer saved | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
+| `flow.spec.ts:176` | Category saved | `.aviso-toast`: the recorder does not watch the category toasts |
+| `flow.spec.ts:180` | Category deleted | `.aviso-toast`: the recorder does not watch the category toasts |
+
+Not flagged and left alone: "Sale saved" and "Sale deleted" (`.venta-guardada`, not in `SuccessToast`).
+One migrated step replaced by a comment: the second "Expense saved" in `flow.spec.ts` (editing the
+expense opens in place on the list, no route changes, so a repeated identical toast cannot be told
+from the first; the row assertion that follows stays).
+
+**Not run here.** The owner suspended local e2e runs (PR #434, and the human decision recorded on this
+task): the throttled red/green on "Entry saved" and the five smoke runs of `npm --prefix web run e2e`
+were not made. The e2e evidence for the migrated steps comes from the pull request's GitHub CI, where
+e2e runs sharded; a red there is a finding to fix. Nothing in this section measures a rate.
