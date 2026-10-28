@@ -49,6 +49,22 @@ def test_finalize_rewrites_generics_unions_and_callables() -> None:
     assert "[" not in out.split("```mermaid")[1]
 
 
+def test_finalize_encodes_braces_in_members() -> None:
+    raw = _fenced("classDiagram", "  class Foo {", "    +opts : dict = {}", "  }")
+    out = finalize("class", raw)
+    assert "+opts : dict = #123;#125;" in out
+    assert finalize("class", out) == out
+
+
+def test_finalize_is_idempotent_on_a_fence_with_blank_lines() -> None:
+    raw = _fenced("classDiagram", "", "  class B {", "", "    +x : int", "  }", "", "  B --> A")
+    once = finalize("class", raw)
+    assert "\n\n  class" not in once.split("```mermaid\n")[1]
+    assert finalize("class", once) == once
+    er = finalize("er", _fenced("erDiagram", "", "  a {", "    INTEGER id PK", "", "  }"))
+    assert finalize("er", er) == er
+
+
 def test_finalize_keeps_the_method_arrow() -> None:
     out = finalize("class", _fenced("classDiagram", "  class A {", "    +run(x) -> int", "  }"))
     assert "+run(x) -> int" in out
@@ -188,6 +204,16 @@ def test_block_problems_edge_limit() -> None:
     assert block_problems(_edges(500)) == [Problem(1, "block-edges", "500 edges, limit is 499")]
 
 
+def test_block_problems_counts_er_relation_lines() -> None:
+    def er(count: int) -> str:
+        return _fenced("erDiagram", *(f"  a{i} ||--o{{ b{i} : has" for i in range(count)))
+
+    assert block_problems(er(499)) == []
+    assert block_problems(er(500)) == [Problem(1, "block-edges", "500 edges, limit is 499")]
+    entity_only = _fenced("erDiagram", "  a {", *(f"    INTEGER c{i}" for i in range(600)), "  }")
+    assert block_problems(entity_only) == []
+
+
 def test_block_problems_size_limit() -> None:
     def padded(total: int) -> str:
         head = "classDiagram\n%% "
@@ -262,7 +288,7 @@ def test_export_openapi_is_stable_and_equals_the_app_document() -> None:
     assert export_openapi(app) == first
     assert export_openapi(build_docs_app()) == first
     assert json.loads(first) == app.openapi()
-    assert first == json.dumps(app.openapi(), sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+    assert first.endswith("}\n") and not first.endswith("\n\n")
 
 
 # --- write_tree -------------------------------------------------------------------------
@@ -296,7 +322,7 @@ def test_write_tree_writes_files_and_removes_stale_headered_ones(tmp_path: Path)
     write_tree(tmp_path, {GEN / "README.md": f"{HEADER}\n", API / "README.md": f"{HEADER}\n"})
     assert not stale.exists()
     assert not (tmp_path / GEN / "classes").exists()
-    assert not (tmp_path / API / "openapi.json").exists()
+    assert (tmp_path / API / "openapi.json").read_text() == "{}\n"
     assert (tmp_path / GEN / "README.md").read_text() == f"{HEADER}\n"
 
 

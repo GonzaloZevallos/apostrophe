@@ -8,7 +8,6 @@ from pathlib import Path, PurePosixPath
 from scripts.docs.text import HEADER
 
 OWNED_ROOTS = (PurePosixPath("docs/architecture/generated"), PurePosixPath("docs/api"))
-OPENAPI_PATH = PurePosixPath("docs/api/openapi.json")
 
 
 def _owned(path: PurePosixPath) -> bool:
@@ -29,8 +28,8 @@ def write_tree(repo_root: Path, outputs: Mapping[PurePosixPath, str]) -> None:
 
     Raises `ValueError` before writing anything if a key is outside `docs/architecture/generated/`
     and `docs/api/`. Files are written in sorted path order. Under the two roots a file the
-    run did not produce is deleted only if it starts with `HEADER`, or is exactly
-    `docs/api/openapi.json`. Nothing outside the roots is touched.
+    run did not produce is deleted only if it starts with `HEADER`: a file without it,
+    `docs/api/openapi.json` included, survives. Nothing outside the roots is touched.
     """
     refused = sorted(str(path) for path in outputs if not _owned(path))
     if refused:
@@ -47,7 +46,7 @@ def write_tree(repo_root: Path, outputs: Mapping[PurePosixPath, str]) -> None:
             relative = PurePosixPath(found.relative_to(repo_root).as_posix())
             if not found.is_file() or relative in outputs:
                 continue
-            if relative == OPENAPI_PATH or _has_header(found):
+            if _has_header(found):
                 found.unlink()
         for directory in sorted((d for d in base.rglob("*") if d.is_dir()), reverse=True):
             if not any(directory.iterdir()):
