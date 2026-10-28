@@ -18,8 +18,8 @@ from app.catalog.application.ports import (
     CatalogWordsSource,
 )
 from app.catalog.domain.attributes import CatalogAttributes
-from app.catalog.domain.text import CatalogEntry, catalog_text, pinned_catalog_text
 from app.catalog.domain.product import CatalogPrice, CatalogState, catalog_state
+from app.catalog.domain.text import CatalogEntry, catalog_text, pinned_catalog_text
 
 
 @dataclass(frozen=True)

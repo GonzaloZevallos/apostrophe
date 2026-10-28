@@ -14,11 +14,11 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
+from app.products.adapters.import_port import ProductsImport
 from app.shared.quantity import Quantity
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, VarietyKey
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
-from app.products.adapters.import_port import ProductsImport
 
 REF = SheetRef(sheet="Ajustes", row=37)
 

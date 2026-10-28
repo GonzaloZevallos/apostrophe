@@ -14,11 +14,11 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.products.adapters.tables import ProductRow
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.ports import LineCost
 from app.shared.quantity import Quantity
 from app.stock.adapters.line_costs import SqlLineCosts
-from app.products.adapters.tables import ProductRow
 
 
 def _variety_id(client: TestClient, list_price: int = 10_000) -> int:

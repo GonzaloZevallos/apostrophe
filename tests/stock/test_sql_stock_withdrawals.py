@@ -9,12 +9,12 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.products.adapters.tables import ProductRow
 from app.shared.quantity import Quantity
 from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.tables import StockWithdrawalLineRow
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
-from app.products.adapters.tables import ProductRow
 
 AT = datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
 DAY = date(2026, 10, 1)

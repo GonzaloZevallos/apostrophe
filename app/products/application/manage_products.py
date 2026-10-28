@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Literal
 
-from app.shared.transaction import Transaction
 from app.products.application.errors import (
     NameHeldByArchived,
     NameTaken,
@@ -9,8 +8,9 @@ from app.products.application.errors import (
     ProductHasHistory,
     ProductNotFound,
 )
-from app.products.application.ports import Products, ProductLeaving
+from app.products.application.ports import ProductLeaving, Products
 from app.products.domain.product import NameHolder, Product, ProductName
+from app.shared.transaction import Transaction
 
 
 def register_product(products: Products, transaction: Transaction, raw_name: str) -> Product:
@@ -92,9 +92,7 @@ def delete_product(
     transaction.commit()
 
 
-def removal_offered(
-    products: Products, product: Product
-) -> Literal["delete", "archive"] | None:
+def removal_offered(products: Products, product: Product) -> Literal["delete", "archive"] | None:
     """`None` for an archived variety; otherwise the one removal its page offers."""
     if product.is_archived:
         return None

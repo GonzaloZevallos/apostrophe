@@ -9,8 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.catalog.domain.attributes import CatalogAttributes
-from app.catalog.domain.text import CatalogEntry
 from app.catalog.domain.product import CatalogPrice
+from app.catalog.domain.text import CatalogEntry
 from app.shared.quantity import Quantity
 
 

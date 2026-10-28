@@ -2,12 +2,12 @@ from sqlalchemy import ColumnElement, delete, exists, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import flush_or_refuse
+from app.products.adapters.tables import PriceEntryRow, ProductRow
+from app.products.domain.product import NameHolder, PriceEntry, Product, ProductName
 from app.sales.adapters.tables import SaleLineRow
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.stock.adapters.tables import StockEntryRow, StockWithdrawalLineRow
-from app.products.adapters.tables import PriceEntryRow, ProductRow
-from app.products.domain.product import NameHolder, PriceEntry, Product, ProductName
 
 
 class SqlProducts:

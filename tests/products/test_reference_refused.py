@@ -13,6 +13,9 @@ import pytest
 from sqlalchemy.orm import Session
 
 from app.db import flush_or_refuse
+from app.products.application import manage_prices
+from app.products.application.errors import ProductArchived, ProductNotFound
+from app.products.domain.product import NameHolder, Product, ProductName
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import PriceQuote, VarietyPricing
 from app.sales.domain.sale import Sale, UnknownVariety
@@ -23,9 +26,6 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyArchived as StockArchived
 from app.stock.application.errors import VarietyNotFound as StockNotFound
 from app.stock.domain.entry import Origin, StockEntry
-from app.products.application import manage_prices
-from app.products.application.errors import ProductArchived, ProductNotFound
-from app.products.domain.product import NameHolder, Product, ProductName
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)

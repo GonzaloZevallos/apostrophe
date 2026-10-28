@@ -12,8 +12,8 @@ from sqlalchemy import event, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.stock.adapters.stock_figures import SqlStockFigures
 from app.products.adapters.tables import ProductRow
+from app.stock.adapters.stock_figures import SqlStockFigures
 from tests.conftest import TODAY
 
 

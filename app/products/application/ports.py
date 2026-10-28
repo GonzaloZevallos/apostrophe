@@ -1,7 +1,7 @@
 from typing import Protocol
 
-from app.shared.pricing_settings import PricingSettings
 from app.products.domain.product import NameHolder, Product, ProductName
+from app.shared.pricing_settings import PricingSettings
 
 
 class Products(Protocol):
@@ -28,9 +28,7 @@ class Products(Protocol):
 
     def save(self, product: Product) -> Product: ...
 
-    def name_holder(
-        self, name: ProductName, *, other_than: int | None = None
-    ) -> NameHolder | None:
+    def name_holder(self, name: ProductName, *, other_than: int | None = None) -> NameHolder | None:
         """Who holds `name` in this business, archived varieties included."""
         ...
 

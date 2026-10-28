@@ -16,11 +16,11 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.sales.domain.pricing import BulkQuote, PriceQuote, VarietyPricing
-from app.spreadsheet_import.domain.rows import PriceHistoryRow
 from app.products.adapters.sql_products import SqlProducts
 from app.products.adapters.tables import PriceEntryRow
 from app.products.domain.product import PriceEntry, Product, ProductName, ProductRuleBroken
+from app.sales.domain.pricing import BulkQuote, PriceQuote, VarietyPricing
+from app.spreadsheet_import.domain.rows import PriceHistoryRow
 
 
 class SqlPriceBook:

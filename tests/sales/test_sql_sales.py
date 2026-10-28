@@ -15,12 +15,12 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
+from app.products.adapters.tables import ProductRow
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import PriceQuote, PricingRule
 from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, PaymentMethod, Sale
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
-from app.products.adapters.tables import ProductRow
 
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)

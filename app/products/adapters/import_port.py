@@ -16,9 +16,6 @@ from collections.abc import Mapping, Sequence
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.shared.transaction import Transaction
-from app.spreadsheet_import.application.ports import Refusal, VarietyKey
-from app.spreadsheet_import.domain.rows import PriceHistoryRow
 from app.products.adapters.sql_products import SqlProducts
 from app.products.adapters.tables import PriceEntryRow, ProductRow
 from app.products.application.manage_prices import record_imported_price_entry
@@ -31,6 +28,9 @@ from app.products.domain.product import (
     ProductName,
     ProductRuleBroken,
 )
+from app.shared.transaction import Transaction
+from app.spreadsheet_import.application.ports import Refusal, VarietyKey
+from app.spreadsheet_import.domain.rows import PriceHistoryRow
 
 
 class ProductsImport:

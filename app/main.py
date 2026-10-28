@@ -59,6 +59,8 @@ from app.pinned_catalog.application.push import BusinessLocks
 from app.pricing_settings.adapters.opening import PricingSettingsOpening
 from app.pricing_settings.adapters.router import router as pricing_settings_router
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
+from app.products.adapters.onboarding_facts import SqlProductFacts
+from app.products.adapters.router import router as products_router
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -73,8 +75,6 @@ from app.stock.adapters.onboarding_facts import SqlStockFacts
 from app.stock.adapters.purchases import SqlPurchases
 from app.stock.adapters.router import router as stock_router
 from app.stock.adapters.stock_figures import SqlStockFigures
-from app.products.adapters.onboarding_facts import SqlProductFacts
-from app.products.adapters.router import router as products_router
 
 
 class _Opening(Protocol):

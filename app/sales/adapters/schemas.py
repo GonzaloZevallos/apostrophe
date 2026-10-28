@@ -8,12 +8,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from app.products.adapters.schemas import QuantityOut
 from app.sales.application.ports import LineCost, SaleView, SaleViewCustomer, SaleViewLine
 from app.sales.application.view_sales import SaleDetail
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import PaymentMethod, Sale
 from app.sales.domain.sale_bill import BillPayment, BillRule, BillState, SaleBill, SaleBillLine
-from app.products.adapters.schemas import QuantityOut
 
 # "Owing" and "none" are adapter-only words for a sale with no `OnTheSpotPayment`;
 # `PaymentMethod` is still the only declaration of the methods themselves (cash,

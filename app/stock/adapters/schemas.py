@@ -10,13 +10,13 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.products.adapters.schemas import QuantityOut
 from app.stock.application.manage_withdrawals import Movement, WithdrawalView
 from app.stock.application.ports import WithdrawalMovement
 from app.stock.application.read_stock import StockView, VarietyStock
 from app.stock.domain.costing import cost_per_gram
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
-from app.products.adapters.schemas import QuantityOut
 
 # The four values `stock_level` (stock-domain) answers; declared here so every
 # subtask that reads or writes a status reads the one literal type, never a bare str.

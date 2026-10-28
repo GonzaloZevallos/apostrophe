@@ -4,18 +4,18 @@ from datetime import UTC, date, datetime
 
 import pytest
 
-from app.shared.quantity import Quantity
 from app.products.domain.product import (
     DuplicateEffectiveDate,
     InvalidName,
     InvalidPriceEntry,
     PriceEntry,
-    UnknownPriceEntry,
     Product,
     ProductArchived,
     ProductName,
+    UnknownPriceEntry,
     VipPriceNotBelowList,
 )
+from app.shared.quantity import Quantity
 
 
 def test_a_name_is_trimmed_and_its_inner_spaces_collapsed() -> None:

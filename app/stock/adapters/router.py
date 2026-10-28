@@ -8,6 +8,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.products.application.errors import ProductArchived, ProductNotFound
 from app.shared.quantity import InvalidQuantity, Quantity
 from app.stock.adapters.schemas import (
     EntryIn,
@@ -48,7 +49,6 @@ from app.stock.domain.errors import (
     WithdrawalVarietyNotFound,
 )
 from app.stock.domain.threshold import ThresholdInvalid
-from app.products.application.errors import ProductArchived, ProductNotFound
 
 router = APIRouter(prefix="/stock", tags=["stock"])
 entries_router = APIRouter(prefix="/entries")

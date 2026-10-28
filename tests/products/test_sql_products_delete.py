@@ -17,6 +17,10 @@ from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.domain.attributes import CatalogAttributes
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
+from app.products.adapters.sql_products import SqlProducts
+from app.products.application import manage_prices, manage_products
+from app.products.application.errors import ProductHasHistory, ProductNotFound
+from app.products.domain.product import PriceEntry, Product, ProductName
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
@@ -33,10 +37,6 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyNotFound as StockVarietyNotFound
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.threshold import Threshold
-from app.products.adapters.sql_products import SqlProducts
-from app.products.application import manage_prices, manage_products
-from app.products.application.errors import ProductHasHistory, ProductNotFound
-from app.products.domain.product import PriceEntry, Product, ProductName
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)

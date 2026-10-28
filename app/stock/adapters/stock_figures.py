@@ -21,6 +21,7 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
+from app.products.adapters.sql_products import SqlProducts
 from app.results.application.ports import StockFiguresAnswer, StockRow
 from app.stock.adapters.draw_rows import build_draw_rows
 from app.stock.adapters.sql_draws import SqlDraws
@@ -29,7 +30,6 @@ from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.sql_thresholds import SqlThresholds
 from app.stock.application.history import history
 from app.stock.domain.stock_level import stock_level
-from app.products.adapters.sql_products import SqlProducts
 
 
 class SqlStockFigures:

@@ -22,6 +22,7 @@ from sqlalchemy.sql.elements import ColumnElement
 from app.customers.adapters.tables import CustomerRow
 from app.db import flush_or_refuse
 from app.payments.adapters.tables import PaymentRow
+from app.products.adapters.tables import ProductRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 from app.sales.application.ports import SaleView, SaleViewCustomer, SaleViewLine
 from app.sales.domain.pricing import PricingRule
@@ -33,7 +34,6 @@ from app.sales.domain.sale import (
     SaleLine,
 )
 from app.shared.quantity import Quantity
-from app.products.adapters.tables import ProductRow
 
 
 class SqlSales:

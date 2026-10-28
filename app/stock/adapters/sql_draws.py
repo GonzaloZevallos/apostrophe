@@ -17,10 +17,10 @@ from collections.abc import Collection
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.products.adapters.tables import ProductRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 from app.shared.quantity import Quantity
 from app.stock.domain.lot_order import SaleLineDraw
-from app.products.adapters.tables import ProductRow
 
 
 class SqlDraws:

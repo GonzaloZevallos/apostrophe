@@ -16,8 +16,8 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.products.adapters.tables import ProductRow
+from app.stock.adapters.draw_costs import SqlDrawCosts
 
 
 def _variety_id(client: TestClient, name: str, list_price: int = 10_000) -> int:

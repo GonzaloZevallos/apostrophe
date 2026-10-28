@@ -9,7 +9,6 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
-from app.shared.quantity import InvalidQuantity, Quantity
 from app.products.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
@@ -28,11 +27,12 @@ from app.products.application.errors import (
 from app.products.application.ports import PricingSettingsReader, ProductLeaving
 from app.products.domain.product import (
     DuplicateEffectiveDate,
-    UnknownPriceEntry,
     ProductArchived,
     ProductRuleBroken,
+    UnknownPriceEntry,
     VipPriceNotBelowList,
 )
+from app.shared.quantity import InvalidQuantity, Quantity
 
 router = APIRouter(prefix="/varieties", tags=["varieties"])
 
@@ -127,7 +127,9 @@ def rename_variety(
     today: TodayDep,
 ) -> VarietyOut:
     with as_http:
-        product = manage_products.rename_product(products, session, product_id=variety_id, raw_name=body.name)
+        product = manage_products.rename_product(
+            products, session, product_id=variety_id, raw_name=body.name
+        )
         return VarietyOut.of(product, today)
 
 
@@ -140,7 +142,9 @@ def archive_variety(
     clock: ClockDep,
 ) -> VarietyOut:
     with as_http:
-        product = manage_products.archive_product(products, session, product_id=variety_id, at=clock())
+        product = manage_products.archive_product(
+            products, session, product_id=variety_id, at=clock()
+        )
         return VarietyOut.of(product, today)
 
 
@@ -189,7 +193,9 @@ def delete_price_entry(
     variety_id: int, entry_id: int, products: ProductsDep, session: SessionDep
 ) -> None:
     with as_http:
-        manage_prices.delete_price_entry(products, session, product_id=variety_id, entry_id=entry_id)
+        manage_prices.delete_price_entry(
+            products, session, product_id=variety_id, entry_id=entry_id
+        )
 
 
 @router.get("/{variety_id}/current-price")

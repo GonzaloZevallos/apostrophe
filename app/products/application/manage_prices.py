@@ -1,12 +1,12 @@
 from datetime import date
 
-from app.shared.quantity import Quantity
-from app.shared.reference import ReferenceRefused
-from app.shared.transaction import Transaction
 from app.products.application.errors import ProductArchived
 from app.products.application.manage_products import get_product
 from app.products.application.ports import PricingSettingsReader, Products
 from app.products.domain.product import PriceEntry, Product
+from app.shared.quantity import Quantity
+from app.shared.reference import ReferenceRefused
+from app.shared.transaction import Transaction
 
 
 def record_price_entry(

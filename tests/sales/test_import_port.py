@@ -15,6 +15,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
+from app.products.adapters.import_port import ProductsImport
 from app.sales.adapters.import_port import SalesImport
 from app.sales.adapters.price_book import PlannedPriceBook
 from app.sales.adapters.sql_sales import SqlSales
@@ -25,7 +26,6 @@ from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
-from app.products.adapters.import_port import ProductsImport
 
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
