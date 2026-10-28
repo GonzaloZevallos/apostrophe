@@ -36,9 +36,9 @@ export interface SheetProps {
   label?: string
   /** Whether the form holds something typed: the host's `dirty`, the one `useLeaveGuard` reads. */
   touched: boolean
-  /** A click on the computer backdrop itself, while untouched. */
   /** A role the computer frame keeps (the in-page edit `.capa` is `presentation`). */
   computerFrameRole?: 'presentation'
+  /** A click on the computer backdrop itself, while untouched. */
   onClose: () => void
   /** The control that takes focus on a phone, instead of the first one. */
   initialFocus?: RefObject<HTMLElement | null>
