@@ -48,6 +48,14 @@ export default defineConfig({
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.
     exclude: CONFIG_EXCLUDE,
+    // Off unless `--coverage` is passed (CI's `web` job): a local `npm test` measures nothing.
+    // `json-summary` is what scripts/ci_coverage.py reads; `lcov` is the uploaded artefact.
+    coverage: {
+      provider: 'v8',
+      include: ['src/**'],
+      reporter: ['json-summary', 'lcov'],
+      reportsDirectory: 'coverage',
+    },
     // Vitest turns every `.css` import into an empty module, `?raw` ones included, so
     // the architecture tests that read stylesheets as text (`import.meta.glob(...,
     // { query: '?raw' })`) saw '' and passed on nothing. Only `?raw` loads are let
