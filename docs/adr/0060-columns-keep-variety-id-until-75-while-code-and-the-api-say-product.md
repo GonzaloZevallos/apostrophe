@@ -5,8 +5,8 @@ date: 2026-10-25
 
 # Columns keep variety_id until #75 while code and the API say Product
 
-GH-318 part 1. Epic GH-318 lets a business call what it sells anything it likes (CONTEXT.md:
-Product word). This records which names change in code and which stay, so the epic's parts agree
+GH-318 part 1. Epic GH-318 lets a business call what it sells anything it likes (the PRD's "Product word" section
+in `docs/product/business-configuration.md`; the glossary's **Product** entry names the code word). This records which names change in code and which stay, so the epic's parts agree
 before any of them builds. It changes no behaviour and amends no earlier ADR.
 
 ## What the PRD says
