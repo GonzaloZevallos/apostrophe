@@ -26,6 +26,8 @@ dev = [
     "pyyaml",
     "types-PyYAML",
     "types-openpyxl",
+    "pylint==4.1.3",
+    "paracelsus==0.15.0",
 ]
 
 [tool.pytest.ini_options]

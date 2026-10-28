@@ -101,28 +101,30 @@ def _edge_lines(body: Sequence[str]) -> list[str]:
     return edges
 
 
-def block_problems(text: str) -> list[Problem]:
+def block_problems(
+    text: str, max_chars: int = MAX_BLOCK_CHARS, max_edges: int = MAX_BLOCK_EDGES
+) -> list[Problem]:
     """The mermaid blocks of `text` that are too big to render.
 
-    A block whose body (the text between its fences, lines joined by `\\n`) is 50,000
-    characters or more is rule `block-size`. A block with 500 or more edges is rule
-    `block-edges`; an edge is a line outside any class or entity group that carries a
-    relation arrow (`--` or `..` with its heads), so a member typed `Callable[..., T]`
-    is not one.
+    A block whose body (the text between its fences, lines joined by `\\n`) is `max_chars`
+    (50,000) characters or more is rule `block-size`. A block with `max_edges` (500) or
+    more edges is rule `block-edges`; an edge is a line outside any class or entity group
+    that carries a relation arrow (`--` or `..` with its heads), so a member typed
+    `Callable[..., T]` is not one.
     """
     lines = text.split("\n")
     problems: list[Problem] = []
     for number, (start, end) in enumerate(_fences(lines), start=1):
         body = lines[start:end]
         size = len("\n".join(body))
-        if size >= MAX_BLOCK_CHARS:
+        if size >= max_chars:
             problems.append(
-                Problem(number, "block-size", f"{size} characters, limit is {MAX_BLOCK_CHARS - 1}")
+                Problem(number, "block-size", f"{size} characters, limit is {max_chars - 1}")
             )
         edges = len(_edge_lines(body))
-        if edges >= MAX_BLOCK_EDGES:
+        if edges >= max_edges:
             problems.append(
-                Problem(number, "block-edges", f"{edges} edges, limit is {MAX_BLOCK_EDGES - 1}")
+                Problem(number, "block-edges", f"{edges} edges, limit is {max_edges - 1}")
             )
     return problems
 
