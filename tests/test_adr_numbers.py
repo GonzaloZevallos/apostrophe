@@ -91,7 +91,12 @@ _JOINED_PREFIX = re.compile(r"(docs/adr/|ADR-) (?=[0-9]{4})")
 
 # The agentic development system has ADRs of its own, numbered separately; a citation
 # preceded by one of these names that system's record, not this repository's.
-FOREIGN_ADR_PREFIXES = ("agentic-system, ", "agentic system's ", "agentic system, ")
+FOREIGN_ADR_PREFIXES = (
+    "agentic-system, ",
+    "agentic-system ",
+    "agentic system's ",
+    "agentic system, ",
+)
 
 # Records of their day: they cite ADRs by the numbers those had then, and are never
 # edited to satisfy this check.
