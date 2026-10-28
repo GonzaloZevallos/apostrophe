@@ -45,7 +45,9 @@ change affects, the suites run in parallel, and one job says whether the pull re
   push queues behind it; the newer run selects everything, so nothing goes untested.
 - **Acceptance that needs GitHub.** The coverage baseline (`docs/coverage-baseline.md`), the wall time
   against the old single job and the green `ci-ok` / sharded e2e runs come from the first full run on the
-  task's pull request; they are not written before it exists.
+  task's pull request; they are not written before it exists. The baseline is the Markdown
+  `scripts/ci_coverage.py` rendered for that run, committed as it is; until it exists the output says so and
+  compares nothing.
 - **Coverage is reported, not enforced.** Totals come from `scripts/ci_coverage.py` alone. No threshold.
 
 ## Rejected
