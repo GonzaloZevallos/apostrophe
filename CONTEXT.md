@@ -29,7 +29,7 @@ _Avoid_: product, strain, item, SKU
 _In the app_: Variety
 
 **Price entry**:
-A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. _In the app_: Price (price history).
+A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. Planned in GH-318 (not yet in the code): a customer type's price becomes a separate effective-dated row, and the price entry keeps its VIP price as it is, frozen; the customer-type prices part builds it (docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md). _In the app_: Price (price history).
 _Avoid_: price change, price update, tariff
 _In the app_: Price (price history)
 
@@ -406,7 +406,7 @@ Finding the seller's own chat number among the private chats that wrote to the b
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. _In the app_: VIP price.
+An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. Planned in GH-318 (not yet in the code): customer-type prices replace it for new writes, and the stored VIP prices and VIP marks stay in place, frozen with the values they hold; the customer-type prices part builds it (docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md). _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
@@ -508,3 +508,51 @@ _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 **Sale bill**:
 The facts about one recorded sale that a seller may share with that sale's customer: business name, date, shipping charged, total, lines, payment state and the customer's current balance. They are worked out live from settlement when the sale's detail is read, and never stored; the balance is the customer's whole current account. A bill is facts only, with no text; in the app it has no word of its own yet (part 2 of GH-322 chooses it).
 _Avoid_: invoice, receipt, statement, ticket
+
+## Planned in GH-318 (not yet in the code)
+
+These terms are not entries of the present glossary. Code, tests and screens keep the present terms until the part named on each line ships; only that part moves its term into the glossary proper and amends the entry it replaces. Each line gives the term, the ADR that decides it, and its owning part by capability.
+
+**Product**:
+What a business sells, in code and in the API, whatever the business calls it on screen; it replaces Variety in code, and the columns that reference it stay `variety_id` until #75. Decided in docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; owned by the Product rename on the wire.
+_Avoid_: item, SKU, article
+
+**Unit**:
+How a business measures a product: a label and 0 to 2 decimals that only validate input and decide display. Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; owned by the units part.
+_Avoid_: measure, UoM
+
+**Quantity, in hundredths of a unit**:
+A stored quantity of any unit, always a whole number of hundredths. Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; owned by the units part.
+_Avoid_: amount, grams
+
+**Business time zone**:
+The zone that decides when a business's day starts and ends; every existing business is given Argentina's. Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; owned by the time-zone part.
+_Avoid_: locale, region
+
+**Money scale**:
+Whether a business stores its money in whole currency units (0) or in hundredths (2); existing businesses stay at 0 and new ones start at 2. Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; owned by the money part.
+_Avoid_: precision, cents mode
+
+**Money format**:
+The currency symbol and the decimals a business shows its money with. Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; owned by the money part.
+_Avoid_: currency settings
+
+**Customer type**:
+A seller-defined kind of customer, at most one per customer, that can have its own price. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the customer types part.
+_Avoid_: tier, segment, group
+
+**Customer-type price**:
+The price a customer type pays for a product, an effective-dated row. Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; owned by the customer-type prices part.
+_Avoid_: tier price, discount
+
+**Payment method**:
+A seller-defined way a customer pays. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the payment methods part.
+_Avoid_: payment type, channel
+
+**Applied promotion**:
+A promotion as a sale stood when it was saved, recorded as typed rows and never recomputed. Decided in docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; owned by the promotions-at-sale-time part, which also settles how it differs from a promotion.
+_Avoid_: discount line, coupon
+
+**Product word**:
+What a business calls its products on screen. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the product word part.
+_Avoid_: label, noun setting
