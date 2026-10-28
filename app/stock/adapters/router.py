@@ -53,7 +53,7 @@ from app.stock.domain.threshold import ThresholdInvalid
 router = APIRouter(prefix="/stock", tags=["stock"])
 entries_router = APIRouter(prefix="/entries")
 withdrawals_router = APIRouter(prefix="/withdrawals")
-products_router = APIRouter(prefix="/varieties")
+varieties_router = APIRouter(prefix="/varieties")
 
 SessionDep = Annotated[Session, Depends(get_session)]
 TodayDep = Annotated[date, Depends(get_today)]
@@ -292,7 +292,7 @@ def get_stock(
     return StockOut.of(view)
 
 
-@products_router.put("/{variety_id}/threshold")
+@varieties_router.put("/{variety_id}/threshold")
 def set_threshold(
     variety_id: int,
     body: ThresholdIn,
@@ -323,7 +323,7 @@ def set_threshold(
         return VarietyStockOut.of(view)
 
 
-@products_router.get("/{variety_id}/movements")
+@varieties_router.get("/{variety_id}/movements")
 def get_movements(
     variety_id: int,
     entries: EntriesDep,
@@ -340,4 +340,4 @@ def get_movements(
 
 router.include_router(entries_router)
 router.include_router(withdrawals_router)
-router.include_router(products_router)
+router.include_router(varieties_router)
