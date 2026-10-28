@@ -24,7 +24,7 @@ from pydantic import BaseModel
 from app.results.application.ports import DebtorRow, StockRow
 from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
 from app.stock.adapters.schemas import VarietyStockOut
-from app.varieties.adapters.schemas import QuantityOut
+from app.products.adapters.schemas import QuantityOut
 
 
 class PanelVarietyOut(VarietyStockOut):

@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from app.catalog.domain.attributes import CatalogAttributes
-from app.catalog.domain.variety import CatalogPrice
+from app.catalog.domain.product import CatalogPrice
 from app.catalog.domain.words import CatalogWords
 from app.shared.quantity import Quantity
 

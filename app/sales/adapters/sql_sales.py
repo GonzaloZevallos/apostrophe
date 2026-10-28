@@ -33,7 +33,7 @@ from app.sales.domain.sale import (
     SaleLine,
 )
 from app.shared.quantity import Quantity
-from app.varieties.adapters.tables import VarietyRow
+from app.products.adapters.tables import ProductRow
 
 
 class SqlSales:
@@ -210,11 +210,11 @@ class SqlSales:
         if not sale_ids:
             return {}
         statement = (
-            select(SaleLineRow, VarietyRow.name)
+            select(SaleLineRow, ProductRow.name)
             .join(
-                VarietyRow,
-                (VarietyRow.id == SaleLineRow.variety_id)
-                & (VarietyRow.business_id == self._business_id),
+                ProductRow,
+                (ProductRow.id == SaleLineRow.variety_id)
+                & (ProductRow.business_id == self._business_id),
             )
             .where(
                 SaleLineRow.business_id == self._business_id,

@@ -17,7 +17,7 @@ class CatalogVarietyNotFound(LookupError):
 class CatalogVarietyArchived(LookupError):
     """The variety exists but is archived, so its attributes are read-only. Code-less
     internal signal: `variety.archived` belongs to one class system-wide
-    (`app.varieties.application.errors.VarietyArchived`) and this application layer
+    (`app.products.application.errors.ProductArchived`) and this application layer
     cannot import it, so the router raises that class in its place."""
 
     def __init__(self, variety_id: int) -> None:

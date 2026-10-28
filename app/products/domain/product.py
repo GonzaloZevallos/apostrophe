@@ -17,44 +17,44 @@ from app.shared.quantity import Quantity
 NAME_MAX_LENGTH = 60
 
 
-class VarietyRuleBroken(ValueError):
+class ProductRuleBroken(ValueError):
     """A rule of varieties and their prices was broken; the message says which."""
 
     code: ClassVar[str] = "variety.rule_broken"
 
 
-class InvalidName(VarietyRuleBroken):
+class InvalidName(ProductRuleBroken):
     code: ClassVar[str] = "variety.name_invalid"
 
 
-class InvalidPriceEntry(VarietyRuleBroken):
+class InvalidPriceEntry(ProductRuleBroken):
     code: ClassVar[str] = "variety.price_entry_invalid"
 
 
-class VipPriceNotBelowList(VarietyRuleBroken):
+class VipPriceNotBelowList(ProductRuleBroken):
     code: ClassVar[str] = "variety.vip_price_not_below_list"
 
 
-class DuplicateEffectiveDate(VarietyRuleBroken):
+class DuplicateEffectiveDate(ProductRuleBroken):
     code: ClassVar[str] = "variety.duplicate_effective_date"
 
 
-class UnknownPriceEntry(VarietyRuleBroken):
+class UnknownPriceEntry(ProductRuleBroken):
     code: ClassVar[str] = "variety.price_entry_not_found"
 
 
-class VarietyArchived(LookupError):
+class ProductArchived(LookupError):
     """An archived variety is read-only: for anything new it is gone (docs/product/varieties.md)."""
 
     code: ClassVar[str] = "variety.archived"
 
-    def __init__(self, variety_id: int | None = None) -> None:
+    def __init__(self, product_id: int | None = None) -> None:
         super().__init__("the variety is archived")
-        self.variety_id = variety_id
+        self.product_id = product_id
 
 
 @dataclass(frozen=True)
-class VarietyName:
+class ProductName:
     """A variety's name, with inner whitespace collapsed. Two names that differ only in
     case are the same name (`key`)."""
 
@@ -70,7 +70,7 @@ class VarietyName:
             raise InvalidName(f"a variety name has at most {NAME_MAX_LENGTH} characters")
 
     @classmethod
-    def of(cls, raw: str) -> VarietyName:
+    def of(cls, raw: str) -> ProductName:
         return cls(collapse_spaces(raw))
 
     @property
@@ -141,8 +141,8 @@ class NameHolder(Enum):
 
 
 @dataclass
-class Variety:
-    name: VarietyName
+class Product:
+    name: ProductName
     price_entries: tuple[PriceEntry, ...] = ()
     id: int | None = None
     archived_at: datetime | None = None
@@ -162,9 +162,9 @@ class Variety:
 
     def _require_live(self) -> None:
         if self.is_archived:
-            raise VarietyArchived
+            raise ProductArchived
 
-    def rename(self, name: VarietyName) -> None:
+    def rename(self, name: ProductName) -> None:
         self._require_live()
         self.name = name
 

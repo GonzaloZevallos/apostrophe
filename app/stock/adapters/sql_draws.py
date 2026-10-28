@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 from app.shared.quantity import Quantity
 from app.stock.domain.lot_order import SaleLineDraw
-from app.varieties.adapters.tables import VarietyRow
+from app.products.adapters.tables import ProductRow
 
 
 class SqlDraws:
@@ -30,15 +30,15 @@ class SqlDraws:
 
     def for_varieties(self, variety_ids: Collection[int] | None) -> list[SaleLineDraw]:
         statement = (
-            select(SaleLineRow, SaleRow, VarietyRow.name)
+            select(SaleLineRow, SaleRow, ProductRow.name)
             .join(
                 SaleRow,
                 (SaleRow.id == SaleLineRow.sale_id) & (SaleRow.business_id == self._business_id),
             )
             .join(
-                VarietyRow,
-                (VarietyRow.id == SaleLineRow.variety_id)
-                & (VarietyRow.business_id == self._business_id),
+                ProductRow,
+                (ProductRow.id == SaleLineRow.variety_id)
+                & (ProductRow.business_id == self._business_id),
             )
             .where(SaleLineRow.business_id == self._business_id)
         )

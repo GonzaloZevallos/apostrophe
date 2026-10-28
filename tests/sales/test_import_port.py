@@ -25,7 +25,7 @@ from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
-from app.varieties.adapters.import_port import VarietiesImport
+from app.products.adapters.import_port import ProductsImport
 
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
@@ -100,7 +100,7 @@ def test_has_records_is_false_for_a_fresh_business_true_after_write(
         sales_import = SalesImport(session, business_id)
         assert sales_import.has_records() is False
 
-        varieties_import = VarietiesImport(session, business_id)
+        varieties_import = ProductsImport(session, business_id)
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(
             variety_id,
@@ -228,7 +228,7 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
         assert planned[0].refusal is None
         planned_total = planned[0].total
 
-        varieties_import = VarietiesImport(session, business_id)
+        varieties_import = ProductsImport(session, business_id)
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(variety_id, history[0], NoCommit())
         written_total = sales_import.write_sale(
@@ -257,7 +257,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     customer_id = _customer_id(client)
     run_today = date(2026, 8, 1)
     with Session(engine) as session:
-        varieties_import = VarietiesImport(session, business_id)
+        varieties_import = ProductsImport(session, business_id)
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(
             variety_id,
@@ -387,7 +387,7 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
         )
 
     with Session(engine) as session:
-        varieties_import = VarietiesImport(session, business_id)
+        varieties_import = ProductsImport(session, business_id)
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(variety_id, history[0], NoCommit())
         session.commit()

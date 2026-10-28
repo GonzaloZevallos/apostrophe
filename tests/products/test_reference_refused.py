@@ -23,9 +23,9 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyArchived as StockArchived
 from app.stock.application.errors import VarietyNotFound as StockNotFound
 from app.stock.domain.entry import Origin, StockEntry
-from app.varieties.application import manage_prices
-from app.varieties.application.errors import VarietyArchived, VarietyNotFound
-from app.varieties.domain.variety import NameHolder, Variety, VarietyName
+from app.products.application import manage_prices
+from app.products.application.errors import ProductArchived, ProductNotFound
+from app.products.domain.product import NameHolder, Product, ProductName
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
@@ -237,27 +237,27 @@ def test_an_entry_refused_with_the_variety_still_usable_re_raises_the_signal(
 class RefusingVarieties:
     """Reads the variety `then` says it is after the refusal: `None` when gone."""
 
-    def __init__(self, then: Variety | None) -> None:
+    def __init__(self, then: Product | None) -> None:
         self._then = then
         self._reads = 0
 
-    def add(self, variety: Variety) -> Variety:
+    def add(self, variety: Product) -> Product:
         raise AssertionError("not used")
 
-    def get(self, variety_id: int) -> Variety | None:
+    def get(self, variety_id: int) -> Product | None:
         self._reads += 1
-        return Variety(VarietyName.of("Gold"), id=7) if self._reads == 1 else self._then
+        return Product(ProductName.of("Gold"), id=7) if self._reads == 1 else self._then
 
-    def listed(self) -> list[Variety]:
+    def listed(self) -> list[Product]:
         return []
 
-    def archived(self) -> list[Variety]:
+    def archived(self) -> list[Product]:
         return []
 
-    def save(self, variety: Variety) -> Variety:
+    def save(self, variety: Product) -> Product:
         raise ReferenceRefused
 
-    def name_holder(self, name: VarietyName, *, other_than: int | None = None) -> NameHolder | None:
+    def name_holder(self, name: ProductName, *, other_than: int | None = None) -> NameHolder | None:
         return None
 
     def has_history(self, variety_id: int) -> bool:
@@ -270,7 +270,7 @@ class RefusingVarieties:
         raise AssertionError("not used")
 
 
-def _record_price(then: Variety | None, transaction: CountingTransaction) -> object:
+def _record_price(then: Product | None, transaction: CountingTransaction) -> object:
     return manage_prices.record_price_entry(
         RefusingVarieties(then),
         BothRulesOn(),
@@ -284,7 +284,7 @@ def _record_price(then: Variety | None, transaction: CountingTransaction) -> obj
 def test_a_price_refused_by_the_foreign_key_answers_the_variety_gone() -> None:
     transaction = CountingTransaction()
 
-    with pytest.raises(VarietyNotFound):
+    with pytest.raises(ProductNotFound):
         _record_price(None, transaction)
 
     assert (transaction.rollbacks, transaction.commits) == (1, 0)
@@ -292,9 +292,9 @@ def test_a_price_refused_by_the_foreign_key_answers_the_variety_gone() -> None:
 
 def test_a_price_refused_with_the_variety_archived_meanwhile_answers_archived() -> None:
     transaction = CountingTransaction()
-    archived = Variety(VarietyName.of("Gold"), id=7, archived_at=NOW)
+    archived = Product(ProductName.of("Gold"), id=7, archived_at=NOW)
 
-    with pytest.raises(VarietyArchived):
+    with pytest.raises(ProductArchived):
         _record_price(archived, transaction)
 
     assert (transaction.rollbacks, transaction.commits) == (1, 0)
@@ -304,7 +304,7 @@ def test_a_price_refused_with_the_variety_still_live_re_raises_the_signal() -> N
     transaction = CountingTransaction()
 
     with pytest.raises(ReferenceRefused):
-        _record_price(Variety(VarietyName.of("Gold"), id=7), transaction)
+        _record_price(Product(ProductName.of("Gold"), id=7), transaction)
 
     assert (transaction.rollbacks, transaction.commits) == (1, 0)
 

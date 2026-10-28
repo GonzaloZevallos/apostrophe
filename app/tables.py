@@ -18,11 +18,11 @@ from app.pinned_catalog.adapters import tables as pinned_catalog_tables
 from app.pricing_settings.adapters import tables as pricing_settings_tables
 from app.sales.adapters import tables as sales_tables
 from app.stock.adapters import tables as stock_tables
-from app.varieties.adapters import tables as varieties_tables
+from app.products.adapters import tables as products_tables
 
 TABLE_MODULES = (
     accounts_tables,
-    varieties_tables,
+    products_tables,
     customers_tables,
     expenses_tables,
     sales_tables,

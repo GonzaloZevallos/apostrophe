@@ -40,7 +40,7 @@ ALL_HEXAGON_NAMES = frozenset(dotted(root) for root in HEXAGON_ROOTS)
 SHARED_KERNEL_MODULES = tuple(sorted((REPO_ROOT / "app" / "shared").glob("*.py")))
 # Stands in for a sibling hexagon that `relative_cross_hexagon.py` reaches with dots
 # alone (`from ... import sibling_hexagon`), the way `app/accounts/application` would
-# reach `app.varieties` with the same number of dots. No such package needs to exist:
+# reach `app.products` with the same number of dots. No such package needs to exist:
 # the checker only parses import statements, it never imports them.
 FIXTURE_SIBLING_HEXAGON = "tests.architecture.fixtures.sibling_hexagon"
 
@@ -56,9 +56,9 @@ def test_the_checker_reports_the_deliberate_violations() -> None:
         ("app.shared.copy", "domain-imports-no-copy"),
         ("app.shared.copy.CopyCatalog", "domain-imports-no-copy"),
         ("app.shared.copy.OperatorText", "application-imports-no-framework-or-adapter"),
-        ("app.varieties", "domain-and-application-import-no-other-hexagon"),
+        ("app.products", "domain-and-application-import-no-other-hexagon"),
         (
-            "app.varieties.domain.variety.Variety",
+            "app.products.domain.product.Variety",
             "domain-and-application-import-no-other-hexagon",
         ),
         ("babel.support", "domain-imports-stdlib-and-shared-only"),

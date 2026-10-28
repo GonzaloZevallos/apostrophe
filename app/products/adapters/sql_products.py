@@ -6,11 +6,11 @@ from app.sales.adapters.tables import SaleLineRow
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.stock.adapters.tables import StockEntryRow, StockWithdrawalLineRow
-from app.varieties.adapters.tables import PriceEntryRow, VarietyRow
-from app.varieties.domain.variety import NameHolder, PriceEntry, Variety, VarietyName
+from app.products.adapters.tables import PriceEntryRow, ProductRow
+from app.products.domain.product import NameHolder, PriceEntry, Product, ProductName
 
 
-class SqlVarieties:
+class SqlProducts:
     """The `Varieties` port over SQLAlchemy, for one business. Every statement filters
     on that business; a variety of another business is, from here, a variety that does
     not exist (docs/adr/0004). Writes flush; the use case commits."""
@@ -19,8 +19,8 @@ class SqlVarieties:
         self._session = session
         self._business_id = business_id
 
-    def add(self, variety: Variety) -> Variety:
-        row = VarietyRow(
+    def add(self, variety: Product) -> Product:
+        row = ProductRow(
             business_id=self._business_id, name=variety.name.value, name_key=variety.name.key
         )
         row.price_entries = [self._entry_row(e) for e in variety.price_entries]
@@ -28,26 +28,26 @@ class SqlVarieties:
         self._session.flush()
         return _variety(row)
 
-    def get(self, variety_id: int) -> Variety | None:
+    def get(self, variety_id: int) -> Product | None:
         row = self._row(variety_id)
         return None if row is None else _variety(row)
 
-    def listed(self) -> list[Variety]:
-        return self._by_name(VarietyRow.archived_at.is_(None))
+    def listed(self) -> list[Product]:
+        return self._by_name(ProductRow.archived_at.is_(None))
 
-    def archived(self) -> list[Variety]:
-        return self._by_name(VarietyRow.archived_at.is_not(None))
+    def archived(self) -> list[Product]:
+        return self._by_name(ProductRow.archived_at.is_not(None))
 
-    def _by_name(self, archival: ColumnElement[bool]) -> list[Variety]:
+    def _by_name(self, archival: ColumnElement[bool]) -> list[Product]:
         statement = (
-            select(VarietyRow)
-            .where(VarietyRow.business_id == self._business_id, archival)
-            .options(selectinload(VarietyRow.price_entries))
-            .order_by(VarietyRow.name_key)
+            select(ProductRow)
+            .where(ProductRow.business_id == self._business_id, archival)
+            .options(selectinload(ProductRow.price_entries))
+            .order_by(ProductRow.name_key)
         )
         return [_variety(row) for row in self._session.scalars(statement)]
 
-    def save(self, variety: Variety) -> Variety:
+    def save(self, variety: Product) -> Product:
         assert variety.id is not None, "save takes a variety that was added"
         row = self._row(variety.id)
         if row is None:
@@ -64,12 +64,12 @@ class SqlVarieties:
         flush_or_refuse(self._session)
         return _variety(row)
 
-    def name_holder(self, name: VarietyName, *, other_than: int | None = None) -> NameHolder | None:
-        statement = select(VarietyRow.archived_at).where(
-            VarietyRow.business_id == self._business_id, VarietyRow.name_key == name.key
+    def name_holder(self, name: ProductName, *, other_than: int | None = None) -> NameHolder | None:
+        statement = select(ProductRow.archived_at).where(
+            ProductRow.business_id == self._business_id, ProductRow.name_key == name.key
         )
         if other_than is not None:
-            statement = statement.where(VarietyRow.id != other_than)
+            statement = statement.where(ProductRow.id != other_than)
         found = self._session.execute(statement).first()
         if found is None:
             return None
@@ -91,13 +91,13 @@ class SqlVarieties:
         """One statement: the history check and the delete cannot be pulled apart by a
         sale, an entry or a withdrawal recorded in between (the foreign keys close the rest)."""
         statement = (
-            delete(VarietyRow)
+            delete(ProductRow)
             .where(
-                VarietyRow.id == variety_id,
-                VarietyRow.business_id == self._business_id,
+                ProductRow.id == variety_id,
+                ProductRow.business_id == self._business_id,
                 ~self._history_exists(variety_id),
             )
-            .returning(VarietyRow.id)
+            .returning(ProductRow.id)
         )
         removed = self._session.execute(statement).first()
         self._session.expire_all()
@@ -116,9 +116,9 @@ class SqlVarieties:
         )
         return lines | entries | withdrawn
 
-    def _row(self, variety_id: int) -> VarietyRow | None:
-        statement = select(VarietyRow).where(
-            VarietyRow.id == variety_id, VarietyRow.business_id == self._business_id
+    def _row(self, variety_id: int) -> ProductRow | None:
+        statement = select(ProductRow).where(
+            ProductRow.id == variety_id, ProductRow.business_id == self._business_id
         )
         return self._session.scalar(statement)
 
@@ -133,9 +133,9 @@ class SqlVarieties:
         )
 
 
-def _variety(row: VarietyRow) -> Variety:
-    return Variety(
-        name=VarietyName(row.name),
+def _variety(row: ProductRow) -> Product:
+    return Product(
+        name=ProductName(row.name),
         price_entries=tuple(_entry(r) for r in row.price_entries),
         id=row.id,
         archived_at=row.archived_at,

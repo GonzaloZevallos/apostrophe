@@ -28,7 +28,7 @@ from app.results.adapters.router import as_http as results_as_http
 from app.sales.adapters.router import as_http as sales_as_http
 from app.static_spa import SHARED_FRONT_PATHS
 from app.stock.adapters.router import as_http as stock_as_http
-from app.varieties.adapters.router import as_http as varieties_as_http
+from app.products.adapters.router import as_http as products_as_http
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
@@ -38,7 +38,7 @@ TRANSLATORS: list[TranslateErrors] = [
     accounts_as_http,
     language_as_http,
     customers_as_http,
-    varieties_as_http,
+    products_as_http,
     expenses_as_http,
     sales_as_http,
     stock_as_http,

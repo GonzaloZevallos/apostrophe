@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
 from app.onboarding.domain.progress import VarietyFact
-from app.varieties.adapters.onboarding_facts import SqlVarietyFacts
+from app.products.adapters.onboarding_facts import SqlProductFacts
 from tests.conftest import TODAY
 
 
@@ -19,7 +19,7 @@ def _facts(engine: Engine) -> list[VarietyFact]:
     with Session(engine) as session:
         row = session.scalar(select(UserRow).where(UserRow.email == "uno@example.com"))
         assert row is not None
-        return SqlVarietyFacts(session, row.business_id, TODAY).varieties()
+        return SqlProductFacts(session, row.business_id, TODAY).varieties()
 
 
 def _variety(client: TestClient, name: str) -> int:

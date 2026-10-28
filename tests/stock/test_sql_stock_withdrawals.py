@@ -14,7 +14,7 @@ from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.tables import StockWithdrawalLineRow
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
-from app.varieties.adapters.tables import VarietyRow
+from app.products.adapters.tables import ProductRow
 
 AT = datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
 DAY = date(2026, 10, 1)
@@ -27,7 +27,7 @@ def _variety(client: TestClient, name: str) -> int:
 
 def _business_of(engine: Engine, variety_id: int) -> int:
     with Session(engine) as session:
-        row = session.scalar(select(VarietyRow).where(VarietyRow.id == variety_id))
+        row = session.scalar(select(ProductRow).where(ProductRow.id == variety_id))
         assert row is not None
         return row.business_id
 

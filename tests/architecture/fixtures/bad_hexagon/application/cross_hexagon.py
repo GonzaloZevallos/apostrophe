@@ -1,5 +1,5 @@
-from app.varieties.domain.variety import Variety
+from app.products.domain.product import Product
 
 
 def use() -> object:
-    return Variety
+    return Product

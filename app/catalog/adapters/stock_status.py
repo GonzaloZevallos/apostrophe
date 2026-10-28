@@ -10,7 +10,7 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.catalog.domain.variety import StockStatus
+from app.catalog.domain.product import StockStatus
 from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals

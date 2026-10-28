@@ -10,27 +10,27 @@ from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.shared.quantity import InvalidQuantity, Quantity
-from app.varieties.adapters.schemas import (
+from app.products.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
     VarietyDetailOut,
     VarietyIn,
     VarietyOut,
 )
-from app.varieties.adapters.sql_varieties import SqlVarieties
-from app.varieties.application import manage_prices, manage_varieties
-from app.varieties.application.errors import (
+from app.products.adapters.sql_products import SqlProducts
+from app.products.application import manage_prices, manage_products
+from app.products.application.errors import (
     NameHeldByArchived,
     NameTaken,
-    VarietyHasHistory,
-    VarietyNotFound,
+    ProductHasHistory,
+    ProductNotFound,
 )
-from app.varieties.application.ports import PricingSettingsReader, VarietyLeaving
-from app.varieties.domain.variety import (
+from app.products.application.ports import PricingSettingsReader, ProductLeaving
+from app.products.domain.product import (
     DuplicateEffectiveDate,
     UnknownPriceEntry,
-    VarietyArchived,
-    VarietyRuleBroken,
+    ProductArchived,
+    ProductRuleBroken,
     VipPriceNotBelowList,
 )
 
@@ -40,8 +40,8 @@ router = APIRouter(prefix="/varieties", tags=["varieties"])
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-def get_varieties(session: SessionDep, business_id: CurrentBusinessId) -> SqlVarieties:
-    return SqlVarieties(session, business_id)
+def get_varieties(session: SessionDep, business_id: CurrentBusinessId) -> SqlProducts:
+    return SqlProducts(session, business_id)
 
 
 def get_pricing_settings(
@@ -58,26 +58,26 @@ def get_pricing_settings(
 
 def get_leaving(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> VarietyLeaving:
+) -> ProductLeaving:
     # Varieties never imports stock or the catalog (CODING_STANDARDS section 1):
     # `app/main.py` hangs their composite on `app.state.variety_leaving` as a factory,
     # the same shape `line_costs` uses.
-    factory = cast(Callable[[Session, int], VarietyLeaving], request.app.state.variety_leaving)
+    factory = cast(Callable[[Session, int], ProductLeaving], request.app.state.variety_leaving)
     return factory(session, business_id)
 
 
-VarietiesDep = Annotated[SqlVarieties, Depends(get_varieties)]
+VarietiesDep = Annotated[SqlProducts, Depends(get_varieties)]
 SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
-LeavingDep = Annotated[VarietyLeaving, Depends(get_leaving)]
+LeavingDep = Annotated[ProductLeaving, Depends(get_leaving)]
 TodayDep = Annotated[date, Depends(get_today)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
 
 
 as_http = TranslateErrors(
     [
-        (404, (VarietyNotFound, VarietyArchived, UnknownPriceEntry)),
-        (409, (NameTaken, NameHeldByArchived, VarietyHasHistory, DuplicateEffectiveDate)),
-        (422, (VarietyRuleBroken, VipPriceNotBelowList, InvalidQuantity)),
+        (404, (ProductNotFound, ProductArchived, UnknownPriceEntry)),
+        (409, (NameTaken, NameHeldByArchived, ProductHasHistory, DuplicateEffectiveDate)),
+        (422, (ProductRuleBroken, VipPriceNotBelowList, InvalidQuantity)),
     ]
 )
 
@@ -89,7 +89,7 @@ def list_varieties(
     """Each variety's current price as of `on` (today when omitted, docs/adr/0011),
     inside the session's own business. Archived varieties only with `archived=true`."""
     day = on or today
-    listed = manage_varieties.list_varieties(varieties, archived=archived)
+    listed = manage_products.list_products(varieties, archived=archived)
     return [VarietyOut.of(v, day) for v in listed]
 
 
@@ -98,15 +98,15 @@ def register_variety(
     body: VarietyIn, varieties: VarietiesDep, session: SessionDep, today: TodayDep
 ) -> VarietyOut:
     with as_http:
-        variety = manage_varieties.register_variety(varieties, session, body.name)
+        variety = manage_products.register_product(varieties, session, body.name)
         return VarietyOut.of(variety, today)
 
 
 @router.get("/{variety_id}")
 def get_variety(variety_id: int, varieties: VarietiesDep, today: TodayDep) -> VarietyDetailOut:
     with as_http:
-        variety = manage_varieties.get_variety(varieties, variety_id)
-        removal = manage_varieties.removal_offered(varieties, variety)
+        variety = manage_products.get_product(varieties, variety_id)
+        removal = manage_products.removal_offered(varieties, variety)
         return VarietyDetailOut(**VarietyOut.of(variety, today).model_dump(), removal=removal)
 
 
@@ -115,7 +115,7 @@ def delete_variety(
     variety_id: int, varieties: VarietiesDep, leaving: LeavingDep, session: SessionDep
 ) -> None:
     with as_http:
-        manage_varieties.delete_variety(varieties, leaving, session, variety_id)
+        manage_products.delete_product(varieties, leaving, session, variety_id)
 
 
 @router.patch("/{variety_id}")
@@ -127,7 +127,7 @@ def rename_variety(
     today: TodayDep,
 ) -> VarietyOut:
     with as_http:
-        variety = manage_varieties.rename_variety(varieties, session, variety_id, body.name)
+        variety = manage_products.rename_product(varieties, session, variety_id, body.name)
         return VarietyOut.of(variety, today)
 
 
@@ -140,7 +140,7 @@ def archive_variety(
     clock: ClockDep,
 ) -> VarietyOut:
     with as_http:
-        variety = manage_varieties.archive_variety(varieties, session, variety_id, clock())
+        variety = manage_products.archive_product(varieties, session, variety_id, clock())
         return VarietyOut.of(variety, today)
 
 
@@ -149,14 +149,14 @@ def restore_variety(
     variety_id: int, varieties: VarietiesDep, session: SessionDep, today: TodayDep
 ) -> VarietyOut:
     with as_http:
-        variety = manage_varieties.restore_variety(varieties, session, variety_id)
+        variety = manage_products.restore_product(varieties, session, variety_id)
         return VarietyOut.of(variety, today)
 
 
 @router.get("/{variety_id}/prices")
 def price_history(variety_id: int, varieties: VarietiesDep) -> list[PriceEntryOut]:
     with as_http:
-        variety = manage_varieties.get_variety(varieties, variety_id)
+        variety = manage_products.get_product(varieties, variety_id)
         return [PriceEntryOut.of(e) for e in variety.price_history()]
 
 

@@ -29,7 +29,7 @@ from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.sql_thresholds import SqlThresholds
 from app.stock.application.history import history
 from app.stock.domain.stock_level import stock_level
-from app.varieties.adapters.sql_varieties import SqlVarieties
+from app.products.adapters.sql_products import SqlProducts
 
 
 class SqlStockFigures:
@@ -38,7 +38,7 @@ class SqlStockFigures:
         self._draws = SqlDraws(session, business_id)
         self._withdrawals = SqlStockWithdrawals(session, business_id)
         self._thresholds = SqlThresholds(session, business_id)
-        self._varieties = SqlVarieties(session, business_id)
+        self._varieties = SqlProducts(session, business_id)
 
     def read(self, today: date) -> StockFiguresAnswer:
         grouped = history(self._entries, self._draws, self._withdrawals, None)

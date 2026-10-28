@@ -10,12 +10,12 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 from app.onboarding.domain.progress import VarietyFact
-from app.varieties.adapters.sql_varieties import SqlVarieties
+from app.products.adapters.sql_products import SqlProducts
 
 
-class SqlVarietyFacts:
+class SqlProductFacts:
     def __init__(self, session: Session, business_id: int, today: date) -> None:
-        self._varieties = SqlVarieties(session, business_id)
+        self._varieties = SqlProducts(session, business_id)
         self._today = today
 
     def varieties(self) -> list[VarietyFact]:

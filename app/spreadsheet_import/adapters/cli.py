@@ -54,7 +54,7 @@ from app.spreadsheet_import.domain.rows import (
     SheetRef,
 )
 from app.stock.adapters.import_port import SqlStockImport
-from app.varieties.adapters.import_port import VarietiesImport as SqlVarietiesImport
+from app.products.adapters.import_port import ProductsImport as SqlProductsImport
 
 
 class _BusinessUnknown(Exception):
@@ -132,7 +132,7 @@ def _run(
         instant = clock()
         today = business_day(instant)
 
-        varieties = SqlVarietiesImport(session, args.business_id)
+        varieties = SqlProductsImport(session, args.business_id)
         stock = SqlStockImport(session, args.business_id)
         catalog = CatalogImport(session, args.business_id)
         expenses = ExpensesImport(session, args.business_id)

@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.payments.adapters.tables import PaymentRow
 from app.pricing_settings.adapters.tables import PricingSettingsRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
-from app.varieties.adapters.tables import PriceEntryRow
+from app.products.adapters.tables import PriceEntryRow
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand

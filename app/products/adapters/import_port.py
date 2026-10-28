@@ -19,21 +19,21 @@ from sqlalchemy.orm import Session
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, VarietyKey
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
-from app.varieties.adapters.sql_varieties import SqlVarieties
-from app.varieties.adapters.tables import PriceEntryRow, VarietyRow
-from app.varieties.application.manage_prices import record_imported_price_entry
-from app.varieties.application.manage_varieties import register_variety
-from app.varieties.application.ports import Varieties
-from app.varieties.domain.variety import (
+from app.products.adapters.sql_products import SqlProducts
+from app.products.adapters.tables import PriceEntryRow, ProductRow
+from app.products.application.manage_prices import record_imported_price_entry
+from app.products.application.manage_products import register_product
+from app.products.application.ports import Products
+from app.products.domain.product import (
     InvalidName,
     PriceEntry,
-    Variety,
-    VarietyName,
-    VarietyRuleBroken,
+    Product,
+    ProductName,
+    ProductRuleBroken,
 )
 
 
-class VarietiesImport:
+class ProductsImport:
     """`VarietiesImport` for one business."""
 
     def __init__(self, session: Session, business_id: int) -> None:
@@ -43,8 +43,8 @@ class VarietiesImport:
     def has_records(self) -> bool:
         statement = (
             select(func.count())
-            .select_from(VarietyRow)
-            .where(VarietyRow.business_id == self._business_id)
+            .select_from(ProductRow)
+            .where(ProductRow.business_id == self._business_id)
         )
         if self._session.scalar(statement):
             return True
@@ -57,7 +57,7 @@ class VarietiesImport:
 
     def check_name(self, raw: str) -> VarietyKey | Refusal:
         try:
-            name = VarietyName.of(raw)
+            name = ProductName.of(raw)
         except InvalidName as exc:
             return Refusal(code=exc.code)
         return VarietyKey(key=name.key, name=name.value)
@@ -65,13 +65,13 @@ class VarietiesImport:
     def check_price_history(
         self, rows: Sequence[PriceHistoryRow], keys: Mapping[str, str]
     ) -> Sequence[Refusal | None]:
-        varieties: dict[str, Variety] = {}
+        varieties: dict[str, Product] = {}
         results: list[Refusal | None] = []
         for row in rows:
             key = keys[row.variety]
             variety = varieties.get(key)
             if variety is None:
-                variety = Variety(VarietyName.of(row.variety))
+                variety = Product(ProductName.of(row.variety))
                 varieties[key] = variety
             try:
                 entry = PriceEntry.of(
@@ -82,14 +82,14 @@ class VarietiesImport:
                     vip_price=row.bulk_price,
                 )
                 variety.record_price(entry)
-            except VarietyRuleBroken as exc:
+            except ProductRuleBroken as exc:
                 results.append(Refusal(code=exc.code))
                 continue
             results.append(None)
         return results
 
     def write_variety(self, name: str, transaction: Transaction) -> int:
-        variety = register_variety(self._varieties(), transaction, name)
+        variety = register_product(self._varieties(), transaction, name)
         assert variety.id is not None
         return variety.id
 
@@ -115,5 +115,5 @@ class VarietiesImport:
             vip_price=row.bulk_price if with_vip_price else None,
         )
 
-    def _varieties(self) -> Varieties:
-        return SqlVarieties(self._session, self._business_id)
+    def _varieties(self) -> Products:
+        return SqlProducts(self._session, self._business_id)

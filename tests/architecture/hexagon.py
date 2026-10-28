@@ -109,7 +109,7 @@ def full_imports_of(module: Path) -> Iterator[str]:
     other rules only ever check a module's own dotted name against an allow-list of
     packages. The no-other-hexagon rule needs the imported name too, so `from app
     import varieties` and `from ... import varieties` (written where `...` reaches
-    `app`) are both seen as reaching `app.varieties`, not the harmless-looking `app`.
+    `app`) are both seen as reaching `app.products`, not the harmless-looking `app`.
     """
     tree = ast.parse(module.read_text(), filename=str(module))
     for node in ast.walk(tree):
