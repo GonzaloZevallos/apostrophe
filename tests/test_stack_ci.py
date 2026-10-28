@@ -225,6 +225,9 @@ def workflow_problems(workflow: Data) -> list[str]:
                 if name.startswith("coverage-pytest") and name != _coverage_name(job_id):
                     problems.append(f"job {job_id!r} uploads coverage as {name!r}")
 
+    if not any("playwright install" in command for command in runs.get("web", [])):
+        problems.append("job 'web' does not install Chromium, which the census unit project drives")
+
     e2e_needs = sorted(_needs(jobs["e2e"]))
     if e2e_needs != ["build", "changes"]:
         problems.append(f"job 'e2e' needs {e2e_needs}, not only changes and build")
@@ -417,6 +420,15 @@ def test_an_e2e_shard_whose_build_job_runs_lint_is_refused() -> None:
     workflow["jobs"]["build"]["steps"].append({"run": STACK["checks"]["lint"]})
     problems = workflow_problems(workflow)
     assert problems == [f"job 'e2e' needs 'build', which runs {STACK['checks']['lint']}"]
+
+
+def test_a_web_job_without_the_browser_install_is_refused() -> None:
+    workflow = copy.deepcopy(WORKFLOW)
+    steps = workflow["jobs"]["web"]["steps"]
+    workflow["jobs"]["web"]["steps"] = [s for s in steps if "playwright" not in str(s.get("run"))]
+    assert workflow_problems(workflow) == [
+        "job 'web' does not install Chromium, which the census unit project drives"
+    ]
 
 
 def test_a_write_permission_outside_the_coverage_job_is_refused() -> None:

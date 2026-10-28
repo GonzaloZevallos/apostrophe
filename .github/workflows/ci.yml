@@ -73,6 +73,8 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm --prefix web ci --no-fund --no-audit
+      # The census unit project (src/design/census.test.ts) drives a real Chromium.
+      - run: npx --prefix web playwright install --with-deps chromium
       - run: npm --prefix web run typecheck
       - run: npm --prefix web run lint
       - run: npm --prefix web test -- --coverage
