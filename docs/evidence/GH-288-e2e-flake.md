@@ -117,7 +117,7 @@ changed.
 The guard (`web/src/architecture/e2eToastRule.test.ts`) prints, from `npm --prefix web test -- e2eToastRule`:
 
 ```
-e2eToastRule: 27 sites observed in the page, 4 kept on page text, 87 pending
+e2eToastRule: 27 sites observed in the page, 5 kept on page text, 87 pending
 ```
 
 `panel.spec.ts`, `flow.spec.ts`, `sales.spec.ts`, `helpers/seed.ts` and `helpers/ledger.ts` are migrated
@@ -131,6 +131,7 @@ Kept on page text, with the reason (each is also a `KEPT` line in the guard):
 | `panel.spec.ts:210` | Customer saved | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
 | `flow.spec.ts:176` | Category saved | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:180` | Category deleted | `.aviso-toast`: the recorder does not watch the category toasts |
+| `flow.spec.ts:188` | Business renamed | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
 
 Not flagged and left alone: "Sale saved" and "Sale deleted" (`.venta-guardada`, not in `SuccessToast`).
 One migrated step replaced by a comment: the second "Expense saved" in `flow.spec.ts` (editing the
