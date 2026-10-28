@@ -41,7 +41,11 @@ change affects, the suites run in parallel, and one job says whether the pull re
 - **Permissions.** The default is `contents: read`; only `coverage` has `pull-requests: write`, and its
   comment step is skipped on forks.
 - **Concurrency.** The group is `ci-${{ github.ref }}`; a newer push cancels a pull request's run, never a
-  `master` run.
+  `master` run already in progress. GitHub still replaces a `master` run that is only pending when a newer
+  push queues behind it; the newer run selects everything, so nothing goes untested.
+- **Acceptance that needs GitHub.** The coverage baseline (`docs/coverage-baseline.md`), the wall time
+  against the old single job and the green `ci-ok` / sharded e2e runs come from the first full run on the
+  task's pull request; they are not written before it exists.
 - **Coverage is reported, not enforced.** Totals come from `scripts/ci_coverage.py` alone. No threshold.
 
 ## Rejected
