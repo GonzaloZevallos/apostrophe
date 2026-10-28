@@ -124,3 +124,30 @@ new ones start at scale 2.
 Narrowed by [ADR-0055](0055-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md): every stored quantity of every unit is a whole number of hundredths, and
 a unit's decimals only validate input and decide display. The gram becomes one unit among the
 seller's own; its stored values are unchanged.
+
+## Amendment (GH-318 part 1): configuration hexagons
+
+[ADR-0054](0054-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md) narrows one sentence of this ADR. The hexagons it describes are built in later
+parts; until then the sentence describes what runs.
+
+> **Shape**: one hexagon per capability under `app/<capability>/`:
+
+Narrowed by [ADR-0054](0054-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md): the business's configuration (units, categories with
+attributes and the product word, customer types, payment methods, money format) is split into
+hexagons by reason to change, each its own root under `app/` and added to `HEXAGON_ROOTS` in the diff
+that creates it. They are hexagons by the same rule; what changes is that a root may hold a business's
+configuration rather than a capability the seller uses. Their frozen shared values live in
+`app/shared` and each reader reads them through its own Protocol.
+
+## Amendment (GH-318 part 1): the business day
+
+[ADR-0056](0056-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md) narrows one sentence of this ADR. The code changes in the part that builds it; until
+then the sentence describes what runs.
+
+> **"Today" is the business day in Argentina time** (`app/clock.py`); the clock is
+> injected so tests move it.
+
+Narrowed by [ADR-0056](0056-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md): "today" is the business day in the business's own time zone, worked out
+by `get_today` in `app/accounts/adapters/deps.py` through `business_day(instant, zone)` in
+`app/shared/calendar.py`. Argentina is the zone every existing business is given, so its days do not
+change. The clock stays injected.

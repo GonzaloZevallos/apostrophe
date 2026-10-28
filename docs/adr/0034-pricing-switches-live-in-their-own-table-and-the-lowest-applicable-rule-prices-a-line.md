@@ -71,3 +71,20 @@ of its own.
   price-form load: it does not grow with data.
 - The catalog's bulk line follows Precio por cantidad and the VIP price never reaches
   the catalog's entry type, so a switch change is an upkeep trigger (docs/adr/0014).
+
+## Amendment (GH-318 part 1): customer types replace the VIP mark
+
+[ADR-0058](0058-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md) narrows two sentences of this ADR. The code changes in the parts that build it; until
+then both describe what runs.
+
+> and a price entry may carry a VIP price
+> of its own.
+
+> - the VIP price, when Clientes VIP is on, the customer is VIP and the quote has one.
+
+Narrowed by [ADR-0058](0058-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md): a customer type's price is an effective-dated row, and a customer has at
+most one type. The lowest-applicable rule is unchanged but looks up the customer's type price in place
+of the VIP price. `customer.vip` and `price_entry.vip_price` stay in their tables, frozen with the
+values they hold and no longer written or read by new code; the migration gives each existing business
+a customer type VIP and copies its VIP marks and prices into rows. `pricing_settings` and its two
+switches stay as they are, and `is_vip_customers` is the switch for customer-type prices.
