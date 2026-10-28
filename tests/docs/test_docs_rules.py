@@ -40,6 +40,27 @@ def defined_symbol_problems(
     return problems
 
 
+_PARTICIPANT = re.compile(r"^[ \t]*(?:participant|actor)[ \t]+\S+[ \t]+as[ \t]+(.+?)[ \t]*$")
+
+
+def alias_problems(mermaid_source: str, linked_sources: Iterable[str]) -> list[str]:
+    """One message per `participant X as Y` / `actor X as Y` line of one Mermaid block (the
+    block itself is cut out by #460's extractor, not here) whose alias `Y` starts with `_` or
+    has no line-start definition in any of the texts of the files linked on the same page."""
+    sources = list(linked_sources)
+    problems: list[str] = []
+    for line in mermaid_source.splitlines():
+        match = _PARTICIPANT.match(line)
+        if match is None:
+            continue
+        alias = match.group(1)
+        if alias.startswith("_"):
+            problems.append(f"alias `{alias}` starts with an underscore")
+        elif not any(_is_defined(alias, source) for source in sources):
+            problems.append(f"alias `{alias}` is not defined in a file linked on the page")
+    return problems
+
+
 def adr_index_problems(
     linked_marks: Mapping[str, str | None], adr_statuses: Mapping[str, str]
 ) -> list[str]:
@@ -176,3 +197,21 @@ def test_reach_strips_fragments_and_ignores_self_links_and_leaves() -> None:
 
     assert reach_problems("docs/README.md", ["docs/a.md"], links) == []
     assert reach_problems("docs/README.md", ["docs/adr/x.md"], links) != []
+
+
+def test_aliases_defined_in_a_linked_file_pass() -> None:
+    block = "sequenceDiagram\n    participant U as SignIn\n    actor A as Session\n    U->>A: go\n"
+
+    assert alias_problems(block, ["class SignIn: ...\n", "Session = 1\n"]) == []
+
+
+def test_an_alias_undefined_underscored_or_only_in_a_comment_is_rejected() -> None:
+    block = "participant U as Ghost\nparticipant V as _Hidden\nparticipant W as Noted\n"
+
+    problems = alias_problems(block, ["class _Hidden: ...\n# class Noted\n"])
+
+    assert problems == [
+        "alias `Ghost` is not defined in a file linked on the page",
+        "alias `_Hidden` starts with an underscore",
+        "alias `Noted` is not defined in a file linked on the page",
+    ]
