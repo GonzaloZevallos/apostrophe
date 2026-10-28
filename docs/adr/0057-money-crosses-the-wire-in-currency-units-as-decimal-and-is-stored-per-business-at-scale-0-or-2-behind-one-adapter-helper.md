@@ -67,6 +67,8 @@ This records it. No code changes in this part.
 - Amounts are integers in every business, so sums, balances and the ledger arithmetic stay exact; only
   the SQL that multiplies a price by a quantity needs the helper.
 - Two columns of the same table are never at different scales: the scale belongs to the business.
+- The business export (ADR-0015) writes amounts in currency units with `{scale, decimals}` beside
+  them; quantities in it stay hundredths (ADR-0055).
 
 ## Considered and rejected
 
