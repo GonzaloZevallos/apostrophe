@@ -24,9 +24,8 @@ _Avoid_: signup link, referral, code
 ## Catalog and prices
 
 **Variety**:
-A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Varieties tab. A variety with no history can be deleted; one with history can be archived and restored. _In the app_: Variety; the tab is Varieties.
+A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Varieties tab. A variety with no history can be deleted; one with history can be archived and restored. In code, tests and docs: Product (ADR-0060). Variety stays the glossary's word for what screens show. _In the app_: Variety; the tab is Varieties.
 _Avoid_: strain, item, SKU
-In code, tests and docs: Product (ADR-0060). Variety stays the glossary's word for what screens show.
 _In the app_: Variety
 
 **Price entry**:
