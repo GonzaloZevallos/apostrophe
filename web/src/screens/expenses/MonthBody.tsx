@@ -1,7 +1,7 @@
 /**
  * `MonthBody`: what Expenses shows of a resolved month (the total, the categories, the latest
  * expenses). The screen and the sheet's behind-pane (`ExpensesBehind`) both draw it, so the pane
- * cannot drift from its parent (ADR-0053). `onEdit` is the screen's; the pane gives none.
+ * cannot drift from its parent (ADR-0062). `onEdit` is the screen's; the pane gives none.
  */
 
 import type { Expense, MonthlyView } from '../../api/expenses'

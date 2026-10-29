@@ -1,5 +1,5 @@
 /**
- * What sits behind the edit-customer sheet on a phone (ADR-0053): the customer's card, from the
+ * What sits behind the edit-customer sheet on a phone (ADR-0062): the customer's card, from the
  * card's own query keys, so opened from inside the app it is already cached. It draws only from
  * resolved data: while pending and on any error (a gone customer included) it is empty, and the
  * form route shows its own gone handling. It keeps the card's heading, balance, phone and account

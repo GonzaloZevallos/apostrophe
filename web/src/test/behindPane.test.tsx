@@ -1,5 +1,5 @@
 /**
- * The behind-pane helper must reject what it is there to forbid (ADR-0053): a pane that is not
+ * The behind-pane helper must reject what it is there to forbid (ADR-0062): a pane that is not
  * inert, not hidden, or holds an `h1`, an id, a busy mark or any text while it should be empty.
  */
 

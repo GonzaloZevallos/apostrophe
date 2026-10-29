@@ -1,5 +1,5 @@
 /**
- * What sits behind the new stock entry's sheet on a phone, on a direct address (ADR-0053;
+ * What sits behind the new stock entry's sheet on a phone, on a direct address (ADR-0062;
  * navigation.md's back-with-no-history table, "Stock entry form, new → Varieties"): the Varieties
  * list, from the list's own query keys, so opened from inside the app it is already cached and a
  * direct address costs the two GETs the list would have made. It draws only from resolved data:

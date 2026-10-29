@@ -3,7 +3,7 @@
  * `fetch` faked. On a phone a direct address shows the form as a sheet over its parent (new over
  * Customers, edit over the customer's card), the parent drawn as an inert, hidden `BehindPane`;
  * focus is in the first field and the sheet shows exactly one Close. On a computer the form is the
- * page it always was, with nothing behind it (ADR-0053).
+ * page it always was, with nothing behind it (ADR-0062).
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

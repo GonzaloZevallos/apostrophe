@@ -3,7 +3,7 @@
  * `fetch` faked. On a phone a direct address to the new withdrawal shows the sheet over Varieties,
  * and to the edit shows it over the withdrawal's detail (an inert, hidden `BehindPane`); the first
  * control is the reason's first option, there is exactly one Close, and the errors and the main
- * action sit in the pinned actions with nothing below them (ADR-0053). Opened from inside the app
+ * action sit in the pinned actions with nothing below them (ADR-0062). Opened from inside the app
  * no pane is drawn: the screen it was opened from is the one the app already has behind it.
  */
 

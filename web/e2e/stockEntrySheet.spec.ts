@@ -1,5 +1,5 @@
 /**
- * The stock entry form as a sheet on a phone (ADR-0053): a direct address opens it over its parent
+ * The stock entry form as a sheet on a phone (ADR-0062): a direct address opens it over its parent
  * (new over Varieties, edit over All entries), focus is in the first field, and the action sits at
  * the bottom of the sheet within the bottom inset. Roles, names, text and URLs only.
  */

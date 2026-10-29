@@ -8,7 +8,7 @@
  *   replacing the form's entry.
  * - A save refreshes the expenses, arms "Expense saved" to show on the screen it returns
  *   to (`useFlash().armAfterLeaving`), calls `disarm()`, then leaves.
- * - On a phone the form is a `Sheet` (ADR-0053); on a direct address Expenses is drawn behind it
+ * - On a phone the form is a `Sheet` (ADR-0062); on a direct address Expenses is drawn behind it
  *   (`ExpensesBehind`). The computer page is the one it always was.
  * - Leaving with something typed asks first ("Discard the expense?"), through the one
  *   leave guard, so "Cerrar", the browser's Back and the swipe all ask the same question.

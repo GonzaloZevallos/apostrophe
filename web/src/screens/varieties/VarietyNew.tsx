@@ -4,7 +4,7 @@
  * when there is no history (a direct link); a save arms "Variedad guardada" for the screen
  * history returns to; leaving with a name typed asks first. Refusals show under the name and
  * keep what was typed. On a computer the CSS draws it as the design's modal over the panes; on a
- * phone it is a `Sheet` (ADR-0053), over Varieties on a direct address (`VarietiesLayout` draws it).
+ * phone it is a `Sheet` (ADR-0062), over Varieties on a direct address (`VarietiesLayout` draws it).
  */
 
 import { useState } from 'react'

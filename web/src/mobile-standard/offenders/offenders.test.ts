@@ -206,7 +206,7 @@ describe('the offenders of a row new to the registry', () => {
 })
 
 /**
- * Collect's walked sheet states: the sheet draws them (ADR-0053), so the faults of its own markup
+ * Collect's walked sheet states: the sheet draws them (ADR-0062), so the faults of its own markup
  * are fixed, not listed. The one exception is Save's `pending-state`: a pending state needs a
  * word the idle button does not say, and this change adds no visible text.
  */

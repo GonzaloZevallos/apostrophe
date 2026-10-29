@@ -1,5 +1,5 @@
 /**
- * The one test helper for what sits behind a phone sheet (ADR-0053): the pane is inert and hidden
+ * The one test helper for what sits behind a phone sheet (ADR-0062): the pane is inert and hidden
  * from assistive technology, holds no `h1` and no id, and while its data is pending or after any
  * error it draws nothing at all (no text, no skeleton, no busy mark).
  */

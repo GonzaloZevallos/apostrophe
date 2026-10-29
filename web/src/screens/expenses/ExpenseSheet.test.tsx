@@ -3,7 +3,7 @@
  * `fetch` faked. On a phone a direct address to the new-expense route shows the sheet over Expenses
  * (an inert, hidden `BehindPane`), and editing in Expenses opens an in-page sheet with the screen
  * itself behind it. Focus is in the first field, there is exactly one Close, and the destructive
- * action sits above Save inside the pinned actions (ADR-0053).
+ * action sits above Save inside the pinned actions (ADR-0062).
  */
 
 import { screen, waitFor, within } from '@testing-library/react'

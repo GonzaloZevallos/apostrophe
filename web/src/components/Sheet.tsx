@@ -1,5 +1,5 @@
 /**
- * `Sheet`: what draws a form on a phone (ADR-0053). Presentational only: its host owns the
+ * `Sheet`: what draws a form on a phone (ADR-0062). Presentational only: its host owns the
  * guard, the sending state, Escape and where the form goes. It always renders the same
  * element tree, `main > div.cuerpo > children` and then `aside` inside `main`, so a resize
  * across 900 px keeps what was typed; `computer` changes only the class, the dialog
@@ -167,7 +167,7 @@ export default function Sheet({
 /**
  * The pinned actions of a sheet's form: its last child, holding the errors above the main action.
  * Only a phone gets the container (`.sheet__actions`); on a computer the children render as they
- * did before, so a computer form's DOM and CSS are unchanged (ADR-0053). The form itself stays
+ * did before, so a computer form's DOM and CSS are unchanged (ADR-0062). The form itself stays
  * mounted across 900 px; only this last row is redrawn.
  */
 export function SheetActions({ children }: { children: ReactNode }) {

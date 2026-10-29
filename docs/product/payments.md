@@ -117,7 +117,7 @@ Success criteria:
 
 - **Opened from**: "Collect" on a debtor row of Customers (either section, or search results) or of Home's "Owed to you" block, and "Record payment" on the customer's card. Each opens it with that customer already chosen.
 - **A sheet on the phone, a modal on the computer** (navigation.md):
-  - On the phone it is a full-screen sheet drawn by the one shared `Sheet` (ADR-0053), over the screen it was opened from (the customer's card, Customers or Home), never a page of its own. That screen stays underneath. It has no handle and no peek of the screen behind.
+  - On the phone it is a full-screen sheet drawn by the one shared `Sheet` (ADR-0062), over the screen it was opened from (the customer's card, Customers or Home), never a page of its own. That screen stays underneath. It has no handle and no peek of the screen behind.
   - On the phone the sheet has no outside: "Close" at the top and the phone's back gesture, which are the same action, are its only exits. A tap on the safe-area strip by the status bar does nothing.
   - On the phone the main action is pinned at the bottom of the form, above the keyboard, with the inline refusals above it. The sheet's height follows the visible viewport.
   - On the computer it is a modal over the same screen, exactly as before: tapping its backdrop closes it only when nothing was typed.
@@ -195,7 +195,7 @@ Success criteria:
   - at a computer viewport, the same entry points open a modal.
 - **Focus and typed text (GH-319)**: a front test shows focus on the first field when the phone sheet opens; a viewport-flip test (phone to computer and back) keeps the typed amount; Record payment's unsaved-changes tests pass unedited; no Mobile check offender entry names Record payment's walked sheet states.
 - **Place kept (criterion 9)**: an end-to-end run scrolls Customers and Home so the tapped debtor row is below the first screenful, then opens Record payment and closes it, once by "Close" and once by a partial save. Each time the scroll offset is unchanged and focus is on the tapped "Collect". After a save that settles the whole balance, the offset is unchanged and focus is on the "Owed to you" heading (or "Nobody owes you").
-- **Design agreement (criterion 9)**: the design capture of Record payment on the phone shows the drawing and the built app both as a sheet. The evidence note leaves no open difference; the drawing's handle and peek are a known difference, dropped on purpose (ADR-0053).
+- **Design agreement (criterion 9)**: the design capture of Record payment on the phone shows the drawing and the built app both as a sheet. The evidence note leaves no open difference; the drawing's handle and peek are a known difference, dropped on purpose (ADR-0062).
 
 ## Out of scope
 

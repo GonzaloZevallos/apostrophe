@@ -1,5 +1,5 @@
 /**
- * What sits behind the edit-withdrawal sheet on a phone, on a direct address (ADR-0053;
+ * What sits behind the edit-withdrawal sheet on a phone, on a direct address (ADR-0062;
  * navigation.md's back-with-no-history table, "Withdrawal form, edit → Withdrawal detail"): the
  * withdrawal's card, from the card's own query key, so the form's own read is the only GET. It draws
  * only from resolved data: while pending and on any error it is empty, with no skeleton and no

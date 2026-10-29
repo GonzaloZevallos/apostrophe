@@ -31,7 +31,7 @@ export default function ClientesLayout() {
   const onCard = customerId !== undefined && /^[0-9]+$/.test(customerId)
   // Registrar cobro is a modal over the list and the card on a computer (ADR-0044).
   const onPayment = useMatch(CUSTOMER_PAYMENT) !== null
-  // On a phone the customer form is a sheet over its parent (ADR-0053): new over Customers, edit
+  // On a phone the customer form is a sheet over its parent (ADR-0062): new over Customers, edit
   // over the customer's card. The pane comes first and `{!computer && …}` leaves its place, so the
   // form keeps one index on both viewports.
   const onNew = useMatch(CUSTOMER_NEW) !== null

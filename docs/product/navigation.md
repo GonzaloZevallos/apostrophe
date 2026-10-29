@@ -228,7 +228,7 @@ Below 900 px only. Every rule here is scoped under that breakpoint. Computer lay
   - the stock withdrawal form, new and editing;
   - New variety;
   - a variety's rename, low-stock warning form and catalog attributes form.
-- **Known exception**: Change password, the expense categories editor and New sale's new-customer overlay keep the old overlay on the phone, with no pinned action. The `Sheet` ADR (ADR-0053) names them. This is an exception to criterion 19's pinned action, not a failure of it.
+- **Known exception**: Change password, the expense categories editor and New sale's new-customer overlay keep the old overlay on the phone, with no pinned action. The `Sheet` ADR (ADR-0062) names them. This is an exception to criterion 19's pinned action, not a failure of it.
 - **Record payment's focus**: on the phone, opening it puts focus on its first field, not its title; its computer modal still focuses the title. Closing still returns focus to the "Collect" or "Record payment" that was tapped (payments.md).
 - **New sale's payment choice**:
   - The Cash / Transfer / Owing choice stays visible above the sale's footer.
@@ -341,7 +341,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   - a server error shows a generic retry;
   - a record that is gone follows the "That is gone." rule.
 - **Phone layout (GH-319)**:
-  - Every phone sheet is rendered by the one shared `Sheet` (ADR-0053). No form defines its own backdrop, Close placement, pinned-action layout or scroll lock.
+  - Every phone sheet is rendered by the one shared `Sheet` (ADR-0062). No form defines its own backdrop, Close placement, pinned-action layout or scroll lock.
   - Wherever a sheet has an outside, its tap-outside and its Close read the same `touched` value: the `dirty` the host already passes to `useLeaveGuard`. On the phone's full-screen sheet nothing outside it closes it.
   - "Keyboard open" is decided only in `useVisualViewport` (ADR-0028 as amended).
   - The phone rules never edit ADR-0044's `PriceFrame` dialog branch or `CobroFrame`'s computer branch.

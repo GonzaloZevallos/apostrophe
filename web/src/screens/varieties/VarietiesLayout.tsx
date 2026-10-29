@@ -10,7 +10,7 @@
  * across 900 px never remounts it and what was typed is kept.
  *
  * The stock entry form keeps the whole width on a computer, as it always had. On a phone it is a sheet
- * (ADR-0053) over its parent on a direct address: new over Varieties, edit over All entries, drawn as
+ * (ADR-0062) over its parent on a direct address: new over Varieties, edit over All entries, drawn as
  * an inert, hidden `BehindPane`. `{!computer && …}` leaves the pane's place, so the form keeps one
  * index on both viewports and a resize across 900 px never remounts it. New variety is the same on a
  * phone, over Varieties, drawn only on a direct address (opened from inside the app the app is already

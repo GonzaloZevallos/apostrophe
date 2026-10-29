@@ -1,5 +1,5 @@
 /**
- * The expense form as a sheet on a phone (ADR-0053): a direct address to the new-expense form
+ * The expense form as a sheet on a phone (ADR-0062): a direct address to the new-expense form
  * opens it over Expenses, editing an expense in Expenses opens an in-page sheet, focus is in the
  * first field, and the action sits at the bottom of the sheet within the bottom inset. Roles,
  * names, text and URLs only.

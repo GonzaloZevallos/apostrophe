@@ -7,7 +7,7 @@
  *   direct link, to Variedades (new) or the withdrawal's detail (edit).
  * - A save arms "Retiro guardado" for the screen history returns to, then leaves.
  * - Leaving with something typed asks first (`useLeaveGuard`); a save never is blocked.
- * - On a phone the form is a `Sheet` (ADR-0053). On a direct address its parent is drawn behind it,
+ * - On a phone the form is a `Sheet` (ADR-0062). On a direct address its parent is drawn behind it,
  *   inert and hidden (`BehindPane`): Variedades for a new withdrawal, the withdrawal's detail for an
  *   edit. Opened from inside the app that screen is already the app's own behind, so no pane is
  *   drawn. The computer page is the one it always was.

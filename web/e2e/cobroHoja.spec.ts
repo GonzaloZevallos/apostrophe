@@ -90,7 +90,7 @@ for (const viewport of VIEWPORTS) {
         if (viewport.name === 'phone') {
           await expect(page.getByRole('navigation')).toHaveCount(0)
           await expect(page.getByRole('link', { name: 'New sale' })).toHaveCount(0)
-          // A full-screen sheet (ADR-0053): it covers the screen it was opened from, with no peek,
+          // A full-screen sheet (ADR-0062): it covers the screen it was opened from, with no peek,
           // and Save is within reach inside it.
           const box = await dialog.boundingBox()
           if (box === null) throw new Error('the dialog has no box')

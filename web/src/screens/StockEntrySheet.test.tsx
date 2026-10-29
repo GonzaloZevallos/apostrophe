@@ -4,7 +4,7 @@
  * the Varieties list, edit over All entries), the parent drawn as an inert, hidden `BehindPane`;
  * focus is in the first field, the sheet shows exactly one Close, and everything that sat below the
  * main action (the delete) sits above it inside the pinned actions. On a computer the form is the
- * page it always was, with nothing behind it (ADR-0053).
+ * page it always was, with nothing behind it (ADR-0062).
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

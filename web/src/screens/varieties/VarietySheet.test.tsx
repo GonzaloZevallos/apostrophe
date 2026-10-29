@@ -4,7 +4,7 @@
  * direct address to New variety shows the sheet over the Varieties list (an inert, hidden
  * `BehindPane`); the three inline edits open as in-page sheets with the variety's page itself behind
  * them, so no pane. Each sheet resolves its first focus, shows exactly one Close, and keeps its main
- * action last inside the form's pinned actions (ADR-0053). On a computer none of it is drawn.
+ * action last inside the form's pinned actions (ADR-0062). On a computer none of it is drawn.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

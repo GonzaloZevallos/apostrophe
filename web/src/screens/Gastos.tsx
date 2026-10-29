@@ -217,7 +217,7 @@ export default function Gastos() {
       </div>
 
       {editTarget !== null && (
-        // An in-page sheet (ADR-0053): Expenses itself is behind it, so no `BehindPane`. On a
+        // An in-page sheet (ADR-0062): Expenses itself is behind it, so no `BehindPane`. On a
         // computer it is the `.capa` it always was, a `div` since the screen is already the `main`.
         <Sheet
           computer={computer}

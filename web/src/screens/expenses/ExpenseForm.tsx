@@ -207,7 +207,7 @@ export default function ExpenseForm({
   )
 
   // On a phone the destructive action sits above the main action, in the pinned actions; on a
-  // computer the form keeps the order it had (ADR-0053).
+  // computer the form keeps the order it had (ADR-0062).
   const deleteButton = target !== 'nuevo' && onRequestDelete !== undefined && (
     <Boton variant="icon" action="delete" ariaLabel={EXPENSES_TEXT.deleteExpense} onClick={() => onRequestDelete(target)} />
   )

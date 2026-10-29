@@ -1,5 +1,5 @@
 /**
- * The withdrawal form as a sheet on a phone (ADR-0053): a direct address opens it over its parent
+ * The withdrawal form as a sheet on a phone (ADR-0062): a direct address opens it over its parent
  * (new over Varieties, edit over the withdrawal's detail), focus is in the first control, and the
  * action sits at the bottom of the sheet within the bottom inset, on the tallest form too (a
  * withdrawal with several lines). Roles, names, text and URLs only.

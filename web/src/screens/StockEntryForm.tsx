@@ -12,7 +12,7 @@
  * Its dialogs sit inline after the form, or in `dialogHost` when the host wants them
  * elsewhere in its own markup. A host that draws the form in a `Sheet` says `pinned`: on a phone
  * the errors, the cost preview, the delete and the main action then sit in the sheet's pinned
- * actions, the delete above the main action (ADR-0053); a computer form keeps the order it had.
+ * actions, the delete above the main action (ADR-0062); a computer form keeps the order it had.
  */
 
 import { type FormEvent, Fragment, useEffect, useState } from 'react'

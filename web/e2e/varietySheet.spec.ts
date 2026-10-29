@@ -1,5 +1,5 @@
 /**
- * A variety's rename as a sheet on a phone (ADR-0053): its action sits at the bottom of the
+ * A variety's rename as a sheet on a phone (ADR-0062): its action sits at the bottom of the
  * sheet within the bottom inset, and the page behind stays locked while the sheet or its
  * leave confirmation is on screen, with the scroll position where it was. A direct address to
  * New variety opens it over Varieties. Roles, names, text and URLs only.
