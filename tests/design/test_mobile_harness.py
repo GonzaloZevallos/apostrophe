@@ -59,7 +59,7 @@ def test_stretch_puts_the_worst_case_data_on_the_sample_business(pinned_client: 
     sample_app.seed(api, today)
     sample_app.stretch(api, today)
 
-    for path in ("/customers", "/varieties", "/expense-categories"):
+    for path in ("/customers", "/api/products", "/expense-categories"):
         names = [row["name"] for row in client.get(path).json()]
         assert NAME_LENGTH in {len(name) for name in names}, path
     assert len(client.get("/business").json()["name"]) == NAME_LENGTH

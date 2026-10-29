@@ -259,7 +259,7 @@ def test_a_business_opened_as_an_ended_account_has_its_onboarding_over_beside_la
         first_run = ended.call("GET", "/first-run")
         assert first_run["kind"] == "none"
         assert first_run["import_notice"] is False
-        assert ended.call("GET", "/varieties")
+        assert ended.call("GET", "/api/products")
 
         progress = huerta.call("GET", "/onboarding-progress")
         assert progress["over"] is False
@@ -336,7 +336,7 @@ def test_the_checklist_account_is_a_business_with_no_onboarding_and_one_priced_v
         business = sample_app.business_id_of(db_path, account.email)
         assert rows_of(db_path, "onboarding", business) == 0
         assert rows_of(db_path, "first_run", business) == 0
-        assert len(api.call("GET", "/varieties")) == 1
+        assert len(api.call("GET", "/api/products")) == 1
 
 
 def test_the_imported_account_is_a_business_the_real_import_loaded(tmp_path: Path) -> None:
@@ -350,7 +350,7 @@ def test_the_imported_account_is_a_business_the_real_import_loaded(tmp_path: Pat
         assert shown["checklist"] == []
         assert shown["import_notice"] is True
         assert api.call("GET", "/onboarding-progress")["over"] is True
-        assert len(api.call("GET", "/varieties")) == 1
+        assert len(api.call("GET", "/api/products")) == 1
         business = sample_app.business_id_of(db_path, account.email)
         with closing(sqlite3.connect(db_path, timeout=30)) as conn:
             stamps = conn.execute(
@@ -529,7 +529,7 @@ def test_primera_vez_is_a_business_with_no_onboarding_and_nothing_priced(tmp_pat
         business = sample_app.business_id_of(db_path, account.email)
         assert rows_of(db_path, "onboarding", business) == 0
         assert rows_of(db_path, "first_run", business) == 0
-        assert api.call("GET", "/varieties") == []
+        assert api.call("GET", "/api/products") == []
 
 
 def test_the_en_curso_account_is_an_onboarding_with_one_step_done(tmp_path: Path) -> None:
@@ -555,7 +555,7 @@ def test_the_en_curso_account_is_an_onboarding_with_one_step_done(tmp_path: Path
             ("partner", "pending"),
             ("categories", "pending"),
         ]
-        assert len(api.call("GET", "/varieties")) == 1
+        assert len(api.call("GET", "/api/products")) == 1
 
 
 def test_the_completo_account_has_every_step_answered_and_its_onboarding_still_open(

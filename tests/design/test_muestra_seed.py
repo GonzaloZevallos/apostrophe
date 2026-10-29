@@ -92,7 +92,7 @@ HINT = (
 
 
 def varieties_by_name(client: TestClient) -> dict[str, int]:
-    return {v["name"]: v["id"] for v in client.get("/varieties").json()}
+    return {v["name"]: v["id"] for v in client.get("/api/products").json()}
 
 
 def movements_of(client: TestClient, variety_id: int) -> list[dict[str, Any]]:
@@ -183,7 +183,7 @@ def test_the_archived_variety_has_one_opening_stock_entry_and_nothing_else(
 ) -> None:
     sample = seeded_at_capture_date(client, clock)
 
-    archived = client.get("/varieties", params={"archived": "true"}).json()
+    archived = client.get("/api/products", params={"archived": "true"}).json()
     assert [(v["id"], v["name"], v["archived"]) for v in archived] == [
         (sample.archived, ARCHIVED_NAME, True)
     ]
@@ -212,7 +212,7 @@ def test_the_archived_variety_is_hidden_and_carries_its_catalog_attributes(
 ) -> None:
     sample = seeded_at_capture_date(client, clock)
 
-    client.post(f"/varieties/{sample.archived}/restore")
+    client.post(f"/api/products/{sample.archived}/restore")
     catalog = {v["id"]: v for v in client.get("/catalog").json()["varieties"]}
 
     assert catalog[sample.archived]["shown"] is False
@@ -229,7 +229,7 @@ def test_the_archived_variety_touches_no_read_of_the_live_business(
 
     assert gone not in [r["variety_id"] for r in client.get("/panel").json()["stock"]]
     assert gone not in [r["variety_id"] for r in client.get("/stock").json()["varieties"]]
-    assert gone not in [v["id"] for v in client.get("/varieties").json()]
+    assert gone not in [v["id"] for v in client.get("/api/products").json()]
     catalog = client.get("/catalog").json()
     assert gone not in [v["id"] for v in catalog["varieties"]]
     assert ARCHIVED_NAME not in (catalog["text"] or "")
@@ -240,7 +240,7 @@ def test_the_archived_variety_touches_no_read_of_the_live_business(
         r["variety_id"]
         for r in client.get("/stock", params={"archived": "true"}).json()["varieties"]
     ]
-    assert gone in [v["id"] for v in client.get("/varieties", params={"archived": "true"}).json()]
+    assert gone in [v["id"] for v in client.get("/api/products", params={"archived": "true"}).json()]
     assert gone in {e["variety_id"] for e in client.get("/stock").json()["entries"]}
 
 
@@ -325,7 +325,7 @@ class RewritingApi(ClientApi):
                     super().call(then_method, then_path, then_body)
                 return answer
         answer = super().call(method, path, body)
-        if method == "POST" and path == "/varieties" and isinstance(body, dict):
+        if method == "POST" and path == "/api/products" and isinstance(body, dict):
             self.ids[body["name"]] = answer["id"]
         return answer
 

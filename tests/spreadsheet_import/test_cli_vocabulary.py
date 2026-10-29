@@ -215,7 +215,7 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     assert customers[AMIGO_CUSTOMER]["vip"] is True
     assert customers[AMIGO_CUSTOMER]["balance"] == 4000
 
-    varieties_by_name = {v["name"]: v["id"] for v in client.get("/varieties").json()}
+    varieties_by_name = {v["name"]: v["id"] for v in client.get("/api/products").json()}
     stock = client.get("/stock").json()
     stock_by_variety = {row["variety_id"]: row for row in stock["varieties"]}
     # 4 origins * 20g in, 9g sold (5 + 1 + 2 + 1): 71g left.

@@ -20,7 +20,7 @@ TODAY = "2026-10-02"
 
 
 def _variety(client: TestClient, name: str = "Zkittlez") -> int:
-    return int(client.post("/varieties", json={"name": name}).json()["id"])
+    return int(client.post("/api/products", json={"name": name}).json()["id"])
 
 
 def _stock_in(client: TestClient, variety_id: int, quantity: str = "50", **extra: Any) -> None:
@@ -337,7 +337,7 @@ def test_movements_of_another_business_variety_answer_404(
 def _priced_variety(client: TestClient, name: str) -> int:
     variety_id = _variety(client, name)
     client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9_000},
     )
     return variety_id

@@ -39,9 +39,9 @@ def _seed(client: TestClient) -> int:
     """One customer with every shape the guard's sums must handle: a two-line sale
     with shipping, left owing; a cash sale; a sale recorded with no customer and
     assigned later; a $0 gift sale; a partial later payment."""
-    variety = client.post("/varieties", json={"name": "Guard variety"}).json()
+    variety = client.post("/api/products", json={"name": "Guard variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 1_000},
     )
     customer = client.post(

@@ -38,9 +38,9 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     leaving business's pending, used and expired join invitations are seeded
     separately, by `_seed_join_invitations`, since they need the business id and a
     session rather than the signed-in client alone."""
-    variety = client.post("/varieties", json={"name": "Removal variety"}).json()
+    variety = client.post("/api/products", json={"name": "Removal variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     customer = client.post(
@@ -315,7 +315,7 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
     # (criterion 6: "keep working during the run").
     with TestClient(app) as client:
         staying = signed_in(client, staying_token)
-        varieties = staying.get("/varieties")
+        varieties = staying.get("/api/products")
         assert varieties.status_code == 200
         assert [v["name"] for v in varieties.json()] == ["Removal variety"]
         customers = staying.get("/customers")
@@ -416,7 +416,7 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
         customer = signed.post(
             "/customers", json={"name": "Vip customer", "phone": "11 2345-6789", "vip": True}
         ).json()
-        variety = signed.post("/varieties", json={"name": "Types variety"}).json()
+        variety = signed.post("/api/products", json={"name": "Types variety"}).json()
         entry = signed.post(
             "/stock/entries",
             json={

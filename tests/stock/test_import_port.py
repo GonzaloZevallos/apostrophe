@@ -26,7 +26,7 @@ TEN_QUANTITY = Quantity.of("10")
 
 
 def _variety_id(client: TestClient, name: str = "Zkittlez") -> int:
-    return int(client.post("/varieties", json={"name": name}).json()["id"])
+    return int(client.post("/api/products", json={"name": name}).json()["id"])
 
 
 def _row(

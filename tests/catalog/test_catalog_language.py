@@ -42,9 +42,9 @@ def settings(tmp_path: Path) -> Settings:
 
 
 def _qualifying_variety(client: TestClient, name: str) -> int:
-    variety: int = client.post("/varieties", json={"name": name}).json()["id"]
+    variety: int = client.post("/api/products", json={"name": name}).json()["id"]
     priced = client.post(
-        f"/varieties/{variety}/prices",
+        f"/api/products/{variety}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     assert priced.status_code == 201, priced.text

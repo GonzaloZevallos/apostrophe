@@ -416,7 +416,7 @@ def test_dry_run_over_the_clean_export_finds_everything_and_reports_mismatches(
     assert "Writable: yes" in report
     assert report.count("Total mismatches") == 1
     assert report.count("\n  Ventas row") == 2  # both non-whole Totals are mismatches
-    assert client.get("/varieties").json() == []
+    assert client.get("/api/products").json() == []
 
 
 def test_real_run_over_the_clean_export_writes_the_numeric_names(
@@ -444,7 +444,7 @@ def test_real_run_over_the_clean_export_writes_the_numeric_names(
     assert code == 0, err.getvalue()
     assert err.getvalue() == ""
 
-    varieties = client.get("/varieties").json()
+    varieties = client.get("/api/products").json()
     assert {v["name"] for v in varieties} == {VARIETY, "Blue Dream"}
 
     customers = client.get("/customers").json()
@@ -517,6 +517,6 @@ def test_real_run_over_the_problem_export_writes_nothing(
 
     assert code == 1
     assert err.getvalue() == ""
-    assert client.get("/varieties").json() == []
+    assert client.get("/api/products").json() == []
     assert client.get("/customers").json() == []
     assert client.get("/stock").json()["varieties"] == []

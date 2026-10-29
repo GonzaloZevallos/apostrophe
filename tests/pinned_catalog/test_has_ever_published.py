@@ -31,11 +31,11 @@ def _ever_published(app: FastAPI, business_name: str = "Primer Negocio") -> bool
 
 
 def _variety(client: TestClient, name: str, aroma: str | None = None) -> int:
-    created = client.post("/varieties", json={"name": name})
+    created = client.post("/api/products", json={"name": name})
     assert created.status_code == 201, created.text
     variety_id = int(created.json()["id"])
     priced = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     assert priced.status_code == 201, priced.text
@@ -69,7 +69,7 @@ def _published(client: TestClient) -> int:
 
 def _rename(client: TestClient, variety_id: int, name: str) -> None:
     # A catalog change: upkeep runs after the save and always answers 200.
-    renamed = client.patch(f"/varieties/{variety_id}", json={"name": name})
+    renamed = client.patch(f"/api/products/{variety_id}", json={"name": name})
     assert renamed.status_code == 200, renamed.text
 
 

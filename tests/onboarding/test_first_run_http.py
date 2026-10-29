@@ -67,14 +67,14 @@ def _stamps(engine: Engine) -> dict[str, Any]:
 
 
 def _variety(client: TestClient, name: str = "Lemon Haze") -> int:
-    created = client.post("/varieties", json={"name": name})
+    created = client.post("/api/products", json={"name": name})
     assert created.status_code == 201, created.text
     return int(created.json()["id"])
 
 
 def _price(client: TestClient, variety_id: int, effective_from: str = "2026-10-01") -> int:
     entry = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": effective_from, "list_price": 11_000},
     )
     assert entry.status_code == 201, entry.text
@@ -186,7 +186,7 @@ def test_the_checklist_goes_when_both_required_steps_are_met_and_never_returns(
     assert met["checklist"] == []
     assert _stamps(engine)["checklist_gone_at"] == NOW
 
-    assert client.delete(f"/varieties/{variety_id}/prices/{price_id}").status_code == 204
+    assert client.delete(f"/api/products/{variety_id}/prices/{price_id}").status_code == 204
     after = _first_run(client)
 
     assert after["kind"] == "start_varieties"
@@ -565,7 +565,7 @@ def _build_checklist_gone_then_price_deleted(client: TestClient, engine: Engine)
     price_id = _price(client, variety_id)
     _stock(client, variety_id)
     assert _first_run(client)["kind"] == "none"  # this read stamps `checklist_gone_at`
-    assert client.delete(f"/varieties/{variety_id}/prices/{price_id}").status_code == 204
+    assert client.delete(f"/api/products/{variety_id}/prices/{price_id}").status_code == 204
 
 
 def _build_open_onboarding(client: TestClient, engine: Engine) -> None:

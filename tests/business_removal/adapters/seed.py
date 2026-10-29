@@ -116,12 +116,12 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         assert customer.status_code == 201, customer.text
         customer_id = customer.json()["id"]
 
-        variety = client.post("/varieties", json={"name": "Lavanda"})
+        variety = client.post("/api/products", json={"name": "Lavanda"})
         assert variety.status_code == 201, variety.text
         variety_id = variety.json()["id"]
 
         price = client.post(
-            f"/varieties/{variety_id}/prices",
+            f"/api/products/{variety_id}/prices",
             json={"effective_from": days.price.isoformat(), "list_price": 5000},
         )
         assert price.status_code == 201, price.text

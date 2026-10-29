@@ -28,10 +28,10 @@ def _ok(response: Any, status: int = 200) -> Any:
 
 
 def _variety(client: TestClient, name: str, price: int) -> int:
-    variety = _ok(client.post("/varieties", json={"name": name}), 201)
+    variety = _ok(client.post("/api/products", json={"name": name}), 201)
     _ok(
         client.post(
-            f"/varieties/{variety['id']}/prices",
+            f"/api/products/{variety['id']}/prices",
             json={"effective_from": "2020-01-01", "list_price": price},
         ),
         201,
@@ -153,11 +153,11 @@ def _variety_row(stock: dict[str, Any], variety_id: int) -> dict[str, Any]:
 
 
 def _archive(client: TestClient, variety_id: int) -> None:
-    _ok(client.post(f"/varieties/{variety_id}/archive"))
+    _ok(client.post(f"/api/products/{variety_id}/archive"))
 
 
 def _restore(client: TestClient, variety_id: int) -> None:
-    _ok(client.post(f"/varieties/{variety_id}/restore"))
+    _ok(client.post(f"/api/products/{variety_id}/restore"))
 
 
 def test_no_figure_of_the_books_moves_when_a_variety_is_archived_and_restored(
@@ -209,8 +209,8 @@ def test_a_restored_variety_comes_back_whole(
     def whole() -> dict[str, Any]:
         stock = _ok(client.get("/stock"))
         return {
-            "variety": _ok(client.get(f"/varieties/{a}")),
-            "prices": _ok(client.get(f"/varieties/{a}/prices")),
+            "variety": _ok(client.get(f"/api/products/{a}")),
+            "prices": _ok(client.get(f"/api/products/{a}/prices")),
             "entries": [e for e in stock["entries"] if e["variety_id"] == a],
             "stock_row": _variety_row(stock, a),
             "catalog": [v for v in _ok(client.get("/catalog"))["varieties"] if v["id"] == a],
@@ -219,13 +219,13 @@ def test_a_restored_variety_comes_back_whole(
     before = whole()
     _archive(client, a)
     assert a not in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
-    assert a not in [v["id"] for v in _ok(client.get("/varieties"))]
+    assert a not in [v["id"] for v in _ok(client.get("/api/products"))]
     assert a not in [v["variety_id"] for v in _ok(client.get("/stock"))["varieties"]]
     assert all(v["id"] != a for v in _ok(client.get("/catalog"))["varieties"])
     _restore(client, a)
 
     assert whole() == before
-    assert a in [v["id"] for v in _ok(client.get("/varieties"))]
+    assert a in [v["id"] for v in _ok(client.get("/api/products"))]
     assert a in [v["variety_id"] for v in _ok(client.get("/stock"))["varieties"]]
     assert a in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
 
@@ -277,7 +277,7 @@ def test_archiving_a_hidden_or_unpriced_variety_sends_nothing(
             json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
         )
     )
-    unpriced = int(_ok(client.post("/varieties", json={"name": "Unpriced"}), 201)["id"])
+    unpriced = int(_ok(client.post("/api/products", json={"name": "Unpriced"}), 201)["id"])
     _publish(client)
     telegram.calls.clear()
 
@@ -295,7 +295,7 @@ def test_the_triggering_request_answers_normally_when_telegram_fails(
     _publish(client)
     telegram.fail_next(TelegramUnreachable())
 
-    archived = client.post(f"/varieties/{gone}/archive")
+    archived = client.post(f"/api/products/{gone}/archive")
 
     assert archived.status_code == 200, archived.text
     assert archived.json()["archived"] is True

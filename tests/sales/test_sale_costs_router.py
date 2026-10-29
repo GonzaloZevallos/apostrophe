@@ -12,9 +12,9 @@ from tests.contract_shapes import assert_matches_fixture
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return int(variety["id"])

@@ -42,9 +42,9 @@ def _status(client: TestClient) -> dict[str, Any] | None:
 
 
 def _register_priced_variety(client: TestClient, name: str) -> dict[str, Any]:
-    variety: dict[str, Any] = client.post("/varieties", json={"name": name}).json()
+    variety: dict[str, Any] = client.post("/api/products", json={"name": name}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     return variety
@@ -84,13 +84,13 @@ def test_a_refused_write_calls_the_fake_zero_times(
     variety = _register_qualifying_variety(client, "V1")
     _publish(client)
     telegram.fail_next(TelegramUnreachable())
-    client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     failed_status = _status(client)
     assert failed_status is not None
     assert failed_status["reason"] == "telegram_unreachable"
     telegram.calls.clear()
 
-    refused = client.post("/varieties", json={"name": ""})
+    refused = client.post("/api/products", json={"name": ""})
     assert refused.status_code >= 400
 
     assert telegram.calls == []  # a task that ran would have retried and succeeded
@@ -100,7 +100,7 @@ def test_a_refused_write_calls_the_fake_zero_times(
 def test_a_recorded_price_entry_triggers_an_edit(
     client: TestClient, telegram: FakeTelegram
 ) -> None:
-    variety = client.post("/varieties", json={"name": "V1"}).json()
+    variety = client.post("/api/products", json={"name": "V1"}).json()
     client.post(
         "/stock/entries",
         json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
@@ -109,7 +109,7 @@ def test_a_recorded_price_entry_triggers_an_edit(
     telegram.calls.clear()
 
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
 
@@ -124,10 +124,10 @@ def test_deleting_the_only_price_entry_triggers_an_edit(
 ) -> None:
     variety = _register_qualifying_variety(client, "V1")
     _publish(client)
-    entry_id = client.get(f"/varieties/{variety['id']}/prices").json()[0]["id"]
+    entry_id = client.get(f"/api/products/{variety['id']}/prices").json()[0]["id"]
     telegram.calls.clear()
 
-    deleted = client.delete(f"/varieties/{variety['id']}/prices/{entry_id}")
+    deleted = client.delete(f"/api/products/{variety['id']}/prices/{entry_id}")
     assert deleted.status_code == 204
 
     assert len(_edits(telegram)) == 1
@@ -165,7 +165,7 @@ def test_a_variety_renamed_triggers_an_edit(client: TestClient, telegram: FakeTe
     _publish(client)
     telegram.calls.clear()
 
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text
 
     assert len(_edits(telegram)) == 1
@@ -174,9 +174,9 @@ def test_a_variety_renamed_triggers_an_edit(client: TestClient, telegram: FakeTe
 def test_a_variety_selling_out_and_coming_back_triggers_edits(
     client: TestClient, telegram: FakeTelegram
 ) -> None:
-    sellable = client.post("/varieties", json={"name": "Sellable"}).json()
+    sellable = client.post("/api/products", json={"name": "Sellable"}).json()
     client.post(
-        f"/varieties/{sellable['id']}/prices",
+        f"/api/products/{sellable['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     client.post(
@@ -230,15 +230,15 @@ def test_a_message_deleted_then_a_price_change_keeps_showing_message_gone(
     telegram.calls.clear()
 
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-02-01", "list_price": 9500},
     )
     status = _status(client)
     assert status is not None
     assert status["reason"] == "message_gone"
 
-    entry_id = client.get(f"/varieties/{variety['id']}/prices").json()[-1]["id"]
-    client.delete(f"/varieties/{variety['id']}/prices/{entry_id}")
+    entry_id = client.get(f"/api/products/{variety['id']}/prices").json()[-1]["id"]
+    client.delete(f"/api/products/{variety['id']}/prices/{entry_id}")
 
     status_after = _status(client)
     assert status_after is not None
@@ -252,7 +252,7 @@ def test_resilience_a_failed_trigger_never_fails_the_save_and_clears_on_the_next
     _publish(client)
 
     telegram.fail_next(TelegramUnreachable())
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text  # the save itself always succeeds
 
     status = _status(client)
@@ -261,7 +261,7 @@ def test_resilience_a_failed_trigger_never_fails_the_save_and_clears_on_the_next
     assert status["reason"] == "telegram_unreachable"
     last_published_on = status["last_published_on"]
 
-    renamed_again = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Again"})
+    renamed_again = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Again"})
     assert renamed_again.status_code == 200, renamed_again.text
 
     recovered = _status(client)
@@ -279,9 +279,9 @@ def test_too_long_text_is_not_sent_and_the_pin_keeps_its_text(
     _publish(client)
 
     for i in range(1, 18):
-        over = client.post("/varieties", json={"name": f"Over{i}"}).json()
+        over = client.post("/api/products", json={"name": f"Over{i}"}).json()
         client.post(
-            f"/varieties/{over['id']}/prices",
+            f"/api/products/{over['id']}/prices",
             json={"effective_from": "2026-01-01", "list_price": 9000},
         )
         client.post(
@@ -302,7 +302,7 @@ def test_too_long_text_is_not_sent_and_the_pin_keeps_its_text(
     telegram.calls.clear()
 
     # One more trigger over the limit: still refused, the pin keeps its last text.
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text
 
     assert _edits(telegram) == []
@@ -336,9 +336,9 @@ def test_editing_a_stock_entry_triggers_an_edit(client: TestClient, telegram: Fa
     """`PUT /stock/entries/{id}` (the brief's own "stock entries ... edited"): moving
     the entry to a different variety sells the first one out and brings the second
     one in, changing the text."""
-    sold = client.post("/varieties", json={"name": "WasStocked"}).json()
+    sold = client.post("/api/products", json={"name": "WasStocked"}).json()
     client.post(
-        f"/varieties/{sold['id']}/prices",
+        f"/api/products/{sold['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     entry = _add_stock_entry(client, sold["id"])
@@ -391,7 +391,7 @@ def test_nothing_is_attempted_after_a_token_change_until_publicar(
     assert changed.json()["previous_pin_left"] is True
     telegram.calls.clear()
 
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text
 
     assert telegram.calls == []
@@ -417,7 +417,7 @@ def test_nothing_is_attempted_after_a_channel_change_until_publicar(
     assert changed.json()["previous_pin_left"] is True
     telegram.calls.clear()
 
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text
 
     assert telegram.calls == []

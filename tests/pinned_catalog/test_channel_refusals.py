@@ -84,9 +84,9 @@ def _status(client: TestClient) -> dict[str, Any] | None:
 
 
 def _qualifying_variety(client: TestClient) -> dict[str, Any]:
-    variety: dict[str, Any] = client.post("/varieties", json={"name": "V1"}).json()
+    variety: dict[str, Any] = client.post("/api/products", json={"name": "V1"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     client.post(
@@ -152,7 +152,7 @@ def test_upkeep_records_the_channel_reason_for_every_cause(
     assert client.post("/pinned-catalog/publish").status_code == 200
     telegram.fail_next(TelegramRefused(cause), "edit")
 
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
 
     assert renamed.status_code == 200, renamed.text  # upkeep never fails the save
     status = _status(client)

@@ -206,9 +206,9 @@ def _seed(client: TestClient, sales: int) -> None:
     """`sales` sales through the HTTP API: three per customer, every other one left
     owing, every seventh without a customer, spread over September, and a later
     payment for a third of the customers that owe."""
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()["id"]
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()["id"]
     priced = client.post(
-        f"/varieties/{variety}/prices",
+        f"/api/products/{variety}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     assert priced.status_code == 201, priced.text

@@ -17,9 +17,9 @@ TODAY = "2026-10-02"  # tests/conftest.py's own TODAY
 
 
 def _priced_variety(client: TestClient, *, price: int = 1_000, name: str = "Variety") -> int:
-    variety: dict[str, int] = client.post("/varieties", json={"name": name}).json()
+    variety: dict[str, int] = client.post("/api/products", json={"name": name}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": price},
     )
     return variety["id"]

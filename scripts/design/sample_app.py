@@ -157,10 +157,10 @@ def seed(api: Api, today: date) -> Sample:
     api.call("PUT", "/pricing-settings", {"is_bulk_pricing": True, "is_vip_customers": True})
 
     def variety(name: str, list_price: int, bulk: int | None = None) -> int:
-        made: int = api.call("POST", "/varieties", {"name": name})["id"]
+        made: int = api.call("POST", "/api/products", {"name": name})["id"]
         api.call(
             "POST",
-            f"/varieties/{made}/prices",
+            f"/api/products/{made}/prices",
             {
                 "effective_from": ago(40),
                 "list_price": list_price,
@@ -336,7 +336,7 @@ def seed(api: Api, today: date) -> Sample:
     )
     api.call("PUT", f"/stock/varieties/{archived}/threshold", {"quantity": "15"})
     entry(ago(40), archived, "opening_stock", "25", None)
-    api.call("POST", f"/varieties/{archived}/archive")
+    api.call("POST", f"/api/products/{archived}/archive")
 
     return Sample(
         debtor=nico,
@@ -368,10 +368,10 @@ def stretch(api: Api, today: date) -> None:
     assert len(named("Cliente")) == 60 == len(LONG_NAME)
     api.call("PATCH", "/business", {"name": named("Negocio")})
     category: int = api.call("POST", "/expense-categories", {"name": named("Categoría")})["id"]
-    variety: int = api.call("POST", "/varieties", {"name": named("Variedad")})["id"]
+    variety: int = api.call("POST", "/api/products", {"name": named("Variedad")})["id"]
     api.call(
         "POST",
-        f"/varieties/{variety}/prices",
+        f"/api/products/{variety}/prices",
         {
             "effective_from": (today - timedelta(days=40)).isoformat(),
             "list_price": WORST,
@@ -427,7 +427,7 @@ def stretch(api: Api, today: date) -> None:
     )
     purchase = before["cash"] - before["profit"]
     if purchase > 0:
-        spare: int = api.call("POST", "/varieties", {"name": "Variedad sin ventas"})["id"]
+        spare: int = api.call("POST", "/api/products", {"name": "Variedad sin ventas"})["id"]
         api.call(
             "POST",
             "/stock/entries",
@@ -595,10 +595,10 @@ def drop_onboarding_row(db_path: Path, business: int) -> None:
 def price_first_variety(api: Api, today: date) -> None:
     """One variety, priced from `today`: the first step of the Onboarding and of the
     checklist, and nothing else."""
-    made: int = api.call("POST", "/varieties", {"name": "Primera variedad"})["id"]
+    made: int = api.call("POST", "/api/products", {"name": "Primera variedad"})["id"]
     api.call(
         "POST",
-        f"/varieties/{made}/prices",
+        f"/api/products/{made}/prices",
         {
             "effective_from": today.isoformat(),
             "list_price": 10_000,
@@ -700,7 +700,7 @@ def onboarding_frame_account(env: dict[str, str], base: str, today: date, name: 
         # account must stay open.
         for step in OPTIONAL_STEPS:
             api.call("POST", "/onboarding-progress/passes", {"step": step, "as": "skipped"})
-        (variety,) = api.call("GET", "/varieties")
+        (variety,) = api.call("GET", "/api/products")
         api.call(
             "POST",
             "/stock/entries",

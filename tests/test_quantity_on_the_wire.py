@@ -22,7 +22,7 @@ def _property_names(node: Any) -> set[str]:
 
 
 def _variety(client: TestClient) -> int:
-    return int(client.post("/varieties", json={"name": "Zkittlez"}).json()["id"])
+    return int(client.post("/api/products", json={"name": "Zkittlez"}).json()["id"])
 
 
 def _threshold_of(client: TestClient, variety_id: int) -> Any:

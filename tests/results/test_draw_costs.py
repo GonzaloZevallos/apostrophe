@@ -21,10 +21,10 @@ from app.stock.adapters.draw_costs import SqlDrawCosts
 
 
 def _variety_id(client: TestClient, name: str, list_price: int = 10_000) -> int:
-    variety = client.post("/varieties", json={"name": name}).json()
+    variety = client.post("/api/products", json={"name": name}).json()
     variety_id = int(variety["id"])
     client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return variety_id

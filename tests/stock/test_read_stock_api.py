@@ -17,13 +17,13 @@ TODAY = "2026-10-02"
 
 
 def _variety_id(client: TestClient, name: str = "Zkittlez") -> int:
-    return int(client.post("/varieties", json={"name": name}).json()["id"])
+    return int(client.post("/api/products", json={"name": name}).json()["id"])
 
 
 def _priced_variety_id(client: TestClient, name: str = "Zkittlez", list_price: int = 10_000) -> int:
     variety_id = _variety_id(client, name)
     client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return variety_id

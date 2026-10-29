@@ -16,13 +16,13 @@ TODAY = "2026-10-02"
 
 
 def _variety(client: TestClient, name: str) -> int:
-    variety: int = client.post("/varieties", json={"name": name}).json()["id"]
+    variety: int = client.post("/api/products", json={"name": name}).json()["id"]
     return variety
 
 
 def _price(client: TestClient, variety_id: int) -> None:
     response = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     assert response.status_code == 201, response.text

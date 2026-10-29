@@ -21,9 +21,9 @@ def _switch(client: TestClient, *, bulk: bool, vip: bool) -> None:
 def _bulk_priced_variety(client: TestClient, name: str, *, vip_price: int | None = None) -> None:
     # An entry stores nothing for a rule that is off (ADR-0034), so it is recorded with both on.
     _switch(client, bulk=True, vip=True)
-    variety_id = client.post("/varieties", json={"name": name}).json()["id"]
+    variety_id = client.post("/api/products", json={"name": name}).json()["id"]
     price = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={
             "effective_from": "2026-01-01",
             "list_price": 11_000,

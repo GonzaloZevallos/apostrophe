@@ -25,9 +25,9 @@ def _add_variety_with_long_aroma(client: TestClient, index: int) -> None:
     characters, `catalog.aroma_too_long`'s own limit): enough of these push the text
     over Telegram's 4096 UTF-16-unit limit (confirmed below the module, 18 of them
     land at 4469 units)."""
-    variety = client.post("/varieties", json={"name": f"V{index}"}).json()
+    variety = client.post("/api/products", json={"name": f"V{index}"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     client.post(
@@ -348,9 +348,9 @@ def test_the_test_copy_and_the_published_copy_both_match_get_catalog_s_text(
     """PRD metric 3 (text fidelity): the source text handed to the port equals
     `GET /catalog`'s text, bold left-to-right paired the same way the in-app preview
     is; Probarlo's test send and Publicar's post carry the exact same rendering."""
-    variety = client.post("/varieties", json={"name": "Blue Dream"}).json()
+    variety = client.post("/api/products", json={"name": "Blue Dream"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     client.post(

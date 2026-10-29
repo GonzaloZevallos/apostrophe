@@ -25,9 +25,9 @@ from tests.statement_log import captured_statements
 
 
 def _variety(client: TestClient, name: str, price: int = 10_000) -> int:
-    variety = client.post("/varieties", json={"name": name}).json()
+    variety = client.post("/api/products", json={"name": name}).json()
     priced = client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2020-01-01", "list_price": price},
     )
     assert priced.status_code == 201, priced.text

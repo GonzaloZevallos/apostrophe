@@ -21,14 +21,14 @@ def _states(answer: dict[str, Any]) -> dict[str, str]:
 
 
 def _variety(client: TestClient, name: str = "Lemon Haze") -> int:
-    created = client.post("/varieties", json={"name": name})
+    created = client.post("/api/products", json={"name": name})
     assert created.status_code == 201, created.text
     return int(created.json()["id"])
 
 
 def _price(client: TestClient, variety_id: int, effective_from: str = "2026-10-01") -> int:
     entry = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": effective_from, "list_price": 11_000},
     )
     assert entry.status_code == 201, entry.text
@@ -134,7 +134,7 @@ def test_a_last_pass_with_no_price_left_does_not_end_it_and_advance_ends_it_once
     variety_id, entry_id = _required_steps(client)
     for step in ("header_footer", "bot", "partner"):
         assert _pass(client, step, "skipped").json()["over"] is False
-    assert client.delete(f"/varieties/{variety_id}/prices/{entry_id}").status_code == 204
+    assert client.delete(f"/api/products/{variety_id}/prices/{entry_id}").status_code == 204
 
     last = _pass(client, "categories")
 

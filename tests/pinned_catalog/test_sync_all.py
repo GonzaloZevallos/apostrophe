@@ -63,10 +63,10 @@ def test_the_day_change_syncs_a_price_that_takes_effect_tomorrow(
     tomorrow is invisible to today's catalog, so the first Publicar goes out empty.
     Moving the `MovableClock` to tomorrow and calling `sync_all_published` the way the
     ticker does picks it up without anyone touching the business."""
-    variety = client.post("/varieties", json={"name": "Tomorrow's Price"}).json()
+    variety = client.post("/api/products", json={"name": "Tomorrow's Price"}).json()
     tomorrow = business_day(clock()) + timedelta(days=1)
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": tomorrow.isoformat(), "list_price": 9000},
     )
     client.post(
@@ -108,10 +108,10 @@ def test_last_checked_on_retries_a_failure_and_skips_a_fresh_success(
     """`last_checked_on` (plan, "How a sync runs"): it advances on every outcome except
     `telegram_unreachable`, so `SqlDueBusinesses.due` keeps offering a failed business
     to the next `sync_all_published` call, and stops offering one that just succeeded."""
-    variety = client.post("/varieties", json={"name": "V1"}).json()
+    variety = client.post("/api/products", json={"name": "V1"}).json()
     tomorrow = business_day(clock()) + timedelta(days=1)
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": tomorrow.isoformat(), "list_price": 9000},
     )
     client.post(

@@ -21,9 +21,9 @@ from tests.pricing_switches import set_switches
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return int(variety["id"])
@@ -32,9 +32,9 @@ def _variety(client: TestClient, list_price: int = 10_000) -> int:
 def _variety_with_bulk(
     client: TestClient, list_price: int = 10_000, bulk_price: int = 8_000, bulk_minimum: str = "50"
 ) -> int:
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={
             "effective_from": "2026-01-01",
             "list_price": list_price,
@@ -220,9 +220,9 @@ def test_deleting_a_sale_sums_returned_grams_per_variety_sorted_by_variety_id(
     # (second variety first) proves the response is sorted by `variety_id`, not by the
     # order the lines were recorded in.
     first_variety = _variety(client)
-    second_variety = client.post("/varieties", json={"name": "Sativa"}).json()["id"]
+    second_variety = client.post("/api/products", json={"name": "Sativa"}).json()["id"]
     client.post(
-        f"/varieties/{second_variety}/prices",
+        f"/api/products/{second_variety}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     sale_id = client.post(
@@ -508,7 +508,7 @@ def test_adding_a_price_entry_after_the_sale_does_not_reprice_it(client: TestCli
     # Effective on the sale's date, so it would become the sale's "current price"
     # if `SqlSales.get` ever repriced from the `PriceBook` instead of the stored row.
     added = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={
             "effective_from": TODAY.isoformat(),
             "list_price": 99_000,
@@ -530,9 +530,9 @@ def test_deleting_a_price_entry_after_the_sale_does_not_reprice_it(client: TestC
     ).json()["id"]
     before = client.get(f"/sales/{sale_id}").json()
 
-    history = client.get(f"/varieties/{variety_id}/prices").json()
+    history = client.get(f"/api/products/{variety_id}/prices").json()
     entry_id = history[0]["id"]
-    deleted = client.delete(f"/varieties/{variety_id}/prices/{entry_id}")
+    deleted = client.delete(f"/api/products/{variety_id}/prices/{entry_id}")
     assert deleted.status_code == 204
 
     after = client.get(f"/sales/{sale_id}").json()

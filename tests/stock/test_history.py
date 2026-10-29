@@ -25,9 +25,9 @@ TODAY = date(2026, 10, 2)
 
 
 def _variety(client: TestClient, name: str) -> int:
-    variety_id = int(client.post("/varieties", json={"name": name}).json()["id"])
+    variety_id = int(client.post("/api/products", json={"name": name}).json()["id"])
     price = {"effective_from": "2026-01-01", "list_price": 10_000}
-    client.post(f"/varieties/{variety_id}/prices", json=price)
+    client.post(f"/api/products/{variety_id}/prices", json=price)
     return variety_id
 
 

@@ -28,9 +28,9 @@ PAYMENT_KEYS = {"state", "still_owed"}
 
 
 def _variety(client: TestClient, name: str = "Lavanda", **prices: int | str) -> int:
-    variety = client.post("/varieties", json={"name": name}).json()
+    variety = client.post("/api/products", json={"name": name}).json()
     response = client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": PRICE, **prices},
     )
     assert response.status_code == 201, response.text

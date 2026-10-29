@@ -37,10 +37,10 @@ def _publish_then_change_the_text(client: TestClient, clock: MovableClock) -> No
     tomorrow — unseen by today's catalog, so a sync run tomorrow has a changed text to
     send without any background trigger consuming the fake's `fail_next` first."""
     _publish(client)
-    variety = client.post("/varieties", json={"name": "V1"}).json()
+    variety = client.post("/api/products", json={"name": "V1"}).json()
     tomorrow = business_day(clock()) + timedelta(days=1)
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": tomorrow.isoformat(), "list_price": 9000},
     )
     client.post(
@@ -104,9 +104,9 @@ def test_one_businesss_non_telegram_failure_never_stops_the_others_syncing(
     from the setup writes themselves."""
     tomorrow = business_day(clock()) + timedelta(days=1)
 
-    a_variety = client.post("/varieties", json={"name": "A1"}).json()
+    a_variety = client.post("/api/products", json={"name": "A1"}).json()
     client.post(
-        f"/varieties/{a_variety['id']}/prices",
+        f"/api/products/{a_variety['id']}/prices",
         json={"effective_from": tomorrow.isoformat(), "list_price": 9000},
     )
     client.post(
@@ -115,9 +115,9 @@ def test_one_businesss_non_telegram_failure_never_stops_the_others_syncing(
     )
     _publish(client)
 
-    b_variety = other_client.post("/varieties", json={"name": "B1"}).json()
+    b_variety = other_client.post("/api/products", json={"name": "B1"}).json()
     other_client.post(
-        f"/varieties/{b_variety['id']}/prices",
+        f"/api/products/{b_variety['id']}/prices",
         json={"effective_from": tomorrow.isoformat(), "list_price": 9000},
     )
     other_client.post(

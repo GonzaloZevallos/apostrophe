@@ -21,13 +21,13 @@ def _edits(telegram: FakeTelegram) -> list[tuple[str, ...]]:
 
 
 def _publish_a_catalog_with_a_bulk_price(client: TestClient) -> None:
-    variety = client.post("/varieties", json={"name": "V1"}).json()
+    variety = client.post("/api/products", json={"name": "V1"}).json()
     client.post(
         "/stock/entries",
         json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     priced = client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={
             "effective_from": "2026-01-01",
             "list_price": 9000,
@@ -101,9 +101,9 @@ def _leave_the_pin_failed(client: TestClient, telegram: FakeTelegram) -> None:
     """A pin that failed to sync needs a send whatever the text says, so an upkeep that
     runs retries at once and a task that never ran leaves it failed: that tells a
     scheduled upkeep from a no-op, independently of what the text holds."""
-    variety_id = client.get("/varieties").json()[0]["id"]
+    variety_id = client.get("/api/products").json()[0]["id"]
     telegram.fail_next(TelegramUnreachable())
-    client.patch(f"/varieties/{variety_id}", json={"name": "V1 Renamed"})
+    client.patch(f"/api/products/{variety_id}", json={"name": "V1 Renamed"})
     status = client.get("/pinned-catalog/status").json()["status"]
     assert status["reason"] == "telegram_unreachable"
     telegram.calls.clear()
@@ -173,8 +173,8 @@ def test_a_pin_published_while_bulk_is_off_has_no_bulk_line(
     _put(client, bulk=False, vip=True)
     telegram.calls.clear()
 
-    variety_id = client.get("/varieties").json()[0]["id"]
-    client.patch(f"/varieties/{variety_id}", json={"name": "V1 Renamed"})
+    variety_id = client.get("/api/products").json()[0]["id"]
+    client.patch(f"/api/products/{variety_id}", json={"name": "V1 Renamed"})
 
     edits = _edits(telegram)
     assert len(edits) == 1

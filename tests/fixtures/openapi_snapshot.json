@@ -2660,6 +2660,104 @@
         "title": "PricingSettingsBody",
         "type": "object"
       },
+      "ProductDetailOut": {
+        "description": "One product's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived product).",
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceEntryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "removal": {
+            "anyOf": [
+              {
+                "enum": [
+                  "delete",
+                  "archive"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removal"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "current_price",
+          "archived",
+          "removal"
+        ],
+        "title": "ProductDetailOut",
+        "type": "object"
+      },
+      "ProductIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProductIn",
+        "type": "object"
+      },
+      "ProductOut": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceEntryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "current_price",
+          "archived"
+        ],
+        "title": "ProductOut",
+        "type": "object"
+      },
       "ProgressOut": {
         "properties": {
           "can_skip_rest": {
@@ -2819,7 +2917,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One An\u00e1lisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -3012,7 +3110,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
         "properties": {
           "bill": {
             "anyOf": [
@@ -3611,104 +3709,6 @@
         "title": "ValidationError",
         "type": "object"
       },
-      "VarietyDetailOut": {
-        "description": "One variety's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived variety).",
-        "properties": {
-          "archived": {
-            "title": "Archived",
-            "type": "boolean"
-          },
-          "current_price": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PriceEntryOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "removal": {
-            "anyOf": [
-              {
-                "enum": [
-                  "delete",
-                  "archive"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Removal"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "current_price",
-          "archived",
-          "removal"
-        ],
-        "title": "VarietyDetailOut",
-        "type": "object"
-      },
-      "VarietyIn": {
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "title": "VarietyIn",
-        "type": "object"
-      },
-      "VarietyOut": {
-        "properties": {
-          "archived": {
-            "title": "Archived",
-            "type": "boolean"
-          },
-          "current_price": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PriceEntryOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "current_price",
-          "archived"
-        ],
-        "title": "VarietyOut",
-        "type": "object"
-      },
       "VarietyRowOut": {
         "properties": {
           "cost": {
@@ -4268,6 +4268,574 @@
         "summary": "Get Analysis",
         "tags": [
           "results"
+        ]
+      }
+    },
+    "/api/products": {
+      "get": {
+        "description": "Each product's current price as of `on` (today when omitted, docs/adr/0011),\ninside the session's own business. Archived products only with `archived=true`.",
+        "operationId": "list_all_products_api_products_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "On"
+            }
+          },
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProductOut"
+                  },
+                  "title": "Response List All Products Api Products Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List All Products",
+        "tags": [
+          "products"
+        ]
+      },
+      "post": {
+        "operationId": "register_product_api_products_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Register Product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}": {
+      "delete": {
+        "operationId": "delete_product_api_products__product_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Product",
+        "tags": [
+          "products"
+        ]
+      },
+      "get": {
+        "operationId": "get_product_api_products__product_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Product",
+        "tags": [
+          "products"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_product_api_products__product_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rename Product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/archive": {
+      "post": {
+        "operationId": "archive_product_api_products__product_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Archive Product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/current-price": {
+      "get": {
+        "description": "The price entry in force on `on` (today when omitted); 404 when there is none.",
+        "operationId": "current_price_api_products__product_id__current_price_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "On"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceEntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Current Price",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/prices": {
+      "get": {
+        "operationId": "price_history_api_products__product_id__prices_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PriceEntryOut"
+                  },
+                  "title": "Response Price History Api Products  Product Id  Prices Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Price History",
+        "tags": [
+          "products"
+        ]
+      },
+      "post": {
+        "operationId": "record_price_entry_api_products__product_id__prices_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceEntryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceEntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Price Entry",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/prices/{entry_id}": {
+      "delete": {
+        "operationId": "delete_price_entry_api_products__product_id__prices__entry_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Price Entry",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/restore": {
+      "post": {
+        "operationId": "restore_product_api_products__product_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Restore Product",
+        "tags": [
+          "products"
         ]
       }
     },
@@ -6945,574 +7513,6 @@
         "summary": "Edit Withdrawal",
         "tags": [
           "stock"
-        ]
-      }
-    },
-    "/varieties": {
-      "get": {
-        "description": "Each variety's current price as of `on` (today when omitted, docs/adr/0011),\ninside the session's own business. Archived varieties only with `archived=true`.",
-        "operationId": "list_varieties_varieties_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "on",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "format": "date",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "On"
-            }
-          },
-          {
-            "in": "query",
-            "name": "archived",
-            "required": false,
-            "schema": {
-              "default": false,
-              "title": "Archived",
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/VarietyOut"
-                  },
-                  "title": "Response List Varieties Varieties Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "List Varieties",
-        "tags": [
-          "varieties"
-        ]
-      },
-      "post": {
-        "operationId": "register_variety_varieties_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VarietyIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Register Variety",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}": {
-      "delete": {
-        "operationId": "delete_variety_varieties__variety_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Delete Variety",
-        "tags": [
-          "varieties"
-        ]
-      },
-      "get": {
-        "operationId": "get_variety_varieties__variety_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyDetailOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get Variety",
-        "tags": [
-          "varieties"
-        ]
-      },
-      "patch": {
-        "operationId": "rename_variety_varieties__variety_id__patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VarietyIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Rename Variety",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/archive": {
-      "post": {
-        "operationId": "archive_variety_varieties__variety_id__archive_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Archive Variety",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/current-price": {
-      "get": {
-        "description": "The price entry in force on `on` (today when omitted); 404 when there is none.",
-        "operationId": "current_price_varieties__variety_id__current_price_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "query",
-            "name": "on",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "format": "date",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "On"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PriceEntryOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Current Price",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/prices": {
-      "get": {
-        "operationId": "price_history_varieties__variety_id__prices_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/PriceEntryOut"
-                  },
-                  "title": "Response Price History Varieties  Variety Id  Prices Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Price History",
-        "tags": [
-          "varieties"
-        ]
-      },
-      "post": {
-        "operationId": "record_price_entry_varieties__variety_id__prices_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PriceEntryIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PriceEntryOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Record Price Entry",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/prices/{entry_id}": {
-      "delete": {
-        "operationId": "delete_price_entry_varieties__variety_id__prices__entry_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "entry_id",
-            "required": true,
-            "schema": {
-              "title": "Entry Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Delete Price Entry",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/restore": {
-      "post": {
-        "operationId": "restore_variety_varieties__variety_id__restore_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Restore Variety",
-        "tags": [
-          "varieties"
         ]
       }
     }

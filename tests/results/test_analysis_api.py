@@ -12,9 +12,9 @@ from tests.conftest import TODAY, MovableClock
 
 
 def _variety_with_price(client: TestClient, name: str, list_price: int) -> int:
-    variety = client.post("/varieties", json={"name": name}).json()
+    variety = client.post("/api/products", json={"name": name}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return int(variety["id"])

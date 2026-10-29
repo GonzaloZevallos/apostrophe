@@ -24,9 +24,9 @@ def _business_id_of_customer(engine: Engine, customer_id: int) -> int:
 
 
 def _variety(client: TestClient) -> int:
-    variety = client.post("/varieties", json={"name": "Import variety"}).json()
+    variety = client.post("/api/products", json={"name": "Import variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 1_000},
     )
     variety_id: int = variety["id"]

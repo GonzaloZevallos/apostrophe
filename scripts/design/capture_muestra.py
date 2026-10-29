@@ -187,7 +187,7 @@ def _seeded(day: date) -> _ClientApi:
 
 
 def _varieties(api: _ClientApi) -> list[str]:
-    names = {v["id"]: v for v in api.get("/varieties")}
+    names = {v["id"]: v for v in api.get("/api/products")}
     rows = []
     for row in api.get("/stock")["varieties"]:
         variety = names[row["variety_id"]]
@@ -223,12 +223,12 @@ def _archived(api: _ClientApi) -> list[str]:
     the variety is restored for an instant, then archived again: archive and restore touch
     no stock, lot or price (varieties.md), and this is the capture's last read."""
     stock = {row["variety_id"]: row for row in api.get("/stock?archived=true")["varieties"]}
-    archived = api.get("/varieties?archived=true")
+    archived = api.get("/api/products?archived=true")
     for variety in archived:
-        api.call("POST", f"/varieties/{variety['id']}/restore")
+        api.call("POST", f"/api/products/{variety['id']}/restore")
     shown = {v["id"]: v["shown"] for v in api.get("/catalog")["varieties"]}
     for variety in archived:
-        api.call("POST", f"/varieties/{variety['id']}/archive")
+        api.call("POST", f"/api/products/{variety['id']}/archive")
     rows = []
     for variety in archived:
         price = variety["current_price"]
@@ -244,7 +244,7 @@ def _archived(api: _ClientApi) -> list[str]:
 
 
 def _movements(api: _ClientApi) -> list[str]:
-    names = {v["id"]: v["name"] for v in api.get("/varieties")}
+    names = {v["id"]: v["name"] for v in api.get("/api/products")}
     rows = []
     for row in api.get("/stock")["varieties"]:
         listed = api.get(f"/stock/varieties/{row['variety_id']}/movements")

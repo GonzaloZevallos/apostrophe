@@ -15,9 +15,9 @@ PRICE = 1_000
 
 
 def _priced_variety(client: TestClient) -> int:
-    variety: dict[str, int] = client.post("/varieties", json={"name": "Variety"}).json()
+    variety: dict[str, int] = client.post("/api/products", json={"name": "Variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": PRICE},
     )
     return variety["id"]

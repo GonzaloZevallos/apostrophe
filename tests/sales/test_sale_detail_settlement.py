@@ -52,9 +52,9 @@ def calls(app: FastAPI) -> dict[str, int]:
 
 
 def _variety(client: TestClient) -> int:
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     return int(variety["id"])
