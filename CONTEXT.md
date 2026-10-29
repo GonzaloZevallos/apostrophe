@@ -167,258 +167,258 @@ Gramos opcionales por debajo de los cuales el Stock de una Variety cuenta como b
 _In the app_: Warn below
 _Avoid_: reorder point, alert level
 
-## Results
+## Resultados
 
 **Cost of goods sold**:
-What the grams sold or gifted in a period cost, taken from the lots they came out of as those lots stand today, oldest first; it is worked out again whenever an earlier stock entry changes, however far back (ADR-0009). Part of it may be pending cost.
+Lo que costaron los gramos vendidos o regalados en un período, tomados de los Lots de los que salieron tal como están hoy, primero el más antiguo; se vuelve a calcular cada vez que cambia una Stock entry anterior, por lejos que quede en el pasado (ADR-0009). Una parte puede ser Pending cost.
 _In the app_: Cost of goods sold
 _Avoid_: COGS, average cost, cost per gram
 
 **Expense**:
-Money spent on something other than flower, filed under one expense category. Flower bought is a purchase, never an expense.
+Dinero que sale por algo que no es flor, archivado bajo una Expense category. La flor que se compra es una Purchase, nunca una Expense.
 _In the app_: Expense
 _Avoid_: cost, outflow, bill
 
 **Expense category**:
-A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A new business starts with four defaults in its stored language at opening (in English "Growing supplies", "Packaging", "Shipping and transport" and "Other"), which a language change never renames; earlier businesses keep the defaults they received, Spanish ones included. A category cannot be removed while it has expenses.
+El rubro propio de un Business para sus Expenses, con un nombre único dentro de ese Business sin importar mayúsculas, minúsculas ni espacios. Un Business nuevo arranca con cuatro valores por defecto en su Stored language al abrirse (en inglés "Growing supplies", "Packaging", "Shipping and transport" y "Other"), que un cambio de idioma nunca renombra; los Businesses anteriores conservan los valores que recibieron, los de español incluidos. Una Expense category no se puede eliminar mientras tenga Expenses.
 _Avoid_: type, tag, label, account, cost center
 _In the app_: Category
 
 **Profit**:
-Sales (shipping included, paid or not) minus cost of goods sold, stock shortfall, promotion cost, own-use cost and expenses, over a period, each counted on its own date; purchases never enter it. When any cost is pending, it is worked out over the costed part and marked "and N g without cost", N adding the pending grams sold, gifted, taken out by negative adjustments and withdrawn in the period. It may be negative and is then shown with a minus sign; in the app: Profit.
+Las Sales (con el envío incluido, estén pagas o no) menos el Cost of goods sold, el Stock shortfall, el costo de Promotion, el costo de Own use y las Expenses, en un período, cada uno contado en su propia fecha; las Purchases nunca entran. Cuando algún costo está pendiente, se calcula sobre la parte con costo y se marca con "and N g without cost", donde N suma los gramos pendientes vendidos, regalados, sacados por Adjustments negativos y retirados en el período. Puede ser negativo y entonces se muestra con signo menos; en la app: Profit.
 _Avoid_: margin, earnings, net
 _In the app_: Profit
 
 **Cash**:
-Payments received minus expenses minus purchases, over a period: the money that actually moved.
+Los Payments recibidos menos las Expenses menos las Purchases, en un período: el dinero que realmente se movió.
 _In the app_: Cash
 _Avoid_: cash flow, balance, profit
 
 ## Telegram
 
 **Catalog**:
-The text that offers every unarchived, shown variety with stock above zero and a current price today: its emoji, name, indica share, aroma and prices, between the business's header and footer. It keeps its **bold** markers and its own money format ($11.000). _In the app_: Catalog.
+El texto que ofrece cada Variety sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre el texto de apertura y el de cierre del Business. Conserva sus marcadores **bold** y su propio formato de dinero ($11.000). _In the app_: Catalog.
 _Avoid_: menu, price list, flyer
 _In the app_: Catalog
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram channel chat by its own bot, edited in place whenever the catalog text changes and never posted again in that chat. When nothing qualifies, it shows the header, the empty line ("Nothing to offer for now." in English) and the footer; its fixed lines follow the business's shown language.
+El mensaje del Catalog fijado en el chat del canal de Telegram del Business por su propio bot, editado en el lugar cada vez que cambia el texto del Catalog y nunca enviado de nuevo en ese chat. Cuando nada califica, muestra el texto de apertura, la línea vacía ("Nothing to offer for now." en inglés) y el texto de cierre; sus líneas fijas siguen el Shown language del Business.
 _Avoid_: post, broadcast
 _In the app_: Pinned message
 
 **Test send**:
-The catalog sent only to the user's own Telegram chat, using the bot settings typed on the screen. They are saved only if it succeeds. A successful test since the settings last changed is required before Publish. _In the app_: Test it.
+El Catalog enviado solo al chat de Telegram propio del User, con los Bot settings tipeados en la pantalla. Se guardan solo si el envío tiene éxito. Hace falta un Test send exitoso desde el último cambio de los Bot settings antes de Publish. _In the app_: Test it.
 _Avoid_: preview, draft
 _In the app_: Test it
 
 **Upkeep**:
-The automatic edit of the pinned catalog after a change that may affect its text, or at the start of a new Argentina day. It only ever edits; it never posts or pins. _In the app_: no word of its own.
+La edición automática del Pinned catalog después de un cambio que puede afectar su texto, o al comenzar un nuevo día en hora de Argentina. Solo edita: nunca envía ni fija. _In the app_: no tiene palabra propia.
 _Avoid_: sync, auto-publish, refresh
 _In the app_: no word of its own
 
 **Last published text**:
-The source text (markers included) last sent to the pinned message of the current bot and channel chat. _In the app_: no word of its own.
+El texto fuente (marcadores incluidos) enviado por última vez al Pinned catalog del bot y del chat del canal actuales. _In the app_: no tiene palabra propia.
 _Avoid_: cache, last snapshot
 _In the app_: no word of its own
 
-## Language
+## Lenguaje
 
 **Stock status**:
-How a variety stands on stock, the first that fits: no entries (nothing has moved: no stock entry, no sale or gift, no withdrawal), sold out (stock at or below zero), low (above zero and under its threshold), ok. It is told by shape and word, never by color alone. _In the app_: no entries, sold out, low, ok.
+Cómo está una Variety en cuanto a Stock, el primero que corresponda: sin movimientos (no se movió nada: ninguna Stock entry, ninguna Sale ni Gift, ningún Stock withdrawal), agotado (Stock en cero o menos), bajo (mayor que cero y por debajo de su Low-stock threshold), ok. Se distingue por forma y palabra, nunca solo por color. _In the app_: no entries, sold out, low, ok.
 _Avoid_: stock level, alert, availability
 
 **Days left**:
-A variety's stock divided by the average daily grams sold, gifted or withdrawn over the last 30 days, rounded down to whole days. It is not shown when stock is at or below zero or nothing went out in those 30 days. _In the app_: At the pace of the last 30 days.
+El Stock de una Variety dividido por el promedio diario de gramos vendidos, regalados o retirados en los últimos 30 días, redondeado hacia abajo a días enteros. No se muestra cuando el Stock está en cero o menos o cuando no salió nada en esos 30 días. _In the app_: At the pace of the last 30 days.
 _Avoid_: runway, coverage, forecast
 
 **Opening stock**:
-A stock entry recording grams already on hand when a business starts keeping stock. It is an ordinary origin with no limit per variety, and its lot costs $0 unless a cost is recorded. _In the app_: Initial stock.
+Una Stock entry que registra los gramos que ya había cuando un Business empieza a llevar Stock. Es un origen común, sin límite por Variety, y su Lot cuesta $0 salvo que se registre un costo. _In the app_: Initial stock.
 _Avoid_: initial balance, baseline, starting inventory
 
 **Harvest**:
-A stock entry of grams the business grew. Its lot costs $0 unless a cost is recorded; cultivation inputs are expenses, never spread over harvests. _In the app_: Harvest.
+Una Stock entry de gramos que el Business cultivó. Su Lot cuesta $0 salvo que se registre un costo; los insumos de cultivo son Expenses y nunca se reparten entre las Harvests. _In the app_: Harvest.
 _Avoid_: crop, yield, production
 
 **Adjustment**:
-A stock entry recording the difference between a physical count and the stock the app shows, plus or minus. A negative adjustment carries no cost and takes its grams out of the oldest lots, as grams going out do. _In the app_: Adjustment.
+Una Stock entry que registra la diferencia entre un conteo físico y el Stock que muestra la app, en más o en menos. Un Adjustment negativo no tiene costo y saca sus gramos de los Lots más antiguos, igual que los gramos que salen. _In the app_: Adjustment.
 _Avoid_: correction, recount, shrinkage, write-off
 
 **Catalog attributes**:
-What a variety shows in the catalog: whether it is shown, its emoji, its indica share and its aroma. They never affect prices, stock or sales, and are edited only on the variety's own page. _In the app_: In the catalog.
+Lo que una Variety muestra en el Catalog: si se muestra, su emoji, su Indica share y su Aroma. Nunca afectan los precios, el Stock ni las Sales, y se editan solo en la página propia de la Variety. _In the app_: In the catalog.
 _Avoid_: catalog settings, metadata, tags
 
 **Hidden variety**:
-A variety the seller chose to leave out of the catalog, whatever its price or stock. Hidden means only that: a hidden variety is still in Varieties and every picker. A variety out for lack of price or stock is not hidden, and an archived variety is a separate thing that keeps its hidden flag. _In the app_: Hidden.
+Una Variety que el vendedor eligió dejar fuera del Catalog, sin importar su precio o su Stock. Oculta significa solo eso: una Hidden variety sigue figurando en Varieties y en todos los selectores. Una Variety que queda afuera por falta de precio o de Stock no está oculta, y una Archived variety es otra cosa que conserva su marca de Hidden variety. _In the app_: Hidden.
 _Avoid_: inactive, disabled, archived (that is an archived variety)
 
 **Indica share**:
-A variety's indica percentage, a whole number from 0 to 100; sativa is the rest. Optional; unknown means the catalog leaves its line out. _In the app_: % indica.
+El porcentaje de indica de una Variety, un número entero de 0 a 100; el resto es sativa. Opcional; si no se conoce, el Catalog deja afuera su línea. _In the app_: % indica.
 _Avoid_: genetics, ratio, type
 
 **Aroma**:
-One line of free text describing a variety's aroma and flavour for the catalog, up to 200 characters. _In the app_: Aroma/flavor.
+Una línea de texto libre que describe el aroma y el sabor de una Variety para el Catalog, de hasta 200 caracteres. _In the app_: Aroma/flavor.
 _Avoid_: description, notes, flavor profile
 
 **Catalog header and footer**:
-A business's own text opening and closing the catalog, multi-line and up to 500 characters each; a blank one is left out. A new business starts with the defaults in its stored language at opening (in English "🌿 **CATALOG** 🌿" and "📩 Questions and orders by private message."); from then on they are its own data, edited only in Settings, and a language change never rewrites them. Earlier businesses keep what they stored.
+El texto propio de un Business que abre y cierra el Catalog, de varias líneas y de hasta 500 caracteres cada uno; uno en blanco se deja afuera. Un Business nuevo arranca con los valores por defecto en su Stored language al abrirse (en inglés "🌿 **CATALOG** 🌿" y "📩 Questions and orders by private message."); desde entonces son datos propios, que se editan solo en Settings, y un cambio de idioma nunca los reescribe. Los Businesses anteriores conservan lo que guardaron.
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:
-The payment recorded together with a sale paid in full in cash or by transfer. It settles that sale alone, never an older debt, and is deleted only with its sale. _In the app_: Paid in cash / Paid by transfer.
+El Payment registrado junto con una Sale pagada por completo en efectivo o por transferencia. Salda solo esa Sale, nunca una deuda más antigua, y se elimina solo junto con su Sale. _In the app_: Paid in cash / Paid by transfer.
 _Avoid_: cash sale, immediate payment
 
 **Settlement**:
-Which sales a later payment covers: the customer's oldest debt first (sales by date, then recording order; payments by date, then recording order), whatever the payment's own date. It is worked out live from the sales and payments as they stand now, and never stored. _In the app_: On account of the sale of dd/mm.
+Qué Sales cubre un Payment posterior: primero la deuda más antigua del Customer (las Sales por fecha y después por orden de registro; los Payments por fecha y después por orden de registro), sin importar la fecha del propio Payment. Se calcula en el momento a partir de las Sales y los Payments tal como están ahora, y nunca se guarda. _In the app_: On account of the sale of dd/mm.
 _Avoid_: allocation, application, imputación
 
 **Credit**:
-A balance below zero, left only when a sale that payments had settled is deleted; recording never creates one. It applies automatically to the customer's next sales left owing and counts in no debt figure. _In the app_: In your favor.
+Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Payments habían saldado; registrar nunca crea uno. Se aplica automáticamente a las próximas Sales del Customer que queden con deuda y no cuenta en ninguna cifra de deuda. _In the app_: In your favor.
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
-Every sale of a business that is not fully paid once settlement is applied, partially paid ones included, each counted once. _In the app_: owes you (in Sales) and the count line of the "Owed to you" section of Customers and of Home's "Owed to you" block.
+Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. _In the app_: owes you (en Sales) y la línea del conteo de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
 _Avoid_: unpaid orders, pending sales, open invoices
 
 **Total owed**:
-The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading of the "Owed to you" section of Customers and of Home's "Owed to you" block.
+La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. _In the app_: el título de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
 _Avoid_: receivables, outstanding
 
 **Margin**:
-A variety's sales of costed grams in a period minus what those grams cost, in pesos; gifts add their cost and $0 of sales, so it can be negative. Sales of costed grams are, per line, line total × costed grams ÷ line grams, half up; pending grams are left out and marked "and N g without cost". _In the app_: Margin.
+Las Sales de gramos con costo de una Variety en un período menos lo que costaron esos gramos, en pesos; los Gifts suman su costo y $0 de Sales, así que puede ser negativo. Las Sales de gramos con costo son, por línea, el total de la línea × gramos con costo ÷ gramos de la línea, redondeando la mitad hacia arriba; los gramos pendientes se dejan afuera y se marcan con "and N g without cost". _In the app_: Margin.
 _Avoid_: profit, earnings, markup, ganancia
 
 **Margin percentage**:
-A variety's margin over its sales of costed grams in the period. There is none when those are $0, as for a variety only gifted or with every gram pending. _In the app_: Margin %.
+El Margin de una Variety sobre sus Sales de gramos con costo en el período. No hay ninguno cuando esas Sales son $0, como en una Variety solo regalada o con todos los gramos pendientes. _In the app_: Margin %.
 _Avoid_: markup, rentabilidad, return
 
 **Average margin**:
-A month's total margin across its varieties over the month's sales of costed grams, marked when any variety carries pending grams. _In the app_: Average margin.
+El Margin total de un mes en todas sus Varieties sobre las Sales de gramos con costo del mes, marcado cuando alguna Variety tiene gramos pendientes. _In the app_: Average margin.
 _Avoid_: average profit, mean margin
 
 **First record**:
-The earliest sale, stock entry, stock withdrawal, payment or expense a business recorded in the app. Analysis's history and its since-the-start totals begin there, so no withdrawal's cost is ever left out of them. _In the app_: Since the first record.
+El registro más antiguo de un Business en la app: una Sale, una Stock entry, un Stock withdrawal, un Payment o una Expense. El historial de Analysis y sus totales desde el inicio empiezan ahí, así que el costo de ningún Stock withdrawal queda afuera de ellos. _In the app_: Since the first record.
 _Avoid_: start date, opening date, inception
 
 **Best week**:
-Of the last 8 Monday-to-Sunday weeks, the one with the highest sales, shipping included; on a tie the most recent wins, and none is marked when all are $0. _In the app_: Best week.
+De las últimas 8 semanas de lunes a domingo, la que tiene el total de Sales más alto, con el envío incluido; en un empate gana la más reciente, y no se marca ninguna cuando todas son $0. _In the app_: Best week.
 _Avoid_: top week, record week
 
 **Best weekday**:
-Since the first record, the weekday with the highest sales total; on a tie the earlier day from Monday to Sunday wins, and none is marked when all are $0. _In the app_: Best day.
+Desde el First record, el día de la semana con el total de Sales más alto; en un empate gana el día que viene antes de lunes a domingo, y no se marca ninguno cuando todos son $0. _In the app_: Best day.
 _Avoid_: peak day, top day
 
 **Stock shortfall**:
-What the grams taken out by negative adjustments in a period cost, on the adjustment's date, from their lots as they stand today, oldest first; a part beyond every lot is pending, never $0. It lowers profit. _In the app_: Stock shortfall.
+Lo que costaron los gramos sacados por Adjustments negativos en un período, en la fecha del Adjustment, tomados de sus Lots tal como están hoy, primero el más antiguo; una parte más allá de todo Lot queda pendiente, nunca en $0. Baja el Profit. _In the app_: Stock shortfall.
 _Avoid_: shrinkage, write-off, loss, merma
 
 **Stock withdrawal**:
-A dated record of grams of one or more varieties taken out of stock for one reason, Promotion or Own use, with an optional note. No money moves and Cash is untouched. Its grams are costed on its date from the lots, oldest first, and a part beyond every lot is pending cost, never $0. The cost shows as its own line per reason and lowers profit; it never enters a variety's margin or the cost of goods sold. It can be edited or deleted at any time. _In the app_: Withdrawal, recorded with the action "Take from stock"; the reasons read Promotion and Own use.
+Un registro con fecha de gramos de una o más Varieties sacados del Stock por un solo motivo, Promotion u Own use, con una nota opcional. No se mueve dinero y el Cash no se toca. Sus gramos se costean en su fecha a partir de los Lots, primero el más antiguo, y una parte más allá de todo Lot es Pending cost, nunca $0. El costo se muestra como una línea propia por motivo y baja el Profit; nunca entra en el Margin de una Variety ni en el Cost of goods sold. Se puede editar o eliminar en cualquier momento. _In the app_: Withdrawal, registrado con la acción "Take from stock"; los motivos se leen Promotion y Own use.
 _Avoid_: gift (a gift is a sale line at $0 price), shrinkage, write-off
 
 **Publish**:
-Posting and pinning the catalog in the business's channel chat, or editing the already pinned message there. It always sends, even when the text has not changed. _In the app_: Publish.
+Enviar y fijar el Catalog en el chat del canal del Business, o editar ahí el Pinned catalog que ya existe. Siempre envía, incluso cuando el texto no cambió. _In the app_: Publish.
 _Avoid_: broadcast, push, sync
 
 **Bot settings**:
-A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. _In the app_: Integrations, in Settings.
+El único token de bot de Telegram de un Business, guardado cifrado y que nunca se vuelve a mostrar una vez guardado, más el chat de su canal y el chat propio del User. Cambiar cualquiera de ellos exige un nuevo Test send antes de publicar. _In the app_: Integrations, en Settings.
 _Avoid_: integration, connection, config
 
 **Out of date**:
-The pinned catalog's state when customers are not seeing today's catalog: the last automatic update failed (Telegram down, bot can't post, message deleted, text too long), or a new token or channel was tested but not yet published. It shows one fixed reason and, when the current chat has been published to, the last publish date. Its only other state is up to date. _In the app_: Out of date / Up to date.
+El estado del Pinned catalog cuando los Customers no están viendo el Catalog de hoy: la última actualización automática falló (Telegram caído, el bot no puede enviar, mensaje eliminado, texto demasiado largo), o se probó un token o un canal nuevo pero todavía no se envió. Muestra un solo motivo fijo y, cuando ya se envió algo al chat actual, la fecha del último envío. Su único otro estado es el de actualizado. _In the app_: Out of date / Up to date.
 _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
-Home's one-screen view of a business in Argentina time. Today shows what was sold today, money owed and stock per variety. Week and Month add cost of goods sold, stock shortfall, promotion and own-use cost, expenses, grams gifted, purchases, profit and cash; read only, every figure from the server. _In the app_: Home (tabs Today · Week · Month).
+La vista de una sola pantalla de Home sobre un Business, en hora de Argentina. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Variety. Week y Month suman Cost of goods sold, Stock shortfall, el costo de Promotion y de Own use, Expenses, gramos regalados, Purchases, Profit y Cash; solo lectura, cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
 _Avoid_: dashboard, overview, home, summary, Analysis
 
 **Average sale**:
-A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
+El total de Sales de un período, con el envío incluido, dividido por su cantidad de Sales (no de líneas), redondeando la mitad hacia arriba al peso entero. No se muestra cuando el período no tiene Sales.
 _Avoid_: average ticket, mean order, ticket promedio
 
 **Operator**:
-The person who runs the installation from outside the app. They run scripts/invite-business.sh, scripts/reset-password.sh and the business removal, deploy, keep the backups and run the restore drill. Not a user of any business; nothing they do happens from a signed-in session, and they never see or choose a user's password.
+La persona que maneja la instalación desde afuera de la app. Ejecuta scripts/invite-business.sh, scripts/reset-password.sh y la Business removal, hace el deploy, mantiene los backups y ejecuta el Restore drill. No es un User de ningún Business; nada de lo que hace sucede desde una Session iniciada, y nunca ve ni elige la contraseña de un User.
 _Avoid_: admin, administrator, superuser, owner, PM
 
 **Business export**:
-One JSON file holding every recorded fact of a business as stored, each record naming what it refers to, with no computed figure, password hash, secret or invitation. It is written only as the first step of removing the business.
+Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Se escribe solo como primer paso de la Business removal.
 _Avoid_: backup, dump, archive
 
 **Business removal**:
-The operator's command that exports a business and then deletes every row of it, users and invitations included, along with its users' login-attempt history, in one transaction. Nothing is deleted unless the export was written, read back, and its counts match what is deleted.
+El comando del Operator que hace el Business export de un Business y después borra cada fila de él, los Users y las Invitations incluidos, junto con el historial de intentos de login de sus Users, en una sola transacción. No se borra nada a menos que el Business export se haya escrito, releído y sus conteos coincidan con lo que se borra.
 _Avoid_: offboarding, account deletion, purge, wipe
 
 
 **Login brake**:
-What stops password guessing at login and at a password change. An email is locked after 5 failures in a row, and a client address after 20 failed logins within 15 minutes, each for 15 minutes. Every refused attempt counts for both, a wrong current password on a password change included. A successful login, password change or reset resets only the email's count, and both locks answer the same. _In the app_: the brake message under Sign in and in Change password.
+Lo que frena el adivinado de contraseñas al iniciar sesión y en un Password change. Un email se bloquea tras 5 fallos seguidos, y una dirección de origen tras 20 logins fallidos en un plazo de 15 minutos, cada uno por 15 minutos. Cada intento rechazado cuenta para ambos, una contraseña actual incorrecta en un Password change incluida. Un login, un Password change o un reseteo exitosos reinician solo el conteo del email, y ambos bloqueos responden igual. _In the app_: el mensaje del freno bajo Sign in y en Change password.
 _Avoid_: rate limit, throttle, ban, captcha
 
 **Restore drill**:
-A script the operator runs by hand to restore the backup into a scratch target, never the running app. It reports the integrity check, row counts and the time of the restored copy's latest change.
+Un script que el Operator ejecuta a mano para restaurar el backup en un destino de prueba, nunca en la app en marcha. Informa el chequeo de integridad, los conteos de filas y la hora del último cambio de la copia restaurada.
 _Avoid_: backup test, recovery check, DR test
 
 **Spreadsheet import**:
-The one-time load of a business's history from the `Control_de_ventas_y_gastos` spreadsheet into that business. The installation's operator runs it on switch day, and only into a business with no records yet. It never appears in the app; on screen, imported data is the same as data entered by hand.
+La carga única del historial de un Business desde la planilla `Control_de_ventas_y_gastos` en ese Business. La corre el Operator de la instalación el día del traspaso, y solo en un Business sin registros todavía. Nunca aparece en la app; en pantalla, los datos cargados desde la planilla son iguales a los cargados a mano.
 _Avoid_: migration, sync, upload, restore
 
 **Unfinished row**:
-A row of the sheet's Ventas, Entradas or Gastos that the spreadsheet import leaves out because the sheet itself marks it not ready: Ventas by text instead of a number in its Total formula, Entradas and Gastos by a non-blank Revisar. It is listed in the import's report with the sheet's own text, creates no customer, no VIP and no kept spelling, and never blocks the import.
+Una fila de Ventas, Entradas o Gastos de la planilla que el Spreadsheet import deja afuera porque la propia planilla la marca como no lista: las de Ventas por tener texto en lugar de un número en su fórmula Total, las de Entradas y Gastos por tener un Revisar que no está en blanco. Se lista en el reporte del Spreadsheet import con el texto de la propia planilla, no crea ningún Customer, ningún VIP ni ninguna grafía conservada, y nunca frena el Spreadsheet import.
 _Avoid_: incomplete row, invalid row, skipped row
 _In the app_: (operator terminal only; never shown on screen)
 
 **Session**:
-A signed-in device of one user, lasting 30 days as a cookie and a token. A change of that user's password closes every session of theirs, except the device that changed it by Change, which gets a fresh one. _In the app_: Session (Sign out).
+Un dispositivo con sesión iniciada de un User, que dura 30 días como una cookie y un token. Un Password change de ese User cierra todas sus Sessions, salvo el dispositivo que lo hizo con Change, que recibe una nueva. _In the app_: Session (Sign out).
 _Avoid_: login, device, token, connection
 
 **Password change**:
-A user setting a new password with their current one, from Settings → Your account. The only rule is at least 10 characters, and the same password is accepted. It closes every other session of that user and retires their unused reset links, while the device that made the change stays signed in. _In the app_: Change password.
+Un User que define una contraseña nueva con la actual, desde Settings → Your account. La única regla es como mínimo 10 caracteres, y se acepta la misma contraseña. Cierra todas las demás Sessions de ese User y retira sus Reset links sin usar, mientras que el dispositivo que hizo el cambio sigue con la sesión iniciada. _In the app_: Change password.
 _Avoid_: password update, rotation, edit password
 
 **Reset link**:
-A link the operator prints with scripts/reset-password.sh that lets one user choose a new password themselves, once, within 24 hours, without the current one. A user has at most one live link: a newer link or any password change retires it. A retired, used, expired or unknown link answers the same 404. _In the app_: link ("This link no longer works").
+Un link que el Operator imprime con scripts/reset-password.sh y que permite a un User elegir por sí mismo una contraseña nueva, una sola vez, en un plazo de 24 horas, sin la actual. Un User tiene como máximo un link activo: un link más nuevo o cualquier Password change lo retira. Un link retirado, usado, vencido o desconocido responde el mismo 404. _In the app_: link ("This link no longer works").
 _Avoid_: recovery code, reset token, magic link, forgot-password email
 
 **Navigation**:
-The app's fixed structure for a business: the tabs, More, Settings, and the one rule that gives every screen its chrome and its way back. It decides where each capability is reached from, never what it does. In the app: no word of its own.
+La estructura fija de la app para un Business: las pestañas, More, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace. En la app: no tiene palabra propia.
 _Avoid_: menu, sitemap, routing, shell
 
 **Tab root**:
-A screen reached straight from the bar or the sidebar (Home, Sales, Customers, Varieties, Expenses, Analysis, More); it shows the bar and "+ New sale". Every other screen is a card or detail (with a back arrow to its parent) or a form or sheet (with "Close").
+Una pantalla a la que se llega directo desde la barra o la barra lateral (Home, Sales, Customers, Varieties, Expenses, Analysis, More); muestra la barra y "+ New sale". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
 _Avoid_: home, main screen, section
 
 **Settings**:
-The one place holding every business-wide setting, in groups: Business, Users, Prices, Integrations, Catalog message, Expense categories, Appearance and Your account. A setting of one variety lives on the variety, never here, and nothing of the operator's is here. _In the app_: Settings.
+El único lugar que reúne cada configuración de todo el Business, en grupos: Business, Users, Prices, Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de una sola Variety vive en la Variety, nunca acá, y nada del Operator está acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
-Four steps on Home for a business that existed before the Onboarding shipped and has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Done" when met; the checklist goes for good the first time the two required steps are met and never returns. A brand-new business gets the Onboarding instead.
+Cuatro pasos en Home para un Business que existía antes de que saliera el Onboarding y todavía no hizo las dos cosas: ponerle precio a una Variety para hoy y registrar una Stock entry. Esos dos pasos, más publicar el Pinned catalog y sumar un segundo User, que son opcionales. Cada paso se calcula a partir de los datos del Business y dice "Done" cuando se cumple; la First-run checklist desaparece para siempre la primera vez que se cumplen los dos pasos obligatorios y nunca vuelve. Un Business recién creado recibe el Onboarding en su lugar.
 _Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
 
 **Onboarding**:
-The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted, in place of the first-run checklist. It has two required steps (a variety priced today, its opening stock) and optional ones (catalog header and footer, Telegram bot, a partner, expense categories), each saving what Settings or the variety's page saves. It resumes where it was left, is over for good once its closing screen "Done" is reached or an import loads the business, and is never offered to a joined user's business or one that existed before it shipped.
+La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo, en lugar de la First-run checklist. Tiene dos pasos obligatorios (una Variety con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories), y cada uno guarda lo que guardan Settings o la página de la Variety. Retoma donde quedó, termina para siempre cuando se llega a su pantalla de cierre "Done" o un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
 _Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
-A device's choice of Light or Dark. It is made only in Settings → Appearance, applies at once and is kept on that device alone. It is not tied to a user or a business, survives logging out and holds nothing else. With none stored, the app opens light whatever the system setting.
+La elección de Light o Dark de un dispositivo. Se hace solo en Settings → Appearance, se aplica de inmediato y se conserva solo en ese dispositivo. No está atada a un User ni a un Business, sobrevive al cierre de sesión y no guarda nada más. Sin ninguna guardada, la app abre en modo claro sin importar la configuración del sistema.
 _Avoid_: preference, dark mode setting, skin, user setting
 
 **Own chat lookup**:
-Finding the seller's own chat number among the private chats that wrote to the business's bot, using the token Test it would use. It fills the own chat field only when exactly one person wrote privately, shows only the number and saves nothing; settings are still saved only by a successful test send. _In the app_: Find my chat.
+Buscar el número del chat propio del vendedor entre los chats privados que le escribieron al bot del Business, con el token que usaría Test it. Completa el campo del chat propio solo cuando escribió exactamente una persona en privado, muestra solo el número y no guarda nada; los Bot settings se siguen guardando solo con un Test send exitoso. _In the app_: Find my chat.
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. Planned in GH-318 (not yet in the code): what changes beside this entry is told in the closing block below. _In the app_: VIP price.
+Un precio por gramo opcional en una Price entry, para los VIP customers: un peso entero mayor que $0 y menor que el List price de esa Price entry, independiente del Bulk price. Nunca se muestra en el Catalog. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre de abajo. _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
-Which of bulk pricing (Bulk price) and VIP customers a business uses: two independent switches. A rule switched off is hidden and stops applying to new sales, while everything stored for it is kept. _In the app_: Prices, in Settings.
+Cuáles de Bulk price y VIP customers usa un Business: dos interruptores independientes. Una regla desactivada queda oculta y deja de aplicarse a las Sales nuevas, mientras que todo lo guardado para ella se conserva. _In the app_: Prices, en Settings.
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Archived variety**:
-A variety the seller took out of every list and picker (Varieties, What you have left, New sale, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. Archive is the action offered for a variety with history, but an archived variety may have none. It keeps its name reserved and its hidden flag, is seen and restored only from Archived, has a read-only page, and restoring brings it back exactly as it was. In the app: Archived.
+Una Variety que el vendedor sacó de toda lista y selector (Varieties, What you have left, New sale, los formularios de Stock entry y de Price entry, el Catalog y el Pinned catalog), mientras que todo registro pasado conserva su nombre y sus cifras tal cual. Archive es la acción que se ofrece para una Variety con historial, pero una Archived variety puede no tener ninguno. Conserva reservado su nombre y su marca de Hidden variety, se ve y se restaura solo desde Archived, tiene una página de solo lectura y al restaurarla vuelve exactamente como estaba. En la app: Archived.
 _Avoid_: deleted, hidden, inactive, disabled
 
 **Variety history**:
-Any sale line of a variety (gifts and special prices included) or any stock entry of it (any origin, an adjustment of either sign included), or any stock withdrawal line of it, worked out live and never stored. A variety with history can only be archived. A variety without history can be deleted for good, and its price entries, threshold and catalog attributes go with it.
+Cualquier Sale line de una Variety (los Gifts y los Special prices incluidos) o cualquier Stock entry de ella (de cualquier origen, un Adjustment de cualquiera de los dos signos incluido), o cualquier línea de Stock withdrawal de ella; se calcula en el momento y nunca se guarda. Una Variety con historial solo se puede archivar. Una Variety sin historial se puede eliminar para siempre, y sus Price entries, su Low-stock threshold y sus Catalog attributes se van con ella.
 _Avoid_: usage, activity, movements, references
 
 **Promotion**:
