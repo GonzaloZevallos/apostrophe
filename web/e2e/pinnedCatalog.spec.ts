@@ -12,6 +12,7 @@
 import { CATALOG, HOME, SETTINGS_INTEGRATIONS, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openCatalog } from './helpers/openMas.js'
@@ -39,13 +40,11 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('9000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await openCatalog(page)
   await expectPath(page, CATALOG)
@@ -84,8 +83,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.getByRole('alert')).toHaveCount(0)
   await expect(page.getByText('Saved on')).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Test it' }).click()
-  await expect(page.getByText('Test sent')).toBeVisible()
+  await expectToast(page, 'Test sent', () => page.getByRole('button', { name: 'Test it' }).click())
   await expect(page.getByText('Saved on')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Publish' })).toHaveCount(0)
 
@@ -97,15 +95,14 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   )
   await page.getByRole('button', { name: 'Test it' }).click()
   await tested
-  await expect(page.getByText('Test sent')).toBeVisible()
+  // The second "Test sent" lands on the still-mounted first one and records nothing: the link, Publish and "Up to date" below prove the save.
 
   // Everything is saved, so leaving asks nothing: the link leads to the catalog screen.
   await page.getByRole('link', { name: 'Go to the catalog' }).click()
   await expectPath(page, CATALOG)
   await expect(page.getByRole('button', { name: 'Publish' })).toBeEnabled()
 
-  await page.getByRole('button', { name: 'Publish' }).click()
-  await expect(page.getByText('Catalog published')).toBeVisible()
+  await expectToast(page, 'Catalog published', () => page.getByRole('button', { name: 'Publish' }).click())
   await expect(page.getByText('Up to date')).toBeVisible()
 
   await page.goto(HOME)

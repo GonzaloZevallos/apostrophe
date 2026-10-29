@@ -9,6 +9,7 @@
 import { expectPath } from './helpers/url.js'
 import { CATALOG, CUSTOMERS, CUSTOMER_PAYMENT, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -101,9 +102,10 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await page.getByRole('combobox', { name: 'Category' }).selectOption({ label: 'Packaging' })
   await page.getByLabel('Amount').fill('3200')
   await page.getByLabel('Details').fill('Cajas de cartón')
-  await page.getByRole('button', { name: 'Save the expense' }).click()
-  await expectPath(page, MORE)
-  await expect(page.getByText('Expense saved')).toBeVisible()
+  await expectToast(page, 'Expense saved', async () => {
+    await page.getByRole('button', { name: 'Save the expense' }).click()
+    await expectPath(page, MORE)
+  })
 
   await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }).click()
   await expect(page.getByText('Cajas de cartón')).toBeVisible()

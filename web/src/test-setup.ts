@@ -5,6 +5,7 @@ import { afterEach, beforeEach } from 'vitest'
 // `main.tsx` installs it for the app): a component test renders keys
 // through it without any module outside `i18n/` importing the instance.
 import './i18n/testing'
+import { ASYNC_UTIL_TIMEOUT } from './test/asyncTimeout'
 import { assertNoEnglishMisses, clearMissingKeys, missingKeys } from './i18n/missingKeys'
 
 // The ceiling of every `findBy*` and `waitFor`: the library's own 1000 ms only holds
@@ -12,7 +13,7 @@ import { assertNoEnglishMisses, clearMissingKeys, missingKeys } from './i18n/mis
 // value (a test may await up to three sequential `findBy*`) and at least 2x the
 // longest passing test measured under load. A call site sets its own timeout only to
 // make it longer than this, with a comment saying why, never shorter.
-configure({ asyncUtilTimeout: 10_000 })
+configure({ asyncUtilTimeout: ASYNC_UTIL_TIMEOUT })
 
 // jsdom has no scrolling: it prints "Not implemented" for `window.scrollTo`, which the screens
 // call to come back to their place after Record payment. A test that cares spies on it.

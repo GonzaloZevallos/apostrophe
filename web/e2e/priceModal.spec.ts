@@ -8,6 +8,7 @@
 import type { Page } from '@playwright/test'
 import { VARIETIES, VARIETY, pathTo } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectPath } from './helpers/url.js'
 
@@ -17,8 +18,7 @@ async function addVariety(page: Page, name: string): Promise<void> {
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByPlaceholder('Variety name').fill(name)
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
 }
 
 /** Signs up, makes two varieties and opens "New price" of Rosa; returns Rosa's id. */

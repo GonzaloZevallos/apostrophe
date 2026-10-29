@@ -284,6 +284,54 @@ test('Assign customer opens the "Pick a customer" sheet without "No customer"; c
   expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
 })
 
+test('assigning a customer shows the customer the second GET answers, never the PUT answer written into the cache', async () => {
+  // The PUT's `SaleOut` carries no `bill` and no line cost: the screen must wait for the
+  // detail read back from `GET /sales/{id}` (ADR-0053) and show nothing of the PUT answer.
+  let resolveSecondGet: (response: Response) => void = () => {
+    throw new Error('the second GET never started')
+  }
+  let gets = 0
+  const noCustomer = { ...SALE, customer: null, payment: 'none', bill: { ...SALE.bill, balance: null } }
+  vi.mocked(fetch).mockImplementation((input, init) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    const method = init?.method ?? 'GET'
+    if (method === 'GET' && url === '/sales/10') {
+      gets += 1
+      if (gets === 1) return Promise.resolve(jsonResponse(200, noCustomer))
+      return new Promise<Response>((resolve) => {
+        resolveSecondGet = resolve
+      })
+    }
+    if (method === 'GET' && url === '/customers?q=Nico') {
+      return Promise.resolve(jsonResponse(200, [NICO_SEARCH_RESULT]))
+    }
+    if (method === 'PUT' && url === '/sales/10/customer') {
+      const { bill: _bill, ...saleOut } = SALE
+      return Promise.resolve(
+        jsonResponse(200, { ...saleOut, customer: { id: 5, name: 'From The PUT', vip: false } }),
+      )
+    }
+    return Promise.resolve(jsonResponse(200, []))
+  })
+  renderDetalle()
+  await screen.findByText('3,5 g · No customer')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
+  fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
+  await userEvent.click(await screen.findByText('Nico'))
+
+  await waitFor(() => expect(gets).toBe(2))
+  expect(screen.queryByText(/From The PUT/)).not.toBeInTheDocument()
+  expect(screen.getByText('3,5 g · No customer')).toBeInTheDocument()
+
+  resolveSecondGet(
+    jsonResponse(200, { ...SALE, customer: NICO, bill: { ...SALE.bill, balance: 4000 } }),
+  )
+
+  expect(await screen.findByText('3,5 g · Nico · left owing')).toBeInTheDocument()
+  expect(gets).toBe(2)
+})
+
 test('assigning a customer to a sale someone already assigned shows the fixed message and refreshes the detail', async () => {
   let assignedAlready = false
   vi.mocked(fetch).mockImplementation(
