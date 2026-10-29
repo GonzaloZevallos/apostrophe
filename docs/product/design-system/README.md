@@ -130,7 +130,7 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--boton-texto` | par | `--boton` | 6,46 | 8,76 |  |
 | `--critico-texto` | par | `--critico` | 12,28 | 10,66 |  |
 | `--nav-inactivo` | par | `--papel` | 5,79 | 7,67 | `.bar-inferior__item` |
-| `--tinta` | par | `--acento-calido` | 7,58 | 4,54 |  |
+| `--acento-calido-texto` | par | `--acento-calido` | 7,58 | 7,58 |  |
 | `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg`, `.lista-clientes__fila > svg` |
 | `--serie1` | ícono | — | — | — | |
 | `--serie2` | ícono | — | — | — | |
@@ -157,18 +157,16 @@ resuelve invirtiendo, no con un color nuevo.
 **Tokens nuevos.** `--positivo` (`#1e7a45` claro, `#6bd39a` oscuro) y `--negativo`
 (`#c0352b`, `#f07a6e`) son texto general en la tabla; ninguna regla de `app.css` los usa
 mientras ninguna pantalla muestre una ganancia. `--acento-oscuro` (`#14532f`) no es texto y
-aún no lo usa ninguna regla. `--acento-calido` es un relleno con un solo texto, la tinta
-(fila `par` de arriba).
+aún no lo usa ninguna regla. `--acento-calido` (`#e3a23b` en los dos temas) es un relleno con
+un solo texto, la tinta: `--acento-calido-texto` (token agregado, no es de la dueña; `#15201a` en los dos temas, el valor de la
+tinta clara), fila `par` de arriba. No se usa `--tinta` para esto porque en oscuro es
+clara, y porque la guarda trata cada token como general o par, nunca los dos.
 
 **Desviaciones de lo pedido por la dueña** (un par bajaba de 4,5:1, se movió sólo ese
-token, entero, al valor más cercano que pasa):
+token, entero, al valor más cercano que pasa; es la única):
 
 - `--deuda` en claro: `#a85a06` → `#a35706`. Sobre `--acento-suave` medía 4,35 y la
   tabla exige 4,5. Sobre `--papel` pasa de 4,73 a 4,98.
-- `--acento-calido` en oscuro: `#e3a23b` → `#916115`. La fila `--tinta` sobre
-  `--acento-calido` medía 1,87 en oscuro (tinta clara sobre ámbar claro); el relleno se
-  oscurece, con la misma tonalidad, hasta que la tinta clara lo lee a 4,54. En claro queda
-  `#e3a23b` (7,58).
 
 Ningún otro valor de la dueña se movió. `--deuda-fondo` en claro no es de la dueña: se
 aclaró de `#f6e8d4` a `#fbf1e3` para que `--deuda`, `--positivo` y `--negativo` lleguen a

@@ -1,13 +1,14 @@
 /**
  * apostrophe · tokens del sistema de diseño
- * Dirección "Fino" · paleta Papel y azul · apta para deuteranopia.
+ * Dirección "Fino" · paleta Yerba, en claro y en oscuro.
  *
  * Esta es la única fuente de verdad del color. Si cambiás un valor acá,
  * cambia en toda la app. No pongas hexadecimales sueltos en los componentes.
  *
- * Regla de accesibilidad que no se negocia: el eje de color es azul ↔ ámbar,
- * nunca verde ↔ rojo. Y ningún estado se distingue sólo por color: siempre
- * lleva palabra, y donde puede, forma (ver MarcaEstado en componentes.ts).
+ * Regla de accesibilidad que no se negocia: ningún estado se cuenta sólo con el
+ * color. Cada ganancia, pérdida, deuda o estado lleva un signo, una flecha o una
+ * palabra (y donde puede, forma: ver MarcaEstado en componentes.ts), y las series
+ * de un gráfico se rotulan directamente.
  */
 
 export type Tema = 'claro' | 'oscuro';
@@ -26,12 +27,18 @@ export interface Paleta {
   /** Línea fina que separa filas y secciones. */
   linea: string;
 
-  /** Única tinta de color: acción, enlaces, ganancia, regla aplicada. */
+  /** Única tinta de color: acción, enlaces, regla aplicada. */
   acento: string;
   /** Fondo de las insignias de acento. */
   acentoSuave: string;
+  /** Acento más profundo (no es texto). */
+  acentoOscuro: string;
+  /** Relleno cálido; el único texto encima es acentoCalidoTexto. */
+  acentoCalido: string;
+  /** La tinta sobre el relleno cálido: la misma en los dos temas (fila par del README). */
+  acentoCalidoTexto: string;
 
-  /** Ámbar: deuda y stock bajo. */
+  /** Ámbar: deuda y stock bajo, siempre con su palabra. */
   deuda: string;
   /** Fondo del panel de deuda y de sus insignias. */
   deudaFondo: string;
@@ -40,64 +47,99 @@ export interface Paleta {
   /** Línea fina dentro del panel de deuda. */
   deudaLinea: string;
 
-  /** Estado crítico (agotada): se resuelve invirtiendo, no con rojo. */
+  /** Estado crítico (agotada): se resuelve invirtiendo, siempre con su palabra. */
   critico: string;
   criticoTexto: string;
+
+  /** Ganancia: nunca sola, lleva signo, flecha o palabra. */
+  positivo: string;
+  /** Pérdida: nunca sola, lleva signo, flecha o palabra. */
+  negativo: string;
 
   /** Botón primario. */
   boton: string;
   botonTexto: string;
   /** Ítem no activo de la barra inferior / riel. */
   navInactivo: string;
+
+  /** Series de gráfico: marcas, siempre rotuladas directamente (ver README). */
+  serie1: string;
+  serie2: string;
+  serie3: string;
+  serie4: string;
+  serie5: string;
 }
 
 export const claro: Paleta = {
-  papel: '#FCFBF8',
-  superficie: '#F2EEE6',
-  tinta: '#231E18',
-  tinta2: '#706659',
-  tenue: '#9A9085',
-  linea: '#EBE5DA',
+  papel: '#F6F7F5',
+  superficie: '#FFFFFF',
+  tinta: '#15201A',
+  tinta2: '#56645C',
+  tenue: '#818E87',
+  linea: '#DCE3DE',
 
-  acento: '#1B4FA8',
-  acentoSuave: '#E9EDF7',
+  acento: '#1E6B47',
+  acentoSuave: '#E2F1E8',
+  acentoOscuro: '#14532F',
+  acentoCalido: '#E3A23B',
+  acentoCalidoTexto: '#15201A',
 
-  deuda: '#7A4A00',
-  deudaFondo: '#F3E6CB',
-  deuda2: '#7F5D28',
-  deudaLinea: '#E6D5B4',
+  deuda: '#A35706',
+  deudaFondo: '#FBF1E3',
+  deuda2: '#8A5A1F',
+  deudaLinea: '#ECDCC3',
 
-  critico: '#33281A',
-  criticoTexto: '#F7EFE0',
+  critico: '#26332B',
+  criticoTexto: '#F6F7F5',
 
-  boton: '#231E18',
-  botonTexto: '#FCFBF8',
-  navInactivo: '#7A7064',
+  positivo: '#1E7A45',
+  negativo: '#C0352B',
+
+  boton: '#1E6B47',
+  botonTexto: '#FFFFFF',
+  navInactivo: '#56645C',
+
+  serie1: '#1E6B47',
+  serie2: '#E3A23B',
+  serie3: '#4C7FD0',
+  serie4: '#B8457A',
+  serie5: '#B9C2BC',
 };
 
 export const oscuro: Paleta = {
-  papel: '#10131A',
-  superficie: '#1A1F28',
-  tinta: '#E9EDF2',
-  tinta2: '#8A93A1',
-  tenue: '#5E6872',
-  linea: '#262C36',
+  papel: '#0E1411',
+  superficie: '#18211C',
+  tinta: '#E7EEE9',
+  tinta2: '#9AAAA1',
+  tenue: '#66756C',
+  linea: '#2A362F',
 
-  acento: '#8AB0FF',
-  acentoSuave: '#1B2440',
+  acento: '#5CC594',
+  acentoSuave: '#1F3A2C',
+  acentoOscuro: '#14532F',
+  acentoCalido: '#E3A23B',
+  acentoCalidoTexto: '#15201A',
 
-  deuda: '#EDB05A',
-  deudaFondo: '#2C2113',
-  deuda2: '#C08E4E',
-  deudaLinea: '#3A2C19',
+  deuda: '#E8A54B',
+  deudaFondo: '#2B2110',
+  deuda2: '#C9944A',
+  deudaLinea: '#3D2E17',
 
-  // En oscuro el crítico se invierte al revés: relleno ámbar claro, texto oscuro.
-  critico: '#F5C77A',
-  criticoTexto: '#231708',
+  critico: '#F0BB68',
+  criticoTexto: '#0E1411',
 
-  boton: '#E9EDF2',
-  botonTexto: '#10131A',
-  navInactivo: '#7B8780',
+  positivo: '#6BD39A',
+  negativo: '#F07A6E',
+
+  boton: '#5CC594',
+  botonTexto: '#0E1411',
+  navInactivo: '#9AAAA1',
+
+  serie1: '#5CC594',
+  serie2: '#F0B95A',
+  serie3: '#7FA8E8',
+  serie4: '#E07AA8',
+  serie5: '#7F8C85',
 };
 
 export const paletas: Record<Tema, Paleta> = { claro, oscuro };
