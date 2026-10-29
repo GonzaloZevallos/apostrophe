@@ -442,6 +442,12 @@ body {
 
 .disposicion .pantalla {
   padding: 0;
+  /* Inside the shell the column is already at least one viewport tall (`.disposicion`), and
+   * the card's "‹ parent" arrow and the bar sit in it with the screen: the screen takes what
+   * they leave, not a viewport of its own on top of them. A page that is one viewport tall
+   * stays one viewport tall when the viewport grows (the design capture's growth check). */
+  min-height: 0;
+  flex: 1;
 }
 
 .bar-inferior {
@@ -2031,6 +2037,39 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* The sale bill's own wrapper (`SaleBillButton`): it lays its children out as the actions row
+ * does, and its Share/Copy takes no tap delay or double-tap zoom. Scoped here, not on `.boton`,
+ * so no other screen's listed touch-action offender changes. */
+.sale-bill {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sale-bill > .boton {
+  touch-action: manipulation;
+}
+
+/* The bill shown by hand when copying failed (`SaleBillButton`): the one place the text is
+ * selectable, so a seller can copy it from the screen. */
+.sale-bill__bloque {
+  background: var(--superficie);
+  border-radius: var(--radio-campo);
+  padding: var(--espacio-lg);
+}
+
+.sale-bill__texto {
+  margin: 0;
+  font-family: var(--fuente);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--tinta);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* One DOM for the phone and the computer (`PeriodFigures.tsx`): the period block's

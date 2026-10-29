@@ -1,90 +1,103 @@
-# Sale bill
-
-The facts about one recorded sale that a seller may share with that sale's customer. They are worked out live from settlement when the sale's detail is read, and never stored or logged. A bill is facts only, with no text: the server sends a closed structure and the front works out the shareable text (ADR-0053). The sale and its lines are defined in `sales.md`. Settlement, payments and balances are defined in `payments.md`. GH-322 part 1 delivers the facts. Part 2 delivers the text, the unit wording, and the share and copy actions.
-
 ## Jobs
 
-**When** I have handed over a sale, or a customer asks what they owe, **I want** to send them that sale's lines, total, how it was paid and where their account stands, taken from the sale I already recorded, **so I can** share it without retyping or miscalculating.
+**Cuando** entregué una venta, o un cliente me pregunta cuánto me debe, **quiero** mandarle las líneas de esa venta, el total, cómo se pagó y cómo está su cuenta, sacados de la venta que ya registré, **para** compartirlo sin volver a tipear ni equivocarme en las cuentas.
 
-The main progress is that the customer sees exactly the figures the seller sees, so nobody argues about the amount. Speed comes second. Reminding debtors is not a job of its own: a bill may carry a balance owed, but the product sends no reminders, schedules nothing and writes no wording that presses for payment. Before this feature the seller copied the figures by hand into Telegram or WhatsApp, mostly for debtors and delivered orders. Customers also ask for a confirmation of a sale paid on the spot, so every sale gets a bill.
+**Cuando** registré una venta, o un cliente me pregunta después qué se llevó o cuánto me debe, **quiero** mandarle en un toque el comprobante de esa venta en texto plano y corto (sus líneas, el envío, el total, cómo pagó, lo que todavía debe de esa venta y su saldo de ahora), **para** contestarle en nuestro chat sin volver a tipear ni sacar cuentas, y que el cliente vea los mismos números que veo yo. (La historia dice "el chat" y no nombra ningún canal, por Assume nothing; está también en `sales.md`).
 
-## Behaviour
+El avance principal es que el cliente vea exactamente las cifras que ve la vendedora, para que nadie discuta el monto. La velocidad viene después. Recordarles a los deudores no es un trabajo propio: un comprobante puede llevar un saldo debido, pero el producto no manda recordatorios, no programa nada y no escribe ningún texto que presione para pagar. Antes de esto la vendedora copiaba las cifras a mano en Telegram o WhatsApp, sobre todo para deudores y pedidos entregados. Los clientes también piden una confirmación de una venta pagada en el momento, así que toda venta tiene comprobante.
 
-`GET /sales/{sale_id}` answers a field `bill`. It holds a sale bill, or null. The sales list does not carry it.
+# Comprobante de venta (Sale bill)
 
-### Live figures
+Los hechos de una venta registrada que la vendedora puede compartir con el cliente de esa venta. Se calculan en vivo a partir de la imputación cuando se lee el detalle de la venta, y nunca se guardan ni se loguean. El servidor manda solo hechos, en una estructura cerrada y sin texto, y el front arma el texto para compartir (ADR-0053). La venta y sus líneas están definidas en `sales.md`; la imputación, los pagos y los saldos, en `payments.md`. La parte 1 de GH-322 entregó los hechos; la parte 2 (GH-376) entregó el texto, la entrada de unidad y las acciones Share y Copy en el detalle de la venta. El texto exacto, sus líneas que pueden faltar y el botón están en `sales.md`, "Comprobante de venta (en el detalle de la venta)".
 
-- The payment state, the amount still owed and the balance are read when the detail is read. They come from the same single settlement pass (`OwingSales.settlement_of`) as the detail's "still owing".
-- The balance is the customer's whole current account. It is never the balance on the sale's date.
-- A sale owed last week and paid since reads "paid" today.
-- Nothing in sales or in the front recomputes settlement.
+## Comportamiento
 
-### Contents
+`GET /sales/{sale_id}` responde un campo `bill`, con un comprobante o null. La lista de ventas no lo trae.
 
-- **Business name:** always the current name of the session's business, so a rename shows on the next read.
-- **Date:** the sale's own date.
-- **Shipping charged:** apart from the lines.
-- **Total:** the sale's total, shipping included.
-- **Lines:** in recorded order. Each line has the variety's name, its quantity (to the hundredth, as recorded) and its amount.
-  - A bulk line adds its unit price and the rule "bulk".
-  - A gift line carries the rule "gift" and an amount of $0.
-  - List, VIP and special lines carry only the amount, with no rule and no unit price.
-  - An archived variety keeps its plain name.
-- **Payment state:** the first check that fits wins.
-  1. Total $0 (gifts only): none.
-  2. Paid on the spot: cash or transfer, by the recorded method. If settlement also reports an amount still owed for it, the sale is inconsistent.
-  3. No customer and none of the above: inconsistent.
-  4. Something still owing: owed, with the amount still owed.
-  5. Nothing owing (settled by a later payment or a credit): paid.
-  6. A customer's sale above $0, not paid on the spot and missing from settlement: inconsistent.
-- **Amount still owed:** present only when the state is owed.
-- **Balance:**
-  - None when the sale has no customer or the balance is exactly $0.
-  - Otherwise signed. A credit is negative ("In your favor").
-  - It also shows on cash, transfer and $0 sales when the customer owes from elsewhere or holds a credit.
-- **Closed shape:** business name, date, shipping charged, total, lines (product, quantity, amount, rule, unit price), payment (state, amount still owed), balance. Nothing else can appear.
+### Cifras en vivo
 
-### Coverage
+- El estado de pago, lo que todavía se debe y el saldo se leen cuando se lee el detalle. Salen de la misma única pasada de imputación (`OwingSales.settlement_of`) que el "still owing" del detalle.
+- El saldo es la cuenta entera actual del cliente, nunca el saldo en la fecha de la venta.
+- Una venta que se debía la semana pasada y se pagó después hoy se lee "paid".
+- Nada en ventas ni en el front vuelve a calcular la imputación.
 
-- Every sale gets a bill, whatever its age or state.
-- A sale with no customer gets one when it was paid on the spot or is a $0 gift-only sale, and it never has a balance.
-- A customer assigned later makes it an ordinary customer's sale, balance included.
-- Another business's sale stays a 404.
-- No setting and no cutoff date. Nothing depends on a business's units, currency or payment methods: the bill reports the method the sale recorded. Customizable payment methods belong to #330 and #318.
+### Contenido
 
-### When the facts disagree
+- **Nombre del negocio**: siempre el nombre actual del negocio de la sesión, así que un cambio de nombre se ve en la siguiente lectura.
+- **Fecha**: la fecha propia de la venta.
+- **Envío cobrado**: aparte de las líneas.
+- **Total**: el total de la venta, envío incluido.
+- **Líneas**: en el orden en que se registraron. Cada línea tiene el nombre de la variedad, su cantidad (al centésimo, como se registró) y su monto.
+  - Una línea por cantidad agrega su precio unitario y la regla "bulk".
+  - Una línea de regalo lleva la regla "gift" y un monto de $0.
+  - Las líneas de lista, VIP y precio especial llevan solo el monto, sin regla ni precio unitario.
+  - Una variedad archivada conserva su nombre tal cual.
+- **Estado de pago**: gana el primer chequeo que encaja.
+  1. Total $0 (solo regalos): none.
+  2. Pagada en el momento: cash o transfer, según el medio registrado. Si la imputación igual informa algo debido para ella, la venta es inconsistente.
+  3. Sin cliente y nada de lo anterior: inconsistente.
+  4. Algo todavía debido: owed, con lo que todavía se debe.
+  5. Nada debido (saldada por un pago posterior o un crédito): paid.
+  6. Una venta de un cliente por encima de $0, no pagada en el momento y ausente de la imputación: inconsistente.
+- **Lo que todavía se debe**: solo cuando el estado es owed.
+- **Saldo**:
+  - Ninguno cuando la venta no tiene cliente o el saldo es exactamente $0.
+  - Si no, con signo. Un crédito es negativo ("In your favor").
+  - También aparece en ventas en efectivo, por transferencia y de $0 cuando el cliente debe por otro lado o tiene un crédito.
+- **Forma cerrada**: nombre del negocio, fecha, envío cobrado, total, líneas (producto, cantidad, monto, regla, precio unitario), pago (estado, lo que todavía se debe) y saldo. Nada más puede aparecer.
 
-- In the inconsistent cases (2, 3 and 6 above), `bill` is null.
-- The rest of the detail answers 200 unchanged, with no error and no notice.
-- A bill is never wrong or partial.
-- The error names only the rule broken, never a sale, customer, amount or name. Nothing is logged.
-- Part 2 simply does not offer share or copy for such a sale.
+### Alcance
 
-### What the bill never carries
+- Toda venta tiene comprobante, sea cual sea su antigüedad o su estado.
+- Una venta sin cliente lo tiene cuando se pagó en el momento o es una venta de $0 solo de regalos, y nunca lleva saldo.
+- Un cliente asignado después la convierte en una venta común de cliente, saldo incluido. Después de asignar, el detalle se vuelve a leer del servidor para traer ese saldo.
+- La venta de otro negocio sigue respondiendo 404.
+- No hay configuración ni fecha de corte. Nada depende de las unidades, la moneda o los medios de pago de un negocio: el comprobante informa el medio que registró la venta. Los medios de pago configurables son de #330 y #318.
 
-The note, the customer's name or id, the sale id or any line id, the VIP flag, any pricing rule other than bulk or gift, cost, pending cost or margin, any link, or anything of another customer or business.
+### Cuando los hechos no coinciden
 
-### Invariants
+- En los casos inconsistentes (2, 3 y 6 de arriba), `bill` es null.
+- El resto del detalle responde 200 sin cambios, sin error y sin aviso.
+- Un comprobante nunca sale equivocado ni a medias.
+- El error nombra solo la regla incumplida, nunca una venta, un cliente, un monto ni un nombre. No se loguea nada.
+- En pantalla, el botón Share/Copy no aparece para esa venta y el resto del detalle se ve igual.
 
-1. The payment state, still-owed amount and balance come from the one settlement pass, in the same response as the detail's "still owing".
-2. The bill's shape is closed. The business comes from the session's current business only.
-3. Failing to derive a bill makes it null and never fails the rest of the detail.
-4. No fixed word of the bill is a literal outside the copy module. The unit is read from its one keyed copy entry (part 2).
-5. A bill quantity is formatted from integer hundredths, never from a float.
-6. The expected bill texts are written by hand against this definition, never generated by the renderer.
-7. Nothing of the bill is stored, logged, or written to the console or browser storage. The share or copy call runs synchronously in the click handler (part 2).
+### El texto y las acciones (en el detalle de la venta)
 
-### Out of scope
+- **El texto** lo arma el front a partir del último detalle que tiene la pantalla, con `renderSaleBill` (`web/src/sales/saleBill.ts`): el encabezado (nombre del negocio y dd/mm, sin año), una línea por línea de la venta, el envío solo por encima de $0, el total, la línea de pago (ninguna para none) y la línea de saldo ("Your balance" por encima de $0, "In your favor" para un crédito como su valor absoluto, ninguna en $0 o sin cliente). El detalle está en `sales.md`.
+- **Las cantidades** se formatean a partir de centésimos enteros con `formatQuantity`, nunca de un float. La plata se lee `$ 11.000`, nunca con el formato del catálogo.
+- **Las palabras fijas y la unidad** viven en el módulo de textos, en el grupo `saleBill`. La unidad es una sola entrada, "g", hasta #318.
+- **Los nombres que tipeó la vendedora** (el del negocio y los de las variedades) salen exactamente como están guardados; el comprobante no agrega formato propio.
+- **El botón** Share o Copy es el primer elemento de la fila de acciones del detalle, nunca dentro del aviso "Sale saved". Si compartir sale bien o se cancela, no muestra nada. Si compartir falla, muestra su línea con el ícono de atención y la etiqueta pasa a Copy. Si copiar sale bien, muestra el aviso "Bill copied". Si copiar falla, muestra su línea con el ícono de atención y debajo el bloque seleccionable "Sale bill". Con `bill: null` el botón no aparece. Mientras carga, conserva la etiqueta, queda deshabilitado y ocupado, y no muestra cifras.
 
-Reminders or wording that presses for payment, taking orders or messaging through a bot, invoices, taxes and accounting exports, and customizable payment methods.
+### Lo que el comprobante nunca lleva
 
-## Success criteria and metrics
+La nota, el nombre o el id del cliente, el id de la venta o de cualquier línea, la marca VIP, ninguna regla de precio que no sea bulk o gift, costo, costo pendiente ni margen, ningún link, ni nada de otro cliente u otro negocio.
 
-1. **Reach (judged across GH-322):** on the phone, from a recorded sale's detail, the share or copy step is reached in at most two taps.
-2. **Same figures:** every figure on the bill equals what the sale detail and the customer's balance show in the same moment: total, payment state, amount still owed, and balance (a credit counts). Measured by:
-   - every state-table row agreeing between the pure domain test and the API test with real settlement;
-   - one settlement read per detail request, and none for a sale with no customer.
+### Invariantes
 
-   If the facts disagree, there is no bill.
-3. **Nothing internal:** the leak test (a sale with a note, a VIP customer, special and VIP lines, and pending cost) finds exactly the closed shape and no note, customer name or id, sale id, "vip", "special" or "list". Another business's sale stays a 404.
-4. **Nothing kept:** nothing of the bill is stored or logged. A forced mismatch answers 200 with `bill` null and every other field unchanged.
+1. El estado de pago, lo que todavía se debe y el saldo salen de la única pasada de imputación, en la misma respuesta que el "still owing" del detalle.
+2. La forma del comprobante es cerrada. El negocio sale solo del negocio actual de la sesión.
+3. Si no se puede calcular un comprobante, queda null y nunca hace fallar el resto del detalle.
+4. Ninguna palabra fija del comprobante es un literal fuera del módulo de textos. La unidad se lee de su única entrada con clave, y ningún módulo del comprobante tiene un literal "g" ni llama a `formatGrams`.
+5. Una cantidad del comprobante se formatea a partir de centésimos enteros, nunca de un float.
+6. Los textos esperados del comprobante se escriben a mano contra esta definición, nunca los genera el renderizador.
+7. Nada del comprobante se guarda, se loguea, ni se escribe en la consola o en el almacenamiento del navegador. La llamada de compartir o copiar corre de forma sincrónica dentro del clic (ADR-0002).
+
+### Fuera de alcance
+
+Recordatorios o textos que presionen para pagar, tomar pedidos o mandar mensajes por un bot, facturas, impuestos y exportaciones contables, medios de pago configurables, un año en la fecha, una vista previa, un estado de "ya compartido", un recibo de pago, elegir un canal o enviar desde la app, hacer configurable la unidad (#318) y cualquier otro idioma (#317).
+
+## Criterios de éxito y métricas
+
+1. **Alcance**: en el teléfono, desde el detalle de una venta registrada, compartir o copiar está a un toque, sin tipear (criterio 20 de `sales.md`).
+2. **Mismas cifras**: cada cifra del comprobante es igual a lo que muestran en el mismo momento el detalle de la venta y el saldo del cliente: total, estado de pago, lo que todavía se debe y el saldo (un crédito cuenta). Se mide con:
+   - cada fila de la tabla de estados coincidiendo entre el test puro de dominio y el test de API con imputación real;
+   - una sola lectura de imputación por pedido de detalle, y ninguna para una venta sin cliente;
+   - el juego de referencia `saleBill.cases.json`, con textos escritos a mano, en 0 diferencias.
+
+   Si los hechos no coinciden, no hay comprobante.
+3. **Nada interno**: el test de filtraciones (una venta con nota, un cliente VIP, líneas especiales y VIP, y costo pendiente) encuentra exactamente la forma cerrada y ni la nota, ni el nombre o id del cliente, ni el id de la venta, ni "vip", "special" o "list". En el texto tampoco aparecen "http", `*`, `_` ni comillas invertidas propias. La venta de otro negocio sigue en 404.
+4. **Nada guardado**: nada del comprobante se guarda ni se loguea. Una inconsistencia forzada responde 200 con `bill` null y todos los demás campos sin cambios.
+5. **Contrato cumplido**: un vitest lee los esquemas `SaleBillOut` de `tests/fixtures/openapi_snapshot.json` y verifica que sus nombres de propiedad y sus enums son iguales a las listas de claves del front.
+6. **Assume nothing**: con la entrada de unidad puesta en "u", el texto dice "3,5 u" y "/u".
