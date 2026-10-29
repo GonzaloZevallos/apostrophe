@@ -160,7 +160,8 @@ e2e runs sharded; a red there is a finding to fix. Nothing in this section measu
 **Status of the part 2 steps.** None of the 35 migrated steps in the 11 specs has run in a browser yet:
 no pull request existed when part 2 was delivered, so GitHub CI's `e2e` job has not run on them. Their
 proof is that job going green; a red at a site is fixed there with the assert-what-follows rule (a
-one-line comment and a row in this doc), never with a retry or a longer wait.
+one-line comment and a row in this doc), never with a retry or a longer wait. The delivery opens the pull request after
+the review approves, and CI's `web` and `e2e` jobs are read at landing, not in the subtask review.
 
 **After merging `master`.** `master` carries three of the toasts as `common:` keys
 (`common:customerSaved`, `common:entrySaved`, `common:entryDeleted`) in `SuccessToast`, and
