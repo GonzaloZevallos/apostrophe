@@ -516,6 +516,8 @@ def test_an_anchored_read_claims_its_prefix_for_the_shard_of_its_test(
         "from scripts.affected import REPO_ROOT\n"
         "def test_a() -> None:\n    list(REPO_ROOT.rglob('*.py'))\n",
         "def test_a() -> None:\n    (ROOT / 'web' / 'gone').read_text()\n",
+        "ROOT = Path('/repo')\n"
+        "def test_a() -> None:\n    assert str(ROOT / 'web/node_modules/.bin/x') == '/repo/web'\n",
     ],
 )
 def test_a_string_that_is_not_an_anchored_read_claims_nothing(tmp_path: Path, text: str) -> None:

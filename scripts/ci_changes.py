@@ -304,6 +304,9 @@ def _call_value(node: ast.Call, env: dict[str, _Value], here: tuple[str, ...]) -
             return _Anchored(here)
         if isinstance(arguments[0], _Anchored):
             return _join(arguments[0], node.args[1:])
+        text = _literal(first)
+        if text is not None and text.startswith("/"):
+            return _LOCAL  # an absolute path is not the repository: a fake root in a unit test
     elif isinstance(func, ast.Attribute):
         receiver = _value_of(func.value, env, here)
         if isinstance(receiver, _Anchored):
