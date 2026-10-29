@@ -101,8 +101,8 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
   saving (the design's `precios.ts`), but what it shows after saving is what the API
   answered.
 - **Color, type and spacing only from the design tokens.** No loose hex values in a
-  component. The design README's accessibility rules are requirements: blue ↔ amber,
-  never green ↔ red; no state told by color alone; text at 4.5:1 at least.
+  component. The design README's accessibility rules are requirements: no state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly; text at
+  4.5:1 at least.
 - **Formats in one place**: money as whole pesos with dot thousands (`$ 11.000`), grams
   with a comma and up to two decimals (`3,5 g`), dates `dd/mm`, weeks Monday to Sunday.
 - **Section 9 holds in the browser too.** The business is never in a URL. No phone

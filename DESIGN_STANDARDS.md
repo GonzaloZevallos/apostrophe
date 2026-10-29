@@ -75,6 +75,18 @@ The app's colors are the owner's Yerba palette, in a light and a dark theme. The
 - **Deviation:** light debt moved from the owner's `#a85a06` to `#a35706` because it read 4.35:1 on the soft tint; the ratio and the move are in the README.
 - **Chart series:** `--serie1` to `--serie5`. Light: `#1e6b47`, `#e3a23b`, `#4c7fd0`, `#b8457a`, `#b9c2bc`. Dark, brighter variants of the same hues: `#5cc594`, `#f0b95a`, `#7fa8e8`, `#e07aa8`, `#7f8c85`. A series is a mark, always labelled directly, touching it.
 - Every text pair is at least 4.5:1 in both themes; decorative borders are exempt.
+- **Color never alone:** no state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly. The color census (`web/src/architecture/colorCensus.ts`) lists every rule that uses a debt, state, gain, loss or series token.
+
+## Theme
+
+The owner's decision of 2026-10-29 wins over ADR-0026 (the ADR is not edited here).
+
+- **Automatic by default.** With nothing stored the app follows the phone's light or dark setting live, and re-checks when the seller comes back to the app.
+- **A stored choice wins.** Light or Dark is chosen only in Settings → Appearance (Theme: Automatic, Light, Dark) and stored on that device as `tema` = `claro` or `oscuro`. Automatic is no key; any other value or a storage error also reads as Automatic.
+- **The attribute is the resolved theme.** No `data-tema` on `<html>` is light, `oscuro` is dark. Only `web/src/theme.ts` writes it and the key; only `web/src/theme/systemTheme.ts` asks the system.
+- **Old choices.** An old Dark still opens dark. An old Light stored nothing, so it now follows the phone.
+- **Other tabs** pick up a change when they next load; there is no live sync between windows.
+- **Accepted cost:** one light frame on a dark phone with nothing stored. A device that cannot report its setting reads light.
 
 ## Mobile standard
 

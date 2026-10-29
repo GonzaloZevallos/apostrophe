@@ -13,7 +13,7 @@ donde toda otra pantalla lo copia tal cual.
 | Archivo | Qué es |
 | --- | --- |
 | `tokens.ts` | Paleta clara y oscura, escala tipográfica, espacios, radios, medidas. |
-| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema es el de luz (Papel y azul); `data-tema="oscuro"` lo pasa a oscuro. El sistema operativo no elige el tema. Las cuatro zonas seguras (`--inset-arriba`, `--inset-abajo`, `--inset-izquierda`, `--inset-derecha`) salen de `env(safe-area-inset-*)`, valen 0 donde no hay muesca y no tienen valor en `tokens.ts`. |
+| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema resuelto es el de luz (paleta Yerba); `data-tema="oscuro"` lo pasa a oscuro. El atributo lleva el tema ya resuelto: `web/src/theme.ts` lo pone según la elección guardada o, en Automático, según el teléfono. Las cuatro zonas seguras (`--inset-arriba`, `--inset-abajo`, `--inset-izquierda`, `--inset-derecha`) salen de `env(safe-area-inset-*)`, valen 0 donde no hay muesca y no tienen valor en `tokens.ts`. |
 | `formato.ts` | Plata, gramos, fechas, semana y teléfonos. Las reglas del enunciado. |
 | `dominio.ts` | Tipos del dominio: negocio, variedades, precios, clientes, ventas, stock, gastos. |
 | `precios.ts` | Motor de precios, totales, validación de venta e imputación de cobros. |
@@ -59,11 +59,10 @@ un solo verde usado con cuentagotas.
 
 ## Accesibilidad — no se negocia
 
-La paleta es **apta para deuteranopia**. El eje es **azul ↔ ámbar**, que esa
-condición conserva; verde contra rojo cae al mismo tono (medido: ΔE 64 → 4,0).
-
-1. Nunca usar verde para "bien" y rojo para "mal".
-2. Ningún estado se distingue sólo por color: siempre lleva la palabra.
+1. Ningún estado se cuenta sólo por color: una señal, flecha o palabra en cada
+   ganancia, pérdida, deuda o estado; las series de un gráfico se rotulan
+   directamente. `--positivo` y `--negativo` nunca van solos.
+2. La palabra, la señal o la flecha vienen del formato y de la API, no del color.
 3. Donde hay varios estados juntos, además cambia la forma. En la lista de
    stock: cuadrado = agotada, círculo lleno = baja, círculo vacío = ok.
 4. "Agotada" no es rojo: es el chip invertido, que se separa por luminosidad.
