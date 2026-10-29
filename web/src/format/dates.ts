@@ -1,4 +1,4 @@
-import { COMMON_TEXT } from '../copy/common'
+import type { TFunction } from 'i18next'
 import { DATES_TEXT } from '../copy/dates'
 /**
  * Formats API dates (`"YYYY-MM-DD"` strings, the business day, ADR-0001) and API
@@ -44,9 +44,10 @@ export function formatDateShort(iso: string): string {
 }
 
 /** The "Rige desde" chip's text: `"Hoy 15/10"` for today, else `"02/10"` (no year, no
- * "Hoy"). Equality is the whole date, so the same day of another year is not today. */
-export function chipDate(iso: string, todayIso: string): string {
-  return iso === todayIso ? COMMON_TEXT.todayWith(formatDateShort(iso)) : formatDateShort(iso)
+ * "Hoy"). Equality is the whole date, so the same day of another year is not today. The caller
+ * passes its `t`, so the word "Hoy" is resolved on that render and follows a language switch. */
+export function chipDate(iso: string, todayIso: string, t: TFunction): string {
+  return iso === todayIso ? t('common:todayWith', { date: formatDateShort(iso) }) : formatDateShort(iso)
 }
 
 /** Always with the year: for a card or a detail with no "today" to compare against. */

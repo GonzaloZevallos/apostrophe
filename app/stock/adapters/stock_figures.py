@@ -54,10 +54,10 @@ class SqlStockFigures:
                 StockRow(
                     variety_id=variety.id,
                     name=variety.name.value,
-                    grams=level.grams,
+                    quantity=level.quantity,
                     status=level.status,
                     sold_out_since=level.sold_out_since,
-                    threshold=threshold.grams if threshold is not None else None,
+                    threshold=threshold.quantity if threshold is not None else None,
                     days_left=level.days_left,
                 )
             )

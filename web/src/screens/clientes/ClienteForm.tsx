@@ -48,7 +48,7 @@ import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
-export const SAVED_TOAST = COMMON_TEXT.customerSaved
+export const SAVED_TOAST = 'common:customerSaved'
 export const NAME_REQUIRED = CUSTOMERS_TEXT.giveItAName
 export const PHONE_INVALID = CUSTOMERS_TEXT.notAPhone
 export const PHONE_TAKEN = CUSTOMERS_TEXT.phoneTaken

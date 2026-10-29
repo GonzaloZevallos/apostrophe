@@ -42,7 +42,7 @@ from app.sales.domain.sale import (
     UnknownCustomer,
     UnknownVariety,
 )
-from app.shared.grams import Grams, InvalidGrams
+from app.shared.quantity import InvalidQuantity, Quantity
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -115,7 +115,7 @@ as_http = TranslateErrors(
     [
         (404, (SaleNotFound, UnknownCustomer, UnknownVariety)),
         (409, (CustomerAlreadyAssigned,)),
-        (422, (SaleRuleBroken, InvalidGrams)),
+        (422, (SaleRuleBroken, InvalidQuantity)),
     ]
 )
 
@@ -123,7 +123,7 @@ as_http = TranslateErrors(
 def _line_input(line: LineIn) -> LineInput:
     return LineInput(
         variety_id=line.variety_id,
-        grams=Grams.of(line.grams),
+        quantity=Quantity.of(line.grams),
         gift=line.gift,
         special_price=line.special_price,
     )
@@ -228,7 +228,7 @@ def delete_sale(sale_id: int, sales: SalesDep, session: SessionDep) -> DeleteSal
         returned = delete_sale_use_case(sales, session, sale_id)
         return DeleteSaleOut(
             returned=[
-                ReturnedGramsOut(variety_id=r.variety_id, grams=r.grams.as_decimal())
+                ReturnedGramsOut(variety_id=r.variety_id, grams=r.quantity.as_decimal())
                 for r in returned
             ]
         )

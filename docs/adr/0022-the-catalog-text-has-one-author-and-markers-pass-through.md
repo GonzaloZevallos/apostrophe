@@ -88,3 +88,15 @@ above stands.
   is a later task backed by the owner's pastes.
 - The preview's path is `web/src/screens/telegramPreview.ts`, as the amendment above
   already says; the Decision's `web/src/catalog/telegramPreview.ts` was a placeholder.
+
+## Amendment (GH-384): the catalog's money and quantity formats follow the business
+
+Planned in GH-318, not yet in the code. One sentence of this ADR is narrowed by docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md, in the money
+part, and by docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md, in the units part; until those parts ship the sentence describes what runs.
+
+> It owns the catalog's own formats, `$11.000` and
+> `10 g` / `2,5 g`
+
+Narrowed: the amount follows the business's currency symbol and money decimals (ADR-0058), and the
+quantity takes its places from its unit's decimals and its label from the unit itself (ADR-0056). The
+text is still written by this one function.

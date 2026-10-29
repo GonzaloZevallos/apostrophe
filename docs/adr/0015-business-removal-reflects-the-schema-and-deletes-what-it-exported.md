@@ -182,3 +182,16 @@ business") fixes both.
   clean-up branch only by construction, not by a test that isolates them.
 - A hard kill (SIGKILL) or a power loss between `os.open` and the `_created` record
   can still leave an orphan file, as already written above.
+
+## Amendment (GH-384): the export's amounts follow the business's money scale
+
+Planned in GH-318, not yet in the code. One sentence of this ADR is narrowed by docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md, in the money
+part, and the quantity columns by docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md, in the units part; until those parts ship the sentence
+describes what runs.
+
+> `*_hundredths` written as two-place decimals under the key without the
+> suffix, whole pesos.
+
+Narrowed: amounts are exported as the exact value in currency units, and the export carries the
+business's `{scale, decimals}` beside them, so a business at scale 2 is not exported as whole pesos.
+Quantity columns stay as ADR-0056 stores them, in hundredths.

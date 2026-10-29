@@ -7,11 +7,17 @@
  */
 
 import type { LimitedCopy } from './limits.ts'
-import { REFUSAL_TEXT } from './refusals.ts'
+import type { PinReason } from '../api/refusals.ts'
 
-type PinReason = keyof typeof REFUSAL_TEXT.pinReason
-const PINNED_CATALOG_NOT_READY_REASON = REFUSAL_TEXT.pinnedNotReady
-const PINNED_CATALOG_REASON_LABEL = REFUSAL_TEXT.pinReason
+/** Byte-equal copies of the `refusals` texts (a Vitest check holds them to `locales/en`). */
+const PINNED_CATALOG_NOT_READY_REASON = 'Test it first to see how it looks'
+const PINNED_CATALOG_REASON_LABEL: Record<PinReason, string> = {
+  telegram_unreachable: 'Telegram did not respond',
+  bot_cannot_post: 'The bot cannot post in the channel',
+  message_gone: 'The pinned message is gone: publish it again',
+  missing_publish: 'It still has to be published with the new bot or channel',
+  too_long: 'It is too long for Telegram: shorten aromas or hide varieties.',
+}
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 

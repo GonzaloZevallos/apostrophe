@@ -11,9 +11,9 @@
  * `--tinta2`, the general text token ADR-0029 already guards.
  */
 
+import { useTranslation } from 'react-i18next'
 import { useId, useState } from 'react'
 import Icono from './Icono'
-import { COMMON_TEXT } from '../copy/common'
 
 export interface MasInfoProps {
   /** The always-visible line (a registered binding of at most 80 characters). */
@@ -23,6 +23,7 @@ export interface MasInfoProps {
 }
 
 export default function MasInfo({ line, more }: MasInfoProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const panelId = useId()
   return (
@@ -34,7 +35,7 @@ export default function MasInfo({ line, more }: MasInfoProps) {
         <button
           type="button"
           className="mas-info__boton"
-          aria-label={COMMON_TEXT.moreInfo}
+          aria-label={t('common:moreInfo')}
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((was) => !was)}

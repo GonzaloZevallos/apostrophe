@@ -38,10 +38,10 @@ def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, 
     return result
 
 
-def _sale(client: TestClient, variety_id: int, grams: str, **overrides: Any) -> dict[str, Any]:
+def _sale(client: TestClient, variety_id: int, quantity: str, **overrides: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "payment": "cash",
-        "lines": [{"variety_id": variety_id, "grams": grams}],
+        "lines": [{"variety_id": variety_id, "grams": quantity}],
     }
     body.update(overrides)
     response = client.post("/sales", json=body)

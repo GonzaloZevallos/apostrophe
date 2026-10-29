@@ -42,13 +42,14 @@ import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
-import { EMPTY_LIST, SALES_TEXT } from '../../copy/sales'
+import { SALES_TEXT } from '../../copy/sales'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { useViewport } from '../../shell/useViewport'
 import { COMMON_TEXT } from '../../copy/common'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
-export { EMPTY_LIST }
 
 const PERIOD_LABEL: Record<Period, string> = {
   hoy: COMMON_TEXT.today,
@@ -92,6 +93,7 @@ function varietyNames(lines: Sale['lines']): string {
 }
 
 export default function Ventas() {
+  const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const location = useLocation()
   const [feedback] = useState(() => readFeedback(location.state))
@@ -133,7 +135,7 @@ export default function Ventas() {
           )}
         </div>
 
-        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
+        {feedback !== null && <Notice {...feedback} />}
 
         {period === 'fechas' && (
           <div className="periodos__fechas">
@@ -174,7 +176,7 @@ export default function Ventas() {
         {!isError && !isPending && (
           <>
             {sales.length === 0 && <span className="campo__rotulo" data-copy="emptyLine">
-                {EMPTY_LIST}
+                {t(EMPTY_STATE_KEYS.salesList)}
               </span>}
 
             <div className="lista-ventas">

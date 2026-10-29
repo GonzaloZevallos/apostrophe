@@ -28,7 +28,9 @@ import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
-import { EMPTY_CUSTOMERS, EVERYONE, CUSTOMERS_TEXT } from '../../copy/customers'
+import { EVERYONE, CUSTOMERS_TEXT } from '../../copy/customers'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
 import { COMMON_TEXT } from '../../copy/common'
@@ -43,13 +45,17 @@ function owedOrSearch(root: HTMLElement): HTMLElement | null {
 }
 
 export default function Clientes() {
+  const { t } = useTranslation()
   const { query, setQuery } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
   const [debounced, setDebounced] = useState(query)
   const location = useLocation()
-  const [stateFeedback] = useState(() => readFeedback(location.state))
+  const besideCard = useMatch(CUSTOMER) !== null
+  // Mounted beside a customer's card, the entry's state is the card's (the toast a new customer
+  // lands with): the card shows it, so the list never repeats it (GH-288).
+  const [stateFeedback] = useState(() => (besideCard ? null : readFeedback(location.state)))
   const goneShown = useGoneNotice()
-  const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
+  const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, refusal: GONE_NOTICE } : null)
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query), 150)
@@ -68,7 +74,6 @@ export default function Clientes() {
   // card the card is where the seller returns to, so the list leaves it to the card.
   const debtors = useQuery({ ...debtorsQuery, enabled: query === '' })
   const root = useRef<HTMLElement>(null)
-  const besideCard = useMatch(CUSTOMER) !== null
   useReturnToPlace({
     root,
     ready: data !== undefined && !isPlaceholderData && !isFetching && !debtors.isFetching,
@@ -85,7 +90,7 @@ export default function Clientes() {
             {COMMON_TEXT.newCustomer}
           </BotonLink>
         </div>
-        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
+        {feedback !== null && <Notice {...feedback} />}
         <label className="campo">
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>
           <input
@@ -110,7 +115,7 @@ export default function Clientes() {
               {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
               {!isPlaceholderData && customers.length === 0 && (
                 <span className="campo__rotulo" data-copy="emptyTitle">
-                  {EMPTY_CUSTOMERS}
+                  {t(EMPTY_STATE_KEYS.customersList)}
                 </span>
               )}
               {customers.map((customer) => (

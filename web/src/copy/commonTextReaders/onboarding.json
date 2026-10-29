@@ -1,0 +1,9 @@
+[
+  "web/src/screens/onboarding/CatalogMessageStep.tsx",
+  "web/src/screens/onboarding/Listo.tsx",
+  "web/src/screens/onboarding/OnboardingStep.tsx",
+  "web/src/screens/onboarding/StockStep.tsx",
+  "web/src/screens/onboarding/VarietyDone.tsx",
+  "web/src/screens/onboarding/VarietyForm.tsx",
+  "web/src/screens/onboarding/useVarietyWithPrice.ts"
+]

@@ -42,7 +42,6 @@ const KNOWN_MODULES = [
   '/src/copy/onboarding.ts',
   '/src/copy/payments.ts',
   '/src/copy/pinnedCatalog.ts',
-  '/src/copy/refusals.ts',
   '/src/copy/sales.ts',
   '/src/copy/settings.ts',
   '/src/copy/shell.ts',

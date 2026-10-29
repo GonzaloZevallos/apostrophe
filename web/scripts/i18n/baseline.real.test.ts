@@ -28,6 +28,16 @@ describe('the real copy files', () => {
     expect(coverageProblems(modules, committed, loadMappingFiles())).toEqual([])
   })
 
+  test('two sources mapped to one key both render equal to their baseline text', () => {
+    const owes = ['customers.ts:NOBODY_OWES', 'inicio.ts:NOBODY_OWES']
+    const files = loadMappingFiles().filter((file) => file.file === 'emptyStates.json')
+    const picked = files.map((file) => ({ file: file.file, mappings: Object.fromEntries(owes.flatMap((source) => (file.mappings[source] ? [[source, file.mappings[source]]] : []))) }))
+
+    expect(picked.flatMap((file) => Object.values(file.mappings).map((mapping) => mapping.key))).toEqual(['emptyStates:nobodyOwes', 'emptyStates:nobodyOwes'])
+    expect(mappedRows(picked, committed).rows.map((row) => row.text)).toEqual(['Nobody owes you', 'Nobody owes you'])
+    expect(mappingProblems(picked, committed, loadBundle('en'))).toEqual([])
+  })
+
   test('every mapped entry renders in en equal to its baseline text, and every mapping is read', () => {
     const files = loadMappingFiles()
     // The expected count comes from a listing of the folder, never from the loader under test.

@@ -34,7 +34,7 @@ VARIETY = "Jack Herer"
 PHONE = "1123456789"
 
 
-def _workbook(*, bulk: bool, kind: str, grams: int, total: int) -> Workbook:
+def _workbook(*, bulk: bool, kind: str, quantity: int, total: int) -> Workbook:
     """One variety at $1000 (bulk $800 from 10 g when `bulk`), one sale of it."""
     workbook = Workbook()
     active = workbook.active
@@ -53,7 +53,7 @@ def _workbook(*, bulk: bool, kind: str, grams: int, total: int) -> Workbook:
     _titles(ventas, VENTAS_TITLES)
     ventas.cell(row=2, column=1, value=date(2026, 1, 10))
     ventas.cell(row=2, column=2, value=VARIETY)
-    ventas.cell(row=2, column=3, value=grams)
+    ventas.cell(row=2, column=3, value=quantity)
     ventas.cell(row=2, column=4, value="Efectivo")
     ventas.cell(row=2, column=5, value=total)
     ventas.cell(row=2, column=6, value="Juan Perez")
@@ -115,7 +115,7 @@ def _only_sale(client: TestClient) -> dict[str, object]:
 def test_a_sheet_with_bulk_prices_and_an_amigo_row_turns_both_switches_on(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
-    sheet = _workbook(bulk=True, kind="Amigo", grams=10, total=8000)
+    sheet = _workbook(bulk=True, kind="Amigo", quantity=10, total=8000)
 
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
@@ -130,7 +130,7 @@ def test_a_sheet_with_bulk_prices_and_an_amigo_row_turns_both_switches_on(
 def test_the_dry_run_reports_the_switches_and_changes_none(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
-    sheet = _workbook(bulk=True, kind="Amigo", grams=10, total=8000)
+    sheet = _workbook(bulk=True, kind="Amigo", quantity=10, total=8000)
 
     code, out = _import(client, engine, clock, tmp_path, sheet, dry_run=True)
 
@@ -143,7 +143,7 @@ def test_the_dry_run_reports_the_switches_and_changes_none(
 def test_a_sheet_with_neither_leaves_both_off_and_stores_no_vip_price(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
-    sheet = _workbook(bulk=False, kind="Lista", grams=10, total=10_000)
+    sheet = _workbook(bulk=False, kind="Lista", quantity=10, total=10_000)
 
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
@@ -157,7 +157,7 @@ def test_a_sheet_with_neither_leaves_both_off_and_stores_no_vip_price(
 def test_bulk_prices_without_a_vip_customer_switch_only_bulk_on_and_store_no_vip_price(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
-    sheet = _workbook(bulk=True, kind="Lista", grams=10, total=8000)
+    sheet = _workbook(bulk=True, kind="Lista", quantity=10, total=8000)
 
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
@@ -173,7 +173,7 @@ def test_a_switch_already_on_stays_on_and_is_not_reported(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
     client.put("/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": False})
-    sheet = _workbook(bulk=True, kind="Amigo", grams=10, total=8000)
+    sheet = _workbook(bulk=True, kind="Amigo", quantity=10, total=8000)
 
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
@@ -186,7 +186,7 @@ def test_a_switch_already_on_is_never_turned_off_by_a_sheet_that_needs_nothing(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
     client.put("/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True})
-    sheet = _workbook(bulk=False, kind="Lista", grams=10, total=10_000)
+    sheet = _workbook(bulk=False, kind="Lista", quantity=10, total=10_000)
 
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
@@ -198,7 +198,7 @@ def test_a_switch_already_on_is_never_turned_off_by_a_sheet_that_needs_nothing(
 def test_an_amigo_row_without_a_vip_price_pays_list_when_the_variety_has_no_bulk_price(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
-    sheet = _workbook(bulk=False, kind="Amigo", grams=10, total=10_000)
+    sheet = _workbook(bulk=False, kind="Amigo", quantity=10, total=10_000)
 
     code, _ = _import(client, engine, clock, tmp_path, sheet)
 
@@ -210,7 +210,7 @@ def test_an_amigo_row_without_a_vip_price_pays_list_when_the_variety_has_no_bulk
 def test_a_lista_row_at_the_bulk_minimum_takes_the_bulk_price_with_the_switches_off_before(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
-    sheet = _workbook(bulk=True, kind="Lista", grams=20, total=16_000)
+    sheet = _workbook(bulk=True, kind="Lista", quantity=20, total=16_000)
 
     code, _ = _import(client, engine, clock, tmp_path, sheet)
 
@@ -242,7 +242,7 @@ def test_a_switch_turned_on_between_the_plan_and_the_write_still_succeeds_with_t
         original(self, bulk, vip)
 
     monkeypatch.setattr(PricingSettingsImport, "switch_on", _racing_switch_on)
-    sheet = _workbook(bulk=True, kind="Amigo", grams=10, total=8000)
+    sheet = _workbook(bulk=True, kind="Amigo", quantity=10, total=8000)
 
     code, out = _import(client, engine, clock, tmp_path, sheet)
 

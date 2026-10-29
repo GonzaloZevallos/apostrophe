@@ -28,18 +28,18 @@ def _price(client: TestClient, variety_id: int) -> None:
     assert response.status_code == 201, response.text
 
 
-def _stock(client: TestClient, variety_id: int, grams: str) -> None:
+def _stock(client: TestClient, variety_id: int, quantity: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": grams},
+        json={"variety_id": variety_id, "origin": "opening_stock", "grams": quantity},
     )
     assert response.status_code == 201, response.text
 
 
-def _draw(client: TestClient, variety_id: int, grams: str) -> None:
+def _draw(client: TestClient, variety_id: int, quantity: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "grams": f"-{grams}"},
+        json={"variety_id": variety_id, "origin": "adjustment", "grams": f"-{quantity}"},
     )
     assert response.status_code == 201, response.text
 

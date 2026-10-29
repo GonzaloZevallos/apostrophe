@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
 from app.varieties.application.errors import VarietyArchived
@@ -17,7 +17,7 @@ def record_price_entry(
     effective_from: date,
     list_price: int,
     bulk_price: int | None = None,
-    bulk_minimum: Grams | None = None,
+    bulk_minimum: Quantity | None = None,
     vip_price: int | None = None,
 ) -> PriceEntry:
     """A rule that is off stores nothing on the new entry, whatever was sent, and nothing
@@ -40,7 +40,7 @@ def record_imported_price_entry(
     effective_from: date,
     list_price: int,
     bulk_price: int | None,
-    bulk_minimum: Grams | None,
+    bulk_minimum: Quantity | None,
     vip_price: int | None,
 ) -> PriceEntry:
     """The spreadsheet import's own write: it has already switched on what its sheet

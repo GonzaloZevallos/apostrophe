@@ -13,7 +13,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import { GONE_NOTICE } from '../../api/refusals'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import ExpenseCategoriesGroup, { CANNOT_REMOVE } from './ExpenseCategoriesGroup'
@@ -196,7 +195,7 @@ test('renaming a category that is already gone shows the gone notice and drops t
   await userEvent.click(screen.getByRole('button', { name: 'Rename' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-  const notice = await screen.findByText(GONE_NOTICE)
+  const notice = await screen.findByText('That is gone. The list is up to date.')
   // Same floating slot the "Category saved"/"Category deleted" toast uses.
   expect(notice.closest('.aviso-flotante')).not.toBeNull()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
@@ -216,7 +215,7 @@ test('removing a category that is already gone shows the gone notice, not the re
   await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
   expect(screen.queryByText(CANNOT_REMOVE)).not.toBeInTheDocument()
 })
 

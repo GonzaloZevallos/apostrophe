@@ -19,7 +19,10 @@ import * as share from '../share'
 import Shell from '../shell/Shell'
 import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/catalog'
+import { baselineText } from '../i18n/testing'
+
+const EMPTY_STATE_TITLE = baselineText('catalog.ts:EMPTY_STATE_TITLE')
+const EMPTY_STATE_DETAIL = baselineText('catalog.ts:EMPTY_STATE_DETAIL')
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 vi.mock('../share', () => ({
@@ -197,7 +200,7 @@ test('shows the empty state and no Copiar when nothing qualifies', async () => {
     ),
   )
 
-  expect(await screen.findByText('Nothing in the catalog today')).toBeInTheDocument()
+  expect(await screen.findByText(EMPTY_STATE_TITLE)).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })

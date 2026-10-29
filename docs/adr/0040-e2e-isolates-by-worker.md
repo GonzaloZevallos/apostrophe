@@ -318,3 +318,32 @@ The serial figures in section 4 are not comparable with the earlier `workers: 1`
 ### 6. What guards these figures
 
 Nothing. No test, gate step or config value reads any figure in this amendment (ADR-0038). `workers: 3` and the `playwright.config.ts` timeouts stay as set, and the 600 s check timeout belongs to the agentic system, outside this repository.
+
+## Amendment (GH-288): success toasts are observed in the page
+
+A success toast lives on a browser timer (`TOAST_MS` 2.5 s in `FlashProvider`, 3 s in `IntegrationsGroup`, `PinPublish` and `Catalogo`). A spec that polls from outside the page can miss it between two polls on a loaded machine. The evidence is in `docs/evidence/GH-288-e2e-flake.md`. No product timer changes.
+
+### What observes
+
+`web/e2e/toastRecorder.ts` exports `installToastRecorder()`, a typed function with no imports and no closed-over values: Playwright sends its source through `addInitScript`, so it is never a string of code. The `context` fixture in `fixtures.ts` installs it, and `withToastRecorder(browser.newContext(...))` does the same for a context a spec opens itself; `web/src/architecture/e2eToastRule.test.ts` fails on a `browser.newContext` outside `fixtures.ts` that is not the argument of `withToastRecorder`.
+
+- It watches `.aviso-exito[role=status]` and `.toast[role=status]`, in the top frame only (`window !== window.top` returns at once). The other `role=status` elements (`.aviso-toast`, `.venta-guardada`, `.aviso-ambar`, `.aviso-neutro`) are not recorded; their sites stay on page text.
+- A `MutationObserver` on `document` (`childList`, `characterData`, `subtree`) reads the mutation records: each added node and its subtree, and `closest()` from a `characterData` or `childList` target. It never queries the document after a batch, so a toast added and removed within one batch is still recorded.
+- It records `{seq, text}` when the element is first seen or its text differs from the last text recorded for that element (a `WeakMap`). Its state is one `window.__toastRecorder` property, `{documentId, seq, entries}`, with a random `documentId` per document. Nothing goes to browser storage.
+
+### `expectToast(page, text, action)`
+
+In `web/e2e/helpers/toast.ts`, with `expect` taken from `../fixtures.js`. It reads the mark `{documentId, seq}`, runs `action`, and polls with `expect.poll` for an entry with exactly `text`, from the same document, with `seq` greater than the mark's. An entry recorded before the mark, or from another document, never counts: a history-state toast renders again after a reload, so a newer document must not pass. It never waits for a load state and sets no timeout of its own. It fails at once with one of three fixed messages:
+
+- `NO_RECORDER`: "expectToast: this page has no toast recorder; its context was not made through the fixture or withToastRecorder".
+- `DOCUMENT_CHANGED_AT_MARK`: "expectToast: the page was navigating when the mark was read" (the execution context was destroyed while the mark was read).
+- `DOCUMENT_CHANGED`: "expectToast: the document changed during the action" (the `documentId` differs, or a poll hit a destroyed context).
+
+A toast with no product timer (the history-state `Notice`, "Customer saved") keeps its page `toBeVisible` next to `expectToast`: page visibility is the stronger check there.
+
+### Known risks
+
+- The Undo window in `VentaDetalle` (`UNDO_WINDOW_MS`, 5 s, `sales.spec.ts`) is a timer the recorder does not watch and is not fixed here.
+- The same text shown again while one toast is still on screen (`showNow` twice on one location: `Gastos`, `EntriesList`, `PriceRows`) writes the same text to the same element, so there is no mutation and the recorder holds one entry. `toastRecorder.spec.ts` pins that behaviour with a toast fed to the page (the app path itself is not driven). A spec that needs the second one asserts what follows it.
+- Toasts the recorder cannot see (`.aviso-toast` category toasts, `.venta-guardada`) stay on page text and keep the old race.
+- `expectToast` proves the toast was shown after the action, not that it was shown for the action: a different toast with the same text from another source in the window would pass.

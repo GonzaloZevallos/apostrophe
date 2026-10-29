@@ -9,7 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
-from app.shared.grams import Grams, InvalidGrams
+from app.shared.quantity import InvalidQuantity, Quantity
 from app.varieties.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
@@ -77,7 +77,7 @@ as_http = TranslateErrors(
     [
         (404, (VarietyNotFound, VarietyArchived, UnknownPriceEntry)),
         (409, (NameTaken, NameHeldByArchived, VarietyHasHistory, DuplicateEffectiveDate)),
-        (422, (VarietyRuleBroken, VipPriceNotBelowList, InvalidGrams)),
+        (422, (VarietyRuleBroken, VipPriceNotBelowList, InvalidQuantity)),
     ]
 )
 
@@ -169,7 +169,7 @@ def record_price_entry(
     session: SessionDep,
 ) -> PriceEntryOut:
     with as_http:
-        bulk_minimum = None if body.bulk_minimum is None else Grams.of(body.bulk_minimum)
+        bulk_minimum = None if body.bulk_minimum is None else Quantity.of(body.bulk_minimum)
         entry = manage_prices.record_price_entry(
             varieties,
             settings,

@@ -1,0 +1,104 @@
+{
+  "analysis.ts:EMPTY_MONTH_LINE": {
+    "key": "emptyStates:analysisEmptyMonth"
+  },
+  "analysis.ts:NO_HISTORY_LINE": {
+    "key": "emptyStates:analysisNoHistory"
+  },
+  "catalog.ts:EMPTY_STATE_DETAIL": {
+    "key": "emptyStates:catalogDetail"
+  },
+  "catalog.ts:EMPTY_STATE_TITLE": {
+    "key": "emptyStates:catalogTitle"
+  },
+  "customers.ts:EMPTY_CUSTOMERS": {
+    "key": "emptyStates:customersList"
+  },
+  "customers.ts:NOBODY_OWES": {
+    "key": "emptyStates:nobodyOwes"
+  },
+  "inicio.ts:EMPTY_DETAIL": {
+    "key": "emptyStates:homeVarietiesDetail"
+  },
+  "inicio.ts:EMPTY_TITLE": {
+    "key": "emptyStates:homeVarietiesTitle"
+  },
+  "inicio.ts:NOBODY_OWES": {
+    "key": "emptyStates:nobodyOwes"
+  },
+  "sales.ts:EMPTY_LIST": {
+    "key": "emptyStates:salesList"
+  },
+  "stock.ts:EMPTY_STATE_DETAIL": {
+    "key": "emptyStates:stockDetail"
+  },
+  "stock.ts:EMPTY_STATE_TITLE": {
+    "key": "emptyStates:stockTitle"
+  },
+  "emptyStates.ts:EMPTY_STATES.analysisEmptyMonth": {
+    "key": "emptyStates:analysisEmptyMonth"
+  },
+  "emptyStates.ts:EMPTY_STATES.analysisNoHistory": {
+    "key": "emptyStates:analysisNoHistory"
+  },
+  "emptyStates.ts:EMPTY_STATES.catalogDetail": {
+    "key": "emptyStates:catalogDetail"
+  },
+  "emptyStates.ts:EMPTY_STATES.catalogTitle": {
+    "key": "emptyStates:catalogTitle"
+  },
+  "emptyStates.ts:EMPTY_STATES.customersList": {
+    "key": "emptyStates:customersList"
+  },
+  "emptyStates.ts:EMPTY_STATES.homeNobodyOwes": {
+    "key": "emptyStates:nobodyOwes"
+  },
+  "emptyStates.ts:EMPTY_STATES.homeVarietiesDetail": {
+    "key": "emptyStates:homeVarietiesDetail"
+  },
+  "emptyStates.ts:EMPTY_STATES.homeVarietiesTitle": {
+    "key": "emptyStates:homeVarietiesTitle"
+  },
+  "emptyStates.ts:EMPTY_STATES.salesList": {
+    "key": "emptyStates:salesList"
+  },
+  "emptyStates.ts:EMPTY_STATES.stockDetail": {
+    "key": "emptyStates:stockDetail"
+  },
+  "emptyStates.ts:EMPTY_STATES.stockTitle": {
+    "key": "emptyStates:stockTitle"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[0]": {
+    "key": "emptyStates:salesList"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[1]": {
+    "key": "emptyStates:customersList"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[2]": {
+    "key": "emptyStates:nobodyOwes"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[3]": {
+    "key": "emptyStates:homeVarietiesTitle"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[4]": {
+    "key": "emptyStates:homeVarietiesDetail"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[5]": {
+    "key": "emptyStates:stockTitle"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[6]": {
+    "key": "emptyStates:stockDetail"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[7]": {
+    "key": "emptyStates:catalogTitle"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[8]": {
+    "key": "emptyStates:catalogDetail"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[9]": {
+    "key": "emptyStates:analysisNoHistory"
+  },
+  "emptyStates.ts:EMPTY_STATE_WORDINGS[10]": {
+    "key": "emptyStates:analysisEmptyMonth"
+  }
+}

@@ -2,7 +2,7 @@ import { CUSTOMERS, HOME, INVITATION, LOGIN, RESET, pathTo } from './routes'
 import { QueryClient } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from './api/client'
-import i18n from './i18n'
+import { shownLanguage } from './i18n/testing'
 import { applyShownLanguage, resetToBootLanguage, setLocaleLoader } from './i18n/language'
 import { loadLocale } from './i18n/resources'
 import {
@@ -32,7 +32,7 @@ function actions(): SessionActions & { navigate: ReturnType<typeof vi.fn> } {
 async function showGerman(): Promise<void> {
   setLocaleLoader(() => Promise.resolve({ common: { hello: 'Hallo' } }))
   await applyShownLanguage('de')
-  expect(i18n.language).toBe('de')
+  expect(shownLanguage()).toBe('de')
 }
 
 afterEach(() => {
@@ -225,7 +225,7 @@ describe('the boot language at every session boundary', () => {
 
       await run(actions())
 
-      expect(i18n.language).toBe('en')
+      expect(shownLanguage()).toBe('en')
       expect(document.documentElement.lang).toBe('en')
     }
   })
@@ -233,13 +233,13 @@ describe('the boot language at every session boundary', () => {
   test('the invitation lookup restores it before the lookup answers', async () => {
     await showGerman()
     vi.mocked(client.get).mockImplementation(() => {
-      expect(i18n.language).toBe('en')
+      expect(shownLanguage()).toBe('en')
       return Promise.resolve({ kind: 'join_business', business_name: null, expires_at: 'x' })
     })
 
     await openInvitation({ queryClient: new QueryClient() }, 'tok')
 
-    expect(i18n.language).toBe('en')
+    expect(shownLanguage()).toBe('en')
   })
 
   test('opening a reset link restores it', async () => {
@@ -248,17 +248,17 @@ describe('the boot language at every session boundary', () => {
 
     await openResetLink({ queryClient: new QueryClient() }, 'tok')
 
-    expect(i18n.language).toBe('en')
+    expect(shownLanguage()).toBe('en')
   })
 
   test('a 401 on a gated screen restores it; on a public screen nothing changes', async () => {
     await showGerman()
     handleUnauthorized(actions(), LOGIN)
-    expect(i18n.language).toBe('de')
+    expect(shownLanguage()).toBe('de')
 
     handleUnauthorized(actions(), CUSTOMERS)
 
-    expect(i18n.language).toBe('en')
+    expect(shownLanguage()).toBe('en')
   })
 
   test('a password change is no boundary: the shown language stays', async () => {
@@ -266,7 +266,7 @@ describe('the boot language at every session boundary', () => {
 
     await changePassword('vieja12345', 'nueva12345')
 
-    expect(i18n.language).toBe('de')
+    expect(shownLanguage()).toBe('de')
   })
 
   test('a response that lands after the sign-out leaves <html lang> at the boot value', async () => {
@@ -278,7 +278,7 @@ describe('the boot language at every session boundary', () => {
     answer({})
     await pending
 
-    expect(i18n.language).toBe('en')
+    expect(shownLanguage()).toBe('en')
     expect(document.documentElement.lang).toBe('en')
   })
 })

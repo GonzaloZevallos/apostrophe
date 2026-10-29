@@ -138,3 +138,14 @@ as profit and cash go. Debts and the stock rows still come from their owners.
   (business B's `today.cost_of_goods`, `grams_sold`, `grams_gifted` and `profit` all
   leaked business A's figures). Restored both filters; the sweep passed again, and
   `ruff`/`mypy` were clean throughout.
+
+## Amendment (GH-384): the half-up average rounds through the one money function
+
+Planned in GH-318, not yet in the code. One sentence of this ADR is narrowed by docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md, in the money
+part; until that part ships the sentence describes what runs.
+
+> "Profit, cash and the half-up average are integer arithmetic in results' domain"
+
+Narrowed: the half-up average is computed by `round_half_up` in `app/shared/money.py`, which the first
+money part creates, in integer arithmetic on the stored unit, and no other rounding of an amount stays
+in results' domain.

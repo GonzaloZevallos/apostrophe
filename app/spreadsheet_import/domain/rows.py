@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 
 @dataclass(frozen=True)
@@ -34,7 +34,7 @@ class VarietyRow:
 
     ref: SheetRef
     raw_name: str
-    threshold: Grams | None
+    threshold: Quantity | None
 
 
 @dataclass(frozen=True)
@@ -47,7 +47,7 @@ class PriceHistoryRow:
     effective: date
     list_price: int
     bulk_price: int | None
-    bulk_minimum: Grams | None
+    bulk_minimum: Quantity | None
 
 
 @dataclass(frozen=True)
@@ -90,7 +90,7 @@ class EntradaRow:
     ref: SheetRef
     entry_date: date | None
     variety: str | None
-    grams: Grams | None
+    quantity: Quantity | None
     origin: str | None
     total_cost: int | None
     note: str | None
@@ -123,7 +123,7 @@ class VentaRow:
     ref: SheetRef
     sale_date: date | None
     variety: str | None
-    grams: Grams | None
+    quantity: Quantity | None
     payment: str | None
     customer: str | None
     kind: str | None

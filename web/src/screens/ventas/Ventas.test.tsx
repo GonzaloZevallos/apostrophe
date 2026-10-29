@@ -12,12 +12,13 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import saleFixture from '../../api/fixtures/sale.json'
-import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import Ventas from './Ventas'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
+import { gone } from '../../components/feedback'
+import { baselineText } from '../../i18n/testing'
 
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -232,7 +233,7 @@ test('an empty period shows the empty-list text, not a blank list', async () => 
   api.mockResolvedValue(jsonResponse(200, []))
   renderVentas()
 
-  expect(await screen.findByText("You haven't recorded any sales in this period yet.")).toBeInTheDocument()
+  expect(await screen.findByText(baselineText('sales.ts:EMPTY_LIST'))).toBeInTheDocument()
 })
 
 test('a dropped network shows Sin conexión, never the empty-list text', async () => {
@@ -241,13 +242,13 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(
-    screen.queryByText("You haven't recorded any sales in this period yet."),
+    screen.queryByText(baselineText('sales.ts:EMPTY_LIST')),
   ).not.toBeInTheDocument()
 })
 
 test('arriving back from Delete sale or Deshacer shows "Sale deleted · the grams go back to stock"', async () => {
   api.mockResolvedValue(jsonResponse(200, []))
-  renderVentas({ toast: 'Sale deleted · the grams go back to stock' })
+  renderVentas({ toast: 'common:saleDeletedGramsBack' })
 
   expect(
     await screen.findByText('Sale deleted · the grams go back to stock'),
@@ -256,7 +257,7 @@ test('arriving back from Delete sale or Deshacer shows "Sale deleted · the gram
 
 test('arriving back after deleting an already-gone sale shows the gone notice', async () => {
   api.mockResolvedValue(jsonResponse(200, []))
-  renderVentas({ notice: GONE_NOTICE })
+  renderVentas(gone())
 
-  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+  expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
 })

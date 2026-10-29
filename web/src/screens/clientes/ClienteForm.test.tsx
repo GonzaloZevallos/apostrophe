@@ -1,13 +1,14 @@
 /**
  * `ClienteForm` at the screen seam: add and edit share the form; a refusal maps
  * to its field and keeps what was typed (`customers.md`); a save on a `gone`
- * customer closes the form and shows `GONE_NOTICE` instead of "Customer saved"
+ * customer closes the form and shows `'That is gone. The list is up to date.'` instead of "Customer saved"
  * (plan, "Gone records").
  */
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo } from '../../routes'
-import { GONE_NOTICE } from '../../api/refusals'
 import { useGoneNotice } from '../../components/goneExit'
+import { readFeedback } from '../../components/feedback'
+import Notice from '../../components/Notice'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { stubViewport } from '../../test-viewport'
 import { StrictMode } from 'react'
@@ -26,26 +27,26 @@ import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
 function ListStub() {
   const location = useLocation()
-  const state = location.state as { toast?: string } | null
+  const feedback = readFeedback(location.state)
   const goneShown = useGoneNotice()
   return (
     <div>
       <span>la lista</span>
-      {state?.toast !== undefined && <span>{state.toast}</span>}
-      {goneShown && <span>{GONE_NOTICE}</span>}
+      {feedback?.kind === 'toast' && <Notice {...feedback} />}
+      {goneShown && <span>{'That is gone. The list is up to date.'}</span>}
     </div>
   )
 }
 
 function FichaStub() {
   const location = useLocation()
-  const state = location.state as { toast?: string } | null
+  const feedback = readFeedback(location.state)
   const goneShown = useGoneNotice()
   return (
     <div>
       <span>la ficha</span>
-      {state?.toast !== undefined && <span>{state.toast}</span>}
-      {goneShown && <span>{GONE_NOTICE}</span>}
+      {feedback?.kind === 'toast' && <Notice {...feedback} />}
+      {goneShown && <span>{'That is gone. The list is up to date.'}</span>}
     </div>
   )
 }
@@ -475,10 +476,10 @@ test('a gone edit opened from the card goes back to it: the card is in history o
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(CARD)
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
 })
 
 test('a gone edit opened from a search replaces the form with the card and leaves the list behind alone', async () => {
@@ -489,10 +490,10 @@ test('a gone edit opened from a search replaces the form with the card and leave
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('REPLACE')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
 })
 
 test('a gone edit on a direct link replaces the form with the card and shows the notice', async () => {
@@ -503,7 +504,7 @@ test('a gone edit on a direct link replaces the form with the card and shows the
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('REPLACE')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 test('after a reload of the form, the gone exit still goes back once', async () => {
@@ -517,7 +518,7 @@ test('after a reload of the form, the gone exit still goes back once', async () 
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 test('a resize across 900 px between opening and leaving does not change where the exit goes', async () => {
@@ -544,7 +545,7 @@ test.each([
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 test('the form follows the icon and text rule: its submit and its Cerrar are text controls of the closed kinds', () => {

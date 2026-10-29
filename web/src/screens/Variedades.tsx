@@ -139,7 +139,7 @@ export default function Variedades() {
           </span>
         </div>
         {feedback !== null ? (
-          <Notice kind={feedback.kind} message={feedback.message} />
+          <Notice {...feedback} />
         ) : (
           goneExited && <GoneNotice />
         )}

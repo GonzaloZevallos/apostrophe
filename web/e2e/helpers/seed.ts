@@ -18,10 +18,10 @@ import {
   pathTo,
   withdrawalNewFor,
 } from '../../src/routes.js'
-import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
+import { expectToast } from './toast.js'
 import { fillSaleLine } from './sale.js'
 import { leaveOnboarding } from './signup.js'
 import { uniqueTag } from './unique.js'
@@ -59,14 +59,12 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   const variety = await idAt(page, VARIETY)
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill(customerName)
@@ -82,8 +80,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('45000')
-  await page.getByRole('button', { name: 'Save the entry' }).click()
-  await expect(page.getByText('Entry saved')).toBeVisible()
+  await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
   await page.goto(STOCK)
   await page.getByRole('link', { name: 'Edit' }).click()
   const entry = await idAt(page, STOCK_ENTRY)
@@ -91,8 +88,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await page.goto(withdrawalNewFor(variety))
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Promotion', exact: true }).click()
-  await page.getByRole('button', { name: 'Save the withdrawal' }).click()
-  await expect(page.getByText('Withdrawal saved')).toBeVisible()
+  await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
   await page.goto(pathTo(VARIETY, { id: variety }))
   await page.locator('.fila-entrada__enlace', { hasText: 'Promotion' }).click()
   const withdrawal = await idAt(page, WITHDRAWAL)

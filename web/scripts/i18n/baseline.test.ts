@@ -48,6 +48,44 @@ describe('collectEntries', () => {
     expect(collectEntries(modules).map((entry) => entry.source)).toEqual(['a.ts:KEPT'])
   })
 
+  describe('the exports a module names in MOVED_TO_KEYS', () => {
+    const moved = (): Record<string, unknown> => ({
+      NAMESPACE: 'common',
+      MOVED_TO_KEYS: ['OLD'] as const,
+      OLD: { home: 'Home', greet: (name: string) => `Hello ${name}` },
+      KEPT: 'kept',
+      BASELINE_ARGS: { 'OLD.greet': [['Ana']] },
+    })
+
+    test('are not recorded, and their BASELINE_ARGS rows are not an error, but the rest still is', () => {
+      expect(collectEntries({ 'a.ts': moved() }).map((entry) => entry.source)).toEqual(['a.ts:KEPT'])
+    })
+
+    test('are not rendered for drift: a recorded entry of a moved export is left to the keyed check', () => {
+      const committed = [{ source: 'a.ts:OLD.home', args: null, text: 'Another' }]
+
+      expect(driftProblems({ 'a.ts': moved() }, committed)).toEqual([])
+    })
+
+    test('a module without MOVED_TO_KEYS skips nothing', () => {
+      const plain = Object.fromEntries(Object.entries(moved()).filter(([name]) => name !== 'MOVED_TO_KEYS'))
+
+      expect(collectEntries({ 'a.ts': plain }).map((entry) => entry.source)).toEqual(['a.ts:KEPT', 'a.ts:OLD.greet', 'a.ts:OLD.home'])
+    })
+
+    test('only the names it lists: a function outside the list still needs its row', () => {
+      const mod = { ...moved(), LATER: { f: () => 'x' } }
+
+      expect(() => collectEntries({ 'a.ts': mod })).toThrow('a.ts:LATER.f: a function with no BASELINE_ARGS row')
+    })
+
+    test('a row for a name that is neither a moved export nor a function is still an error', () => {
+      const mod = { ...moved(), BASELINE_ARGS: { 'OLD.greet': [['Ana']], KEPT: [[]] } }
+
+      expect(() => collectEntries({ 'a.ts': mod })).toThrow('a.ts:KEPT: a BASELINE_ARGS row for something that is not a function')
+    })
+  })
+
   test('keeps null and undefined apart in the recorded arguments', () => {
     const modules: Modules = {
       'a.ts': { maybe: (x?: string | null) => `${x}`, BASELINE_ARGS: { maybe: [[null], [undefined]] } },

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import Draw, Lot, LotOrder
 from app.stock.domain.stock_level import stock_level
@@ -16,40 +16,40 @@ AT = datetime(2026, 9, 1, 10, 0)
 TODAY = date(2026, 10, 2)
 
 
-def _lot(grams: str, day: date, ref_id: int = 1) -> Lot:
-    return Lot(LotOrder(day, AT, 0, ref_id, 0), 1, Grams.of(grams), None)
+def _lot(quantity: str, day: date, ref_id: int = 1) -> Lot:
+    return Lot(LotOrder(day, AT, 0, ref_id, 0), 1, Quantity.of(quantity), None)
 
 
 def _draw(
-    grams: str, day: date, ref_id: int = 1, source: DrawSource = DrawSource.SALE_LINE
+    quantity: str, day: date, ref_id: int = 1, source: DrawSource = DrawSource.SALE_LINE
 ) -> Draw:
-    return Draw(LotOrder(day, AT, 1, ref_id, 0), 1, Grams.of(grams), source)
+    return Draw(LotOrder(day, AT, 1, ref_id, 0), 1, Quantity.of(quantity), source)
 
 
 def test_no_entries_when_nothing_has_ever_moved() -> None:
     level = stock_level([], [], None, TODAY)
 
     assert level.status == "no_entries"
-    assert level.grams == Grams(0)
+    assert level.quantity == Quantity(0)
     assert level.sold_out_since is None
     assert level.days_left is None
 
 
 def test_ok_when_stock_is_above_the_threshold() -> None:
-    level = stock_level([_lot("50", TODAY)], [], Threshold.of(Grams.of("20")), TODAY)
+    level = stock_level([_lot("50", TODAY)], [], Threshold.of(Quantity.of("20")), TODAY)
 
     assert level.status == "ok"
-    assert level.grams == Grams.of("50")
+    assert level.quantity == Quantity.of("50")
 
 
 def test_low_when_stock_is_under_the_threshold() -> None:
-    level = stock_level([_lot("10", TODAY)], [], Threshold.of(Grams.of("20")), TODAY)
+    level = stock_level([_lot("10", TODAY)], [], Threshold.of(Quantity.of("20")), TODAY)
 
     assert level.status == "low"
 
 
 def test_stock_equal_to_the_threshold_reads_ok_not_low() -> None:
-    level = stock_level([_lot("20", TODAY)], [], Threshold.of(Grams.of("20")), TODAY)
+    level = stock_level([_lot("20", TODAY)], [], Threshold.of(Quantity.of("20")), TODAY)
 
     assert level.status == "ok"
 
@@ -66,7 +66,7 @@ def test_sold_out_when_stock_reaches_exactly_zero() -> None:
     )
 
     assert level.status == "sold_out"
-    assert level.grams == Grams(0)
+    assert level.quantity == Quantity(0)
     assert level.sold_out_since == date(2026, 9, 2)
 
 
@@ -74,7 +74,7 @@ def test_sold_out_wins_over_a_threshold() -> None:
     level = stock_level(
         [_lot("10", date(2026, 9, 1))],
         [_draw("12", date(2026, 9, 2))],
-        Threshold.of(Grams.of("50")),
+        Threshold.of(Quantity.of("50")),
         TODAY,
     )
 
@@ -87,7 +87,7 @@ def test_sales_with_no_entries_still_reads_sold_out() -> None:
     level = stock_level([], [_draw("4", date(2026, 9, 5))], None, TODAY)
 
     assert level.status == "sold_out"
-    assert level.grams == Grams.of("-4")
+    assert level.quantity == Quantity.of("-4")
     assert level.sold_out_since == date(2026, 9, 5)
 
 
@@ -161,7 +161,7 @@ def test_a_variety_with_only_a_withdrawal_is_sold_out_not_no_entries() -> None:
     level = stock_level([], [withdrawal], None, TODAY)
 
     assert level.status == "sold_out"
-    assert level.grams == Grams.of("-2")
+    assert level.quantity == Quantity.of("-2")
     assert level.sold_out_since == date(2026, 9, 20)
 
 
@@ -174,9 +174,7 @@ def test_sold_out_since_follows_a_withdrawals_date() -> None:
 
 
 def test_days_left_is_none_when_stock_is_at_or_below_zero() -> None:
-    level = stock_level(
-        [_lot("10", date(2026, 9, 1))], [_draw("12", TODAY)], None, TODAY
-    )
+    level = stock_level([_lot("10", date(2026, 9, 1))], [_draw("12", TODAY)], None, TODAY)
 
     assert level.days_left is None
 
@@ -189,9 +187,7 @@ def test_days_left_is_none_with_nothing_out_in_the_last_30_days() -> None:
 
 def test_days_left_counts_a_draw_exactly_29_days_before_today() -> None:
     edge_day = TODAY - timedelta(days=29)
-    level = stock_level(
-        [_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY
-    )
+    level = stock_level([_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY)
 
     # Stock is 100 - 10 = 90; the edge draw counts: 90 * 30 // 10 = 270.
     assert level.days_left == 270
@@ -199,9 +195,7 @@ def test_days_left_counts_a_draw_exactly_29_days_before_today() -> None:
 
 def test_days_left_excludes_a_draw_30_days_before_today() -> None:
     edge_day = TODAY - timedelta(days=30)
-    level = stock_level(
-        [_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY
-    )
+    level = stock_level([_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY)
 
     # The draw still reduces stock (90g) but falls outside the 30-day pace window.
     assert level.days_left is None

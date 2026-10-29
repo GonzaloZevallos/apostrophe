@@ -41,7 +41,9 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../format/initials'
-import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
+import { PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import { inicioNotices } from './inicioNotices'
 import FirstRunChecklist from './inicio/FirstRunChecklist'
 import ImportNotice from './inicio/ImportNotice'
@@ -49,13 +51,14 @@ import InicioPanel from './inicio/InicioPanel'
 import OnboardingNotice from './onboarding/OnboardingNotice'
 import { COMMON_TEXT } from '../copy/common'
 
-export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
+export { PINNED_CATALOG_OUT_OF_DATE }
 
 interface PinnedCatalogStatus {
   status: { state: 'up_to_date' | 'out_of_date' } | null
 }
 
 export default function Inicio() {
+  const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const [tab, setTab] = useState<PanelTab>('today')
 
@@ -107,8 +110,8 @@ export default function Inicio() {
         {notices.first?.kind === 'start' && (
           <div className="estado-vacio estado-vacio--atencion">
             <AvisoCuerpo attention>
-              <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
-              <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+              <span className="estado-vacio__titulo">{t(EMPTY_STATE_KEYS.homeVarietiesTitle)}</span>
+              <span className="estado-vacio__detalle">{t(EMPTY_STATE_KEYS.homeVarietiesDetail)}</span>
             </AvisoCuerpo>
           </div>
         )}

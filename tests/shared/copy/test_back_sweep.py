@@ -92,7 +92,7 @@ def test_a_bulk_line_that_appends_a_literal_fails_the_sweep() -> None:
         indica=real.indica,
         aroma=real.aroma,
         price_per_gram=real.price_per_gram,
-        bulk=lambda grams, price: real.bulk(grams, price) + " each",
+        bulk=lambda quantity, price: real.bulk(quantity, price) + " each",
     )
 
     text = catalog_text(planted, HEADER, FOOTER, entries())

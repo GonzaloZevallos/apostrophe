@@ -8,12 +8,7 @@ import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const EMPTY_STATE_TITLE = 'Nothing in the catalog today'
-export const EMPTY_STATE_DETAIL = 'Nothing to copy yet'
-
 export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },
-  { kind: 'emptyLine', text: EMPTY_STATE_DETAIL },
 ]
 export const LONG_REFUSALS: readonly string[] = []
 

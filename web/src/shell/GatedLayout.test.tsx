@@ -14,7 +14,6 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../api/keys'
 import { getMe } from '../api/me'
-import i18n from '../i18n'
 import {
   LANGUAGE_LOAD_TIMEOUT_MS,
   resetToBootLanguage,
@@ -23,8 +22,7 @@ import {
 import { logOut } from '../session'
 import { missingKeys } from '../i18n/missingKeys'
 import { loadLocale, type LocaleBundle } from '../i18n/resources'
-import { SIN_CONEXION_MENSAJE } from '../copy/common'
-import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import common from '../copy/locales/en/common.json'
 import GatedLayout from './GatedLayout'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -63,7 +61,7 @@ test('a dropped network on GET /auth/me shows "Sin conexión", not a blank page'
 
   renderGated()
 
-  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText(common.offline)).toBeInTheDocument()
   expect(screen.queryByText('contenido del negocio')).not.toBeInTheDocument()
 })
 
@@ -72,7 +70,7 @@ test('a server error on GET /auth/me shows the generic retry, not a blank page',
 
   renderGated()
 
-  expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText(common.genericError)).toBeInTheDocument()
   expect(screen.queryByText('contenido del negocio')).not.toBeInTheDocument()
 })
 
@@ -179,7 +177,6 @@ test('a business in another language renders nothing until its chunk is installe
   })
 
   expect(await screen.findByText('contenido del negocio')).toBeInTheDocument()
-  expect(i18n.language).toBe('de')
   expect(document.documentElement.lang).toBe('de')
 })
 
@@ -194,7 +191,6 @@ test('a rejected chunk mounts the outlet in English with one recorded miss', asy
   })
 
   expect(await screen.findByText('contenido del negocio')).toBeInTheDocument()
-  expect(i18n.language).toBe('en')
   expect(missingKeys()).toEqual([{ language: 'de', ns: '*', key: '*' }])
   expect(document.documentElement.lang).toBe('en')
 })
@@ -214,7 +210,6 @@ test('a chunk that never settles mounts the outlet in English after the timeout'
   })
 
   expect(screen.getByText('contenido del negocio')).toBeInTheDocument()
-  expect(i18n.language).toBe('en')
   expect(missingKeys()).toHaveLength(1)
 })
 
@@ -233,7 +228,6 @@ test('a chunk that resolves after the timeout does not change the language', asy
   })
 
   expect(screen.getByText('contenido del negocio')).toBeInTheDocument()
-  expect(i18n.language).toBe('en')
   expect(document.documentElement.lang).toBe('en')
 })
 

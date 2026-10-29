@@ -13,11 +13,14 @@ import type { SAMPLES } from '../copy/limits.ts'
  */
 export const PLACEHOLDERS: Record<string, keyof typeof SAMPLES> = {
   amount: 'amount',
+  business: 'name',
   count: 'count',
+  customer: 'name',
   date: 'date',
   fromDate: 'date',
   grams: 'grams',
   name: 'name',
   negativeAmount: 'negativeAmount',
+  parent: 'name',
   toDate: 'date',
 }

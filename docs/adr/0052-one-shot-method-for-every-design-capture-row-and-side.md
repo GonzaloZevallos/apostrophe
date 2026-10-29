@@ -88,3 +88,20 @@ the other sides. Nothing runs in the app, the gate or CI.
 5. The four phone layer rows reach the design side as a section taller than the phone.
 6. The seed day was 2026-10-24, not the pinned 2026-09-16, and 50 rows have no old counterpart (27
    old rows with Spanish labels and 23 new rows); (d) is judged against the census run.
+
+## Amendment (GH-440): the step bound is an option
+
+Known risk 3 was met by the census test: the gate's `web-tests` failed once with `shot: timed out
+taking the shot (design)`, because under `parallel_checks` the census runs beside pytest, mypy, tsc and
+the build, and a starved page load takes 8 to 20 s.
+
+- The step bound still defaults to 8000 ms.
+- `--step-timeout <ms>` (an integer of at least 1; anything else exits with status 2) sets it for the
+  whole run, in `withinTimeout` and in the built page's Playwright default.
+- The design page's Playwright default is the larger of 30000 ms and the bound.
+- The settle bounds count frames and are unchanged.
+- The census test runs at `CENSUS_STEP_MS` (60 s), because under `parallel_checks` its group no longer
+  has an idle CPU.
+- `compare.sh` still runs at 8 s.
+
+Date: 2026-10-27.

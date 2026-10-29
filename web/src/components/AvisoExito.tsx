@@ -3,12 +3,14 @@
  * "Deshacer"). Blue, never green (accessibility rule: blue ↔ amber only) — `--acento`,
  * the same accent the rest of the app uses, not a state color of its own.
  *
+ * A toast that is a `common:` key (`feedback.ts`'s `SuccessToast`) is resolved with `t`.
+ *
  * `SuccessToast` is the PRD's own closed union ("Feedback": the full list of fixed
  * toasts) — every screen's toast state is typed on it, not on a bare `string`, so a
  * typo or an invented message fails `tsc` instead of rendering silently.
  */
 
-import type { COMMON_TEXT } from '../copy/common'
+import { useTranslation } from 'react-i18next'
 import type { CUSTOMERS_TEXT } from '../copy/customers'
 import type { EXPENSES_TEXT } from '../copy/expenses'
 import type { PAYMENTS_TEXT } from '../copy/payments'
@@ -24,11 +26,15 @@ import type {
 import type { PRICE_SAVED, THRESHOLD_SAVED, VARIETIES_TEXT } from '../copy/varieties'
 import type { STOCK_TEXT } from '../copy/stock'
 import type { CATALOG_TEXT } from '../copy/catalog'
+import { isSuccessToast } from './feedback'
 
+/** The flash union: not `feedback.ts`'s `SuccessToast` (the closed set of five keys that rides in
+ * history state). The `common:` members here are keys; the rest are still English until their
+ * area part moves them, and only a key is ever handed to `t` (`isSuccessToast` narrows first). */
 export type SuccessToast =
-  | (typeof COMMON_TEXT)['customerSaved']
-  | (typeof COMMON_TEXT)['entrySaved']
-  | (typeof COMMON_TEXT)['entryDeleted']
+  | 'common:customerSaved'
+  | 'common:entrySaved'
+  | 'common:entryDeleted'
   | (typeof VARIETIES_TEXT)['variedadGuardada']
   | (typeof VARIETIES_TEXT)['variedadEliminada']
   | (typeof VARIETIES_TEXT)['variedadArchivada']
@@ -57,9 +63,12 @@ export type SuccessToast =
   | (typeof STOCK_TEXT)['retiroEliminado']
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
+  const { t } = useTranslation()
+  // A `common:` key is resolved here; the area toasts below it in the union are still
+  // their English words until their area part moves them to keys.
   return (
     <div className="aviso-exito" role="status">
-      <span className="aviso-exito__texto">{texto}</span>
+      <span className="aviso-exito__texto">{isSuccessToast(texto) ? t(texto) : texto}</span>
     </div>
   )
 }

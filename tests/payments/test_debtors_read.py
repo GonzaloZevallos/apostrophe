@@ -23,14 +23,14 @@ def _priced_variety(client: TestClient) -> int:
     return variety["id"]
 
 
-def _owing_sale(client: TestClient, customer_id: int, variety_id: int, grams: int) -> int:
+def _owing_sale(client: TestClient, customer_id: int, variety_id: int, quantity: int) -> int:
     sale = client.post(
         "/sales",
         json={
             "customer_id": customer_id,
             "payment": "owing",
             "date": SALE_DATE,
-            "lines": [{"variety_id": variety_id, "grams": str(grams)}],
+            "lines": [{"variety_id": variety_id, "grams": str(quantity)}],
         },
     )
     assert sale.status_code == 201, sale.text

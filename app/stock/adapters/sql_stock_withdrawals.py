@@ -13,7 +13,7 @@ from sqlalchemy import delete as sa_delete
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.adapters.tables import StockWithdrawalLineRow, StockWithdrawalRow
 from app.stock.application.ports import WithdrawalMovement
 from app.stock.domain.draw_source import WithdrawalReason
@@ -39,7 +39,7 @@ class SqlStockWithdrawals:
             .order_by(StockWithdrawalLineRow.position)
         )
         lines = tuple(
-            WithdrawalLine(variety_id, Grams(hundredths))
+            WithdrawalLine(variety_id, Quantity(hundredths))
             for variety_id, hundredths in self._session.execute(statement).all()
         )
         return Withdrawal(
@@ -105,7 +105,7 @@ class SqlStockWithdrawals:
                 recorded_at=header.recorded_at,
                 withdrawal_id=header.id,
                 position=line.position,
-                grams=Grams(line.grams_hundredths),
+                quantity=Quantity(line.grams_hundredths),
                 reason=self._reason_of(header),
             )
             for line, header in self._session.execute(statement).all()
@@ -134,7 +134,7 @@ class SqlStockWithdrawals:
                 withdrawn_on=header.withdrawn_on,
                 recorded_at=header.recorded_at,
                 reason=self._reason_of(header),
-                grams=Grams(total),
+                quantity=Quantity(total),
             )
             for header, total in summed.values()
         ]
@@ -176,7 +176,7 @@ class SqlStockWithdrawals:
                     stock_withdrawal_id=withdrawal_id,
                     variety_id=line.variety_id,
                     position=position,
-                    grams_hundredths=line.grams.hundredths,
+                    grams_hundredths=line.quantity.hundredths,
                 )
             )
         self._session.flush()

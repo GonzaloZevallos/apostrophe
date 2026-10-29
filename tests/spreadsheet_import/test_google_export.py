@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
 from app.shared.copy import OperatorText
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cells import read_workbook
 from app.spreadsheet_import.adapters.cli import run
@@ -321,11 +321,11 @@ def _assert_clean_parse(parsed: ParsedWorkbook) -> None:
     assert history.list_price == 1000
     assert isinstance(history.list_price, int)
     assert history.bulk_price == 800
-    assert history.bulk_minimum == Grams.of(10)
+    assert history.bulk_minimum == Quantity.of(10)
     [variety] = [v for v in parsed.varieties if v.raw_name == VARIETY]
-    assert variety.threshold == Grams.of(20)
+    assert variety.threshold == Quantity.of(20)
     [blue_dream] = [v for v in parsed.varieties if v.raw_name == "Blue Dream"]
-    assert blue_dream.threshold == Grams.of("7.25")
+    assert blue_dream.threshold == Quantity.of("7.25")
     [catalog_row] = parsed.catalog
     assert catalog_row.indica == 60
     assert isinstance(catalog_row.indica, int)
@@ -337,7 +337,7 @@ def _assert_clean_parse(parsed: ParsedWorkbook) -> None:
     assert first_venta.special_total == 500
     assert isinstance(first_venta.special_total, int)
     first_entrada = next(e for e in parsed.entradas if e.ref.row == 2)
-    assert first_entrada.grams == Grams.of("3.5")
+    assert first_entrada.quantity == Quantity.of("3.5")
     assert first_entrada.total_cost == 20_000
     notes = {e.ref.row: e.note for e in parsed.entradas}
     assert notes[3] == "3,5"

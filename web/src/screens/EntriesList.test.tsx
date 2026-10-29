@@ -28,6 +28,10 @@ import VarietyRoute from './varieties/VarietyRoute'
 import { LIMITS } from '../copy/limits'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Shell from '../shell/Shell'
+import { baselineText } from '../i18n/testing'
+
+const STOCK_EMPTY_TITLE = baselineText('stock.ts:EMPTY_STATE_TITLE')
+const STOCK_EMPTY_DETAIL = baselineText('stock.ts:EMPTY_STATE_DETAIL')
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: SHOWN_EN }
 
@@ -319,8 +323,8 @@ test('with no entries the empty state shows, with no rows', async () => {
   )
   renderAt(STOCK_PATH)
 
-  expect(await screen.findByText('No stock entries')).toBeInTheDocument()
-  expect(screen.getByText('Enter your initial stock or a purchase')).toBeInTheDocument()
+  expect(await screen.findByText(STOCK_EMPTY_TITLE)).toBeInTheDocument()
+  expect(screen.getByText(STOCK_EMPTY_DETAIL)).toBeInTheDocument()
   expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
 })
 
@@ -369,7 +373,7 @@ test('the empty state keeps the title and the line within their limits', async (
   )
   renderAt(STOCK_PATH)
 
-  await screen.findByText('No stock entries')
+  await screen.findByText(STOCK_EMPTY_TITLE)
   expect(document.querySelectorAll('[data-copy="emptyTitle"], [data-copy="emptyLine"]')).toHaveLength(2)
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

@@ -10,10 +10,23 @@
 import type { LoadingFacts } from '../../src/mobile-standard/loading.ts'
 import { judgeLoading } from '../../src/mobile-standard/loading.ts'
 import { judgeShifts, type ShiftSample } from '../../src/mobile-standard/layoutShift.ts'
-import { FORBIDDEN_WHILE_LOADING } from '../../src/mobile-standard/emptyStates.ts'
+import { forbiddenWhileLoading } from '../../src/mobile-standard/emptyStates.ts'
+import { loadBundle } from '../../scripts/i18n/loadBundle.ts'
+import { mobileLanguage } from '../env.js'
 import type { Collector } from './collect.js'
 
-export function probeLoading(forbidden: readonly string[]): LoadingFacts {
+/**
+ * The wordings forbidden while loading in this run: English always, and the run's own bundle
+ * read from disk when the run is not `en`. Read here, in `e2e/`: `mobile-standard/` only takes
+ * the bundles it is given.
+ */
+export function runForbidden(): readonly string[] {
+  const tag = mobileLanguage()
+  return forbiddenWhileLoading(loadBundle('en'), loadBundle(tag), tag)
+}
+
+/** Reads the page; `judgeLoading` decides which texts are forbidden. */
+export function probeLoading(): LoadingFacts {
   const phone = window.__phone
   if (phone === undefined) throw new Error('the phone toolkit is not installed in this page')
   const main = document.querySelector('main')
@@ -28,21 +41,22 @@ export function probeLoading(forbidden: readonly string[]): LoadingFacts {
       return hasText || (surface && rect.width >= 8 && rect.height >= 8)
     })
 
-  const falseEmpty: LoadingFacts['falseEmpty'][number][] = []
+  const texts: LoadingFacts['texts'][number][] = []
   const data: LoadingFacts['data'][number][] = []
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
   for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
     const parent = node.parentElement
     const text = phone.squash(node.textContent)
     if (parent === null || text === '' || parent.closest('script, style, noscript') !== null || !phone.visible(parent)) continue
-    if (forbidden.some((wording) => text.includes(wording))) falseEmpty.push(phone.raw(parent))
+    texts.push({ text, raw: phone.raw(parent) })
     if (main !== null && main.contains(parent) && /[\d$]/.test(text)) data.push(phone.raw(parent))
   }
 
   return {
+    lang: document.documentElement.lang,
     blank: main === null || !drawn(main),
     busy: main !== null && (main.getAttribute('aria-busy') === 'true' || main.querySelector('[aria-busy="true"]') !== null),
-    falseEmpty,
+    texts,
     data,
   }
 }
@@ -79,7 +93,12 @@ export function probeShifts(): ShiftSample[] {
 export const LOADING_COLLECTOR: Collector = {
   name: 'loading',
   phase: 'loading',
-  run: async (page, cell) => judgeLoading(await page.evaluate(probeLoading, FORBIDDEN_WHILE_LOADING), cell),
+  run: async (page, cell) => {
+    const verdict = judgeLoading(await page.evaluate(probeLoading), cell, runForbidden(), mobileLanguage())
+    // A page in the wrong language fails the step with its own reason, outside `Violation`s.
+    if (verdict.language !== null) throw new Error(verdict.language)
+    return verdict.violations
+  },
 }
 
 export const SHIFT_COLLECTOR: Collector = {

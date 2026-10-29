@@ -9,12 +9,10 @@ import type * as Self from './sales.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
 import { CUSTOMERS_TEXT } from './customers.ts'
-import { EMPTY_STATES } from './emptyStates.ts'
 import { VARIETIES_TEXT } from './varieties.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const EMPTY_LIST = EMPTY_STATES.salesList
 export const GRAMS_HELP = 'Comma, up to two decimals'
 export const OWING_HINT = 'To leave it owing, pick a customer'
 
@@ -52,7 +50,6 @@ export const SALE_BILL_TEXT = {
 }
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyLine', text: EMPTY_LIST },
   { kind: 'help', text: OWING_HINT },
   { kind: 'help', text: GRAMS_HELP },
   { kind: 'help', text: noPriceMessage(SAMPLES.name) },

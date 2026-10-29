@@ -1,0 +1,6 @@
+[
+  "web/src/screens/Gastos.test.tsx",
+  "web/src/screens/Gastos.tsx",
+  "web/src/screens/expenses/ExpenseForm.tsx",
+  "web/src/screens/expenses/ExpenseNewRoute.tsx"
+]

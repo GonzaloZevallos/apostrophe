@@ -47,7 +47,7 @@ items:
   added_at: '2026-10-26T04:29:54.986+00:00'
   last_applied: '2026-10-26T04:50:52.469+00:00'
 - id: developer-5
-  lesson: When you change a value other code reads (shared copy, labels, dates), grep every test that reads it (sister unit tests, e2e specs, phone cells) and fix each lookup before delivering. Run the unit tests you touched; do not run the e2e suite by hand, the gate and CI run it.
+  lesson: When you change a value other code reads (copy, labels, dates), grep every test that reads it (unit, e2e specs, phone cells) and fix each lookup. Run the unit tests you touched; never run e2e by hand, the gate and CI do.
   category: process-suite-red
   since: 2fa58829
   seen_in:

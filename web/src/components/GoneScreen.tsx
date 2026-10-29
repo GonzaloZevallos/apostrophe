@@ -5,18 +5,20 @@
  * name only the list to go back to, e.g. "Clientes" / /clientes.
  */
 
+import { useTranslation } from 'react-i18next'
 import BotonLink from './BotonLink'
 import { GONE_DETAIL } from '../api/refusals'
-import { COMMON_TEXT } from '../copy/common'
+import { refusalText } from '../i18n/refusalKeys'
 
 export default function GoneScreen({ label, to }: { label: string; to: string }) {
+  const { t } = useTranslation()
   return (
     <main className="pantalla">
       <div className="cuerpo">
         <div className="estado-vacio">
-          <span className="estado-vacio__titulo">{GONE_DETAIL}</span>
+          <span className="estado-vacio__titulo">{refusalText(t, GONE_DETAIL)}</span>
           <BotonLink variant="primary" icon="atras" to={to}>
-            {COMMON_TEXT.backTo}{label}
+            {t('common:backTo', { parent: label })}
           </BotonLink>
         </div>
       </div>
