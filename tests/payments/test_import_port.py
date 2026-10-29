@@ -59,7 +59,7 @@ def test_has_records_is_true_for_an_on_the_spot_payment(
         json={
             "customer_id": customer["id"],
             "payment": "cash",
-            "lines": [{"variety_id": variety_id, "grams": "2"}],
+            "lines": [{"variety_id": variety_id, "quantity": "2"}],
         },
     )
     assert sold.status_code == 201, sold.text
@@ -80,7 +80,7 @@ def test_has_records_is_true_for_a_later_payment(client: TestClient, engine: Eng
         json={
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety_id, "grams": "2"}],
+            "lines": [{"variety_id": variety_id, "quantity": "2"}],
         },
     )
     assert sold.status_code == 201, sold.text

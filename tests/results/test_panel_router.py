@@ -46,7 +46,7 @@ def _entry(
     body: dict[str, Any] = {
         "variety_id": variety_id,
         "origin": origin,
-        "grams": quantity,
+        "quantity": quantity,
         "date": on,
     }
     if total_cost is not None:
@@ -69,7 +69,7 @@ def _sale(
     body: dict[str, Any] = {
         "date": on,
         "payment": payment,
-        "lines": [{"variety_id": variety_id, "grams": quantity, "gift": gift}],
+        "lines": [{"variety_id": variety_id, "quantity": quantity, "gift": gift}],
     }
     if customer_id is not None:
         body["customer_id"] = customer_id
@@ -119,8 +119,8 @@ def test_an_empty_business_answers_real_zeros(client: TestClient) -> None:
         assert figures["sales"] == 0
         assert figures["sales_count"] == 0
         assert figures["average_sale"] is None
-        assert figures["grams_sold"] == 0
-        assert figures["grams_gifted"] == 0
+        assert figures["quantity_sold"] == 0
+        assert figures["quantity_gifted"] == 0
         assert figures["cost_of_goods"] == 0
         assert figures["pending_cost"] is False
         assert figures["shortfall"] is None  # no negative adjustment: no Faltante de stock
@@ -208,7 +208,7 @@ def test_editing_a_stock_entry_s_cost_moves_cost_of_goods_and_profit(
         json={
             "variety_id": variety_id,
             "origin": "opening_stock",
-            "grams": "10",
+            "quantity": "10",
             "total_cost": 2_000,
             "date": day.isoformat(),
         },
@@ -231,7 +231,7 @@ def test_a_negative_adjustment_s_grams_are_never_summed_into_cost_of_goods(
         json={
             "variety_id": variety_id,
             "origin": "adjustment",
-            "grams": "-4",
+            "quantity": "-4",
             "date": "2026-10-14",
         },
     )
@@ -289,7 +289,7 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
     _entry(client, sold_out_id, quantity="10", total_cost=500, on=day.isoformat())
     low_id = _variety(client, "Poca")
     _entry(client, low_id, quantity="10", total_cost=500, on=day.isoformat())
-    threshold = client.put(f"/stock/varieties/{low_id}/threshold", json={"grams": "20"})
+    threshold = client.put(f"/stock/varieties/{low_id}/threshold", json={"quantity": "20"})
     assert threshold.status_code == 200, threshold.text
 
     _sale(client, ok_id, quantity="5", on=day.isoformat())
@@ -388,7 +388,7 @@ def test_a_negative_adjustment_beyond_every_lot_is_shortfall_only_pending(
         json={
             "variety_id": variety_id,
             "origin": "adjustment",
-            "grams": "-3",
+            "quantity": "-3",
             "date": "2026-10-15",
         },
     )
@@ -422,7 +422,7 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     # same lot, which is used up exactly: 10 - 1 - 2 - 7 = 0.
     adjustment_29 = client.post(
         "/stock/entries",
-        json={"variety_id": x_id, "origin": "adjustment", "grams": "-2", "date": "2026-09-29"},
+        json={"variety_id": x_id, "origin": "adjustment", "quantity": "-2", "date": "2026-09-29"},
     )
     assert adjustment_29.status_code == 201, adjustment_29.text
     _sale(client, x_id, quantity="7", on="2026-09-29")
@@ -443,7 +443,7 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     _sale(client, y_id, quantity="3", on="2026-10-02")
     adjustment_today = client.post(
         "/stock/entries",
-        json={"variety_id": x_id, "origin": "adjustment", "grams": "-1", "date": "2026-10-02"},
+        json={"variety_id": x_id, "origin": "adjustment", "quantity": "-1", "date": "2026-10-02"},
     )
     assert adjustment_today.status_code == 201, adjustment_today.text
 
@@ -459,8 +459,8 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     assert today_figures["sales"] == 6_000  # 3g * $2.000/g, Y
     assert today_figures["sales_count"] == 1  # the Y sale only; the adjustment is not a sale
     assert today_figures["average_sale"] == 6_000  # one sale, so the average is its own total
-    assert today_figures["grams_sold"] == 3.0
-    assert today_figures["grams_gifted"] == 0.0
+    assert today_figures["quantity_sold"] == 3.0
+    assert today_figures["quantity_gifted"] == 0.0
     assert today_figures["cost_of_goods"] == 0  # Y has no entry: wholly pending, nothing costed
     assert today_figures["pending_cost"] is True
     assert today_figures["shortfall"] == {"amount": 0, "pending": True}  # X's lot is empty
@@ -512,7 +512,7 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     assert analysis_month_shortfall is not None
     assert month_figures["shortfall"] is not None
     assert analysis_month_shortfall["amount"] == month_figures["shortfall"]["amount"]
-    assert (analysis_month_shortfall["pending_grams"] > 0) == month_figures["shortfall"]["pending"]
+    assert (analysis_month_shortfall["pending_quantity"] > 0) == month_figures["shortfall"]["pending"]
 
 
 def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
@@ -561,13 +561,13 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
     # Análisis agrees on what it carries for the same windows.
     assert week_row["sales"] == 6_000
     assert week_row["profit"]["amount"] == 5_000 - 500
-    assert week_row["profit"]["pending_grams"] > 0
+    assert week_row["profit"]["pending_quantity"] > 0
     assert month_row["sales"] == 3_000
     assert month_row["profit"]["amount"] == 3_000 - 300
-    assert month_row["profit"]["pending_grams"] == 0
+    assert month_row["profit"]["pending_quantity"] == 0
     header_varieties = analysis["month"]["varieties"]
     assert sum(v["cost"]["costed"] for v in header_varieties) == month["cost_of_goods"] == 300
-    assert not any(v["cost"]["pending_grams"] > 0 for v in header_varieties)
+    assert not any(v["cost"]["pending_quantity"] > 0 for v in header_varieties)
 
     # Since the first record: sales are the full $7.000 (1.000 + 2.000 + 3.000 of A, B's
     # 1.000 pending but kept in the figure); A's 6 g cost $600, B's sale is left out of
@@ -575,13 +575,13 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
     since = analysis["since_first_record"]
     assert since["sales"] == 7_000
     assert since["expenses"] == 0
-    assert since["profit"] == {"amount": 6_000 - 600, "pending_grams": 1.0}
+    assert since["profit"] == {"amount": 6_000 - 600, "pending_quantity": 1.0}
 
 
 def _adjust(client: TestClient, variety_id: int, *, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "grams": quantity, "date": on},
+        json={"variety_id": variety_id, "origin": "adjustment", "quantity": quantity, "date": on},
     )
     assert response.status_code == 201, response.text
 
@@ -592,7 +592,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
         json={
             "reason": reason,
             "date": on,
-            "lines": [{"variety_id": variety_id, "grams": quantity}],
+            "lines": [{"variety_id": variety_id, "quantity": quantity}],
         },
     )
     assert response.status_code == 201, response.text
@@ -633,13 +633,13 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     assert header["shortfall"]["amount"] == panel["month"]["shortfall"]["amount"]
 
     # Each figure has its own pending grams and its own fully-pending flag.
-    assert week_row["cost_of_goods"] == {"amount": 500, "pending_grams": 1.0, "all_pending": False}
-    assert month_row["cost_of_goods"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
-    assert week_row["shortfall"] == {"amount": 200, "pending_grams": 1.0, "all_pending": False}
-    assert month_row["shortfall"] == {"amount": 0, "pending_grams": 1.0, "all_pending": True}
-    assert week_row["promotion"] == {"amount": 400, "pending_grams": 2.0, "all_pending": False}
-    assert month_row["promotion"] == {"amount": 0, "pending_grams": 2.0, "all_pending": True}
-    assert month_row["own_use"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
+    assert week_row["cost_of_goods"] == {"amount": 500, "pending_quantity": 1.0, "all_pending": False}
+    assert month_row["cost_of_goods"] == {"amount": 300, "pending_quantity": 0.0, "all_pending": False}
+    assert week_row["shortfall"] == {"amount": 200, "pending_quantity": 1.0, "all_pending": False}
+    assert month_row["shortfall"] == {"amount": 0, "pending_quantity": 1.0, "all_pending": True}
+    assert week_row["promotion"] == {"amount": 400, "pending_quantity": 2.0, "all_pending": False}
+    assert month_row["promotion"] == {"amount": 0, "pending_quantity": 2.0, "all_pending": True}
+    assert month_row["own_use"] == {"amount": 300, "pending_quantity": 0.0, "all_pending": False}
     assert header["promotion"] == month_row["promotion"]
     assert header["own_use"] == month_row["own_use"]
 
@@ -649,7 +649,7 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     assert previous_week["first_day"] == "2026-09-21"
     assert previous_week["cost_of_goods"] == {
         "amount": 100,
-        "pending_grams": 0.0,
+        "pending_quantity": 0.0,
         "all_pending": False,
     }
     assert previous_week["shortfall"] is None
@@ -657,18 +657,18 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     assert september["month"] == "2026-09"
     assert september["cost_of_goods"] == {
         "amount": 300,
-        "pending_grams": 1.0,
+        "pending_quantity": 1.0,
         "all_pending": False,
     }
-    assert september["shortfall"] == {"amount": 200, "pending_grams": 0.0, "all_pending": False}
+    assert september["shortfall"] == {"amount": 200, "pending_quantity": 0.0, "all_pending": False}
     # A period with no sales reads a real $0, never null.
     quiet_week = analysis["weeks"][-3]
-    assert quiet_week["cost_of_goods"] == {"amount": 0, "pending_grams": 0.0, "all_pending": False}
+    assert quiet_week["cost_of_goods"] == {"amount": 0, "pending_quantity": 0.0, "all_pending": False}
 
     # Since the first record: costed $200 plus B's pending gram, not fully pending.
     assert analysis["since_first_record"]["shortfall"] == {
         "amount": 200,
-        "pending_grams": 1.0,
+        "pending_quantity": 1.0,
         "all_pending": False,
     }
     # The row order is the PRD's.
@@ -676,7 +676,7 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
         "first_day",
         "last_day",
         "sales",
-        "grams",
+        "quantity",
         "cost_of_goods",
         "shortfall",
         "promotion",
@@ -697,7 +697,7 @@ def test_a_wholly_pending_shortfall_reads_all_pending_on_the_row_header_and_sinc
     _adjust(client, b_id, quantity="-3", on=TODAY.isoformat())
 
     analysis = client.get("/analysis").json()
-    pending = {"amount": 0, "pending_grams": 3.0, "all_pending": True}
+    pending = {"amount": 0, "pending_quantity": 3.0, "all_pending": True}
 
     assert analysis["weeks"][-1]["shortfall"] == pending
     assert analysis["months"][-1]["shortfall"] == pending
@@ -705,7 +705,7 @@ def test_a_wholly_pending_shortfall_reads_all_pending_on_the_row_header_and_sinc
     assert analysis["since_first_record"]["shortfall"] == pending
     assert analysis["weeks"][-1]["cost_of_goods"] == {
         "amount": 0,
-        "pending_grams": 4.0,
+        "pending_quantity": 4.0,
         "all_pending": True,
     }
 
@@ -722,12 +722,12 @@ def test_a_zero_cost_lot_with_pending_overflow_is_not_fully_pending(client: Test
 
     assert analysis["months"][-1]["shortfall"] == {
         "amount": 0,
-        "pending_grams": 4.0,
+        "pending_quantity": 4.0,
         "all_pending": False,
     }
     assert analysis["weeks"][-1]["cost_of_goods"] == {
         "amount": 0,
-        "pending_grams": 0.0,
+        "pending_quantity": 0.0,
         "all_pending": False,
     }
 
@@ -778,7 +778,7 @@ def _seed_small_panel_history(client: TestClient) -> None:
     _expense(client, amount=100, on=day)
     adjustment = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "grams": "-1", "date": day},
+        json={"variety_id": variety_id, "origin": "adjustment", "quantity": "-1", "date": day},
     )
     assert adjustment.status_code == 201, adjustment.text
     withdrawal = client.post(
@@ -786,7 +786,7 @@ def _seed_small_panel_history(client: TestClient) -> None:
         json={
             "reason": "promotion",
             "date": day,
-            "lines": [{"variety_id": variety_id, "grams": "1"}],
+            "lines": [{"variety_id": variety_id, "quantity": "1"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -840,7 +840,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
         json={
             "variety_id": variety_ids[0],
             "origin": "adjustment",
-            "grams": "-1",
+            "quantity": "-1",
             "date": TODAY.isoformat(),
         },
     )
@@ -850,7 +850,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
         json={
             "reason": "own_use",
             "date": TODAY.isoformat(),
-            "lines": [{"variety_id": variety_ids[0], "grams": "1"}],
+            "lines": [{"variety_id": variety_ids[0], "quantity": "1"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -884,7 +884,7 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
         _entry(client, variety_id, quantity="100", total_cost=None, on="2026-10-01")
         sold = client.post(
             "/sales",
-            json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
+            json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
         )
         assert sold.status_code == 201, sold.text
     before = client.get("/panel").json()

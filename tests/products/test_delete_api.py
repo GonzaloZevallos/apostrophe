@@ -27,7 +27,7 @@ def _price(client: TestClient, variety_id: int) -> None:
 
 
 def _entry(client: TestClient, variety_id: int, origin: str, quantity: str) -> int:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": origin, "grams": quantity}
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": origin, "quantity": quantity}
     if origin == "purchase":
         body["total_cost"] = 5_000
     response = client.post("/stock/entries", json=body)
@@ -38,7 +38,7 @@ def _entry(client: TestClient, variety_id: int, origin: str, quantity: str) -> i
 
 def _sale(client: TestClient, variety_id: int, **line: Any) -> int:
     _price(client, variety_id)
-    body = {"lines": [{"variety_id": variety_id, "grams": "1", **line}], "payment": "cash"}
+    body = {"lines": [{"variety_id": variety_id, "quantity": "1", **line}], "payment": "cash"}
     response = client.post("/sales", json=body)
     assert response.status_code == 201, response.text
     sale_id: int = response.json()["id"]
@@ -47,7 +47,7 @@ def _sale(client: TestClient, variety_id: int, **line: Any) -> int:
 
 def _withdrawal(client: TestClient, variety_id: int, reason: str) -> int:
     # A withdrawal is never refused for lack of stock, so it alone can be the history.
-    body = {"reason": reason, "lines": [{"variety_id": variety_id, "grams": "1"}]}
+    body = {"reason": reason, "lines": [{"variety_id": variety_id, "quantity": "1"}]}
     response = client.post("/stock/withdrawals", json=body)
     assert response.status_code == 201, response.text
     withdrawal_id: int = response.json()["id"]
@@ -108,7 +108,7 @@ def test_prices_a_threshold_and_attributes_alone_leave_delete_offered_and_go_wit
     variety_id = _register(client)
     _price(client, variety_id)
     assert (
-        client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": "5"}).status_code
+        client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "5"}).status_code
         == 200
     )
     attributes = client.put(

@@ -24,7 +24,7 @@ def _variety(client: TestClient, name: str = "Zkittlez") -> int:
 
 
 def _stock_in(client: TestClient, variety_id: int, quantity: str = "50", **extra: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "opening_stock", "grams": quantity}
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity}
     response = client.post("/stock/entries", json=body | extra)
     assert response.status_code == 201, response.text
 
@@ -32,14 +32,14 @@ def _stock_in(client: TestClient, variety_id: int, quantity: str = "50", **extra
 def _body(variety_id: int, **overrides: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "reason": "promotion",
-        "lines": [{"variety_id": variety_id, "grams": "5"}],
+        "lines": [{"variety_id": variety_id, "quantity": "5"}],
     }
     body.update(overrides)
     return body
 
 
 def _line(variety_id: int, quantity: str = "5") -> dict[str, Any]:
-    return {"variety_id": variety_id, "grams": quantity}
+    return {"variety_id": variety_id, "quantity": quantity}
 
 
 def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, Any]:
@@ -51,7 +51,7 @@ def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, 
 
 def _quantity_of(client: TestClient, variety_id: int) -> float:
     rows = client.get("/stock").json()["varieties"]
-    return float(next(row["grams"] for row in rows if row["variety_id"] == variety_id))
+    return float(next(row["quantity"] for row in rows if row["variety_id"] == variety_id))
 
 
 def test_a_withdrawal_is_recorded_and_answers_with_its_lines(client: TestClient) -> None:
@@ -64,8 +64,8 @@ def test_a_withdrawal_is_recorded_and_answers_with_its_lines(client: TestClient)
         reason="own_use",
         note="  para mí  ",
         lines=[
-            {"variety_id": zkittlez, "grams": "2.5"},
-            {"variety_id": gelato, "grams": "1"},
+            {"variety_id": zkittlez, "quantity": "2.5"},
+            {"variety_id": gelato, "quantity": "1"},
         ],
     )
 
@@ -73,7 +73,7 @@ def test_a_withdrawal_is_recorded_and_answers_with_its_lines(client: TestClient)
     assert withdrawal["reason"] == "own_use"
     assert withdrawal["date"] == TODAY
     assert withdrawal["note"] == "para mí"
-    assert withdrawal["total_grams"] == 3.5
+    assert withdrawal["total_quantity"] == 3.5
     assert [line["variety_name"] for line in withdrawal["lines"]] == ["Zkittlez", "Gelato"]
     assert "recorded_at" not in withdrawal
     assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
@@ -87,8 +87,8 @@ def test_an_earlier_date_is_allowed_and_the_same_variety_may_repeat(client: Test
         variety_id,
         date="2026-09-20",
         lines=[
-            {"variety_id": variety_id, "grams": "1"},
-            {"variety_id": variety_id, "grams": "1"},
+            {"variety_id": variety_id, "quantity": "1"},
+            {"variety_id": variety_id, "quantity": "1"},
         ],
     )
 
@@ -100,12 +100,12 @@ def test_stock_moves_exactly_on_record_edit_and_delete(client: TestClient) -> No
     variety_id = _variety(client)
     _stock_in(client, variety_id, "50")
 
-    withdrawal = _record(client, variety_id, lines=[{"variety_id": variety_id, "grams": "5.25"}])
+    withdrawal = _record(client, variety_id, lines=[{"variety_id": variety_id, "quantity": "5.25"}])
     assert _quantity_of(client, variety_id) == 44.75
 
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json=_body(variety_id, reason="own_use", lines=[{"variety_id": variety_id, "grams": "7"}]),
+        json=_body(variety_id, reason="own_use", lines=[{"variety_id": variety_id, "quantity": "7"}]),
     )
     assert edited.status_code == 200, edited.text
     assert edited.json()["id"] == withdrawal["id"]
@@ -122,11 +122,11 @@ def test_a_withdrawal_past_stock_is_recorded_and_shows_sold_out(client: TestClie
     variety_id = _variety(client)
     _stock_in(client, variety_id, "3")
 
-    _record(client, variety_id, lines=[{"variety_id": variety_id, "grams": "5"}])
+    _record(client, variety_id, lines=[{"variety_id": variety_id, "quantity": "5"}])
 
     row = client.get("/stock").json()["varieties"][0]
     assert row["status"] == "sold_out"
-    assert row["grams"] == -2.0
+    assert row["quantity"] == -2.0
     assert row["sold_out_since"] == TODAY
 
 
@@ -145,7 +145,7 @@ def test_days_left_counts_withdrawn_grams(client: TestClient) -> None:
     before = client.get("/stock").json()["varieties"][0]["days_left"]
 
     _record(
-        client, variety_id, date="2026-09-20", lines=[{"variety_id": variety_id, "grams": "30"}]
+        client, variety_id, date="2026-09-20", lines=[{"variety_id": variety_id, "quantity": "30"}]
     )
 
     after = client.get("/stock").json()["varieties"][0]["days_left"]
@@ -161,21 +161,21 @@ def test_an_edit_with_the_same_line_count_and_with_reversed_lines_answers_200(
     withdrawal = _record(
         client,
         first,
-        lines=[{"variety_id": first, "grams": "1"}, {"variety_id": second, "grams": "2"}],
+        lines=[{"variety_id": first, "quantity": "1"}, {"variety_id": second, "quantity": "2"}],
     )
 
     same = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
         json=_body(
             first,
-            lines=[{"variety_id": first, "grams": "3"}, {"variety_id": second, "grams": "4"}],
+            lines=[{"variety_id": first, "quantity": "3"}, {"variety_id": second, "quantity": "4"}],
         ),
     )
     reversed_ = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
         json=_body(
             first,
-            lines=[{"variety_id": second, "grams": "4"}, {"variety_id": first, "grams": "3"}],
+            lines=[{"variety_id": second, "quantity": "4"}, {"variety_id": first, "quantity": "3"}],
         ),
     )
 
@@ -207,9 +207,9 @@ def test_an_edit_keeps_the_recording_order_of_the_withdrawal(
         ({"lines": []}, "stock.withdrawal_no_lines"),
         ({"date": "2026-10-03"}, "stock.withdrawal_date_in_future"),
         ({"note": "x" * 201}, "stock.withdrawal_note_too_long"),
-        ({"lines": [{"variety_id": 0, "grams": "0"}]}, "stock.withdrawal_grams_not_positive"),
-        ({"lines": [{"variety_id": 0, "grams": "-1"}]}, "stock.withdrawal_grams_not_positive"),
-        ({"lines": [{"variety_id": 0, "grams": "1.234"}]}, "stock.withdrawal_grams_too_precise"),
+        ({"lines": [{"variety_id": 0, "quantity": "0"}]}, "stock.withdrawal_grams_not_positive"),
+        ({"lines": [{"variety_id": 0, "quantity": "-1"}]}, "stock.withdrawal_grams_not_positive"),
+        ({"lines": [{"variety_id": 0, "quantity": "1.234"}]}, "stock.withdrawal_grams_too_precise"),
     ],
 )
 def test_each_refusal_has_its_own_code_and_never_repeats_the_input(
@@ -292,9 +292,9 @@ def test_movements_mix_entries_and_withdrawals_newest_first(
         reason="own_use",
         date="2026-09-15",
         lines=[
-            {"variety_id": first, "grams": "1"},
-            {"variety_id": second, "grams": "2"},
-            {"variety_id": first, "grams": "0.5"},
+            {"variety_id": first, "quantity": "1"},
+            {"variety_id": second, "quantity": "2"},
+            {"variety_id": first, "quantity": "0.5"},
         ],
     )
     _stock_in(client, first, "10", date="2026-09-30")
@@ -311,9 +311,9 @@ def test_movements_mix_entries_and_withdrawals_newest_first(
     ]
     assert [row["id"] for row in rows[1:3]] == [both["id"], earlier["id"]]
     assert rows[1]["reason"] == "own_use"
-    assert rows[1]["grams"] == 1.5  # one row for the withdrawal, its repeated lines summed
+    assert rows[1]["quantity"] == 1.5  # one row for the withdrawal, its repeated lines summed
     assert rows[3]["cost_per_gram"] == 2_000
-    assert [(row["kind"], row["grams"]) for row in other] == [("withdrawal", 2.0)]
+    assert [(row["kind"], row["quantity"]) for row in other] == [("withdrawal", 2.0)]
 
 
 def test_movements_of_another_business_variety_answer_404(
@@ -345,7 +345,7 @@ def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agre
     _stock_in(client, variety_id, "5", date="2026-09-01", origin="purchase", total_cost=5_000)
     sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "5"}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "5"}]},
     ).json()
 
     def line_cost() -> int:
@@ -361,13 +361,13 @@ def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agre
     assert line_cost() == 500
 
     withdrawal = _record(
-        client, variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "grams": "3"}]
+        client, variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "quantity": "3"}]
     )
     assert line_cost() == 3_200  # 2 g from the first lot, 3 g from the second
 
     client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json=_body(variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "grams": "1"}]),
+        json=_body(variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "quantity": "1"}]),
     )
     assert line_cost() == 1_400
 
@@ -384,15 +384,15 @@ def test_a_withdrawal_is_never_a_sale_a_debt_or_money(client: TestClient) -> Non
         json={
             "payment": "owing",
             "customer_id": customer["id"],
-            "lines": [{"variety_id": variety_id, "grams": "2"}],
+            "lines": [{"variety_id": variety_id, "quantity": "2"}],
         },
     )
     unchanged = (
         "sales",
         "sales_count",
         "average_sale",
-        "grams_sold",
-        "grams_gifted",
+        "quantity_sold",
+        "quantity_gifted",
         "cost_of_goods",
         "shortfall",
         "expenses",
@@ -516,7 +516,7 @@ def test_an_edit_keeps_a_variety_archived_since_and_changes_the_rest(
     assert response.status_code == 200, response.text
     stored = client.get(f"/stock/withdrawals/{withdrawal['id']}").json()
     assert (stored["reason"], stored["date"], stored["note"]) == ("own_use", "2026-09-20", "cambió")
-    assert [line["grams"] for line in stored["lines"]] == [7]
+    assert [line["quantity"] for line in stored["lines"]] == [7]
 
 
 def test_an_edit_that_keeps_one_archived_variety_and_adds_another_is_refused_unchanged(

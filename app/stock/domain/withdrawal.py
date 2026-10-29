@@ -33,16 +33,16 @@ class WithdrawalLine:
 
     def __post_init__(self) -> None:
         if not self.quantity.is_positive:
-            raise WithdrawalQuantityNotPositive("a withdrawal line takes grams above zero")
+            raise WithdrawalQuantityNotPositive("a withdrawal line takes a quantity above zero")
 
     @classmethod
     def of(cls, variety_id: int, quantity: Decimal | int | str) -> WithdrawalLine:
         try:
             amount = Decimal(quantity)
         except InvalidOperation as exc:
-            raise WithdrawalQuantityNotPositive("a withdrawal line takes grams above zero") from exc
+            raise WithdrawalQuantityNotPositive("a withdrawal line takes a quantity above zero") from exc
         if not amount.is_finite():
-            raise WithdrawalQuantityNotPositive("a withdrawal line takes grams above zero")
+            raise WithdrawalQuantityNotPositive("a withdrawal line takes a quantity above zero")
         scaled = amount * HUNDREDTHS_PER_UNIT
         if scaled != scaled.to_integral_value():
             raise WithdrawalQuantityTooPrecise("a withdrawal line allows at most two decimals")

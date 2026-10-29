@@ -76,7 +76,7 @@ def amounts(line: dict[str, Any] | None) -> tuple[int, bool] | None:
     """A cost line as (amount, pending), whichever way its answer spells the pending mark."""
     if line is None:
         return None
-    pending = line["pending"] if "pending" in line else line["pending_grams"] > 0
+    pending = line["pending"] if "pending" in line else line["pending_quantity"] > 0
     return line["amount"], bool(pending)
 
 
@@ -113,7 +113,7 @@ def assert_seed_states(client: TestClient) -> None:
     week, month = analysis["weeks"][-1], analysis["months"][-1]
 
     # Own use: Sir Jack's gram goes beyond every lot, so only it is pending.
-    own_use = {"amount": OWN_USE_AMOUNT, "pending_grams": 1, "all_pending": False}
+    own_use = {"amount": OWN_USE_AMOUNT, "pending_quantity": 1, "all_pending": False}
     assert week["own_use"] == own_use, "own use" + HINT
     assert periods["week"]["own_use"] == {"amount": OWN_USE_AMOUNT, "pending": True}, HINT
     stock = {row["variety_id"]: row["status"] for row in client.get("/stock").json()["varieties"]}
@@ -121,23 +121,23 @@ def assert_seed_states(client: TestClient) -> None:
     jack_uses = [
         m for m in movements_of(client, jack) if m["kind"] == "withdrawal" and m["date"] == day
     ]
-    assert [(m["reason"], m["grams"]) for m in jack_uses] == [("own_use", 1)], "Sir Jack" + HINT
+    assert [(m["reason"], m["quantity"]) for m in jack_uses] == [("own_use", 1)], "Sir Jack" + HINT
 
     # Promotion is costed, in the week and in the month.
-    assert week["promotion"]["pending_grams"] == 0, "promotion week" + HINT
-    assert analysis["month"]["promotion"]["pending_grams"] == 0, "promotion month" + HINT
+    assert week["promotion"]["pending_quantity"] == 0, "promotion week" + HINT
+    assert analysis["month"]["promotion"]["pending_quantity"] == 0, "promotion month" + HINT
     for name in ("week", "month"):
         assert periods[name]["promotion"]["pending"] is False, f"promotion {name}" + HINT
 
     # The shortfall is 24K Gold's costed 2 g adjustment, and nobody else's.
     for where in (analysis["month"], analysis["since_first_record"]):
-        costed = {"amount": SHORTFALL_AMOUNT, "pending_grams": 0, "all_pending": False}
+        costed = {"amount": SHORTFALL_AMOUNT, "pending_quantity": 0, "all_pending": False}
         assert where["shortfall"] == costed, HINT
     for name in ("today", "week", "month"):
         assert amounts(periods[name]["shortfall"]) == (SHORTFALL_AMOUNT, False), name + HINT
     adjustments = {
         name: [
-            (m["date"], m["grams"])
+            (m["date"], m["quantity"])
             for m in movements_of(client, vid)
             if m.get("origin") == "adjustment"
         ]
@@ -147,7 +147,7 @@ def assert_seed_states(client: TestClient) -> None:
     assert [n for n, found in adjustments.items() if found and n != "24K Gold"] == [], HINT
 
     # The month's "y N g sin costo", on its row and on the panel's mark.
-    assert month["profit"]["pending_grams"] == MONTH_PENDING_QUANTITY, "sin costo" + HINT
+    assert month["profit"]["pending_quantity"] == MONTH_PENDING_QUANTITY, "sin costo" + HINT
     assert periods["month"]["profit_pending"] is True, HINT
 
 
@@ -189,7 +189,7 @@ def test_the_archived_variety_has_one_opening_stock_entry_and_nothing_else(
     ]
     assert archived[0]["current_price"] is not None
     movements = movements_of(client, sample.archived)
-    assert [(m["kind"], m["origin"], m["grams"], m["total_cost"]) for m in movements] == [
+    assert [(m["kind"], m["origin"], m["quantity"], m["total_cost"]) for m in movements] == [
         ("entry", "opening_stock", 25, None)
     ]
     first_record = client.get("/analysis").json()["first_record"]
@@ -204,7 +204,7 @@ def test_the_archived_variety_has_one_opening_stock_entry_and_nothing_else(
         for r in client.get("/stock", params={"archived": "true"}).json()["varieties"]
     }
     assert stock[sample.archived]["threshold"] == 15
-    assert stock[sample.archived]["grams"] == 25
+    assert stock[sample.archived]["quantity"] == 25
 
 
 def test_the_archived_variety_is_hidden_and_carries_its_catalog_attributes(
@@ -256,9 +256,9 @@ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
         panel = periods[name]
         assert row["first_day"] == panel["start"] and row["last_day"] == panel["end"]
         assert row["profit"]["amount"] == panel["profit"]
-        assert (row["profit"]["pending_grams"] > 0) == panel["profit_pending"]
+        assert (row["profit"]["pending_quantity"] > 0) == panel["profit_pending"]
         assert row["cost_of_goods"]["amount"] == panel["cost_of_goods"]
-        assert (row["cost_of_goods"]["pending_grams"] > 0) == panel["pending_cost"]
+        assert (row["cost_of_goods"]["pending_quantity"] > 0) == panel["pending_cost"]
         assert amounts(row["shortfall"]) == amounts(panel["shortfall"])
         assert amounts(row["promotion"]) == amounts(panel["promotion"])
         assert amounts(row["own_use"]) == amounts(panel["own_use"])
@@ -287,11 +287,11 @@ def test_every_analysis_week_and_month_row_prints_its_cost_of_goods() -> None:
 
 def test_a_row_cost_reads_grams_alone_only_when_everything_behind_it_is_pending() -> None:
     row_cost = load_capture().row_cost
-    assert row_cost({"amount": 0, "pending_grams": 4.0, "all_pending": True}) == "4 g sin costo"
+    assert row_cost({"amount": 0, "pending_quantity": 4.0, "all_pending": True}) == "4 g sin costo"
     # A partly pending figure keeps its amount; its grams are the Pendiente column.
-    assert row_cost({"amount": 9000, "pending_grams": 2.5, "all_pending": False}) == "$ 9.000"
+    assert row_cost({"amount": 9000, "pending_quantity": 2.5, "all_pending": False}) == "$ 9.000"
     # Costed at zero with nothing pending is a real $ 0, not a missing cost.
-    assert row_cost({"amount": 0, "pending_grams": 0, "all_pending": False}) == "$ 0"
+    assert row_cost({"amount": 0, "pending_quantity": 0, "all_pending": False}) == "$ 0"
 
 
 @dataclass
@@ -372,7 +372,7 @@ def jack_gram_to_promotion(
         "date": body["date"],
         "reason": "promotion",
         "note": None,
-        "lines": [{"variety_id": ids["Sir Jack"], "grams": "1"}],
+        "lines": [{"variety_id": ids["Sir Jack"], "quantity": "1"}],
     }
     return Rewrite({**body, "lines": lines}, [("POST", "/stock/withdrawals", promotion)])
 
@@ -390,7 +390,7 @@ def adjustment_of_three(
 ) -> Rewrite | None:
     if not adjustment_of(method, path, body, ids):
         return None
-    return Rewrite({**body, "grams": "-3"})
+    return Rewrite({**body, "quantity": "-3"})
 
 
 @pytest.mark.parametrize(

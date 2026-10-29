@@ -1,7 +1,7 @@
 """The HTTP shapes of a stock entry. Bare: no pydantic length or value constraint, so
 every rule stays the domain's and its message is a fixed string (ADR-0005). Quantity are
 typed `Decimal` here and become `Quantity` only through `Quantity.of`, at the router; every
-grams value out uses the shared `GramsOut` (CODING_STANDARDS: no second grams format).
+quantity value out uses the shared `QuantityOut` (CODING_STANDARDS: no second quantity format).
 """
 
 from datetime import date
@@ -31,7 +31,7 @@ class EntryIn(BaseModel):
     date: EntryDate | None = None
     variety_id: int
     origin: Origin
-    grams: Decimal
+    quantity: Decimal
     total_cost: int | None = None
     note: str | None = None
 
@@ -41,7 +41,7 @@ class EntryOut(BaseModel):
     date: EntryDate
     variety_id: int
     origin: Origin
-    grams: QuantityOut
+    quantity: QuantityOut
     total_cost: int | None
     cost_per_gram: int | None
     note: str | None
@@ -60,7 +60,7 @@ class EntryOut(BaseModel):
             date=entry.entry_date,
             variety_id=entry.variety_id,
             origin=entry.origin,
-            grams=entry.quantity.as_decimal(),
+            quantity=entry.quantity.as_decimal(),
             total_cost=entry.total_cost,
             cost_per_gram=per_gram,
             note=entry.note,
@@ -72,7 +72,7 @@ class ThresholdIn(BaseModel):
     threshold off, rather than storing a zero or negative one (`Threshold.of`
     refuses both)."""
 
-    grams: Decimal | None = None
+    quantity: Decimal | None
 
 
 class VarietyStockOut(BaseModel):
@@ -81,7 +81,7 @@ class VarietyStockOut(BaseModel):
     SQL aggregate or front code."""
 
     variety_id: int
-    grams: QuantityOut
+    quantity: QuantityOut
     status: Status
     sold_out_since: date | None
     threshold: QuantityOut | None
@@ -92,7 +92,7 @@ class VarietyStockOut(BaseModel):
         level = view.level
         return cls(
             variety_id=view.variety_id,
-            grams=level.quantity.as_decimal(),
+            quantity=level.quantity.as_decimal(),
             status=level.status,
             sold_out_since=level.sold_out_since,
             threshold=view.threshold.quantity.as_decimal() if view.threshold is not None else None,
@@ -119,7 +119,7 @@ class StockOut(BaseModel):
 
 class WithdrawalLineIn(BaseModel):
     variety_id: int
-    grams: Decimal
+    quantity: Decimal
 
 
 class WithdrawalIn(BaseModel):
@@ -135,7 +135,7 @@ class WithdrawalIn(BaseModel):
 class WithdrawalLineOut(BaseModel):
     variety_id: int
     variety_name: str
-    grams: QuantityOut
+    quantity: QuantityOut
 
 
 class WithdrawalOut(BaseModel):
@@ -143,7 +143,7 @@ class WithdrawalOut(BaseModel):
     reason: WithdrawalReason
     date: EntryDate
     note: str | None
-    total_grams: QuantityOut
+    total_quantity: QuantityOut
     lines: list[WithdrawalLineOut]
 
     @classmethod
@@ -155,12 +155,12 @@ class WithdrawalOut(BaseModel):
             reason=withdrawal.reason,
             date=withdrawal.withdrawn_on,
             note=withdrawal.note,
-            total_grams=withdrawal.total_quantity.as_decimal(),
+            total_quantity=withdrawal.total_quantity.as_decimal(),
             lines=[
                 WithdrawalLineOut(
                     variety_id=line.variety_id,
                     variety_name=view.variety_names[line.variety_id],
-                    grams=line.quantity.as_decimal(),
+                    quantity=line.quantity.as_decimal(),
                 )
                 for line in withdrawal.lines
             ],
@@ -176,7 +176,7 @@ class WithdrawalMovementOut(BaseModel):
     id: int
     date: EntryDate
     reason: WithdrawalReason
-    grams: QuantityOut
+    quantity: QuantityOut
 
 
 MovementOut = EntryMovementOut | WithdrawalMovementOut
@@ -188,6 +188,6 @@ def movement_out(movement: Movement) -> MovementOut:
             id=movement.withdrawal_id,
             date=movement.withdrawn_on,
             reason=movement.reason,
-            grams=movement.quantity.as_decimal(),
+            quantity=movement.quantity.as_decimal(),
         )
     return EntryMovementOut(**EntryOut.of(movement).model_dump())

@@ -1,6 +1,6 @@
 """`GET /panel`'s HTTP shape (`web/src/api/fixtures/panel.json`, plan: "Answer
 shape"). Adapters may import anything (CODING_STANDARDS section 1): `PanelVarietyOut`
-reuses stock's own `VarietyStockOut` and `GramsOut`, rather than a second grams or
+reuses stock's own `VarietyStockOut` and `QuantityOut`, rather than a second quantity or
 status format.
 
 `GET /analysis`'s response shape (docs/adr/0020, plan: Response contract).
@@ -9,7 +9,7 @@ Pinned ahead of `period_figures` and the route so the front (`analysis-front`) a
 backend (`results-backend`) build against the same frozen contract. Bare (ADR-0005):
 no length or pattern constraint, so a refusal is always the domain's, never pydantic's.
 
-Money is `int`. Quantity reuse `GramsOut` (`app/products/adapters/schemas.py`) rather than
+Money is `int`. Quantity reuse `QuantityOut` (`app/products/adapters/schemas.py`) rather than
 a second float-serialising decimal. Percentages are `int | None`, never a float: this
 file answers results figures (CODING_STANDARDS.md's "no float ... in any results money,
 grams or percentage path"), it does not compute them.
@@ -41,7 +41,7 @@ class PanelVarietyOut(VarietyStockOut):
         return cls(
             variety_id=row.variety_id,
             name=row.name,
-            grams=row.quantity.as_decimal(),
+            quantity=row.quantity.as_decimal(),
             status=row.status,
             sold_out_since=row.sold_out_since,
             threshold=row.threshold.as_decimal() if row.threshold is not None else None,
@@ -100,8 +100,8 @@ class PeriodOut(BaseModel):
     sales: int
     sales_count: int
     average_sale: int | None
-    grams_sold: QuantityOut
-    grams_gifted: QuantityOut
+    quantity_sold: QuantityOut
+    quantity_gifted: QuantityOut
     cost_of_goods: int
     pending_cost: bool
     shortfall: CostLineOut | None
@@ -121,8 +121,8 @@ class PeriodOut(BaseModel):
             sales=figures.sales,
             sales_count=figures.sales_count,
             average_sale=figures.average_sale,
-            grams_sold=figures.quantity_sold.as_decimal(),
-            grams_gifted=figures.quantity_gifted.as_decimal(),
+            quantity_sold=figures.quantity_sold.as_decimal(),
+            quantity_gifted=figures.quantity_gifted.as_decimal(),
             cost_of_goods=figures.cost_of_goods,
             pending_cost=figures.pending_cost,
             shortfall=CostLineOut.of(figures.shortfall),
@@ -163,17 +163,17 @@ class PanelOut(BaseModel):
 class MarginOut(BaseModel):
     """A margin in pesos, worked out over costed grams only (ADR-0020): a variety's own
     margin, or the chosen month's average margin. `percent` is `null` when the sales it
-    is taken over are $0; `pending_grams` is the sold-or-gifted grams behind it that are
+    is taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are
     not costed yet."""
 
     amount: int
     percent: int | None
-    pending_grams: QuantityOut
+    pending_quantity: QuantityOut
 
 
 class CostOut(BaseModel):
     costed: int
-    pending_grams: QuantityOut
+    pending_quantity: QuantityOut
 
 
 class AmountWithPendingOut(BaseModel):
@@ -181,17 +181,17 @@ class AmountWithPendingOut(BaseModel):
     period."""
 
     amount: int
-    pending_grams: QuantityOut
+    pending_quantity: QuantityOut
 
 
 class RowCostOut(BaseModel):
     """One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its
-    costed `amount` and its own `pending_grams` (a positive magnitude). `all_pending` is
+    costed `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is
     the domain's answer (`row_cost`) that every gram behind the line is pending, so the
     screen says "N g sin costo" and never "$ 0"."""
 
     amount: int
-    pending_grams: QuantityOut
+    pending_quantity: QuantityOut
     all_pending: bool
 
 
@@ -200,8 +200,8 @@ class VarietyRowOut(BaseModel):
     name: str
     sales_without_shipping: int
     share_percent: int | None
-    grams_sold: QuantityOut
-    grams_gifted: QuantityOut
+    quantity_sold: QuantityOut
+    quantity_gifted: QuantityOut
     cost: CostOut
     margin: MarginOut
 
@@ -212,8 +212,8 @@ class AnalysisMonthOut(BaseModel):
     next: str | None
     sales: int
     sales_without_shipping: int
-    grams_sold: QuantityOut
-    grams_gifted: QuantityOut
+    quantity_sold: QuantityOut
+    quantity_gifted: QuantityOut
     average_margin: MarginOut
     shortfall: RowCostOut | None
     promotion: RowCostOut | None
@@ -225,7 +225,7 @@ class WeekOut(BaseModel):
     first_day: date
     last_day: date
     sales: int
-    grams: QuantityOut
+    quantity: QuantityOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
     promotion: RowCostOut | None
@@ -241,7 +241,7 @@ class MonthRowOut(BaseModel):
     first_day: date
     last_day: date
     sales: int
-    grams: QuantityOut
+    quantity: QuantityOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
     promotion: RowCostOut | None

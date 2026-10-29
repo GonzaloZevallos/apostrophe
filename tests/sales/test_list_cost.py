@@ -226,7 +226,7 @@ def _seed(client: TestClient, sales: int) -> None:
         body: dict[str, object] = {
             "date": (date(2026, 9, 1) + timedelta(days=number % 28)).isoformat(),
             "payment": "owing" if is_owing else "cash",
-            "lines": [{"variety_id": variety, "grams": "2"}, {"variety_id": variety, "grams": "1"}],
+            "lines": [{"variety_id": variety, "quantity": "2"}, {"variety_id": variety, "quantity": "1"}],
         }
         if customer is not None:
             body["customer_id"] = customer

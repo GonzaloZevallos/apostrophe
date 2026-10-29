@@ -39,7 +39,7 @@ class NonPositiveQuantity(SaleRuleBroken):
     code: ClassVar[str] = "sale.grams_invalid"
 
     def __init__(self) -> None:
-        super().__init__("a line needs grams above zero")
+        super().__init__("a line needs a quantity above zero")
 
 
 class GiftWithSpecialPrice(SaleRuleBroken):

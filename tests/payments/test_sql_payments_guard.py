@@ -56,8 +56,8 @@ def _seed(client: TestClient) -> int:
             "payment": "owing",
             "shipping_charged": 500,
             "lines": [
-                {"variety_id": variety["id"], "grams": "10"},
-                {"variety_id": variety["id"], "grams": "5"},
+                {"variety_id": variety["id"], "quantity": "10"},
+                {"variety_id": variety["id"], "quantity": "5"},
             ],
         },
     )
@@ -66,12 +66,12 @@ def _seed(client: TestClient) -> int:
         json={
             "customer_id": customer_id,
             "payment": "cash",
-            "lines": [{"variety_id": variety["id"], "grams": "2"}],
+            "lines": [{"variety_id": variety["id"], "quantity": "2"}],
         },
     )
     unassigned = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "grams": "1"}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "quantity": "1"}]},
     ).json()
     assigned = client.put(
         f"/sales/{unassigned['id']}/customer", json={"customer_id": customer_id}
@@ -81,7 +81,7 @@ def _seed(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer_id,
-            "lines": [{"variety_id": variety["id"], "grams": "3", "gift": True}],
+            "lines": [{"variety_id": variety["id"], "quantity": "3", "gift": True}],
         },
     )
 

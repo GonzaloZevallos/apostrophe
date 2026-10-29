@@ -50,7 +50,7 @@ def _qualifying_variety(client: TestClient, name: str) -> int:
     assert priced.status_code == 201, priced.text
     stocked = client.post(
         "/stock/entries",
-        json={"variety_id": variety, "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety, "origin": "opening_stock", "quantity": "50"},
     )
     assert stocked.status_code == 201, stocked.text
     return variety
