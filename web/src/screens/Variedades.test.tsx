@@ -25,7 +25,7 @@ import {
   WITHDRAWAL_NEW,
   pathTo,
 } from '../routes'
-import { NO_PRICE_TODAY } from './Variedades'
+import { NO_PRICE_TODAY, type Variety } from './Variedades'
 import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 import { chooseTheme } from '../theme'
@@ -33,18 +33,18 @@ import { chooseTheme } from '../theme'
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
 function price(list: number) {
-  return { id: 1, effective_from: '2026-09-25', list_price: list, bulk_price: null, bulk_minimum: null }
+  return { id: 1, effective_from: '2026-09-25', list_price: list, bulk_price: null, bulk_minimum: null, vip_price: null }
 }
 
 const VARIETIES = [
-  { id: 4, name: 'Sir Jack', current_price: price(11000) },
-  { id: 2, name: 'Golden Cookies', current_price: price(14000) },
-  { id: 3, name: 'Mango Bomb', current_price: null },
-  { id: 1, name: '24K Gold', current_price: price(12000) },
-]
+  { id: 4, name: 'Sir Jack', archived: false, current_price: price(11000) },
+  { id: 2, name: 'Golden Cookies', archived: false, current_price: price(14000) },
+  { id: 3, name: 'Mango Bomb', archived: false, current_price: null },
+  { id: 1, name: '24K Gold', archived: false, current_price: price(12000) },
+] satisfies Variety[]
 
-function stockRow(product_id: number, patch: Record<string, unknown>) {
-  return { product_id, quantity: 0, status: 'ok', sold_out_since: null, threshold: null, days_left: null, ...patch }
+function stockRow(product_id: number, patch: Partial<VarietyStock>) {
+  return { product_id, quantity: 0, status: 'ok', sold_out_since: null, threshold: null, days_left: null, ...patch } satisfies VarietyStock
 }
 
 const STOCK = {

@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { StockEntry } from '../api/stock'
 import StockEntryForm, { type StockEntryFormProps } from './StockEntryForm'
+import type { Variety } from './Variedades'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -21,9 +22,9 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 const VARIETIES = [
-  { id: 3, name: 'Sir Jack', current_price: null },
-  { id: 4, name: 'Gelato', current_price: null },
-]
+  { id: 3, name: 'Sir Jack', archived: false, current_price: null },
+  { id: 4, name: 'Gelato', archived: false, current_price: null },
+] satisfies Variety[]
 const STOCK_VIEW = { total: 0, products: [], entries: [] }
 
 function renderForm(onSaved: () => void) {

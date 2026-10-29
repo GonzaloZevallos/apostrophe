@@ -1,4 +1,4 @@
-"""`PUT /stock/products/{variety_id}/threshold`'s use case (CONTEXT.md: Low-stock
+"""`PUT /stock/products/{product_id}/threshold`'s use case (CONTEXT.md: Low-stock
 threshold). The variety is checked through `VarietyCatalog` before any write, the same
 404 `variety.not_found` as every other stock use case that takes a `variety_id`.
 """
