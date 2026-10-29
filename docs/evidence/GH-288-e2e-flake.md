@@ -115,7 +115,7 @@ changed.
 ## Kept sites and proofs
 
 The guard (`web/src/architecture/e2eToastRule.test.ts`) prints, from `npm --prefix web test -- e2eToastRule`
-(at part 1, kept as history; the current counts are under "After part 3" below):
+(with part 2 alone, kept as history; the current counts are under "After part 3" below):
 
 ```
 e2eToastRule: 62 sites observed in the page, 10 kept on page text, 51 pending
