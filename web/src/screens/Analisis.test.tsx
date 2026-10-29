@@ -830,3 +830,24 @@ describe('the phone renders cards, one per row, month selector first', () => {
     expect(line.previousElementSibling).toBe(document.querySelector('.analisis__semanas'))
   })
 })
+
+describe('while the API is held', () => {
+  test('the content area is busy, shows no digit, no currency symbol and no empty-state wording', async () => {
+    renderAnalisis(() => new Promise<Response>(() => undefined), 'phone')
+
+    const bar = await screen.findByRole('progressbar')
+    expect(bar).toHaveAttribute('aria-busy', 'true')
+    const area = screen.getByRole('main')
+    expect(area).toContainElement(bar)
+    expect(area.textContent ?? '').not.toMatch(/[0-9$]/)
+    expect(screen.queryByText(EMPTY_MONTH_LINE)).toBeNull()
+    expect(screen.queryByText(NO_HISTORY_LINE)).toBeNull()
+  })
+
+  test('the busy bar leaves with the answer', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+
+    await screen.findAllByText(/^(Flor A|Flor B|Flor Gift)$/)
+    expect(screen.queryByRole('progressbar')).toBeNull()
+  })
+})

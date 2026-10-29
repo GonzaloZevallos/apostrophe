@@ -20,9 +20,9 @@ classDiagram
   }
   class header_footer {
   }
-  class text {
+  class product {
   }
-  class variety {
+  class text {
   }
   class words {
   }
@@ -30,10 +30,10 @@ classDiagram
   attributes --> errors
   emoji --> errors
   header_footer --> errors
+  product --> attributes
   text --> attributes
-  text --> variety
+  text --> product
   text --> words
-  variety --> attributes
 ```
 
 #### application
@@ -71,7 +71,7 @@ classDiagram
 
 ```mermaid
 classDiagram
-  class ArchivedCatalogVariety {
+  class ArchivedCatalogProduct {
     id : int
     name : str
   }
@@ -109,12 +109,12 @@ classDiagram
     bulk_price : int #124; None
     list_price : int
   }
-  class CatalogRuleBroken {
-  }
-  class CatalogVariety {
+  class CatalogProduct {
     id : int
     name : str
     price : CatalogPrice #124; None
+  }
+  class CatalogRuleBroken {
   }
   class CatalogWords {
     aroma : Callable~~str~, str~
@@ -177,9 +177,9 @@ classDiagram
     statuses(day: date) dict~int, StockStatus~
   }
   class CatalogVarieties {
-    archived() list~ArchivedCatalogVariety~
+    archived() list~ArchivedCatalogProduct~
     exists(variety_id: int) bool
-    on(day: date) list~CatalogVariety~
+    on(day: date) list~CatalogProduct~
     usable(variety_id: int) bool
   }
   class CatalogVarietyArchived {

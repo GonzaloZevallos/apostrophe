@@ -17,6 +17,13 @@ bytes-to-be. The same input in any line order gives the same output:
 - `packages`: node lines (and node groups) are sorted by name, then the edge lines.
 - `er`: entity blocks are sorted by name and then the relation lines. The attribute lines
   inside an entity keep the order they came in: it is the column order of the table.
+- `flow`: a Mermaid flowchart. Every `subgraph` keeps its `end`, at any depth, and the body is
+  re-indented two spaces per depth. At each level nested groups come first, sorted by id,
+  then the node lines, sorted. After all the groups come every edge (hoisted out of any
+  group), sorted, then the `classDef`/`style`/`class` lines, sorted. A `linkStyle` line
+  refers to edges by position, so it is never reordered (it follows the styles in input
+  order) and `block_problems` reports it as `flow-linkstyle`. A group with no `end` stays
+  without one, so the parse of the staged file fails instead of the text being repaired.
 - `index`: the shared steps only.
 
 The module imports nothing from `app` or `tests`.
@@ -34,7 +41,7 @@ HEADER = (
     "run `uv run --no-project python -m scripts.docs.generate` instead. -->"
 )
 
-Kind = Literal["class", "packages", "er", "index"]
+Kind = Literal["class", "packages", "er", "flow", "index"]
 
 MAX_BLOCK_CHARS = 50_000
 MAX_BLOCK_EDGES = 500
@@ -46,6 +53,12 @@ _FENCE_CLOSE = "```"
 _RELATION = re.compile(r"(?<!\S)[<>|*o{}()]*(?:--|\.\.)[<>|*o{}()]*(?!\S)")
 _CLASS_NAME = re.compile(r'^(?:class\s+)?("[^"]*"|[^\s{]+)')
 _CLASS_DEF = re.compile(r'^class\s+("[^"]*"|[^\s{]+)')
+# A flowchart edge: `-->`, `---`, `-.->`, `==>`; the labelled forms (`-->|x|`, `--|x|-->`)
+# contain one of them. Quoted node labels are blanked first.
+_FLOW_EDGE = re.compile(r"-->|---|-\.->|==>")
+_QUOTED = re.compile(r'"[^"]*"')
+_SUBGRAPH_ID = re.compile(r"^subgraph\s+([^\s\[]+)")
+_FLOW_STYLE_WORDS = ("classDef ", "style ", "class ")
 
 
 @dataclass(frozen=True)
@@ -87,8 +100,20 @@ def _fences(lines: Sequence[str]) -> list[tuple[int, int]]:
     return found
 
 
-def _edge_lines(body: Sequence[str]) -> list[str]:
-    """The relation lines of a diagram body: those outside any group that carry an arrow."""
+def _is_flow_edge(line: str) -> bool:
+    stripped = line.strip()
+    if stripped.startswith(("subgraph ", "linkStyle", *_FLOW_STYLE_WORDS)):
+        return False
+    return _FLOW_EDGE.search(_QUOTED.sub('""', stripped)) is not None
+
+
+def _edge_lines(body: Sequence[str], kind: Kind = "class") -> list[str]:
+    """The relation lines of a diagram body: those outside any group that carry an arrow.
+
+    In a `flow` body an edge counts at any depth.
+    """
+    if kind == "flow":
+        return [line for line in body if _is_flow_edge(line)]
     edges: list[str] = []
     inside = False
     for line in body:
@@ -102,7 +127,10 @@ def _edge_lines(body: Sequence[str]) -> list[str]:
 
 
 def block_problems(
-    text: str, max_chars: int = MAX_BLOCK_CHARS, max_edges: int = MAX_BLOCK_EDGES
+    text: str,
+    max_chars: int = MAX_BLOCK_CHARS,
+    max_edges: int = MAX_BLOCK_EDGES,
+    kind: Kind = "class",
 ) -> list[Problem]:
     """The mermaid blocks of `text` that are too big to render.
 
@@ -110,7 +138,9 @@ def block_problems(
     (50,000) characters or more is rule `block-size`. A block with `max_edges` (500) or
     more edges is rule `block-edges`; an edge is a line outside any class or entity group
     that carries a relation arrow (`--` or `..` with its heads), so a member typed
-    `Callable[..., T]` is not one.
+    `Callable[..., T]` is not one. For `kind` `flow` an edge is a line with `-->`, `---`,
+    `-.->` or `==>` at any depth (quoted labels do not count), and a `linkStyle` line is rule
+    `flow-linkstyle`.
     """
     lines = text.split("\n")
     problems: list[Problem] = []
@@ -121,10 +151,16 @@ def block_problems(
             problems.append(
                 Problem(number, "block-size", f"{size} characters, limit is {max_chars - 1}")
             )
-        edges = len(_edge_lines(body))
+        edges = len(_edge_lines(body, kind))
         if edges >= max_edges:
             problems.append(
                 Problem(number, "block-edges", f"{edges} edges, limit is {max_edges - 1}")
+            )
+        if kind == "flow":
+            problems.extend(
+                Problem(number, "flow-linkstyle", line.strip())
+                for line in body
+                if line.strip().startswith("linkStyle")
             )
     return problems
 
@@ -212,10 +248,69 @@ def _canonical_group(group: list[str], kind: Kind) -> list[str]:
     return [opener, *members, closer]
 
 
+@dataclass
+class _Group:
+    opener: str
+    nodes: list[str]
+    groups: list[_Group]
+    closed: bool = False
+
+
+def _group_id(opener: str) -> str:
+    match = _SUBGRAPH_ID.match(opener)
+    return match.group(1) if match is not None else opener
+
+
+def _render_group(group: _Group, depth: int) -> list[str]:
+    pad = "  " * depth
+    inner = "  " * (depth + 1) if group.opener else pad
+    out = [f"{pad}{group.opener}"] if group.opener else []
+    child_depth = depth + 1 if group.opener else depth
+    children = sorted(
+        (_render_group(child, child_depth) for child in group.groups),
+        key=lambda lines: (_group_id(lines[0].strip()), lines),
+    )
+    for lines in children:
+        out.extend(lines)
+    directions = sorted(n for n in group.nodes if n.startswith("direction "))
+    others = sorted(n for n in group.nodes if not n.startswith("direction "))
+    out.extend(f"{inner}{node}" for node in [*directions, *others])
+    if group.opener and group.closed:
+        out.append(f"{pad}end")
+    return out
+
+
+def _canonical_flow(lines: Sequence[str]) -> list[str]:
+    root = _Group("", [], [])
+    stack = [root]
+    edges: list[str] = []
+    styles: list[str] = []
+    link_styles: list[str] = []
+    for raw in lines[1:]:
+        line = raw.strip()
+        if line.startswith("subgraph "):
+            group = _Group(line, [], [])
+            stack[-1].groups.append(group)
+            stack.append(group)
+        elif line == "end" and len(stack) > 1:
+            stack.pop().closed = True
+        elif line.startswith("linkStyle"):
+            link_styles.append(line)
+        elif line.startswith(_FLOW_STYLE_WORDS):
+            styles.append(line)
+        elif _is_flow_edge(line):
+            edges.append(line)
+        else:
+            stack[-1].nodes.append(line)
+    return [lines[0], *_render_group(root, 0), *sorted(edges), *sorted(styles), *link_styles]
+
+
 def _canonical_body(body: Sequence[str], kind: Kind) -> list[str]:
     lines = [line for line in body if line.strip()]
     if not lines:
         return []
+    if kind == "flow":
+        return _canonical_flow(lines)
     first, rest = lines[0], lines[1:]
     nodes: list[list[str]] = []
     edges: list[str] = []
