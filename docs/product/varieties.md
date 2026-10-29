@@ -37,6 +37,8 @@ entradas"; defined in `stock.md`.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, with everything about one variety in one place, **so I can** get back to the customer instead of hunting through menus, and never wonder which of several screens holds what I need. (The navigation job, navigation.md.)
 
+**When** I'm in the middle of serving a customer with my phone in hand, **I want** the app to behave like a phone app (a form that fills the screen with its main action under my thumb, and nothing I need hidden behind the keyboard), **so I can** record a price or edit a variety without fighting the screen or losing what I typed. (The phone layout job, navigation.md, GH-319: served here by the price form, New variety and a variety's rename, low-stock warning and catalog attributes forms, drawn on the phone by the one shared `Sheet`.)
+
 **When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one variety and find everything about it on its own page (its stock and entries, its prices, its low-stock warning and how it shows in the catalog), the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a variety I can't sell.
 
 This one is the navigation job applied to varieties, stock and the catalog, not a
@@ -271,7 +273,7 @@ Success criteria:
   opening the stock entry form with the variety to be chosen (`stock.md`).
 - **"Take from stock"**, a secondary button next to "+ Stock entry", on phone and
   computer, opening the stock withdrawal form with no variety chosen (`stock.md`).
-- **"New variety"**: adds a variety (a form).
+- **"New variety"**: adds a variety (a form; on the phone a sheet drawn by the one shared `Sheet`, over Varieties, navigation.md's Phone layout).
 - **"All entries"** at the foot (`stock.md`), at `/varieties/entries`. It lists entries only.
 - **"Archived (N)"** at the foot, next to "All entries", opening the Archived
   card. It is left out when there are none.
@@ -388,6 +390,11 @@ Success criteria:
 - **Forms** opened from here (New price, + Entry, Take from stock, rename, the low-stock warning, the
   catalog attributes) have "Close" and a confirmation when leaving with something typed;
   an untouched one closes at once.
+  - On the phone each is a full-screen sheet drawn by the one shared `Sheet` (ADR-0062,
+    navigation.md's Phone layout), with its main action pinned at the bottom of the form.
+  - Rename, the low-stock warning and the catalog attributes open as sheets over this
+    page, which stays behind them, and share the page's one record of unsaved changes.
+    Back closes the sheet first and never jumps over the page.
 - **Deleting a price entry**: confirmed with "Before deleting" ("Delete…? / No, keep it /
   Yes, delete it"), and the copy says what takes the entry's place:
   - with an earlier entry, the price that applies again and its date, e.g. "Back to
@@ -427,8 +434,8 @@ Success criteria:
   - recording a price effective today never requires opening a date picker;
   - the date rules are unchanged: any date is allowed, one entry per variety per date, and a refused date is refused as before;
   - the chosen date is kept when the save is refused for any field.
-- **On the phone**: a full form screen, closing with "Close".
-- **On a computer**: a modal over the variety's page.
+- **On the phone**: a full-screen sheet drawn by the one shared `Sheet` (ADR-0062, navigation.md's Phone layout), with "Close" at the top and "Save the price" pinned at the bottom of the form, above the keyboard; refusals sit above it. It has no outside: "Close" and the phone's back gesture are its exits. Opened by a direct link, it shows over that variety's page, which stays inert behind it. Resizing across 900 px or rotating the phone keeps what was typed.
+- **On a computer**: a modal over the variety's page, unchanged by the phone layout (ADR-0044).
   - "Close" returns to that page; a successful save returns there too, shows the toast "Price saved", and the Prices section shows the new entry.
   - A refusal keeps the modal open with everything typed, inline on its field.
   - Opened by a direct link (`/varieties/{low}/prices/new`), it shows the modal over that variety's page.
@@ -464,6 +471,7 @@ Success criteria:
   archived variety; an archived variety referenced for a new record (gone). Archive has no
   refusal of its own. None repeats a name or an amount (ADR-0005).
 - **One source per shared message**: in the front, "Check the grams entered" (shown by the price, stock entry and withdrawal forms) and the toast "Price saved" are each defined once and read from there; no screen restates either as its own literal.
+- **Phone layout (GH-319)**: the price form's phone branch, New variety and the three inline edits are drawn by the one shared `Sheet`; ADR-0044's `PriceFrame` dialog branch is not edited, and the registry keys `VariedadRenombrar`, `VariedadUmbral` and `CatalogoAtributos` are kept.
 
 ## Metrics
 
@@ -595,7 +603,8 @@ Success criteria:
   - `scripts/design/screens.json` holds the price form's dark twins (phone and computer), following the dark-twin convention, and the Onboarding's price step, and `compare.sh` measures them.
 - **"$" scope (criterion 16)**: front tests show the "$" on the list, bulk and VIP price, never on the bulk minimum, and the same in the Onboarding's step 1, which shows no date chip.
 - **Date chip (criterion 17)**: front tests show "Today dd/mm" by default and "dd/mm" for another day, going back to today from the chip, the chosen date kept after a refused save, and no native date input opened to record a price from today.
-- **Modal (criterion 16)**: front tests through the real routes show the modal on a computer viewport and a full form screen on the phone, a direct link rendering the modal over its variety, the list behind it inert, and the close, save ("Price saved", the new entry in Prices) and discard flows.
+- **Modal (criterion 16)**: front tests through the real routes show the modal on a computer viewport and a full-screen sheet on the phone, a direct link rendering the modal over its variety, the list behind it inert, and the close, save ("Price saved", the new entry in Prices) and discard flows. A viewport-flip test (phone to computer and back) keeps what was typed (GH-319).
+- **Sheets on a variety (GH-319)**: front tests show focus on the first field and exactly one "Close" in New variety and in the rename, low-stock warning and catalog attributes sheets; a direct address to New variety shows it over Varieties; an e2e run shows the rename sheet's action within `--inset-abajo` of the sheet's bottom.
 - **One source (criterion 18)**: a test shows "Check the grams entered" and "Price saved" each defined once, and the rendered text in every screen that shows them unchanged.
 - **Chrome proven by behaviour** (navigation.md, criterion 5): a Shell test shows "+ New sale" on a tab root and absent under card chrome.
 - **No regression (criteria 16–18)**: the existing suites pass; the only edited tests are those that found the native date input or the page layout, each listed in the PR; the contrast guard (ADR-0029) passes with no token change.
