@@ -15,7 +15,9 @@ The API reference is one more file in the same tree: Redocly turns the in-memory
 document into `docs/api/index.html`, and the staging stage rejects an external link or a
 machine path in it before anything is written.
 
-Which packages, layers and children get a diagram is read from the filesystem.
+Which packages, layers, children and front folders get a diagram is read from the filesystem.
+The front module graph (`front-modules/`) comes from dependency-cruiser, run through the same
+injected `run_tool`.
 """
 
 from __future__ import annotations
@@ -27,6 +29,20 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
 from scripts.docs.discover import discover
+from scripts.docs.front import (
+    direct_name,
+    folder_text,
+    front_folders,
+    has_direct_files,
+    load_patterns,
+    overview_text,
+    plan_calls,
+    root_has_files,
+    root_text,
+    split_calls,
+    split_folder_text,
+    subfolders,
+)
 from scripts.docs.reference import offline_problems, reference_file, strip_attribution
 from scripts.docs.text import (
     MAX_BLOCK_CHARS,
@@ -56,6 +72,7 @@ from scripts.docs.writer import write_tree
 LAYERS = ("domain", "application", "adapters")
 GENERATED = PurePosixPath("docs/architecture/generated")
 API = PurePosixPath("docs/api")
+FRONT_MODULES = GENERATED / "front-modules"
 SPLIT_NOTE = "Edges between children are not drawn."
 PACKAGES_SPLIT_NOTE = "Edges between layers are not drawn."
 NO_LAYER = "No such layer in this package."
@@ -240,6 +257,55 @@ def _index(paths: Sequence[PurePosixPath]) -> str:
     return "\n".join(parts)
 
 
+def _flow_breaks(cruise: str, limits: Limits) -> bool:
+    """Whether a depcruise block is too big once finalized (a `linkStyle` is not a size issue)."""
+    text = finalize("flow", _fence(cruise))
+    problems = block_problems(text, limits.max_chars, limits.max_edges, "flow")
+    return any(p.rule in ("block-size", "block-edges") for p in problems)
+
+
+def _front_section(
+    repo_root: Path, run_tool: RunTool, limits: Limits
+) -> dict[PurePosixPath, tuple[Kind, str]]:
+    """The front module graph: one file per `web/src` folder, `root.md` and `overview.md`.
+
+    A folder whose block is too big is cruised again, one block per subfolder plus one for
+    the files directly in it (one level only; what is still too big is reported by staging).
+    """
+    web_src = repo_root / "web" / "src"
+    if not web_src.is_dir():
+        return {}
+    patterns = load_patterns(repo_root)
+    folders = front_folders(web_src, patterns)
+    root = root_has_files(web_src, patterns)
+    results = run_all(plan_calls(folders, root=root), run_tool, node_worker_count())
+    plans: dict[str, tuple[list[str], bool]] = {}
+    calls: list[ToolCall] = []
+    for folder in folders:
+        if _flow_breaks(results[f"front/{folder}"], limits):
+            prefix = f"src/{folder}"
+            subs = subfolders(web_src / folder, prefix, patterns)
+            direct = has_direct_files(web_src / folder, prefix, patterns)
+            plans[folder] = (subs, direct)
+            calls += split_calls(folder, subs, direct=direct)
+    results.update(run_all(calls, run_tool, node_worker_count()))
+    files: dict[PurePosixPath, tuple[Kind, str]] = {}
+    for folder in folders:
+        if folder in plans:
+            subs, direct = plans[folder]
+            text = split_folder_text(
+                folder,
+                {sub: results[f"front/{folder}/{sub}"] for sub in subs},
+                results[direct_name(folder)] if direct else None,
+            )
+        else:
+            text = folder_text(folder, results[f"front/{folder}"])
+        files[FRONT_MODULES / f"{folder}.md"] = ("flow", text)
+    files[FRONT_MODULES / "root.md"] = ("flow", root_text(results.get("front/root")))
+    files[FRONT_MODULES / "overview.md"] = ("flow", overview_text(results["front/overview"]))
+    return files
+
+
 def _real_openapi() -> str:
     from scripts.docs.openapi_export import build_docs_app, export_openapi
 
@@ -281,6 +347,7 @@ def produce(
         "er",
         f"# Data model\n\n{_fence(results['er/data-model'])}",
     )
+    classes.update(_front_section(repo_root, run_tool, limits))
     outputs = {path: finalize(kind, text) for path, (kind, text) in classes.items()}
     outputs[GENERATED / "README.md"] = finalize("index", _index(list(outputs)))
     outputs[API / "README.md"] = finalize(
@@ -318,13 +385,16 @@ def _staged_findings(
         if path.suffix != ".md":
             continue
         text = outputs[path]
+        flow = path.parent == FRONT_MODULES
         markdown.append(stage / path)
         fences += _count_fences(text)
         findings += _located(
             str(path),
             [
-                *block_problems(text, limits.max_chars, limits.max_edges),
-                *duplicate_classes(text),
+                *block_problems(
+                    text, limits.max_chars, limits.max_edges, "flow" if flow else "class"
+                ),
+                *([] if flow else duplicate_classes(text)),
                 *absolute_paths(text, roots),
             ],
         )
