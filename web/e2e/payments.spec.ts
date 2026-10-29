@@ -130,7 +130,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('radio', { name: 'Transfer' }).check()
   await expect(page.getByText(`$ 3.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText('They still owe $ 5.000')).toBeVisible()
-  await expectToast(page, 'Payment saved · still owing $ 5.000', () => page.getByRole('button', { name: 'Save' }).click())
+  await expectToast(page, 'Payment saved · still owing $ 5.000', () =>
+    page.getByRole('button', { name: 'Save' }).click(),
+  )
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 5\.000/ })).toBeVisible()
 
   // --- Delete payment: confirmed first, then the debt it had settled returns. ---

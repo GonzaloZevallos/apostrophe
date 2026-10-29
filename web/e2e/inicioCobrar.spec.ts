@@ -73,7 +73,9 @@ for (const viewport of VIEWPORTS) {
     await page.getByLabel('Amount').fill('2000')
     await page.getByRole('radio', { name: 'Cash' }).check()
     // The exact text is the privacy check: an exact match cannot contain the customer's name.
-    await expectToast(page, 'Payment saved · still owing $ 3.000', () => page.getByRole('button', { name: 'Save' }).click())
+    await expectToast(page, 'Payment saved · still owing $ 3.000', () =>
+      page.getByRole('button', { name: 'Save' }).click(),
+    )
     await expectPath(page, HOME)
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 3.000')
 
