@@ -433,7 +433,6 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - A checklist for a brand-new business; storing a checklist step as ticked.
 - Backfilling the import fact for a business imported before it existed.
 - Promotions (as campaigns or offers), automations, languages, and any entry for them before they exist. A stock withdrawal for promotion is a stock record, not this.
-- A "follow the system" theme.
 - The pin's status or Publish in Integrations.
 - Per-variety settings in Settings (#47).
 - An Archived entry in the bar, the sidebar, More or Settings: it is reached only from Varieties.

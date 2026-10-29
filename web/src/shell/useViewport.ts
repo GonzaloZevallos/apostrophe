@@ -1,6 +1,6 @@
 /**
  * Which of the two layouts is on screen: the bottom bar (`'phone'`) or the side rail
- * (`'computer'`). The only module that calls `matchMedia`; whatever else needs to know the
+ * (`'computer'`). The only module for the viewport query; whatever else needs to know the
  * viewport (the parent a screen has on each, `routes.ts`) asks this hook.
  *
  * `COMPUTER_MIN_WIDTH` is the width at which `styles/app.css` hides `.bar-inferior` and shows

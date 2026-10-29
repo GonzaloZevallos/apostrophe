@@ -35,7 +35,7 @@ These two refine the "log in once and stay in" job above. The operator's command
 
 This refines the "log in once and stay in", "get in with the link I was sent" and forgotten-password jobs above; it is not a new job. Its protagonist is the seller; the operator's commands stay outside the app.
 
-**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Settings → Appearance, navigation.md) and stays on that device once chosen.
+**When** I open the app on my phone or computer, at any hour, **I want** to see it in the Yerba look (greenish paper and green-black ink with one green, or its dark counterpart) matching my phone's light or dark setting without my touching anything, and to be able to force Light or Dark (in Settings → Appearance, navigation.md) and have that stay on that device, **so I** work in a look that was designed and checked for reading figures, states and amounts in both themes, and no state is ever told by color alone.
 
 **When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Settings's Business, Users, Appearance and Your account; the structure is navigation.md.)
 
@@ -77,9 +77,9 @@ Success criteria:
 4. No `curl` at any point. From the phone alone, a seller can do everything the backend does, starting with opening or joining a business from the invitation link.
 5. It feels like a phone app.
    - It sits on the home screen with its own name and icon. On iOS it installs over the home network. On Android it is a home-screen shortcut there, and a full install on the published installation with TLS.
-   - It opens in the light theme whatever the phone's setting; dark only when chosen on that device.
+   - It follows the phone's light or dark setting by default; a Light or Dark chosen on that device wins over the phone.
    - It says "No connection" when the network drops.
-   - No state is told by color alone (blue ↔ amber, never green ↔ red).
+   - No state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly.
    - Installed, it fills the screen and responds like a phone app (criteria 33–36).
    - Every screen at phone widths (below the 900 px computer breakpoint) meets the phone standard, written in CODING_STANDARDS §10 "Phone" and the design README's "En el celular", and checked by `web/e2e/mobile.spec.ts` (criteria 37–41).
 6. Businesses stay invisible to each other in the browser too.
@@ -107,9 +107,9 @@ Success criteria:
 
 Success criteria, the theme:
 
-23. **Light unless chosen on the device**: a device with no stored choice opens in the light theme on every screen, whether the system is set to light or dark. With the system in dark, the page background is `--papel` (#fcfbf8).
-24. **Dark only on request, and it stays**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Only the choice "Dark" in Settings → Appearance sets it (navigation.md). The device remembers it across closing the app, reloads and logging out, and shows it on every screen of that device, the sign-in screen, the invitation and the reset screens included. Choosing "Light" returns to light and is remembered the same way.
-25. **The themes themselves don't change**: both keep the same tokens and values; only what picks the theme changed. Every rule about state (no state told by color alone, blue ↔ amber) holds in both.
+23. **Automatic unless chosen on the device**: a device with no stored choice follows the phone's light or dark setting on every screen, live, and is re-checked when the seller comes back to the app. The owner's decision of 2026-10-29 replaces ADR-0026 on this point (the ADR is not edited). A device that cannot report its setting reads light. One light frame on a dark phone with nothing stored is accepted before the theme applies.
+24. **Light or Dark on request, and it stays**: the dark theme (`InicioOscuro`) shows when `data-tema="oscuro"` is set on `<html>`, which is the resolved theme, not the choice. The choice is made only in Settings → Appearance (Theme: Automatic, Light, Dark; navigation.md) and is stored on the device as `tema` = `claro` or `oscuro`. Automatic is no stored key; any other value or a storage error also reads as Automatic. A stored choice wins over the phone, survives closing the app, reloads and logging out, and shows on every screen of that device, the sign-in screen, the invitation and the reset screens included. An old Dark still opens dark; an old Light (nothing stored) now follows the phone. Another tab or window picks up a change when it next loads.
+25. **The themes keep the Yerba palette**: both themes carry the same tokens with their own values (DESIGN_STANDARDS.md "Palette"); what picks the theme is the rule above. Every rule about state (no state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly) holds in both.
 26. **One rule, written the same everywhere**: the comment at the top of `web/src/styles/tokens.css`, `docs/product/design-system/tokens.css`, the design-system README and this file all state the same rule.
 
 Success criteria, changing and resetting a password:
@@ -155,7 +155,7 @@ Success criteria, the installed shell:
     - With the keyboard open, the focused field stays in view.
 34. **The status bar is the app's colour.**
     - On Android it matches the paper of the theme in force: light `--papel` with no `data-tema`, the dark theme's own paper token with `data-tema="oscuro"`. It changes as soon as the attribute changes.
-    - The phone's own light or dark setting picks nothing. There is no blue band in either theme.
+    - On Automatic it follows the phone's setting live, because the attribute does. There is no blue band in either theme.
     - The splash and the manifest's colours are light `--papel`.
     - On iOS the status bar stays light in both themes, because iOS fixes its style at launch. This is an accepted limitation, not a defect.
 35. **Taps feel like a phone app's.**
@@ -371,18 +371,18 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - the app shows no banner or explanation of the difference.
 - **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
 - **No network**: when a request fails because the network dropped, the open app shows "No connection" on any origin. This does not rely on the service worker.
-- **Theme**: the app opens in the light theme whatever the phone or computer is set to, unless Dark is stored on that device. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Settings → Appearance, Light or Dark (navigation.md).
-  - The rule is one: no attribute on `<html>` means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session, and the system's light or dark setting picks nothing. `oscuro` is the only recognised value.
+- **Theme**: the app is Automatic by default: with nothing stored it follows the phone's light or dark setting live, and re-checks it when the person comes back to the app. A Light or Dark stored on that device wins over the phone. The one place a person chooses is Settings → Appearance, Theme: Automatic, Light or Dark (navigation.md).
+  - The rule is one: the attribute on `<html>` carries the resolved theme. No attribute means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session. The stored value is `claro` or `oscuro`; no key, any other value or a storage error is Automatic.
   - **The theme choice is remembered per device**:
-    - tapping Light or Dark applies and remembers it at once, with no save, toast or unsaved-changes warning;
+    - tapping Automatic, Light or Dark applies it and remembers it at once, with no save, toast or unsaved-changes warning;
     - the device keeps only the choice: nothing personal, no money, no session and nothing about a business;
     - it belongs to the device, not to the user or the business; a partner's device and the user's other devices are unaffected;
     - logging out does not clear it;
-    - a stored Dark shows on every screen of that device, the sign-in screen, the invitation and the reset screens included; a device with nothing stored opens light;
+    - a stored Dark shows on every screen of that device, the sign-in screen, the invitation and the reset screens included; a device with nothing stored follows the phone;
     - the screens before login have no theme control.
-  - Native controls and scrollbars follow the app's theme, not the system's: light with no attribute, dark with `data-tema="oscuro"`.
-  - Both themes keep the same tokens and values, and every state rule holds in both.
-  - The manifest's colours and the splash are static and light. The status bar follows the app's chosen theme (`data-tema`), never the system's; on iOS it stays light, because iOS fixes its style at launch.
+  - Native controls and scrollbars follow the resolved theme: light with no attribute, dark with `data-tema="oscuro"`.
+  - Both themes carry the Yerba tokens, and every state rule holds in both.
+  - The manifest's colours and the splash are static and light. The status bar follows the resolved theme the app shows (`data-tema`, which on Automatic already tracks the phone), not the system's setting directly; on iOS it stays light, because iOS fixes its style at launch.
   - The font is self-hosted.
 - **Language and formats**: every word on screen in English (product-language.md, which supersedes the earlier Spanish rule). Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Go to sign in`, the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), the reset screen):
@@ -419,7 +419,7 @@ How the app fills a phone's screen and responds to touch once installed (criteri
 - **Status bar**:
   - exactly one `theme-color` meta, with no `media` attribute, light `--papel` in the static HTML;
   - one place sets or removes `data-tema` and updates `theme-color` with it, including at app start, from the theme's paper token, never a copied value;
-  - there is no pair of metas with `prefers-color-scheme`: the system setting picks nothing;
+  - there is no pair of metas with `prefers-color-scheme`: the system setting reaches the page only through the theme module;
   - only Android follows it live; iOS keeps the light `default` strip in both themes.
 - **Insets**: four tokens, `--inset-arriba`, `--inset-abajo`, `--inset-izquierda` and `--inset-derecha`, built from `env(safe-area-inset-*)`.
   - Top and bottom are used by the bar, the header, the fixed "+ New sale", sheets and toasts.
@@ -570,7 +570,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
     - "Back to Sales".
 
     It carries no id, name or date.
-- No state is told by color alone (blue ↔ amber, never green ↔ red), in either theme.
+- No state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly, in either theme.
 
 ## Metrics
 
@@ -595,21 +595,19 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - an offline check shows "No connection";
   - no state is told by color alone.
 - **Theme (criteria 23–26)**:
-  - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`), nothing stored and no attribute reads the page background as `--papel` (#fcfbf8), the sign-in screen included;
-  - dark on request: an e2e run with `data-tema="oscuro"` on `<html>`, whatever the system setting, reads the page background as the dark theme's own value from `tokens.css`;
-  - choosing Dark in Settings → Appearance sets the attribute, and Light removes it, with no toast, save button or unsaved-changes warning, and the current choice marked by more than color;
+  - Automatic follows the phone: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`) and nothing stored sets `data-tema="oscuro"` and `theme-color` equal to the dark `--papel`; an `emulateMedia` flip to light removes the attribute and puts the meta back to #f6f7f5, live;
+  - a stored choice wins: `tema=claro` on a dark phone stays light after a reload; `tema=oscuro` opens dark; an unknown value reads as Automatic;
+  - Settings → Appearance offers Automatic, Light and Dark, in that order; choosing applies at once, with no toast, save button or unsaved-changes warning, and the active option marked by a check plus its word, not by color;
   - the choice survives a reload and a logout; with Dark stored, the sign-in screen, the invitation and the reset screens show dark;
   - browser storage holds only the theme choice;
-  - no test or fixture reaches the dark theme by emulating a dark system;
-  - no token value changed;
   - native controls and scrollbars are checked by eye on a dark-system device, light with no attribute and dark with it; no fast test reads them;
   - the four places that state the rule say the same, and none names `claro` as an attribute value.
 - **Installed shell (criteria 33–36)**:
   - meta tags, fast test: the viewport has its four parts and no zoom restriction; `mobile-web-app-capable` and the iOS status-bar style `default` are present; exactly one `theme-color`, with no `media`;
   - manifest, fast test: `id: "/"`, `scope: "/"`, `lang: "en"`, `display: "standalone"`, `theme_color` and `background_color` equal to `--papel`, no `orientation`; 192 and 512 icons `any` and a 512 `maskable` present;
   - installability: the manifest still passes the browser's installability check on `localhost` with its new fields;
-  - status bar, front test driving `data-tema` directly: `theme-color` is light `--papel` with no attribute, the dark paper token with `oscuro`, light again once the attribute is removed, and stays light with the system emulated dark and no attribute;
-  - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ New sale", sheets and toasts use them; no existing token value changed;
+  - status bar, front test driving `data-tema` directly: `theme-color` is light `--papel` with no attribute, the dark paper token with `oscuro`, light again once the attribute is removed (the system reading reaches the attribute only through the theme module);
+  - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ New sale", sheets and toasts use them; no existing token value changed apart from the Yerba palette;
   - regression: the accounts, navigation and feedback suites pass unchanged; the bar fits at 320 px with text at 130 %; the pressed state uses tokens only, in both themes;
   - by eye, in portrait, on a real iPhone installed over the home network and a real Android phone on the published installation:
     - criterion 33, with New sale, Record payment and the expense form open with the keyboard;
@@ -734,7 +732,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - Blocking or marking a rerun after a commit whose outcome is unknown; the dry run is the check.
 - Roles within a business.
 - Offline use; an install walkthrough on iOS or Android; Capacitor.
-- A "follow the system" theme option; a theme control before login; syncing the theme choice per user, per business or across devices.
+- A theme control before login; syncing the theme choice per user, per business or across devices.
 - A computer-only layout for the getting-in screens; a design file of its own for the reset screen.
 - Any state drawn in Estados that no capability defines.
 - TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).

@@ -803,8 +803,9 @@ body {
   resize: vertical;
 }
 
-/* "Apariencia" (`ConfiguracionApariencia.dc.html`): Claro · Oscuro, the segmented control
- * on the group's surface. The current one is a filled pill and bolder, not only a color. */
+/* "Apariencia" (`ConfiguracionApariencia.dc.html`): Automatic · Light · Dark, the segmented
+ * control on the group's surface. The current one is a filled pill, bolder and carries a check
+ * beside its word, not only a color. */
 .ajustes-tema__rotulo {
   display: block;
   margin-bottom: 10px;
@@ -820,6 +821,16 @@ body {
 
 .ajustes-tema__opcion {
   flex: 1;
+  /* The check beside the word of the active option wraps under it where the segment is narrow
+     (320 and 246 px) rather than pushing the row past the card. */
+  min-width: 0;
+  min-height: 44px;
+  touch-action: manipulation;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 var(--espacio-xs);
   text-align: center;
   padding: 11px 0;
   border: 0;
@@ -834,6 +845,12 @@ body {
   background: var(--papel);
   color: var(--tinta);
   font-weight: 600;
+}
+
+.ajustes-tema__ayuda {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--tinta2);
 }
 
 /* The language control under the name form: the same segments, at least 44px tall. */
@@ -5144,7 +5161,9 @@ body {
   color: var(--boton-texto);
   box-shadow: none;
   font-weight: 600;
-  opacity: 0.75;
+  /* 0.8, not the design's 0.75: white on the Yerba --boton blends to 4.42:1 at 0.75 and
+   * 4.79:1 at 0.8 (the Undo contrast e2e needs 4.5:1). */
+  opacity: 0.8;
   min-height: var(--alto-tocable);
   padding: 0 var(--espacio-xs);
 }

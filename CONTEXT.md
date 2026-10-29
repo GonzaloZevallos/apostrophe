@@ -398,8 +398,8 @@ La configuración paso a paso por la que se guía a un Business recién creado u
 _Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
-La elección de Light o Dark de un dispositivo. Se hace solo en Settings → Appearance, se aplica de inmediato y se conserva solo en ese dispositivo. No está atada a un User ni a un Business, sobrevive al cierre de sesión y no guarda nada más. Sin ninguna guardada, la app abre en modo claro sin importar la configuración del sistema.
-_Avoid_: preference, dark mode setting, skin, user setting
+La elección de Automatic, Light o Dark de un dispositivo. Se hace solo en Settings → Appearance, se aplica de inmediato y se conserva solo en ese dispositivo. No está atada a un User ni a un Business, sobrevive al cierre de sesión y no guarda nada más. Sin ninguna guardada, la app sigue al teléfono en vivo; una elección guardada es solo de ese dispositivo y gana sobre el teléfono. _In the app_: Theme (Automatic · Light · Dark).
+_Avoid_: preference, dark mode setting, skin, user setting, system theme
 
 **Own chat lookup**:
 Buscar el número del chat propio del vendedor entre los chats privados que le escribieron al bot del Business, con el token que usaría Test it. Completa el campo del chat propio solo cuando escribió exactamente una persona en privado, muestra solo el número y no guarda nada; los Bot settings se siguen guardando solo con un Test send exitoso. _In the app_: Find my chat.

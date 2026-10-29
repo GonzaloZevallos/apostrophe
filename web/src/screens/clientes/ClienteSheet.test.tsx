@@ -89,6 +89,8 @@ describe('on a phone, a direct address', () => {
     expectBehindPane(pane)
     await waitFor(() => expect(pane).toHaveTextContent('Ana Pérez'))
     expect(pane).toHaveTextContent('Beto Gómez')
+    expect(pane).toHaveTextContent('Owed to you')
+    expect(pane).toHaveTextContent(/owes you since \d\d\/\d\d/)
     expect(pane).not.toContainElement(dialog)
     expect(document.querySelector('.sheet__actions')).toContainElement(screen.getByRole('button', { name: 'Save and use' }))
   })
@@ -105,6 +107,7 @@ describe('on a phone, a direct address', () => {
     expectBehindPane(pane)
     await waitFor(() => expect(pane).toHaveTextContent('Ana Pérez'))
     expect(pane).toHaveTextContent('$ 11.000')
+    expect(pane).toHaveTextContent('Owes you')
     expect(pane).not.toContainElement(dialog)
   })
 

@@ -13,7 +13,7 @@ donde toda otra pantalla lo copia tal cual.
 | Archivo | Qué es |
 | --- | --- |
 | `tokens.ts` | Paleta clara y oscura, escala tipográfica, espacios, radios, medidas. |
-| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema es el de luz (Papel y azul); `data-tema="oscuro"` lo pasa a oscuro. El sistema operativo no elige el tema. Las cuatro zonas seguras (`--inset-arriba`, `--inset-abajo`, `--inset-izquierda`, `--inset-derecha`) salen de `env(safe-area-inset-*)`, valen 0 donde no hay muesca y no tienen valor en `tokens.ts`. |
+| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema resuelto es el de luz (paleta Yerba); `data-tema="oscuro"` lo pasa a oscuro. El atributo lleva el tema ya resuelto: `web/src/theme.ts` lo pone según la elección guardada o, en Automático, según el teléfono (en vivo y al volver a la app). Un Oscuro viejo sigue abriendo oscuro; un Claro viejo, que no guardaba nada, ahora sigue al teléfono. Otra pestaña toma el cambio al cargar. Un cuadro claro en un teléfono oscuro sin elección guardada es un costo aceptado. Las cuatro zonas seguras (`--inset-arriba`, `--inset-abajo`, `--inset-izquierda`, `--inset-derecha`) salen de `env(safe-area-inset-*)`, valen 0 donde no hay muesca y no tienen valor en `tokens.ts`. |
 | `formato.ts` | Plata, gramos, fechas, semana y teléfonos. Las reglas del enunciado. |
 | `dominio.ts` | Tipos del dominio: negocio, variedades, precios, clientes, ventas, stock, gastos. |
 | `precios.ts` | Motor de precios, totales, validación de venta e imputación de cobros. |
@@ -47,8 +47,8 @@ restantes, las cifras del panel) están todas en
 
 ## Dirección de diseño
 
-Minimalista y fino, paleta **Papel y azul**: fondo cálido, tinta marrón-negra y
-un solo azul usado con cuentagotas.
+Minimalista y fino, paleta **Yerba**: fondo verdoso muy claro, tinta verde-negra y
+un solo verde usado con cuentagotas.
 
 - **La jerarquía la hace el tamaño, no el peso.** Rótulo de 14 en gris sobre
   cifra de 54. Nada de versalitas con tracking.
@@ -59,11 +59,10 @@ un solo azul usado con cuentagotas.
 
 ## Accesibilidad — no se negocia
 
-La paleta es **apta para deuteranopia**. El eje es **azul ↔ ámbar**, que esa
-condición conserva; verde contra rojo cae al mismo tono (medido: ΔE 64 → 4,0).
-
-1. Nunca usar verde para "bien" y rojo para "mal".
-2. Ningún estado se distingue sólo por color: siempre lleva la palabra.
+1. Ningún estado se cuenta sólo por color: una señal, flecha o palabra en cada
+   ganancia, pérdida, deuda o estado; las series de un gráfico se rotulan
+   directamente. `--positivo` y `--negativo` nunca van solos.
+2. La palabra, la señal o la flecha vienen del formato y de la API, no del color.
 3. Donde hay varios estados juntos, además cambia la forma. En la lista de
    stock: cuadrado = agotada, círculo lleno = baja, círculo vacío = ok.
 4. "Agotada" no es rojo: es el chip invertido, que se separa por luminosidad.
@@ -95,35 +94,106 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--superficie` | superficie | — | — | — | |
 | `--deuda-fondo` | superficie | — | — | — | |
 | `--acento-suave` | superficie | — | — | — | |
-| `--tinta` | general | `--papel` | 15,97 | 15,80 |  |
-| `--tinta` | general | `--superficie` | 14,29 | 14,06 |  |
-| `--tinta` | general | `--deuda-fondo` | 13,38 | 13,39 |  |
-| `--tinta` | general | `--acento-suave` | 14,11 | 13,01 |  |
-| `--tinta2` | general | `--papel` | 5,44 | 5,99 |  |
-| `--tinta2` | general | `--superficie` | 4,86 | 5,33 |  |
-| `--tinta2` | general | `--deuda-fondo` | 4,55 | 5,07 |  |
-| `--tinta2` | general | `--acento-suave` | 4,80 | 4,93 |  |
-| `--acento` | general | `--papel` | 7,43 | 8,61 |  |
-| `--acento` | general | `--superficie` | 6,65 | 7,66 |  |
-| `--acento` | general | `--deuda-fondo` | 6,22 | 7,30 |  |
-| `--acento` | general | `--acento-suave` | 6,56 | 7,09 |  |
-| `--deuda` | general | `--papel` | 7,23 | 9,70 |  |
-| `--deuda` | general | `--superficie` | 6,47 | 8,63 |  |
-| `--deuda` | general | `--deuda-fondo` | 6,05 | 8,21 |  |
-| `--deuda` | general | `--acento-suave` | 6,38 | 7,98 |  |
-| `--deuda2` | general | `--papel` | 5,80 | 6,39 |  |
-| `--deuda2` | general | `--superficie` | 5,19 | 5,68 |  |
-| `--deuda2` | general | `--deuda-fondo` | 4,86 | 5,41 |  |
-| `--deuda2` | general | `--acento-suave` | 5,12 | 5,26 |  |
-| `--critico` | general | `--papel` | 13,91 | 11,80 |  |
-| `--critico` | general | `--superficie` | 12,44 | 10,49 |  |
-| `--critico` | general | `--deuda-fondo` | 11,64 | 9,99 |  |
-| `--critico` | general | `--acento-suave` | 12,28 | 9,71 |  |
-| `--boton-texto` | par | `--boton` | 15,97 | 15,80 |  |
-| `--critico-texto` | par | `--critico` | 12,59 | 11,13 |  |
-| `--nav-inactivo` | par | `--papel` | 4,69 | 4,97 | `.bar-inferior__item` |
+| `--tinta` | general | `--papel` | 15,59 | 15,80 |  |
+| `--tinta` | general | `--superficie` | 16,75 | 13,98 |  |
+| `--tinta` | general | `--deuda-fondo` | 14,99 | 13,41 |  |
+| `--tinta` | general | `--acento-suave` | 14,35 | 10,47 |  |
+| `--tinta2` | general | `--papel` | 5,79 | 7,67 |  |
+| `--tinta2` | general | `--superficie` | 6,23 | 6,79 |  |
+| `--tinta2` | general | `--deuda-fondo` | 5,57 | 6,51 |  |
+| `--tinta2` | general | `--acento-suave` | 5,33 | 5,08 |  |
+| `--acento` | general | `--papel` | 6,01 | 8,76 |  |
+| `--acento` | general | `--superficie` | 6,46 | 7,75 |  |
+| `--acento` | general | `--deuda-fondo` | 5,78 | 7,43 |  |
+| `--acento` | general | `--acento-suave` | 5,53 | 5,81 |  |
+| `--deuda` | general | `--papel` | 4,98 | 8,80 |  |
+| `--deuda` | general | `--superficie` | 5,35 | 7,79 |  |
+| `--deuda` | general | `--deuda-fondo` | 4,79 | 7,47 |  |
+| `--deuda` | general | `--acento-suave` | 4,58 | 5,83 |  |
+| `--deuda2` | general | `--papel` | 5,48 | 6,94 |  |
+| `--deuda2` | general | `--superficie` | 5,89 | 6,14 |  |
+| `--deuda2` | general | `--deuda-fondo` | 5,27 | 5,89 |  |
+| `--deuda2` | general | `--acento-suave` | 5,05 | 4,60 |  |
+| `--critico` | general | `--papel` | 12,28 | 10,66 |  |
+| `--critico` | general | `--superficie` | 13,20 | 9,44 |  |
+| `--critico` | general | `--deuda-fondo` | 11,81 | 9,05 |  |
+| `--critico` | general | `--acento-suave` | 11,30 | 7,07 |  |
+| `--positivo` | general | `--papel` | 4,98 | 10,13 |  |
+| `--positivo` | general | `--superficie` | 5,35 | 8,96 |  |
+| `--positivo` | general | `--deuda-fondo` | 4,79 | 8,59 |  |
+| `--positivo` | general | `--acento-suave` | 4,58 | 6,71 |  |
+| `--negativo` | general | `--papel` | 5,16 | 6,85 |  |
+| `--negativo` | general | `--superficie` | 5,55 | 6,06 |  |
+| `--negativo` | general | `--deuda-fondo` | 4,96 | 5,81 |  |
+| `--negativo` | general | `--acento-suave` | 4,75 | 4,54 |  |
+| `--boton-texto` | par | `--boton` | 6,46 | 8,76 |  |
+| `--critico-texto` | par | `--critico` | 12,28 | 10,66 |  |
+| `--nav-inactivo` | par | `--papel` | 5,79 | 7,67 | `.bar-inferior__item` |
+| `--acento-calido-texto` | par | `--acento-calido` | 7,58 | 7,58 |  |
 | `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg`, `.lista-clientes__fila > svg` |
+| `--acento-oscuro` | ícono | — | — | — | |
+| `--serie1` | ícono | — | — | — | |
+| `--serie2` | ícono | — | — | — | |
+| `--serie3` | ícono | — | — | — | |
+| `--serie4` | ícono | — | — | — | |
+| `--serie5` | ícono | — | — | — | |
+| `--linea` | ícono | — | — | — | |
+| `--deuda-linea` | ícono | — | — | — | |
 <!-- contraste:fin -->
+
+### La paleta Yerba
+
+Verde yerba sobre papel verdoso en claro; verde claro sobre un fondo casi negro en oscuro.
+El tema lo fija `data-tema` en `<html>` y sigue al teléfono mientras no haya una elección
+guardada (la regla del tema vive en `DESIGN_STANDARDS.md`). Los valores de cada tema están en
+`tokens.css` y `tokens.ts`; los de la dueña son los de su pedido, escritos en minúscula.
+
+**Derivados** (la dueña no dio valor; cada uno es un tinte o una sombra de sus tonos, y
+cada fila de arriba que los usa lo hace en los dos temas): `--tenue`, `--deuda-fondo`,
+`--deuda2`, `--deuda-linea`, `--critico` y `--critico-texto`. En claro `--deuda-fondo` es
+`#fbf1e3` (tinte del ámbar), `--deuda2` `#8a5a1f`, `--deuda-linea` `#ecdcc3`, `--critico`
+`#26332b` (sombra de la tinta) con `--critico-texto` `#f6f7f5`, y `--tenue` `#818e87`. En
+oscuro: `#2b2110`, `#c9944a`, `#3d2e17`, `#f0bb68` con `#0e1411`, y `#66756c`. "Agotada" se
+resuelve invirtiendo, no con un color nuevo.
+
+**Tokens nuevos.** `--positivo` (`#1e7a45` claro, `#6bd39a` oscuro) y `--negativo`
+(`#c0352b`, `#f07a6e`) son texto general en la tabla; ninguna regla de `app.css` los usa
+mientras ninguna pantalla muestre una ganancia. `--acento-oscuro` (`#14532f`) no es texto y
+aún no lo usa ninguna regla. `--acento-calido` (`#e3a23b` en los dos temas) es un relleno con
+un solo texto, la tinta: `--acento-calido-texto` (token agregado, no es de la dueña; `#15201a` en los dos temas, el valor de la
+tinta clara), fila `par` de arriba. No se usa `--tinta` para esto porque en oscuro es
+clara, y porque la guarda trata cada token como general o par, nunca los dos.
+
+**Desviaciones de lo pedido por la dueña** (un par bajaba de 4,5:1, se movió sólo ese
+token, entero, al valor más cercano que pasa; es la única):
+
+- `--deuda` en claro: `#a85a06` → `#a35706`. Sobre `--acento-suave` medía 4,35 y la
+  tabla exige 4,5. Sobre `--papel` pasa de 4,73 a 4,98.
+
+**Bordes decorativos** (`--linea`, `--deuda-linea`). Sólo se usan como `border` o
+`background-color` de una línea, nunca como `color` de texto ni de un ícono con significado:
+están exentos de los 4,5:1 y por eso llevan fila `ícono` sin selectores, igual que las series.
+
+Ningún otro valor de la dueña se movió. `--deuda-fondo` en claro no es de la dueña: se
+aclaró de `#f6e8d4` a `#fbf1e3` para que `--deuda`, `--positivo` y `--negativo` lleguen a
+4,5:1 encima.
+
+**Series de gráfico** (`--serie1` a `--serie5`). Son marcas, no texto: cada una va
+rotulada directamente, pegada a su marca, y apunta a 3:1 contra la `--superficie` de su
+tema. No llevan fila de contraste de texto (filas `ícono`, sin selectores). Claro: los
+cinco de la dueña. Oscuro: variantes más claras de los mismos cinco tonos, elegidas acá.
+
+| Serie | Claro | Relación | Oscuro | Relación |
+|---|---|---|---|---|
+| `--serie1` | `#1e6b47` | 6,46 | `#5cc594` | 7,75 |
+| `--serie2` | `#e3a23b` | 2,21 | `#f0b95a` | 9,26 |
+| `--serie3` | `#4c7fd0` | 4,00 | `#7fa8e8` | 6,81 |
+| `--serie4` | `#b8457a` | 5,04 | `#e07aa8` | 5,91 |
+| `--serie5` | `#b9c2bc` | 1,83 | `#7f8c85` | 4,71 |
+
+En claro `--serie2` y `--serie5` quedan bajo 3:1 sobre `--superficie` porque son los valores
+de la dueña; no se movieron porque nunca se leen por el color solo: la etiqueta directa
+dice cuál es cuál.
 
 ## En el celular
 
