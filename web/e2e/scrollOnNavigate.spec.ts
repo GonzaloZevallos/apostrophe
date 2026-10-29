@@ -147,9 +147,12 @@ for (const viewport of VIEWPORTS) {
 
     test('Back returns Home to its offset', async ({ page }) => {
       await seedLongLists(page)
+      // Home's Owes-you block shows only the top three debtors; its stock list shows every
+      // variety, so 40 more varieties make Home taller than any viewport here.
+      await seedLongVarieties(page)
 
       await page.goto(HOME)
-      await expect(page.getByRole('link', { name: /Collect from Zeta 40/ })).toBeVisible()
+      await expect(page.getByText('Tulipan 40', { exact: true })).toBeVisible()
       const homeOffset = await scrollDown(page)
       await tab(page, 'Sales').click()
       await expectPath(page, SALES)
