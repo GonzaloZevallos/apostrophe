@@ -29,6 +29,7 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
+import Loading from '../components/Loading'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { amountParts } from './analisisCost'
@@ -311,6 +312,8 @@ export default function Analisis() {
         <div className="encabezado__fila">
           <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
         </div>
+
+        {query.isPending && <Loading />}
 
         {query.isError && query.error instanceof NetworkError && <SinConexion />}
         {query.isError && !(query.error instanceof NetworkError) && <ErrorGenerico />}
