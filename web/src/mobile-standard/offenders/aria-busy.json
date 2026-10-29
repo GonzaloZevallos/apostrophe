@@ -1,11 +1,5 @@
 [
   {
-    "screen": "Analisis",
-    "rule": "aria-busy",
-    "target": "",
-    "issue": 48
-  },
-  {
     "screen": "Catalogo",
     "rule": "aria-busy",
     "target": "",
