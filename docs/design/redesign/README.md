@@ -2,8 +2,8 @@
 
 Capturas y dibujos fuente del diseño consolidado que armó el dueño el 29 de octubre de 2026 (épica #494). **Es el objetivo del desarrollo**: cada parte del rediseño se construye contra estas pantallas, en el teléfono y en la compu, en claro y en oscuro.
 
-- Los dibujos fuente () están en  y , con el nombre que van a tener en . La versión oscura lleva el sufijo .
-- La issue de importación los copia a  y los suma a , para que la captura de diseño compare la app contra ellos.
+- Los dibujos fuente (`.dc.html`) están en `fuente/telefono/` y `fuente/compu/`, con el nombre que van a tener en `docs/product/design-system/pantallas/`. La versión oscura lleva el sufijo `Oscuro`.
+- La issue de importación los copia a `pantallas/` y los suma a `scripts/design/screens.json`, para que la captura de diseño compare la app contra ellos.
 - El dibujo es una guía, no un contrato (DESIGN_STANDARDS.md, "Drawing as guide"). Los datos son de ejemplo y no atan el producto a ningún rubro ("Assume nothing").
 - Lienzos vivos: teléfono https://claude.ai/artifact/4yuwZQXGXeras6NPQhSKAx · compu https://claude.ai/artifact/NXrFg5gFPS3qRgiZhcgGhf · pedidos https://claude.ai/artifact/SX78hYQr72E6vJyDXKcprF
 
