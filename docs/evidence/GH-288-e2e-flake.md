@@ -154,8 +154,8 @@ sees), and the `Equal` check reads a `{ key }` entry as its key. `master` also m
 fails without the fix (`expected [ …(2) ] to have a length of 1 but got 2`, checked again after the
 merge by reverting the fix for one run). The counts are unchanged: 27 observed, 6 kept, 86 pending.
 
-**Diff scope** (`git diff --stat fbc4fdc0..HEAD -- . ':!docs/evidence/GH-288-e2e-flake.md'`, from the base this branch
-started on, without this doc, which keeps growing): 21 files changed, 1202 insertions, 84 deletions. Under `web/src` only `screens/clientes/Clientes.tsx` and its
+**Diff scope** (`git diff --stat fbc4fdc0..bef8e033 -- . ':!docs/evidence/GH-288-e2e-flake.md'`: the task's own work, from the base
+this branch started on to the head before `master` was merged, without this doc): 21 files changed, 1202 insertions, 84 deletions. The merge of `master` brings its own 391 files, and the follow-up commit touches the guard and the Clientes test only. Under `web/src` only `screens/clientes/Clientes.tsx` and its
 test (the Cause's fix) and the guard `architecture/e2eToastRule.test.ts` changed; nothing under
 `app/`; no product timer.
 
