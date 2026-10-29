@@ -132,6 +132,7 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--nav-inactivo` | par | `--papel` | 5,79 | 7,67 | `.bar-inferior__item` |
 | `--acento-calido-texto` | par | `--acento-calido` | 7,58 | 7,58 |  |
 | `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg`, `.lista-clientes__fila > svg` |
+| `--acento-oscuro` | ícono | — | — | — | |
 | `--serie1` | ícono | — | — | — | |
 | `--serie2` | ícono | — | — | — | |
 | `--serie3` | ícono | — | — | — | |
