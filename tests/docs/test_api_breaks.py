@@ -13,6 +13,7 @@ from scripts.docs.api_breaks import (
     OASDIFF_NO_BREAK,
     BaseSpecMissing,
     Verdict,
+    main,
     read_base_spec,
     verdict,
 )
@@ -130,3 +131,15 @@ def test_read_base_spec_is_absent_when_the_ref_has_no_spec(tmp_path: Path) -> No
 def test_read_base_spec_reports_a_ref_that_does_not_exist(tmp_path: Path) -> None:
     repo = _repo_with_origin_x(tmp_path, {"docs/api/openapi.json": SPEC})
     assert read_base_spec("nope", repo) is BaseSpecMissing.REF_MISSING
+
+
+def test_main_fails_without_runner_temp_rather_than_using_the_system_temp_dir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = _repo_with_origin_x(tmp_path, {"docs/api/openapi.json": SPEC})
+    monkeypatch.chdir(repo)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("GITHUB_BASE_REF", "x")
+    monkeypatch.delenv("RUNNER_TEMP", raising=False)
+    assert main() == 1
+    assert "api_breaks: FAIL, RUNNER_TEMP is not set" in capsys.readouterr().out

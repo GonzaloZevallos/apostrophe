@@ -75,9 +75,10 @@ def read_base_spec(base_ref: str, cwd: Path) -> str | BaseSpecMissing:
     return shown.stdout
 
 
-def _run_oasdiff(base_spec: str, cwd: Path) -> int | None:
-    """oasdiff's exit code, or None when the binary is not there."""
-    with tempfile.TemporaryDirectory() as tmp:
+def _run_oasdiff(base_spec: str, cwd: Path, runner_temp: Path) -> int | None:
+    """oasdiff's exit code, or None when the binary is not there. The base spec is written
+    under `runner_temp`, never into the repository or the system temporary directory."""
+    with tempfile.TemporaryDirectory(dir=runner_temp) as tmp:
         base_file = Path(tmp) / "base-openapi.json"
         base_file.write_text(base_spec, encoding="utf-8")
         try:
@@ -103,7 +104,11 @@ def main() -> int:
     if base is BaseSpecMissing.ABSENT:
         print(f"api_breaks: SKIP, the base ref has no {SPEC_PATH}")
         return 0
-    oasdiff_exit = _run_oasdiff(base, cwd)
+    runner_temp = os.environ.get("RUNNER_TEMP")
+    if not runner_temp:
+        print("api_breaks: FAIL, RUNNER_TEMP is not set, nowhere safe to write the base spec")
+        return 1
+    oasdiff_exit = _run_oasdiff(base, cwd, Path(runner_temp))
     result = verdict(base, oasdiff_exit, os.environ.get("PR_BODY"))
     print(f"api_breaks: {result.name} (oasdiff exit {oasdiff_exit})")
     return 1 if result is Verdict.FAIL else 0

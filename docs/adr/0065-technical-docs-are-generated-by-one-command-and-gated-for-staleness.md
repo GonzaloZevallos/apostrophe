@@ -43,7 +43,7 @@ to 6 of ADR-0063 still hold. `.agentic/stack.yaml` does not declare `docs:` yet 
    parses `npm ls --all --json mermaid` and fails unless every `mermaid` node is the front's version. The
    script also installs `chrome-headless-shell` explicitly, under `$RUNNER_TEMP/puppeteer-cache`, and the
    renderer runs Chromium with `--no-sandbox`.
-6. **Scripts write only under `$RUNNER_TEMP`** (and `$GITHUB_PATH`). Each fails when it processed nothing:
+6. **Scripts write only under `$RUNNER_TEMP`** (and `$GITHUB_PATH`); `api_breaks` writes the base spec there too and fails when `RUNNER_TEMP` is unset. Each fails when it processed nothing:
    a missing mmdc, no markdown files, or a count of svg files different from the count of `mermaid` blocks.
 7. **Breaking-change check.** `api_breaks` compares `docs/api/openapi.json` with `origin/$GITHUB_BASE_REF`
    using `oasdiff breaking --fail-on ERR`. Measured on the pinned binary: exit 0 is no break, 1 a break, 102 a
