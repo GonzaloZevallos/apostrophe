@@ -28,7 +28,7 @@ import { CUSTOMERS_TEXT } from '../copy/customers'
 import { EXPENSES_TEXT } from '../copy/expenses'
 import { PAYMENTS_TEXT } from '../copy/payments'
 import { PINNED_CATALOG_TEXT } from '../copy/pinnedCatalog'
-import { SALES_TEXT } from '../copy/sales'
+import { SALE_BILL_TEXT, SALES_TEXT } from '../copy/sales'
 import { CATALOG_SAVED, PASSWORD_CHANGED_SUCCESS, PRICES_SAVED, RENAME_SUCCESS, SETTINGS_TEXT } from '../copy/settings'
 import { STOCK_TEXT } from '../copy/stock'
 import { PRICE_SAVED, THRESHOLD_SAVED, VARIETIES_TEXT } from '../copy/varieties'
@@ -66,6 +66,7 @@ export const SUCCESS_TOASTS = [
   PASSWORD_CHANGED_SUCCESS,
   SETTINGS_TEXT.invitationReady,
   SALES_TEXT.customerAssigned,
+  SALE_BILL_TEXT.copied,
   THRESHOLD_SAVED,
   CATALOG_SAVED,
   PRICES_SAVED,

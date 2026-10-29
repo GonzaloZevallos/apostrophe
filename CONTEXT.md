@@ -510,7 +510,7 @@ The owner's fourth criterion: the app never hard-codes one business's way of wor
 _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 
 **Sale bill**:
-The facts about one recorded sale that a seller may share with that sale's customer: business name, date, shipping charged, total, lines, payment state and the customer's current balance. They are worked out live from settlement when the sale's detail is read, and never stored; the balance is the customer's whole current account. A bill is facts only, with no text; in the app it has no word of its own yet (part 2 of GH-322 chooses it).
+The facts about one recorded sale that a seller may share with that sale's customer: business name, date, lines, shipping charged, total, payment state and the customer's current balance. They are worked out live from settlement when the sale's detail is read and never stored, and the balance is the customer's whole account at the moment of sharing. On screen it is shared as plain text by Share or Copy on the sale's detail; In the app: Sale bill (the accessible name of its selectable block), the action reads Share / Copy.
 _Avoid_: invoice, receipt, statement, ticket
 
 ## Planned in GH-318 (not yet in the code)
