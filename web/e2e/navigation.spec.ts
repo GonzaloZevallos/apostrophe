@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { CUSTOMER, CUSTOMER_EDIT, HOME, LOGIN, SALE, STOCK_ENTRY, VARIETY, pathTo } from '../src/routes.js'
-import { expect, test } from './fixtures.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
 import type { Locator, Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import { LEGACY_REDIRECTS } from './helpers/legacyPaths.js'
@@ -73,7 +73,7 @@ test.describe.serial('navigation', () => {
 
   test.beforeAll(async ({ browser, workerServer }) => {
     test.setTimeout(180_000)
-    page = await (await browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } })).newPage()
+    page = await (await withToastRecorder(browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } }))).newPage()
     watchConsole(page, consoleMessages)
     await signUp(page, 'Rutas')
     records = await seedRecords(page, 'Carla Rutas')
@@ -140,7 +140,7 @@ test.describe.serial('navigation', () => {
   }) => {
     const old = LEGACY_REDIRECTS.find(([, now]) => now === SALE)
     expect(old).toBeDefined()
-    const context = await browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } })
+    const context = await withToastRecorder(browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } }))
     const other = await context.newPage()
     await signUp(other, 'Ajena')
     await other.goto(pathTo(old?.[0] ?? '', { id: records.sale }))
@@ -176,7 +176,7 @@ test.describe.serial('navigation', () => {
 
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(HOME)
-    await expectAction(page.locator('.columna-principal > .boton-nueva-venta'))
+    await expectAction(page.locator('.nueva-venta-flotante > .boton-nueva-venta'))
 
     await page.setViewportSize({ width: 1280, height: 920 })
     await page.goto(HOME)
@@ -187,7 +187,7 @@ test.describe.serial('navigation', () => {
     await page.evaluate(() => document.documentElement.setAttribute('data-tema', 'oscuro'))
     await expectAction(page.locator('.boton-nueva-venta--escritorio'))
     await page.setViewportSize({ width: 390, height: 844 })
-    await expectAction(page.locator('.columna-principal > .boton-nueva-venta'))
+    await expectAction(page.locator('.nueva-venta-flotante > .boton-nueva-venta'))
     await page.evaluate(() => document.documentElement.removeAttribute('data-tema'))
 
     for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 920 }]) {
@@ -197,11 +197,11 @@ test.describe.serial('navigation', () => {
     }
 
     // InicioPrimeraVez: Inicio of a business with nothing in it yet.
-    const context = await browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } })
+    const context = await withToastRecorder(browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } }))
     const fresh = await context.newPage()
     await signUp(fresh, 'PrimeraVez')
     await fresh.goto(HOME)
-    await expectAction(fresh.locator('.columna-principal > .boton-nueva-venta'))
+    await expectAction(fresh.locator('.nueva-venta-flotante > .boton-nueva-venta'))
     await fresh.setViewportSize({ width: 1280, height: 920 })
     await expectAction(fresh.locator('.boton-nueva-venta--escritorio'))
     await context.close()
@@ -221,7 +221,7 @@ test.describe.serial('navigation', () => {
       entry: records.entry,
       withdrawal: records.withdrawal,
     }
-    const context = await browser.newContext({ baseURL: workerServer.url })
+    const context = await withToastRecorder(browser.newContext({ baseURL: workerServer.url }))
     const anonymous = await context.newPage()
     for (const template of builtPaths()) {
       await anonymous.goto(filled(template, ids))

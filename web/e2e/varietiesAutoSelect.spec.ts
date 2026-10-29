@@ -10,6 +10,7 @@
 import { CATALOG, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { uniqueTag } from './helpers/unique.js'
 
@@ -27,8 +28,7 @@ test('a tap that leaves Variedades on the phone is not replaced when the viewpor
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
 
   const cdp = await context.newCDPSession(page)
   for (let round = 0; round < 3; round++) {

@@ -50,7 +50,10 @@ export default function Clientes() {
   const vipCustomers = useIsVipCustomers()
   const [debounced, setDebounced] = useState(query)
   const location = useLocation()
-  const [stateFeedback] = useState(() => readFeedback(location.state))
+  const besideCard = useMatch(CUSTOMER) !== null
+  // Mounted beside a customer's card, the entry's state is the card's (the toast a new customer
+  // lands with): the card shows it, so the list never repeats it (GH-288).
+  const [stateFeedback] = useState(() => (besideCard ? null : readFeedback(location.state)))
   const goneShown = useGoneNotice()
   const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, refusal: GONE_NOTICE } : null)
 
@@ -71,7 +74,6 @@ export default function Clientes() {
   // card the card is where the seller returns to, so the list leaves it to the card.
   const debtors = useQuery({ ...debtorsQuery, enabled: query === '' })
   const root = useRef<HTMLElement>(null)
-  const besideCard = useMatch(CUSTOMER) !== null
   useReturnToPlace({
     root,
     ready: data !== undefined && !isPlaceholderData && !isFetching && !debtors.isFetching,
@@ -93,7 +95,9 @@ export default function Clientes() {
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>
           <input
             className="campo__input"
-            type="text"
+            type="search"
+            enterKeyHint="search"
+            autoComplete="off"
             placeholder={SEARCH_PLACEHOLDER}
             value={query}
             onChange={(event) => setQuery(event.target.value)}

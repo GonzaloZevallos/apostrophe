@@ -1,27 +1,41 @@
 /**
- * `useVisualViewport(ref)`: pins Nueva venta's three-zone form to the part of the page the
- * user can actually see (ADR-0028), so the fixed footer rides above the on-screen keyboard.
- * It writes `--vv-top` and `--vv-alto` (the visual viewport's offset and height, in px) on
- * the element and sets `data-teclado="abierto"` while the keyboard is up.
+ * `useVisualViewport(ref, { fixedForm })`: pins a phone form to the part of the page the user
+ * can actually see (ADR-0028), so its fixed footer rides above the on-screen keyboard. It
+ * writes `--vv-top` and `--vv-alto` (the visual viewport's offset and height, in px) on the
+ * element and sets `data-teclado="abierto"` while the keyboard is up.
  *
- * It reads only viewport geometry, and does nothing on a computer layout or where
- * `window.visualViewport` is missing. While the page is pinch-zoomed (`scale !== 1`) the
- * visual viewport's numbers describe the zoom, not a keyboard: the pin and the flag are
- * removed and events are ignored until the scale is back at 1.
+ * Whether the keyboard is up is decided only by `keyboard.ts` (`isKeyboardOpen`); this hook
+ * follows its store and writes the result. It does nothing on a computer layout. While the
+ * page is pinch-zoomed the pin and the flag are removed until the scale is back at 1.
+ * Where `window.visualViewport` is missing nothing is pinned, and the flag follows focus on a
+ * text-entry control.
+ *
+ * `fixedForm` (default true: Nueva venta's call) sets `html--formulario-fijo` on `<html>` while
+ * mounted, so the page itself does not scroll behind a form that owns the screen. The shell and
+ * the sheets pass false: they pin or hide things, they do not own the page.
+ *
+ * It follows the store through a synchronous subscription, not `useSyncExternalStore`: the
+ * element is written on the event itself, as the existing hook tests expect.
  */
 
 import { type RefObject, useEffect } from 'react'
 import { useViewport } from '../shell/useViewport'
+import { type KeyboardState, subscribeKeyboard } from './keyboard'
 
 const FIXED_FORM_CLASS = 'html--formulario-fijo'
-const KEYBOARD_GAP_PX = 120
 
-export function useVisualViewport(ref: RefObject<HTMLElement | null>): void {
+export interface VisualViewportOptions {
+  fixedForm?: boolean
+}
+
+export function useVisualViewport(
+  ref: RefObject<HTMLElement | null>,
+  { fixedForm = true }: VisualViewportOptions = {},
+): void {
   const layout = useViewport()
   useEffect(() => {
     const element = ref.current
-    const viewport = window.visualViewport
-    if (!element || !viewport) return
+    if (!element) return
     if (layout === 'computer') return
 
     const clear = () => {
@@ -30,30 +44,26 @@ export function useVisualViewport(ref: RefObject<HTMLElement | null>): void {
       element.removeAttribute('data-teclado')
     }
 
-    const sync = () => {
-      if (viewport.scale !== 1) {
-        clear()
-        return
-      }
-      element.style.setProperty('--vv-top', `${viewport.offsetTop}px`)
-      element.style.setProperty('--vv-alto', `${viewport.height}px`)
-      if (window.innerHeight - viewport.height > KEYBOARD_GAP_PX) {
-        element.setAttribute('data-teclado', 'abierto')
+    const write = ({ open, viewport }: KeyboardState) => {
+      if (viewport) {
+        element.style.setProperty('--vv-top', `${viewport.top}px`)
+        element.style.setProperty('--vv-alto', `${viewport.height}px`)
       } else {
-        element.removeAttribute('data-teclado')
+        element.style.removeProperty('--vv-top')
+        element.style.removeProperty('--vv-alto')
       }
+      if (open) element.setAttribute('data-teclado', 'abierto')
+      else element.removeAttribute('data-teclado')
     }
 
-    document.documentElement.classList.add(FIXED_FORM_CLASS)
-    viewport.addEventListener('resize', sync)
-    viewport.addEventListener('scroll', sync)
-    sync()
+    const pinsPage = fixedForm && window.visualViewport != null
+    if (pinsPage) document.documentElement.classList.add(FIXED_FORM_CLASS)
+    const unsubscribe = subscribeKeyboard(write)
 
     return () => {
-      viewport.removeEventListener('resize', sync)
-      viewport.removeEventListener('scroll', sync)
-      document.documentElement.classList.remove(FIXED_FORM_CLASS)
+      unsubscribe()
+      if (pinsPage) document.documentElement.classList.remove(FIXED_FORM_CLASS)
       clear()
     }
-  }, [ref, layout])
+  }, [ref, layout, fixedForm])
 }

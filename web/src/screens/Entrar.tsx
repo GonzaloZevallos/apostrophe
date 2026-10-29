@@ -82,12 +82,19 @@ export default function Entrar() {
           <input
             className="campo__input"
             type="email"
+            autoComplete="username"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
           />
         </label>
-        <PasswordField label={AUTH_TEXT.password} value={password} onChange={setPassword} error={error} />
+        <PasswordField
+          label={AUTH_TEXT.password}
+          autoComplete="current-password"
+          value={password}
+          onChange={setPassword}
+          error={error}
+        />
         <Boton textOnly="submit" type="submit" disabled={sending}>
           {AUTH_TEXT.signIn}
         </Boton>

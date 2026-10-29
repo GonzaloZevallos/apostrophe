@@ -100,15 +100,27 @@ function backdrop(): HTMLElement {
 }
 
 describe('on a phone', () => {
-  test('the form is a full screen: no dialog, and no pane behind it', async () => {
+  test('the form is a full-screen sheet, one dialog, with one Close and no pane behind it', async () => {
     renderApp([NEW_PATH], 'phone')
 
     expect(await screen.findByRole('button', { name: 'Save the price' })).toBeInTheDocument()
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const dialog = screen.getByRole('dialog', { name: 'New price' })
+    expect(dialog).toHaveClass('sheet__body')
+    expect(within(dialog).getAllByRole('button', { name: 'Close' })).toHaveLength(1)
+    const save = screen.getByRole('button', { name: 'Save the price' })
+    expect(save.parentElement).toHaveClass('sheet__actions')
+    expect(save.closest('form')?.lastElementChild).toBe(save.parentElement)
     expect(document.querySelector('.variedades-paneles__lista')).toBeNull()
     expect(document.querySelector('.variedades-paneles__detalle')).toBeNull()
     expect(document.querySelector('[inert]')).toBeNull()
     expect(document.querySelector('nav.riel-lateral')).not.toBeNull()
+  })
+
+  test('focus goes to the first field, the date chip', async () => {
+    renderApp([NEW_PATH], 'phone')
+    await screen.findByRole('button', { name: 'Save the price' })
+
+    expect(screen.getByRole('button', { name: /^Today 02\/10/ })).toHaveFocus()
   })
 
   test('Escape does nothing: the phone has no dialog to dismiss', async () => {
@@ -308,10 +320,22 @@ describe('across 900 px', () => {
 
     flipViewport('phone')
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'New price' })).toHaveClass('sheet__body')
     expect(screen.getByRole('button', { name: 'Save the price' }).closest('form')).toBe(form)
     expect(screen.getByRole('button', { name: '28/09' })).toHaveAttribute('aria-expanded', 'true')
     expect(screen.getByLabelText('Effective from', { exact: true })).toHaveValue('2026-09-28')
+    expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
+  })
+
+  test('typed on the phone, a flip to the computer and back keeps the price', async () => {
+    const user = userEvent.setup()
+    renderApp([NEW_PATH], 'phone')
+    await user.type(await screen.findByLabelText(/^List price/), '12000')
+
+    flipViewport('computer')
+    expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
+    flipViewport('phone')
+
     expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
   })
 })

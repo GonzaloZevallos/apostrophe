@@ -41,7 +41,7 @@ function FilaContenido({ name, phone, vip, balance, owingSince, standing }: Requ
       <Avatar name={name} />
       <span className="lista-clientes__datos">
         <span className="lista-clientes__nombre">
-          {name}
+          <span className="lista-clientes__nombre-texto">{name}</span>
           {vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
         </span>
         {phone !== null && <span className="lista-clientes__telefono">{formatPhone(phone)}</span>}

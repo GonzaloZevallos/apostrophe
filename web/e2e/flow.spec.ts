@@ -16,7 +16,8 @@
 import { CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
 import { legacyFor } from './helpers/legacyPaths.js'
 import { expectAnyPath, expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
@@ -44,7 +45,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone').fill(PHONE)
   await page.getByLabel('Name').fill('Marisa Gómez')
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -52,8 +53,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expectPath(page, VARIETY)
 
@@ -62,14 +62,12 @@ test('a seller does everything the backend offers today, from the front alone', 
   // is, never dated from the browser's own UTC clock (plan, "One clock").
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('9000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
   await expect(page.getByText(/\$ 9\.000 x g/).first()).toBeVisible()
 
   // Delete the price entry (the only one): the variety is left with no price.
   await page.getByRole('button', { name: 'Delete this price' }).click();
-  await page.getByRole('button', { name: 'Yes, delete it' }).click();
-  await expect(page.getByText('Price deleted')).toBeVisible()
+  await expectToast(page, 'Price deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
   await expect(page.getByText('No price: cannot be sold').first()).toBeVisible()
 
   // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
@@ -83,9 +81,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('45000')
   await expect(page.getByText('It comes to $ 900 per gram')).toBeVisible()
-  await page.getByRole('button', { name: 'Save the entry' }).click()
+  await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
   await expectAnyPath(page, [VARIETIES, VARIETY])
-  await expect(page.getByText('Entry saved')).toBeVisible()
   await page.goto(STOCK)
   await expect(page.getByText('Purchase · 50 g')).toBeVisible()
 
@@ -96,17 +93,15 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('Grams').fill('60')
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Save the changes?')).toBeVisible()
-  await page.getByRole('button', { name: 'Yes, save' }).click()
+  await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Yes, save' }).click())
   await expectPath(page, STOCK)
-  await expect(page.getByText('Entry saved')).toBeVisible()
   await expect(page.getByText('Purchase · 60 g')).toBeVisible()
 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
   await page.getByRole('button', { name: 'Delete', exact: true }).click()
   await expect(page.getByText('Before deleting')).toBeVisible()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await expectToast(page, 'Entry deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
   await expectPath(page, STOCK)
-  await expect(page.getByText('Entry deleted')).toBeVisible()
   await expect(page.getByText('Purchase · 60 g')).toHaveCount(0)
 
   // Rosa's page: set the low-stock warning through its form (turning it on only opens the
@@ -116,8 +111,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Warning off')).toBeVisible()
   await page.getByRole('switch', { name: 'Warn when running low' }).click()
   await page.getByLabel('Warn when below').fill('15')
-  await page.getByRole('button', { name: 'Save the warning' }).click()
-  await expect(page.getByText('Warning saved')).toBeVisible()
+  await expectToast(page, 'Warning saved', () => page.getByRole('button', { name: 'Save the warning' }).click())
   await expect(page.getByText('Warn me below 15 g')).toBeVisible()
   await page.getByRole('switch', { name: 'Warn when running low' }).click()
   await expect(page.getByText('Warning off')).toBeVisible()
@@ -130,22 +124,20 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount').fill('4500')
   await page.getByLabel('Details').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Save the expense' }).click()
-  await expect(page.getByText('Expense saved')).toBeVisible()
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
   await expect(page.getByText('Flete al mercado')).toBeVisible()
 
   // Edit it.
   await page.getByText('Flete al mercado').click()
   await page.getByLabel('Details').fill('Flete al mercado central')
   await page.getByRole('button', { name: 'Save the expense' }).click()
-  await expect(page.getByText('Expense saved')).toBeVisible()
+  // A second "Expense saved" on the same list, the first maybe still showing: not detectable, so the row is asserted.
   await expect(page.getByText('Flete al mercado central')).toBeVisible()
 
   // Delete it.
   await page.getByText('Flete al mercado central').click()
   await page.getByRole('button', { name: 'Delete expense' }).click()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
-  await expect(page.getByText('Expense deleted')).toBeVisible()
+  await expectToast(page, 'Expense deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
   // Move between months: the month lives in the URL, one step back and one forward.
@@ -192,7 +184,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Business name').fill(renamedTo)
-  await page.getByRole('button', { name: 'Save the name' }).click()
+  await expectToast(page, 'Business renamed', () => page.getByRole('button', { name: 'Save the name' }).click())
   await expect(page.getByText('Business renamed')).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser
@@ -203,7 +195,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
 
-  const partnerContext = await browser.newContext({ baseURL: workerServer.url })
+  const partnerContext = await withToastRecorder(browser.newContext({ baseURL: workerServer.url }))
   const partnerPage = await partnerContext.newPage()
   watchConsole(partnerPage, consoleMessages)
   await partnerPage.goto(inviteUrl)

@@ -14,11 +14,11 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.products.adapters.tables import ProductRow
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.ports import LineCost
 from app.shared.quantity import Quantity
 from app.stock.adapters.line_costs import SqlLineCosts
-from app.varieties.adapters.tables import VarietyRow
 
 
 def _variety_id(client: TestClient, list_price: int = 10_000) -> int:
@@ -40,7 +40,7 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
 
 def _business_id_of_variety(engine: Engine, variety_id: int) -> int:
     with Session(engine) as session:
-        row = session.scalar(select(VarietyRow).where(VarietyRow.id == variety_id))
+        row = session.scalar(select(ProductRow).where(ProductRow.id == variety_id))
         assert row is not None
         return row.business_id
 

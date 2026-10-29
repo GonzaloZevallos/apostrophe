@@ -15,7 +15,7 @@ import type { CUSTOMERS_TEXT } from '../copy/customers'
 import type { EXPENSES_TEXT } from '../copy/expenses'
 import type { PAYMENTS_TEXT } from '../copy/payments'
 import type { PINNED_CATALOG_TEXT } from '../copy/pinnedCatalog'
-import type { SALES_TEXT } from '../copy/sales'
+import type { SALE_BILL_TEXT, SALES_TEXT } from '../copy/sales'
 import type {
   CATALOG_SAVED,
   PASSWORD_CHANGED_SUCCESS,
@@ -49,6 +49,7 @@ export type SuccessToast =
   | typeof PASSWORD_CHANGED_SUCCESS
   | (typeof SETTINGS_TEXT)['invitationReady']
   | (typeof SALES_TEXT)['customerAssigned']
+  | (typeof SALE_BILL_TEXT)['copied']
   | typeof THRESHOLD_SAVED
   | typeof CATALOG_SAVED
   | typeof PRICES_SAVED

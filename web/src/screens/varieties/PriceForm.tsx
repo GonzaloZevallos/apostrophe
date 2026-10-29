@@ -18,6 +18,7 @@ import { chipDate } from '../../format/dates'
 import { isGone, kindOf } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import { SheetActions } from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import Boton from '../../components/Boton'
@@ -182,11 +183,13 @@ export default function PriceForm({
           errors={errors}
           onChange={(field, value) => setValues((current) => ({ ...current, [field]: value }))}
         />
-        <FieldError message={errors.form} />
-        {offline && <SinConexion />}
-        <Boton textOnly="submit" type="submit" disabled={sending}>
-          {VARIETIES_TEXT.guardaElPrecio}
-        </Boton>
+        <SheetActions>
+          <FieldError message={errors.form} />
+          {offline && <SinConexion />}
+          <Boton textOnly="submit" type="submit" disabled={sending}>
+            {VARIETIES_TEXT.guardaElPrecio}
+          </Boton>
+        </SheetActions>
       </form>
     </div>
   )

@@ -2,12 +2,13 @@
  * `PriceFrame`: what surrounds the price form. Presentational only: its host (`PriceNew`)
  * owns the guard, the sending state, Escape and focus. On a computer it is the
  * design's modal (`PrecioNuevoCompu.dc.html`): a backdrop and a dialog named by the form's
- * title; on a phone it is the full form screen. Both are the same elements (`main > .cuerpo`),
- * only attributes and classes differ, so a resize across 900 px keeps what was typed.
+ * title (ADR-0044); on a phone it is a `Sheet`, the full form screen. `Sheet` draws both as the
+ * same elements (`main > .cuerpo`), so a resize across 900 px keeps what was typed.
  * `children` render beside the dialog, never inside it (the leave confirmation).
  */
 
-import { type ReactNode, useEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
+import Sheet from '../../components/Sheet'
 
 export interface PriceFrameProps {
   /** True on a computer: the frame is a modal dialog. */
@@ -23,31 +24,20 @@ export interface PriceFrameProps {
 }
 
 export default function PriceFrame({ dialog, titleId, label, onBackdrop, form, children }: PriceFrameProps) {
-  // The backdrop is a pointer convenience, not a control: a keyboard user leaves by Escape
-  // or "Cerrar". So it is a native listener, not a click handler the control scan would read
-  // as a control without a name, a role or a pressed state.
-  const frame = useRef<HTMLElement>(null)
-  useEffect(() => {
-    const element = frame.current
-    if (!dialog || element === null) return
-    function onClick(event: MouseEvent): void {
-      if (event.target === element) onBackdrop()
-    }
-    element.addEventListener('click', onClick)
-    return () => element.removeEventListener('click', onClick)
-  }, [dialog, onBackdrop])
   return (
-    <main ref={frame} className={dialog ? 'pantalla precio-modal' : 'pantalla'}>
-      <div
-        className="cuerpo"
-        role={dialog ? 'dialog' : undefined}
-        aria-modal={dialog ? true : undefined}
-        aria-labelledby={dialog ? titleId : undefined}
-        aria-label={dialog && titleId === undefined ? label : undefined}
-      >
-        {form}
-      </div>
-      {children}
-    </main>
+    <Sheet
+      computer={dialog}
+      computerClass="pantalla precio-modal"
+      computerDialog
+      titleId={titleId}
+      label={label}
+      // ADR-0044's modal keeps its backdrop as it was: a click on it is the host's one `leave`, which
+      // asks first when something was typed. So the frame never reports itself touched.
+      touched={false}
+      onClose={onBackdrop}
+      aside={children}
+    >
+      {form}
+    </Sheet>
   )
 }

@@ -86,3 +86,11 @@ export function deleteRowIndices(rows: readonly AccountRow[]): ReadonlySet<numbe
   })
   return indices
 }
+
+/** A row's React key, from the ids its own kind carries (never its index). A
+ * payment settles a given sale in at most one split, so `payment`+`sale` is unique. */
+export function rowKey(row: AccountRow): string {
+  if (row.kind === 'sale') return `sale-${row.sale.id}`
+  if (row.kind === 'payment') return `payment-${row.payment.id}-${row.applied_to.sale_id}`
+  return `credit-${row.payment.id}`
+}

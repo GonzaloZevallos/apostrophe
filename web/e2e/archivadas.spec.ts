@@ -7,6 +7,7 @@
  */
 
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -37,8 +38,7 @@ for (const viewport of VIEWPORTS) {
         await page.goto(VARIETIES)
         await page.getByRole('link', { name: 'New variety' }).click()
         await page.getByLabel('Name').fill(name)
-        await page.getByRole('button', { name: 'Add the variety' }).click()
-        await expect(page.getByText('Variety saved')).toBeVisible()
+        await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
       }
 
       // A fresh variety has no history: Eliminar variedad, one confirmation.
@@ -47,8 +47,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('link', { name: /Nube/ }).click()
       await expect(page.getByRole('button', { name: 'Archive variety' })).toHaveCount(0)
       await page.getByRole('button', { name: 'Delete variety' }).click()
-      await page.getByRole('button', { name: 'Yes, delete it' }).click()
-      await expect(page.getByText('Variety deleted')).toBeVisible()
+      await expectToast(page, 'Variety deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
       await expect(page.getByRole('link', { name: /Nube/ })).toHaveCount(0)
 
       // One with a sale has history: Archivar variedad, one confirmation.
@@ -57,8 +56,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('link', { name: /Rosa/ }).click()
       await page.getByRole('link', { name: 'New price' }).click()
       await page.getByLabel(/^List price/).fill('9000')
-      await page.getByRole('button', { name: 'Save the price' }).click()
-      await expect(page.getByText('Price saved')).toBeVisible()
+      await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
       await page.goto(SALE_NEW)
       await fillSaleLine(page, 1, { variety: 'Rosa', grams: '4', gift: true })
       await page.getByRole('button', { name: 'Save sale' }).click()
@@ -67,8 +65,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('link', { name: /Rosa/ }).click()
       await expect(page.getByRole('button', { name: 'Delete variety' })).toHaveCount(0)
       await page.getByRole('button', { name: 'Archive variety' }).click()
-      await page.getByRole('button', { name: 'Yes, archive it' }).click()
-      await expect(page.getByText('Variety archived')).toBeVisible()
+      await expectToast(page, 'Variety archived', () => page.getByRole('button', { name: 'Yes, archive it' }).click())
       await expect(page.getByRole('link', { name: /Rosa/ })).toHaveCount(0)
 
       // Found in Archived (1); its page is read-only and Restore is the one action.
@@ -100,10 +97,9 @@ for (const viewport of VIEWPORTS) {
         await expect(page).toHaveURL(/\/varieties\/archived$/)
         await page.getByRole('link', { name: /Rosa/ }).click()
       }
-      await page.getByRole('button', { name: 'Restore' }).last().click()
+      await expectToast(page, 'Variety restored', () => page.getByRole('button', { name: 'Restore' }).last().click())
       // The page never turns into the live variety: it goes back, and with none archived left
       // lands on Variedades, where the restored variety is listed.
-      await expect(page.getByText('Variety restored')).toBeVisible()
       await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
       await expect(page.getByText(/Archived \(/)).toHaveCount(0)
       await page.goto(VARIETIES)

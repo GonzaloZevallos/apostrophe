@@ -104,3 +104,9 @@ test('without visualViewport it does nothing and does not throw', () => {
   vi.advanceTimersByTime(1000)
   expect(scrollIntoView).not.toHaveBeenCalled()
 })
+
+test('a field in a Sheet scrolls into view too', () => {
+  field('pantalla sheet').focus()
+  viewport.resize()
+  expect(scrollIntoView).toHaveBeenCalledTimes(1)
+})

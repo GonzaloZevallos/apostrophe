@@ -37,6 +37,7 @@ const SALE = {
   total: 11000,
   still_owing: false,
   total_grams: 1,
+  bill: null,
   lines: [
     {
       variety_id: 1,

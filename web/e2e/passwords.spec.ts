@@ -20,7 +20,8 @@
 
 import { HOME, LOGIN, SETTINGS_ACCOUNT } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { resetLink, supportsPasswordReset } from './backend.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -52,7 +53,7 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A second device, signed in as the same user.
-  const otherContext = await browser.newContext({ baseURL: workerServer.url })
+  const otherContext = await withToastRecorder(browser.newContext({ baseURL: workerServer.url }))
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await otherPage.goto(LOGIN)
@@ -66,8 +67,7 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Current password').fill(PASSWORD)
   await sheet.getByLabel('New password').fill(NEW_PASSWORD)
-  await sheet.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Password changed · we signed out your other sessions')).toBeVisible()
+  await expectToast(page, 'Password changed · we signed out your other sessions', () => sheet.getByRole('button', { name: 'Save' }).click())
 
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
   // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather

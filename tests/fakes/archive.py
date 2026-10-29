@@ -7,15 +7,15 @@ from datetime import UTC, datetime
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.varieties.adapters.sql_varieties import SqlVarieties
-from app.varieties.adapters.tables import VarietyRow
+from app.products.adapters.sql_products import SqlProducts
+from app.products.adapters.tables import ProductRow
 
 
 def archive_by_hand(engine: Engine, variety_id: int) -> None:
     with Session(engine) as session:
-        row = session.get(VarietyRow, variety_id)
+        row = session.get(ProductRow, variety_id)
         assert row is not None
-        varieties = SqlVarieties(session, row.business_id)
+        varieties = SqlProducts(session, row.business_id)
         variety = varieties.get(variety_id)
         assert variety is not None
         variety.archive(datetime(2026, 10, 6, tzinfo=UTC))

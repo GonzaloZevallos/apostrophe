@@ -21,6 +21,7 @@ import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { INDICA_SHARE_INVALID_MESSAGE, fieldOfRefusal, type CatalogField } from './catalogFormErrors'
 import Boton from '../../components/Boton'
+import { SheetActions } from '../../components/Sheet'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
 import { CATALOG_SAVED } from '../../copy/settings'
@@ -170,15 +171,17 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
           />
           {errorUnder('aroma')}
         </label>
-        {generalError !== null && (
-          <span className="campo__error" role="alert">
-            {generalError}
-          </span>
-        )}
-        {offline && <SinConexion />}
-        <Boton textOnly="submit" type="submit" disabled={sending}>
-          {VARIETIES_TEXT.guardaElCatalogo}
-        </Boton>
+        <SheetActions>
+          {generalError !== null && (
+            <span className="campo__error" role="alert">
+              {generalError}
+            </span>
+          )}
+          {offline && <SinConexion />}
+          <Boton textOnly="submit" type="submit" disabled={sending}>
+            {VARIETIES_TEXT.guardaElCatalogo}
+          </Boton>
+        </SheetActions>
       </form>
     </div>
   )

@@ -180,5 +180,11 @@
     "rule": "aria-busy",
     "target": "",
     "issue": 47
+  },
+  {
+    "screen": "VariedadNueva",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 47
   }
 ]
