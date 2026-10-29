@@ -3311,6 +3311,12 @@ body {
     flex: 1 0 auto;
   }
 
+  /* Expenses' `flex-basis: 100%` is a width in its wrapping row; in Analysis's column it would be
+     a height, and the selector would stretch with a tall page. */
+  .analisis .gastos__mes {
+    flex-basis: auto;
+  }
+
   .analisis .gastos__mes-boton {
     min-width: var(--alto-tocable);
     min-height: var(--alto-tocable);
