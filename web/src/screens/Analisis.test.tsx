@@ -7,7 +7,7 @@
 
 import { ANALYSIS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -17,6 +17,9 @@ import analysisEmptyFixture from '../api/fixtures/analysis-empty.json'
 import analysisFixture from '../api/fixtures/analysis.json'
 import { ANALYSIS_TEXT } from '../copy/analysis'
 import { formatDateShort, formatMonthLong } from '../format/dates'
+import { formatGrams, formatMoney } from '../format/money'
+import { flipViewport, stubViewport } from '../test-viewport'
+import type { Viewport } from '../routes'
 import { rowOf } from './analisis/rowOf'
 import Analisis, {
   BEST_WEEKDAY_MARK,
@@ -47,6 +50,24 @@ function partsOf(row: HTMLElement): string[] {
   ).map((node) => (node.textContent ?? '').trim())
 }
 
+/** The phone's cards of one section, in document order: its list holds one named group per row. */
+const cardsIn = (list: string): HTMLElement[] =>
+  Array.from(document.querySelectorAll<HTMLElement>(`${list} > [role="group"]`))
+
+/** A card's figures in order (the headline first). */
+const figuresOf = (card: HTMLElement): string[] =>
+  Array.from(card.querySelectorAll('.analisis__tarjeta-cifra')).map((node) => node.textContent ?? '')
+
+/** Each row of a card as read, spaces collapsed. */
+const rowsOf = (card: HTMLElement): string[] =>
+  Array.from(card.querySelectorAll('.analisis__tarjeta-fila')).map((node) =>
+    (node.textContent ?? '').replace(/\s+/g, ' ').trim(),
+  )
+
+/** The row of a card that starts with a label, or undefined when the card has none. */
+const rowStarting = (card: HTMLElement, label: string): string | undefined =>
+  rowsOf(card).find((text) => text.startsWith(label))
+
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04', shown_language: SHOWN_EN }
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -60,7 +81,11 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function renderAnalisis(fetchImpl: (url: string, init?: RequestInit) => Promise<Response>) {
+function renderAnalisis(
+  fetchImpl: (url: string, init?: RequestInit) => Promise<Response>,
+  viewport: Viewport = 'phone',
+) {
+  stubViewport(viewport)
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -98,8 +123,8 @@ test('reads the best and worst variety by margin, the best week, the best weekda
     .filter((node) => node.closest('.analisis__variedades') !== null)
     .map((node) => node.textContent)
   expect(varietyNames).toEqual(['Flor A', 'Flor B', 'Flor Gift'])
-  expect(screen.getByText(/margin \$ 40\.000/)).toBeInTheDocument()
-  expect(screen.getByText(/margin \$ -5\.000/)).toBeInTheDocument()
+  expect(screen.getByRole('group', { name: 'Flor A' })).toHaveTextContent(/margin \$ 40\.000/)
+  expect(screen.getByRole('group', { name: 'Flor Gift' })).toHaveTextContent(/margin \$ -5\.000/)
 
   // The fixture's last week (28/9) carries `best: true`.
   expect(screen.getAllByText(BEST_WEEK_MARK)).toHaveLength(1)
@@ -124,20 +149,18 @@ test('pending marks show their own N, never a $0 cost', async () => {
   expect(shortfall.textContent).toBe('Stock shortfall $ 3.000 and 1 g without cost')
 
   // "Flor B"'s own cost and margin carry the same mark.
-  expect(screen.getByText(/cost \$ 9\.000 and 2,5 g without cost/)).toBeInTheDocument()
+  expect(screen.getByRole('group', { name: 'Flor B' })).toHaveTextContent(
+    /cost \$ 9\.000 and 2,5 g without cost/,
+  )
 })
 
 test('a variety only gifted shows no margin percentage', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
 
-  // "Flor Gift" names both the card and the computer table's row; only the card
-  // carries the "margen" label this assertion reads.
-  const giftRow = (await screen.findAllByText('Flor Gift'))
-    .map((node) => node.closest('.analisis__variedad'))
-    .find((node) => node !== null)
-  expect(giftRow).not.toBeUndefined()
-  const margin = within(giftRow as HTMLElement).getByText(/^margin/)
-  expect(margin.textContent).not.toMatch(/%/)
+  const giftCard = await screen.findByRole('group', { name: 'Flor Gift' })
+  const margin = rowStarting(giftCard, 'margin')
+  expect(margin).toBeDefined()
+  expect(margin).not.toMatch(/%/)
 })
 
 test('a business with no history shows its fixed line and no figures', async () => {
@@ -171,7 +194,7 @@ test('month navigation requests the previous month and disables at the bounds', 
 })
 
 test('the computer table carries headers, the margin stack, pending marks and the best/current week', async () => {
-  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  renderAnalisis(async () => jsonResponse(200, analysisFixture), 'computer')
 
   const table = (await screen.findAllByText('Variety')).find(
     (node) => node.closest('table') !== null,
@@ -243,7 +266,8 @@ test('the computer table carries headers, the margin stack, pending marks and th
   expect(within(monthTable).getByText('Cash')).toBeInTheDocument()
 })
 
-test('"None stood out" shows in the week table when every week is $0', async () => {
+describe.each(['phone', 'computer'] as const)('"None stood out" at %s width', (viewport) => {
+test('shows once when every week is $0', async () => {
   const noBestFixture = {
     ...analysisFixture,
     weeks: analysisFixture.weeks.map((week) => ({
@@ -252,9 +276,10 @@ test('"None stood out" shows in the week table when every week is $0', async () 
       best: false,
     })),
   }
-  renderAnalisis(async () => jsonResponse(200, noBestFixture))
+  renderAnalisis(async () => jsonResponse(200, noBestFixture), viewport)
 
-  expect(await screen.findByText(NO_BEST_WEEK_LINE)).toBeInTheDocument()
+  expect(await screen.findAllByText(NO_BEST_WEEK_LINE)).toHaveLength(1)
+})
 })
 
 test('month navigation disables "Previous month" when there is no earlier month', async () => {
@@ -290,21 +315,20 @@ test('a week and a month row show a withdrawal line only when the period has one
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
-  // Phone rows: only the fixture's first week (10/8) has a promotion and an own use.
-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  expect(weekRows).toHaveLength(8)
-  expect(rowOf(weekRows[0]!, 'Promotion').textContent).toBe('Promotion $ 1.000')
-  expect(rowOf(weekRows[0]!, 'Own use').textContent).toBe('Own use $ 500')
-  for (const row of weekRows.slice(1)) {
-    expect(within(row).queryByRole('group', { name: /Promotion|Own use/ })).not.toBeInTheDocument()
+  // Phone cards: only the fixture's first week (10/8) has a promotion and an own use.
+  const weekCards = cardsIn('.analisis__semanas')
+  expect(weekCards).toHaveLength(8)
+  expect(rowStarting(weekCards[0]!, 'Promotion')).toBe('Promotion $ 1.000')
+  expect(rowStarting(weekCards[0]!, 'Own use')).toBe('Own use $ 500')
+  for (const card of weekCards.slice(1)) {
+    expect(rowStarting(card, 'Promotion')).toBeUndefined()
+    expect(rowStarting(card, 'Own use')).toBeUndefined()
   }
 
-  // The month rows: the same, with the fixture's last month holding no promotion.
-  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
-  expect(rowOf(monthRows[0]!, 'Promotion').textContent).toBe('Promotion $ 1.000')
-  expect(
-    within(monthRows[monthRows.length - 1]!).queryByRole('group', { name: 'Promotion' }),
-  ).not.toBeInTheDocument()
+  // The month cards: the same, with the fixture's last month holding no promotion.
+  const monthCards = cardsIn('.analisis__meses')
+  expect(rowStarting(monthCards[0]!, 'Promotion')).toBe('Promotion $ 1.000')
+  expect(rowStarting(monthCards.at(-1)!, 'Promotion')).toBeUndefined()
 })
 
 const FIXTURE_FIRST_WEEK = analysisFixture.weeks[0]!
@@ -339,26 +363,26 @@ test('every week and month row shows Cost of goods sold, in the PRD order', asyn
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
-  expect(weekRows).toHaveLength(analysisFixture.weeks.length)
-  expect(monthRows).toHaveLength(analysisFixture.months.length)
-  for (const row of [...weekRows, ...monthRows]) {
-    expect(rowOf(row, 'Cost of goods sold').textContent).toMatch(/^Cost of goods sold \$ [\d.]+$/)
+  const weekCards = cardsIn('.analisis__semanas')
+  const monthCards = cardsIn('.analisis__meses')
+  expect(weekCards).toHaveLength(analysisFixture.weeks.length)
+  expect(monthCards).toHaveLength(analysisFixture.months.length)
+  for (const card of [...weekCards, ...monthCards]) {
+    expect(rowStarting(card, 'Cost of goods sold')).toMatch(/^Cost of goods sold \$ [\d.]+$/)
   }
 
   // Cost of goods sold, Stock shortfall, Promotion, Own use: the named rows, in order.
-  const first = weekRows[0]!
-  const names = within(first)
-    .getAllByRole('group')
-    .map((group) => group.querySelector('.analisis__monto-etiqueta')?.textContent)
+  const first = weekCards[0]!
+  const names = rowsOf(first)
+    .map((text) => text.match(/^(Cost of goods sold|Stock shortfall|Promotion|Own use)/)?.[1])
+    .filter((name) => name !== undefined)
   expect(names).toEqual(['Cost of goods sold', 'Stock shortfall', 'Promotion', 'Own use'])
   const cost = FIXTURE_FIRST_WEEK.cost_of_goods.amount.toLocaleString('es-AR')
-  expect(rowOf(first, 'Cost of goods sold').textContent).toBe(`Cost of goods sold $ ${cost}`)
+  expect(rowStarting(first, 'Cost of goods sold')).toBe(`Cost of goods sold $ ${cost}`)
 })
 
-test('each week and month renders its cost rows in both the card and the table', async () => {
-  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+test.each(['phone', 'computer'] as const)('each week and month renders its cost rows once at %s width', async (viewport) => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture), viewport)
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
   const names = [
@@ -367,14 +391,12 @@ test('each week and month renders its cost rows in both the card and the table',
   ]
   for (const name of names) {
     const copies = screen.getAllByRole('group', { name })
-    expect(copies, 'card and table').toHaveLength(2)
-    for (const copy of copies) {
-      // label, amount, marker: in that order inside each cost row
-      const cost = rowOf(copy, 'Cost of goods sold')
-      expect(partsOf(cost).slice(0, 2)).toEqual(['Cost of goods sold', expect.stringMatching(/^\$ /)])
-      expect(cost.firstElementChild).toHaveClass('analisis__monto-etiqueta')
-      expect(cost.lastElementChild).toHaveClass('analisis__monto-valor')
-    }
+    expect(copies, 'the one layout on screen').toHaveLength(1)
+    const cost =
+      viewport === 'phone'
+        ? rowStarting(copies[0]!, 'Cost of goods sold')
+        : rowOf(copies[0]!, 'Cost of goods sold').textContent
+    expect(cost).toMatch(/^Cost of goods sold \$ [\d.]+$/)
   }
 
   // The partly pending week carries label, amount, marker, in that order.
@@ -386,30 +408,29 @@ test('a row with an amount and pending grams reads label, amount, marker in that
   renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
-  const name = formatDateShort(analysisFixture.weeks[1]!.first_day)
-  for (const copy of screen.getAllByRole('group', { name })) {
-    const cost = rowOf(copy, 'Cost of goods sold')
-    expect(partsOf(cost)).toEqual(['Cost of goods sold', '$ 7.000', 'and 1,5 g without cost'])
-    expect(cost.textContent).toBe('Cost of goods sold $ 7.000 and 1,5 g without cost')
-    const amount = cost.querySelector('.analisis__monto-cifra')!
-    expect(amount.textContent).toBe('$ 7.000')
-  }
+  const card = screen.getByRole('group', { name: formatDateShort(analysisFixture.weeks[1]!.first_day) })
+  const cost = Array.from(card.querySelectorAll('.analisis__tarjeta-fila')).find((node) =>
+    node.textContent?.startsWith('Cost of goods sold'),
+  )!
+  // label, then the amount, then the pending text on its own line
+  expect(cost.firstChild?.textContent).toBe('Cost of goods sold ')
+  expect(cost.querySelector('.analisis__tarjeta-cifra')?.textContent).toBe('$ 7.000')
+  expect(cost.querySelector('.analisis__tarjeta-pendiente')?.textContent).toBe(' and 1,5 g without cost')
+  expect(rowStarting(card, 'Cost of goods sold')).toBe('Cost of goods sold $ 7.000 and 1,5 g without cost')
 })
 
 test('Stock shortfall shows on a row only when its shortfall is not null', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  expect(rowOf(weekRows[0]!, 'Stock shortfall').textContent).toBe('Stock shortfall $ 2.000')
-  for (const row of weekRows.slice(1)) {
-    expect(within(row).queryByRole('group', { name: 'Stock shortfall' })).not.toBeInTheDocument()
+  const weekCards = cardsIn('.analisis__semanas')
+  expect(rowStarting(weekCards[0]!, 'Stock shortfall')).toBe('Stock shortfall $ 2.000')
+  for (const card of weekCards.slice(1)) {
+    expect(rowStarting(card, 'Stock shortfall')).toBeUndefined()
   }
-  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
-  expect(rowOf(monthRows[0]!, 'Stock shortfall').textContent).toBe('Stock shortfall $ 2.000')
-  expect(
-    within(monthRows.at(-1)!).queryByRole('group', { name: 'Stock shortfall' }),
-  ).not.toBeInTheDocument()
+  const monthCards = cardsIn('.analisis__meses')
+  expect(rowStarting(monthCards[0]!, 'Stock shortfall')).toBe('Stock shortfall $ 2.000')
+  expect(rowStarting(monthCards.at(-1)!, 'Stock shortfall')).toBeUndefined()
   expect(FIXTURE_LAST_WEEK.shortfall).toBeNull()
 })
 
@@ -423,10 +444,8 @@ test('a fully pending figure reads only its grams on the header, the since lines
   expect(shortfall.querySelector('.analisis__monto-cifra')).toBeNull()
   expect(shortfall.textContent).not.toContain('$')
   expect(rowOf(history(), 'Promotion').textContent).toBe('Promotion 3 g without cost')
-  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
-  expect(rowOf(monthRows[1]!, 'Promotion').textContent).toBe('Promotion 4 g without cost')
-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  expect(rowOf(weekRows[2]!, 'Cost of goods sold').textContent).toBe(
+  expect(rowStarting(cardsIn('.analisis__meses')[1]!, 'Promotion')).toBe('Promotion 4 g without cost')
+  expect(rowStarting(cardsIn('.analisis__semanas')[2]!, 'Cost of goods sold')).toBe(
     'Cost of goods sold 4 g without cost',
   )
   expect(screen.queryByText(/\$ 0 y \d+ g without cost/)).not.toBeInTheDocument()
@@ -436,15 +455,15 @@ test('a partly pending cost of goods reads its amount and its grams; a real zero
   renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  expect(rowOf(weekRows[1]!, 'Cost of goods sold').textContent).toBe(
+  const weekCards = cardsIn('.analisis__semanas')
+  expect(rowStarting(weekCards[1]!, 'Cost of goods sold')).toBe(
     'Cost of goods sold $ 7.000 and 1,5 g without cost',
   )
-  expect(rowOf(weekRows[3]!, 'Cost of goods sold').textContent).toBe('Cost of goods sold $ 0')
+  expect(rowStarting(weekCards[3]!, 'Cost of goods sold')).toBe('Cost of goods sold $ 0')
 })
 
 test('the computer tables carry the same cost lines under each row', async () => {
-  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()), 'computer')
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
   const weekTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--semanas')!
@@ -550,5 +569,264 @@ describe('the strip line of grams and average margin', () => {
     )
     const node = await screen.findByText(/average margin/)
     expect(node.textContent).toBe(`${line} · average margin and 2,5 g without cost`)
+  })
+})
+
+describe('one layout in the DOM, chosen by the viewport', () => {
+  test('at phone width no table is in the page', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    expect(screen.queryByRole('table')).toBeNull()
+    expect(document.querySelectorAll('.analisis__variedades > .analisis__tarjeta')).toHaveLength(
+      analysisFixture.month.varieties.length,
+    )
+  })
+
+  test('at computer width the three tables render and no card does', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'computer')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    expect(screen.getAllByRole('table')).toHaveLength(3)
+    expect(document.querySelector('.analisis__tarjeta')).toBeNull()
+  })
+
+  test('the month selector, the section headings and the aside are the same nodes across 900 px', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    const shared = () => [
+      document.querySelector('.gastos__mes'),
+      screen.getByText(ANALYSIS_TEXT.porVariedad),
+      screen.getByText(ANALYSIS_TEXT.semanaASemanaUltimas),
+      screen.getByText(ANALYSIS_TEXT.mesAMesUltimos),
+      document.querySelector('.analisis__aside'),
+    ]
+    const before = shared()
+    expect(before.every((node) => node !== null)).toBe(true)
+
+    flipViewport('computer')
+    expect(screen.getAllByRole('table')).toHaveLength(3)
+    const after = shared()
+    after.forEach((node, index) => expect(node).toBe(before[index]))
+
+    flipViewport('phone')
+    expect(screen.queryByRole('table')).toBeNull()
+    shared().forEach((node, index) => expect(node).toBe(before[index]))
+  })
+
+  test('on the phone a change of the window height alone keeps the same nodes, with no refetch or loading state', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+    const fetches = vi.mocked(fetch).mock.calls.length
+    const nodes = () => Array.from(document.querySelectorAll('.analisis *'))
+    const before = nodes()
+    const text = document.body.textContent
+    expect(before.length).toBeGreaterThan(0)
+
+    const height = window.innerHeight
+    try {
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: height + 3000 })
+      act(() => {
+        window.dispatchEvent(new Event('resize'))
+      })
+      const after = nodes()
+      expect(after).toHaveLength(before.length)
+      after.forEach((node, index) => expect(node).toBe(before[index]))
+      expect(document.body.textContent).toBe(text)
+      expect(document.querySelector('[aria-busy="true"]')).toBeNull()
+      expect(screen.queryByRole('table')).toBeNull()
+      expect(vi.mocked(fetch).mock.calls).toHaveLength(fetches)
+    } finally {
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: height })
+    }
+  })
+
+  test('the empty-month line shows once at both widths', async () => {
+    const emptyMonth = {
+      ...analysisFixture,
+      month: { ...analysisFixture.month, varieties: [] },
+    }
+    for (const viewport of ['phone', 'computer'] as const) {
+      renderAnalisis(async () => jsonResponse(200, emptyMonth), viewport)
+      expect(await screen.findAllByText(EMPTY_MONTH_LINE)).toHaveLength(1)
+      cleanup()
+    }
+  })
+})
+
+describe('the phone renders cards, one per row, month selector first', () => {
+  test('the first control is Previous month', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    const [first, second] = screen.getAllByRole('button')
+    expect(first).toHaveAccessibleName('Previous month')
+    expect(second).toHaveAccessibleName('Next month')
+  })
+
+  test('each variety is one card carrying its table row, in order', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    const cards = cardsIn('.analisis__variedades')
+    expect(cards).toHaveLength(analysisFixture.month.varieties.length)
+    analysisFixture.month.varieties.forEach((variety, index) => {
+      const card = cards[index]!
+      expect(card).toHaveAccessibleName(variety.name)
+      const share = variety.share_percent === null ? [] : [String(variety.share_percent)]
+      expect(figuresOf(card)).toEqual([
+        formatMoney(variety.sales_without_shipping),
+        ...share,
+        formatGrams(variety.grams_sold),
+        formatGrams(variety.grams_gifted),
+        formatMoney(variety.cost.costed),
+        formatMoney(variety.margin.amount),
+      ])
+      expect(rowsOf(card).at(-1)).toBe(
+        `${ANALYSIS_TEXT.margen}${formatMoney(variety.margin.amount)}${
+          variety.margin.percent === null ? '' : ` (${variety.margin.percent}%)`
+        }${
+          variety.margin.pending_grams > 0
+            ? ANALYSIS_TEXT.pendingSuffix(formatGrams(variety.margin.pending_grams))
+            : ''
+        }`.trim(),
+      )
+    })
+  })
+
+  test('each week is one card with its figures in order, the last is current and the best is marked', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    const cards = cardsIn('.analisis__semanas')
+    expect(cards).toHaveLength(analysisFixture.weeks.length)
+    analysisFixture.weeks.forEach((week, index) => {
+      const card = cards[index]!
+      expect(card).toHaveAccessibleName(formatDateShort(week.first_day))
+      const withdrawals = [week.shortfall, week.promotion, week.own_use]
+        .filter((cost) => cost !== null)
+        .map((cost) => formatMoney(cost.amount))
+      expect(figuresOf(card)).toEqual([
+        formatMoney(week.sales),
+        formatGrams(week.grams),
+        formatMoney(week.cost_of_goods.amount),
+        ...withdrawals,
+        formatMoney(week.expenses),
+        formatMoney(week.profit.amount),
+        formatMoney(week.cash),
+      ])
+      expect(card.classList.contains('analisis__tarjeta--actual')).toBe(
+        index === analysisFixture.weeks.length - 1,
+      )
+      expect(within(card).queryByText(BEST_WEEK_MARK) !== null).toBe(week.best)
+    })
+    const labels = rowsOf(cards[0]!).map((text) => text.replace(/ \$.*$| [\d,.]+ g$/, ''))
+    expect(labels).toEqual([
+      'Grams',
+      'Cost of goods sold',
+      'Stock shortfall',
+      'Promotion',
+      'Own use',
+      'expenses',
+      'profit',
+      'cash',
+    ])
+  })
+
+  test('each month is one card with its figures in order', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    const cards = cardsIn('.analisis__meses')
+    expect(cards).toHaveLength(analysisFixture.months.length)
+    analysisFixture.months.forEach((row, index) => {
+      const card = cards[index]!
+      expect(card).toHaveAccessibleName(formatMonthLong(row.month))
+      const withdrawals = [row.shortfall, row.promotion, row.own_use]
+        .filter((cost) => cost !== null)
+        .map((cost) => formatMoney(cost.amount))
+      expect(figuresOf(card)).toEqual([
+        formatMoney(row.sales),
+        formatGrams(row.grams),
+        formatMoney(row.cost_of_goods.amount),
+        ...withdrawals,
+        formatMoney(row.expenses),
+        formatMoney(row.profit.amount),
+        formatMoney(row.cash),
+      ])
+      expect(card.classList.contains('analisis__tarjeta--actual')).toBe(false)
+    })
+  })
+
+  test('a pending text sits in its own element, below a whole figure; a full one has no figure', async () => {
+    renderAnalisis(async () => jsonResponse(200, pendingRowFixture()), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    const [, partly, fully] = cardsIn('.analisis__semanas')
+    const partlyCost = Array.from(partly!.querySelectorAll('.analisis__tarjeta-fila')).find(
+      (node) => node.textContent?.startsWith('Cost of goods sold'),
+    )!
+    const figure = partlyCost.querySelector('.analisis__tarjeta-cifra')!
+    const pending = partlyCost.querySelector('.analisis__tarjeta-pendiente')!
+    expect(figure.textContent).toBe('$ 7.000')
+    expect(pending.textContent).toBe(' and 1,5 g without cost')
+    expect(figure.contains(pending)).toBe(false)
+    expect(pending.contains(figure)).toBe(false)
+    expect(figure.nextElementSibling).toBe(pending)
+
+    const fullyCost = Array.from(fully!.querySelectorAll('.analisis__tarjeta-fila')).find(
+      (node) => node.textContent?.startsWith('Cost of goods sold'),
+    )!
+    expect(fullyCost.querySelector('.analisis__tarjeta-cifra')).toBeNull()
+    expect(fullyCost.querySelector('.analisis__tarjeta-pendiente')?.textContent).toBe('4 g without cost')
+  })
+
+  test('a pending variety cost and margin show their text apart from the figure', async () => {
+    const [first, ...rest] = analysisFixture.month.varieties
+    const body = {
+      ...analysisFixture,
+      month: {
+        ...analysisFixture.month,
+        varieties: [
+          {
+            ...first!,
+            cost: { costed: 5000, pending_grams: 2.5 },
+            margin: { amount: 9000, percent: null, pending_grams: 2.5 },
+          },
+          ...rest,
+        ],
+      },
+    }
+    renderAnalisis(async () => jsonResponse(200, body), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    const card = cardsIn('.analisis__variedades')[0]!
+    const pendings = Array.from(card.querySelectorAll('.analisis__tarjeta-pendiente'))
+    expect(pendings.map((node) => node.textContent)).toEqual([
+      ' and 2,5 g without cost',
+      ' and 2,5 g without cost',
+    ])
+    expect(rowsOf(card).at(-1)).toBe('margin $ 9.000 and 2,5 g without cost')
+  })
+
+  test('the cards draw no table nor AmountRow, and the none-stood-out line follows the week cards', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+    await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+    expect(screen.queryByRole('table')).toBeNull()
+    for (const card of document.querySelectorAll('.analisis__tarjeta')) {
+      expect(card.querySelector('.analisis__monto, .analisis__costos')).toBeNull()
+    }
+  })
+
+  test('the none-stood-out line comes right after the week cards', async () => {
+    const noBest = {
+      ...analysisFixture,
+      weeks: analysisFixture.weeks.map((week) => ({ ...week, best: false })),
+    }
+    renderAnalisis(async () => jsonResponse(200, noBest), 'phone')
+    const line = await screen.findByText(NO_BEST_WEEK_LINE)
+    expect(line.previousElementSibling).toBe(document.querySelector('.analisis__semanas'))
   })
 })
