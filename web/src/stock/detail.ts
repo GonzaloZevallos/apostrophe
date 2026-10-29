@@ -55,8 +55,8 @@ export function sideNoteFor(variety: StockSideNoteSubject): string | null {
  * the same `GET /stock` row `MarcaEstado` reads, never a figure the front works out itself.
  * "Warning off" is a key the component resolves on every render (`useLabel`), so a language
  * switch re-renders it in place; the figure lines stay text until the stock area moves them. */
-export function warningFor(row: StockDetailSubject & { grams: number }): Label {
+export function warningFor(row: StockDetailSubject & { quantity: number }): Label {
   if (row.threshold === null) return { kind: 'key', key: 'common:warningOff' }
-  if (row.status === 'low') return { kind: 'text', text: STOCK_TEXT.warningLow(formatGrams(row.grams)) }
+  if (row.status === 'low') return { kind: 'text', text: STOCK_TEXT.warningLow(formatGrams(row.quantity)) }
   return { kind: 'text', text: STOCK_TEXT.warnMeBelow(formatGrams(row.threshold)) }
 }

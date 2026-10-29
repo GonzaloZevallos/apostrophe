@@ -167,7 +167,7 @@ export default function EntriesList({ varietyId }: Props) {
           detail={STOCK_TEXT.borrasLaEntradaDel(
             formatDate(confirming.date, me.today),
             nameOf(confirming.variety_id),
-            formatGrams(confirming.grams),
+            formatGrams(confirming.quantity),
           )}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
@@ -213,7 +213,7 @@ export function EntryRows({
                 <span className="fila-entrada__linea2">
                   {REASON_LABEL[entry.reason]}
                   {OUT_OF_DATE_JOINER}
-                  {`−${formatGrams(entry.grams)}`}
+                  {`−${formatGrams(entry.quantity)}`}
                 </span>
               </span>
             </InAppLink>
@@ -229,7 +229,7 @@ export function EntryRows({
               <span className="fila-entrada__linea2">
                 {t(ORIGIN_LABEL[entry.origin])}
                 {OUT_OF_DATE_JOINER}
-                {formatGrams(entry.grams)}
+                {formatGrams(entry.quantity)}
               </span>
             </span>
             <span className="fila-entrada__cifras">

@@ -26,7 +26,7 @@ export function amountParts(amount: number, pendingGrams: number): AmountParts {
  * "$ 9.000" + " and 2,5 g without cost" when part of it is, "$ 9.000" when none is. */
 export function rowCostParts(cost: RowCost): AmountParts {
   if (cost.all_pending) {
-    return { amount: null, marker: ANALYSIS_TEXT.noCostAlone(formatGrams(cost.pending_grams)) }
+    return { amount: null, marker: ANALYSIS_TEXT.noCostAlone(formatGrams(cost.pending_quantity)) }
   }
-  return amountParts(cost.amount, cost.pending_grams)
+  return amountParts(cost.amount, cost.pending_quantity)
 }

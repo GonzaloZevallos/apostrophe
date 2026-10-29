@@ -36,16 +36,16 @@ const SALE = {
   payment: 'cash',
   total: 11000,
   still_owing: false,
-  total_grams: 1,
+  total_quantity: 1,
   lines: [
     {
       variety_id: 1,
       variety_name: '24K Gold',
-      grams: 1,
+      quantity: 1,
       pricing_rule: 'list',
       price_per_gram: 11000,
       line_total: 11000,
-      cost: { costed: 5000, pending_grams: 0 },
+      cost: { costed: 5000, pending_quantity: 0 },
     },
   ],
 }
@@ -86,7 +86,7 @@ const CATALOG = {
 
 const STOCK = {
   total: 18,
-  varieties: [{ variety_id: 1, grams: 18, status: 'ok', sold_out_since: null, threshold: null, days_left: null }],
+  varieties: [{ variety_id: 1, quantity: 18, status: 'ok', sold_out_since: null, threshold: null, days_left: null }],
   entries: [],
 }
 

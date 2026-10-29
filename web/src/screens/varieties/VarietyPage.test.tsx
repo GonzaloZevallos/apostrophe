@@ -56,14 +56,14 @@ function entry(id: number, varietyId: number, date: string, grams: number) {
     date,
     variety_id: varietyId,
     origin: 'purchase',
-    grams,
+    quantity: grams,
     total_cost: 280000,
     cost_per_gram: 7000,
     note: null,
   }
 }
 
-const STOCK_ROW = { variety_id: 1, grams: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
+const STOCK_ROW = { variety_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
 
 function stockOf(row: Record<string, unknown>, entries = ENTRIES) {
   return { total: 18, varieties: [row, { ...STOCK_ROW, variety_id: 2 }], entries }
@@ -191,9 +191,9 @@ describe('the summary line', () => {
   })
 
   test.each([
-    ['sold_out', { grams: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, '0 g · sold out'],
-    ['no_entries', { grams: 0, status: 'no_entries', days_left: null }, '0 g · no entries'],
-    ['ok', { grams: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 days'],
+    ['sold_out', { quantity: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, '0 g · sold out'],
+    ['no_entries', { quantity: 0, status: 'no_entries', days_left: null }, '0 g · no entries'],
+    ['ok', { quantity: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 days'],
   ])('a %s variety', async (_name, patch, expected) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
@@ -296,7 +296,7 @@ describe("an archived variety's summary line and its one action", () => {
     renderPage(VARIETY_ONE, {
       ...ARCHIVED,
       'GET /varieties/1': () => json(200, { ...NO_PRICE_ROW, archived: true, removal: null }),
-      'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, grams: -4, status: 'sold_out' })),
+      'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, quantity: -4, status: 'sold_out' })),
     })
 
     expect(await screen.findByText(/No price/)).toHaveTextContent('-4 g · No price: cannot be sold')
@@ -403,7 +403,7 @@ describe('the actions and the sections', () => {
       'GET /stock/varieties/1/movements': () =>
         json(200, [
           { ...ENTRIES[0], kind: 'entry' },
-          { kind: 'withdrawal', id: 5, date: '2026-09-25', reason: 'promotion', grams: 5.5 },
+          { kind: 'withdrawal', id: 5, date: '2026-09-25', reason: 'promotion', quantity: 5.5 },
           { ...ENTRIES[2], kind: 'entry' },
           { ...ENTRIES[3], kind: 'entry' },
         ]),
@@ -487,8 +487,8 @@ describe('the actions and the sections', () => {
   })
 
   test.each([
-    ['no threshold', { threshold: null, status: 'ok', grams: 90, days_left: 60 }, 'Warning off'],
-    ['a threshold not reached', { threshold: 15, status: 'ok', grams: 90, days_left: 60 }, 'Warn me below 15 g'],
+    ['no threshold', { threshold: null, status: 'ok', quantity: 90, days_left: 60 }, 'Warning off'],
+    ['a threshold not reached', { threshold: 15, status: 'ok', quantity: 90, days_left: 60 }, 'Warn me below 15 g'],
   ])('Low stock warning with %s', async (_name, patch, expected) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
@@ -563,7 +563,7 @@ describe('the openers push a history entry, so Back closes the form', () => {
   test('turning the warning on opens the form and calls nothing', async () => {
     const user = userEvent.setup()
     const { router, fetchMock } = renderPage(VARIETY_ONE, {
-      'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, threshold: null, status: 'ok', grams: 90, days_left: 60 })),
+      'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, threshold: null, status: 'ok', quantity: 90, days_left: 60 })),
     })
 
     await user.click(await screen.findByRole('switch'))
@@ -680,7 +680,7 @@ describe('renaming from the page', () => {
 })
 
 describe('turning the warning off', () => {
-  test('saves {grams: null}, keeps the switch on and disabled until the server answers, then flips and toasts', async () => {
+  test('saves {quantity: null}, keeps the switch on and disabled until the server answers, then flips and toasts', async () => {
     const user = userEvent.setup()
     let release: (response: Response) => void = () => undefined
     let stock = stockOf(STOCK_ROW)
@@ -708,7 +708,7 @@ describe('turning the warning off', () => {
 
     expect(toggle).toBeChecked()
     expect(toggle).toBeDisabled()
-    stock = stockOf({ ...STOCK_ROW, threshold: null, status: 'ok', grams: 90, days_left: 60 })
+    stock = stockOf({ ...STOCK_ROW, threshold: null, status: 'ok', quantity: 90, days_left: 60 })
     release(json(200, { ...STOCK_ROW, threshold: null }))
 
     expect(await screen.findByText('Warning off')).toBeInTheDocument()
@@ -748,7 +748,7 @@ describe('turning the warning off', () => {
 })
 
 describe('Low stock warning: the form', () => {
-  const OFF = { ...STOCK_ROW, threshold: null, status: 'ok', grams: 90, days_left: 60 }
+  const OFF = { ...STOCK_ROW, threshold: null, status: 'ok', quantity: 90, days_left: 60 }
 
   test('the section is read-only until "Edit" opens the form with the saved amount', async () => {
     const user = userEvent.setup()
@@ -794,7 +794,7 @@ describe('Low stock warning: the form', () => {
 
     expect(await screen.findByText('Warning saved')).toBeInTheDocument()
     expect(screen.queryByLabelText('Warn when below')).not.toBeInTheDocument()
-    expect(putOf(fetchMock)).toEqual({ url: '/stock/varieties/1/threshold', body: { grams: 15.5 } })
+    expect(putOf(fetchMock)).toEqual({ url: '/stock/varieties/1/threshold', body: { quantity: 15.5 } })
     await waitFor(() => expect(reads(fetchMock, 'GET /stock')).toBe(2))
     await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
     expect(await screen.findByRole('switch')).toBeChecked()

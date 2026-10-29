@@ -88,7 +88,7 @@ function initialState(target: WithdrawalTarget, today: string, varietyId: string
     lines: target.lines.map((line, index) => ({
       key: index,
       varietyId: String(line.variety_id),
-      grams: String(line.grams),
+      grams: String(line.quantity),
     })),
     note: target.note ?? '',
     gone: NONE,
@@ -320,7 +320,7 @@ export default function WithdrawalForm({
       const grams = parseGrams(line.grams)
       const varietyId = Number(line.varietyId)
       if (!grams.ok || !Number.isInteger(varietyId)) return null
-      lines.push({ variety_id: varietyId, grams: grams.value })
+      lines.push({ variety_id: varietyId, quantity: grams.value })
     }
     const note = form.note.trim()
     return {

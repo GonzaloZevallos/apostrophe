@@ -53,7 +53,7 @@ function entry(id: number, date: string, varietyId: number, grams: number, total
     date,
     variety_id: varietyId,
     origin: total === null ? 'harvest' : 'purchase',
-    grams,
+    quantity: grams,
     total_cost: total,
     cost_per_gram: total === null ? null : total / grams,
     note: null,
@@ -204,7 +204,7 @@ test("an archived variety's withdrawal rows still open the withdrawal's detail",
     'GET /varieties/3': () => jsonResponse(200, ARCHIVED_VARIETY),
     'GET /stock/varieties/3/movements': () =>
       jsonResponse(200, [
-        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', grams: 5.5 },
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...STOCK.entries[0], kind: 'entry' },
       ]),
   })
@@ -220,7 +220,7 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
   fakeApi({
     'GET /stock/varieties/3/movements': () =>
       jsonResponse(200, [
-        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', grams: 5.5 },
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...STOCK.entries[0], kind: 'entry' },
       ]),
   })
@@ -245,7 +245,7 @@ test('"All entries" shows the entry and no withdrawal, and never asks for moveme
     'GET /stock': () => jsonResponse(200, { total: 30, varieties: [], entries: [recorded] }),
     'GET /stock/varieties/3/movements': () =>
       jsonResponse(200, [
-        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', grams: 5.5 },
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...recorded, kind: 'entry' },
       ]),
   })

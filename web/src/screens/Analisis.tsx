@@ -267,11 +267,11 @@ function AnalisisContenido({
           <span className="cifra-xl analisis__monto-cifra">{formatMoney(m.sales)}</span>
         </div>
         <span className="pie">
-          <span className="analisis__monto-cifra">{formatGrams(m.grams_sold)}</span>
+          <span className="analisis__monto-cifra">{formatGrams(m.quantity_sold)}</span>
           {ANALYSIS_TEXT.vendidos}
-          <span className="analisis__monto-cifra">{formatGrams(m.grams_gifted)}</span>
+          <span className="analisis__monto-cifra">{formatGrams(m.quantity_gifted)}</span>
           {ANALYSIS_TEXT.regalados}
-          {(m.average_margin.percent !== null || m.average_margin.pending_grams > 0) &&
+          {(m.average_margin.percent !== null || m.average_margin.pending_quantity > 0) &&
             ANALYSIS_TEXT.margenPromedio}
           {m.average_margin.percent !== null && (
             <>
@@ -281,9 +281,9 @@ function AnalisisContenido({
               </span>
             </>
           )}
-          {m.average_margin.pending_grams > 0 && (
+          {m.average_margin.pending_quantity > 0 && (
             <span className="analisis__monto-marca">
-              {pendingSuffix(m.average_margin.pending_grams)}
+              {pendingSuffix(m.average_margin.pending_quantity)}
             </span>
           )}
         </span>
@@ -324,16 +324,16 @@ function AnalisisContenido({
                       {variety.share_percent !== null && (
                         <span>{variety.share_percent}{ANALYSIS_TEXT.delMes}</span>
                       )}
-                      <span>{formatGrams(variety.grams_sold)}{COMMON_TEXT.soldSuffix}</span>
-                      <span>{formatGrams(variety.grams_gifted)}{ANALYSIS_TEXT.regalados}</span>
+                      <span>{formatGrams(variety.quantity_sold)}{COMMON_TEXT.soldSuffix}</span>
+                      <span>{formatGrams(variety.quantity_gifted)}{ANALYSIS_TEXT.regalados}</span>
                       <span>
                         {ANALYSIS_TEXT.costo}{formatMoney(variety.cost.costed)}
-                        {pendingSuffix(variety.cost.pending_grams)}
+                        {pendingSuffix(variety.cost.pending_quantity)}
                       </span>
                       <span className="analisis__variedad-margen">
                         {ANALYSIS_TEXT.margen}{formatMoney(variety.margin.amount)}
                         {variety.margin.percent !== null && ` (${variety.margin.percent}%)`}
-                        {pendingSuffix(variety.margin.pending_grams)}
+                        {pendingSuffix(variety.margin.pending_quantity)}
                       </span>
                     </div>
                   </div>
@@ -368,16 +368,16 @@ function AnalisisContenido({
                         <td className="analisis__num">
                           {variety.share_percent !== null ? `${variety.share_percent}%` : ''}
                         </td>
-                        <td className="analisis__num">{formatGrams(variety.grams_sold)}</td>
-                        <td className="analisis__num">{formatGrams(variety.grams_gifted)}</td>
+                        <td className="analisis__num">{formatGrams(variety.quantity_sold)}</td>
+                        <td className="analisis__num">{formatGrams(variety.quantity_gifted)}</td>
                         <td className="analisis__num">
                           {formatMoney(variety.cost.costed)}
-                          {pendingSuffix(variety.cost.pending_grams)}
+                          {pendingSuffix(variety.cost.pending_quantity)}
                         </td>
                         <td className="analisis__num analisis__celda-margen">
                           <span>
                             {formatMoney(variety.margin.amount)}
-                            {pendingSuffix(variety.margin.pending_grams)}
+                            {pendingSuffix(variety.margin.pending_quantity)}
                           </span>
                           {variety.margin.percent !== null && (
                             <span>{variety.margin.percent}%</span>
@@ -403,14 +403,14 @@ function AnalisisContenido({
                 <span id={`${ids}-w-${week.first_day}`}>{formatDateShort(week.first_day)}</span>
                 <Bar value={week.sales} max={maxWeekSales} />
                 <span className="analisis__monto-cifra">{formatMoney(week.sales)}</span>
-                <span>{formatGrams(week.grams)}</span>
+                <span>{formatGrams(week.quantity)}</span>
                 <div className="analisis__costos">
                   <RowCostLines period={week} />
                 </div>
                 <span>{ANALYSIS_TEXT.gastos}{formatMoney(week.expenses)}</span>
                 <span>
                   {ANALYSIS_TEXT.ganancia}{formatMoney(week.profit.amount)}
-                  {pendingSuffix(week.profit.pending_grams)}
+                  {pendingSuffix(week.profit.pending_quantity)}
                 </span>
                 <span>{ANALYSIS_TEXT.caja}{formatMoney(week.cash)}</span>
                 {week.best && <span className="analisis__marca-mejor">{BEST_WEEK_MARK}</span>}
@@ -440,11 +440,11 @@ function AnalisisContenido({
                   >
                     <td id={`${ids}-wt-${week.first_day}`}>{formatDateShort(week.first_day)}</td>
                     <td className="analisis__num">{formatMoney(week.sales)}</td>
-                    <td className="analisis__num">{formatGrams(week.grams)}</td>
+                    <td className="analisis__num">{formatGrams(week.quantity)}</td>
                     <td className="analisis__num">{formatMoney(week.expenses)}</td>
                     <td className="analisis__num">
                       {formatMoney(week.profit.amount)}
-                      {pendingSuffix(week.profit.pending_grams)}
+                      {pendingSuffix(week.profit.pending_quantity)}
                       {week.best && (
                         <span className="analisis__etiqueta-mejor">{BEST_WEEK_TABLE_MARK}</span>
                       )}
@@ -476,14 +476,14 @@ function AnalisisContenido({
               >
                 <span id={`${ids}-m-${row.month}`}>{formatMonthLong(row.month)}</span>
                 <span className="analisis__monto-cifra">{formatMoney(row.sales)}</span>
-                <span>{formatGrams(row.grams)}</span>
+                <span>{formatGrams(row.quantity)}</span>
                 <div className="analisis__costos">
                   <RowCostLines period={row} />
                 </div>
                 <span>{ANALYSIS_TEXT.gastos}{formatMoney(row.expenses)}</span>
                 <span>
                   {ANALYSIS_TEXT.ganancia}{formatMoney(row.profit.amount)}
-                  {pendingSuffix(row.profit.pending_grams)}
+                  {pendingSuffix(row.profit.pending_quantity)}
                 </span>
                 <span>{ANALYSIS_TEXT.caja}{formatMoney(row.cash)}</span>
               </div>
@@ -508,11 +508,11 @@ function AnalisisContenido({
                   <tr>
                     <td id={`${ids}-mt-${row.month}`}>{formatMonthLong(row.month)}</td>
                     <td className="analisis__num">{formatMoney(row.sales)}</td>
-                    <td className="analisis__num">{formatGrams(row.grams)}</td>
+                    <td className="analisis__num">{formatGrams(row.quantity)}</td>
                     <td className="analisis__num">{formatMoney(row.expenses)}</td>
                     <td className="analisis__num">
                       {formatMoney(row.profit.amount)}
-                      {pendingSuffix(row.profit.pending_grams)}
+                      {pendingSuffix(row.profit.pending_quantity)}
                     </td>
                     <td className="analisis__num">{formatMoney(row.cash)}</td>
                   </tr>
@@ -558,7 +558,7 @@ function AnalisisContenido({
                 label={COMMON_TEXT.profit}
                 value={amountParts(
                   data.since_first_record.profit.amount,
-                  data.since_first_record.profit.pending_grams,
+                  data.since_first_record.profit.pending_quantity,
                 )}
               />
               <AmountRow

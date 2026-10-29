@@ -11,10 +11,10 @@
 import { del, get, put } from './client'
 import type { PricingRule } from '../sales/pricing'
 
-/** Whole grams the sale's lines hold, gifts included (plan, "Contract":
- * `SaleDetailOut` adds `total_grams`) — read for the delete confirmation's
+/** The quantity the sale's lines hold, gifts included (plan, "Contract":
+ * `SaleDetailOut` adds `total_quantity`) — read for the delete confirmation's
  * "Vuelven N g al stock" (sales.md), never summed here from the lines. */
-export type GramsOut = number
+export type QuantityOut = number
 
 export type Payment = 'cash' | 'transfer' | 'owing' | 'none'
 
@@ -27,7 +27,7 @@ export interface SaleCustomer {
 export interface SaleLine {
   variety_id: number
   variety_name: string
-  grams: number
+  quantity: number
   pricing_rule: PricingRule
   price_per_gram: number
   line_total: number
@@ -51,10 +51,10 @@ export function listSales(dateFrom: string, dateTo: string): Promise<Sale[]> {
 }
 
 /** A line's cost of goods (ADR-0009): `costed` is `null` exactly when none of the
- * line's grams is costed yet, never a $0 standing in for "not yet known". */
+ * line's quantity is costed yet, never a $0 standing in for "not yet known". */
 export interface SaleLineCost {
   costed: number | null
-  pending_grams: number
+  pending_quantity: number
 }
 
 export interface SaleDetailLine extends SaleLine {
@@ -63,19 +63,19 @@ export interface SaleDetailLine extends SaleLine {
 
 export interface SaleDetail extends Omit<Sale, 'lines'> {
   lines: SaleDetailLine[]
-  /** Every line's grams summed, gifts included (sales.md: named in the delete
+  /** Every line's quantity summed, gifts included (sales.md: named in the delete
    * confirmation, "Vuelven N g al stock" — the front never adds this up itself). */
-  total_grams: GramsOut
+  total_quantity: QuantityOut
 }
 
-/** The grams a deleted sale gave back to one variety's stock. */
-export interface ReturnedGrams {
+/** The quantity a deleted sale gave back to one variety's stock. */
+export interface ReturnedQuantity {
   variety_id: number
-  grams: number
+  quantity: number
 }
 
 export interface DeletedSale {
-  returned: ReturnedGrams[]
+  returned: ReturnedQuantity[]
 }
 
 export function getSale(id: string): Promise<SaleDetail> {
