@@ -422,95 +422,95 @@ Cualquier Sale line de una Variety (los Gifts y los Special prices incluidos) o 
 _Avoid_: usage, activity, movements, references
 
 **Promotion**:
-A stock withdrawal to make the business known, e.g. grams shared at a party for several people to try. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. _In the app_: Promotion.
+Una Stock withdrawal para dar a conocer el Business, p. ej. gramos compartidos en una fiesta para que los prueben varias personas. Su costo es lo que costaron los gramos sacados de sus Lots tal como están hoy, y se muestra como una línea propia que baja el Profit. _In the app_: Promotion.
 _Avoid_: gift (a gift is a sale line, to someone, inside a sale), sample, freebie, promo
 
 **Own use**:
-A stock withdrawal the seller consumes personally. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. _In the app_: Own use.
+Una Stock withdrawal que el vendedor consume él mismo. Su costo es lo que costaron los gramos sacados de sus Lots tal como están hoy, y se muestra como una línea propia que baja el Profit. _In the app_: Own use.
 _Avoid_: personal, shrinkage
 
 **More info**:
-The longer how-or-why behind a shortened line, one tap away on an "i" at the end of that line, expanded in place and collapsed on a second tap; it always opens closed and is never remembered. Never a consequence, a refusal's fix or a state. _In the app_: More info (its accessible name, with aria-expanded).
+El porqué o el cómo más largo detrás de una línea acortada, a un toque en una "i" al final de esa línea, que se expande en el lugar y se colapsa con un segundo toque; siempre se abre cerrada y nunca se recuerda. Nunca es una consecuencia, la solución de un rechazo ni un estado. _In the app_: More info (su nombre accesible, con aria-expanded).
 _Avoid_: tooltip, popover, help modal, info sheet, details
 
 **Icon and text rule**:
-The one written rule for how every screen labels its entries, actions and notices. It decides how things are labelled, never what they do. Its full text lives in `docs/product/icon-and-text-rule.md`. In the app: no word of its own.
+La única regla escrita sobre cómo cada pantalla rotula sus opciones, acciones y avisos. Decide cómo se rotula cada cosa, nunca qué hace. Su texto completo vive en `docs/product/icon-and-text-rule.md`. En la app: no tiene palabra propia.
 _Avoid_: style guide, UI guidelines, icon policy
 
 **Attention icon**:
-The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed. Its full rule lives in `docs/product/icon-and-text-rule.md`. In the app: no word of its own.
+El único ícono, el mismo en todas partes, puesto junto a la oración de un aviso o estado que le pide al vendedor que actúe o dice que algo falló. Su regla completa vive en `docs/product/icon-and-text-rule.md`. En la app: no tiene palabra propia.
 _Avoid_: warning icon, alert icon, badge, error icon
 
 **Gate**:
-The checks every change must pass before it merges: pytest, vitest and e2e. A red gate must mean a product regression, never the calendar moving past an expiry or a day boundary. In the app: no word of its own.
+Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día. En la app: no tiene palabra propia.
 _Avoid_: pipeline, build, test run
 
 **Tappable notice**:
-A notice the seller taps to open what it points to, such as Home's "Go on to the setup". Its sentence carries the meaning and is its accessible name. Its full rule lives in `docs/product/icon-and-text-rule.md`.
+Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on to the setup" de Home. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-The side-by-side capture of a screen's design file and the built app, attached to a PR as review evidence and judged by eye against Drawing as guide. It is never a step of the gate. Its full rule lives in `docs/product/design-capture.md`.
+La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. Su regla completa vive en `docs/product/design-capture.md`.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
 
 **Product language**:
-The language the product writes in for a person to read. English is the source copy and, until a second language ships (#317), the only selectable language. It covers screens, accessible names, API messages, operator script output and the catalog's fixed lines, never the seller's own data. An API refusal's `detail` is an English diagnostic, never shown. Numeric and date formats stay Argentine.
+El idioma en que el producto escribe lo que una persona lee. El inglés es el texto fuente y, hasta que salga un segundo idioma (#317), el único Selectable language. Abarca pantallas, nombres accesibles, mensajes de la API, la salida de los scripts del Operator y las líneas fijas del Catalog, nunca los datos propios del vendedor. El `detail` de un rechazo de la API es un diagnóstico en inglés, nunca se muestra. Los formatos numéricos y de fecha siguen siendo argentinos.
 _Avoid_: locale, i18n, translation, Rioplatense
 
 **Language**:
-A language the copy module has copy for, identified by its tag. In the app: no word of its own.
+Un idioma para el que el Copy module tiene textos, identificado por su etiqueta. En la app: no tiene palabra propia.
 _Avoid_: locale, translation
 
 **Selectable language**:
-A language a business may be set to: every language with complete copy (every English message has a non-empty translation) except the test locale. Only English until #317. In the app: no word of its own.
+Un idioma al que se puede configurar un Business: todo idioma con textos completos (cada mensaje en inglés tiene una traducción no vacía) salvo el Test locale. Solo inglés hasta #317. En la app: no tiene palabra propia.
 _Avoid_: supported language, available locale
 
 **Shown language**:
-The language texts are shown in for a business: its stored language, unless the forced language overrides it. Until #317 every business is English. In the app: no word of its own.
+El idioma en que se muestran los textos de un Business: su Stored language, salvo que la Forced language lo reemplace. Hasta #317 todo Business está en inglés. En la app: no tiene palabra propia.
 _Avoid_: display locale, UI language
 
 **Test locale**:
-`en-XA`, generated from English and used only to judge layout, never character limits. Never selectable and never chosen by a request. In the app: no word of its own.
+`en-XA`, generado a partir del inglés y usado solo para juzgar la disposición de los elementos en pantalla, nunca los límites de caracteres. Nunca es seleccionable ni lo elige un pedido. En la app: no tiene palabra propia.
 _Avoid_: pseudo-language, fake language
 
 **Forced language**:
-The test locale, switched on for the whole installation by the operator through `APOSTROPHE_FORCED_LANGUAGE`. It overrides the shown language and the pre-sign-in language, never the operator's output or a stored language. In the app: no word of its own.
+El Test locale, activado para toda la instalación por el Operator mediante `APOSTROPHE_FORCED_LANGUAGE`. Reemplaza al Shown language y al Pre-sign-in language, nunca a la salida del Operator ni a un Stored language. En la app: no tiene palabra propia.
 _Avoid_: override mode, debug language
 
 **Pre-sign-in language**:
-The language of the page before sign-in, worked out from the phone's `Accept-Language` and the selectable languages alone, English when nothing matches. No business, user, invitation or link can influence it, so the page reveals nothing about any of them. In the app: no word of its own.
+El idioma de la página antes de iniciar sesión, calculado a partir del `Accept-Language` del teléfono y de los Selectable languages solamente, inglés cuando nada coincide. Ningún Business, User, Invitation ni link puede influir en él, así que la página no revela nada sobre ninguno de ellos. En la app: no tiene palabra propia.
 _Avoid_: browser language, default language
 
 **Copy module**:
-The one keyed place that holds every text the front shows, accessible names included. No screen holds a text of its own, so a rewording or an added language is a change there only.
+El único lugar con claves que guarda cada texto que muestra el front, nombres accesibles incluidos. Ninguna pantalla guarda un texto propio, así que un cambio de redacción o un idioma agregado es un cambio solo ahí.
 _Avoid_: messages file, strings, translations, dictionary
 
 **Mobile check**:
-The Gate check that walks the screens registry's phone rows and fails on any offence against the mobile standard that the offender lists do not name. The mobile standard lives in CODING_STANDARDS.md §10 "Phone", and DESIGN_STANDARDS.md points to it. The check, its lists and their growth conditions are in docs/product/mobile-check.md and docs/product/gate.md.
+El control del Gate que recorre las filas de teléfono del registro de pantallas y falla ante cualquier infracción del estándar móvil que las listas de infractores no nombren. El estándar móvil vive en CODING_STANDARDS.md §10 "Phone", y DESIGN_STANDARDS.md remite a él. El control, sus listas y las condiciones para que crezcan están en docs/product/mobile-check.md y docs/product/gate.md.
 _Avoid_: mobile test, phone audit, lint, allowlist
 
 **Drawing as guide**:
-A difference from the drawing is a finding only when the owner, on the phone, would read or do something differently. The written product definition and the ADRs win over the drawing. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
+Una diferencia con el dibujo es un hallazgo solo cuando el dueño, en el teléfono, leería o haría algo distinto. La definición escrita del producto y los ADRs ganan sobre el dibujo. En la app: no tiene palabra propia; la regla vive en DESIGN_STANDARDS.md.
 _Avoid_: exact spec, pixel-perfect, design fidelity, mockup diff
 
 **Phone first**:
-When a choice is needed, the flow working on the phone ships first. Polish is a later task the owner or PM chooses to schedule. The computer keeps every capability but gets no dedicated polish. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
+Cuando hay que elegir, sale primero el flujo que funciona en el teléfono. El pulido es una tarea posterior que el dueño o PM elige programar. La computadora conserva todas las capacidades pero no recibe pulido dedicado. En la app: no tiene palabra propia; la regla vive en DESIGN_STANDARDS.md.
 _Avoid_: mobile-only, responsive, mobile first, polish pass
 
 **Stored language**:
-The one language recorded on a business. A new business gets it from the accepting phone when its invitation is accepted, an existing business has English, and afterwards only a user's choice in Settings → Business changes it. It is what the language control shows and edits, and it is the shown language unless the operator's forced language overrides it. In the app: no word of its own.
+El único idioma registrado en un Business. Un Business nuevo lo toma del teléfono que acepta cuando se acepta su Invitation, un Business existente tiene inglés, y después solo lo cambia la elección de un User en Settings → Business. Es lo que muestra y edita el control de idioma, y es el Shown language salvo que la Forced language del Operator lo reemplace. En la app: no tiene palabra propia.
 _Avoid_: locale, display language, preferred language, business locale
 
 **Sheet**:
-Below 900 px, how a form is drawn: full screen, a modal dialog with "Close" at the top and its main action pinned at the bottom, drawn by one shared component over the screen it was opened from (or over its parent on a direct address). Its only exits are "Close" and the phone's back gesture, which are the same action; it has no outside, so nothing around it (not even the safe-area strip by the status bar) closes it. On a computer the same form keeps its own frame. In the app: no word of its own.
+Con un ancho menor que 900 px, cómo se dibuja un formulario: a pantalla completa, un diálogo modal con "Close" arriba y su acción principal fija abajo, dibujado por un solo componente compartido sobre la pantalla desde la que se abrió (o sobre su pantalla padre en una dirección directa). Sus únicas salidas son "Close" y el gesto de volver del teléfono, que son la misma acción; no tiene afuera, así que nada a su alrededor (ni siquiera la franja de área segura junto a la barra de estado) la cierra. En una computadora el mismo formulario conserva su propio marco. En la app: no tiene palabra propia.
 _Avoid_: modal, overlay, drawer, bottom sheet, popup, capa
 
 **Assume nothing**:
-The owner's fourth criterion: the app never hard-codes one business's way of working (product type, units, currency, payment methods, pricing rules, channels, and so on), and each business runs it its own way through settings with neutral defaults. There are no ready-made business-type presets. Its test is "would this still be right for a business that sells something else, in other units, other ways?" If not, it is a finding, a default that fits one business included; it applies to new work, while existing assumptions are swept in #330 and made customizable in #318. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
+El cuarto criterio del dueño: la app nunca fija en el código la forma de trabajar de un Business (tipo de producto, Units, moneda, Payment methods, Pricing rules, canales, etcétera), y cada Business la hace funcionar a su manera mediante configuraciones con valores por defecto neutros. No hay configuraciones prearmadas por tipo de Business. Su prueba es "would this still be right for a business that sells something else, in other units, other ways?" Si no, es un hallazgo, incluso un valor por defecto que le sirve a un solo Business; se aplica al trabajo nuevo, mientras que los supuestos existentes se barren en #330 y se vuelven personalizables en #318. En la app: no tiene palabra propia; la regla vive en DESIGN_STANDARDS.md.
 _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 
 **Sale bill**:
-The facts about one recorded sale that a seller may share with that sale's customer: business name, date, lines, shipping charged, total, payment state and the customer's current balance. They are worked out live from settlement when the sale's detail is read and never stored, and the balance is the customer's whole account at the moment of sharing. On screen it is shared as plain text by Share or Copy on the sale's detail; In the app: Sale bill (the accessible name of its selectable block), the action reads Share / Copy.
+Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan, y el Balance es la cuenta completa del Customer en el momento de compartir. En pantalla se comparte como texto plano con Share o Copy en el detalle de la Sale; en la app: Sale bill (el nombre accesible de su bloque seleccionable), la acción dice Share / Copy.
 _Avoid_: invoice, receipt, statement, ticket
 
 **Documentation language**:
@@ -519,48 +519,48 @@ _Avoid_: Product language, locale, idioma de la app, traducción
 
 ## Planned in GH-318 (not yet in the code)
 
-These terms are not entries of the present glossary. Code, tests and screens keep the present terms until the part named on each line ships; only that part moves its term into the glossary proper and amends the entry it replaces. Each line gives the term, the ADR that decides it, and its owning part by capability.
+Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte nombrada en cada línea; solo esa parte pasa su término al glosario propiamente dicho y corrige la definición que reemplaza. Cada línea da el término, el ADR que lo decide y la parte a cargo, nombrada por capacidad.
 
 **Product**:
-What a business sells, in code and in the API, whatever the business calls it on screen; it replaces Variety in code, and the columns that reference it stay `variety_id` until #75. Decided in docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; owned by the Product rename on the wire. The Python names of the products hexagon (its modules, classes, ports, use-case parameters and domain attributes) and `app/catalog/domain/product.py` say Product from GH-386. Other hexagons' own fields, the wire, tables, columns and screens keep Variety until their parts (ADR-0061).
+Lo que vende un Business, en el código y en la API, cualquiera sea el nombre que el Business le dé en pantalla; reemplaza a la Variety en el código, y las columnas que la referencian siguen siendo `variety_id` hasta #75. Decidido en docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; a cargo del Product rename on the wire. Los nombres en Python del hexágono de Products (sus módulos, clases, puertos, parámetros de casos de uso y atributos de dominio) y `app/catalog/domain/product.py` dicen Product desde GH-386. Los campos propios de otros hexágonos, el wire, las tablas, las columnas y las pantallas siguen con Variety hasta sus partes (ADR-0061).
 _Avoid_: item, SKU, article
 
 **Unit**:
-How a business measures a product: a label and 0 to 2 decimals that only validate input and decide display. Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; owned by the units part.
+Cómo mide un Business un Product: una etiqueta y de 0 a 2 decimales que solo validan lo que se ingresa y deciden cómo se muestra. Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; a cargo de la parte units.
 _Avoid_: measure, UoM
 
 **Quantity, in hundredths of a unit**:
-A stored quantity of any unit, always a whole number of hundredths. Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; owned by the units part.
+Una cantidad guardada de cualquier Unit, siempre un número entero de centésimos. Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; a cargo de la parte units.
 _Avoid_: amount, grams
 
 **Business time zone**:
-The zone that decides when a business's day starts and ends; every existing business is given Argentina's. Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; owned by the time-zone part.
+La zona que decide cuándo empieza y termina el día de un Business; a todo Business existente se le da la de Argentina. Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; a cargo de la parte time-zone.
 _Avoid_: locale, region
 
 **Money scale**:
-Whether a business stores its money in whole currency units (0) or in hundredths (2); existing businesses stay at 0 and new ones start at 2. Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; owned by the money part.
+Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2); los Businesses existentes quedan en 0 y los nuevos empiezan en 2. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
 _Avoid_: precision, cents mode
 
 **Money format**:
-The currency symbol and the decimals a business shows its money with. Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; owned by the money part.
+El símbolo de la moneda y los decimales con que un Business muestra su dinero. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
 _Avoid_: currency settings
 
 **Customer type**:
-A seller-defined kind of customer, at most one per customer, that can have its own price. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the customer types part.
+Un tipo de Customer definido por el vendedor, como máximo uno por Customer, que puede tener su propio precio. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte customer types.
 _Avoid_: tier, segment, group
 
 **Customer-type price**:
-The price a customer type pays for a product, an effective-dated row. It replaces the VIP price for new writes; the price entry keeps its VIP price as it is, and the stored VIP prices and VIP marks stay in place, frozen with the values they hold. Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; owned by the customer-type prices part.
+El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.
 _Avoid_: tier price, discount
 
 **Payment method**:
-A seller-defined way a customer pays. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the payment methods part.
+Una forma de pagar de un Customer, definida por el vendedor. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte payment methods.
 _Avoid_: payment type, channel
 
 **Applied promotion**:
-A promotion as a sale stood when it was saved, recorded as typed rows and never recomputed. Decided in docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; owned by the promotions-at-sale-time part, which also settles how it differs from a promotion.
+Una Promotion tal como estaba una Sale cuando se guardó, registrada como filas tipadas que nunca se vuelven a calcular. Decidido en docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; a cargo de la parte promotions-at-sale-time, que también define en qué se diferencia de una Promotion.
 _Avoid_: discount line, coupon
 
 **Product word**:
-What a business calls its products on screen. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the product word part.
+Cómo llama un Business a sus Products en pantalla. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte product word.
 _Avoid_: label, noun setting
