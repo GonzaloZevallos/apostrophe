@@ -1,4 +1,4 @@
-"""The `changes` job of the selective CI (GH-448, ADR-0063): which suites a pull request runs.
+"""The `changes` job of the selective CI (GH-448, ADR-0064): which suites a pull request runs.
 
 `select(paths, root)` is a pure function over the changed paths and a repository tree. The result
 is the union of every rule that matches a path, and it fails closed: a path that matches no rule,

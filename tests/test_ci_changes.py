@@ -1,4 +1,4 @@
-"""`scripts/ci_changes.py` (GH-448, ADR-0063): the selection of suites from the changed paths, the
+"""`scripts/ci_changes.py` (GH-448, ADR-0064): the selection of suites from the changed paths, the
 reader map, the diff command and the thin `main`, over a `tmp_path` tree and the real repository."""
 
 from __future__ import annotations
