@@ -64,8 +64,8 @@ def test_history_orders_a_sale_line_and_a_withdrawal_line_by_recording_and_costs
 ) -> None:
     variety_id = _variety(client, "Lavanda")
     other_id = _variety(client, "Menta")
-    _entry(client, variety_id, grams="10", total_cost=10_000)
-    _entry(client, other_id, grams="10", total_cost=50_000)
+    _entry(client, variety_id, quantity="10", total_cost=10_000)
+    _entry(client, other_id, quantity="10", total_cost=50_000)
     sale = client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "4"}]}
     )
@@ -99,8 +99,8 @@ def test_history_narrowed_to_one_variety_gives_that_variety_the_same_draws_and_c
 ) -> None:
     variety_id = _variety(client, "Lavanda")
     other_id = _variety(client, "Menta")
-    _entry(client, variety_id, grams="2", total_cost=4_000)
-    _entry(client, other_id, grams="2", total_cost=9_000)
+    _entry(client, variety_id, quantity="2", total_cost=4_000)
+    _entry(client, other_id, quantity="2", total_cost=9_000)
     client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
     )

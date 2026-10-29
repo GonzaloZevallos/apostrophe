@@ -50,17 +50,17 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
     # A variety split across two lots: 8 g costed ($5 000 + $6 000 = $11 000), 2 g
     # of a 10 g line pending.
     split_variety = _variety_id(client, "Variedad dividida")
-    _entry(client, split_variety, grams="5", total_cost=5_000)
-    _entry(client, split_variety, grams="3", total_cost=6_000)
+    _entry(client, split_variety, quantity="5", total_cost=5_000)
+    _entry(client, split_variety, quantity="3", total_cost=6_000)
 
     # A fully costed variety, gifted on the same sale.
     gift_variety = _variety_id(client, "Variedad regalada")
-    _entry(client, gift_variety, grams="5", total_cost=2_000)
+    _entry(client, gift_variety, quantity="5", total_cost=2_000)
 
     # An unrelated variety, drawn down by a negative adjustment: a shortfall, never
     # a sale line, and never mixed into either line above.
     shortfall_variety = _variety_id(client, "Variedad con faltante")
-    _entry(client, shortfall_variety, grams="4", total_cost=4_000)
+    _entry(client, shortfall_variety, quantity="4", total_cost=4_000)
     adjustment = client.post(
         "/stock/entries",
         json={"variety_id": shortfall_variety, "origin": "adjustment", "quantity": "-1"},

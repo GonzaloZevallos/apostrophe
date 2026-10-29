@@ -47,7 +47,7 @@ def test_reads_entries_and_draws_exactly_once_whatever_the_number_of_varieties(
     lavanda = _variety(client, "Lavanda")
     menta = _variety(client, "Menta")
     for variety_id in (lavanda, menta):
-        _entry(client, variety_id, grams="10", total_cost=1_000)
+        _entry(client, variety_id, quantity="10", total_cost=1_000)
         sale = client.post(
             "/sales",
             json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "2"}]},
@@ -82,7 +82,7 @@ def test_rows_include_a_variety_with_no_entries_and_translate_stock_level(
 ) -> None:
     priced = _variety(client, "Lavanda")
     untouched = _variety(client, "Zarzamora")
-    _entry(client, priced, grams="10", total_cost=1_000)
+    _entry(client, priced, quantity="10", total_cost=1_000)
 
     business_id = _business_id_of_variety(engine, priced)
     with Session(engine) as session:
@@ -102,7 +102,7 @@ def test_draws_are_costed_the_same_way_sql_draw_costs_answers_them(
     invariant: one draw-row builder in `app/stock/adapters/`), so a sale-line draw
     here costs exactly what `GET /analysis`'s own `DrawCosts` port would answer for it."""
     variety_id = _variety(client, "Lavanda")
-    _entry(client, variety_id, grams="10", total_cost=1_000)
+    _entry(client, variety_id, quantity="10", total_cost=1_000)
     sale = client.post(
         "/sales",
         json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},

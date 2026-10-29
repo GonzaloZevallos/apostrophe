@@ -127,14 +127,14 @@
             "title": "Amount",
             "type": "integer"
           },
-          "pending_grams": {
-            "title": "Pending Grams",
+          "pending_quantity": {
+            "title": "Pending Quantity",
             "type": "number"
           }
         },
         "required": [
           "amount",
-          "pending_grams"
+          "pending_quantity"
         ],
         "title": "AmountWithPendingOut",
         "type": "object"
@@ -143,14 +143,6 @@
         "properties": {
           "average_margin": {
             "$ref": "#/components/schemas/MarginOut"
-          },
-          "grams_gifted": {
-            "title": "Grams Gifted",
-            "type": "number"
-          },
-          "grams_sold": {
-            "title": "Grams Sold",
-            "type": "number"
           },
           "month": {
             "title": "Month",
@@ -198,6 +190,14 @@
               }
             ]
           },
+          "quantity_gifted": {
+            "title": "Quantity Gifted",
+            "type": "number"
+          },
+          "quantity_sold": {
+            "title": "Quantity Sold",
+            "type": "number"
+          },
           "sales": {
             "title": "Sales",
             "type": "integer"
@@ -230,8 +230,8 @@
           "next",
           "sales",
           "sales_without_shipping",
-          "grams_sold",
-          "grams_gifted",
+          "quantity_sold",
+          "quantity_gifted",
           "average_margin",
           "shortfall",
           "promotion",
@@ -798,14 +798,14 @@
             "title": "Costed",
             "type": "integer"
           },
-          "pending_grams": {
-            "title": "Pending Grams",
+          "pending_quantity": {
+            "title": "Pending Quantity",
             "type": "number"
           }
         },
         "required": [
           "costed",
-          "pending_grams"
+          "pending_quantity"
         ],
         "title": "CostOut",
         "type": "object"
@@ -1073,7 +1073,7 @@
         "properties": {
           "returned": {
             "items": {
-              "$ref": "#/components/schemas/ReturnedGramsOut"
+              "$ref": "#/components/schemas/ReturnedQuantityOut"
             },
             "title": "Returned",
             "type": "array"
@@ -1099,18 +1099,6 @@
             ],
             "title": "Date"
           },
-          "grams": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              }
-            ],
-            "title": "Grams"
-          },
           "note": {
             "anyOf": [
               {
@@ -1124,6 +1112,18 @@
           },
           "origin": {
             "$ref": "#/components/schemas/Origin"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Quantity"
           },
           "total_cost": {
             "anyOf": [
@@ -1144,7 +1144,7 @@
         "required": [
           "variety_id",
           "origin",
-          "grams"
+          "quantity"
         ],
         "title": "EntryIn",
         "type": "object"
@@ -1166,10 +1166,6 @@
             "format": "date",
             "title": "Date",
             "type": "string"
-          },
-          "grams": {
-            "title": "Grams",
-            "type": "number"
           },
           "id": {
             "title": "Id",
@@ -1195,6 +1191,10 @@
           "origin": {
             "$ref": "#/components/schemas/Origin"
           },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
           "total_cost": {
             "anyOf": [
               {
@@ -1216,7 +1216,7 @@
           "date",
           "variety_id",
           "origin",
-          "grams",
+          "quantity",
           "total_cost",
           "cost_per_gram",
           "note"
@@ -1242,10 +1242,6 @@
             "title": "Date",
             "type": "string"
           },
-          "grams": {
-            "title": "Grams",
-            "type": "number"
-          },
           "id": {
             "title": "Id",
             "type": "integer"
@@ -1263,6 +1259,10 @@
           },
           "origin": {
             "$ref": "#/components/schemas/Origin"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
           },
           "total_cost": {
             "anyOf": [
@@ -1285,7 +1285,7 @@
           "date",
           "variety_id",
           "origin",
-          "grams",
+          "quantity",
           "total_cost",
           "cost_per_gram",
           "note"
@@ -1548,7 +1548,7 @@
         "type": "object"
       },
       "LineCostOut": {
-        "description": "A sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none of\nthe line's grams is costed yet; `pending_grams` is the part with no lot behind it,\nnever folded into `costed` as a $0 cost.",
+        "description": "A sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none of\nthe line's grams is costed yet; `pending_quantity` is the part with no lot behind it,\nnever folded into `costed` as a $0 cost.",
         "properties": {
           "costed": {
             "anyOf": [
@@ -1561,14 +1561,14 @@
             ],
             "title": "Costed"
           },
-          "pending_grams": {
-            "title": "Pending Grams",
+          "pending_quantity": {
+            "title": "Pending Quantity",
             "type": "number"
           }
         },
         "required": [
           "costed",
-          "pending_grams"
+          "pending_quantity"
         ],
         "title": "LineCostOut",
         "type": "object"
@@ -1580,7 +1580,7 @@
             "title": "Gift",
             "type": "boolean"
           },
-          "grams": {
+          "quantity": {
             "anyOf": [
               {
                 "type": "number"
@@ -1590,7 +1590,7 @@
                 "type": "string"
               }
             ],
-            "title": "Grams"
+            "title": "Quantity"
           },
           "special_price": {
             "anyOf": [
@@ -1610,7 +1610,7 @@
         },
         "required": [
           "variety_id",
-          "grams"
+          "quantity"
         ],
         "title": "LineIn",
         "type": "object"
@@ -1634,14 +1634,14 @@
         "type": "object"
       },
       "MarginOut": {
-        "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a variety's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_grams` is the sold-or-gifted grams behind it that are\nnot costed yet.",
+        "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a variety's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are\nnot costed yet.",
         "properties": {
           "amount": {
             "title": "Amount",
             "type": "integer"
           },
-          "pending_grams": {
-            "title": "Pending Grams",
+          "pending_quantity": {
+            "title": "Pending Quantity",
             "type": "number"
           },
           "percent": {
@@ -1659,7 +1659,7 @@
         "required": [
           "amount",
           "percent",
-          "pending_grams"
+          "pending_quantity"
         ],
         "title": "MarginOut",
         "type": "object"
@@ -1711,10 +1711,6 @@
             "title": "First Day",
             "type": "string"
           },
-          "grams": {
-            "title": "Grams",
-            "type": "number"
-          },
           "last_day": {
             "format": "date",
             "title": "Last Day",
@@ -1747,6 +1743,10 @@
               }
             ]
           },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
           "sales": {
             "title": "Sales",
             "type": "integer"
@@ -1767,7 +1767,7 @@
           "first_day",
           "last_day",
           "sales",
-          "grams",
+          "quantity",
           "cost_of_goods",
           "shortfall",
           "promotion",
@@ -1886,13 +1886,13 @@
             ],
             "title": "Days Left"
           },
-          "grams": {
-            "title": "Grams",
-            "type": "number"
-          },
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
           },
           "sold_out_since": {
             "anyOf": [
@@ -1934,7 +1934,7 @@
         },
         "required": [
           "variety_id",
-          "grams",
+          "quantity",
           "status",
           "sold_out_since",
           "threshold",
@@ -2140,14 +2140,6 @@
             "title": "Expenses",
             "type": "integer"
           },
-          "grams_gifted": {
-            "title": "Grams Gifted",
-            "type": "number"
-          },
-          "grams_sold": {
-            "title": "Grams Sold",
-            "type": "number"
-          },
           "own_use": {
             "anyOf": [
               {
@@ -2184,6 +2176,14 @@
             "title": "Purchases",
             "type": "integer"
           },
+          "quantity_gifted": {
+            "title": "Quantity Gifted",
+            "type": "number"
+          },
+          "quantity_sold": {
+            "title": "Quantity Sold",
+            "type": "number"
+          },
           "sales": {
             "title": "Sales",
             "type": "integer"
@@ -2214,8 +2214,8 @@
           "sales",
           "sales_count",
           "average_sale",
-          "grams_sold",
-          "grams_gifted",
+          "quantity_sold",
+          "quantity_gifted",
           "cost_of_goods",
           "pending_cost",
           "shortfall",
@@ -2800,10 +2800,10 @@
         "title": "ResetSubmitIn",
         "type": "object"
       },
-      "ReturnedGramsOut": {
+      "ReturnedQuantityOut": {
         "properties": {
-          "grams": {
-            "title": "Grams",
+          "quantity": {
+            "title": "Quantity",
             "type": "number"
           },
           "variety_id": {
@@ -2813,13 +2813,13 @@
         },
         "required": [
           "variety_id",
-          "grams"
+          "quantity"
         ],
-        "title": "ReturnedGramsOut",
+        "title": "ReturnedQuantityOut",
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_grams` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -2829,14 +2829,14 @@
             "title": "Amount",
             "type": "integer"
           },
-          "pending_grams": {
-            "title": "Pending Grams",
+          "pending_quantity": {
+            "title": "Pending Quantity",
             "type": "number"
           }
         },
         "required": [
           "amount",
-          "pending_grams",
+          "pending_quantity",
           "all_pending"
         ],
         "title": "RowCostOut",
@@ -3088,8 +3088,8 @@
             "title": "Total",
             "type": "integer"
           },
-          "total_grams": {
-            "title": "Total Grams",
+          "total_quantity": {
+            "title": "Total Quantity",
             "type": "number"
           }
         },
@@ -3102,7 +3102,7 @@
           "payment",
           "total",
           "lines",
-          "total_grams",
+          "total_quantity",
           "still_owing",
           "bill"
         ],
@@ -3185,10 +3185,6 @@
           "cost": {
             "$ref": "#/components/schemas/LineCostOut"
           },
-          "grams": {
-            "title": "Grams",
-            "type": "number"
-          },
           "line_total": {
             "title": "Line Total",
             "type": "integer"
@@ -3199,6 +3195,10 @@
           },
           "pricing_rule": {
             "$ref": "#/components/schemas/PricingRule"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
           },
           "variety_id": {
             "title": "Variety Id",
@@ -3212,7 +3212,7 @@
         "required": [
           "variety_id",
           "variety_name",
-          "grams",
+          "quantity",
           "pricing_rule",
           "price_per_gram",
           "line_total",
@@ -3223,10 +3223,6 @@
       },
       "SaleLineOut": {
         "properties": {
-          "grams": {
-            "title": "Grams",
-            "type": "number"
-          },
           "line_total": {
             "title": "Line Total",
             "type": "integer"
@@ -3237,6 +3233,10 @@
           },
           "pricing_rule": {
             "$ref": "#/components/schemas/PricingRule"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
           },
           "variety_id": {
             "title": "Variety Id",
@@ -3250,7 +3250,7 @@
         "required": [
           "variety_id",
           "variety_name",
-          "grams",
+          "quantity",
           "pricing_rule",
           "price_per_gram",
           "line_total"
@@ -3536,7 +3536,7 @@
       "ThresholdIn": {
         "description": "`PUT /stock/varieties/{variety_id}/threshold`'s body: `None` turns the\nthreshold off, rather than storing a zero or negative one (`Threshold.of`\nrefuses both).",
         "properties": {
-          "grams": {
+          "quantity": {
             "anyOf": [
               {
                 "type": "number"
@@ -3549,9 +3549,12 @@
                 "type": "null"
               }
             ],
-            "title": "Grams"
+            "title": "Quantity"
           }
         },
+        "required": [
+          "quantity"
+        ],
         "title": "ThresholdIn",
         "type": "object"
       },
@@ -3711,20 +3714,20 @@
           "cost": {
             "$ref": "#/components/schemas/CostOut"
           },
-          "grams_gifted": {
-            "title": "Grams Gifted",
-            "type": "number"
-          },
-          "grams_sold": {
-            "title": "Grams Sold",
-            "type": "number"
-          },
           "margin": {
             "$ref": "#/components/schemas/MarginOut"
           },
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "quantity_gifted": {
+            "title": "Quantity Gifted",
+            "type": "number"
+          },
+          "quantity_sold": {
+            "title": "Quantity Sold",
+            "type": "number"
           },
           "sales_without_shipping": {
             "title": "Sales Without Shipping",
@@ -3751,8 +3754,8 @@
           "name",
           "sales_without_shipping",
           "share_percent",
-          "grams_sold",
-          "grams_gifted",
+          "quantity_sold",
+          "quantity_gifted",
           "cost",
           "margin"
         ],
@@ -3773,8 +3776,8 @@
             ],
             "title": "Days Left"
           },
-          "grams": {
-            "title": "Grams",
+          "quantity": {
+            "title": "Quantity",
             "type": "number"
           },
           "sold_out_since": {
@@ -3817,7 +3820,7 @@
         },
         "required": [
           "variety_id",
-          "grams",
+          "quantity",
           "status",
           "sold_out_since",
           "threshold",
@@ -3848,10 +3851,6 @@
             "title": "First Day",
             "type": "string"
           },
-          "grams": {
-            "title": "Grams",
-            "type": "number"
-          },
           "last_day": {
             "format": "date",
             "title": "Last Day",
@@ -3880,6 +3879,10 @@
               }
             ]
           },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
           "sales": {
             "title": "Sales",
             "type": "integer"
@@ -3899,7 +3902,7 @@
           "first_day",
           "last_day",
           "sales",
-          "grams",
+          "quantity",
           "cost_of_goods",
           "shortfall",
           "promotion",
@@ -3993,7 +3996,7 @@
       },
       "WithdrawalLineIn": {
         "properties": {
-          "grams": {
+          "quantity": {
             "anyOf": [
               {
                 "type": "number"
@@ -4003,7 +4006,7 @@
                 "type": "string"
               }
             ],
-            "title": "Grams"
+            "title": "Quantity"
           },
           "variety_id": {
             "title": "Variety Id",
@@ -4012,15 +4015,15 @@
         },
         "required": [
           "variety_id",
-          "grams"
+          "quantity"
         ],
         "title": "WithdrawalLineIn",
         "type": "object"
       },
       "WithdrawalLineOut": {
         "properties": {
-          "grams": {
-            "title": "Grams",
+          "quantity": {
+            "title": "Quantity",
             "type": "number"
           },
           "variety_id": {
@@ -4035,7 +4038,7 @@
         "required": [
           "variety_id",
           "variety_name",
-          "grams"
+          "quantity"
         ],
         "title": "WithdrawalLineOut",
         "type": "object"
@@ -4047,10 +4050,6 @@
             "title": "Date",
             "type": "string"
           },
-          "grams": {
-            "title": "Grams",
-            "type": "number"
-          },
           "id": {
             "title": "Id",
             "type": "integer"
@@ -4061,6 +4060,10 @@
             "title": "Kind",
             "type": "string"
           },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
           "reason": {
             "$ref": "#/components/schemas/WithdrawalReason"
           }
@@ -4069,7 +4072,7 @@
           "id",
           "date",
           "reason",
-          "grams"
+          "quantity"
         ],
         "title": "WithdrawalMovementOut",
         "type": "object"
@@ -4106,8 +4109,8 @@
           "reason": {
             "$ref": "#/components/schemas/WithdrawalReason"
           },
-          "total_grams": {
-            "title": "Total Grams",
+          "total_quantity": {
+            "title": "Total Quantity",
             "type": "number"
           }
         },
@@ -4116,7 +4119,7 @@
           "reason",
           "date",
           "note",
-          "total_grams",
+          "total_quantity",
           "lines"
         ],
         "title": "WithdrawalOut",

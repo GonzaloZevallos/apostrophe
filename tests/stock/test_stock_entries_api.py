@@ -42,7 +42,7 @@ def test_an_entry_is_recorded(client: TestClient) -> None:
 
 
 def test_a_purchase_answers_its_cost_per_gram(client: TestClient) -> None:
-    entry = _record(client, origin="purchase", grams="10", total_cost=85_000)
+    entry = _record(client, origin="purchase", quantity="10", total_cost=85_000)
 
     assert entry["total_cost"] == 85_000
     assert entry["cost_per_gram"] == 8_500
@@ -261,7 +261,7 @@ def test_an_entry_edit_keeps_its_own_archived_variety_but_cannot_move_onto_anoth
     client: TestClient, engine: Engine
 ) -> None:
     mine = _variety_id(client, "Mine")
-    entry = _record(client, variety_id=mine, grams="10")
+    entry = _record(client, variety_id=mine, quantity="10")
     other = _archived_variety(client, engine, "Other")
     archive_by_hand(engine, mine)
 
@@ -284,7 +284,7 @@ def test_an_entry_cannot_move_onto_an_archived_variety_from_a_live_one(
     client: TestClient, engine: Engine
 ) -> None:
     live = _variety_id(client, "Live")
-    entry = _record(client, variety_id=live, grams="10")
+    entry = _record(client, variety_id=live, quantity="10")
     archived = _archived_variety(client, engine, "Gone")
 
     moved = client.put(
@@ -299,7 +299,7 @@ def test_an_entry_of_an_archived_variety_can_still_be_deleted(
     client: TestClient, engine: Engine
 ) -> None:
     variety_id = _variety_id(client, "Mine")
-    entry = _record(client, variety_id=variety_id, grams="10")
+    entry = _record(client, variety_id=variety_id, quantity="10")
     archive_by_hand(engine, variety_id)
 
     assert client.delete(f"/stock/entries/{entry['id']}").status_code == 204

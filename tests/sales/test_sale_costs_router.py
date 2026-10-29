@@ -40,7 +40,7 @@ def test_a_fully_costed_line_answers_its_cost_and_no_pending_grams(
     client: TestClient,
 ) -> None:
     variety_id = _variety(client)
-    _entry(client, variety_id, grams="10", total_cost=5_000)
+    _entry(client, variety_id, quantity="10", total_cost=5_000)
 
     sale_id = _sale(client, variety_id)
 
@@ -100,7 +100,7 @@ def test_a_gift_line_with_no_lot_behind_it_matches_the_gift_fixture(client: Test
 
 def test_list_sales_never_carries_a_cost_field(client: TestClient) -> None:
     variety_id = _variety(client)
-    _entry(client, variety_id, grams="10", total_cost=5_000)
+    _entry(client, variety_id, quantity="10", total_cost=5_000)
     client.post(
         "/sales",
         json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
@@ -118,7 +118,7 @@ def test_sale_detail_answers_total_grams_summed_over_every_line_gifts_included(
     """Left over from #20 (sales.md): the delete confirmation and Deshacer name the
     grams returning to stock, from this field — never added up in the browser."""
     variety_id = _variety(client)
-    _entry(client, variety_id, grams="20", total_cost=5_000)
+    _entry(client, variety_id, quantity="20", total_cost=5_000)
 
     response = client.post(
         "/sales",
@@ -150,7 +150,7 @@ def test_recording_a_later_entry_moves_the_cost_the_next_time_it_is_read(
     before = client.get(f"/sales/{sale_id}").json()
     assert before["lines"][0]["cost"] == {"costed": None, "pending_quantity": 10.0}
 
-    _entry(client, variety_id, grams="10", total_cost=4_000)
+    _entry(client, variety_id, quantity="10", total_cost=4_000)
 
     after = client.get(f"/sales/{sale_id}").json()
     assert after["lines"][0]["cost"] == {"costed": 4_000, "pending_quantity": 0.0}

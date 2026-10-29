@@ -49,8 +49,8 @@ def test_a_line_spanning_two_lots_is_split_between_costed_and_pending(
     client: TestClient, engine: Engine
 ) -> None:
     variety_id = _variety_id(client)
-    _entry(client, variety_id, grams="5", total_cost=5_000)
-    _entry(client, variety_id, grams="3", total_cost=6_000)
+    _entry(client, variety_id, quantity="5", total_cost=5_000)
+    _entry(client, variety_id, quantity="3", total_cost=6_000)
 
     sale_response = client.post(
         "/sales",
