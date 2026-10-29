@@ -26,6 +26,7 @@ import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } f
 import type { Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -60,19 +61,17 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   // A customer, left owing on its first sale.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone').fill('+5491155550099')
   await page.getByLabel('Name').fill('Carla Pérez')
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -101,8 +100,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Taken from the oldest debt')).toBeVisible()
   await expect(page.getByText(`$ 5.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText(/They still owe/)).toHaveCount(0) // nothing left.
-  await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
+  await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
 
   // Settled: no more "Te debe", no more "Record payment", and the account names
   // how it was paid and the sale as "Left owing" no more — it reads the cash
@@ -132,8 +130,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('radio', { name: 'Transfer' }).check()
   await expect(page.getByText(`$ 3.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText('They still owe $ 5.000')).toBeVisible()
-  await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Payment saved · still owing $ 5.000')).toBeVisible()
+  await expectToast(page, 'Payment saved · still owing $ 5.000', () =>
+    page.getByRole('button', { name: 'Save' }).click(),
+  )
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 5\.000/ })).toBeVisible()
 
   // --- Delete payment: confirmed first, then the debt it had settled returns. ---
@@ -143,8 +142,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(
     page.getByText(`Delete the payment of $ 3.000 (transfer) from ${today}?`),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
-  await expect(page.getByText('Payment deleted')).toBeVisible()
+  await expectToast(page, 'Payment deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
 
   // --- Te deben: opened from the Clientes header, lists her with the same figure,
@@ -198,8 +196,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 5.000' }).click()
   await page.getByRole('radio', { name: 'Cash' }).check()
-  await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
+  await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
 
   await page.goto(creditSaleUrl)
   await page.getByRole('button', { name: 'Delete sale' }).click()
@@ -220,8 +217,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(
     page.getByText(`Delete the payment of $ 5.000 (cash) from ${today}?`),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
-  await expect(page.getByText('Payment deleted')).toBeVisible()
+  await expectToast(page, 'Payment deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(cardOf(page).getByText('Credit', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Delete payment' })).toHaveCount(1)

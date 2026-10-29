@@ -8,6 +8,7 @@
 
 import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -22,13 +23,11 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Jazmín con un nombre bastante largo')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('500')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 }
 
 async function box(target: Locator): Promise<{ x: number; width: number; height: number }> {
