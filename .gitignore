@@ -19,3 +19,9 @@ node_modules/
 
 # Playwright run directories (GH-251): junit, traces and screenshots of a run.
 web/test-results/
+
+# Coverage reports (pytest-cov, @vitest/coverage-v8), written only when asked for.
+.coverage*
+coverage.json
+htmlcov/
+web/coverage/
