@@ -1,6 +1,6 @@
 # Navigation
 
-The app's one structure for a business: the tabs on the phone, the sidebar on a computer, More, Settings, the one rule that gives every screen its chrome and its way back, which place is marked, the routes and their redirects, and the first run (the Onboarding for a brand-new business, the first-run checklist for a business that existed before it, the after-import notice for an imported one). It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
+The app's one structure for a business: the tabs on the phone, the sidebar on a computer, More, Settings, the one rule that gives every screen its chrome and its way back, which place is marked, the routes and their redirects, the phone layout (fixed bar, floating "+ New sale", forms as sheets), and the first run (the Onboarding for a brand-new business, the first-run checklist for a business that existed before it, the after-import notice for an imported one). It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
 
 ## Jobs
 
@@ -39,6 +39,12 @@ This refines the navigation job and criterion 5; it is not a new job. Its protag
 - Its capture side (the `InicioHoyCompu` row) is design-capture.md's.
 - Before it (GH-45's follow-up): the agreement test reached `/first-run` only where the checklist shows, the shape of `checklist` outside the checklist kind was undecided, only the checklist test ran in both themes, and the Today capture showed a difference by construction.
 
+**When** I'm in the middle of serving a customer with my phone in hand, **I want** the app to behave like a phone app (the tabs and "+ New sale" within reach, a form that fills the screen with its main action under my thumb, and nothing I need hidden behind the keyboard or off the edge of the screen), **so I can** record a sale, a payment or stock without fighting the screen or losing what I typed.
+
+- This is a quality bar on the navigation job and the BRIEF's phone jobs (record a sale, collect a payment, record stock, check Home), below 900 px only (GH-319). It is not a new job. The computer keeps every capability and gets nothing from it (Phone first).
+- Before it: the bar scrolled away with the page, "+ New sale" sat in the page flow, forms were overlays or routed pages whose action could end up below the fold or behind the keyboard, some tap targets and labels were too small, and some screens scrolled sideways. The seller scrolled back up, pinched or retried taps.
+- Served by "Phone layout (GH-319)" below and criteria 19 and 20. Analysis's content (its three tables and month selector) is GH-319's part 2; its chrome is covered here.
+
 Choosing which pricing rules the business uses (pricing-settings.md) belongs in Settings too, as the Prices group.
 
 Before this structure: the bar was Home · Sales · Customers · Stock · More; one variety was split across Stock, Varieties and Catalog; collecting a debt took four taps from Customers; settings were split across Business, Catalog and Expenses → Expense categories, and the bot was configured inside Catalog. Nothing of it is kept but the redirects from its paths, and, until Settings's Integrations and Catalog message exist, the temporary place for the bot and the header and footer reached from the catalog screen (catalog.md).
@@ -75,13 +81,28 @@ Success criteria, reviewing the first run (GH-45 follow-up):
 17. **The capture tells the truth.** `InicioHoyCompu` is compared against its own named section (design-capture.md).
 18. **Nothing a seller sees changes, and no test is loosened.** This file, results.md and every screen read and behave as before; every suite passes; edited tests keep every assertion they had; registry changes stay within their declared seams.
 
+Success criteria, the phone layout (GH-319). They are checked at 320, 360 and 390 px. Analysis's content meets them in GH-319's part 2; its chrome meets them here. Speed is criterion 1 together with the BRIEF's measure: the tap count to a saved sale is unchanged, and a sale is still recorded from the phone in under a minute.
+
+19. **Nothing needed is out of reach on the phone.**
+    - On tab roots, the bar and "+ New sale" stay in view at any scroll position. On cards and details only the bar shows, and on forms and sheets neither shows.
+    - While a text keyboard is open, the bar and the button are hidden and can't be tapped, and nothing shifts when they come back.
+    - A sheet's main action, and any error about it, stays pinned and visible at the bottom. The three forms that keep the old overlay (below) are a named exception.
+    - No page is wider than the screen, down to 246 px, with extreme data.
+    - Long names truncate with an ellipsis. A figure never splits, and "$" never stays alone on a line.
+    - Every tap target is at least 44×44, and no text is under 12 px.
+20. **Nothing typed or found is lost, and the computer is untouched.**
+    - Rotating the phone or resizing across 900 px keeps what was typed.
+    - Closing a sheet opened from a scrolled list returns to the same scroll position.
+    - Tapping outside a sheet never discards work and never adds a confirmation. Where a visible area lies outside it, a tap there closes it only when nothing was changed. A full-screen phone sheet has no outside: the safe-area strip by the status bar never counts as one.
+    - Computer layouts come out with unchanged captures, ADR-0044's price modal included.
+
 ## Behaviour
 
 ### Tabs (phone)
 
-- **The bar**: Home · Sales · Customers · Varieties · More, in that order. Tabs are objects, chosen by how often they are used.
-- **The fixed "+ New sale"** button sits apart from the tabs and opens the sale form directly (sales.md). It is not a tab.
-- **Labels** are always visible; no tab is an icon alone.
+- **The bar**: Home · Sales · Customers · Varieties · More, in that order. Tabs are objects, chosen by how often they are used. It is fixed to the bottom of the screen (Phone layout).
+- **"+ New sale"** floats just above the bar on tab roots, apart from the tabs, and opens the sale form directly (sales.md). It is not a tab.
+- **Labels** are always visible, at least 12 px; no tab is an icon alone.
 - **The active tab** is marked by more than color: a filled icon or an underline, and `aria-current` on the element.
 - **Fit**: the bar, "Varieties" included, fits at 320 px viewport width with text at 130 %, measured in a real browser.
 
@@ -139,6 +160,7 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
   - It shows neither the bar nor "+ New sale". It closes with "Close", never another word such as "Back".
   - Leaving it with unsaved changes asks before discarding. New sale keeps its own "Discard the sale?" (sales.md); every other form or sheet asks the same way with its own fixed wording.
   - An untouched form or sheet closes at once.
+  - On the phone, the forms listed under "Phone layout" are drawn as sheets by the one shared `Sheet`.
   - The Onboarding's "Close" lands on Home and keeps its resume point; New sale opened from "Done" goes back to Home, never to "Done" or the Onboarding (onboarding.md).
 - **Back** follows the app's history and leaves in one move; it never lands on the same screen twice. With no history (a link opened directly), it goes to the parent named by "‹", or for a form or sheet to the screen it belongs to:
 
@@ -151,6 +173,7 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 | Customer form, new | Customers |
 | Customer form, editing | that customer's card |
 | Record payment | Customers |
+| Expense form, new | Expenses |
 | A variety's "See all" of prices or entries | the variety's page |
 | "All entries" | Varieties |
 | Stock withdrawal form, new | Varieties |
@@ -162,6 +185,67 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 
 - **A gone exit is the same move as "Close".** When saving, deleting or undoing in the stock entry form, the customer form or Record payment hits a record that no longer exists, the screen goes back one step in history when it was opened from inside the app, or to its parent when it was opened by a direct link. The list refreshes and "That is gone. The list is up to date." shows, as accounts.md defines it. No history entry is ever duplicated.
 - **"Collect from <name>"** on a debtor row (Customers or Home) opens Record payment with that customer chosen, as an entry in the app's history; back or "Close" closes it in one move, back to the screen it came from.
+
+### Phone layout (GH-319)
+
+Below 900 px only. Every rule here is scoped under that breakpoint. Computer layouts, ADR-0044's price modal included, stay exactly as they are. Analysis's content (its three tables and month selector) is GH-319's part 2; only its chrome follows this section now.
+
+- **Fixed bar**: the bar is fixed to the bottom of the screen on tab roots and on cards and details, respecting the device insets.
+- **Floating "+ New sale"**: it floats together with its "what is missing" line just above the bar, on tab roots only. Forms and sheets show neither the bar nor the button.
+- **Bottom space**: content never ends under the bar or the button, and the last row is fully visible above them. One bottom-space value (`--bottom-chrome-height`) drives three things: the content padding, the button position and the toast position. No rule hard-codes those heights. A customer's card pins its "New sale to <name>" above the bar from the same value.
+- **Keyboard**:
+  - Whenever a text keyboard is open, on any tab root or card with a text field (Customers search, Sales search or filters, and the rest), the bar and the button are hidden and can't be tapped. They are never pushed up above the keyboard.
+  - Padding does not change, so nothing shifts. Closing the keyboard brings both back with the typed text and scroll position unchanged.
+  - Pinch-zoom never counts as keyboard open. Neither does a date, time, select, checkbox, radio, range, color, file or button control: those leave the bar in place.
+  - It works on iOS, on Android and without the visual viewport API. Only `useVisualViewport` decides it, through one pure function (ADR-0028 as amended). New sale keeps its form-fixed behaviour.
+- **Toasts**: only their position changes, never their timing or dismissal.
+  - They sit above the bar and the "+ New sale" group on tab roots, above the bar on cards and details, and above the pinned action on a sheet. A toast never covers a main action.
+  - After a save closes a sheet, the toast shows in its place on the screen the seller returns to.
+- **Sheets**:
+  - One shared `Sheet` draws every phone form listed below. It is a full-screen modal dialog with "Close" at the top, and the background does not scroll.
+  - Focus goes to the first enabled field (a choice group's first option included), or to a field the form names.
+  - The main action sits in an actions container pinned at the bottom of the form, inside the form. Errors and destructive actions sit above the main action, and nothing renders below it.
+  - The sheet's height follows the visible viewport, so the keyboard does not cover the action.
+  - The form's element tree is the same on phone and computer, so a resize across 900 px or a rotation keeps what was typed.
+- **Back and Close on a sheet**: the phone's back gesture is the same action as "Close".
+  - With nothing changed, the sheet closes and the seller is back where they opened it from, at the same scroll position.
+  - With something typed, the form's existing leave confirmation appears, exactly as before.
+  - The inline edits on a variety's page close their sheet first and never jump over the page.
+- **Tap outside**:
+  - On the phone a sheet fills the screen and has no outside. The safe-area strip by the status bar does not count as outside: a tap there does nothing, whether the sheet is touched or not. No gap or visible backdrop is added to create an outside. "Close" and back are a phone sheet's only exits.
+  - Where a visible area does lie outside a dialog (the computer's existing dialogs), a tap there closes an untouched dialog and does nothing on a touched one. Those computer frames keep their backdrop behaviour exactly as it is today; this part does not edit them.
+  - Anywhere, tapping outside never discards work, never opens a dialog, and no form gains a new confirmation.
+- **What is behind a sheet**:
+  - Opened from inside the app, the screen behind is the one the form was opened from. An in-page sheet (a variety's inline edits, editing an expense) has its own screen behind it.
+  - Opened by a direct address, a routed form shows its sheet over the parent from the back-with-no-history table. That parent is inert and hidden from assistive technology, with no chrome, no heading and no ids, and it shows nothing while its data is loading or missing.
+  - Routes, kinds and parents do not change.
+- **Forms drawn as sheets**:
+  - Record payment;
+  - the price entry form (phone only; its computer modal is ADR-0044's);
+  - the customer form, new and editing;
+  - the expense form, new and editing;
+  - the stock entry form, new and editing;
+  - the stock withdrawal form, new and editing;
+  - New variety;
+  - a variety's rename, low-stock warning form and catalog attributes form.
+- **Known exception**: Change password, the expense categories editor and New sale's new-customer overlay keep the old overlay on the phone, with no pinned action. The `Sheet` ADR (ADR-0062) names them. This is an exception to criterion 19's pinned action, not a failure of it.
+- **Record payment's focus**: on the phone, opening it puts focus on its first field, not its title; its computer modal still focuses the title. Closing still returns focus to the "Collect" or "Record payment" that was tapped (payments.md).
+- **New sale's payment choice**:
+  - The Cash / Transfer / Owing choice stays visible above the sale's footer.
+  - Save is never disabled. It does not look ready until a choice is made: it is drawn as a secondary button until then and as the primary button after.
+  - A tap on Save before the choice does what it did before: the line names what is missing. The tap count to a saved sale does not change.
+- **Fit**: no page is wider than the viewport at 320 and 246 px with extreme data. Long names truncate with an ellipsis, a figure never splits, and "$" never stays alone on a line. The expenses month ordering rule applies to Expenses only.
+- **Tap targets and text**: every tap target is at least 44×44 and no text is under 12 px. This includes:
+  - New variety;
+  - the onboarding Skip and Skip the rest;
+  - Categories, Integrations and Edit header and footer;
+  - Owed to you;
+  - the month arrows;
+  - the low-stock switch.
+- **Keyboard help**:
+  - Login suggests the username and current password.
+  - Change password and the reset page suggest the new and current password.
+  - Customer search is a search field with a search key on the keyboard.
 
 ### Routes
 
@@ -256,6 +340,12 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   - no network shows "No connection";
   - a server error shows a generic retry;
   - a record that is gone follows the "That is gone." rule.
+- **Phone layout (GH-319)**:
+  - Every phone sheet is rendered by the one shared `Sheet` (ADR-0062). No form defines its own backdrop, Close placement, pinned-action layout or scroll lock.
+  - Wherever a sheet has an outside, its tap-outside and its Close read the same `touched` value: the `dirty` the host already passes to `useLeaveGuard`. On the phone's full-screen sheet nothing outside it closes it.
+  - "Keyboard open" is decided only in `useVisualViewport` (ADR-0028 as amended).
+  - The phone rules never edit ADR-0044's `PriceFrame` dialog branch or `CobroFrame`'s computer branch.
+  - Each step leaves the Mobile check green, deletes every offender entry it turns green, keeps registry keys and adds no entry outside gate.md's trade or new-row rules.
 
 ## Metrics
 
@@ -306,6 +396,31 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - **Reloads under `/varieties` (criterion 11)**: a browser navigation to each Varieties route, parameterised ones included (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`) and `/varieties/archived`, opens the screen, never the API's answer; the front's own API calls still reach the API.
 - **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail, the Archived card, the archived variety's page, Prices, the Onboarding's screens and Home's first-run states included; Zeta approves the pull request that states them.
 - **Design**: `scripts/design/compare.sh` runs before and after for the stock entry form, the customer form, New sale and Home (phone and computer, both themes), attached to the PR and judged by eye; `NuevaVentaCompu` comes out unchanged; any difference from the design is listed in the PR.
+- **Phone speed (GH-319, with criterion 1)**: the New sale e2e passes unedited, with the same tap count to a saved sale. A sale is recorded from a phone viewport in under 60 s.
+- **Chrome in reach (criterion 19)**:
+  - The Mobile check runs at 320, 360 and 390 px, at the top, middle and bottom scroll positions. On every tab root, Analysis's chrome included, it finds the bar and "+ New sale" inside the viewport with the last row fully above them. On cards it finds the bar and no button, and on forms and sheets neither.
+  - 0 `chrome-at-load`, `chrome-mid-scroll` or bar-label entries are left for the screens in scope.
+- **Keyboard (criterion 19)**:
+  - The unit matrix of the keyboard decision passes 100%: iOS gap, Android drop, focus at mount, an address-bar change under 120 px, `scale = 2`, and no `visualViewport` with text, date and select focus.
+  - On Customers, the e2e hides the bar and button with the keyboard open and brings them back with the search text and scroll offset unchanged.
+  - An Android-sized scroll keeps the bar visible.
+  - `nuevaVentaTelefono.spec.ts` and the existing hook tests pass unedited.
+- **Pinned action and focus (criterion 19)**:
+  - On every sheet, the action's bottom edge is within `--inset-abajo` of the sheet's bottom. This is checked on rename (the shortest form) and on a withdrawal with lines (the tallest).
+  - A front test per form asserts its first-focus control, Record payment's first field included.
+  - A direct address shows each routed sheet over its parent, one test per route.
+- **Fit, targets and text (criterion 19)**:
+  - 0 `h-scroll`, `name-overflow` or `figure-split` entries at 320 and 246 px with the seed's extreme data, on every phone screen except Analysis's content.
+  - 0 `touch-target`, `text-size` or `autocomplete` entries on the screens in scope.
+  - No entry names Record payment's walked sheet states.
+- **Nothing lost (criterion 20)**:
+  - Viewport-flip tests in the price form and in Record payment keep the typed text.
+  - Close from a scrolled list returns to the same offset.
+  - `Sheet` unit tests, wherever a backdrop is drawn: tapping it closes an untouched sheet and does nothing on a touched one.
+  - A `Sheet` unit test on the phone: a tap on the top safe-area strip leaves the sheet open, touched or untouched.
+  - The existing unsaved-changes tests pass unedited.
+- **Computer untouched (criterion 20)**: the computer captures of touched screens are unchanged. `PriceFrame`'s dialog branch and `CobroFrame`'s computer branch have 0 changed lines.
+- **Offender lists (GH-319)**: 0 entries added outside gate.md's trade or new-row rules. Each new assertion is shown failing once on a deliberately regressed input in the PR, and that input is not committed.
 
 ## Out of scope
 
@@ -335,6 +450,11 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - Changing the contract checker so it can declare a nullable array; a `null` checklist.
 - A `nothing_qualifies` that answers for every kind, or a catalog read added to every Home read for it.
 - Theme coverage of Home's Today, Week and Month figures as part of the first-run review.
+- Analysis's content on the phone (its three tables and month selector): GH-319's part 2.
+- Converting Change password, the expense categories editor or New sale's new-customer overlay into sheets.
+- Any computer layout change from the phone layout; changing the timing or dismissal of toasts; changing New sale's tap count or what Save does before the payment choice.
+- Disabling Save in New sale; a scroll-and-highlight on Save.
+- A tap-outside area on the phone's full-screen sheet: a gap, a visible backdrop strip, or the safe-area strip acting as a close target.
 
 ## Planned in GH-318
 

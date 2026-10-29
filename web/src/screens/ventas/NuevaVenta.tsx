@@ -49,6 +49,7 @@ import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { useViewport } from '../../shell/useViewport'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
@@ -173,6 +174,8 @@ function NuevaVentaForm() {
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
+  // Save looks unready before the choice on the phone only; the computer draws it as it always did.
+  const onPhone = useViewport() === 'phone'
 
   const initialCustomerId = readNewSaleState(location.state)
 
@@ -584,7 +587,7 @@ function NuevaVentaForm() {
                   <div className="nueva-venta__cliente">
                     <div className="nueva-venta__cliente-texto">
                       <span className="lista-clientes__nombre">
-                        {customer.name}
+                        <span className="lista-clientes__nombre-texto">{customer.name}</span>
                         {settings.vip && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                       </span>
                       {customer.phone !== null && (
@@ -690,7 +693,11 @@ function NuevaVentaForm() {
                 {totals.gramsGiftedHundredths > 0 &&
                   SALES_TEXT.giftGrams(formatGrams(fromHundredths(totals.gramsGiftedHundredths)))}
               </span>
-              <Boton textOnly="submit" type="submit" disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
+              <Boton
+                textOnly="submit"
+                type="submit"
+                variant={onPhone && method === null ? 'secondary' : 'primary'}
+                disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
                 {SALES_TEXT.saveSale}
               </Boton>
             </div>

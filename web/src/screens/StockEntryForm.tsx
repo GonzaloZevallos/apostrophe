@@ -10,10 +10,12 @@
  * the date is `today` and implied, and only the grams and the optional total cost are asked.
  * A host that only wants a starting point passes the `preselected*` ones.
  * Its dialogs sit inline after the form, or in `dialogHost` when the host wants them
- * elsewhere in its own markup.
+ * elsewhere in its own markup. A host that draws the form in a `Sheet` says `pinned`: on a phone
+ * the errors, the cost preview, the delete and the main action then sit in the sheet's pinned
+ * actions, the delete above the main action (ADR-0062); a computer form keeps the order it had.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
@@ -23,14 +25,23 @@ import { type Origin, type StockEntry, deleteEntry, editEntry, readStock, record
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import { SheetActions } from '../components/Sheet'
 import SinConexion from '../components/SinConexion'
+import { useViewport } from '../shell/useViewport'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
-import { COST_REQUIRED_HELP, GRAMS_INVALID, OPENING_COST_HINT, onHandHelp, perGramPreview, STOCK_TEXT } from '../copy/stock'
+import {
+  COST_REQUIRED_HELP,
+  GRAMS_INVALID,
+  OPENING_COST_HINT,
+  onHandHelp,
+  perGramPreview,
+  STOCK_TEXT,
+} from '../copy/stock'
 import { COMMON_TEXT } from '../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
@@ -71,6 +82,8 @@ interface CommonProps {
   onDirtyChange?: (dirty: boolean) => void
   /** Where the dialogs go; inline after the form when absent. */
   dialogHost?: HTMLElement | null
+  /** The host draws the form in a `Sheet`: its last row is the pinned actions on a phone. */
+  pinned?: boolean
 }
 
 /** The owner's form: a new entry or an edit, nothing locked. */
@@ -108,7 +121,10 @@ export default function StockEntryForm({
   onGone,
   onDirtyChange,
   dialogHost,
+  pinned = false,
 }: StockEntryFormProps) {
+  const phone = useViewport() === 'phone'
+  const Actions = pinned ? SheetActions : Fragment
   const queryClient = useQueryClient()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
@@ -184,7 +200,14 @@ export default function StockEntryForm({
     return found?.grams ?? null
   })()
 
-  function buildBody(): { date: string; variety_id: number; origin: Origin; grams: string; total_cost?: number; note?: string } | null {
+  function buildBody(): {
+    date: string
+    variety_id: number
+    origin: Origin
+    grams: string
+    total_cost?: number
+    note?: string
+  } | null {
     if (!previewGrams.ok) return null
     const variety = Number(varietyId)
     if (!Number.isInteger(variety) || varietyId === '') return null
@@ -290,7 +313,11 @@ export default function StockEntryForm({
       {confirmingDelete && initial !== undefined && (
         <ConfirmDialog
           title={STOCK_TEXT.antesDeBorrar}
-          detail={STOCK_TEXT.borrasLaEntradaDel(formatDate(initial.date, initial.date), varietyName, formatGrams(initial.grams))}
+          detail={STOCK_TEXT.borrasLaEntradaDel(
+            formatDate(initial.date, initial.date),
+            varietyName,
+            formatGrams(initial.grams),
+          )}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
@@ -303,43 +330,56 @@ export default function StockEntryForm({
     </>
   )
 
+  const deleteButton = mode === 'editar' && (
+    <Boton
+      variant="icon"
+      action="delete"
+      ariaLabel={STOCK_TEXT.borrarEntrada}
+      onClick={() => setConfirmingDelete(true)}
+    />
+  )
+
   return (
     <>
       <form className="formulario" onSubmit={onSubmit}>
         {fixedVarietyId !== undefined ? (
           <>
-        <div className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
-          <span className="campo__valor">{varietyName}</span>
-          {varietyGrams !== null && (
-            <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
-          )}
-        </div>
-        <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
-          <input
-            className="campo__input"
-            inputMode="decimal"
-            value={grams}
-            onChange={(event) => setGrams(event.target.value)}
-            required
-          />
-        </label>
-        <div className="campo">
-          <div className="origen-pildoras">
-            <span className="pildora pildora--activa pildora--fija">{COMMON_TEXT.initialStock}</span>
-          </div>
-        </div>
-        <label className="campo">
-          <span className="campo__rotulo">{STOCK_TEXT.costoTotal}</span>
-          <input
-            className="campo__input"
-            inputMode="numeric"
-            value={totalCost}
-            onChange={(event) => setTotalCost(event.target.value)}
-          />
-          <span className="campo__ayuda" data-copy="help">{OPENING_COST_HINT}</span>
-        </label>
+            <div className="campo">
+              <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
+              <span className="campo__valor">{varietyName}</span>
+              {varietyGrams !== null && (
+                <span className="campo__ayuda" data-copy="help">
+                  {onHandHelp(formatGrams(varietyGrams))}
+                </span>
+              )}
+            </div>
+            <label className="campo">
+              <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
+              <input
+                className="campo__input"
+                inputMode="decimal"
+                value={grams}
+                onChange={(event) => setGrams(event.target.value)}
+                required
+              />
+            </label>
+            <div className="campo">
+              <div className="origen-pildoras">
+                <span className="pildora pildora--activa pildora--fija">{COMMON_TEXT.initialStock}</span>
+              </div>
+            </div>
+            <label className="campo">
+              <span className="campo__rotulo">{STOCK_TEXT.costoTotal}</span>
+              <input
+                className="campo__input"
+                inputMode="numeric"
+                value={totalCost}
+                onChange={(event) => setTotalCost(event.target.value)}
+              />
+              <span className="campo__ayuda" data-copy="help">
+                {OPENING_COST_HINT}
+              </span>
+            </label>
           </>
         ) : (
           <>
@@ -380,7 +420,9 @@ export default function StockEntryForm({
                 ))}
               </select>
               {varietyGrams !== null && (
-                <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
+                <span className="campo__ayuda" data-copy="help">
+                  {onHandHelp(formatGrams(varietyGrams))}
+                </span>
               )}
             </label>
             {fixedOrigin === undefined && (
@@ -409,7 +451,9 @@ export default function StockEntryForm({
                 value={totalCost}
                 onChange={(event) => setTotalCost(event.target.value)}
               />
-              <span className="campo__ayuda" data-copy="help">{COST_REQUIRED_HELP}</span>
+              <span className="campo__ayuda" data-copy="help">
+                {COST_REQUIRED_HELP}
+              </span>
             </label>
             <label className="campo">
               <span className="campo__rotulo">{COMMON_TEXT.note}</span>
@@ -422,26 +466,24 @@ export default function StockEntryForm({
             </label>
           </>
         )}
-        {formError !== null && (
-          <span className="campo__error" role="alert">
-            {formError}
-          </span>
-        )}
-        {offline && <SinConexion />}
-        {preview !== null && (
-          <span className="pie" data-copy="help">{perGramPreview(formatMoney(preview))}</span>
-        )}
-        <Boton textOnly="submit" type="submit" disabled={sending}>
-          {mode === 'nuevo' ? STOCK_TEXT.guardaLaEntrada : COMMON_TEXT.save}
-        </Boton>
-        {mode === 'editar' && (
-          <Boton
-            variant="icon"
-            action="delete"
-            ariaLabel={STOCK_TEXT.borrarEntrada}
-            onClick={() => setConfirmingDelete(true)}
-          />
-        )}
+        <Actions>
+          {formError !== null && (
+            <span className="campo__error" role="alert">
+              {formError}
+            </span>
+          )}
+          {offline && <SinConexion />}
+          {preview !== null && (
+            <span className="pie" data-copy="help">
+              {perGramPreview(formatMoney(preview))}
+            </span>
+          )}
+          {pinned && phone && deleteButton}
+          <Boton textOnly="submit" type="submit" disabled={sending}>
+            {mode === 'nuevo' ? STOCK_TEXT.guardaLaEntrada : COMMON_TEXT.save}
+          </Boton>
+          {!(pinned && phone) && deleteButton}
+        </Actions>
       </form>
       {dialogHost ? createPortal(dialogs, dialogHost) : dialogs}
     </>

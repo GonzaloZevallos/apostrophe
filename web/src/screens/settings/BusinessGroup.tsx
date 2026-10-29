@@ -148,6 +148,7 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
           <input
             className="campo__input"
             type="text"
+            autoComplete="organization"
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
             required

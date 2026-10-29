@@ -45,6 +45,13 @@ test('the submit is text only and the screen follows the icon and text rule', ()
   expectIconAndTextRule(document.body)
 })
 
+test('the email suggests the username and the password the current password', () => {
+  renderEntrar(new QueryClient())
+
+  expect(screen.getByLabelText('Email address')).toHaveAttribute('autocomplete', 'username')
+  expect(screen.getByLabelText('Password')).toHaveAttribute('autocomplete', 'current-password')
+})
+
 test('shows the fixed hint under the button, never a count of attempts', () => {
   renderEntrar(new QueryClient())
 

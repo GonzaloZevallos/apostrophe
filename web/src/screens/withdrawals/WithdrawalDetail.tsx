@@ -32,7 +32,7 @@ import { useFlash } from '../../flash/useFlash'
 import { formatDate } from '../../format/dates'
 import { formatGrams } from '../../format/money'
 import { VARIETIES, WITHDRAWAL_EDIT, pathTo } from '../../routes'
-import { REASON_OPTIONS } from './withdrawalReasons'
+import WithdrawalFacts from './WithdrawalFacts'
 import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
 
@@ -119,7 +119,6 @@ export default function WithdrawalDetail() {
   }
 
   const withdrawal = query.data
-  const reasonWord = REASON_OPTIONS.find((option) => option.value === withdrawal.reason)?.label ?? ''
   const date = formatDate(withdrawal.date, me.today)
   const confirmation =
     withdrawal.reason === 'promotion'
@@ -129,34 +128,7 @@ export default function WithdrawalDetail() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado-fila">
-          <span className="encabezado__titulo">{COMMON_TEXT.withdrawal}</span>
-        </div>
-        <dl className="retiro__datos">
-          <div className="retiro__dato">
-            <dt className="campo__rotulo">{STOCK_TEXT.motivo}</dt>
-            <dd>{reasonWord}</dd>
-          </div>
-          <div className="retiro__dato">
-            <dt className="campo__rotulo">{COMMON_TEXT.date}</dt>
-            <dd>{date}</dd>
-          </div>
-        </dl>
-        <ul className="retiro__lineas" aria-label={COMMON_TEXT.varieties}>
-          {withdrawal.lines.map((line, index) => (
-            // A variety may repeat in several lines with no merging: the position is the identity.
-            <li key={index} className="retiro__linea">
-              <span>{line.variety_name}</span>
-              <span>{formatGrams(line.grams)}</span>
-            </li>
-          ))}
-        </ul>
-        {withdrawal.note !== null && (
-          <div className="retiro__dato">
-            <span className="campo__rotulo">{COMMON_TEXT.note}</span>
-            <span>{withdrawal.note}</span>
-          </div>
-        )}
+        <WithdrawalFacts withdrawal={withdrawal} today={me.today} />
         {offline && <SinConexion />}
         {deleteError !== null && (
           <span className="campo__error" role="alert">

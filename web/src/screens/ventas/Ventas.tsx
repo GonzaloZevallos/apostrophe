@@ -192,7 +192,7 @@ export default function Ventas() {
                           <span className="fila-venta__sin-cliente">{SALES_TEXT.noCustomer}</span>
                         ) : (
                           <>
-                            {sale.customer.name}
+                            <span className="fila-venta__texto">{sale.customer.name}</span>
                             {vipCustomers && sale.customer.vip && <Insignia tono="acento">{COMMON_TEXT.vip}</Insignia>}
                           </>
                         )}

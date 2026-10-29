@@ -553,3 +553,74 @@ test('a form shows no "New sale", so it asks nothing of /first-run', async () =>
   expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
   expect(vi.mocked(fetch)).not.toHaveBeenCalled()
 })
+
+// The fixed bar and the floating "+ New sale" (GH-319): the markup the phone CSS pins.
+test.each([
+  ['a root', HOME, true],
+  ['a root that is Gastos', EXPENSES, true],
+  ['a card: a sale', pathTo(SALE, { id: 7 }), false],
+  ['a form: the sale', SALE_NEW, false],
+])('%s: "New sale" and its missing line float as one group only on a root (%s)', async (_kind, path, grouped) => {
+  const { container } = renderShell([path], { firstRun: checklist(false) })
+
+  await screen.findAllByText(MISSING_LINE).catch(() => [])
+  const group = container.querySelector('.nueva-venta-flotante')
+  expect(group !== null).toBe(grouped)
+  if (group !== null) {
+    expect(group.querySelector('a.boton-nueva-venta')).not.toBeNull()
+    expect(group.querySelector('.nueva-venta__falta')).not.toBeNull()
+  }
+  // The missing line never sits outside the group on the phone.
+  for (const line of container.querySelectorAll('.nueva-venta__falta:not(.nueva-venta__falta--escritorio)')) {
+    expect(line.closest('.nueva-venta-flotante')).not.toBeNull()
+  }
+})
+
+class FakeVisualViewport extends EventTarget {
+  offsetTop = 0
+  height = 800
+  scale = 1
+}
+
+test('the shell follows the keyboard without pinning the page: the flag shows, html--formulario-fijo does not', () => {
+  const fake = new FakeVisualViewport()
+  Object.defineProperty(window, 'visualViewport', { configurable: true, value: fake })
+  Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 })
+  try {
+    const { container } = renderShell([CUSTOMERS])
+    const layout = container.querySelector('.disposicion') as HTMLElement
+    expect(layout).not.toHaveAttribute('data-teclado')
+    expect(document.documentElement.classList.contains('html--formulario-fijo')).toBe(false)
+
+    act(() => {
+      fake.height = 450
+      fake.dispatchEvent(new Event('resize'))
+    })
+    expect(layout).toHaveAttribute('data-teclado', 'abierto')
+    expect(document.documentElement.classList.contains('html--formulario-fijo')).toBe(false)
+
+    act(() => {
+      fake.height = 800
+      fake.dispatchEvent(new Event('resize'))
+    })
+    expect(layout).not.toHaveAttribute('data-teclado')
+  } finally {
+    Reflect.deleteProperty(window, 'visualViewport')
+  }
+})
+
+test('a computer layout never reads the keyboard', () => {
+  const fake = new FakeVisualViewport()
+  Object.defineProperty(window, 'visualViewport', { configurable: true, value: fake })
+  Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 })
+  try {
+    const { container } = renderShell([CUSTOMERS], { computer: true })
+    act(() => {
+      fake.height = 450
+      fake.dispatchEvent(new Event('resize'))
+    })
+    expect(container.querySelector('.disposicion')).not.toHaveAttribute('data-teclado')
+  } finally {
+    Reflect.deleteProperty(window, 'visualViewport')
+  }
+})

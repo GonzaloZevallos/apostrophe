@@ -95,7 +95,9 @@ export default function Clientes() {
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>
           <input
             className="campo__input"
-            type="text"
+            type="search"
+            enterKeyHint="search"
+            autoComplete="off"
             placeholder={SEARCH_PLACEHOLDER}
             value={query}
             onChange={(event) => setQuery(event.target.value)}

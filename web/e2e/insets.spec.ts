@@ -198,7 +198,9 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     await page.context().setOffline(true)
     await expect(page.locator('.aviso-flotante')).toBeVisible()
     const toast = await box(page, '.aviso-flotante')
-    expect(toast.top, where('toast top')).toBeGreaterThanOrEqual(TOP + TOAST_MARGIN)
+    // Below 900 px the toast moved from the top to sit above the bar and the pinned action.
+    if (viewport.wide) expect(toast.top, where('toast top')).toBeGreaterThanOrEqual(TOP + TOAST_MARGIN)
+    else expect(toast.bottom, where('toast bottom')).toBeLessThanOrEqual(viewport.height - BOTTOM - TOAST_MARGIN)
     expect(toast.left, where('toast left')).toBeGreaterThanOrEqual(SIDE + TOAST_MARGIN)
     expect(toast.right, where('toast right')).toBeLessThanOrEqual(viewport.width - SIDE - TOAST_MARGIN)
     await page.context().setOffline(false)

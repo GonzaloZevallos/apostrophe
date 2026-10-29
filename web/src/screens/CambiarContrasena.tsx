@@ -101,6 +101,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
             <input
               className="campo__input"
               type="password"
+              autoComplete="current-password"
               value={currentPassword}
               onChange={(event) => setCurrentPassword(event.target.value)}
               required
@@ -116,6 +117,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
             <input
               className="campo__input"
               type={reveal ? 'text' : 'password'}
+              autoComplete="new-password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
               required

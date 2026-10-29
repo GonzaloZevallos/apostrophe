@@ -91,6 +91,17 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+test('the search is a search field with a search key and no autofill', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
+  renderClientes()
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/customers', expect.anything()))
+
+  const search = screen.getByLabelText('Search customer')
+  expect(search).toHaveAttribute('type', 'search')
+  expect(search).toHaveAttribute('enterkeyhint', 'search')
+  expect(search).toHaveAttribute('autocomplete', 'off')
+})
+
 test('searching by part of the name calls the API with that query, never the URL', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
   renderClientes()
