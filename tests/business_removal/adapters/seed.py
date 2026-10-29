@@ -131,7 +131,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
             json={
                 "variety_id": variety_id,
                 "origin": "purchase",
-                "grams": 100,
+                "quantity": 100,
                 "total_cost": 300000,
                 "note": "stock seed",
             },
@@ -145,7 +145,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
                 "shipping_charged": SHIPPING_CHARGED,
                 "note": SALE_NOTE,
                 "payment": "owing",
-                "lines": [{"variety_id": variety_id, "grams": 10, "special_price": 6000}],
+                "lines": [{"variety_id": variety_id, "quantity": 10, "special_price": 6000}],
             },
         )
         assert sale.status_code == 201, sale.text
@@ -184,7 +184,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         assert attributes.status_code == 200, attributes.text
 
         threshold = client.put(
-            f"/stock/varieties/{variety_id}/threshold", json={"grams": LOW_STOCK_THRESHOLD}
+            f"/stock/varieties/{variety_id}/threshold", json={"quantity": LOW_STOCK_THRESHOLD}
         )
         assert threshold.status_code == 200, threshold.text
 

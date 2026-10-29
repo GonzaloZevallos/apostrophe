@@ -2,4 +2,4 @@
 
 # API
 
-The OpenAPI document of the app, exported without starting a server: [openapi.json](openapi.json).
+The OpenAPI document of the app, exported without starting a server: [openapi.json](openapi.json). The same document as a static page that needs no network: [index.html](index.html).

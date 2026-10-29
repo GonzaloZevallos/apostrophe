@@ -43,7 +43,7 @@ def _entry(client: TestClient, variety_id: int, quantity: str, on: str, **more: 
     body = {
         "variety_id": variety_id,
         "origin": "opening_stock",
-        "grams": quantity,
+        "quantity": quantity,
         "date": on,
         **more,
     }
@@ -75,19 +75,19 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
         _sale(
             client,
             "2026-09-12",
-            [{"variety_id": a, "grams": "5"}, {"variety_id": b, "grams": "2"}],
+            [{"variety_id": a, "quantity": "5"}, {"variety_id": b, "quantity": "2"}],
             customer_id=customer["id"],
             payment="owing",
         ),
         # paid on the spot
-        _sale(client, "2026-09-20", [{"variety_id": a, "grams": "3"}], payment="cash"),
+        _sale(client, "2026-09-20", [{"variety_id": a, "quantity": "3"}], payment="cash"),
         # a gift and a special price
         _sale(
             client,
             "2026-10-01",
             [
-                {"variety_id": a, "grams": "2", "gift": True},
-                {"variety_id": b, "grams": "1", "special_price": 1_500},
+                {"variety_id": a, "quantity": "2", "gift": True},
+                {"variety_id": b, "quantity": "1", "special_price": 1_500},
             ],
             payment="cash",
         ),
@@ -103,13 +103,13 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
     _entry(client, a, "-4", "2026-09-25", origin="adjustment")
     _entry(client, a, "-150", "2026-10-02", origin="adjustment")
     # a sale line whose grams have no lot behind them
-    sales.append(_sale(client, "2026-10-03", [{"variety_id": a, "grams": "10"}], payment="cash"))
+    sales.append(_sale(client, "2026-10-03", [{"variety_id": a, "quantity": "10"}], payment="cash"))
     # a sale on the clock's own day, so the panel's today and week are not empty either
     sales.append(
         _sale(
             client,
             "2026-10-15",
-            [{"variety_id": a, "grams": "1"}, {"variety_id": b, "grams": "1"}],
+            [{"variety_id": a, "quantity": "1"}, {"variety_id": b, "quantity": "1"}],
             payment="cash",
         )
     )
@@ -198,7 +198,7 @@ def test_a_restored_variety_comes_back_whole(
 ) -> None:
     seed = _seed(client, clock)
     a = seed.archived_id
-    _ok(client.put(f"/stock/varieties/{a}/threshold", json={"grams": "20"}))
+    _ok(client.put(f"/stock/varieties/{a}/threshold", json={"quantity": "20"}))
     _ok(
         client.put(
             f"/catalog/varieties/{a}",

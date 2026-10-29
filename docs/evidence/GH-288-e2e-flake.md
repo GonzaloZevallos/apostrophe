@@ -103,26 +103,29 @@ changed.
 
 ## Known risks
 
-- The Undo window at `sales.spec.ts:245` is 5 s (`UNDO_WINDOW_MS`): not fixed here.
+- The Undo window at `sales.spec.ts:244` is 5 s (`UNDO_WINDOW_MS`): not fixed here.
 - A repeated identical toast while one is still showing is not detectable without a product change
   (`flashReducer` resets on a location change only).
-- The `.aviso-toast` category sites (`flow.spec.ts:184, 188`) and the `.venta-guardada` "Sale saved"
+- The `.aviso-toast` category sites (`flow.spec.ts:176, 180`) and the `.venta-guardada` "Sale saved"
   sites cannot be seen by the recorder and stay on page text.
-- Other `getByText('Customer saved')` sites (`customers.spec.ts:65,85`, `clientesCobrar.spec.ts:39`,
-  `flow.spec.ts:49`, `payments.spec.ts:77`) hit the same step; the fix removes the second match for all.
+- Other `getByText('Customer saved')` sites (`customers.spec.ts:64,84`, `clientesCobrar.spec.ts:40`,
+  `flow.spec.ts:50`, `payments.spec.ts:76`) hit the same step; the fix removes the second match for all.
 - The loaded runs measure no rate.
 
 ## Kept sites and proofs
 
 The guard (`web/src/architecture/e2eToastRule.test.ts`) prints, from `npm --prefix web test -- e2eToastRule`
-(at part 1, kept as history; the current counts are under "After part 3" below):
+(with part 2 alone, kept as history; the current counts are under "After part 3" below):
 
 ```
-e2eToastRule: 27 sites observed in the page, 6 kept on page text, 86 pending
+e2eToastRule: 62 sites observed in the page, 10 kept on page text, 51 pending
 ```
 
-`panel.spec.ts`, `flow.spec.ts`, `sales.spec.ts`, `helpers/seed.ts` and `helpers/ledger.ts` are migrated
-(27 `expectToast` calls in those five files; the recorder's own spec is not counted). The 86 sites in the other specs wait on `PENDING` for parts 2 and 3; the list only shrinks.
+`panel.spec.ts`, `flow.spec.ts`, `sales.spec.ts`, `helpers/seed.ts` and `helpers/ledger.ts` (part 1) and
+`payments`, `customers`, `clientesCobrar`, `inicioCobrar`, `cobroModal`, `ventasTelefono`, `ventasPhone`,
+`nuevaVentaTelefono`, `ventasLinea`, `pressed` and `leaveWithBack` (part 2) are migrated (62 `expectToast`
+calls in those files; the recorder's own spec is not counted). At part 2 alone the 51 sites in the other specs
+waited on `PENDING`; see "After part 3" for the merged counts. The list only shrinks.
 
 Kept on page text, with the reason (each is also a `KEPT` line in the guard):
 
@@ -134,8 +137,18 @@ Kept on page text, with the reason (each is also a `KEPT` line in the guard):
 | `flow.spec.ts:176` | Category saved | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:180` | Category deleted | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:188` | Business renamed | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
+| `customers.spec.ts:64` | Customer saved | no product timer: the page check proves exactly one "Customer saved" in the page (the strict-mode count), which the recorder cannot (`expectToast` wraps the `Save and use` click at :62) |
+| `customers.spec.ts:84` | Customer saved | same reason as `customers.spec.ts:64` (the click at :83 is wrapped) |
+| `clientesCobrar.spec.ts:40` | Customer saved | same reason as `customers.spec.ts:64` (the click at :38 is wrapped) |
+| `payments.spec.ts:76` | Customer saved | same reason as `customers.spec.ts:64` (the click at :74 is wrapped) |
 | `settings.spec.ts:95` | Category saved | `.aviso-toast`: the recorder does not watch the category toasts |
 | `settings.spec.ts:108` | Category deleted | `.aviso-toast`: the recorder does not watch the category toasts |
+
+Removed rather than kept: `inicioCobrar.spec.ts` asserted the "Payment saved · still owing $ 3.000" toast
+and then `not.toContainText('Carla')` on it. Once the toast expires that negative assertion passes whatever
+the page shows, so it could never fail; the exact text in `expectToast` (`inicioCobrar.spec.ts:76`) is the
+privacy check, because an exact match cannot hold the customer's name. The `.bloque-deben .cifra-xl`
+assertion stays. No migrated step in part 2 needed an assert-what-follows replacement.
 
 Not flagged and left alone: "Sale saved" and "Sale deleted" (`.venta-guardada`, not in `SuccessToast`).
 One migrated step replaced by a comment: the second "Expense saved" in `flow.spec.ts` (editing the
@@ -146,6 +159,12 @@ from the first; the row assertion that follows stays).
 task): the throttled red/green on "Entry saved" and the five smoke runs of `npm --prefix web run e2e`
 were not made. The e2e evidence for the migrated steps comes from the pull request's GitHub CI, where
 e2e runs sharded; a red there is a finding to fix. Nothing in this section measures a rate.
+
+**Status of the part 2 steps.** None of the 35 migrated steps in the 11 specs has run in a browser yet:
+no pull request existed when part 2 was delivered, so GitHub CI's `e2e` job has not run on them. Their
+proof is that job going green; a red at a site is fixed there with the assert-what-follows rule (a
+one-line comment and a row in this doc), never with a retry or a longer wait. The delivery opens the pull request after
+the review approves, and CI's `web` and `e2e` jobs are read at landing, not in the subtask review.
 
 **After merging `master`.** `master` carries three of the toasts as `common:` keys
 (`common:customerSaved`, `common:entrySaved`, `common:entryDeleted`) in `SuccessToast`, and
@@ -179,11 +198,13 @@ Part 3 migrates the 12 specs `analysis`, `withdrawals`, `settings`, `catalog`, `
 and 1 is a repeat. The guard prints, from `npm --prefix web test -- e2eToastRule`:
 
 ```
-e2eToastRule: 71 sites observed in the page, 8 kept on page text, 39 pending
+e2eToastRule: 109 sites observed in the page, 12 kept on page text, 4 pending
 ```
 
-The 39 sites left are in the specs of part 2. `PENDING_CEILING` is 39, equal to `PENDING.length`, because part 2 has not
-merged. Whichever of parts 2 and 3 merges second sets the ceiling to 0 and empties `PENDING`; the existing shrink test then asserts it stays empty.
+That is with parts 2 and 3 merged and master at GH-466 (its `analysis.spec.ts` adds 3 `expectToast` calls to the 106 of the two parts). Alone, part 3 printed `71 sites observed in the page, 8 kept on page text, 39 pending`
+(the 35 part 2 sites plus the 4 below). The 4 sites left are in `cobroHoja.spec.ts` (`:42`, `:47`, `:125`, `:138`), which neither
+part names; `PENDING_CEILING` is 4, equal to `PENDING.length`. The part 2 `Customer saved` sites are on `KEPT`
+(`ONE_MATCH`), 10 + 2 category rows = 12. `cobroHoja.spec.ts` is left for a later migration, so `PENDING` is not empty yet.
 
 **Classification of the 47 sites**, made before any edit. Lines are those of the base (`8d77fe04`), before the specs changed;
 the kept rows give the new line too. A migrated site is wrapped in `expectToast(page, text, action)`: no earlier toast with

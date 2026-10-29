@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'vitest'
-import { entriesOf, type StockEntry, type StockView } from './stock'
+import { afterEach, describe, expect, test, vi } from 'vitest'
+import { entriesOf, setThreshold, type StockEntry, type StockView } from './stock'
 
 function entry(id: number, varietyId: number): StockEntry {
   return {
@@ -7,7 +7,7 @@ function entry(id: number, varietyId: number): StockEntry {
     date: '2026-10-01',
     variety_id: varietyId,
     origin: 'purchase',
-    grams: 10,
+    quantity: 10,
     total_cost: null,
     cost_per_gram: null,
     note: null,
@@ -29,5 +29,39 @@ describe('entriesOf', () => {
   test('a variety with no entries has none', () => {
     expect(entriesOf(view([entry(1, 1)]), 9)).toEqual([])
     expect(entriesOf(view([]), 1)).toEqual([])
+  })
+})
+
+describe('setThreshold', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  function stubFetch() {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({}), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    return fetchMock
+  }
+
+  test('puts {quantity} under the new name', async () => {
+    const fetchMock = stubFetch()
+
+    await setThreshold(3, 15.5)
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('/stock/varieties/3/threshold')
+    expect(init.method).toBe('PUT')
+    expect(JSON.parse(String(init.body))).toEqual({ quantity: 15.5 })
+  })
+
+  test('turning it off always sends the key, null included, never an empty body', async () => {
+    const fetchMock = stubFetch()
+
+    await setThreshold(3, null)
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(String(init.body)).toBe('{"quantity":null}')
   })
 })

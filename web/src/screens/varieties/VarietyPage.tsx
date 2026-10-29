@@ -270,7 +270,7 @@ function VarietyPageView({
         {row !== undefined && archived && (
           <>
             <p className="variedad-resumen variedad-resumen--archivada">
-              {formatGrams(row.grams)}
+              {formatGrams(row.quantity)}
               {' · '}
               {variety.current_price === null ? NO_PRICE_TODAY : keepMoneyTogether(COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price)))}
             </p>
@@ -282,7 +282,7 @@ function VarietyPageView({
         )}
         {row !== undefined && !archived && (
           <p className="variedad-resumen">
-            {formatGrams(row.grams)}{OUT_OF_DATE_JOINER}<MarcaEstado estado={row.status} />
+            {formatGrams(row.quantity)}{OUT_OF_DATE_JOINER}<MarcaEstado estado={row.status} />
             {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_JOINER}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
             {row.days_left !== null && <>{OUT_OF_DATE_JOINER}{row.days_left}{VARIETIES_TEXT.dias}</>}
             {' · '}
@@ -337,7 +337,7 @@ function VarietyPageView({
           catalogRow !== null && <VarietyCatalogSection row={catalogRow} />
         )}
         {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
-        {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />}
+        {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.quantity ?? null} />}
       </div>
       {open === null && leaveConfirm}
     </main>

@@ -63,16 +63,16 @@ export function TablaVariedades({ varieties }: { varieties: Analysis['month']['v
               <td className="analisis__num">
                 {variety.share_percent !== null ? `${variety.share_percent}%` : ''}
               </td>
-              <td className="analisis__num">{formatGrams(variety.grams_sold)}</td>
-              <td className="analisis__num">{formatGrams(variety.grams_gifted)}</td>
+              <td className="analisis__num">{formatGrams(variety.quantity_sold)}</td>
+              <td className="analisis__num">{formatGrams(variety.quantity_gifted)}</td>
               <td className="analisis__num">
                 {formatMoney(variety.cost.costed)}
-                {pendingSuffix(variety.cost.pending_grams)}
+                {pendingSuffix(variety.cost.pending_quantity)}
               </td>
               <td className="analisis__num analisis__celda-margen">
                 <span>
                   {formatMoney(variety.margin.amount)}
-                  {pendingSuffix(variety.margin.pending_grams)}
+                  {pendingSuffix(variety.margin.pending_quantity)}
                 </span>
                 {variety.margin.percent !== null && (
                   <span>{variety.margin.percent}%</span>
@@ -110,11 +110,11 @@ export function TablaSemanas({ weeks, ids }: { weeks: Analysis['weeks']; ids: st
             >
               <td id={`${ids}-wt-${week.first_day}`}>{formatDateShort(week.first_day)}</td>
               <td className="analisis__num">{formatMoney(week.sales)}</td>
-              <td className="analisis__num">{formatGrams(week.grams)}</td>
+              <td className="analisis__num">{formatGrams(week.quantity)}</td>
               <td className="analisis__num">{formatMoney(week.expenses)}</td>
               <td className="analisis__num">
                 {formatMoney(week.profit.amount)}
-                {pendingSuffix(week.profit.pending_grams)}
+                {pendingSuffix(week.profit.pending_quantity)}
                 {week.best && (
                   <span className="analisis__etiqueta-mejor">{BEST_WEEK_TABLE_MARK}</span>
                 )}
@@ -155,11 +155,11 @@ export function TablaMeses({ months, ids }: { months: Analysis['months']; ids: s
             <tr>
               <td id={`${ids}-mt-${row.month}`}>{formatMonthLong(row.month)}</td>
               <td className="analisis__num">{formatMoney(row.sales)}</td>
-              <td className="analisis__num">{formatGrams(row.grams)}</td>
+              <td className="analisis__num">{formatGrams(row.quantity)}</td>
               <td className="analisis__num">{formatMoney(row.expenses)}</td>
               <td className="analisis__num">
                 {formatMoney(row.profit.amount)}
-                {pendingSuffix(row.profit.pending_grams)}
+                {pendingSuffix(row.profit.pending_quantity)}
               </td>
               <td className="analisis__num">{formatMoney(row.cash)}</td>
             </tr>

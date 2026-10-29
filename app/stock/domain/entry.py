@@ -61,9 +61,9 @@ class StockEntry:
         if entry_date > today:
             raise EntryDateInFuture("a stock entry is not dated after today")
         if quantity.hundredths == 0:
-            raise EntryQuantityInvalid("grams are never zero")
+            raise EntryQuantityInvalid("a quantity is never zero")
         if origin is not Origin.ADJUSTMENT and not quantity.is_positive:
-            raise EntryQuantityInvalid(f"{origin.value} grams are above zero")
+            raise EntryQuantityInvalid(f"{origin.value} quantities are above zero")
         if origin is Origin.PURCHASE:
             if total_cost is None:
                 raise EntryCostRequired("a purchase needs a total cost")

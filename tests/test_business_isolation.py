@@ -117,7 +117,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
         json={
             "payment": "cash",
             "note": MARKER,
-            "lines": [{"variety_id": variety["id"], "grams": "10"}],
+            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
         },
     ).json()
     client.post(
@@ -125,7 +125,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
         json={
             "payment": "owing",
             "customer_id": customer["id"],
-            "lines": [{"variety_id": variety["id"], "grams": "10"}],
+            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
         },
     )
     return {"sale_id": without_customer["id"]}
@@ -143,7 +143,7 @@ def seed_catalog(client: TestClient) -> dict[str, int]:
         json={
             "variety_id": variety["id"],
             "origin": "opening_stock",
-            "grams": "50",
+            "quantity": "50",
         },
     )
     assert entry.status_code == 201, entry.text
@@ -164,7 +164,7 @@ def seed_stock(client: TestClient) -> dict[str, int]:
         json={
             "variety_id": variety["id"],
             "origin": "opening_stock",
-            "grams": "50",
+            "quantity": "50",
             "note": MARKER,
         },
     )
@@ -174,7 +174,7 @@ def seed_stock(client: TestClient) -> dict[str, int]:
         json={
             "reason": "promotion",
             "note": MARKER,
-            "lines": [{"variety_id": variety["id"], "grams": "5"}],
+            "lines": [{"variety_id": variety["id"], "quantity": "5"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -211,7 +211,7 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={
             "payment": "owing",
             "customer_id": customer_id,
-            "lines": [{"variety_id": variety["id"], "grams": "10"}],
+            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
         },
     )
     payment = client.post(
@@ -282,28 +282,28 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,
-        "lines": [{"variety_id": 1, "grams": "1"}],
+        "lines": [{"variety_id": 1, "quantity": "1"}],
     },
     ("PUT", "/sales/{sale_id}/customer"): {"customer_id": 1},
     ("POST", "/stock/entries"): {
         "variety_id": 1,
         "origin": "opening_stock",
-        "grams": "10",
+        "quantity": "10",
     },
     ("PUT", "/stock/entries/{stock_entry_id}"): {
         "variety_id": 1,
         "origin": "opening_stock",
-        "grams": "20",
+        "quantity": "20",
     },
     ("POST", "/stock/withdrawals"): {
         "reason": "own_use",
-        "lines": [{"variety_id": 1, "grams": "1"}],
+        "lines": [{"variety_id": 1, "quantity": "1"}],
     },
     ("PUT", "/stock/withdrawals/{withdrawal_id}"): {
         "reason": "own_use",
-        "lines": [{"variety_id": 1, "grams": "2"}],
+        "lines": [{"variety_id": 1, "quantity": "2"}],
     },
-    ("PUT", "/stock/varieties/{variety_id}/threshold"): {"grams": "15"},
+    ("PUT", "/stock/varieties/{variety_id}/threshold"): {"quantity": "15"},
     ("PUT", "/catalog/varieties/{variety_id}"): {
         "shown": True,
         "emoji": None,
@@ -491,7 +491,7 @@ def _sale_body(*, variety_id: int, customer_id: int) -> dict[str, Any]:
     return {
         "payment": "owing",
         "customer_id": customer_id,
-        "lines": [{"variety_id": variety_id, "grams": "1"}],
+        "lines": [{"variety_id": variety_id, "quantity": "1"}],
     }
 
 
@@ -529,7 +529,7 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
     business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
 ) -> None:
     def body(variety_id: int) -> dict[str, Any]:
-        return {"reason": "promotion", "lines": [{"variety_id": variety_id, "grams": "1"}]}
+        return {"reason": "promotion", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
 
     own_variety = business_b.post("/varieties", json={"name": "B withdrawal variety"}).json()
     own = business_b.post("/stock/withdrawals", json=body(own_variety["id"]))
@@ -591,7 +591,7 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     )
     sale_id = business_b.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "grams": "1"}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "quantity": "1"}]},
     ).json()["id"]
     foreign_customer = seeded_b["customer_id"]
 
@@ -804,7 +804,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         json={
             "date": today,
             "payment": "cash",
-            "lines": [{"variety_id": variety["id"], "grams": "3", "gift": True}],
+            "lines": [{"variety_id": variety["id"], "quantity": "3", "gift": True}],
         },
     )
     assert gifted.status_code == 201, gifted.text
@@ -814,7 +814,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
             "date": today,
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "grams": "2"}],
+            "lines": [{"variety_id": variety["id"], "quantity": "2"}],
         },
     )
     assert owing.status_code == 201, owing.text
@@ -841,7 +841,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         json={
             "variety_id": variety["id"],
             "origin": "purchase",
-            "grams": "50",
+            "quantity": "50",
             "total_cost": 2_000,
             "date": today,
         },
@@ -852,7 +852,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         json={
             "variety_id": variety["id"],
             "origin": "adjustment",
-            "grams": "-5",
+            "quantity": "-5",
             "date": today,
         },
     )
@@ -861,7 +861,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     a_panel = business_a.get("/panel").json()
     today_figures = a_panel["periods"]["today"]
     assert today_figures["sales"] > 0
-    assert today_figures["grams_gifted"] > 0
+    assert today_figures["quantity_gifted"] > 0
     assert today_figures["expenses"] > 0
     assert today_figures["purchases"] > 0
     assert today_figures["shortfall"] is not None
@@ -878,8 +878,8 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
             "sales": 0,
             "sales_count": 0,
             "average_sale": None,
-            "grams_sold": 0,
-            "grams_gifted": 0,
+            "quantity_sold": 0,
+            "quantity_gifted": 0,
             "cost_of_goods": 0,
             "pending_cost": False,
             "shortfall": None,
@@ -985,9 +985,9 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
             "next": None,
             "sales": 0,
             "sales_without_shipping": 0,
-            "grams_sold": 0.0,
-            "grams_gifted": 0.0,
-            "average_margin": {"amount": 0, "percent": None, "pending_grams": 0.0},
+            "quantity_sold": 0.0,
+            "quantity_gifted": 0.0,
+            "average_margin": {"amount": 0, "percent": None, "pending_quantity": 0.0},
             "shortfall": None,
             "promotion": None,
             "own_use": None,

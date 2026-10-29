@@ -24,7 +24,7 @@ const NEW_PATH = pathTo(VARIETY_PRICE_NEW, { id: 1 })
 
 const STOCK = {
   total: 135,
-  varieties: [{ variety_id: 1, grams: 135, status: 'ok', sold_out_since: null, threshold: null, days_left: 270 }],
+  varieties: [{ variety_id: 1, quantity: 135, status: 'ok', sold_out_since: null, threshold: null, days_left: 270 }],
   entries: [],
 }
 const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }

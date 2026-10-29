@@ -58,9 +58,9 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     )
     entry = client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     ).json()
-    client.put(f"/stock/varieties/{variety['id']}/threshold", json={"grams": "5"})
+    client.put(f"/stock/varieties/{variety['id']}/threshold", json={"quantity": "5"})
     client.put(
         f"/catalog/varieties/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": "removal"},
@@ -68,14 +68,14 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     client.put("/catalog/header-footer", json={"header": "removal", "footer": "removal"})
     cash_sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "grams": "5"}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "quantity": "5"}]},
     ).json()
     client.post(
         "/sales",
         json={
             "payment": "owing",
             "customer_id": customer["id"],
-            "lines": [{"variety_id": variety["id"], "grams": "5"}],
+            "lines": [{"variety_id": variety["id"], "quantity": "5"}],
         },
     )
     client.post(
@@ -165,8 +165,8 @@ def _seed_withdrawal(client: TestClient, variety_id: int) -> None:
             "reason": "promotion",
             "date": "2026-01-01",
             "lines": [
-                {"variety_id": variety_id, "grams": "5"},
-                {"variety_id": variety_id, "grams": "1.5"},
+                {"variety_id": variety_id, "quantity": "5"},
+                {"variety_id": variety_id, "quantity": "1.5"},
             ],
         },
     )
@@ -423,7 +423,7 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
                 "date": "2026-01-01",
                 "variety_id": variety["id"],
                 "origin": "opening_stock",
-                "grams": "50",
+                "quantity": "50",
             },
         ).json()
 

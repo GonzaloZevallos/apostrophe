@@ -3,7 +3,7 @@
  * answered it, an on/off switch and "Editar". The switch is derived from the saved
  * threshold and changes only when the server has answered. Turning it on only opens the
  * form (a warning that is off has no saved amount to bring back); turning it off saves at
- * once with `{grams: null}`, stays on and disabled while that runs, and stays on after a
+ * once with `{quantity: null}`, stays on and disabled while that runs, and stays on after a
  * refusal, a dropped network or a gone variety.
  *
  * `readOnly` (an archived variety) states only the stored setting, "Avisame abajo de N g" or

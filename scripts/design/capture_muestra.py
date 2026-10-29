@@ -95,7 +95,7 @@ def row_cost(line: Json) -> str:
     alone (`formatRowCost`), never `$ 0`; otherwise the amount, with a partly pending
     figure's grams in the Pendiente column."""
     if line["all_pending"]:
-        return f"{grams(line['pending_grams'])} sin costo"
+        return f"{grams(line['pending_quantity'])} sin costo"
     return money(line["amount"])
 
 
@@ -203,7 +203,7 @@ def _varieties(api: _ClientApi) -> list[str]:
         rows.append(
             [
                 variety["name"],
-                grams(row["grams"]),
+                grams(row["quantity"]),
                 _STATUS[status],
                 detail,
                 days(row["days_left"]),
@@ -235,7 +235,7 @@ def _archived(api: _ClientApi) -> list[str]:
         rows.append(
             [
                 variety["name"],
-                grams(stock[variety["id"]]["grams"]),
+                grams(stock[variety["id"]]["quantity"]),
                 f"{money(price['list_price'])} x g" if price else "Sin precio",
                 yes_no(not shown[variety["id"]]),
             ]
@@ -250,9 +250,12 @@ def _movements(api: _ClientApi) -> list[str]:
         listed = api.get(f"/stock/varieties/{row['variety_id']}/movements")
         for move in listed[:3]:
             if move["kind"] == "withdrawal":
-                kind, amount = _WITHDRAWAL_KIND[move["reason"]], f"{_MINUS}{grams(move['grams'])}"
+                kind, amount = (
+                    _WITHDRAWAL_KIND[move["reason"]],
+                    f"{_MINUS}{grams(move['quantity'])}",
+                )
             else:
-                kind, amount = _ENTRY_KIND[move["origin"]], grams(move["grams"])
+                kind, amount = _ENTRY_KIND[move["origin"]], grams(move["quantity"])
             rows.append([names[row["variety_id"]], day_month(move["date"]), kind, amount])
     return ["### Movimientos", "", *table(["Variedad", "Fecha", "Tipo", "Gramos"], rows)]
 
@@ -306,10 +309,10 @@ def _panel(api: _ClientApi) -> list[str]:
         add("Vendiste", money(p["sales"]))
         add("Ventas", str(p["sales_count"]))
         add("Promedio", money(p["average_sale"]))
-        add("Gramos vendidos", grams(p["grams_sold"]))
+        add("Gramos vendidos", grams(p["quantity_sold"]))
         if key == "today":
             continue
-        add("Regalaste", grams(p["grams_gifted"]))
+        add("Regalaste", grams(p["quantity_gifted"]))
         add("Costo de lo vendido", money(p["cost_of_goods"]), p["pending_cost"])
         for field, label in (
             ("shortfall", "Faltante de stock"),
@@ -347,7 +350,7 @@ def _sales(api: _ClientApi) -> list[str]:
             [
                 key,
                 line["variety_name"],
-                grams(line["grams"]),
+                grams(line["quantity"]),
                 f"{money(line['price_per_gram'])} x g",
                 _RULE[line["pricing_rule"]],
                 money(line["line_total"]),
@@ -405,7 +408,7 @@ def _cost_rows(add: Any, figures: Json, *, cost_of_goods: bool = False) -> None:
     for field, label in fields:
         if figures.get(field) is not None:
             line = figures[field]
-            add(label, row_cost(line), pending_grams(line["pending_grams"]))
+            add(label, row_cost(line), pending_grams(line["pending_quantity"]))
 
 
 def _analysis(api: _ClientApi) -> list[str]:
@@ -420,10 +423,10 @@ def _analysis(api: _ClientApi) -> list[str]:
         header_rows.append([label, value, pending])
 
     head("Vendiste en el mes", money(month["sales"]))
-    head("Gramos vendidos", grams(month["grams_sold"]))
-    head("Regalados", grams(month["grams_gifted"]))
+    head("Gramos vendidos", grams(month["quantity_sold"]))
+    head("Regalados", grams(month["quantity_gifted"]))
     margin = month["average_margin"]
-    head("Margen promedio", f"{margin['percent']}%", pending_grams(margin["pending_grams"]))
+    head("Margen promedio", f"{margin['percent']}%", pending_grams(margin["pending_quantity"]))
     _cost_rows(head, month)
     out += table(["Etiqueta", "Valor", "Pendiente"], header_rows)
 
@@ -432,12 +435,12 @@ def _analysis(api: _ClientApi) -> list[str]:
         [
             v["name"],
             money(v["sales_without_shipping"]),
-            grams(v["grams_sold"]),
-            grams(v["grams_gifted"]),
+            grams(v["quantity_sold"]),
+            grams(v["quantity_gifted"]),
             money(v["cost"]["costed"]),
             money(v["margin"]["amount"]),
             f"{v['margin']['percent']}%",
-            pending_grams(v["margin"]["pending_grams"]),
+            pending_grams(v["margin"]["pending_quantity"]),
             f"{v['share_percent']}%",
         ]
         for v in month["varieties"]
@@ -475,11 +478,11 @@ def _analysis(api: _ClientApi) -> list[str]:
             into.append([name, rango, label, value, pending])
 
         add("Ventas", money(row["sales"]))
-        add("Gramos", grams(row["grams"]))
+        add("Gramos", grams(row["quantity"]))
         _cost_rows(add, row, cost_of_goods=True)
         add("Gastos", money(row["expenses"]))
         profit = row["profit"]
-        add("Ganancia", money(profit["amount"]), pending_grams(profit["pending_grams"]))
+        add("Ganancia", money(profit["amount"]), pending_grams(profit["pending_quantity"]))
         add("Caja", money(row["cash"]))
         if best:
             add("Mejor semana", "sí")
@@ -517,7 +520,7 @@ def _analysis(api: _ClientApi) -> list[str]:
         _cost_rows(total, since)
         total("Gastos", money(since["expenses"]))
         profit = since["profit"]
-        total("Ganancia", money(profit["amount"]), pending_grams(profit["pending_grams"]))
+        total("Ganancia", money(profit["amount"]), pending_grams(profit["pending_quantity"]))
         total("Caja", money(since["cash"]))
     out += ["### Análisis · desde el primer registro", "", *table(_PERIOD_HEADER, total_rows)]
     return out

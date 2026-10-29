@@ -31,7 +31,7 @@ def _price(client: TestClient, variety_id: int) -> None:
 def _stock(client: TestClient, variety_id: int, quantity: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": quantity},
+        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity},
     )
     assert response.status_code == 201, response.text
 
@@ -39,7 +39,7 @@ def _stock(client: TestClient, variety_id: int, quantity: str) -> None:
 def _draw(client: TestClient, variety_id: int, quantity: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "grams": f"-{quantity}"},
+        json={"variety_id": variety_id, "origin": "adjustment", "quantity": f"-{quantity}"},
     )
     assert response.status_code == 201, response.text
 
@@ -86,7 +86,7 @@ def test_low_stock_still_qualifies_as_in(client: TestClient) -> None:
     variety_id = _variety(client, "Matrix low")
     _price(client, variety_id)
     _stock(client, variety_id, "5")
-    threshold = client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": "50"})
+    threshold = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "50"})
     assert threshold.status_code == 200, threshold.text
     assert threshold.json()["status"] == "low", threshold.text
 

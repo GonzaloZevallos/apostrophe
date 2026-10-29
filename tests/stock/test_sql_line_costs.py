@@ -32,7 +32,7 @@ def _variety_id(client: TestClient, list_price: int = 10_000) -> int:
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "grams": "5"}
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text
@@ -49,12 +49,12 @@ def test_a_line_spanning_two_lots_is_split_between_costed_and_pending(
     client: TestClient, engine: Engine
 ) -> None:
     variety_id = _variety_id(client)
-    _entry(client, variety_id, grams="5", total_cost=5_000)
-    _entry(client, variety_id, grams="3", total_cost=6_000)
+    _entry(client, variety_id, quantity="5", total_cost=5_000)
+    _entry(client, variety_id, quantity="3", total_cost=6_000)
 
     sale_response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
     )
     assert sale_response.status_code == 201, sale_response.text
     sale = sale_response.json()

@@ -24,7 +24,7 @@ afterEach(() => {
 
 const STOCK_WITH_ROWS = {
   total: 20,
-  varieties: [{ variety_id: 1, grams: 20, status: 'ok', sold_out_since: null, threshold: null, days_left: 30 }],
+  varieties: [{ variety_id: 1, quantity: 20, status: 'ok', sold_out_since: null, threshold: null, days_left: 30 }],
   entries: [],
 }
 const EDIT = pathTo(WITHDRAWAL_EDIT, { id: WITHDRAWAL_FIXTURE.id })

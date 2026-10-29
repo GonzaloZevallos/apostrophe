@@ -39,7 +39,7 @@ def _owing_sale(
             "customer_id": customer_id,
             "payment": "owing",
             "date": date,
-            "lines": [{"variety_id": variety_id, "grams": quantity}],
+            "lines": [{"variety_id": variety_id, "quantity": quantity}],
         },
     )
     assert body.status_code == 201, body.text

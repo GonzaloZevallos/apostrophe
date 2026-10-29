@@ -52,13 +52,13 @@ function fakeApi(hidden: readonly number[] = [], overrides: Answers = {}): Answe
     'GET /stock': () =>
       json(200, {
         total: 0,
-        varieties: [...live].map((id) => ({ variety_id: id, grams: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
+        varieties: [...live].map((id) => ({ variety_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
         entries: [],
       }),
     'GET /stock?archived=true': () =>
       json(200, {
         total: 10,
-        varieties: archivedIds().map((id) => ({ variety_id: id, grams: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
+        varieties: archivedIds().map((id) => ({ variety_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
         entries: [],
       }),
     'GET /catalog': () => json(200, CATALOG),

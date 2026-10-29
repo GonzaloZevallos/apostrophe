@@ -147,7 +147,7 @@ export default function StockEntryForm({
   ]
 
   const [date, setDate] = useState(initial?.date ?? today)
-  const [grams, setGrams] = useState(initial !== undefined ? String(initial.grams) : '')
+  const [grams, setGrams] = useState(initial !== undefined ? String(initial.quantity) : '')
   const [varietyId, setVarietyId] = useState(
     initial !== undefined
       ? String(initial.variety_id)
@@ -171,7 +171,7 @@ export default function StockEntryForm({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   // Something typed (or changed, on an edit) is what the host asks about before discarding.
   const dirty =
-    grams !== (initial !== undefined ? String(initial.grams) : '') ||
+    grams !== (initial !== undefined ? String(initial.quantity) : '') ||
     totalCost !== (initial?.total_cost != null ? String(initial.total_cost) : '') ||
     note !== (initial?.note ?? '')
   useEffect(() => {
@@ -197,14 +197,14 @@ export default function StockEntryForm({
     const variety = Number(varietyId)
     if (varietyId === '' || !Number.isInteger(variety)) return null
     const found = stockQuery.data?.varieties.find((row) => row.variety_id === variety)
-    return found?.grams ?? null
+    return found?.quantity ?? null
   })()
 
   function buildBody(): {
     date: string
     variety_id: number
     origin: Origin
-    grams: string
+    quantity: string
     total_cost?: number
     note?: string
   } | null {
@@ -217,7 +217,7 @@ export default function StockEntryForm({
       date,
       variety_id: variety,
       origin,
-      grams: previewGrams.value,
+      quantity: previewGrams.value,
       total_cost: parsedCost?.ok ? parsedCost.value : undefined,
       note: note.trim() === '' ? undefined : note.trim(),
     }
@@ -316,7 +316,7 @@ export default function StockEntryForm({
           detail={STOCK_TEXT.borrasLaEntradaDel(
             formatDate(initial.date, initial.date),
             varietyName,
-            formatGrams(initial.grams),
+            formatGrams(initial.quantity),
           )}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}

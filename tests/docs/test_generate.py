@@ -417,6 +417,7 @@ class FakeTools:
             "class/alpha/application": "classDiagram",
             "class/app-root": _classes("Settings"),
             "er/data-model": ER,
+            "reference/api": "<html><body><p>API</p></body></html>\n",
             **(answers or {}),
         }
         self.calls: list[ToolCall] = []
@@ -453,6 +454,7 @@ def test_produce_lays_out_hexagons_packages_and_layers(tmp_path: Path) -> None:
     out = produce(repo, FakeTools(), Limits(), _openapi)
     assert sorted(str(p) for p in out) == [
         "docs/api/README.md",
+        "docs/api/index.html",
         "docs/api/openapi.json",
         "docs/architecture/generated/README.md",
         "docs/architecture/generated/app-root.md",

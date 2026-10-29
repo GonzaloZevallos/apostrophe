@@ -29,6 +29,7 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
+import Loading from '../components/Loading'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { amountParts } from './analisisCost'
@@ -168,11 +169,11 @@ function AnalisisContenido({
           <span className="cifra-xl analisis__monto-cifra">{formatMoney(m.sales)}</span>
         </div>
         <span className="pie">
-          <span className="analisis__monto-cifra">{formatGrams(m.grams_sold)}</span>
+          <span className="analisis__monto-cifra">{formatGrams(m.quantity_sold)}</span>
           {ANALYSIS_TEXT.vendidos}
-          <span className="analisis__monto-cifra">{formatGrams(m.grams_gifted)}</span>
+          <span className="analisis__monto-cifra">{formatGrams(m.quantity_gifted)}</span>
           {ANALYSIS_TEXT.regalados}
-          {(m.average_margin.percent !== null || m.average_margin.pending_grams > 0) &&
+          {(m.average_margin.percent !== null || m.average_margin.pending_quantity > 0) &&
             ANALYSIS_TEXT.margenPromedio}
           {m.average_margin.percent !== null && (
             <>
@@ -182,9 +183,9 @@ function AnalisisContenido({
               </span>
             </>
           )}
-          {m.average_margin.pending_grams > 0 && (
+          {m.average_margin.pending_quantity > 0 && (
             <span className="analisis__monto-marca">
-              {pendingSuffix(m.average_margin.pending_grams)}
+              {pendingSuffix(m.average_margin.pending_quantity)}
             </span>
           )}
         </span>
@@ -263,7 +264,7 @@ function AnalisisContenido({
                 label={COMMON_TEXT.profit}
                 value={amountParts(
                   data.since_first_record.profit.amount,
-                  data.since_first_record.profit.pending_grams,
+                  data.since_first_record.profit.pending_quantity,
                 )}
               />
               <AmountRow
@@ -311,6 +312,8 @@ export default function Analisis() {
         <div className="encabezado__fila">
           <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
         </div>
+
+        {query.isPending && <Loading />}
 
         {query.isError && query.error instanceof NetworkError && <SinConexion />}
         {query.isError && !(query.error instanceof NetworkError) && <ErrorGenerico />}

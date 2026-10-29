@@ -10,25 +10,25 @@ import { get } from './client'
 export interface MarginFigure {
   amount: number
   percent: number | null
-  pending_grams: number
+  pending_quantity: number
 }
 
 export interface CostFigure {
   costed: number
-  pending_grams: number
+  pending_quantity: number
 }
 
 export interface AmountWithPending {
   amount: number
-  pending_grams: number
+  pending_quantity: number
 }
 
-/** One Análisis cost line (`RowCostOut`): a costed amount, the grams still without a
- * cost, and the backend's own answer on whether every gram behind the figure is
+/** One Análisis cost line (`RowCostOut`): a costed amount, the quantity still without a
+ * cost, and the backend's own answer on whether every unit behind the figure is
  * pending. The front never works that out itself. */
 export interface RowCost {
   amount: number
-  pending_grams: number
+  pending_quantity: number
   all_pending: boolean
 }
 
@@ -37,8 +37,8 @@ export interface VarietyRow {
   name: string
   sales_without_shipping: number
   share_percent: number | null
-  grams_sold: number
-  grams_gifted: number
+  quantity_sold: number
+  quantity_gifted: number
   cost: CostFigure
   margin: MarginFigure
 }
@@ -49,8 +49,8 @@ export interface AnalysisMonth {
   next: string | null
   sales: number
   sales_without_shipping: number
-  grams_sold: number
-  grams_gifted: number
+  quantity_sold: number
+  quantity_gifted: number
   average_margin: MarginFigure
   shortfall: RowCost | null
   promotion: RowCost | null
@@ -62,7 +62,7 @@ export interface AnalysisWeek {
   first_day: string
   last_day: string
   sales: number
-  grams: number
+  quantity: number
   expenses: number
   cost_of_goods: RowCost
   shortfall: RowCost | null
@@ -78,7 +78,7 @@ export interface AnalysisMonthRow {
   first_day: string
   last_day: string
   sales: number
-  grams: number
+  quantity: number
   expenses: number
   cost_of_goods: RowCost
   shortfall: RowCost | null

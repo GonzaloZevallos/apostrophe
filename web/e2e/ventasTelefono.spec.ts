@@ -15,6 +15,7 @@
 
 import { SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
 import { expect, test, withToastRecorder, type WorkerServer } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import type { Browser, BrowserContext, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
@@ -63,14 +64,12 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Jazmín')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await setPriceDate(page, '2000-01-01')
   await page.getByLabel(/^List price/).fill('500')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 }
 
 test('a sale is recorded from a phone: existing customer, new customer, none', async ({ page }) => {

@@ -14,6 +14,7 @@ import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
@@ -34,7 +35,7 @@ function aYearBefore(iso: string): string {
 async function registerCustomer(page: Page, name: string): Promise<void> {
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill(name)
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 }
@@ -79,13 +80,11 @@ for (const viewport of VIEWPORTS) {
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New variety' }).click()
     await page.getByLabel('Name').fill('Rosa')
-    await page.getByRole('button', { name: 'Add the variety' }).click()
-    await expect(page.getByText('Variety saved')).toBeVisible()
+    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
     await page.getByRole('link', { name: /Rosa/ }).click()
     await page.getByRole('link', { name: 'New price' }).click()
     await page.getByLabel(/^List price/).fill('1000')
-    await page.getByRole('button', { name: 'Save the price' }).click()
-    await expect(page.getByText('Price saved')).toBeVisible()
+    await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
     // Three debtors, none with a phone number, and one customer who owes nothing. Zoe is last
     // by name but owes since the oldest date; Beto and Carla owe since today, so they tie.
@@ -118,9 +117,8 @@ for (const viewport of VIEWPORTS) {
     await page.getByRole('button', { name: 'All: $ 5.000' }).click()
     await expect(page.getByLabel('Amount')).toHaveValue('$ 5.000')
     await page.getByRole('radio', { name: 'Cash' }).check()
-    await page.getByRole('button', { name: 'Save' }).click()
+    await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
     await expectPath(page, CUSTOMERS)
-    await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
 
     // The section is the API's new answer: she left, the total and the count follow.
     await expect(owing.locator('.cifra-xl')).toHaveText('$ 5.000')

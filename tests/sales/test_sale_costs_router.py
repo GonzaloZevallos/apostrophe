@@ -21,7 +21,7 @@ def _variety(client: TestClient, list_price: int = 10_000) -> int:
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "grams": "5"}
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text
@@ -30,7 +30,7 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
 def _sale(client: TestClient, variety_id: int, quantity: str = "10") -> int:
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": quantity}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": quantity}]},
     )
     assert response.status_code == 201, response.text
     return int(response.json()["id"])
@@ -40,7 +40,7 @@ def test_a_fully_costed_line_answers_its_cost_and_no_pending_grams(
     client: TestClient,
 ) -> None:
     variety_id = _variety(client)
-    _entry(client, variety_id, grams="10", total_cost=5_000)
+    _entry(client, variety_id, quantity="10", total_cost=5_000)
 
     sale_id = _sale(client, variety_id)
 
@@ -51,11 +51,11 @@ def test_a_fully_costed_line_answers_its_cost_and_no_pending_grams(
         {
             "variety_id": variety_id,
             "variety_name": "Lavanda",
-            "grams": 10.0,
+            "quantity": 10.0,
             "pricing_rule": "list",
             "price_per_gram": 10_000,
             "line_total": 100_000,
-            "cost": {"costed": 5_000, "pending_grams": 0.0},
+            "cost": {"costed": 5_000, "pending_quantity": 0.0},
         }
     ]
 
@@ -72,7 +72,7 @@ def test_a_line_with_no_lot_behind_it_is_entirely_pending_never_a_zero_cost(
     response = client.get(f"/sales/{sale_id}")
 
     cost = response.json()["lines"][0]["cost"]
-    assert cost == {"costed": None, "pending_grams": 10.0}
+    assert cost == {"costed": None, "pending_quantity": 10.0}
 
 
 def test_a_gift_line_with_no_lot_behind_it_matches_the_gift_fixture(client: TestClient) -> None:
@@ -84,7 +84,7 @@ def test_a_gift_line_with_no_lot_behind_it_matches_the_gift_fixture(client: Test
 
     sale = client.post(
         "/sales",
-        json={"lines": [{"variety_id": variety_id, "grams": "5", "gift": True}]},
+        json={"lines": [{"variety_id": variety_id, "quantity": "5", "gift": True}]},
     )
     assert sale.status_code == 201, sale.text
     sale_id = sale.json()["id"]
@@ -100,10 +100,10 @@ def test_a_gift_line_with_no_lot_behind_it_matches_the_gift_fixture(client: Test
 
 def test_list_sales_never_carries_a_cost_field(client: TestClient) -> None:
     variety_id = _variety(client)
-    _entry(client, variety_id, grams="10", total_cost=5_000)
+    _entry(client, variety_id, quantity="10", total_cost=5_000)
     client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
     )
 
     listed = client.get("/sales")
@@ -118,15 +118,15 @@ def test_sale_detail_answers_total_grams_summed_over_every_line_gifts_included(
     """Left over from #20 (sales.md): the delete confirmation and Deshacer name the
     grams returning to stock, from this field — never added up in the browser."""
     variety_id = _variety(client)
-    _entry(client, variety_id, grams="20", total_cost=5_000)
+    _entry(client, variety_id, quantity="20", total_cost=5_000)
 
     response = client.post(
         "/sales",
         json={
             "payment": "cash",
             "lines": [
-                {"variety_id": variety_id, "grams": "10"},
-                {"variety_id": variety_id, "grams": "4", "gift": True},
+                {"variety_id": variety_id, "quantity": "10"},
+                {"variety_id": variety_id, "quantity": "4", "gift": True},
             ],
         },
     )
@@ -136,7 +136,7 @@ def test_sale_detail_answers_total_grams_summed_over_every_line_gifts_included(
     detail = client.get(f"/sales/{sale_id}")
 
     assert detail.status_code == 200, detail.text
-    assert detail.json()["total_grams"] == 14.0
+    assert detail.json()["total_quantity"] == 14.0
 
 
 def test_recording_a_later_entry_moves_the_cost_the_next_time_it_is_read(
@@ -148,12 +148,12 @@ def test_recording_a_later_entry_moves_the_cost_the_next_time_it_is_read(
     variety_id = _variety(client)
     sale_id = _sale(client, variety_id)
     before = client.get(f"/sales/{sale_id}").json()
-    assert before["lines"][0]["cost"] == {"costed": None, "pending_grams": 10.0}
+    assert before["lines"][0]["cost"] == {"costed": None, "pending_quantity": 10.0}
 
-    _entry(client, variety_id, grams="10", total_cost=4_000)
+    _entry(client, variety_id, quantity="10", total_cost=4_000)
 
     after = client.get(f"/sales/{sale_id}").json()
-    assert after["lines"][0]["cost"] == {"costed": 4_000, "pending_grams": 0.0}
+    assert after["lines"][0]["cost"] == {"costed": 4_000, "pending_quantity": 0.0}
     assert after["total"] == before["total"]
     assert after["lines"][0]["price_per_gram"] == before["lines"][0]["price_per_gram"]
 
@@ -174,12 +174,12 @@ def test_a_sale_detail_carries_still_owing_from_settlement(client: TestClient) -
         json={
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety_id, "grams": "1"}],
+            "lines": [{"variety_id": variety_id, "quantity": "1"}],
         },
     ).json()
     paid = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]},
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
     ).json()
 
     owing_detail = client.get(f"/sales/{owing['id']}").json()

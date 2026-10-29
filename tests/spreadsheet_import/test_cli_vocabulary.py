@@ -219,8 +219,8 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     stock = client.get("/stock").json()
     stock_by_variety = {row["variety_id"]: row for row in stock["varieties"]}
     # 4 origins * 20g in, 9g sold (5 + 1 + 2 + 1): 71g left.
-    assert stock_by_variety[varieties_by_name[VARIETY]]["grams"] == 71.0
-    assert stock_by_variety[varieties_by_name[HIDDEN_VARIETY]]["grams"] == 0.0
+    assert stock_by_variety[varieties_by_name[VARIETY]]["quantity"] == 71.0
+    assert stock_by_variety[varieties_by_name[HIDDEN_VARIETY]]["quantity"] == 0.0
     stored_origins = {entry["origin"] for entry in stock["entries"]}
     assert stored_origins == {origin.value for origin in ORIGEN_WORDS.values()}
 

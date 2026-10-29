@@ -46,7 +46,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 /** `DELETE /sales/{id}`'s own answer (ADR-0009): the grams the sale gave back. */
-const DELETED = { returned: [{ variety_id: 2, grams: 3.5 }] }
+const DELETED = { returned: [{ variety_id: 2, quantity: 3.5 }] }
 
 function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -79,7 +79,7 @@ afterEach(() => {
 test('shows the total, each line with its lowercase rule badge, shipping, note and the final Total row, all from the API', async () => {
   // The fixture's one example owes and carries no note: this test's own point is
   // that every one of these fields renders, so it overrides just those two,
-  // keeping everything else — id, lines, total_grams — as the real answer's shape.
+  // keeping everything else — id, lines, total_quantity — as the real answer's shape.
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment: 'cash' }),
   )

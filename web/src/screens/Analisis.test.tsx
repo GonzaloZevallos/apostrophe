@@ -335,14 +335,14 @@ const FIXTURE_FIRST_WEEK = analysisFixture.weeks[0]!
 const FIXTURE_LAST_WEEK = analysisFixture.weeks.at(-1)!
 
 function pendingRowFixture() {
-  const fullyPending = { amount: 0, pending_grams: 4, all_pending: true }
-  const partlyPending = { amount: 7000, pending_grams: 1.5, all_pending: false }
+  const fullyPending = { amount: 0, pending_quantity: 4, all_pending: true }
+  const partlyPending = { amount: 7000, pending_quantity: 1.5, all_pending: false }
   return {
     ...analysisFixture,
-    month: { ...analysisFixture.month, shortfall: { amount: 0, pending_grams: 2, all_pending: true } },
+    month: { ...analysisFixture.month, shortfall: { amount: 0, pending_quantity: 2, all_pending: true } },
     since_first_record: {
       ...analysisFixture.since_first_record,
-      promotion: { amount: 0, pending_grams: 3, all_pending: true },
+      promotion: { amount: 0, pending_quantity: 3, all_pending: true },
     },
     weeks: analysisFixture.weeks.map((week, index) =>
       index === 1
@@ -350,7 +350,7 @@ function pendingRowFixture() {
         : index === 2
           ? { ...week, cost_of_goods: fullyPending }
           : index === 3
-            ? { ...week, cost_of_goods: { amount: 0, pending_grams: 0, all_pending: false } }
+            ? { ...week, cost_of_goods: { amount: 0, pending_quantity: 0, all_pending: false } }
             : week,
     ),
     months: analysisFixture.months.map((row, index) =>
@@ -401,7 +401,7 @@ test.each(['phone', 'computer'] as const)('each week and month renders its cost 
 
   // The partly pending week carries label, amount, marker, in that order.
   const pending = pendingRowFixture()
-  expect(pending.weeks[1]!.cost_of_goods.pending_grams).toBe(1.5)
+  expect(pending.weeks[1]!.cost_of_goods.pending_quantity).toBe(1.5)
 })
 
 test('a row with an amount and pending grams reads label, amount, marker in that order', async () => {
@@ -505,14 +505,14 @@ test('the history block has one named row per metric, in order, each with its am
   expect(rowOf(block, 'Profit').textContent).toBe('Profit $ 140.000 and 9,5 g without cost')
 })
 
-test('the history marker shows only when pending_grams > 0, and alone when all_pending', async () => {
+test('the history marker shows only when pending_quantity > 0, and alone when all_pending', async () => {
   const fixture = {
     ...analysisFixture,
     since_first_record: {
       ...analysisFixture.since_first_record,
-      profit: { amount: 140000, pending_grams: 0 },
+      profit: { amount: 140000, pending_quantity: 0 },
       shortfall: null,
-      promotion: { amount: 0, pending_grams: 3, all_pending: true },
+      promotion: { amount: 0, pending_quantity: 3, all_pending: true },
     },
   }
   renderAnalisis(async () => jsonResponse(200, fixture))
@@ -538,13 +538,13 @@ test('the hero is a group named "You sold in the month" holding the amount in on
 
 describe('the strip line of grams and average margin', () => {
   const line = '28 g sold · 15 g given away'
-  function withMargin(average_margin: { amount: number; percent: number | null; pending_grams: number }) {
+  function withMargin(average_margin: { amount: number; percent: number | null; pending_quantity: number }) {
     return { ...analysisFixture, month: { ...analysisFixture.month, average_margin } }
   }
 
   test('percent with nothing pending', async () => {
     renderAnalisis(async () =>
-      jsonResponse(200, withMargin({ amount: 41000, percent: 55, pending_grams: 0 })),
+      jsonResponse(200, withMargin({ amount: 41000, percent: 55, pending_quantity: 0 })),
     )
     expect(await screen.findByText(/average margin/)).toHaveTextContent(
       `${line} · average margin 55%`,
@@ -554,7 +554,7 @@ describe('the strip line of grams and average margin', () => {
 
   test('percent with pending grams', async () => {
     renderAnalisis(async () =>
-      jsonResponse(200, withMargin({ amount: 41000, percent: 55, pending_grams: 2.5 })),
+      jsonResponse(200, withMargin({ amount: 41000, percent: 55, pending_quantity: 2.5 })),
     )
     const node = await screen.findByText(/average margin/)
     expect(node.textContent).toBe(`${line} · average margin 55% and 2,5 g without cost`)
@@ -565,7 +565,7 @@ describe('the strip line of grams and average margin', () => {
 
   test('percent null with pending grams', async () => {
     renderAnalisis(async () =>
-      jsonResponse(200, withMargin({ amount: 0, percent: null, pending_grams: 2.5 })),
+      jsonResponse(200, withMargin({ amount: 0, percent: null, pending_quantity: 2.5 })),
     )
     const node = await screen.findByText(/average margin/)
     expect(node.textContent).toBe(`${line} · average margin and 2,5 g without cost`)
@@ -678,8 +678,8 @@ describe('the phone renders cards, one per row, month selector first', () => {
       expect(figuresOf(card)).toEqual([
         formatMoney(variety.sales_without_shipping),
         ...share,
-        formatGrams(variety.grams_sold),
-        formatGrams(variety.grams_gifted),
+        formatGrams(variety.quantity_sold),
+        formatGrams(variety.quantity_gifted),
         formatMoney(variety.cost.costed),
         formatMoney(variety.margin.amount),
       ])
@@ -687,8 +687,8 @@ describe('the phone renders cards, one per row, month selector first', () => {
         `${ANALYSIS_TEXT.margen}${formatMoney(variety.margin.amount)}${
           variety.margin.percent === null ? '' : ` (${variety.margin.percent}%)`
         }${
-          variety.margin.pending_grams > 0
-            ? ANALYSIS_TEXT.pendingSuffix(formatGrams(variety.margin.pending_grams))
+          variety.margin.pending_quantity > 0
+            ? ANALYSIS_TEXT.pendingSuffix(formatGrams(variety.margin.pending_quantity))
             : ''
         }`.trim(),
       )
@@ -709,7 +709,7 @@ describe('the phone renders cards, one per row, month selector first', () => {
         .map((cost) => formatMoney(cost.amount))
       expect(figuresOf(card)).toEqual([
         formatMoney(week.sales),
-        formatGrams(week.grams),
+        formatGrams(week.quantity),
         formatMoney(week.cost_of_goods.amount),
         ...withdrawals,
         formatMoney(week.expenses),
@@ -748,7 +748,7 @@ describe('the phone renders cards, one per row, month selector first', () => {
         .map((cost) => formatMoney(cost.amount))
       expect(figuresOf(card)).toEqual([
         formatMoney(row.sales),
-        formatGrams(row.grams),
+        formatGrams(row.quantity),
         formatMoney(row.cost_of_goods.amount),
         ...withdrawals,
         formatMoney(row.expenses),
@@ -791,8 +791,8 @@ describe('the phone renders cards, one per row, month selector first', () => {
         varieties: [
           {
             ...first!,
-            cost: { costed: 5000, pending_grams: 2.5 },
-            margin: { amount: 9000, percent: null, pending_grams: 2.5 },
+            cost: { costed: 5000, pending_quantity: 2.5 },
+            margin: { amount: 9000, percent: null, pending_quantity: 2.5 },
           },
           ...rest,
         ],
@@ -828,5 +828,26 @@ describe('the phone renders cards, one per row, month selector first', () => {
     renderAnalisis(async () => jsonResponse(200, noBest), 'phone')
     const line = await screen.findByText(NO_BEST_WEEK_LINE)
     expect(line.previousElementSibling).toBe(document.querySelector('.analisis__semanas'))
+  })
+})
+
+describe('while the API is held', () => {
+  test('the content area is busy, shows no digit, no currency symbol and no empty-state wording', async () => {
+    renderAnalisis(() => new Promise<Response>(() => undefined), 'phone')
+
+    const bar = await screen.findByRole('progressbar')
+    expect(bar).toHaveAttribute('aria-busy', 'true')
+    const area = screen.getByRole('main')
+    expect(area).toContainElement(bar)
+    expect(area.textContent ?? '').not.toMatch(/[0-9$]/)
+    expect(screen.queryByText(EMPTY_MONTH_LINE)).toBeNull()
+    expect(screen.queryByText(NO_HISTORY_LINE)).toBeNull()
+  })
+
+  test('the busy bar leaves with the answer', async () => {
+    renderAnalisis(async () => jsonResponse(200, analysisFixture), 'phone')
+
+    await screen.findAllByText(/^(Flor A|Flor B|Flor Gift)$/)
+    expect(screen.queryByRole('progressbar')).toBeNull()
   })
 })

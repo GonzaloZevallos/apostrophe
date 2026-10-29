@@ -30,7 +30,7 @@ def _priced_variety_id(client: TestClient, name: str = "Zkittlez", list_price: i
 
 
 def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, Any]:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "opening_stock", "grams": "50"}
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text
@@ -41,7 +41,7 @@ def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, 
 def _sale(client: TestClient, variety_id: int, quantity: str, **overrides: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "payment": "cash",
-        "lines": [{"variety_id": variety_id, "grams": quantity}],
+        "lines": [{"variety_id": variety_id, "quantity": quantity}],
     }
     body.update(overrides)
     response = client.post("/sales", json=body)
@@ -72,41 +72,41 @@ def test_a_variety_with_no_entries_reads_no_entries(client: TestClient) -> None:
 
     row = _variety_row(stock, variety_id)
     assert row["status"] == "no_entries"
-    assert row["grams"] == 0.0
+    assert row["quantity"] == 0.0
     assert row["days_left"] is None
 
 
 def test_an_entry_shows_up_in_grams_total_and_entries(client: TestClient) -> None:
     variety_id = _variety_id(client)
-    entry = _record(client, variety_id, grams="50")
+    entry = _record(client, variety_id, quantity="50")
 
     stock = client.get("/stock").json()
 
     row = _variety_row(stock, variety_id)
     assert row["status"] == "ok"
-    assert row["grams"] == 50.0
+    assert row["quantity"] == 50.0
     assert stock["total"] == 50.0
     assert stock["entries"][0]["id"] == entry["id"]
 
 
 def test_a_variety_at_or_below_zero_reads_sold_out(client: TestClient) -> None:
     variety_id = _variety_id(client)
-    _record(client, variety_id, grams="10")
-    _record(client, variety_id, origin="adjustment", grams="-10")
+    _record(client, variety_id, quantity="10")
+    _record(client, variety_id, origin="adjustment", quantity="-10")
 
     stock = client.get("/stock").json()
 
     row = _variety_row(stock, variety_id)
     assert row["status"] == "sold_out"
     assert row["sold_out_since"] == TODAY
-    assert row["grams"] == 0.0
+    assert row["quantity"] == 0.0
 
 
 def test_setting_a_threshold_makes_low_stock_show_up(client: TestClient) -> None:
     variety_id = _variety_id(client)
-    _record(client, variety_id, grams="10")
+    _record(client, variety_id, quantity="10")
 
-    set_response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": "20"})
+    set_response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "20"})
 
     assert set_response.status_code == 200, set_response.text
     body = set_response.json()
@@ -120,10 +120,10 @@ def test_setting_a_threshold_makes_low_stock_show_up(client: TestClient) -> None
 
 def test_turning_off_a_threshold_is_idempotent(client: TestClient) -> None:
     variety_id = _variety_id(client)
-    client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": "20"})
+    client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "20"})
 
-    first_off = client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": None})
-    second_off = client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": None})
+    first_off = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": None})
+    second_off = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": None})
 
     assert first_off.status_code == 200
     assert first_off.json()["threshold"] is None
@@ -134,14 +134,14 @@ def test_turning_off_a_threshold_is_idempotent(client: TestClient) -> None:
 def test_a_zero_threshold_is_refused(client: TestClient) -> None:
     variety_id = _variety_id(client)
 
-    response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": "0"})
+    response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "0"})
 
     assert response.status_code == 422
     assert response.json()["code"] == "stock.threshold_invalid"
 
 
 def test_an_unknown_variety_threshold_is_not_found(client: TestClient) -> None:
-    response = client.put("/stock/varieties/999999/threshold", json={"grams": "10"})
+    response = client.put("/stock/varieties/999999/threshold", json={"quantity": "10"})
 
     assert response.status_code == 404
     assert response.json()["code"] == "variety.not_found"
@@ -152,7 +152,7 @@ def test_a_foreign_variety_threshold_answers_the_same_404(
 ) -> None:
     foreign_variety = _variety_id(other_client)
 
-    response = client.put(f"/stock/varieties/{foreign_variety}/threshold", json={"grams": "10"})
+    response = client.put(f"/stock/varieties/{foreign_variety}/threshold", json={"quantity": "10"})
 
     assert response.status_code == 404
     assert response.json()["code"] == "variety.not_found"
@@ -161,7 +161,7 @@ def test_a_foreign_variety_threshold_answers_the_same_404(
 def test_a_malformed_threshold_grams_value_is_refused(client: TestClient) -> None:
     variety_id = _variety_id(client)
 
-    response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": "1.234"})
+    response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "1.234"})
 
     assert response.status_code == 422
     assert response.json()["code"] == "grams.invalid"
@@ -172,8 +172,8 @@ def test_turning_off_an_unset_threshold_is_not_found_for_a_foreign_or_missing_va
 ) -> None:
     foreign_variety = _variety_id(other_client)
 
-    missing = client.put("/stock/varieties/999999/threshold", json={"grams": None})
-    foreign = client.put(f"/stock/varieties/{foreign_variety}/threshold", json={"grams": None})
+    missing = client.put("/stock/varieties/999999/threshold", json={"quantity": None})
+    foreign = client.put(f"/stock/varieties/{foreign_variety}/threshold", json={"quantity": None})
 
     assert missing.status_code == 404
     assert foreign.status_code == 404
@@ -184,38 +184,40 @@ def test_a_sale_draws_down_stock_and_deleting_it_restores_the_grams(client: Test
     """Proves `SqlDraws` actually runs against the database: with a fake or an always
     empty `for_varieties`, the sale's grams would never leave stock at all."""
     variety_id = _priced_variety_id(client)
-    _record(client, variety_id, grams="50")
+    _record(client, variety_id, quantity="50")
 
     sale = _sale(client, variety_id, "10")
     after_sale = client.get("/stock").json()
-    assert _variety_row(after_sale, variety_id)["grams"] == 40.0
+    assert _variety_row(after_sale, variety_id)["quantity"] == 40.0
 
     deleted = client.delete(f"/sales/{sale['id']}")
     assert deleted.status_code == 200, deleted.text
 
     after_delete = client.get("/stock").json()
-    assert _variety_row(after_delete, variety_id)["grams"] == 50.0
+    assert _variety_row(after_delete, variety_id)["quantity"] == 50.0
 
 
 def test_a_gift_also_draws_down_stock(client: TestClient) -> None:
     variety_id = _priced_variety_id(client)
-    _record(client, variety_id, grams="50")
+    _record(client, variety_id, quantity="50")
 
-    _sale(client, variety_id, "10", lines=[{"variety_id": variety_id, "grams": "10", "gift": True}])
+    _sale(
+        client, variety_id, "10", lines=[{"variety_id": variety_id, "quantity": "10", "gift": True}]
+    )
 
     stock = client.get("/stock").json()
-    assert _variety_row(stock, variety_id)["grams"] == 40.0
+    assert _variety_row(stock, variety_id)["quantity"] == 40.0
 
 
 def test_a_sale_beyond_stock_oversells_into_negative_and_sold_out(client: TestClient) -> None:
     variety_id = _priced_variety_id(client)
-    _record(client, variety_id, grams="5")
+    _record(client, variety_id, quantity="5")
 
     _sale(client, variety_id, "10")
 
     stock = client.get("/stock").json()
     row = _variety_row(stock, variety_id)
-    assert row["grams"] == -5.0
+    assert row["quantity"] == -5.0
     assert row["status"] == "sold_out"
 
 
@@ -228,20 +230,20 @@ def test_a_sale_with_no_stock_entries_reads_sold_out_not_no_entries(client: Test
     row = _variety_row(stock, variety_id)
     assert row["status"] == "sold_out"
     assert row["sold_out_since"] == TODAY
-    assert row["grams"] == -5.0
+    assert row["quantity"] == -5.0
 
 
 def test_days_left_counts_only_sales_within_the_last_30_days(
     client: TestClient, clock: MovableClock
 ) -> None:
     variety_id = _priced_variety_id(client)
-    _record(client, variety_id, grams="100")
+    _record(client, variety_id, quantity="100")
     _sale(client, variety_id, "10")
 
     stock = client.get("/stock").json()
     row = _variety_row(stock, variety_id)
     # 90 g left, 10 g sold today: (90 * 30) // 10 = 270 whole days.
-    assert row["grams"] == 90.0
+    assert row["quantity"] == 90.0
     assert row["days_left"] == 270
 
     # Move exactly 30 days past the sale (still inside the session's own lifetime):
@@ -250,7 +252,7 @@ def test_days_left_counts_only_sales_within_the_last_30_days(
     clock.set(NOW + timedelta(days=30))
     later_stock = client.get("/stock").json()
     later_row = _variety_row(later_stock, variety_id)
-    assert later_row["grams"] == 90.0
+    assert later_row["quantity"] == 90.0
     assert later_row["status"] == "ok"
     assert later_row["days_left"] is None
 
@@ -260,8 +262,8 @@ def test_an_archived_variety_leaves_the_rows_but_its_grams_stay_in_the_total(
 ) -> None:
     kept = _variety_id(client, "Kept")
     archived = _variety_id(client, "Archived")
-    _record(client, kept, grams="30")
-    _record(client, archived, grams="20")
+    _record(client, kept, quantity="30")
+    _record(client, archived, quantity="20")
     archive_by_hand(engine, archived)
 
     stock = client.get("/stock").json()
@@ -275,8 +277,8 @@ def test_the_archived_rows_are_read_with_archived_true_and_the_total_does_not_ch
 ) -> None:
     kept = _variety_id(client, "Kept")
     archived = _variety_id(client, "Archived")
-    _record(client, kept, grams="30")
-    _record(client, archived, grams="20")
+    _record(client, kept, quantity="30")
+    _record(client, archived, quantity="20")
     total_before = client.get("/stock").json()["total"]
     archive_by_hand(engine, archived)
 
@@ -285,7 +287,7 @@ def test_the_archived_rows_are_read_with_archived_true_and_the_total_does_not_ch
 
     assert [row["variety_id"] for row in default["varieties"]] == [kept]
     assert [row["variety_id"] for row in only_archived["varieties"]] == [archived]
-    assert only_archived["varieties"][0]["grams"] == 20.0
+    assert only_archived["varieties"][0]["quantity"] == 20.0
     assert default["total"] == total_before == only_archived["total"]
     assert [entry["variety_id"] for entry in only_archived["entries"]] == [
         entry["variety_id"] for entry in default["entries"]
@@ -317,15 +319,15 @@ def test_entries_sort_by_date_then_recorded_at_then_id_newest_first(
         clock.set(NOW + timedelta(hours=hours))
 
     at(2)
-    b = _record(client, kept, grams="1", date=day)["id"]
+    b = _record(client, kept, quantity="1", date=day)["id"]
     at(1)
-    c = _record(client, kept, grams="2", date=day)["id"]
+    c = _record(client, kept, quantity="2", date=day)["id"]
     at(0)
-    e = _record(client, kept, grams="3", date=day)["id"]
-    f = _record(client, kept, grams="4", date=day)["id"]
+    e = _record(client, kept, quantity="3", date=day)["id"]
+    f = _record(client, kept, quantity="4", date=day)["id"]
     at(3)
-    a = _record(client, kept, grams="5", date="2026-10-01")["id"]
-    archived_entry = _record(client, archived, grams="20", date="2026-09-30")["id"]
+    a = _record(client, kept, quantity="5", date="2026-10-01")["id"]
+    archived_entry = _record(client, archived, quantity="20", date="2026-09-30")["id"]
     archive_by_hand(engine, archived)
 
     stock = client.get("/stock").json()

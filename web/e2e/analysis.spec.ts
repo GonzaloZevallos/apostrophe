@@ -424,8 +424,10 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
     expect(edges.at(-1)).not.toBe(edges[0])
   }
 
-  // Growing only the height moves nothing: the month arrows and the "Nueva venta" button keep
-  // their tops. The measure rejects the two rules that once made them slide.
+  // Growing only the height moves nothing: the month arrows keep their tops, the floating
+  // "Nueva venta" button keeps its distance from the viewport's bottom edge, and the document does
+  // not outgrow the viewport it was grown to. The measure rejects the two rules that once made
+  // them slide.
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto(ANALYSIS)
   await expect(page.getByText('You sold in the month')).toBeVisible()
@@ -435,25 +437,35 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   await page.goto(ANALYSIS)
   await expect(page.getByText('You sold in the month')).toBeVisible()
   await page.addStyleTag({ content: '.analisis.pantalla { min-height: 100dvh; flex: 0 1 auto }' })
-  expect((await tallerMoves(page)).join(' '), 'screen minimum height back').toContain('boton-nueva-venta')
+  expect((await tallerMoves(page)).join(' '), 'screen minimum height back').toContain('documento-mas-alto-que-la-ventana')
   expect(consoleMessages).toEqual([])
 })
 
-/** The tops of the month arrows and the "Nueva venta" button at 812 px and at the document's own height; the ones that moved. */
+/**
+ * The places of the month arrows and the "Nueva venta" button at 812 px and at the document's own height; the ones that
+ * moved. The arrows sit in the flow, so their place is their top on the page. The button floats above the bar
+ * (`position: fixed`, GH-373), so its place is its distance from the viewport's bottom edge: its top moves with the
+ * viewport by design. A screen taller than its content shows as the document outgrowing the viewport it was grown to.
+ */
 async function tallerMoves(page: Page): Promise<string[]> {
-  const tops = () =>
+  const places = () =>
     page.evaluate(() =>
-      Array.from(document.querySelectorAll('.gastos__mes-boton, .boton-nueva-venta')).map(
-        (node) => `${node.className}@${Math.round(node.getBoundingClientRect().top + window.scrollY)}`,
-      ),
+      Array.from(document.querySelectorAll('.gastos__mes-boton, .boton-nueva-venta')).map((node) => {
+        const box = node.getBoundingClientRect()
+        const floats = getComputedStyle(node.closest('.nueva-venta-flotante') ?? node).position === 'fixed'
+        return `${node.className}@${Math.round(floats ? window.innerHeight - box.bottom : box.top + window.scrollY)}`
+      }),
     )
   const size = page.viewportSize()
   if (size === null) throw new Error('no viewport')
   await page.setViewportSize({ width: size.width, height: 812 })
-  const before = await tops()
+  const before = await places()
   const height = await page.evaluate(() => document.documentElement.scrollHeight)
-  await page.setViewportSize({ width: size.width, height: Math.max(height, 812) })
-  const after = await tops()
+  const grown = Math.max(height, 812)
+  await page.setViewportSize({ width: size.width, height: grown })
+  const after = await places()
+  const outgrown = await page.evaluate((viewport) => document.documentElement.scrollHeight > viewport, grown)
   await page.setViewportSize(size)
-  return before.filter((top, index) => top !== after[index])
+  const moved = before.filter((place, index) => place !== after[index])
+  return outgrown ? [...moved, 'documento-mas-alto-que-la-ventana'] : moved
 }
