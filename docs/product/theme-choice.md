@@ -17,6 +17,8 @@ Cómo se ve la app en claro y en oscuro, y quién decide cuál se muestra en cad
 
 - Sin nada guardado, la app sigue al teléfono en vivo: abre en el tema del teléfono y cambia cuando el teléfono cambia, sea por horario o a mano. También se corrige al volver a la app si el teléfono cambió mientras estaba en segundo plano (`visibilitychange` a visible y `pageshow`).
 - Una elección guardada (Light o Dark) es solo de ese dispositivo, sobrevive a una recarga y al cierre de sesión, y gana sobre el teléfono. Un Dark elegido con la opción anterior sigue abriendo oscuro.
+- Un Light elegido con la opción anterior no quedó guardado (la app anterior lo trataba como "sin elección"), así que ese dispositivo pasa a Automatic y en un teléfono oscuro se ve oscuro. Es un efecto aceptado: eligiendo Light en Settings → Appearance queda guardado y gana sobre el teléfono.
+- Con la app abierta en dos pestañas o ventanas del mismo dispositivo, cambiar el tema en una no cambia la otra en vivo: la otra sigue como estaba (en Automatic, siguiendo al teléfono; en Light o Dark, en ese tema) y toma la elección guardada la próxima vez que carga.
 - Guardado: la clave `tema` en `localStorage`; `claro` es Light y `oscuro` es Dark. Sin clave, con cualquier otro valor o ante un error de almacenamiento, es Automatic. Si el almacenamiento falla, lo elegido aplica solo en esa visita.
 - El atributo `data-tema` de `<html>` lleva el tema resuelto: sin atributo es claro, `oscuro` es oscuro. `theme-color` sigue a `--papel` en cada cambio del atributo.
 - Un dispositivo sin consulta de tema del sistema lee claro; ahí igual se puede elegir Light o Dark.
@@ -39,8 +41,8 @@ Cómo se ve la app en claro y en oscuro, y quién decide cuál se muestra en cad
 
 ## Nunca solo por color
 
-- Ningún estado se cuenta solo con color: toda ganancia, pérdida, deuda, crédito o estado lleva un signo, flecha o palabra, y las series de gráfico van etiquetadas directamente.
-- Un censo de vitest sobre `web/src/styles/app.css` lista cada regla que usa `--deuda*`, `--positivo`, `--negativo` o una serie de gráfico, con el componente que estiliza y la palabra o signo que lleva ("Owes you", "Since", "In your favor", el signo menos, etiquetas directas). Falla ante una regla no listada. La lista de `--positivo` y `--negativo` arranca vacía: hoy ninguna pantalla muestra una ganancia.
+- Ningún estado se cuenta solo con color: toda ganancia, pérdida, deuda, crédito o estado (sold out y low incluidos) lleva un signo, flecha, palabra o forma, y las series de gráfico van etiquetadas directamente.
+- Un censo de vitest sobre `web/src/styles/app.css` lista cada regla que usa `--deuda*`, `--positivo`, `--negativo`, `--critico*`, `--acento-calido` o una serie de gráfico, con el componente que estiliza y la palabra, signo o forma que lleva ("Owes you", "Since", "In your favor", el signo menos, "sold out", "low", etiquetas directas). Una regla donde `--acento-calido` no marca ningún estado se lista como decorativa, con su motivo. Falla ante una regla no listada. La lista de `--positivo` y `--negativo` arranca vacía: hoy ninguna pantalla muestra una ganancia.
 - El test de cada componente listado afirma su palabra o signo.
 - Una cifra de ganancia futura toma signo y dirección del valor de la API y el texto del módulo de formato, en una unidad sin cortes, con la flecha `aria-hidden` y "up"/"down" en su nombre accesible.
 - Los lugares que necesitan más que agregar un signo, flecha o palabra faltante quedan en un issue de seguimiento, como brecha conocida.
@@ -48,6 +50,7 @@ Cómo se ve la app en claro y en oscuro, y quién decide cuál se muestra en cad
 ## Fuera de alcance
 
 - Mostrar en el control el tema resuelto.
+- Sincronizar el tema en vivo entre pestañas o ventanas del mismo dispositivo.
 - Colores o presets por negocio.
 - Aviso de novedades dentro de la app.
 - Pulido dedicado para la computadora.
@@ -56,6 +59,6 @@ Cómo se ve la app en claro y en oscuro, y quién decide cuál se muestra en cad
 
 - Criterio 1 (sigue al teléfono): `web/e2e/theme.spec.ts` (oscuro emulado sin nada guardado abre oscuro; un cambio con `emulateMedia` cambia en vivo) y `web/src/theme.test.ts` (un cambio con la app oculta se corrige al volver visible).
 - Criterio 2 (la elección guardada se mantiene): `theme.spec.ts` (`tema=claro` en teléfono oscuro sigue claro tras recargar; `tema=oscuro` abre oscuro) y `theme.test.ts` (`claro`, `oscuro` y valores desconocidos se leen como Light, Dark y Automatic).
-- Criterio 3 (legible sin color): `tests/test_design_contrast.py` en verde con todas las filas en ambos temas; el censo de color en verde; cantidad de lugares abiertos en el issue de seguimiento, que debe llegar a cero.
+- Criterio 3 (legible sin color): `tests/test_design_contrast.py` en verde con todas las filas en ambos temas; el censo de color en verde, stock crítico y acento cálido incluidos; cantidad de lugares abiertos en el issue de seguimiento, que debe llegar a cero.
 - Criterio 4 (toda pantalla, todo ancho): e2e `mobile` en verde a 320, 375, 430 y 246 px; las entradas de offenders solo bajan; conteos de `scripts/design/compare.sh`.
-- Criterio 5 (nada más se mueve): todas las suites fuera de los tests de tema pasan sin editar.
+- Criterio 5 (nada más se mueve): todas las suites fuera de los tests de tema pasan sin editar, salvo el literal del fondo claro en `tests/test_design_tokens.py`, que pasa a `#f6f7f5`.
