@@ -512,7 +512,9 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     assert analysis_month_shortfall is not None
     assert month_figures["shortfall"] is not None
     assert analysis_month_shortfall["amount"] == month_figures["shortfall"]["amount"]
-    assert (analysis_month_shortfall["pending_quantity"] > 0) == month_figures["shortfall"]["pending"]
+    assert (analysis_month_shortfall["pending_quantity"] > 0) == month_figures["shortfall"][
+        "pending"
+    ]
 
 
 def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
@@ -633,8 +635,16 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     assert header["shortfall"]["amount"] == panel["month"]["shortfall"]["amount"]
 
     # Each figure has its own pending grams and its own fully-pending flag.
-    assert week_row["cost_of_goods"] == {"amount": 500, "pending_quantity": 1.0, "all_pending": False}
-    assert month_row["cost_of_goods"] == {"amount": 300, "pending_quantity": 0.0, "all_pending": False}
+    assert week_row["cost_of_goods"] == {
+        "amount": 500,
+        "pending_quantity": 1.0,
+        "all_pending": False,
+    }
+    assert month_row["cost_of_goods"] == {
+        "amount": 300,
+        "pending_quantity": 0.0,
+        "all_pending": False,
+    }
     assert week_row["shortfall"] == {"amount": 200, "pending_quantity": 1.0, "all_pending": False}
     assert month_row["shortfall"] == {"amount": 0, "pending_quantity": 1.0, "all_pending": True}
     assert week_row["promotion"] == {"amount": 400, "pending_quantity": 2.0, "all_pending": False}
@@ -663,7 +673,11 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     assert september["shortfall"] == {"amount": 200, "pending_quantity": 0.0, "all_pending": False}
     # A period with no sales reads a real $0, never null.
     quiet_week = analysis["weeks"][-3]
-    assert quiet_week["cost_of_goods"] == {"amount": 0, "pending_quantity": 0.0, "all_pending": False}
+    assert quiet_week["cost_of_goods"] == {
+        "amount": 0,
+        "pending_quantity": 0.0,
+        "all_pending": False,
+    }
 
     # Since the first record: costed $200 plus B's pending gram, not fully pending.
     assert analysis["since_first_record"]["shortfall"] == {

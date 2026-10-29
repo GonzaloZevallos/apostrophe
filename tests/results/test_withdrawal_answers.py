@@ -171,7 +171,9 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     # The panel's month shortfall is the header's, amount and pending flag.
     assert _same_line(month["shortfall"], header["shortfall"])
     assert month["pending_cost"] is True
-    assert month["pending_cost"] == any(v["cost"]["pending_quantity"] > 0 for v in header["varieties"])
+    assert month["pending_cost"] == any(
+        v["cost"]["pending_quantity"] > 0 for v in header["varieties"]
+    )
     # B's row holds the sale's 1 g only: its 2 g promotion is not a sale (ADR-0031), so
     # it must not add to the variety's pending cost (that would read 3.0).
     b_row = next(v for v in header["varieties"] if v["name"] == "B")
@@ -293,7 +295,14 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
             assert after_panel[name][key] == before_panel[name][key], (name, key)
         assert after_panel[name]["promotion"] is not None or name == "today"
     assert after_panel["month"]["profit"] < before_panel["month"]["profit"]
-    for key in ("sales", "quantity_sold", "quantity_gifted", "average_margin", "shortfall", "varieties"):
+    for key in (
+        "sales",
+        "quantity_sold",
+        "quantity_gifted",
+        "average_margin",
+        "shortfall",
+        "varieties",
+    ):
         assert after_analysis["month"][key] == before_analysis["month"][key], key
     assert after_analysis["weekdays"] == before_analysis["weekdays"]
     for row_before, row_after in zip(

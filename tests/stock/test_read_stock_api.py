@@ -201,7 +201,9 @@ def test_a_gift_also_draws_down_stock(client: TestClient) -> None:
     variety_id = _priced_variety_id(client)
     _record(client, variety_id, quantity="50")
 
-    _sale(client, variety_id, "10", lines=[{"variety_id": variety_id, "quantity": "10", "gift": True}])
+    _sale(
+        client, variety_id, "10", lines=[{"variety_id": variety_id, "quantity": "10", "gift": True}]
+    )
 
     stock = client.get("/stock").json()
     assert _variety_row(stock, variety_id)["quantity"] == 40.0

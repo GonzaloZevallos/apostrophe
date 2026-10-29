@@ -73,9 +73,7 @@ def _seed(client: TestClient) -> int:
         "/sales",
         json={"payment": "cash", "lines": [{"variety_id": variety["id"], "quantity": "1"}]},
     ).json()
-    assigned = client.put(
-        f"/sales/{unassigned['id']}/customer", json={"customer_id": customer_id}
-    )
+    assigned = client.put(f"/sales/{unassigned['id']}/customer", json={"customer_id": customer_id})
     assert assigned.status_code == 200, assigned.text
     client.post(
         "/sales",

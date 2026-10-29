@@ -250,7 +250,10 @@ def _movements(api: _ClientApi) -> list[str]:
         listed = api.get(f"/stock/varieties/{row['variety_id']}/movements")
         for move in listed[:3]:
             if move["kind"] == "withdrawal":
-                kind, amount = _WITHDRAWAL_KIND[move["reason"]], f"{_MINUS}{grams(move['quantity'])}"
+                kind, amount = (
+                    _WITHDRAWAL_KIND[move["reason"]],
+                    f"{_MINUS}{grams(move['quantity'])}",
+                )
             else:
                 kind, amount = _ENTRY_KIND[move["origin"]], grams(move["quantity"])
             rows.append([names[row["variety_id"]], day_month(move["date"]), kind, amount])

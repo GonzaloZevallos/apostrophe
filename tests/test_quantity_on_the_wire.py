@@ -38,7 +38,9 @@ def test_no_property_of_the_api_document_contains_grams(app: FastAPI) -> None:
 
 
 def test_a_property_name_check_sees_a_grams_property() -> None:
-    document = {"components": {"schemas": {"X": {"properties": {"pending_grams": {}}}}}}
+    document: dict[str, Any] = {
+        "components": {"schemas": {"X": {"properties": {"pending_grams": {}}}}}
+    }
 
     assert "pending_grams" in _property_names(document)
 

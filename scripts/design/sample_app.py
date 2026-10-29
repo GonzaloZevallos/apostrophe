@@ -406,7 +406,9 @@ def stretch(api: Api, today: date) -> None:
             "shipping_charged": 0,
             "note": None,
             "payment": "cash",
-            "lines": [{"variety_id": variety, "quantity": "1", "gift": False, "special_price": None}],
+            "lines": [
+                {"variety_id": variety, "quantity": "1", "gift": False, "special_price": None}
+            ],
         },
     )
 

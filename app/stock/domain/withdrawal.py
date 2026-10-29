@@ -40,7 +40,9 @@ class WithdrawalLine:
         try:
             amount = Decimal(quantity)
         except InvalidOperation as exc:
-            raise WithdrawalQuantityNotPositive("a withdrawal line takes a quantity above zero") from exc
+            raise WithdrawalQuantityNotPositive(
+                "a withdrawal line takes a quantity above zero"
+            ) from exc
         if not amount.is_finite():
             raise WithdrawalQuantityNotPositive("a withdrawal line takes a quantity above zero")
         scaled = amount * HUNDREDTHS_PER_UNIT

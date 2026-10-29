@@ -24,7 +24,11 @@ def _variety(client: TestClient, name: str = "Zkittlez") -> int:
 
 
 def _stock_in(client: TestClient, variety_id: int, quantity: str = "50", **extra: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity}
+    body: dict[str, Any] = {
+        "variety_id": variety_id,
+        "origin": "opening_stock",
+        "quantity": quantity,
+    }
     response = client.post("/stock/entries", json=body | extra)
     assert response.status_code == 201, response.text
 
@@ -105,7 +109,9 @@ def test_stock_moves_exactly_on_record_edit_and_delete(client: TestClient) -> No
 
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json=_body(variety_id, reason="own_use", lines=[{"variety_id": variety_id, "quantity": "7"}]),
+        json=_body(
+            variety_id, reason="own_use", lines=[{"variety_id": variety_id, "quantity": "7"}]
+        ),
     )
     assert edited.status_code == 200, edited.text
     assert edited.json()["id"] == withdrawal["id"]
@@ -367,7 +373,9 @@ def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agre
 
     client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json=_body(variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "quantity": "1"}]),
+        json=_body(
+            variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "quantity": "1"}]
+        ),
     )
     assert line_cost() == 1_400
 
