@@ -9,7 +9,7 @@ Pinned ahead of `period_figures` and the route so the front (`analysis-front`) a
 backend (`results-backend`) build against the same frozen contract. Bare (ADR-0005):
 no length or pattern constraint, so a refusal is always the domain's, never pydantic's.
 
-Money is `int`. Quantity reuse `GramsOut` (`app/varieties/adapters/schemas.py`) rather than
+Money is `int`. Quantity reuse `GramsOut` (`app/products/adapters/schemas.py`) rather than
 a second float-serialising decimal. Percentages are `int | None`, never a float: this
 file answers results figures (CODING_STANDARDS.md's "no float ... in any results money,
 grams or percentage path"), it does not compute them.
@@ -21,10 +21,10 @@ from datetime import date
 
 from pydantic import BaseModel
 
+from app.products.adapters.schemas import QuantityOut
 from app.results.application.ports import DebtorRow, StockRow
 from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
 from app.stock.adapters.schemas import VarietyStockOut
-from app.varieties.adapters.schemas import QuantityOut
 
 
 class PanelVarietyOut(VarietyStockOut):

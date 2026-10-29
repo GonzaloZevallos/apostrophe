@@ -6,10 +6,10 @@ from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base, UtcDateTime
-from app.varieties.domain.variety import NAME_MAX_LENGTH
+from app.products.domain.product import NAME_MAX_LENGTH
 
 
-class VarietyRow(Base):
+class ProductRow(Base):
     __tablename__ = "variety"
     # The casefolded name is what makes two names the same name, within one business.
     __table_args__ = (UniqueConstraint("business_id", "name_key"),)
@@ -38,4 +38,4 @@ class PriceEntryRow(Base):
     bulk_price: Mapped[int | None]
     bulk_minimum_hundredths: Mapped[int | None]
     vip_price: Mapped[int | None]
-    variety: Mapped[VarietyRow] = relationship(back_populates="price_entries")
+    variety: Mapped[ProductRow] = relationship(back_populates="price_entries")

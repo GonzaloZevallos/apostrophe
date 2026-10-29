@@ -9,30 +9,30 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
-from app.shared.quantity import InvalidQuantity, Quantity
-from app.varieties.adapters.schemas import (
+from app.products.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
     VarietyDetailOut,
     VarietyIn,
     VarietyOut,
 )
-from app.varieties.adapters.sql_varieties import SqlVarieties
-from app.varieties.application import manage_prices, manage_varieties
-from app.varieties.application.errors import (
+from app.products.adapters.sql_products import SqlProducts
+from app.products.application import manage_prices, manage_products
+from app.products.application.errors import (
     NameHeldByArchived,
     NameTaken,
-    VarietyHasHistory,
-    VarietyNotFound,
+    ProductHasHistory,
+    ProductNotFound,
 )
-from app.varieties.application.ports import PricingSettingsReader, VarietyLeaving
-from app.varieties.domain.variety import (
+from app.products.application.ports import PricingSettingsReader, ProductLeaving
+from app.products.domain.product import (
     DuplicateEffectiveDate,
+    ProductArchived,
+    ProductRuleBroken,
     UnknownPriceEntry,
-    VarietyArchived,
-    VarietyRuleBroken,
     VipPriceNotBelowList,
 )
+from app.shared.quantity import InvalidQuantity, Quantity
 
 router = APIRouter(prefix="/varieties", tags=["varieties"])
 
@@ -40,8 +40,8 @@ router = APIRouter(prefix="/varieties", tags=["varieties"])
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-def get_varieties(session: SessionDep, business_id: CurrentBusinessId) -> SqlVarieties:
-    return SqlVarieties(session, business_id)
+def get_products(session: SessionDep, business_id: CurrentBusinessId) -> SqlProducts:
+    return SqlProducts(session, business_id)
 
 
 def get_pricing_settings(
@@ -58,123 +58,127 @@ def get_pricing_settings(
 
 def get_leaving(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> VarietyLeaving:
+) -> ProductLeaving:
     # Varieties never imports stock or the catalog (CODING_STANDARDS section 1):
     # `app/main.py` hangs their composite on `app.state.variety_leaving` as a factory,
     # the same shape `line_costs` uses.
-    factory = cast(Callable[[Session, int], VarietyLeaving], request.app.state.variety_leaving)
+    factory = cast(Callable[[Session, int], ProductLeaving], request.app.state.variety_leaving)
     return factory(session, business_id)
 
 
-VarietiesDep = Annotated[SqlVarieties, Depends(get_varieties)]
+ProductsDep = Annotated[SqlProducts, Depends(get_products)]
 SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
-LeavingDep = Annotated[VarietyLeaving, Depends(get_leaving)]
+LeavingDep = Annotated[ProductLeaving, Depends(get_leaving)]
 TodayDep = Annotated[date, Depends(get_today)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
 
 
 as_http = TranslateErrors(
     [
-        (404, (VarietyNotFound, VarietyArchived, UnknownPriceEntry)),
-        (409, (NameTaken, NameHeldByArchived, VarietyHasHistory, DuplicateEffectiveDate)),
-        (422, (VarietyRuleBroken, VipPriceNotBelowList, InvalidQuantity)),
+        (404, (ProductNotFound, ProductArchived, UnknownPriceEntry)),
+        (409, (NameTaken, NameHeldByArchived, ProductHasHistory, DuplicateEffectiveDate)),
+        (422, (ProductRuleBroken, VipPriceNotBelowList, InvalidQuantity)),
     ]
 )
 
 
 @router.get("")
 def list_varieties(
-    varieties: VarietiesDep, today: TodayDep, on: date | None = None, archived: bool = False
+    products: ProductsDep, today: TodayDep, on: date | None = None, archived: bool = False
 ) -> list[VarietyOut]:
     """Each variety's current price as of `on` (today when omitted, docs/adr/0011),
     inside the session's own business. Archived varieties only with `archived=true`."""
     day = on or today
-    listed = manage_varieties.list_varieties(varieties, archived=archived)
+    listed = manage_products.list_products(products, archived=archived)
     return [VarietyOut.of(v, day) for v in listed]
 
 
 @router.post("", status_code=201)
 def register_variety(
-    body: VarietyIn, varieties: VarietiesDep, session: SessionDep, today: TodayDep
+    body: VarietyIn, products: ProductsDep, session: SessionDep, today: TodayDep
 ) -> VarietyOut:
     with as_http:
-        variety = manage_varieties.register_variety(varieties, session, body.name)
-        return VarietyOut.of(variety, today)
+        product = manage_products.register_product(products, session, body.name)
+        return VarietyOut.of(product, today)
 
 
 @router.get("/{variety_id}")
-def get_variety(variety_id: int, varieties: VarietiesDep, today: TodayDep) -> VarietyDetailOut:
+def get_variety(variety_id: int, products: ProductsDep, today: TodayDep) -> VarietyDetailOut:
     with as_http:
-        variety = manage_varieties.get_variety(varieties, variety_id)
-        removal = manage_varieties.removal_offered(varieties, variety)
-        return VarietyDetailOut(**VarietyOut.of(variety, today).model_dump(), removal=removal)
+        product = manage_products.get_product(products, product_id=variety_id)
+        removal = manage_products.removal_offered(products, product)
+        return VarietyDetailOut(**VarietyOut.of(product, today).model_dump(), removal=removal)
 
 
 @router.delete("/{variety_id}", status_code=204)
 def delete_variety(
-    variety_id: int, varieties: VarietiesDep, leaving: LeavingDep, session: SessionDep
+    variety_id: int, products: ProductsDep, leaving: LeavingDep, session: SessionDep
 ) -> None:
     with as_http:
-        manage_varieties.delete_variety(varieties, leaving, session, variety_id)
+        manage_products.delete_product(products, leaving, session, product_id=variety_id)
 
 
 @router.patch("/{variety_id}")
 def rename_variety(
     variety_id: int,
     body: VarietyIn,
-    varieties: VarietiesDep,
+    products: ProductsDep,
     session: SessionDep,
     today: TodayDep,
 ) -> VarietyOut:
     with as_http:
-        variety = manage_varieties.rename_variety(varieties, session, variety_id, body.name)
-        return VarietyOut.of(variety, today)
+        product = manage_products.rename_product(
+            products, session, product_id=variety_id, raw_name=body.name
+        )
+        return VarietyOut.of(product, today)
 
 
 @router.post("/{variety_id}/archive")
 def archive_variety(
     variety_id: int,
-    varieties: VarietiesDep,
+    products: ProductsDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
 ) -> VarietyOut:
     with as_http:
-        variety = manage_varieties.archive_variety(varieties, session, variety_id, clock())
-        return VarietyOut.of(variety, today)
+        product = manage_products.archive_product(
+            products, session, product_id=variety_id, at=clock()
+        )
+        return VarietyOut.of(product, today)
 
 
 @router.post("/{variety_id}/restore")
 def restore_variety(
-    variety_id: int, varieties: VarietiesDep, session: SessionDep, today: TodayDep
+    variety_id: int, products: ProductsDep, session: SessionDep, today: TodayDep
 ) -> VarietyOut:
     with as_http:
-        variety = manage_varieties.restore_variety(varieties, session, variety_id)
-        return VarietyOut.of(variety, today)
+        product = manage_products.restore_product(products, session, product_id=variety_id)
+        return VarietyOut.of(product, today)
 
 
 @router.get("/{variety_id}/prices")
-def price_history(variety_id: int, varieties: VarietiesDep) -> list[PriceEntryOut]:
+def price_history(variety_id: int, products: ProductsDep) -> list[PriceEntryOut]:
     with as_http:
-        variety = manage_varieties.get_variety(varieties, variety_id)
-        return [PriceEntryOut.of(e) for e in variety.price_history()]
+        product = manage_products.get_product(products, product_id=variety_id)
+        return [PriceEntryOut.of(e) for e in product.price_history()]
 
 
 @router.post("/{variety_id}/prices", status_code=201)
 def record_price_entry(
     variety_id: int,
     body: PriceEntryIn,
-    varieties: VarietiesDep,
+    products: ProductsDep,
     settings: SettingsDep,
     session: SessionDep,
 ) -> PriceEntryOut:
     with as_http:
         bulk_minimum = None if body.bulk_minimum is None else Quantity.of(body.bulk_minimum)
         entry = manage_prices.record_price_entry(
-            varieties,
+            products,
             settings,
             session,
-            variety_id,
+            product_id=variety_id,
             effective_from=body.effective_from,
             list_price=body.list_price,
             bulk_price=body.bulk_price,
@@ -186,20 +190,22 @@ def record_price_entry(
 
 @router.delete("/{variety_id}/prices/{entry_id}", status_code=204)
 def delete_price_entry(
-    variety_id: int, entry_id: int, varieties: VarietiesDep, session: SessionDep
+    variety_id: int, entry_id: int, products: ProductsDep, session: SessionDep
 ) -> None:
     with as_http:
-        manage_prices.delete_price_entry(varieties, session, variety_id, entry_id)
+        manage_prices.delete_price_entry(
+            products, session, product_id=variety_id, entry_id=entry_id
+        )
 
 
 @router.get("/{variety_id}/current-price")
 def current_price(
-    variety_id: int, varieties: VarietiesDep, today: TodayDep, on: date | None = None
+    variety_id: int, products: ProductsDep, today: TodayDep, on: date | None = None
 ) -> PriceEntryOut:
     """The price entry in force on `on` (today when omitted); 404 when there is none."""
     with as_http:
         day = on or today
-        entry = manage_prices.current_price(varieties, variety_id, day)
+        entry = manage_prices.current_price(products, product_id=variety_id, on=day)
     if entry is None:
         raise HTTPException(status_code=404, detail=f"no price in force on {day}")
     return PriceEntryOut.of(entry)

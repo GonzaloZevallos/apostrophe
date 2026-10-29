@@ -4,31 +4,31 @@ from datetime import UTC, date, datetime
 
 import pytest
 
-from app.shared.quantity import Quantity
-from app.varieties.domain.variety import (
+from app.products.domain.product import (
     DuplicateEffectiveDate,
     InvalidName,
     InvalidPriceEntry,
     PriceEntry,
+    Product,
+    ProductArchived,
+    ProductName,
     UnknownPriceEntry,
-    Variety,
-    VarietyArchived,
-    VarietyName,
     VipPriceNotBelowList,
 )
+from app.shared.quantity import Quantity
 
 
 def test_a_name_is_trimmed_and_its_inner_spaces_collapsed() -> None:
-    name = VarietyName.of("  24K   Gold ")
+    name = ProductName.of("  24K   Gold ")
 
     assert name.value == "24K Gold"
-    assert name.key == VarietyName.of("24k gold").key
+    assert name.key == ProductName.of("24k gold").key
 
 
 @pytest.mark.parametrize("raw", ["", "   ", "x" * 61])
 def test_a_name_must_be_present_and_short(raw: str) -> None:
     with pytest.raises(InvalidName):
-        VarietyName.of(raw)
+        ProductName.of(raw)
 
 
 @pytest.mark.parametrize(
@@ -42,10 +42,10 @@ def test_a_name_s_error_messages_are_unchanged_by_the_shared_name_rule(
     raw: str, message: str
 ) -> None:
     with pytest.raises(InvalidName, match=f"^{message}$"):
-        VarietyName.of(raw)
+        ProductName.of(raw)
 
     with pytest.raises(InvalidName, match=f"^{message}$"):
-        VarietyName(raw)
+        ProductName(raw)
 
 
 def test_an_untrimmed_name_built_directly_is_refused_with_its_own_message() -> None:
@@ -54,7 +54,7 @@ def test_an_untrimmed_name_built_directly_is_refused_with_its_own_message() -> N
     with pytest.raises(
         InvalidName, match="^a variety name has no leading, trailing or repeated spaces$"
     ):
-        VarietyName(" 24K Gold")
+        ProductName(" 24K Gold")
 
 
 def test_a_price_entry_needs_a_positive_list_price() -> None:
@@ -89,8 +89,8 @@ def test_a_bulk_price_is_positive_and_lower_than_the_list_price_from_some_grams(
         PriceEntry.of(date(2026, 1, 1), 11_000, bulk_price, bulk_minimum)
 
 
-def _gold() -> Variety:
-    variety = Variety(VarietyName.of("24K Gold"))
+def _gold() -> Product:
+    variety = Product(ProductName.of("24K Gold"))
     variety.record_price(PriceEntry.of(date(2026, 1, 1), 11_000, 10_000, Quantity.of(10), id=1))
     variety.record_price(PriceEntry.of(date(2026, 3, 1), 12_000, id=2))
     return variety
@@ -180,16 +180,16 @@ def test_a_vip_price_must_be_positive(vip_price: int) -> None:
 def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
     from datetime import UTC, datetime
 
-    live = Variety(VarietyName.of("Gelato"))
-    archived = Variety(VarietyName.of("Gelato"), archived_at=datetime(2026, 1, 1, tzinfo=UTC))
+    live = Product(ProductName.of("Gelato"))
+    archived = Product(ProductName.of("Gelato"), archived_at=datetime(2026, 1, 1, tzinfo=UTC))
 
     assert live.archived_at is None
     assert not live.is_archived
     assert archived.is_archived
 
 
-def _bare_gold() -> Variety:
-    return Variety(VarietyName.of("24K Gold"), id=1)
+def _bare_gold() -> Product:
+    return Product(ProductName.of("24K Gold"), id=1)
 
 
 def test_archiving_sets_the_instant_once_and_a_second_archive_keeps_it() -> None:
@@ -219,11 +219,11 @@ def test_an_archived_variety_refuses_to_be_renamed_priced_or_unpriced() -> None:
     variety.record_price(PriceEntry.of(date(2026, 1, 1), 11_000, id=5))
     variety.archive(datetime(2026, 10, 6, 12, 0, tzinfo=UTC))
 
-    with pytest.raises(VarietyArchived):
-        variety.rename(VarietyName.of("Silver"))
-    with pytest.raises(VarietyArchived):
+    with pytest.raises(ProductArchived):
+        variety.rename(ProductName.of("Silver"))
+    with pytest.raises(ProductArchived):
         variety.record_price(PriceEntry.of(date(2026, 2, 1), 12_000))
-    with pytest.raises(VarietyArchived):
+    with pytest.raises(ProductArchived):
         variety.delete_price(5)
 
     assert variety.name.value == "24K Gold"
@@ -235,6 +235,6 @@ def test_a_restored_variety_can_be_renamed_again() -> None:
     variety.archive(datetime(2026, 10, 6, 12, 0, tzinfo=UTC))
     variety.restore()
 
-    variety.rename(VarietyName.of("Silver"))
+    variety.rename(ProductName.of("Silver"))
 
     assert variety.name.value == "Silver"

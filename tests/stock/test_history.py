@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.products.adapters.tables import ProductRow
 from app.shared.quantity import Quantity
 from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
@@ -19,7 +20,6 @@ from app.stock.application.history import history
 from app.stock.domain.allocation import allocate
 from app.stock.domain.draw_source import DrawSource, WithdrawalReason
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
-from app.varieties.adapters.tables import VarietyRow
 
 TODAY = date(2026, 10, 2)
 
@@ -39,7 +39,7 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
 
 def _business_of(engine: Engine, variety_id: int) -> int:
     with Session(engine) as session:
-        row = session.scalar(select(VarietyRow).where(VarietyRow.id == variety_id))
+        row = session.scalar(select(ProductRow).where(ProductRow.id == variety_id))
         assert row is not None
         return row.business_id
 

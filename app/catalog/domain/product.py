@@ -33,14 +33,14 @@ class CatalogPrice:
 
 
 @dataclass(frozen=True)
-class CatalogVariety:
+class CatalogProduct:
     id: int
     name: str
     price: CatalogPrice | None
 
 
 @dataclass(frozen=True)
-class ArchivedCatalogVariety:
+class ArchivedCatalogProduct:
     """An archived variety, named only: its stored attributes are read apart from the
     varieties (docs/adr/0032)."""
 

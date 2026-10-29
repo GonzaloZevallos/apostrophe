@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.varieties.adapters.sql_varieties import SqlVarieties
+from app.products.adapters.sql_products import SqlProducts
 
 
 class SqlVarietyCatalog:
@@ -8,7 +8,7 @@ class SqlVarietyCatalog:
     only through adapters). Built for one business."""
 
     def __init__(self, session: Session, business_id: int) -> None:
-        self._varieties = SqlVarieties(session, business_id)
+        self._varieties = SqlProducts(session, business_id)
 
     def exists(self, variety_id: int) -> bool:
         return self._varieties.get(variety_id) is not None

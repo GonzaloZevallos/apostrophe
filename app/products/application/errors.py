@@ -1,13 +1,13 @@
 from typing import ClassVar
 
-from app.varieties.domain.variety import VarietyArchived as VarietyArchived
+from app.products.domain.product import ProductArchived as ProductArchived
 
 
-class VarietyNotFound(LookupError):
+class ProductNotFound(LookupError):
     code: ClassVar[str] = "variety.not_found"
 
-    def __init__(self, variety_id: int) -> None:
-        super().__init__(f"no variety {variety_id}")
+    def __init__(self, product_id: int) -> None:
+        super().__init__(f"no variety {product_id}")
 
 
 class NameTaken(ValueError):
@@ -26,7 +26,7 @@ class NameHeldByArchived(ValueError):
         super().__init__("the name belongs to an archived variety")
 
 
-class VarietyHasHistory(ValueError):
+class ProductHasHistory(ValueError):
     """A delete was refused because the variety has sale lines or stock entries: fixed
     text, nothing of the variety is repeated."""
 

@@ -36,7 +36,7 @@ from app.catalog.domain.errors import (
 from app.clock import get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
-from app.varieties.application.errors import VarietyArchived
+from app.products.application.errors import ProductArchived
 
 router = APIRouter(prefix="/catalog", tags=["catalog"])
 
@@ -96,7 +96,7 @@ LanguageDep = Annotated[CatalogLanguage, Depends(get_language)]
 
 as_http = TranslateErrors(
     [
-        (404, (CatalogVarietyNotFound, VarietyArchived)),
+        (404, (CatalogVarietyNotFound, ProductArchived)),
         (422, (EmojiInvalid, IndicaShareInvalid, AromaTooLong, HeaderTooLong, FooterTooLong)),
     ]
 )
@@ -170,7 +170,7 @@ def put_variety_attributes(
                 today,
             )
         except CatalogVarietyArchived as exc:
-            raise VarietyArchived(variety_id) from exc
+            raise ProductArchived(variety_id) from exc
         return CatalogOut.of(view)
 
 

@@ -17,6 +17,10 @@ from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.domain.attributes import CatalogAttributes
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
+from app.products.adapters.sql_products import SqlProducts
+from app.products.application import manage_prices, manage_products
+from app.products.application.errors import ProductHasHistory, ProductNotFound
+from app.products.domain.product import PriceEntry, Product, ProductName
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
@@ -33,10 +37,6 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyNotFound as StockVarietyNotFound
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.threshold import Threshold
-from app.varieties.adapters.sql_varieties import SqlVarieties
-from app.varieties.application import manage_prices, manage_varieties
-from app.varieties.application.errors import VarietyHasHistory, VarietyNotFound
-from app.varieties.domain.variety import PriceEntry, Variety, VarietyName
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
@@ -67,10 +67,10 @@ class BothRulesOn:
 def _seed_variety(engine: Engine) -> int:
     """A variety with a price entry, a threshold and catalog attributes, and no history."""
     with Session(engine) as session:
-        variety = SqlVarieties(session, BUSINESS).add(Variety(VarietyName.of("Gold")))
+        variety = SqlProducts(session, BUSINESS).add(Product(ProductName.of("Gold")))
         assert variety.id is not None
         variety.record_price(PriceEntry.of(date(2026, 1, 1), 10_000))
-        SqlVarieties(session, BUSINESS).save(variety)
+        SqlProducts(session, BUSINESS).save(variety)
         SqlThresholds(session, BUSINESS).set(variety.id, Threshold(Quantity.of("5")))
         attributes = CatalogAttributes.of(shown=True, emoji=None, indica_share=50, aroma="dulce")
         SqlCatalogAttributes(session, BUSINESS).put(variety.id, attributes)
@@ -102,9 +102,9 @@ def _orphans(engine: Engine) -> int:
         )
 
 
-def _delete(engine: Engine, variety_id: int, varieties_class: type[SqlVarieties]) -> None:
+def _delete(engine: Engine, variety_id: int, varieties_class: type[SqlProducts]) -> None:
     with Session(engine) as session:
-        manage_varieties.delete_variety(
+        manage_products.delete_product(
             varieties_class(session, BUSINESS),
             _Leaving(session),
             session,
@@ -127,7 +127,7 @@ def test_remove_unused_removes_a_variety_with_no_history_and_returns_its_id(
     variety_id = _seed_variety(engine)
 
     with Session(engine) as session:
-        varieties = SqlVarieties(session, BUSINESS)
+        varieties = SqlProducts(session, BUSINESS)
         assert varieties.has_history(variety_id) is False
         _Leaving(session).leaving(variety_id)
         varieties.remove_price_entries(variety_id)
@@ -145,7 +145,7 @@ def test_remove_unused_removes_nothing_from_a_variety_with_history(engine: Engin
         session.commit()
 
     with Session(engine) as session:
-        varieties = SqlVarieties(session, BUSINESS)
+        varieties = SqlProducts(session, BUSINESS)
         assert varieties.has_history(variety_id) is True
         assert varieties.remove_unused(variety_id) is False
         session.commit()
@@ -161,7 +161,7 @@ def test_a_variety_of_another_business_is_never_removed(engine: Engine) -> None:
         )
 
     with Session(engine) as session:
-        assert SqlVarieties(session, 2).remove_unused(variety_id) is False
+        assert SqlProducts(session, 2).remove_unused(variety_id) is False
         session.commit()
 
     assert _count(engine, "variety") == 1
@@ -172,7 +172,7 @@ def test_a_rollback_after_the_dependent_deletes_keeps_every_dependent(engine: En
 
     with Session(engine) as session:
         _Leaving(session).leaving(variety_id)
-        SqlVarieties(session, BUSINESS).remove_price_entries(variety_id)
+        SqlProducts(session, BUSINESS).remove_price_entries(variety_id)
         session.rollback()
 
     assert _count(engine, "variety") == 1
@@ -185,7 +185,7 @@ def test_a_rollback_after_the_dependent_deletes_keeps_every_dependent(engine: En
     ]
 
 
-class _GuardLosesTheRace(SqlVarieties):
+class _GuardLosesTheRace(SqlProducts):
     """The guarded delete finds a history that appeared after the first check."""
 
     def remove_unused(self, variety_id: int) -> bool:
@@ -198,7 +198,7 @@ def test_delete_variety_rolls_back_the_dependents_when_the_guarded_delete_remove
 ) -> None:
     variety_id = _seed_variety(engine)
 
-    with pytest.raises(VarietyHasHistory):
+    with pytest.raises(ProductHasHistory):
         _delete(engine, variety_id, _GuardLosesTheRace)
 
     assert _count(engine, "variety") == 1
@@ -211,7 +211,7 @@ def test_delete_variety_rolls_back_the_dependents_when_the_guarded_delete_remove
     ]
 
 
-class _EntryLandsAfterTheHistoryCheck(SqlVarieties):
+class _EntryLandsAfterTheHistoryCheck(SqlProducts):
     """A partner's connection records an entry after this one found no history."""
 
     engine: Engine
@@ -228,7 +228,7 @@ def test_an_entry_recorded_first_makes_the_delete_answer_has_history(engine: Eng
     variety_id = _seed_variety(engine)
     _EntryLandsAfterTheHistoryCheck.engine = engine
 
-    with pytest.raises(VarietyHasHistory):
+    with pytest.raises(ProductHasHistory):
         _delete(engine, variety_id, _EntryLandsAfterTheHistoryCheck)
 
     assert _count(engine, "variety") == 1
@@ -280,7 +280,7 @@ def test_a_delete_committed_first_makes_the_entry_answer_gone_and_orphans_nothin
     variety_id = _seed_variety(engine)
 
     with Session(engine) as late:
-        _delete(engine, variety_id, SqlVarieties)
+        _delete(engine, variety_id, SqlProducts)
 
         with pytest.raises(StockVarietyNotFound):
             manage_entries.record_entry(
@@ -305,12 +305,12 @@ def test_a_delete_committed_first_makes_the_price_answer_gone(engine: Engine) ->
     variety_id = _seed_variety(engine)
 
     with Session(engine) as late:
-        varieties = SqlVarieties(late, BUSINESS)
+        varieties = SqlProducts(late, BUSINESS)
         stale = varieties.get(variety_id)
         assert stale is not None
-        _delete(engine, variety_id, SqlVarieties)
+        _delete(engine, variety_id, SqlProducts)
 
-        with pytest.raises(VarietyNotFound):
+        with pytest.raises(ProductNotFound):
             manage_prices.record_price_entry(
                 _ReadsStaleOnce(late, stale),
                 BothRulesOn(),
@@ -324,14 +324,14 @@ def test_a_delete_committed_first_makes_the_price_answer_gone(engine: Engine) ->
     assert _orphans(engine) == 0
 
 
-class _ReadsStaleOnce(SqlVarieties):
+class _ReadsStaleOnce(SqlProducts):
     """The first read is the one the request made before the partner's delete."""
 
-    def __init__(self, session: Session, stale: Variety) -> None:
+    def __init__(self, session: Session, stale: Product) -> None:
         super().__init__(session, BUSINESS)
-        self._stale: Variety | None = stale
+        self._stale: Product | None = stale
 
-    def get(self, variety_id: int) -> Variety | None:
+    def get(self, variety_id: int) -> Product | None:
         stale, self._stale = self._stale, None
         return stale if stale is not None else super().get(variety_id)
 
@@ -367,7 +367,7 @@ class _PricesStaleOnce(SqlPriceBook):
         return stale if stale is not None else super().for_variety(variety_id, day)
 
 
-class _SaleLandsAfterTheHistoryCheck(SqlVarieties):
+class _SaleLandsAfterTheHistoryCheck(SqlProducts):
     """A partner's connection records a sale after this one found no history."""
 
     engine: Engine
@@ -383,7 +383,7 @@ def test_a_sale_recorded_first_makes_the_delete_answer_has_history(engine: Engin
     variety_id = _seed_variety(engine)
     _SaleLandsAfterTheHistoryCheck.engine = engine
 
-    with pytest.raises(VarietyHasHistory):
+    with pytest.raises(ProductHasHistory):
         _delete(engine, variety_id, _SaleLandsAfterTheHistoryCheck)
 
     assert _count(engine, "variety") == 1
@@ -406,7 +406,7 @@ def test_a_delete_committed_first_makes_the_sale_answer_gone_and_orphans_nothing
     with Session(engine) as late:
         stale = SqlPriceBook(late, BUSINESS).for_variety(variety_id, DAY)
         assert stale is not None
-        _delete(engine, variety_id, SqlVarieties)
+        _delete(engine, variety_id, SqlProducts)
 
         with pytest.raises(UnknownVariety):
             _record_sale(late, _PricesStaleOnce(late, stale), variety_id)

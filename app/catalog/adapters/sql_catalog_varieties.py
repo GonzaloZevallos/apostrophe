@@ -1,5 +1,5 @@
 """The `CatalogVarieties` port over `SqlVarieties` (CODING_STANDARDS section 1: only
-modules under `app/catalog/adapters/` import `app.varieties`). Built for one business.
+modules under `app/catalog/adapters/` import `app.products`). Built for one business.
 """
 
 from __future__ import annotations
@@ -8,21 +8,21 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.catalog.domain.variety import ArchivedCatalogVariety, CatalogPrice, CatalogVariety
-from app.varieties.adapters.sql_varieties import SqlVarieties
-from app.varieties.domain.variety import PriceEntry
+from app.catalog.domain.product import ArchivedCatalogProduct, CatalogPrice, CatalogProduct
+from app.products.adapters.sql_products import SqlProducts
+from app.products.domain.product import PriceEntry
 
 
 class SqlCatalogVarieties:
     def __init__(self, session: Session, business_id: int) -> None:
-        self._varieties = SqlVarieties(session, business_id)
+        self._varieties = SqlProducts(session, business_id)
 
-    def on(self, day: date) -> list[CatalogVariety]:
+    def on(self, day: date) -> list[CatalogProduct]:
         views = []
         for variety in self._varieties.listed():
             assert variety.id is not None, "only stored varieties are read here"
             views.append(
-                CatalogVariety(
+                CatalogProduct(
                     id=variety.id,
                     name=variety.name.value,
                     price=_catalog_price(variety.current_price(day)),
@@ -30,11 +30,11 @@ class SqlCatalogVarieties:
             )
         return views
 
-    def archived(self) -> list[ArchivedCatalogVariety]:
+    def archived(self) -> list[ArchivedCatalogProduct]:
         views = []
         for variety in self._varieties.archived():
             assert variety.id is not None, "only stored varieties are read here"
-            views.append(ArchivedCatalogVariety(id=variety.id, name=variety.name.value))
+            views.append(ArchivedCatalogProduct(id=variety.id, name=variety.name.value))
         return views
 
     def exists(self, variety_id: int) -> bool:
