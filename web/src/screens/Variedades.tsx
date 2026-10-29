@@ -38,7 +38,16 @@ import PaneRowLink from '../components/PaneRowLink'
 import SinConexion from '../components/SinConexion'
 import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
-import { ARCHIVED_VARIETIES, CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, WITHDRAWAL_NEW, pathTo } from '../routes'
+import {
+  ARCHIVED_VARIETIES,
+  CATALOG,
+  STOCK,
+  STOCK_ENTRY_NEW,
+  VARIETY,
+  VARIETY_NEW,
+  WITHDRAWAL_NEW,
+  pathTo,
+} from '../routes'
 import { useViewport } from '../shell/useViewport'
 import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
@@ -138,57 +147,75 @@ export default function Variedades() {
             </BotonLink>
           </span>
         </div>
-        {feedback !== null ? (
-          <Notice {...feedback} />
-        ) : (
-          goneExited && <GoneNotice />
-        )}
+        {feedback !== null ? <Notice {...feedback} /> : goneExited && <GoneNotice />}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !ready && <Loading />}
         {failure === null && ready && rows.length === 0 && (
           <div className="estado-vacio">
-            <span className="estado-vacio__titulo" data-copy="emptyTitle">{EMPTY_TITLE}</span>
-            <span className="estado-vacio__detalle" data-copy="emptyLine">{EMPTY_DETAIL}</span>
+            <span className="estado-vacio__titulo" data-copy="emptyTitle">
+              {EMPTY_TITLE}
+            </span>
+            <span className="estado-vacio__detalle" data-copy="emptyLine">
+              {EMPTY_DETAIL}
+            </span>
           </div>
         )}
-        {rows.length > 0 && (
-          <div className="lista-variedades">
-            {rows.map(({ variety, row }) => (
-              <PaneRowLink
-                key={variety.id}
-                to={pathTo(VARIETY, { id: variety.id })}
-                replace={computer}
-                className="variedad-fila"
-                activeClassName="variedad-fila variedad-fila--activa"
-              >
-                <span className="variedad-fila__encabezado">
-                  <MarcaEstado estado={row.status} />
-                  <span className="variedad-fila__nombre">{variety.name}</span>
-                  {hidden.has(variety.id) && <span className="variedad-fila__oculta">{VARIETIES_TEXT.oculta}</span>}
-                </span>
-                <span className="variedad-fila__pie">
-                  <span className="variedad-fila__detalle">{figuresOf(row, me.today)}</span>
-                  <span className="variedad-fila__precio">
-                    {variety.current_price === null
-                      ? NO_PRICE_TODAY
-                      : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
-                  </span>
-                </span>
-              </PaneRowLink>
-            ))}
-          </div>
-        )}
+        {rows.length > 0 && <VarietyRows rows={rows} hidden={hidden} today={me.today} computer={computer} />}
         <InAppLink to={STOCK} className="variedades__todas">
           <span>{COMMON_TEXT.allEntries}</span>
           <span aria-hidden="true">›</span>
         </InAppLink>
         {archivedCount > 0 && (
           <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
-            <span>{VARIETIES_TEXT.archivadas}{archivedCount})</span>
+            <span>
+              {VARIETIES_TEXT.archivadas}
+              {archivedCount})
+            </span>
             <span aria-hidden="true">›</span>
           </InAppLink>
         )}
       </div>
     </main>
+  )
+}
+
+/** The list's rows: a variety's status, name, "Oculta" when the catalog hides it, figures and price. */
+export function VarietyRows({
+  rows,
+  hidden,
+  today,
+  computer,
+}: {
+  rows: { variety: Variety; row: VarietyStock }[]
+  hidden: ReadonlySet<number>
+  today: string
+  computer: boolean
+}) {
+  return (
+    <div className="lista-variedades">
+      {rows.map(({ variety, row }) => (
+        <PaneRowLink
+          key={variety.id}
+          to={pathTo(VARIETY, { id: variety.id })}
+          replace={computer}
+          className="variedad-fila"
+          activeClassName="variedad-fila variedad-fila--activa"
+        >
+          <span className="variedad-fila__encabezado">
+            <MarcaEstado estado={row.status} />
+            <span className="variedad-fila__nombre">{variety.name}</span>
+            {hidden.has(variety.id) && <span className="variedad-fila__oculta">{VARIETIES_TEXT.oculta}</span>}
+          </span>
+          <span className="variedad-fila__pie">
+            <span className="variedad-fila__detalle">{figuresOf(row, today)}</span>
+            <span className="variedad-fila__precio">
+              {variety.current_price === null
+                ? NO_PRICE_TODAY
+                : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
+            </span>
+          </span>
+        </PaneRowLink>
+      ))}
+    </div>
   )
 }

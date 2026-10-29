@@ -2,7 +2,7 @@
 section 1: `application/` never imports another hexagon).
 
 `variety.not_found` belongs to one class system-wide
-(`app.varieties.application.errors.VarietyNotFound`;
+(`app.products.application.errors.ProductNotFound`;
 `tests/test_refusal_codes.py` refuses a second class claiming the same code), and
 stock's application layer cannot import it (it would cross hexagons). `VarietyNotFound`
 here is only the internal signal: it carries no `code` of its own and is never

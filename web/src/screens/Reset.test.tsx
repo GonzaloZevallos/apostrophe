@@ -202,3 +202,14 @@ test('the reveal control toggles the field between hidden and shown', async () =
   await userEvent.click(screen.getByRole('button', { name: 'Show' }))
   expect(field).toHaveAttribute('type', 'text')
 })
+
+test('the new password field offers the password manager a new password', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() => Promise.resolve(noContent())),
+  )
+
+  renderReset()
+
+  expect(await screen.findByLabelText('New password')).toHaveAttribute('autocomplete', 'new-password')
+})

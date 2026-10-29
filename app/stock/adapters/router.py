@@ -8,6 +8,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.products.application.errors import ProductArchived, ProductNotFound
 from app.shared.quantity import InvalidQuantity, Quantity
 from app.stock.adapters.schemas import (
     EntryIn,
@@ -48,7 +49,6 @@ from app.stock.domain.errors import (
     WithdrawalVarietyNotFound,
 )
 from app.stock.domain.threshold import ThresholdInvalid
-from app.varieties.application.errors import VarietyArchived, VarietyNotFound
 
 router = APIRouter(prefix="/stock", tags=["stock"])
 entries_router = APIRouter(prefix="/entries")
@@ -92,8 +92,8 @@ as_http = TranslateErrors(
             404,
             (
                 EntryNotFound,
-                VarietyNotFound,
-                VarietyArchived,
+                ProductNotFound,
+                ProductArchived,
                 WithdrawalNotFound,
                 WithdrawalVarietyNotFound,
             ),
@@ -123,15 +123,15 @@ as_http = TranslateErrors(
 
 def _or_variety_not_found(
     exc: _UnknownVariety | _ArchivedVariety, variety_id: int
-) -> VarietyNotFound | VarietyArchived:
+) -> ProductNotFound | ProductArchived:
     """`manage_entries` raises stock's own internal signal (its application layer
-    cannot import `app.varieties`); the router, an adapter, translates it into the
+    cannot import `app.products`); the router, an adapter, translates it into the
     varieties hexagon's own class — the one class `variety.not_found` belongs to
     system-wide (`tests/test_refusal_codes.py`), so a foreign or missing variety_id
     answers the exact same 404 code whichever hexagon's use case found it."""
     if isinstance(exc, _ArchivedVariety):
-        return VarietyArchived(variety_id)
-    return VarietyNotFound(variety_id)
+        return ProductArchived(variety_id)
+    return ProductNotFound(variety_id)
 
 
 @entries_router.post("", status_code=201)
@@ -227,7 +227,7 @@ def record_withdrawal(
                 now=clock(),
             )
         except _ArchivedVariety as exc:
-            raise VarietyArchived(exc.variety_id) from exc
+            raise ProductArchived(exc.variety_id) from exc
         return WithdrawalOut.of(view)
 
 
@@ -264,7 +264,7 @@ def edit_withdrawal(
                 today=today,
             )
         except _ArchivedVariety as exc:
-            raise VarietyArchived(exc.variety_id) from exc
+            raise ProductArchived(exc.variety_id) from exc
         return WithdrawalOut.of(view)
 
 

@@ -8,6 +8,8 @@
  *   replacing the form's entry.
  * - A save refreshes the expenses, arms "Expense saved" to show on the screen it returns
  *   to (`useFlash().armAfterLeaving`), calls `disarm()`, then leaves.
+ * - On a phone the form is a `Sheet` (ADR-0062); on a direct address Expenses is drawn behind it
+ *   (`ExpensesBehind`). The computer page is the one it always was.
  * - Leaving with something typed asks first ("Discard the expense?"), through the one
  *   leave guard, so "Cerrar", the browser's Back and the swipe all ask the same question.
  */
@@ -21,7 +23,11 @@ import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { EXPENSES } from '../../routes'
+import BehindPane from '../../components/BehindPane'
+import Sheet from '../../components/Sheet'
+import { useViewport } from '../../shell/useViewport'
 import ExpenseForm from './ExpenseForm'
+import ExpensesBehind from './ExpensesBehind'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 
@@ -31,6 +37,7 @@ export default function ExpenseNewRoute() {
   const [dirty, setDirty] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)
   const leave = useBackOr(EXPENSES)
+  const computer = useViewport() === 'computer'
 
   function onDone(saved: SuccessToast): void {
     invalidateResource(queryClient, 'expenses')
@@ -40,19 +47,33 @@ export default function ExpenseNewRoute() {
   }
 
   return (
-    <main className="pantalla">
-      <div className="cuerpo">
-        <ExpenseForm target="nuevo" onDone={onDone} onCancel={leave} onDirtyChange={setDirty} />
-      </div>
-      {blocker.state === 'blocked' && (
-        <LeaveConfirm
-          blocker={blocker}
-          question={EXPENSES_TEXT.discardTheExpense}
-          detail={COMMON_TEXT.losesWhatYouEntered}
-          keepLabel={COMMON_TEXT.noKeepEntering}
-          discardLabel={COMMON_TEXT.yesDiscard}
-        />
+    <>
+      {!computer && (
+        <BehindPane>
+          <ExpensesBehind />
+        </BehindPane>
       )}
-    </main>
+      <Sheet
+        computer={computer}
+        computerClass="pantalla"
+        computerDialog={false}
+        label={COMMON_TEXT.addExpense}
+        touched={dirty}
+        onClose={leave}
+        aside={
+          blocker.state === 'blocked' && (
+            <LeaveConfirm
+              blocker={blocker}
+              question={EXPENSES_TEXT.discardTheExpense}
+              detail={COMMON_TEXT.losesWhatYouEntered}
+              keepLabel={COMMON_TEXT.noKeepEntering}
+              discardLabel={COMMON_TEXT.yesDiscard}
+            />
+          )
+        }
+      >
+        <ExpenseForm target="nuevo" onDone={onDone} onCancel={leave} onDirtyChange={setDirty} />
+      </Sheet>
+    </>
   )
 }

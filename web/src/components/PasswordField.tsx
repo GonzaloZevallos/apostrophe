@@ -11,11 +11,14 @@ import Boton from './Boton'
 
 export default function PasswordField({
   label,
+  autoComplete,
   value,
   onChange,
   error,
 }: {
   label: string
+  /** What the browser's password manager should offer; left out, the field says nothing. */
+  autoComplete?: 'current-password' | 'new-password'
   value: string
   onChange: (value: string) => void
   error?: string | null
@@ -30,6 +33,7 @@ export default function PasswordField({
         <input
           className="campo__input"
           type={reveal ? 'text' : 'password'}
+          autoComplete={autoComplete}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           required

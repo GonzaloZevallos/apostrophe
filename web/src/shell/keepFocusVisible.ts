@@ -8,7 +8,7 @@
  */
 
 const FIELDS = 'input, textarea, select'
-const CONTAINERS = '.capa, .cliente-sheet, .columna-principal--sin-bar'
+const CONTAINERS = '.capa, .sheet, .cliente-sheet, .columna-principal--sin-bar'
 /** How long to wait for the keyboard's resize before scrolling anyway. */
 const KEYBOARD_WAIT_MS = 300
 

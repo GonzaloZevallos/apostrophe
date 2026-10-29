@@ -59,6 +59,8 @@ from app.pinned_catalog.application.push import BusinessLocks
 from app.pricing_settings.adapters.opening import PricingSettingsOpening
 from app.pricing_settings.adapters.router import router as pricing_settings_router
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
+from app.products.adapters.onboarding_facts import SqlProductFacts
+from app.products.adapters.router import router as products_router
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -73,8 +75,6 @@ from app.stock.adapters.onboarding_facts import SqlStockFacts
 from app.stock.adapters.purchases import SqlPurchases
 from app.stock.adapters.router import router as stock_router
 from app.stock.adapters.stock_figures import SqlStockFigures
-from app.varieties.adapters.onboarding_facts import SqlVarietyFacts
-from app.varieties.adapters.router import router as varieties_router
 
 
 class _Opening(Protocol):
@@ -277,7 +277,7 @@ def create_app(
     # The Onboarding reads each owner's facts only through its own ports (ADR-0006,
     # ADR-0036), the same `(Session, business_id)` factory shape as above; the varieties
     # one also takes today, since "priced today" is a fact of the day.
-    app.state.onboarding_variety_facts = SqlVarietyFacts
+    app.state.onboarding_variety_facts = SqlProductFacts
     app.state.onboarding_stock_facts = SqlStockFacts
     app.state.onboarding_bot_facts = SqlBotFacts
     app.state.onboarding_user_facts = SqlUserFacts
@@ -302,7 +302,7 @@ def create_app(
     # then `en -> en` would still sync. Only a changed language can owe the pin an edit, so
     # the router schedules upkeep itself when it did (ADR-0014, as pricing settings does).
     app.include_router(language_router, dependencies=gated)
-    app.include_router(varieties_router, dependencies=upkeep_gated)
+    app.include_router(products_router, dependencies=upkeep_gated)
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=upkeep_gated)

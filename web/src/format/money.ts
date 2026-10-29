@@ -8,18 +8,36 @@
  */
 
 const MONEY_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
-const GRAMS_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 })
+const WHOLE_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
 
 /** `11000` → `"$ 11.000"`. */
 export function formatMoney(pesos: number): string {
   return `$ ${MONEY_FMT.format(Math.round(pesos))}`
 }
 
+/** `350` → `"3,5"`: a quantity from whole hundredths, in integer arithmetic only: the
+ * whole part with dot thousands, then a comma and up to two decimals with the trailing
+ * zero dropped. It carries no unit; a caller adds the one its copy holds. */
+export function formatQuantity(hundredths: number): string {
+  const sign = hundredths < 0 ? '-' : ''
+  const magnitude = Math.abs(hundredths)
+  const whole = Math.trunc(magnitude / 100)
+  const rest = magnitude % 100
+  const decimals = rest === 0 ? '' : `,${String(rest).padStart(2, '0').replace(/0$/, '')}`
+  return `${sign}${WHOLE_FMT.format(whole)}${decimals}`
+}
+
+/** Keeps every "$ 11.000" in a sentence on one line: the space after "$" becomes a
+ * no-break space, so a narrow phone wraps before the "$" and never between it and
+ * the number. The text a person reads is the same; only where it may break changes. */
+export function keepMoneyTogether(text: string): string {
+  return text.replace(/\$ (?=\d)/g, '$\u00a0')
+}
+
 /** `3.5` → `"3,5 g"`. Takes the `GramsOut` float the API answers, or the decimal
  * string a form field holds before it is sent. */
 export function formatGrams(grams: number | string): string {
-  const value = typeof grams === 'string' ? Number(grams) : grams
-  return `${GRAMS_FMT.format(value)} g`
+  return `${formatQuantity(Math.round(Number(grams) * 100))} g`
 }
 
 const GRAMS_INPUT_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2, useGrouping: false })

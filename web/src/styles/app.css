@@ -442,6 +442,12 @@ body {
 
 .disposicion .pantalla {
   padding: 0;
+  /* Inside the shell the column is already at least one viewport tall (`.disposicion`), and
+   * the card's "‹ parent" arrow and the bar sit in it with the screen: the screen takes what
+   * they leave, not a viewport of its own on top of them. A page that is one viewport tall
+   * stays one viewport tall when the viewport grows (the design capture's growth check). */
+  min-height: 0;
+  flex: 1;
 }
 
 .bar-inferior {
@@ -575,7 +581,8 @@ body {
 }
 
 /* Inicio's header on the phone (`Inicio.dc.html`): the name and title, and the business
- * avatar as a 44px touch target drawn at 38px. The computer has the rail's row instead. */
+ * avatar as a 44px touch target drawn at 38px (a transparent border the fill does not paint
+ * under, in the phone block at the end of this file). The computer has the rail's row instead. */
 .inicio__cabecera {
   display: flex;
   align-items: center;
@@ -626,6 +633,12 @@ body {
  * the same switch `.bar-inferior`/`.riel-lateral` already make. */
 .boton-nueva-venta {
   margin: 0 var(--margen-pantalla) var(--espacio-md);
+}
+
+/* The phone's floating group (`Shell.tsx`) is a box only below 900 px; elsewhere it takes no part
+ * in the layout, so the computer keeps the markup's old flow. */
+.nueva-venta-flotante {
+  display: contents;
 }
 
 .boton-nueva-venta--escritorio {
@@ -1279,7 +1292,6 @@ body {
 }
 
 .gastos__mes {
-  order: 3;
   flex-basis: 100%;
   display: flex;
   align-items: center;
@@ -1288,6 +1300,10 @@ body {
   padding: 0 8px;
   border-radius: var(--radio-pildora);
   background: var(--superficie);
+}
+
+:where(.gastos__cabecera) > .gastos__mes {
+  order: 3;
 }
 
 .gastos__mes-boton {
@@ -2021,6 +2037,39 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* The sale bill's own wrapper (`SaleBillButton`): it lays its children out as the actions row
+ * does, and its Share/Copy takes no tap delay or double-tap zoom. Scoped here, not on `.boton`,
+ * so no other screen's listed touch-action offender changes. */
+.sale-bill {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sale-bill > .boton {
+  touch-action: manipulation;
+}
+
+/* The bill shown by hand when copying failed (`SaleBillButton`): the one place the text is
+ * selectable, so a seller can copy it from the screen. */
+.sale-bill__bloque {
+  background: var(--superficie);
+  border-radius: var(--radio-campo);
+  padding: var(--espacio-lg);
+}
+
+.sale-bill__texto {
+  margin: 0;
+  font-family: var(--fuente);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--tinta);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* One DOM for the phone and the computer (`PeriodFigures.tsx`): the period block's
@@ -4368,6 +4417,13 @@ body {
     margin-top: var(--espacio-sm);
   }
 
+  /* Save before the payment choice (GH-319): enabled and at full text contrast, but outlined
+     where the ready one is filled, so it differs by shape and not by colour or opacity. */
+  .nueva-venta__pie > .boton--suave {
+    box-sizing: border-box;
+    border: 2px solid var(--tinta);
+  }
+
   .nueva-venta[data-teclado='abierto'] .nueva-venta__gramos {
     display: none;
   }
@@ -4507,6 +4563,221 @@ body {
   }
 }
 /* ===== end ventas-telefono-carga ===== */
+
+/* A form as a sheet on a phone (ADR-0062): one `Sheet` draws it full screen, over the visible
+ * viewport (`--vv-top`, `--vv-alto`). "Close" is the form's own and sticks to the top; the form's
+ * main action sits in `.sheet__actions`, the form's last child, pushed to the bottom and sticky
+ * there, with errors above it. The body scrolls by itself and the page behind is held still. A
+ * phone sheet has no outside, so it draws no backdrop and no strip. */
+@media (max-width: 899.98px) {
+  html:has(.sheet) {
+    overflow: hidden;
+  }
+
+  /* Under `.disposicion` so it is not beaten by `.disposicion .pantalla { padding: 0 }`: the
+   * sheet leaves the flow, so it owns the insets itself. */
+  .disposicion .sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--vv-top, 0px);
+    height: var(--vv-alto, 100dvh);
+    min-height: 0;
+    z-index: 20;
+    box-sizing: border-box;
+    padding: 0 var(--inset-derecha) 0 var(--inset-izquierda);
+    overflow: hidden;
+    background: var(--papel);
+  }
+
+  /* The top and bottom insets belong to the two sticky rows, so each clears the status bar and
+   * the home bar whether the body is scrolled or not. */
+  .sheet__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: 0;
+    /* The pinned actions own the bottom: nothing lies between the main action and the sheet's edge
+     * but its own padding and `--inset-abajo`. */
+    padding-bottom: 0;
+  }
+
+  .sheet__body .encabezado-fila,
+  .sheet__body .gasto-form__cabecera {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding-top: calc(var(--espacio-lg) + var(--inset-arriba));
+    background: var(--papel);
+  }
+
+  .sheet__body > .gasto-form {
+    flex: 1 0 auto;
+    max-width: none;
+  }
+
+  .sheet__body .formulario {
+    flex: 1 0 auto;
+  }
+
+  .sheet__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    padding: var(--espacio-md) 0 calc(var(--espacio-md) + var(--inset-abajo));
+    background: var(--papel);
+  }
+
+  /* A tap on a sheet's control is a tap, never a double-tap zoom (the phone standard's touch). */
+  .sheet button {
+    touch-action: manipulation;
+  }
+}
+
+/* A variety's inline edit on a computer stays inline in the page: the sheet's two wrappers add no
+ * box of their own (on a phone the same two elements are the full-screen sheet). */
+@media (max-width: 899.98px) {
+  .variedades-paneles--solo > .variedades-paneles__detalle {
+    display: contents;
+  }
+}
+
+@media (min-width: 900px) {
+  .variety-form,
+  .variety-form__body {
+    display: contents;
+  }
+}
+
+/* The screen drawn behind a phone sheet on a direct address (`BehindPane`): a picture of the
+ * parent, never touched or read, and clipped in width so what overflows under the sheet cannot
+ * widen the page. */
+@media (max-width: 899.98px) {
+  .behind-pane {
+    pointer-events: none;
+    overflow-x: clip;
+  }
+}
+
+/* The phone's fixed chrome (GH-319): the bar is fixed to the bottom on tab roots and cards, and
+ * "+ New sale" with its missing line floats just above it, on tab roots only. One token,
+ * `--bottom-chrome-height` (the bar, the button group and the home-bar inset), feeds the content's
+ * bottom padding, the group's `bottom` and the toast's `bottom`; no rule below states those heights
+ * again. `html:has(...)` switches the parts on, so the toast (drawn outside the column) reads the
+ * same token. A form or a sheet has no bar and no group, so its token is the inset alone, plus the
+ * sheet's pinned action under a sheet. */
+@media (max-width: 899.98px) {
+  :root {
+    --bar-height: 0px;
+    --group-height: 0px;
+    --sheet-actions-height: 0px;
+    --missing-line-height: 2rem;
+    --bottom-chrome-height: calc(
+      var(--bar-height) + var(--group-height) + var(--sheet-actions-height) + var(--inset-abajo)
+    );
+  }
+
+  html:has(.bar-inferior) {
+    --bar-height: calc(var(--alto-tocable) + 28px);
+  }
+
+  html:has(.nueva-venta-flotante) {
+    --group-height: calc(var(--alto-boton) + var(--espacio-md));
+  }
+
+  html:has(.nueva-venta-flotante .nueva-venta__falta) {
+    --group-height: calc(
+      var(--alto-boton) + var(--espacio-md) + var(--espacio-xs) + var(--missing-line-height)
+    );
+  }
+
+  html:has(.sheet) {
+    --sheet-actions-height: calc(var(--alto-boton) + 2 * var(--espacio-md));
+  }
+
+  .columna-principal {
+    padding-bottom: var(--bottom-chrome-height);
+  }
+
+  .bar-inferior {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    box-sizing: border-box;
+    height: calc(var(--bar-height) + var(--inset-abajo));
+    margin-inline: 0;
+    padding: 8px calc(var(--espacio-sm) + var(--inset-derecha)) calc(12px + var(--inset-abajo))
+      calc(var(--espacio-sm) + var(--inset-izquierda));
+    background: var(--papel);
+  }
+
+  .bar-inferior__item {
+    font-size: 0.75rem;
+  }
+
+  .nueva-venta-flotante {
+    position: fixed;
+    left: var(--inset-izquierda);
+    right: var(--inset-derecha);
+    bottom: calc(var(--bottom-chrome-height) - var(--group-height));
+    z-index: 5;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    padding: 0 var(--margen-pantalla) var(--espacio-md);
+    /* The strip around the button is not a target: only the button and its line are. */
+    pointer-events: none;
+  }
+
+  .nueva-venta-flotante > * {
+    pointer-events: auto;
+  }
+
+  .nueva-venta-flotante .boton-nueva-venta {
+    margin: 0;
+  }
+
+  .nueva-venta-flotante .nueva-venta__falta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: var(--missing-line-height);
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  /* A text keyboard is up: hidden and untappable, never pushed above it. The padding stays, so
+   * nothing shifts. */
+  .disposicion[data-teclado='abierto'] .bar-inferior,
+  .disposicion[data-teclado='abierto'] .nueva-venta-flotante {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* A card's pinned "New sale to ..." sits above the fixed bar. */
+  .columna-principal .ficha-cliente__pie {
+    bottom: var(--bottom-chrome-height);
+  }
+
+  /* Toasts only move: they sit above the bar and the button, above a sheet's pinned action, and
+   * over the sheet itself. */
+  .aviso-flotante {
+    top: auto;
+    bottom: calc(var(--bottom-chrome-height) + var(--espacio-md));
+  }
+
+  html:has(.sheet) .aviso-flotante {
+    z-index: 30;
+  }
+}
 
 /* pressed */
 /* The pressed state (GH-77, GH-102): of every control a finger can tap, from tokens only.
@@ -5275,55 +5546,6 @@ body {
   }
 }
 
-/* Registrar cobro as a sheet on a phone (`Cobro.dc.html`): the host is a layer anchored to the
- * bottom, rounded at the top, with the screen it was opened from showing above its edge, faded
- * and inert. "Close" is on top, under a grab handle, and Save stays at the bottom, within thumb
- * reach, while the form scrolls under it. The sheet scrolls by itself, and the page behind is
- * held still while it is open. */
-@media (max-width: 899.98px) {
-  html:has(.cobro-hoja) {
-    overflow: hidden;
-  }
-
-  /* Under `.disposicion` so it is not beaten by `.disposicion .pantalla { padding: 0 }`: the
-   * sheet leaves the flow, so it owns the side and bottom insets itself. */
-  .disposicion .cobro-hoja {
-    position: fixed;
-    inset: auto 0 0 0;
-    padding: 0 var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
-    z-index: 20;
-    box-sizing: border-box;
-    min-height: 0;
-    height: calc(100dvh - var(--inset-arriba) - var(--asoma-fondo-hoja));
-    max-height: calc(100dvh - var(--inset-arriba) - var(--asoma-fondo-hoja));
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    background: var(--papel);
-    border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
-    box-shadow: 0 -1px 0 var(--linea);
-  }
-
-  .cobro-hoja__asa {
-    display: block;
-    width: 40px;
-    height: 4px;
-    margin: var(--espacio-md) auto 0;
-    border-radius: var(--radio-pildora);
-    background: var(--linea);
-  }
-
-  .disposicion .cobro-hoja > .cuerpo > .formulario {
-    flex: 1;
-  }
-
-  .disposicion .cobro-hoja > .cuerpo > .formulario > button[type='submit'] {
-    position: sticky;
-    bottom: var(--inset-abajo);
-    margin-top: auto;
-    box-shadow: 0 calc(-1 * var(--espacio-md)) 0 0 var(--papel);
-  }
-}
-
 /* Registrar cobro's route over Clientes (ADR-0044): on a computer the list and the card sit
  * behind the modal, inert; on a phone the wrapper adds no box of its own. */
 .cobro-paneles {
@@ -5481,8 +5703,7 @@ body {
   padding: var(--espacio-lg);
 }
 
-.cobro-modal .panel__titulo:focus,
-.cobro-hoja .panel__titulo:focus {
+.cobro-modal .panel__titulo:focus {
   outline: none;
 }
 
@@ -5670,4 +5891,358 @@ body {
  * ring. A real link that carries the marker keeps its own ring. */
 [data-place]:not(a):focus {
   outline: none;
+}
+
+/* Fit on Home, Sales and New sale (GH-319): no page wider than the viewport down to 246 px, a
+ * long name cut with an ellipsis, a figure kept on one line at a size that follows the width it
+ * has (a container query, so it also follows a larger text size), and "$" never alone. */
+@media (max-width: 899.98px) {
+  .inicio__cabecera-titulos {
+    min-width: 0;
+  }
+
+  .inicio__cabecera .encabezado__negocio {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .panel-ventas,
+  .bloque-deben,
+  .ventas__cabecera .ventas__resumen {
+    container-type: inline-size;
+  }
+
+  .panel-ventas .cifra-xl,
+  .bloque-deben .cifra-xl {
+    font-size: min(54px, 13cqw);
+    white-space: nowrap;
+  }
+
+  .ventas__cabecera .ventas__resumen {
+    flex-wrap: wrap;
+  }
+
+  .ventas__cabecera .ventas__total {
+    font-size: min(30px, 12cqw);
+    white-space: nowrap;
+  }
+
+  .nueva-venta__pie > .cifra-xl {
+    white-space: nowrap;
+  }
+
+  /* Ganancia and Caja stack, each a card as wide as the screen, so a signed nine-digit figure
+     has the room to stay on one line. */
+  .nueva-venta__linea-detalle {
+    flex-wrap: wrap;
+  }
+
+  .nueva-venta__linea-preciogramo,
+  .nueva-venta__linea-total {
+    white-space: nowrap;
+  }
+
+  .panel-resultados {
+    flex-direction: column;
+  }
+
+  .panel-resultados__celda {
+    container-type: inline-size;
+  }
+
+  .panel-resultados__valor {
+    font-size: min(25px, 13cqw);
+    white-space: nowrap;
+  }
+
+  .bar-inferior,
+  .bar-inferior a {
+    touch-action: manipulation;
+  }
+
+  .fila-venta__texto {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fila-venta__nombre > :not(.fila-venta__texto) {
+    flex-shrink: 0;
+  }
+
+  .fila-venta__detalle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fila-venta__cifra {
+    white-space: nowrap;
+  }
+
+  .fila-venta__monto {
+    flex-shrink: 0;
+  }
+}
+
+/* Under 360 px the amount and the date share the first line and the name takes the second, so
+ * a long name and a nine-digit amount both fit. */
+@media (max-width: 359.98px) {
+  .fila-venta {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .fila-venta__fecha {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .fila-venta__monto {
+    order: 2;
+  }
+
+  .fila-venta > svg {
+    order: 2;
+  }
+
+  .fila-venta__cuerpo {
+    order: 3;
+    flex: 1 0 100%;
+  }
+}
+
+/* At 246 px the five items need the whole bar: no side padding beyond the insets, and each
+ * item at least 44 px wide (its label can still make it wider). */
+@media (max-width: 299.98px) {
+  .bar-inferior {
+    padding-inline: var(--inset-izquierda) var(--inset-derecha);
+  }
+
+  .bar-inferior__item {
+    flex: 1 1 44px;
+    min-width: min-content;
+  }
+}
+
+/* Fit on Customers, Expenses, Varieties, entries, Settings and the invitation (GH-319): a long
+ * name is cut with an ellipsis (or, in a sentence, broken anywhere), a figure stays on one line,
+ * and no row is wider than the screen. */
+@media (max-width: 899.98px) {
+  .lista-clientes__fila,
+  .lista-clientes__fila-contenido > * {
+    min-width: 0;
+  }
+
+  .lista-clientes__nombre {
+    min-width: 0;
+  }
+
+  .lista-clientes__nombre-texto {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lista-clientes__nombre > .vip-insignia {
+    flex-shrink: 0;
+  }
+
+  .lista-clientes__telefono {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lista-clientes__balance .monto-deuda {
+    white-space: nowrap;
+  }
+
+  .variedad-fila__encabezado,
+  .variedad-fila__pie {
+    min-width: 0;
+  }
+
+  .variedad-fila__nombre {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fila-entrada__linea1,
+  .fila-entrada__linea2,
+  .fila-gasto__categoria,
+  .fila-gasto__texto,
+  .catalogo__fila-detalle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fila-entrada__cifras,
+  .fila-entrada__costo,
+  .fila-gasto__monto,
+  .fila-gasto__fecha {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .fila-entrada__fecha {
+    flex-shrink: 0;
+  }
+
+  .catalogo__fila-nombre {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: var(--alto-tocable);
+  }
+
+  .gastos__total,
+  .clientes__te-deben {
+    container-type: inline-size;
+  }
+
+  .gastos__total .cifra-xl,
+  .clientes__te-deben .cifra-xl {
+    font-size: min(54px, 13cqw);
+    white-space: nowrap;
+  }
+
+  .gastos__categoria .gastos__categoria-cabecera {
+    min-width: 0;
+  }
+
+  .gastos__categoria .gastos__categoria-nombre {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gastos__categoria .gastos__categoria-subtotal {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .ajustes-grupo__cuerpo .fila > .campo__input {
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .categoria-fila__nombre {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .panel__titulo,
+  .panel__detalle,
+  .confirmacion__titulo,
+  .confirmacion__detalle,
+  .auth-page__titulo {
+    overflow-wrap: anywhere;
+  }
+
+  .auth-page .boton {
+    height: auto;
+    min-height: var(--alto-tocable);
+    padding-block: var(--espacio-sm);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Tap targets on Home (GH-319): the business avatar is a 44 px box that still draws the
+ * 38 px disc (a transparent border the background does not paint under), and the
+ * "Owed to you" title is a full-width, 44 px tall link. Phone only: the computer hides the
+ * avatar and keeps the title as it is. */
+@media (max-width: 899.98px) {
+  .inicio__avatar {
+    box-sizing: border-box;
+    flex: none;
+    width: var(--alto-tocable);
+    height: var(--alto-tocable);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .bloque-deben__titulo {
+    display: flex;
+    align-items: center;
+    min-height: var(--alto-tocable);
+  }
+}
+
+/* Tap targets on Varieties and Expenses (GH-319): "New variety", the Expenses "Add expense" and
+ * month arrows, and "Categories" are each at least 44 x 44 on the phone. The computer keeps
+ * its sizes (the Expenses rules at 900 px and up set their own). */
+@media (max-width: 899.98px) {
+  .variedades__nueva .boton--enlace,
+  .gastos__pie .boton--enlace {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--alto-tocable);
+  }
+
+  .gastos__cargar {
+    width: var(--alto-tocable);
+    height: var(--alto-tocable);
+  }
+
+  /* Scoped to Expenses' header: Analysis reuses the month pill and its arrows (part 2). */
+  .gastos__cabecera .gastos__mes-boton {
+    width: var(--alto-tocable);
+    height: var(--alto-tocable);
+  }
+}
+
+/* Tap targets on Catalog, Settings, a variety's page and the dead reset link (GH-319): each
+ * is at least 44 x 44 on the phone. The computer keeps its sizes. */
+@media (max-width: 899.98px) {
+  .catalogo__panel > .boton--enlace,
+  .ajustes-grupo__cuerpo > .boton--enlace,
+  .auth-page__columna > .boton--enlace {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: var(--alto-tocable);
+  }
+
+  .ajustes-tema__opcion {
+    min-height: var(--alto-tocable);
+  }
+
+  /* The switch keeps its 44 x 26 look: the track is the padding box, the rest is a
+   * transparent border that still takes the tap. */
+  .interruptor {
+    height: var(--alto-tocable);
+    border-block: 9px solid transparent;
+    background-clip: padding-box;
+  }
+
+  /* A stock entry's or withdrawal's row link on a variety's page. */
+  .fila-entrada__enlace {
+    min-height: var(--alto-tocable);
+  }
+
+  /* "Your chat" and its search button: on a narrow screen the button wraps under the field
+   * so the field keeps a tappable width. */
+  .campo__fila {
+    flex-wrap: wrap;
+  }
+
+  .campo__fila > .campo__input {
+    flex: 1 1 8rem;
+  }
 }

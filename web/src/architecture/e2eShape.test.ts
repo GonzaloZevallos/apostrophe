@@ -74,8 +74,11 @@ describe('the projects of the e2e run', () => {
   it('has no timed project: the run is one phase', () => {
     const names = (config.projects ?? []).map((project) => project.name)
     expect(names).not.toContain('timed')
-    // The phone check's two projects (GH-80) run in the same single phase.
-    expect(names).toEqual(['secure-origin', 'insecure-origin', 'mobile-setup', 'mobile'])
+    // The phone check's two projects (GH-80) run in the same single phase. They are listed first
+    // on purpose: Playwright queues projects in this order, and the eight phone cells are the
+    // longest tests (about 4 min alone, 6 under load), so queued last they left workers idle
+    // and the run crossed the gate's 1500 s with every test green.
+    expect(names).toEqual(['mobile-setup', 'mobile', 'secure-origin', 'insecure-origin'])
   })
 
   it('selects specs only with RegExp values taken from the config', () => {

@@ -63,7 +63,7 @@ export function gestureViolations(css: string): string[] {
   if (!htmlAndBody.some((rule) => /overscroll-behavior:\s*none/.test(rule.body))) {
     out.push('html, body lack overscroll-behavior: none')
   }
-  for (const panel of ['.capa__contenido', '.cliente-sheet__contenido']) {
+  for (const panel of ['.capa__contenido', '.cliente-sheet__contenido', '.sheet__body']) {
     if (!/overscroll-behavior:\s*contain/.test(bodyOf(css, panel))) {
       out.push(`${panel} lacks overscroll-behavior: contain`)
     }
@@ -510,6 +510,7 @@ html,
 body { overscroll-behavior: none; }
 .capa__contenido { overscroll-behavior: contain; }
 .cliente-sheet__contenido { overscroll-behavior: contain; }
+.sheet__body { overscroll-behavior: contain; }
 /* pressed */
 :is(.boton, .mas__item):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
@@ -528,6 +529,9 @@ test('the checks reject a stylesheet that breaks the rule, and accept one that k
   ])
   expect(gestureViolations(GOOD_APP.replace('.capa__contenido { overscroll-behavior: contain; }', ''))).toEqual([
     '.capa__contenido lacks overscroll-behavior: contain',
+  ])
+  expect(gestureViolations(GOOD_APP.replace('.sheet__body { overscroll-behavior: contain; }', ''))).toEqual([
+    '.sheet__body lacks overscroll-behavior: contain',
   ])
   expect(gestureViolations(`${GOOD_APP}\n.capa { overscroll-behavior: contain; }`)).toEqual([
     '.capa itself must not set overscroll-behavior',

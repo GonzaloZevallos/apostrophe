@@ -43,6 +43,7 @@ export interface RegistryScreen {
 export const STATE_NAMES: readonly string[] = [
   // Sales and collections (`states-sales`).
   'NuevaVentaConLinea',
+  'NuevaVentaConLineaYPago',
   'ElegirCliente',
   'NuevoClienteEnVenta',
   'DescartarVenta',

@@ -30,15 +30,6 @@
     "issue": 49
   },
   {
-    "screen": "VentaAsignarCliente",
-    "rule": "unreachable",
-    "target": "",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
     "screen": "VentaGuardada",
     "rule": "unreachable",
     "target": "",

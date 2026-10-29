@@ -9,6 +9,7 @@
  */
 
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { ANALYSIS, HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { openMas } from './helpers/openMas.js'
@@ -29,15 +30,13 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('20000')
-  await page.getByRole('button', { name: 'Save the entry' }).click()
-  await expect(page.getByText('Entry saved')).toBeVisible()
+  await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // From Más: a promotion of 5 g. The reason has no default, so saving waits for it.
   await openMas(page)
@@ -48,8 +47,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await page.getByLabel('Grams 1', { exact: true }).fill('5')
   await expect(page.getByRole('button', { name: 'Save the withdrawal' })).toBeDisabled()
   await page.getByRole('button', { name: 'Promotion', exact: true }).click()
-  await page.getByRole('button', { name: 'Save the withdrawal' }).click()
-  await expect(page.getByText('Withdrawal saved')).toBeVisible()
+  await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 
   // From the variety's page: an own use of 2 g, with the variety already chosen.
   await page.goto(VARIETIES)
@@ -60,8 +58,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await expect(page.getByLabel('Variety 1', { exact: true })).toHaveValue(/\d+/)
   await page.getByRole('button', { name: 'Own use', exact: true }).click()
   await page.getByLabel('Grams 1', { exact: true }).fill('2')
-  await page.getByRole('button', { name: 'Save the withdrawal' }).click()
-  await expect(page.getByText('Withdrawal saved')).toBeVisible()
+  await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
   await expect(page.getByText('−2 g')).toBeVisible()
 
   // A third one, a promotion of 1 g, to delete.
@@ -70,8 +67,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Promotion', exact: true }).click()
-  await page.getByRole('button', { name: 'Save the withdrawal' }).click()
-  await expect(page.getByText('Withdrawal saved')).toBeVisible()
+  await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 
   // Delete it from its detail, after "Before deleting".
   await page.goto(VARIETIES)
@@ -81,8 +77,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await page.getByRole('button', { name: 'Delete' }).click()
   await expect(page.getByText('Before deleting')).toBeVisible()
   await expect(page.getByText(/1 g go back to stock\./)).toBeVisible()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
-  await expect(page.getByText('Withdrawal deleted')).toBeVisible()
+  await expectToast(page, 'Withdrawal deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
 
   // Edit the 5 g promotion down to 4 g; saving is confirmed first.
   await page.goto(VARIETIES)
@@ -92,8 +87,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await page.getByRole('link', { name: 'Edit' }).click()
   await page.getByLabel('Grams 1', { exact: true }).fill('4')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
-  await page.getByRole('button', { name: 'Yes, save' }).click()
-  await expect(page.getByText('Withdrawal saved')).toBeVisible()
+  await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Yes, save' }).click())
 
   // Inicio: Hoy shows neither line; Semana and Mes show both, at lot cost.
   await page.goto(HOME)

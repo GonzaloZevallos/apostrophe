@@ -22,7 +22,7 @@ from tests.architecture.hexagon import (
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 HEXAGON_ROOTS = (
     REPO_ROOT / "app" / "accounts",
-    REPO_ROOT / "app" / "varieties",
+    REPO_ROOT / "app" / "products",
     REPO_ROOT / "app" / "customers",
     REPO_ROOT / "app" / "expenses",
     REPO_ROOT / "app" / "payments",
@@ -40,7 +40,7 @@ ALL_HEXAGON_NAMES = frozenset(dotted(root) for root in HEXAGON_ROOTS)
 SHARED_KERNEL_MODULES = tuple(sorted((REPO_ROOT / "app" / "shared").glob("*.py")))
 # Stands in for a sibling hexagon that `relative_cross_hexagon.py` reaches with dots
 # alone (`from ... import sibling_hexagon`), the way `app/accounts/application` would
-# reach `app.varieties` with the same number of dots. No such package needs to exist:
+# reach `app.products` with the same number of dots. No such package needs to exist:
 # the checker only parses import statements, it never imports them.
 FIXTURE_SIBLING_HEXAGON = "tests.architecture.fixtures.sibling_hexagon"
 
@@ -52,15 +52,15 @@ def test_the_checker_reports_the_deliberate_violations() -> None:
     result = scan_hexagon(FIXTURES / "bad_hexagon", other_hexagons=other_hexagons)
 
     assert sorted((v.imported, v.rule) for v in result.violations) == [
+        ("app.products", "domain-and-application-import-no-other-hexagon"),
+        (
+            "app.products.domain.product.Product",
+            "domain-and-application-import-no-other-hexagon",
+        ),
         ("app.shared.copy", "application-imports-no-framework-or-adapter"),
         ("app.shared.copy", "domain-imports-no-copy"),
         ("app.shared.copy.CopyCatalog", "domain-imports-no-copy"),
         ("app.shared.copy.OperatorText", "application-imports-no-framework-or-adapter"),
-        ("app.varieties", "domain-and-application-import-no-other-hexagon"),
-        (
-            "app.varieties.domain.variety.Variety",
-            "domain-and-application-import-no-other-hexagon",
-        ),
         ("babel.support", "domain-imports-stdlib-and-shared-only"),
         ("babel.support.Translations", "application-imports-no-framework-or-adapter"),
         ("babel.support.Translations", "domain-imports-no-copy"),

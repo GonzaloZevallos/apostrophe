@@ -15,12 +15,12 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
+from app.products.adapters.tables import ProductRow
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import PriceQuote, PricingRule
 from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, PaymentMethod, Sale
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
-from app.varieties.adapters.tables import VarietyRow
 
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
@@ -43,7 +43,7 @@ def _customer_id(client: TestClient, phone: str = "11 2345-6789") -> int:
 
 def _business_id_of_variety(engine: Engine, variety_id: int) -> int:
     with Session(engine) as session:
-        row = session.scalar(select(VarietyRow).where(VarietyRow.id == variety_id))
+        row = session.scalar(select(ProductRow).where(ProductRow.id == variety_id))
         assert row is not None
         return row.business_id
 

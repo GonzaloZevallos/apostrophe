@@ -19,6 +19,7 @@
 import { CATALOG, SETTINGS_CATALOG_MESSAGE, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openCatalog } from './helpers/openMas.js'
@@ -61,20 +62,17 @@ test('a seller edits a variety, the header and footer, then copies and shares to
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('9000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('45000')
-  await page.getByRole('button', { name: 'Save the entry' }).click()
-  await expect(page.getByText('Entry saved')).toBeVisible()
+  await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // Variedades → Mandar catálogo.
   await openCatalog(page)
@@ -87,8 +85,7 @@ test('a seller edits a variety, the header and footer, then copies and shares to
   await page.getByLabel('Emoji').fill('🌹')
   await page.getByLabel('% indica').fill('30')
   await page.getByLabel('Aroma/flavor').fill('floral, dulce')
-  await page.getByRole('button', { name: 'Save the catalog' }).click()
-  await expect(page.getByText('Catalog saved')).toBeVisible()
+  await expectToast(page, 'Catalog saved', () => page.getByRole('button', { name: 'Save the catalog' }).click())
   await expect(page.getByText('floral, dulce')).toBeVisible()
   await page.goto(CATALOG)
 
@@ -98,8 +95,7 @@ test('a seller edits a variety, the header and footer, then copies and shares to
   await expectPath(page, SETTINGS_CATALOG_MESSAGE)
   await page.getByLabel('Header').fill('🌸 Catálogo de **Flores** 🌸')
   await page.getByLabel('Footer').fill('Pedidos por privado.')
-  await page.getByRole('button', { name: 'Save the message' }).click()
-  await expect(page.getByText('Catalog saved')).toBeVisible()
+  await expectToast(page, 'Catalog saved', () => page.getByRole('button', { name: 'Save the message' }).click())
   await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, CATALOG)
   await expect(page.getByLabel('Footer')).toHaveCount(0)
@@ -123,8 +119,7 @@ test('a seller edits a variety, the header and footer, then copies and shares to
     .poll(() => page.locator('.catalogo__vista-previa').textContent())
     .toBe(EXPECTED_PLAIN_TEXT)
 
-  await page.getByRole('button', { name: 'Copy' }).click()
-  await expect(page.getByText('Catalog copied')).toBeVisible()
+  await expectToast(page, 'Catalog copied', () => page.getByRole('button', { name: 'Copy' }).click())
   const clipboardText = await page.evaluate(() => navigator.clipboard.readText())
   expect(clipboardText).toBe(EXPECTED_PLAIN_TEXT)
 

@@ -90,12 +90,11 @@ for (const viewport of VIEWPORTS) {
         if (viewport.name === 'phone') {
           await expect(page.getByRole('navigation')).toHaveCount(0)
           await expect(page.getByRole('link', { name: 'New sale' })).toHaveCount(0)
-          // A sheet, not a page: it is anchored to the bottom and leaves the top of the screen it
-          // was opened from showing above its edge, and Save is within reach inside it.
+          // A full-screen sheet (ADR-0062): it covers the screen it was opened from, with no peek,
+          // and Save is within reach inside it.
           const box = await dialog.boundingBox()
           if (box === null) throw new Error('the dialog has no box')
-          expect(box.y).toBeGreaterThan(40)
-          expect(box.y).toBeLessThan(200)
+          expect(Math.round(box.y)).toBeLessThanOrEqual(1)
           expect(Math.round(box.y + box.height)).toBeLessThanOrEqual(viewport.height)
           await expect(dialog.getByRole('button', { name: 'Save' })).toBeInViewport()
         } else {

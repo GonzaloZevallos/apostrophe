@@ -91,6 +91,15 @@ test('logging out posts to /auth/logout, clears the query cache and navigates to
   expect(queryClient.getQueryData(['something-else'])).toBeUndefined()
 })
 
+test('the password sheet tells the password manager which field is which', async () => {
+  renderAccount(vi.fn(() => Promise.resolve(jsonResponse(200, BUSINESS))))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
+
+  expect(screen.getByLabelText('Current password')).toHaveAttribute('autocomplete', 'current-password')
+  expect(screen.getByLabelText('New password')).toHaveAttribute('autocomplete', 'new-password')
+})
+
 test('changing the password shows the fixed toast and closes the sheet, with no data', async () => {
   const fetchMock = vi.fn((url: string) => {
     if (url === '/auth/password') {

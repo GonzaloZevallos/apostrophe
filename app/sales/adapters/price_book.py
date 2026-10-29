@@ -16,18 +16,18 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.products.adapters.sql_products import SqlProducts
+from app.products.adapters.tables import PriceEntryRow
+from app.products.domain.product import PriceEntry, Product, ProductName, ProductRuleBroken
 from app.sales.domain.pricing import BulkQuote, PriceQuote, VarietyPricing
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
-from app.varieties.adapters.sql_varieties import SqlVarieties
-from app.varieties.adapters.tables import PriceEntryRow
-from app.varieties.domain.variety import PriceEntry, Variety, VarietyName, VarietyRuleBroken
 
 
 class SqlPriceBook:
     def __init__(self, session: Session, business_id: int) -> None:
         self._session = session
         self._business_id = business_id
-        self._varieties = SqlVarieties(session, business_id)
+        self._varieties = SqlProducts(session, business_id)
 
     def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
         variety = self._varieties.get(variety_id)
@@ -84,7 +84,7 @@ class PlannedPriceBook:
         return _planned_pricing(self._varieties.get(variety_id), variety_id, day)
 
 
-def _planned_pricing(variety: Variety | None, variety_id: int, day: date) -> VarietyPricing | None:
+def _planned_pricing(variety: Product | None, variety_id: int, day: date) -> VarietyPricing | None:
     if variety is None:
         return None
     entry = variety.current_price(day)
@@ -94,13 +94,13 @@ def _planned_pricing(variety: Variety | None, variety_id: int, day: date) -> Var
     return VarietyPricing(variety_id=variety_id, current=_quote(entry, vip_price))
 
 
-def _build_variety(name_source: str, rows: Sequence[PriceHistoryRow]) -> Variety:
-    variety = Variety(VarietyName.of(name_source))
+def _build_variety(name_source: str, rows: Sequence[PriceHistoryRow]) -> Product:
+    variety = Product(ProductName.of(name_source))
     for row in rows:
         try:
             entry = PriceEntry.of(row.effective, row.list_price, row.bulk_price, row.bulk_minimum)
             variety.record_price(entry)
-        except VarietyRuleBroken:
+        except ProductRuleBroken:
             continue
     return variety
 

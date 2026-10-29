@@ -22,5 +22,11 @@
     "rule": "data-while-loading",
     "target": "span:Today #/#",
     "issue": 78
+  },
+  {
+    "screen": "VariedadNueva",
+    "rule": "data-while-loading",
+    "target": "span:Up to # characters · cannot repeat another variety's na",
+    "issue": 47
   }
 ]

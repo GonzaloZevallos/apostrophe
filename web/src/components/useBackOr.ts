@@ -13,7 +13,8 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
-function isInApp(state: unknown): boolean {
+/** Whether the entry carries the app behind it (`inAppState`); false on a typed address or a reload. */
+export function isInApp(state: unknown): boolean {
   return typeof state === 'object' && state !== null && 'inApp' in state && state.inApp === true
 }
 
