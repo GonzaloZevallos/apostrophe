@@ -317,13 +317,11 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill(longName)
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Variedad Larguísimo/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('900000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   // The first record is two weeks old, so there is more than the current week. 10 g are costed; the 500 g sold leave 490 g without a cost: a partly pending figure.
   await page.goto(STOCK_ENTRY_NEW)
@@ -345,8 +343,7 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount').fill('123456789')
   await page.getByLabel('Details').fill('Gasto grande')
-  await page.getByRole('button', { name: 'Save the expense' }).click()
-  await expect(page.getByText('Expense saved')).toBeVisible()
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
   for (const width of [320, 246]) {
     await page.setViewportSize({ width, height: 844 })
