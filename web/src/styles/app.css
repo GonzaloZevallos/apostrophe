@@ -803,8 +803,9 @@ body {
   resize: vertical;
 }
 
-/* "Apariencia" (`ConfiguracionApariencia.dc.html`): Claro · Oscuro, the segmented control
- * on the group's surface. The current one is a filled pill and bolder, not only a color. */
+/* "Apariencia" (`ConfiguracionApariencia.dc.html`): Automatic · Light · Dark, the segmented
+ * control on the group's surface. The current one is a filled pill, bolder and carries a check
+ * beside its word, not only a color. */
 .ajustes-tema__rotulo {
   display: block;
   margin-bottom: 10px;
@@ -824,6 +825,7 @@ body {
      (320 and 246 px) rather than pushing the row past the card. */
   min-width: 0;
   min-height: 44px;
+  touch-action: manipulation;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
