@@ -216,7 +216,7 @@ def test_real_run_imports_and_the_figures_match(
     stock = client.get("/stock").json()
     assert len(stock["varieties"]) == 1
     # 50 g bought in, 10 g sold: 40 g left.
-    assert stock["varieties"][0]["grams"] == 40.0
+    assert stock["varieties"][0]["quantity"] == 40.0
     assert stock["varieties"][0]["threshold"] == 5.0
 
     customers = client.get("/customers").json()
@@ -696,7 +696,7 @@ def _seed_stock_entry(seed_client: TestClient) -> None:
     variety_id = _seed_variety(seed_client)
     body = seed_client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "purchase", "grams": 5, "total_cost": 500},
+        json={"variety_id": variety_id, "origin": "purchase", "quantity": 5, "total_cost": 500},
     )
     assert body.status_code == 201, body.text
 
@@ -714,7 +714,7 @@ def _seed_sale(seed_client: TestClient) -> None:
         "/sales",
         json={
             "date": "2026-01-01",
-            "lines": [{"variety_id": variety_id, "grams": 1, "gift": True}],
+            "lines": [{"variety_id": variety_id, "quantity": 1, "gift": True}],
         },
     )
     assert body.status_code == 201, body.text
@@ -731,7 +731,7 @@ def _seed_payment(seed_client: TestClient) -> None:
         json={
             "date": "2026-01-01",
             "customer_id": customer_id,
-            "lines": [{"variety_id": variety_id, "grams": 1, "special_price": 1000}],
+            "lines": [{"variety_id": variety_id, "quantity": 1, "special_price": 1000}],
             "payment": "owing",
         },
     )
@@ -976,9 +976,9 @@ def test_recording_order_follows_date_then_sheet_row(
     varieties_by_name = {v["name"]: v["id"] for v in client.get("/varieties").json()}
     # (1) 20 g bought in, 8 g adjusted out, 3 g + 5 g sold: 4 g left, all in the 100/g
     # lot.
-    assert stock[varieties_by_name[VARIETY]]["grams"] == 4.0
+    assert stock[varieties_by_name[VARIETY]]["quantity"] == 4.0
     # (2) 20 g bought in, 5 g + 3 g sold: 12 g left.
-    assert stock[varieties_by_name[TIE_VARIETY]]["grams"] == 12.0
+    assert stock[varieties_by_name[TIE_VARIETY]]["quantity"] == 12.0
 
     customers_by_name = {c["name"]: c for c in client.get("/customers").json()}
     assert customers_by_name[CUSTOMER]["balance"] == 8000

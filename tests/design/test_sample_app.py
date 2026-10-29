@@ -60,7 +60,7 @@ def test_the_sample_business_has_every_state_the_design_shows(client: TestClient
 
     week = client.get("/panel").json()["periods"]["week"]
     assert week["sales_count"] >= 3
-    assert week["grams_gifted"] > 0
+    assert week["quantity_gifted"] > 0
     assert week["expenses"] > 0
     assert week["purchases"] > 0
 
@@ -91,7 +91,7 @@ def test_the_sample_business_has_every_state_the_design_shows(client: TestClient
     }
     analysis = client.get("/analysis").json()
     assert analysis["since_first_record"]["promotion"] is not None
-    assert analysis["since_first_record"]["own_use"]["pending_grams"] > 0
+    assert analysis["since_first_record"]["own_use"]["pending_quantity"] > 0
 
     expenses = client.get("/expenses").json()
     assert expenses["total"] > 0

@@ -142,7 +142,7 @@ describe('validateSale', () => {
   })
 })
 
-// The only place a bulk minimum's API grams (a JSON float, GramsOut) may turn into
+// The only place a bulk minimum's API grams (a JSON float, QuantityOut) may turn into
 // hundredths (plan, invariants: "no Math.round, toFixed or float multiplication on
 // grams"; Tech Lead review: a screen calling `toFixed` on grams is a violation).
 describe('hundredthsOfApiGrams', () => {

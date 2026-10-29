@@ -64,7 +64,7 @@ function listFigures(period: PanelPeriod): ListFigure[] {
     return line === null ? [] : [{ key, label, value: formatMoney(line.amount), pending: line.pending }]
   })
   return [
-    { key: 'gifted', label: INICIO_TEXT.regalaste, value: formatGrams(period.grams_gifted), pending: false },
+    { key: 'gifted', label: INICIO_TEXT.regalaste, value: formatGrams(period.quantity_gifted), pending: false },
     {
       key: 'cost_of_goods',
       label: COST_OF_GOODS_LABEL,
@@ -79,7 +79,7 @@ function listFigures(period: PanelPeriod): ListFigure[] {
 
 function salesSubtitle(period: PanelPeriod): string {
   const count = salesCount(period.sales_count)
-  const grams = formatGrams(period.grams_sold)
+  const grams = formatGrams(period.quantity_sold)
   return period.average_sale === null
     ? `${count} · ${grams}`
     : INICIO_TEXT.n0Promedio12(count, formatMoney(period.average_sale), grams)

@@ -84,7 +84,7 @@ export interface Variety {
 /** "135 g · 270 días", or the status' own line where there are no days to count ("0 g · Sin
  * gramos desde el 05/10"). */
 function figuresOf(row: VarietyStock, today: string): string {
-  const grams = formatGrams(row.grams)
+  const grams = formatGrams(row.quantity)
   if (row.status === 'sold_out' || row.status === 'no_entries') return `${grams} · ${detailFor(row, today)}`
   return row.days_left === null ? grams : VARIETIES_TEXT.n01Dias(grams, row.days_left)
 }

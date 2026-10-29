@@ -42,8 +42,8 @@ interface PanelPeriod {
   sales: number
   sales_count: number
   average_sale: number | null
-  grams_sold: number
-  grams_gifted: number
+  quantity_sold: number
+  quantity_gifted: number
   cost_of_goods: number
   pending_cost: boolean
   expenses: number
@@ -65,7 +65,7 @@ interface PanelAnswer {
   stock: {
     variety_id: number
     name: string
-    grams: number
+    quantity: number
     status: Status
     sold_out_since: string | null
     threshold: number | null
@@ -259,7 +259,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
           shipping_charged: 0,
           note: null,
           payment: 'cash',
-          lines: [{ variety_id: rosaId, grams: '1', gift: false, special_price: null }],
+          lines: [{ variety_id: rosaId, quantity: '1', gift: false, special_price: null }],
         },
       })
       expect(extraResponse.ok()).toBe(true)
@@ -301,7 +301,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
       ).toHaveText(pesos(period.expenses))
       await expect(
         page.getByRole('group', { name: 'You gave away', exact: true }).locator('.panel-lista__valor'),
-      ).toHaveText(grams(period.grams_gifted))
+      ).toHaveText(grams(period.quantity_gifted))
       await expect(
         page.getByRole('group', { name: 'Flower purchases', exact: true }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.purchases))
@@ -319,7 +319,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     // "Vendiste ..."'s own subtitle: count, average (absent with no sales) and
     // grams sold (`Inicio.tsx`'s own `salesSubtitle`).
     const count = countLabel(period.sales_count)
-    const gramsSoldText = grams(period.grams_sold)
+    const gramsSoldText = grams(period.quantity_sold)
     const subtitle =
       period.average_sale === null
         ? `${count} · ${gramsSoldText}`
@@ -348,7 +348,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const rosa = panel.stock.find((row) => row.name === 'Rosa')
   if (rosa === undefined) throw new Error('Rosa missing from GET /panel stock')
   const rosaRow = page.locator('.fila-stock').filter({ hasText: 'Rosa' })
-  await expect(rosaRow.locator('.fila-stock__gramos')).toHaveText(grams(rosa.grams))
+  await expect(rosaRow.locator('.fila-stock__gramos')).toHaveText(grams(rosa.quantity))
   await expect(rosaRow.locator('.marca-estado')).toHaveClass(new RegExp(`marca-estado--${rosa.status}\\b`))
   await expect(rosaRow.locator('.marca-estado__palabra')).toHaveText(STATUS_WORD[rosa.status])
   await expect(rosaRow.locator('.fila-stock__detalle')).toHaveText(detailFor(rosa, todayIso))

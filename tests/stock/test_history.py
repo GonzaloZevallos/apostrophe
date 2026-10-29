@@ -32,7 +32,7 @@ def _variety(client: TestClient, name: str) -> int:
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "grams": "5"}
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     assert client.post("/stock/entries", json=body).status_code == 201
 
@@ -64,10 +64,10 @@ def test_history_orders_a_sale_line_and_a_withdrawal_line_by_recording_and_costs
 ) -> None:
     variety_id = _variety(client, "Lavanda")
     other_id = _variety(client, "Menta")
-    _entry(client, variety_id, grams="10", total_cost=10_000)
-    _entry(client, other_id, grams="10", total_cost=50_000)
+    _entry(client, variety_id, quantity="10", total_cost=10_000)
+    _entry(client, other_id, quantity="10", total_cost=50_000)
     sale = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "4"}]}
+        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "4"}]}
     )
     assert sale.status_code == 201, sale.text
     business_id = _business_of(engine, variety_id)
@@ -99,10 +99,10 @@ def test_history_narrowed_to_one_variety_gives_that_variety_the_same_draws_and_c
 ) -> None:
     variety_id = _variety(client, "Lavanda")
     other_id = _variety(client, "Menta")
-    _entry(client, variety_id, grams="2", total_cost=4_000)
-    _entry(client, other_id, grams="2", total_cost=9_000)
+    _entry(client, variety_id, quantity="2", total_cost=4_000)
+    _entry(client, other_id, quantity="2", total_cost=9_000)
     client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]}
+        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
     )
     business_id = _business_of(engine, variety_id)
 

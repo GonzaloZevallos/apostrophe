@@ -41,7 +41,7 @@ def _variety(client: TestClient, name: str, aroma: str | None = None) -> int:
     assert priced.status_code == 201, priced.text
     stocked = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"},
     )
     assert stocked.status_code == 201, stocked.text
     if aroma is not None:

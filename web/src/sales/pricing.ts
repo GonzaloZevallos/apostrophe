@@ -190,7 +190,7 @@ export function fromHundredths(hundredths: number): number {
   return hundredths / 100
 }
 
-/** Turns a bulk minimum's grams as the API answers them (`GramsOut`: a JSON number
+/** Turns a bulk minimum's grams as the API answers them (`QuantityOut`: a JSON number
  * the backend guarantees carries at most two decimals) into hundredths, for building
  * the `BulkQuote` the live preview prices against. Goes through the decimal string
  * `Number.prototype.toString()`'s own shortest-round-trip algorithm produces —

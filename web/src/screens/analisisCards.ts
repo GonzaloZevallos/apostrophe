@@ -60,12 +60,12 @@ export function varietyCard(variety: VarietyRow): CardProps {
     rows.push(plain(String(variety.share_percent), '', ANALYSIS_TEXT.delMes))
   }
   rows.push(
-    plain(formatGrams(variety.grams_sold), '', COMMON_TEXT.soldSuffix),
-    plain(formatGrams(variety.grams_gifted), '', ANALYSIS_TEXT.regalados),
-    row(ANALYSIS_TEXT.costo, amountParts(variety.cost.costed, variety.cost.pending_grams)),
+    plain(formatGrams(variety.quantity_sold), '', COMMON_TEXT.soldSuffix),
+    plain(formatGrams(variety.quantity_gifted), '', ANALYSIS_TEXT.regalados),
+    row(ANALYSIS_TEXT.costo, amountParts(variety.cost.costed, variety.cost.pending_quantity)),
     row(
       ANALYSIS_TEXT.margen,
-      amountParts(variety.margin.amount, variety.margin.pending_grams),
+      amountParts(variety.margin.amount, variety.margin.pending_quantity),
       variety.margin.percent !== null ? ` (${variety.margin.percent}%)` : '',
     ),
   )
@@ -82,13 +82,13 @@ function periodRows(period: Period): CardRow[] {
   const optional = (label: string, cost: RowCost | null): CardRow[] =>
     cost === null ? [] : [row(`${label} `, rowCostParts(cost))]
   return [
-    plain(formatGrams(period.grams), `${COMMON_TEXT.grams} `),
+    plain(formatGrams(period.quantity), `${COMMON_TEXT.grams} `),
     row(`${COST_OF_GOODS_LABEL} `, rowCostParts(period.cost_of_goods)),
     ...optional(SHORTFALL_LABEL, period.shortfall),
     ...optional(PROMOTION_LABEL, period.promotion),
     ...optional(OWN_USE_LABEL, period.own_use),
     plain(formatMoney(period.expenses), ANALYSIS_TEXT.gastos),
-    row(ANALYSIS_TEXT.ganancia, amountParts(period.profit.amount, period.profit.pending_grams)),
+    row(ANALYSIS_TEXT.ganancia, amountParts(period.profit.amount, period.profit.pending_quantity)),
     plain(formatMoney(period.cash), ANALYSIS_TEXT.caja),
   ]
 }

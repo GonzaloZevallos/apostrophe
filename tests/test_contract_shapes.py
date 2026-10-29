@@ -138,7 +138,7 @@ def test_a_fixture_that_is_a_list_rejects_a_wrong_kind_a_stray_key_and_an_undecl
     with pytest.raises(AssertionError, match="extra keys"):
         assert_matches_fixture([{**withdrawal, "variety_id": 1}], "movements")
     with pytest.raises(AssertionError, match="not declared nullable"):
-        assert_matches_fixture([{**withdrawal, "grams": None}], "movements")
+        assert_matches_fixture([{**withdrawal, "quantity": None}], "movements")
     with pytest.raises(AssertionError, match="missing from the fixture"):
         check_shape(movements, movements, {"[entry].no_such_field": "string"})
 
@@ -162,9 +162,9 @@ def test_a_float_in_an_integer_field_fails_the_checker() -> None:
 
 
 def test_an_int_in_a_number_field_fails_the_checker() -> None:
-    broken = _load("sale-detail") | {"total_grams": 4}
+    broken = _load("sale-detail") | {"total_quantity": 4}
 
-    with pytest.raises(AssertionError, match="total_grams"):
+    with pytest.raises(AssertionError, match="total_quantity"):
         assert_matches_fixture(broken, "sale-detail")
 
 

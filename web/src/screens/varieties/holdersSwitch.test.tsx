@@ -47,7 +47,7 @@ const MOVEMENTS: Movement[] = [
     date: '2026-10-02',
     variety_id: 1,
     origin: 'purchase',
-    grams: 50,
+    quantity: 50,
     total_cost: null,
     cost_per_gram: null,
     note: null,

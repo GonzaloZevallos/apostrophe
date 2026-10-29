@@ -313,7 +313,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
         shipping_charged: 0,
         note: null,
         payment: 'cash',
-        lines: [{ variety_id: jazminId, grams, gift: false, special_price: null }],
+        lines: [{ variety_id: jazminId, quantity: grams, gift: false, special_price: null }],
       },
     })
     expect(response.ok()).toBe(true)

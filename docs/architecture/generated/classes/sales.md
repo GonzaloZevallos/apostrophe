@@ -335,24 +335,24 @@ classDiagram
     of(payment: BillPayment) 'BillPaymentOut'
   }
   class DeleteSaleOut {
-    returned : list~ReturnedGramsOut~
+    returned : list~ReturnedQuantityOut~
   }
   class LineCostOut {
     costed : int #124; None
-    pending_grams
+    pending_quantity
     of(cost: LineCost) 'LineCostOut'
   }
   class LineIn {
     gift : bool
-    grams
+    quantity
     special_price : int #124; None
     variety_id : int
   }
   class PlannedPriceBook {
     for_variety(variety_id: int, day: date) VarietyPricing #124; None
   }
-  class ReturnedGramsOut {
-    grams
+  class ReturnedQuantityOut {
+    quantity
     variety_id : int
   }
   class SaleBillLineOut {
@@ -392,7 +392,7 @@ classDiagram
     shipping_charged : int
     still_owing : bool
     total : int
-    total_grams
+    total_quantity
     of(detail: SaleDetail) 'SaleDetailOut'
   }
   class SaleIn {
@@ -405,19 +405,19 @@ classDiagram
   }
   class SaleLineDetailOut {
     cost
-    grams
     line_total : int
     price_per_gram : int
     pricing_rule : PricingRule
+    quantity
     variety_id : int
     variety_name : str
     of(view_line: SaleViewLine, cost: LineCost) 'SaleLineDetailOut'
   }
   class SaleLineOut {
-    grams
     line_total : int
     price_per_gram : int
     pricing_rule : PricingRule
+    quantity
     variety_id : int
     variety_name : str
     of(view_line: SaleViewLine) 'SaleLineOut'

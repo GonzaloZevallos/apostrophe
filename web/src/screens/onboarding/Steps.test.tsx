@@ -244,7 +244,7 @@ test('step 2 saves the opening stock of the stock target through the owner, then
 
   expect(await screen.findByRole('button', { name: 'Add another variety' })).toBeInTheDocument()
   expect(bodies).toEqual([
-    { date: '2026-10-03', variety_id: 7, origin: 'opening_stock', grams: '500' },
+    { date: '2026-10-03', variety_id: 7, origin: 'opening_stock', quantity: '500' },
   ])
   // Saving the stock is not an Onboarding write: nothing was sent to it yet.
   expect(calls.filter((call) => call.startsWith('POST /onboarding-progress'))).toEqual([])

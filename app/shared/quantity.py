@@ -31,12 +31,12 @@ class Quantity:
         try:
             amount = Decimal(value)
         except InvalidOperation as exc:
-            raise InvalidQuantity("grams must be a number") from exc
+            raise InvalidQuantity("the quantity must be a number") from exc
         if not amount.is_finite():
-            raise InvalidQuantity("grams must be a number")
+            raise InvalidQuantity("the quantity must be a number")
         scaled = amount * HUNDREDTHS_PER_UNIT
         if scaled != scaled.to_integral_value():
-            raise InvalidQuantity("grams allow at most two decimals")
+            raise InvalidQuantity("a quantity allows at most two decimals")
         return cls(int(scaled))
 
     @property

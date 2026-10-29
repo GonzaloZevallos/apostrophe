@@ -201,7 +201,7 @@ test('Hoy shows the average only when there were sales, and real zeros otherwise
     ...PANEL,
     periods: {
       ...PANEL.periods,
-      today: { ...PANEL.periods.today, sales: 0, sales_count: 0, average_sale: null, grams_sold: 0 },
+      today: { ...PANEL.periods.today, sales: 0, sales_count: 0, average_sale: null, quantity_sold: 0 },
     },
   }
   renderInicio()

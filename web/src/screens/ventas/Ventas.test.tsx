@@ -132,7 +132,7 @@ test("the period's total and count are the sum and the number of sales shown", a
         payment: 'cash',
         total: 6000,
         lines: [
-          { variety_id: 1, variety_name: 'Blue Dream', grams: 5, pricing_rule: 'list', price_per_gram: 1200, line_total: 6000 },
+          { variety_id: 1, variety_name: 'Blue Dream', quantity: 5, pricing_rule: 'list', price_per_gram: 1200, line_total: 6000 },
         ],
       },
       {
@@ -144,7 +144,7 @@ test("the period's total and count are the sum and the number of sales shown", a
         payment: 'none',
         total: 4000,
         lines: [
-          { variety_id: 2, variety_name: 'OG Kush', grams: 2, pricing_rule: 'list', price_per_gram: 2000, line_total: 4000 },
+          { variety_id: 2, variety_name: 'OG Kush', quantity: 2, pricing_rule: 'list', price_per_gram: 2000, line_total: 4000 },
         ],
       },
     ]),
@@ -197,7 +197,7 @@ test('a sale with no customer shows "No customer" and no VIP badge', async () =>
         payment: 'none',
         total: 1000,
         lines: [
-          { variety_id: 1, variety_name: 'Blue Dream', grams: 1, pricing_rule: 'list', price_per_gram: 1000, line_total: 1000 },
+          { variety_id: 1, variety_name: 'Blue Dream', quantity: 1, pricing_rule: 'list', price_per_gram: 1000, line_total: 1000 },
         ],
       },
     ]),

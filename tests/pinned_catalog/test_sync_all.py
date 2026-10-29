@@ -71,7 +71,7 @@ def test_the_day_change_syncs_a_price_that_takes_effect_tomorrow(
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     client.post(
         "/pinned-catalog/test",
@@ -116,7 +116,7 @@ def test_last_checked_on_retries_a_failure_and_skips_a_fresh_success(
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     client.post(
         "/pinned-catalog/test",
@@ -150,5 +150,3 @@ def test_last_checked_on_retries_a_failure_and_skips_a_fresh_success(
 
     no_longer_due = due.due(tomorrow)
     assert no_longer_due == []  # a fresh success advanced last_checked_on to today
-
-

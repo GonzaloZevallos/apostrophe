@@ -152,7 +152,7 @@ def record_entry(
                 entry_date=body.date or today,
                 variety_id=body.variety_id,
                 origin=body.origin,
-                quantity=Quantity.of(body.grams),
+                quantity=Quantity.of(body.quantity),
                 total_cost=body.total_cost,
                 note=body.note,
                 today=today,
@@ -188,7 +188,7 @@ def edit_entry(
                 entry_date=body.date or today,
                 variety_id=body.variety_id,
                 origin=body.origin,
-                quantity=Quantity.of(body.grams),
+                quantity=Quantity.of(body.quantity),
                 total_cost=body.total_cost,
                 note=body.note,
                 today=today,
@@ -222,7 +222,7 @@ def record_withdrawal(
                 reason=body.reason,
                 withdrawn_on=body.date or today,
                 note=body.note,
-                lines=[(line.variety_id, line.grams) for line in body.lines],
+                lines=[(line.variety_id, line.quantity) for line in body.lines],
                 today=today,
                 now=clock(),
             )
@@ -260,7 +260,7 @@ def edit_withdrawal(
                 reason=body.reason,
                 withdrawn_on=body.date or today,
                 note=body.note,
-                lines=[(line.variety_id, line.grams) for line in body.lines],
+                lines=[(line.variety_id, line.quantity) for line in body.lines],
                 today=today,
             )
         except _ArchivedVariety as exc:
@@ -305,7 +305,7 @@ def set_threshold(
     today: TodayDep,
 ) -> VarietyStockOut:
     with as_http:
-        quantity = Quantity.of(body.grams) if body.grams is not None else None
+        quantity = Quantity.of(body.quantity) if body.quantity is not None else None
         try:
             view = set_threshold_uc.set_threshold(
                 entries,

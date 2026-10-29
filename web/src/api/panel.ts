@@ -13,7 +13,7 @@ import type { VarietyStock } from './stock'
 
 /** A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null` exactly
  * when the period has none of that line's records. `pending` is decided from that
- * line's own pending grams (plan invariant); no grams cross the wire (PM). Twin of
+ * line's own pending quantity (plan invariant); no quantity crosses the wire (PM). Twin of
  * `CostLineOut`. */
 export interface PanelCostLine {
   amount: number
@@ -26,8 +26,8 @@ export interface PanelPeriod {
   sales: number
   sales_count: number
   average_sale: number | null
-  grams_sold: number
-  grams_gifted: number
+  quantity_sold: number
+  quantity_gifted: number
   cost_of_goods: number
   pending_cost: boolean
   shortfall: PanelCostLine | null
