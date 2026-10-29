@@ -8,6 +8,7 @@ Only edges between files inside `theme/` are drawn; edges between folders are in
 flowchart LR
 subgraph src["src"]
   subgraph src_theme["theme"]
+    src_theme_systemTheme_ts["systemTheme.ts"]
     src_theme_theme_ts["theme.ts"]
   end
 end
