@@ -11,6 +11,7 @@
 import { CUSTOMER, CUSTOMER_NEW, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { watchConsole } from './console.js'
@@ -38,13 +39,11 @@ for (const viewport of VIEWPORTS) {
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New variety' }).click()
     await page.getByLabel('Name').fill('Rosa')
-    await page.getByRole('button', { name: 'Add the variety' }).click()
-    await expect(page.getByText('Variety saved')).toBeVisible()
+    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
     await page.getByRole('link', { name: /Rosa/ }).click()
     await page.getByRole('link', { name: 'New price' }).click()
     await page.getByLabel(/^List price/).fill('1000')
-    await page.getByRole('button', { name: 'Save the price' }).click()
-    await expect(page.getByText('Price saved')).toBeVisible()
+    await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
     await page.goto(CUSTOMER_NEW)
     await page.getByLabel('Name').fill('Carla Cobrar')
@@ -73,20 +72,17 @@ for (const viewport of VIEWPORTS) {
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByLabel('Amount').fill('2000')
     await page.getByRole('radio', { name: 'Cash' }).check()
-    await page.getByRole('button', { name: 'Save' }).click()
+    // The exact text is the privacy check: an exact match cannot contain the customer's name.
+    await expectToast(page, 'Payment saved · still owing $ 3.000', () => page.getByRole('button', { name: 'Save' }).click())
     await expectPath(page, HOME)
-    const toast = page.getByText('Payment saved · still owing $ 3.000')
-    await expect(toast).toBeVisible()
-    await expect(toast).not.toContainText('Carla')
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 3.000')
 
     // The rest, with "All": the row leaves and the block reads "Nobody owes you".
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'All: $ 3.000' }).click()
     await page.getByRole('radio', { name: 'Transfer' }).check()
-    await page.getByRole('button', { name: 'Save' }).click()
+    await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
     await expectPath(page, HOME)
-    await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
     await expect(page.getByText('Nobody owes you')).toBeVisible()
     await expect(page.getByRole('link', { name: /^Collect from / })).toHaveCount(0)
 

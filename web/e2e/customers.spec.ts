@@ -20,6 +20,7 @@ import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '..
 import type { Locator, Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -49,18 +50,16 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Jazmín')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   // Registered with no phone number at all.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill('Noe Sinnumero')
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -81,7 +80,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // the phone field while it stays usable.
   await page.getByRole('link', { name: 'Edit' }).click()
   await expect(page.getByLabel('Phone')).toHaveValue('')
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expect(page.getByText('Customer saved')).toBeVisible()
   await expect(page.getByText('Phone')).toHaveCount(0)
 
@@ -123,8 +122,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 4.000' }).click()
   await page.getByRole('radio', { name: 'Cash' }).check()
-  await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Payment saved', { exact: true })).toBeVisible()
+  await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
 
   // A second customer, also without a phone number, created straight from Elegir

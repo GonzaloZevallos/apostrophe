@@ -443,6 +443,8 @@ export function scanE2e(): { site: string; kind: Site['kind'] }[] {
 // ---------------------------------------------------------------------------------------------
 
 const NO_TIMER = 'no product timer: page visibility is the stronger check'
+const ONE_MATCH =
+  'no product timer: the page check proves exactly one "Customer saved" in the page (the strict-mode count), which the recorder cannot'
 const CATEGORY_TOAST = '.aviso-toast: the recorder does not watch the category toasts'
 
 /**
@@ -450,11 +452,15 @@ const CATEGORY_TOAST = '.aviso-toast: the recorder does not watch the category t
  * line. A reason is always given.
  */
 export const KEPT: readonly string[] = [
+  `clientesCobrar.spec.ts:40 — ${ONE_MATCH}`,
+  `customers.spec.ts:64 — ${ONE_MATCH}`,
+  `customers.spec.ts:84 — ${ONE_MATCH}`,
   `flow.spec.ts:50 — ${NO_TIMER}`,
   `flow.spec.ts:176 — ${CATEGORY_TOAST}`,
   `flow.spec.ts:180 — ${CATEGORY_TOAST}`,
   `flow.spec.ts:188 — ${NO_TIMER}`,
   `panel.spec.ts:210 — ${NO_TIMER}`,
+  `payments.spec.ts:76 — ${ONE_MATCH}`,
   `toastRecorder.spec.ts:163 — ${NO_TIMER}`,
 ]
 
@@ -485,47 +491,18 @@ export const PENDING: readonly string[] = [
   'catalogInsecureOrigin.spec.ts:108',
   'catalogInsecureOrigin.spec.ts:115',
   'catalogInsecureOrigin.spec.ts:124',
-  'clientesCobrar.spec.ts:39',
-  'clientesCobrar.spec.ts:83',
-  'clientesCobrar.spec.ts:88',
-  'clientesCobrar.spec.ts:123',
   'cobroHoja.spec.ts:42',
   'cobroHoja.spec.ts:47',
   'cobroHoja.spec.ts:126',
   'cobroHoja.spec.ts:139',
-  'cobroModal.spec.ts:26',
-  'cobroModal.spec.ts:31',
-  'customers.spec.ts:53',
-  'customers.spec.ts:58',
-  'customers.spec.ts:65',
-  'customers.spec.ts:85',
-  'customers.spec.ts:127',
-  'inicioCobrar.spec.ts:42',
-  'inicioCobrar.spec.ts:47',
-  'inicioCobrar.spec.ts:79',
-  'inicioCobrar.spec.ts:89',
   'insets.spec.ts:119',
   'insets.spec.ts:124',
-  'leaveWithBack.spec.ts:35',
-  'leaveWithBack.spec.ts:40',
-  'nuevaVentaTelefono.spec.ts:44',
-  'nuevaVentaTelefono.spec.ts:50',
   'passwords.spec.ts:70',
-  'payments.spec.ts:64',
-  'payments.spec.ts:69',
-  'payments.spec.ts:77',
-  'payments.spec.ts:105',
-  'payments.spec.ts:136',
-  'payments.spec.ts:147',
-  'payments.spec.ts:202',
-  'payments.spec.ts:224',
   'pinnedCatalog.spec.ts:43',
   'pinnedCatalog.spec.ts:48',
   'pinnedCatalog.spec.ts:88',
   'pinnedCatalog.spec.ts:100',
   'pinnedCatalog.spec.ts:108',
-  'pressed.spec.ts:286',
-  'pressed.spec.ts:291',
   'priceModal.spec.ts:21',
   'settings.spec.ts:47',
   'settings.spec.ts:66',
@@ -536,12 +513,6 @@ export const PENDING: readonly string[] = [
   'settings.spec.ts:130',
   'tapBudget.spec.ts:106',
   'varietiesAutoSelect.spec.ts:31',
-  'ventasLinea.spec.ts:26',
-  'ventasLinea.spec.ts:31',
-  'ventasPhone.spec.ts:57',
-  'ventasPhone.spec.ts:63',
-  'ventasTelefono.spec.ts:67',
-  'ventasTelefono.spec.ts:73',
   'withdrawals.spec.ts:33',
   'withdrawals.spec.ts:40',
   'withdrawals.spec.ts:52',
@@ -552,7 +523,7 @@ export const PENDING: readonly string[] = [
 ]
 
 /** The most `PENDING` may hold; lowered with each migration, never raised. */
-export const PENDING_CEILING = 86
+export const PENDING_CEILING = 51
 
 // ---------------------------------------------------------------------------------------------
 // The tests

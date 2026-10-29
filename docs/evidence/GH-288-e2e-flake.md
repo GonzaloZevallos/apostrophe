@@ -103,13 +103,13 @@ changed.
 
 ## Known risks
 
-- The Undo window at `sales.spec.ts:245` is 5 s (`UNDO_WINDOW_MS`): not fixed here.
+- The Undo window at `sales.spec.ts:244` is 5 s (`UNDO_WINDOW_MS`): not fixed here.
 - A repeated identical toast while one is still showing is not detectable without a product change
   (`flashReducer` resets on a location change only).
-- The `.aviso-toast` category sites (`flow.spec.ts:184, 188`) and the `.venta-guardada` "Sale saved"
+- The `.aviso-toast` category sites (`flow.spec.ts:176, 180`) and the `.venta-guardada` "Sale saved"
   sites cannot be seen by the recorder and stay on page text.
-- Other `getByText('Customer saved')` sites (`customers.spec.ts:65,85`, `clientesCobrar.spec.ts:39`,
-  `flow.spec.ts:49`, `payments.spec.ts:77`) hit the same step; the fix removes the second match for all.
+- Other `getByText('Customer saved')` sites (`customers.spec.ts:64,84`, `clientesCobrar.spec.ts:40`,
+  `flow.spec.ts:50`, `payments.spec.ts:76`) hit the same step; the fix removes the second match for all.
 - The loaded runs measure no rate.
 
 ## Kept sites and proofs
@@ -117,11 +117,14 @@ changed.
 The guard (`web/src/architecture/e2eToastRule.test.ts`) prints, from `npm --prefix web test -- e2eToastRule`:
 
 ```
-e2eToastRule: 27 sites observed in the page, 6 kept on page text, 86 pending
+e2eToastRule: 62 sites observed in the page, 10 kept on page text, 51 pending
 ```
 
-`panel.spec.ts`, `flow.spec.ts`, `sales.spec.ts`, `helpers/seed.ts` and `helpers/ledger.ts` are migrated
-(27 `expectToast` calls in those five files; the recorder's own spec is not counted). The 86 sites in the other specs wait on `PENDING` for parts 2 and 3; the list only shrinks.
+`panel.spec.ts`, `flow.spec.ts`, `sales.spec.ts`, `helpers/seed.ts` and `helpers/ledger.ts` (part 1) and
+`payments`, `customers`, `clientesCobrar`, `inicioCobrar`, `cobroModal`, `ventasTelefono`, `ventasPhone`,
+`nuevaVentaTelefono`, `ventasLinea`, `pressed` and `leaveWithBack` (part 2) are migrated (62 `expectToast`
+calls in those files; the recorder's own spec is not counted). The 51 sites in the other specs wait on
+`PENDING` for part 3; the list only shrinks.
 
 Kept on page text, with the reason (each is also a `KEPT` line in the guard):
 
@@ -133,6 +136,16 @@ Kept on page text, with the reason (each is also a `KEPT` line in the guard):
 | `flow.spec.ts:176` | Category saved | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:180` | Category deleted | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:188` | Business renamed | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
+| `customers.spec.ts:64` | Customer saved | no product timer: the page check proves exactly one "Customer saved" in the page (the strict-mode count), which the recorder cannot (`expectToast` wraps the `Save and use` click at :62) |
+| `customers.spec.ts:84` | Customer saved | same reason as `customers.spec.ts:64` (the click at :83 is wrapped) |
+| `clientesCobrar.spec.ts:40` | Customer saved | same reason as `customers.spec.ts:64` (the click at :38 is wrapped) |
+| `payments.spec.ts:76` | Customer saved | same reason as `customers.spec.ts:64` (the click at :74 is wrapped) |
+
+Removed rather than kept: `inicioCobrar.spec.ts` asserted the "Payment saved · still owing $ 3.000" toast
+and then `not.toContainText('Carla')` on it. Once the toast expires that negative assertion passes whatever
+the page shows, so it could never fail; the exact text in `expectToast` (`inicioCobrar.spec.ts:76`) is the
+privacy check, because an exact match cannot hold the customer's name. The `.bloque-deben .cifra-xl`
+assertion stays. No migrated step in part 2 needed an assert-what-follows replacement.
 
 Not flagged and left alone: "Sale saved" and "Sale deleted" (`.venta-guardada`, not in `SuccessToast`).
 One migrated step replaced by a comment: the second "Expense saved" in `flow.spec.ts` (editing the
