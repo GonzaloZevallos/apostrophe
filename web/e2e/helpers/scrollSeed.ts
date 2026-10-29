@@ -41,26 +41,45 @@ async function businessWithRosa(page: Page): Promise<void> {
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 }
 
-/** A new business whose Customers and Sales lists are `LONG` rows each. */
-export async function seedLongLists(page: Page): Promise<void> {
-  await businessWithRosa(page)
+async function rosaId(page: Page): Promise<number> {
   const me: { today: string } = await (await page.request.get('/auth/me')).json()
   const varieties: { id: number; name: string }[] = await (await page.request.get(`/varieties?on=${me.today}`)).json()
   const rosa = varieties.find((variety) => variety.name === 'Rosa')
   if (rosa === undefined) throw new Error('Rosa missing from GET /varieties')
+  return rosa.id
+}
+
+async function owingSale(page: Page, customerId: number, varietyId: number): Promise<void> {
+  const sold = await page.request.post('/sales', {
+    data: {
+      customer_id: customerId,
+      payment: 'owing',
+      lines: [{ variety_id: varietyId, grams: '1', gift: false, special_price: null }],
+    },
+  })
+  expect(sold.ok()).toBe(true)
+}
+
+/** A new business whose Customers and Sales lists are `LONG` rows each. */
+export async function seedLongLists(page: Page): Promise<void> {
+  await businessWithRosa(page)
+  const rosa = await rosaId(page)
   await inBatches(numbered('Zeta', LONG), async (name) => {
     const created = await page.request.post('/customers', { data: { name, phone: null, vip: false } })
     expect(created.ok()).toBe(true)
     const customer: { id: number } = await created.json()
-    const sold = await page.request.post('/sales', {
-      data: {
-        customer_id: customer.id,
-        payment: 'owing',
-        lines: [{ variety_id: rosa.id, grams: '1', gift: false, special_price: null }],
-      },
-    })
-    expect(sold.ok()).toBe(true)
+    await owingSale(page, customer.id, rosa)
   })
+}
+
+/** One more customer ("Historia") with `LONG` sales, so her card is taller than any viewport; returns her id. */
+export async function seedLongHistory(page: Page): Promise<number> {
+  const rosa = await rosaId(page)
+  const created = await page.request.post('/customers', { data: { name: 'Historia', phone: null, vip: false } })
+  expect(created.ok()).toBe(true)
+  const customer: { id: number } = await created.json()
+  await inBatches(numbered('Venta', LONG), () => owingSale(page, customer.id, rosa))
+  return customer.id
 }
 
 /** `LONG` more varieties ("Tulipan 01" ...), so Varieties' list is taller than a computer's viewport. */

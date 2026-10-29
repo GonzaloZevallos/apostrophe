@@ -17,6 +17,7 @@ import {
   CUSTOMER,
   CUSTOMERS,
   EXPENSES,
+  HOME,
   SALE,
   SALES,
   SALE_NEW,
@@ -26,9 +27,10 @@ import {
   SETTINGS_USERS,
   VARIETIES,
   VARIETY,
+  pathTo,
 } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
-import { seedLongExpenses, seedLongLists, seedLongVarieties } from './helpers/scrollSeed.js'
+import { seedLongExpenses, seedLongHistory, seedLongLists, seedLongVarieties } from './helpers/scrollSeed.js'
 import { expectPath } from './helpers/url.js'
 
 const VIEWPORTS = [
@@ -139,6 +141,49 @@ for (const viewport of VIEWPORTS) {
       await expectAtTop(page)
 
       await backToSales(page).click()
+      await expectPath(page, SALES)
+      await expectScrolledTo(page, listOffset)
+    })
+
+    test('Back returns Home to its offset', async ({ page }) => {
+      await seedLongLists(page)
+
+      await page.goto(HOME)
+      await expect(page.getByRole('link', { name: /Collect from Zeta 40/ })).toBeVisible()
+      const homeOffset = await scrollDown(page)
+      await tab(page, 'Sales').click()
+      await expectPath(page, SALES)
+      await expectAtTop(page)
+
+      await page.goBack()
+      await expectPath(page, HOME)
+      await expectScrolledTo(page, homeOffset)
+
+      await page.goForward()
+      await expectPath(page, SALES)
+      await expectAtTop(page)
+    })
+
+    test('Back and Forward return a scrolled customer card and a scrolled list to where each was left', async ({
+      page,
+    }) => {
+      await seedLongLists(page)
+      const historia = await seedLongHistory(page)
+
+      await page.goto(pathTo(CUSTOMER, { id: historia }))
+      await expect(page.getByText('Historia').first()).toBeVisible()
+      const cardOffset = await scrollDown(page)
+      await tab(page, 'Sales').click()
+      await expectPath(page, SALES)
+      await expectAtTop(page)
+      await expect(page.getByRole('link', { name: /Zeta 20/ }).first()).toBeVisible()
+      const listOffset = await scrollDown(page)
+
+      await page.goBack()
+      await expectPath(page, CUSTOMER)
+      await expectScrolledTo(page, cardOffset)
+
+      await page.goForward()
       await expectPath(page, SALES)
       await expectScrolledTo(page, listOffset)
     })
