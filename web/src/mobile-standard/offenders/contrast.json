@@ -3,7 +3,10 @@
     "screen": "Clientes",
     "rule": "contrast",
     "target": "textbox:Search customer::placeholder",
-    "issue": 46
+    "issue": 46,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "DescartarVenta",
@@ -15,7 +18,10 @@
     "screen": "DescartarVenta",
     "rule": "contrast",
     "target": "textbox:Line # special price::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "ElegirCliente",
@@ -27,7 +33,10 @@
     "screen": "ElegirCliente",
     "rule": "contrast",
     "target": "textbox:Line # special price::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "NuevaVenta",
@@ -39,13 +48,19 @@
     "screen": "NuevaVenta",
     "rule": "contrast",
     "target": "textbox:Line # special price::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "contrast",
     "target": "textbox:Search::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "NuevaVentaCliente",
@@ -57,7 +72,10 @@
     "screen": "NuevaVentaCliente",
     "rule": "contrast",
     "target": "textbox:Line # special price::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "NuevaVentaConLinea",
@@ -69,7 +87,10 @@
     "screen": "NuevaVentaConLinea",
     "rule": "contrast",
     "target": "textbox:Line # special price::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "NuevaVentaConLineaYPago",
@@ -81,13 +102,19 @@
     "screen": "NuevaVentaConLineaYPago",
     "rule": "contrast",
     "target": "textbox:Line # special price::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "contrast",
     "target": "textbox:Search::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "NuevoClienteEnVenta",
@@ -99,19 +126,28 @@
     "screen": "NuevoClienteEnVenta",
     "rule": "contrast",
     "target": "textbox:Line # special price::placeholder",
-    "issue": 78
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VariedadNueva",
     "rule": "contrast",
     "target": "textbox:NameUp to # characters · cannot repeat another varie",
-    "issue": 47
+    "issue": 47,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "contrast",
     "target": "textbox:NameUp to # characters · cannot repeat another varie",
-    "issue": 47
+    "issue": 47,
+    "themes": [
+      "oscuro"
+    ]
   },
   {
     "screen": "VentaAsignarCliente",
@@ -122,6 +158,9 @@
       "320x568",
       "375x812",
       "430x932"
+    ],
+    "themes": [
+      "oscuro"
     ]
   },
   {
@@ -131,6 +170,9 @@
     "issue": 78,
     "sizes": [
       "246x437"
+    ],
+    "themes": [
+      "oscuro"
     ]
   }
 ]
