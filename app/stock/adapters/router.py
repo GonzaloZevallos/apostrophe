@@ -16,7 +16,7 @@ from app.stock.adapters.schemas import (
     MovementOut,
     StockOut,
     ThresholdIn,
-    VarietyStockOut,
+    ProductStockOut,
     WithdrawalIn,
     WithdrawalOut,
     movement_out,
@@ -53,7 +53,7 @@ from app.stock.domain.threshold import ThresholdInvalid
 router = APIRouter(prefix="/stock", tags=["stock"])
 entries_router = APIRouter(prefix="/entries")
 withdrawals_router = APIRouter(prefix="/withdrawals")
-varieties_router = APIRouter(prefix="/varieties")
+products_router = APIRouter(prefix="/products")
 
 SessionDep = Annotated[Session, Depends(get_session)]
 TodayDep = Annotated[date, Depends(get_today)]
@@ -150,7 +150,7 @@ def record_entry(
                 catalog,
                 session,
                 entry_date=body.date or today,
-                variety_id=body.variety_id,
+                variety_id=body.product_id,
                 origin=body.origin,
                 quantity=Quantity.of(body.quantity),
                 total_cost=body.total_cost,
@@ -159,7 +159,7 @@ def record_entry(
                 recorded_at=clock(),
             )
         except (_UnknownVariety, _ArchivedVariety) as exc:
-            raise _or_variety_not_found(exc, body.variety_id) from exc
+            raise _or_variety_not_found(exc, body.product_id) from exc
         return EntryOut.of(entry)
 
 
@@ -186,7 +186,7 @@ def edit_entry(
                 session,
                 stock_entry_id,
                 entry_date=body.date or today,
-                variety_id=body.variety_id,
+                variety_id=body.product_id,
                 origin=body.origin,
                 quantity=Quantity.of(body.quantity),
                 total_cost=body.total_cost,
@@ -194,7 +194,7 @@ def edit_entry(
                 today=today,
             )
         except (_UnknownVariety, _ArchivedVariety) as exc:
-            raise _or_variety_not_found(exc, body.variety_id) from exc
+            raise _or_variety_not_found(exc, body.product_id) from exc
         return EntryOut.of(entry)
 
 
@@ -222,7 +222,7 @@ def record_withdrawal(
                 reason=body.reason,
                 withdrawn_on=body.date or today,
                 note=body.note,
-                lines=[(line.variety_id, line.quantity) for line in body.lines],
+                lines=[(line.product_id, line.quantity) for line in body.lines],
                 today=today,
                 now=clock(),
             )
@@ -260,7 +260,7 @@ def edit_withdrawal(
                 reason=body.reason,
                 withdrawn_on=body.date or today,
                 note=body.note,
-                lines=[(line.variety_id, line.quantity) for line in body.lines],
+                lines=[(line.product_id, line.quantity) for line in body.lines],
                 today=today,
             )
         except _ArchivedVariety as exc:
@@ -284,7 +284,7 @@ def get_stock(
     today: TodayDep,
     archived: bool = False,
 ) -> StockOut:
-    """`archived=true` answers the archived varieties' rows instead of the listed ones;
+    """`archived=true` answers the archived products' rows instead of the listed ones;
     the total and the entries are the business's either way."""
     view = read_stock_uc.read_stock(
         entries, draws, withdrawals, catalog, thresholds, today, archived=archived
@@ -292,9 +292,9 @@ def get_stock(
     return StockOut.of(view)
 
 
-@varieties_router.put("/{variety_id}/threshold")
+@products_router.put("/{product_id}/threshold")
 def set_threshold(
-    variety_id: int,
+    product_id: int,
     body: ThresholdIn,
     entries: EntriesDep,
     draws: DrawsDep,
@@ -303,7 +303,7 @@ def set_threshold(
     thresholds: ThresholdsDep,
     session: SessionDep,
     today: TodayDep,
-) -> VarietyStockOut:
+) -> ProductStockOut:
     with as_http:
         quantity = Quantity.of(body.quantity) if body.quantity is not None else None
         try:
@@ -314,30 +314,30 @@ def set_threshold(
                 thresholds,
                 catalog,
                 session,
-                variety_id,
+                product_id,
                 quantity,
                 today,
             )
         except (_UnknownVariety, _ArchivedVariety) as exc:
-            raise _or_variety_not_found(exc, variety_id) from exc
-        return VarietyStockOut.of(view)
+            raise _or_variety_not_found(exc, product_id) from exc
+        return ProductStockOut.of(view)
 
 
-@varieties_router.get("/{variety_id}/movements")
+@products_router.get("/{product_id}/movements")
 def get_movements(
-    variety_id: int,
+    product_id: int,
     entries: EntriesDep,
     withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
 ) -> list[MovementOut]:
     with as_http:
         try:
-            movements = manage_withdrawals.read_movements(entries, withdrawals, catalog, variety_id)
+            movements = manage_withdrawals.read_movements(entries, withdrawals, catalog, product_id)
         except _UnknownVariety as exc:
-            raise _or_variety_not_found(exc, variety_id) from exc
+            raise _or_variety_not_found(exc, product_id) from exc
         return [movement_out(movement) for movement in movements]
 
 
 router.include_router(entries_router)
 router.include_router(withdrawals_router)
-router.include_router(varieties_router)
+router.include_router(products_router)

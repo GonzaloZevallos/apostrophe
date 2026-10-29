@@ -35,7 +35,7 @@ def _bulk_priced_variety(client: TestClient, name: str, *, vip_price: int | None
     assert price.status_code == 201, price.text
     stock = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": "50"},
     )
     assert stock.status_code == 201, stock.text
     _switch(client, bulk=False, vip=False)

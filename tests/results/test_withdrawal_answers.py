@@ -34,7 +34,7 @@ def _entry(
     client: TestClient, variety_id: int, *, quantity: str, on: str, total_cost: int | None = None
 ) -> None:
     body: dict[str, Any] = {
-        "variety_id": variety_id,
+        "product_id": variety_id,
         "origin": "opening_stock",
         "quantity": quantity,
         "date": on,
@@ -48,7 +48,7 @@ def _entry(
 def _adjust(client: TestClient, variety_id: int, *, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "quantity": quantity, "date": on},
+        json={"product_id": variety_id, "origin": "adjustment", "quantity": quantity, "date": on},
     )
     assert response.status_code == 201, response.text
 
@@ -71,7 +71,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
         json={
             "reason": reason,
             "date": on,
-            "lines": [{"variety_id": variety_id, "quantity": quantity}],
+            "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
     )
     assert response.status_code == 201, response.text

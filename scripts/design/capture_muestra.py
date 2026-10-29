@@ -189,8 +189,8 @@ def _seeded(day: date) -> _ClientApi:
 def _varieties(api: _ClientApi) -> list[str]:
     names = {v["id"]: v for v in api.get("/api/products")}
     rows = []
-    for row in api.get("/stock")["varieties"]:
-        variety = names[row["variety_id"]]
+    for row in api.get("/stock")["products"]:
+        variety = names[row["product_id"]]
         status = row["status"]
         if status == "low":
             detail = f"Avisás abajo de {grams(row['threshold'])}"
@@ -222,7 +222,7 @@ def _archived(api: _ClientApi) -> list[str]:
     The catalog lists no archived variety, so the flag is read from `GET /catalog` while
     the variety is restored for an instant, then archived again: archive and restore touch
     no stock, lot or price (varieties.md), and this is the capture's last read."""
-    stock = {row["variety_id"]: row for row in api.get("/stock?archived=true")["varieties"]}
+    stock = {row["product_id"]: row for row in api.get("/stock?archived=true")["products"]}
     archived = api.get("/api/products?archived=true")
     for variety in archived:
         api.call("POST", f"/api/products/{variety['id']}/restore")
@@ -246,8 +246,8 @@ def _archived(api: _ClientApi) -> list[str]:
 def _movements(api: _ClientApi) -> list[str]:
     names = {v["id"]: v["name"] for v in api.get("/api/products")}
     rows = []
-    for row in api.get("/stock")["varieties"]:
-        listed = api.get(f"/stock/varieties/{row['variety_id']}/movements")
+    for row in api.get("/stock")["products"]:
+        listed = api.get(f"/stock/products/{row['variety_id']}/movements")
         for move in listed[:3]:
             if move["kind"] == "withdrawal":
                 kind, amount = (
@@ -256,7 +256,7 @@ def _movements(api: _ClientApi) -> list[str]:
                 )
             else:
                 kind, amount = _ENTRY_KIND[move["origin"]], grams(move["quantity"])
-            rows.append([names[row["variety_id"]], day_month(move["date"]), kind, amount])
+            rows.append([names[row["product_id"]], day_month(move["date"]), kind, amount])
     return ["### Movimientos", "", *table(["Variedad", "Fecha", "Tipo", "Gramos"], rows)]
 
 

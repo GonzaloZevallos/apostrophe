@@ -519,4 +519,4 @@ def test_real_run_over_the_problem_export_writes_nothing(
     assert err.getvalue() == ""
     assert client.get("/api/products").json() == []
     assert client.get("/customers").json() == []
-    assert client.get("/stock").json()["varieties"] == []
+    assert client.get("/stock").json()["products"] == []

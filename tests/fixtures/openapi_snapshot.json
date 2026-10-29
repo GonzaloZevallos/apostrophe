@@ -1113,6 +1113,10 @@
           "origin": {
             "$ref": "#/components/schemas/Origin"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "anyOf": [
               {
@@ -1135,14 +1139,10 @@
               }
             ],
             "title": "Total Cost"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "origin",
           "quantity"
         ],
@@ -1191,6 +1191,10 @@
           "origin": {
             "$ref": "#/components/schemas/Origin"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
@@ -1205,16 +1209,12 @@
               }
             ],
             "title": "Total Cost"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
           "id",
           "date",
-          "variety_id",
+          "product_id",
           "origin",
           "quantity",
           "total_cost",
@@ -1260,6 +1260,10 @@
           "origin": {
             "$ref": "#/components/schemas/Origin"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
@@ -1274,16 +1278,12 @@
               }
             ],
             "title": "Total Cost"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
           "id",
           "date",
-          "variety_id",
+          "product_id",
           "origin",
           "quantity",
           "total_cost",
@@ -1873,7 +1873,7 @@
         "type": "object"
       },
       "PanelVarietyOut": {
-        "description": "`VarietyStockOut`'s own keys plus `name` (plan invariant: \"`PanelVarietyOut`\nsubclasses `VarietyStockOut` and adds only `name`\").",
+        "description": "The keys of stock's `ProductStockOut` with the panel's own `variety_id` (the panel's\nwire is renamed in its own slice, so it no longer subclasses stock's row) plus `name`.",
         "properties": {
           "days_left": {
             "anyOf": [
@@ -2758,6 +2758,73 @@
         "title": "ProductOut",
         "type": "object"
       },
+      "ProductStockOut": {
+        "description": "One product's row in `GET /stock` (and the threshold route's own response):\ncomputed only by `stock_level` over `lots_and_draws` (stock-domain), never by a\nSQL aggregate or front code.",
+        "properties": {
+          "days_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Left"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "sold_out_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold Out Since"
+          },
+          "status": {
+            "enum": [
+              "no_entries",
+              "sold_out",
+              "low",
+              "ok"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          }
+        },
+        "required": [
+          "product_id",
+          "quantity",
+          "status",
+          "sold_out_since",
+          "threshold",
+          "days_left"
+        ],
+        "title": "ProductStockOut",
+        "type": "object"
+      },
       "ProgressOut": {
         "properties": {
           "can_skip_rest": {
@@ -3584,7 +3651,7 @@
         "type": "string"
       },
       "StockOut": {
-        "description": "`GET /stock`'s own shape: the business's total grams, every variety's own row,\nand its entries, newest date first then most recently recorded first.",
+        "description": "`GET /stock`'s own shape: the business's total grams, every product's own row,\nand its entries, newest date first then most recently recorded first.",
         "properties": {
           "entries": {
             "items": {
@@ -3593,21 +3660,21 @@
             "title": "Entries",
             "type": "array"
           },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductStockOut"
+            },
+            "title": "Products",
+            "type": "array"
+          },
           "total": {
             "title": "Total",
             "type": "number"
-          },
-          "varieties": {
-            "items": {
-              "$ref": "#/components/schemas/VarietyStockOut"
-            },
-            "title": "Varieties",
-            "type": "array"
           }
         },
         "required": [
           "total",
-          "varieties",
+          "products",
           "entries"
         ],
         "title": "StockOut",
@@ -3632,7 +3699,7 @@
         "type": "object"
       },
       "ThresholdIn": {
-        "description": "`PUT /stock/varieties/{variety_id}/threshold`'s body: `None` turns the\nthreshold off, rather than storing a zero or negative one (`Threshold.of`\nrefuses both).",
+        "description": "`PUT /stock/products/{product_id}/threshold`'s body: `None` turns the\nthreshold off, rather than storing a zero or negative one (`Threshold.of`\nrefuses both).",
         "properties": {
           "quantity": {
             "anyOf": [
@@ -3760,73 +3827,6 @@
           "margin"
         ],
         "title": "VarietyRowOut",
-        "type": "object"
-      },
-      "VarietyStockOut": {
-        "description": "One variety's row in `GET /stock` (and the threshold route's own response):\ncomputed only by `stock_level` over `lots_and_draws` (stock-domain), never by a\nSQL aggregate or front code.",
-        "properties": {
-          "days_left": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Days Left"
-          },
-          "quantity": {
-            "title": "Quantity",
-            "type": "number"
-          },
-          "sold_out_since": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Sold Out Since"
-          },
-          "status": {
-            "enum": [
-              "no_entries",
-              "sold_out",
-              "low",
-              "ok"
-            ],
-            "title": "Status",
-            "type": "string"
-          },
-          "threshold": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Threshold"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "variety_id",
-          "quantity",
-          "status",
-          "sold_out_since",
-          "threshold",
-          "days_left"
-        ],
-        "title": "VarietyStockOut",
         "type": "object"
       },
       "WeekOut": {
@@ -3996,6 +3996,10 @@
       },
       "WithdrawalLineIn": {
         "properties": {
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "anyOf": [
               {
@@ -4007,14 +4011,10 @@
               }
             ],
             "title": "Quantity"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "quantity"
         ],
         "title": "WithdrawalLineIn",
@@ -4022,22 +4022,22 @@
       },
       "WithdrawalLineOut": {
         "properties": {
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "product_name": {
+            "title": "Product Name",
+            "type": "string"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          },
-          "variety_name": {
-            "title": "Variety Name",
-            "type": "string"
           }
         },
         "required": [
-          "variety_id",
-          "variety_name",
+          "product_id",
+          "product_name",
           "quantity"
         ],
         "title": "WithdrawalLineOut",
@@ -6982,7 +6982,7 @@
     },
     "/stock": {
       "get": {
-        "description": "`archived=true` answers the archived varieties' rows instead of the listed ones;\nthe total and the entries are the business's either way.",
+        "description": "`archived=true` answers the archived products' rows instead of the listed ones;\nthe total and the entries are the business's either way.",
         "operationId": "get_stock_stock_get",
         "parameters": [
           {
@@ -7215,16 +7215,16 @@
         ]
       }
     },
-    "/stock/varieties/{variety_id}/movements": {
+    "/stock/products/{product_id}/movements": {
       "get": {
-        "operationId": "get_movements_stock_varieties__variety_id__movements_get",
+        "operationId": "get_movements_stock_products__product_id__movements_get",
         "parameters": [
           {
             "in": "path",
-            "name": "variety_id",
+            "name": "product_id",
             "required": true,
             "schema": {
-              "title": "Variety Id",
+              "title": "Product Id",
               "type": "integer"
             }
           }
@@ -7244,7 +7244,7 @@
                       }
                     ]
                   },
-                  "title": "Response Get Movements Stock Varieties  Variety Id  Movements Get",
+                  "title": "Response Get Movements Stock Products  Product Id  Movements Get",
                   "type": "array"
                 }
               }
@@ -7273,16 +7273,16 @@
         ]
       }
     },
-    "/stock/varieties/{variety_id}/threshold": {
+    "/stock/products/{product_id}/threshold": {
       "put": {
-        "operationId": "set_threshold_stock_varieties__variety_id__threshold_put",
+        "operationId": "set_threshold_stock_products__product_id__threshold_put",
         "parameters": [
           {
             "in": "path",
-            "name": "variety_id",
+            "name": "product_id",
             "required": true,
             "schema": {
-              "title": "Variety Id",
+              "title": "Product Id",
               "type": "integer"
             }
           }
@@ -7302,7 +7302,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VarietyStockOut"
+                  "$ref": "#/components/schemas/ProductStockOut"
                 }
               }
             },

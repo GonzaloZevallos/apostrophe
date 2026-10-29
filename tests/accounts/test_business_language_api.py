@@ -191,7 +191,7 @@ def _published(client: TestClient) -> int:
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     client.post(
         "/pinned-catalog/test",

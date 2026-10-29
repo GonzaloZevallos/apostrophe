@@ -142,7 +142,7 @@ def seed_catalog(client: TestClient) -> dict[str, int]:
     entry = client.post(
         "/stock/entries",
         json={
-            "variety_id": variety["id"],
+            "product_id": variety["id"],
             "origin": "opening_stock",
             "quantity": "50",
         },
@@ -163,7 +163,7 @@ def seed_stock(client: TestClient) -> dict[str, int]:
     entry = client.post(
         "/stock/entries",
         json={
-            "variety_id": variety["id"],
+            "product_id": variety["id"],
             "origin": "opening_stock",
             "quantity": "50",
             "note": MARKER,
@@ -175,7 +175,7 @@ def seed_stock(client: TestClient) -> dict[str, int]:
         json={
             "reason": "promotion",
             "note": MARKER,
-            "lines": [{"variety_id": variety["id"], "quantity": "5"}],
+            "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -287,24 +287,24 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("PUT", "/sales/{sale_id}/customer"): {"customer_id": 1},
     ("POST", "/stock/entries"): {
-        "variety_id": 1,
+        "product_id": 1,
         "origin": "opening_stock",
         "quantity": "10",
     },
     ("PUT", "/stock/entries/{stock_entry_id}"): {
-        "variety_id": 1,
+        "product_id": 1,
         "origin": "opening_stock",
         "quantity": "20",
     },
     ("POST", "/stock/withdrawals"): {
         "reason": "own_use",
-        "lines": [{"variety_id": 1, "quantity": "1"}],
+        "lines": [{"product_id": 1, "quantity": "1"}],
     },
     ("PUT", "/stock/withdrawals/{withdrawal_id}"): {
         "reason": "own_use",
-        "lines": [{"variety_id": 1, "quantity": "2"}],
+        "lines": [{"product_id": 1, "quantity": "2"}],
     },
-    ("PUT", "/stock/varieties/{variety_id}/threshold"): {"quantity": "15"},
+    ("PUT", "/stock/products/{product_id}/threshold"): {"quantity": "15"},
     ("PUT", "/catalog/varieties/{variety_id}"): {
         "shown": True,
         "emoji": None,
@@ -530,7 +530,7 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
     business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
 ) -> None:
     def body(variety_id: int) -> dict[str, Any]:
-        return {"reason": "promotion", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
+        return {"reason": "promotion", "lines": [{"product_id": variety_id, "quantity": "1"}]}
 
     own_variety = business_b.post("/api/products", json={"name": "B withdrawal variety"}).json()
     own = business_b.post("/stock/withdrawals", json=body(own_variety["id"]))
@@ -549,7 +549,7 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
         assert other_business.status_code == 404, other_business.text
         assert missing.json() == other_business.json()
 
-    assert business_b.get(f"/stock/varieties/{seeded_b['variety_id']}/movements").status_code == 404
+    assert business_b.get(f"/stock/products/{seeded_b['variety_id']}/movements").status_code == 404
 
 
 def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_way(
@@ -618,10 +618,10 @@ def test_another_business_reads_none_of_the_archived_stock_rows(
     variety = business_a.post("/api/products", json={"name": "Archived here"}).json()
     archive_by_hand(engine, variety["id"])
     assert [
-        r["variety_id"] for r in business_a.get("/stock?archived=true").json()["varieties"]
+        r["product_id"] for r in business_a.get("/stock?archived=true").json()["products"]
     ] == [variety["id"]]
 
-    assert business_b.get("/stock?archived=true").json()["varieties"] == []
+    assert business_b.get("/stock?archived=true").json()["products"] == []
 
 
 @pytest.mark.parametrize("path", LISTS)
@@ -840,7 +840,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     purchase = business_a.post(
         "/stock/entries",
         json={
-            "variety_id": variety["id"],
+            "product_id": variety["id"],
             "origin": "purchase",
             "quantity": "50",
             "total_cost": 2_000,
@@ -851,7 +851,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     adjustment = business_a.post(
         "/stock/entries",
         json={
-            "variety_id": variety["id"],
+            "product_id": variety["id"],
             "origin": "adjustment",
             "quantity": "-5",
             "date": today,

@@ -1,6 +1,6 @@
 """`GET /panel`'s HTTP shape (`web/src/api/fixtures/panel.json`, plan: "Answer
 shape"). Adapters may import anything (CODING_STANDARDS section 1): `PanelVarietyOut`
-reuses stock's own `VarietyStockOut` and `QuantityOut`, rather than a second quantity or
+reuses stock's own `Status` and `QuantityOut`, rather than a second quantity or
 status format.
 
 `GET /analysis`'s response shape (docs/adr/0020, plan: Response contract).
@@ -24,20 +24,23 @@ from pydantic import BaseModel
 from app.products.adapters.schemas import QuantityOut
 from app.results.application.ports import DebtorRow, StockRow
 from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
-from app.stock.adapters.schemas import VarietyStockOut
+from app.stock.adapters.schemas import Status
 
 
-class PanelVarietyOut(VarietyStockOut):
-    """`VarietyStockOut`'s own keys plus `name` (plan invariant: "`PanelVarietyOut`
-    subclasses `VarietyStockOut` and adds only `name`")."""
+class PanelVarietyOut(BaseModel):
+    """The keys of stock's `ProductStockOut` with the panel's own `variety_id` (the panel's
+    wire is renamed in its own slice, so it no longer subclasses stock's row) plus `name`."""
 
+    variety_id: int
+    quantity: QuantityOut
+    status: Status
+    sold_out_since: date | None
+    threshold: QuantityOut | None
+    days_left: int | None
     name: str
 
     @classmethod
     def of_row(cls, row: StockRow) -> PanelVarietyOut:
-        # Not named `of`: `VarietyStockOut.of` takes a `VarietyStock` (stock's own
-        # application view), and redeclaring `of` here with a different parameter
-        # type would violate Liskov substitution on the inherited classmethod.
         return cls(
             variety_id=row.variety_id,
             name=row.name,

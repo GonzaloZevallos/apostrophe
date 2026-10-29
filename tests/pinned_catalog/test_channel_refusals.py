@@ -91,7 +91,7 @@ def _qualifying_variety(client: TestClient) -> dict[str, Any]:
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     return variety
 

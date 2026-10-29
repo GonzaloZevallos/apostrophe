@@ -19,7 +19,7 @@ def _register(client: TestClient, name: str = "24K Gold") -> int:
 def _give_history(client: TestClient, variety_id: int) -> None:
     entry = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "12"},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": "12"},
     )
     assert entry.status_code == 201, entry.text
 

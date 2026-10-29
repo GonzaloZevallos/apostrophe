@@ -28,7 +28,7 @@ def _variety(client: TestClient, name: str, list_price: int = 10_000) -> int:
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
+    body: dict[str, Any] = {"product_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text

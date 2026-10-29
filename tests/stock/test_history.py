@@ -32,7 +32,7 @@ def _variety(client: TestClient, name: str) -> int:
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
+    body: dict[str, Any] = {"product_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     assert client.post("/stock/entries", json=body).status_code == 201
 

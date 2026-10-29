@@ -41,7 +41,7 @@ def _variety(client: TestClient, name: str, price: int) -> int:
 
 def _entry(client: TestClient, variety_id: int, quantity: str, on: str, **more: Any) -> int:
     body = {
-        "variety_id": variety_id,
+        "product_id": variety_id,
         "origin": "opening_stock",
         "quantity": quantity,
         "date": on,
@@ -147,7 +147,7 @@ def _books(client: TestClient, seed: Seed) -> dict[str, Any]:
 
 
 def _variety_row(stock: dict[str, Any], variety_id: int) -> dict[str, Any]:
-    (row,) = [r for r in stock["varieties"] if r["variety_id"] == variety_id]
+    (row,) = [r for r in stock["products"] if r["product_id"] == variety_id]
     assert isinstance(row, dict)
     return row
 
@@ -180,7 +180,7 @@ def test_no_figure_of_the_books_moves_when_a_variety_is_archived_and_restored(
     archived_stock = _ok(client.get("/stock", params={"archived": "true"}))
     row_archived = _variety_row(archived_stock, seed.archived_id)
     listed_stock = _ok(client.get("/stock"))
-    assert seed.archived_id not in [r["variety_id"] for r in listed_stock["varieties"]]
+    assert seed.archived_id not in [r["product_id"] for r in listed_stock["products"]]
 
     _restore(client, seed.archived_id)
     after = _books(client, seed)
@@ -198,7 +198,7 @@ def test_a_restored_variety_comes_back_whole(
 ) -> None:
     seed = _seed(client, clock)
     a = seed.archived_id
-    _ok(client.put(f"/stock/varieties/{a}/threshold", json={"quantity": "20"}))
+    _ok(client.put(f"/stock/products/{a}/threshold", json={"quantity": "20"}))
     _ok(
         client.put(
             f"/catalog/varieties/{a}",
@@ -211,7 +211,7 @@ def test_a_restored_variety_comes_back_whole(
         return {
             "variety": _ok(client.get(f"/api/products/{a}")),
             "prices": _ok(client.get(f"/api/products/{a}/prices")),
-            "entries": [e for e in stock["entries"] if e["variety_id"] == a],
+            "entries": [e for e in stock["entries"] if e["product_id"] == a],
             "stock_row": _variety_row(stock, a),
             "catalog": [v for v in _ok(client.get("/catalog"))["varieties"] if v["id"] == a],
         }
@@ -220,13 +220,13 @@ def test_a_restored_variety_comes_back_whole(
     _archive(client, a)
     assert a not in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
     assert a not in [v["id"] for v in _ok(client.get("/api/products"))]
-    assert a not in [v["variety_id"] for v in _ok(client.get("/stock"))["varieties"]]
+    assert a not in [v["product_id"] for v in _ok(client.get("/stock"))["products"]]
     assert all(v["id"] != a for v in _ok(client.get("/catalog"))["varieties"])
     _restore(client, a)
 
     assert whole() == before
     assert a in [v["id"] for v in _ok(client.get("/api/products"))]
-    assert a in [v["variety_id"] for v in _ok(client.get("/stock"))["varieties"]]
+    assert a in [v["product_id"] for v in _ok(client.get("/stock"))["products"]]
     assert a in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
 
 

@@ -172,7 +172,7 @@ def test_dry_run_writes_nothing_and_reports_the_counts(
     assert "Writable: yes" in out.getvalue()
     assert client.get("/api/products").json() == []
     assert client.get("/customers").json() == []
-    assert client.get("/stock").json()["varieties"] == []
+    assert client.get("/stock").json()["products"] == []
 
 
 def test_real_run_imports_and_the_figures_match(
@@ -214,10 +214,10 @@ def test_real_run_imports_and_the_figures_match(
     assert catalog["footer"] == "Gracias por su compra"
 
     stock = client.get("/stock").json()
-    assert len(stock["varieties"]) == 1
+    assert len(stock["products"]) == 1
     # 50 g bought in, 10 g sold: 40 g left.
-    assert stock["varieties"][0]["quantity"] == 40.0
-    assert stock["varieties"][0]["threshold"] == 5.0
+    assert stock["products"][0]["quantity"] == 40.0
+    assert stock["products"][0]["threshold"] == 5.0
 
     customers = client.get("/customers").json()
     assert len(customers) == 1
@@ -302,7 +302,7 @@ def test_imported_records_are_invisible_from_another_business(
     assert code == 0, err.getvalue()
     assert other_client.get("/api/products").json() == []
     assert other_client.get("/customers").json() == []
-    assert other_client.get("/stock").json()["varieties"] == []
+    assert other_client.get("/stock").json()["products"] == []
 
 
 def test_a_malformed_mapping_on_a_real_run_is_refused_with_no_echo(
@@ -486,7 +486,7 @@ def test_a_well_formed_mapping_row_with_a_malformed_phone_blocks_with_no_echo(
     assert caplog.records == []
     assert client.get("/customers").json() == []
     assert client.get("/api/products").json() == []
-    assert client.get("/stock").json()["varieties"] == []
+    assert client.get("/stock").json()["products"] == []
 
 
 def test_the_dry_run_count_of_customers_without_a_phone_matches_the_real_run(
@@ -579,7 +579,7 @@ def test_the_last_writer_forced_to_raise_leaves_nothing_written(
     assert not _DIGIT_RUN.search(err.getvalue())
     assert client.get("/api/products").json() == []
     assert client.get("/customers").json() == []
-    assert client.get("/stock").json()["varieties"] == []
+    assert client.get("/stock").json()["products"] == []
     # Only the 4 seeded categories remain: the fixture's own "Insumos" never landed.
     assert len(client.get("/expense-categories").json()) == 4
     assert client.get("/catalog").json()["header"] != "Catálogo de la casa"
@@ -616,7 +616,7 @@ def test_a_dry_run_and_a_refused_real_run_over_a_blocking_fixture_write_nothing(
         assert "import.origin_unknown" in out.getvalue()
         assert client.get("/api/products").json() == []
         assert client.get("/customers").json() == []
-        assert client.get("/stock").json()["varieties"] == []
+        assert client.get("/stock").json()["products"] == []
         assert client.get("/catalog").json()["header"] != "Catálogo de la casa"
 
 
@@ -696,7 +696,7 @@ def _seed_stock_entry(seed_client: TestClient) -> None:
     variety_id = _seed_variety(seed_client)
     body = seed_client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "purchase", "quantity": 5, "total_cost": 500},
+        json={"product_id": variety_id, "origin": "purchase", "quantity": 5, "total_cost": 500},
     )
     assert body.status_code == 201, body.text
 
@@ -972,7 +972,7 @@ def test_recording_order_follows_date_then_sheet_row(
     )
     assert code == 0, err.getvalue()
 
-    stock = {row["variety_id"]: row for row in client.get("/stock").json()["varieties"]}
+    stock = {row["product_id"]: row for row in client.get("/stock").json()["products"]}
     varieties_by_name = {v["name"]: v["id"] for v in client.get("/api/products").json()}
     # (1) 20 g bought in, 8 g adjusted out, 3 g + 5 g sold: 4 g left, all in the 100/g
     # lot.

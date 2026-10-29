@@ -26,8 +26,8 @@ def _variety(client: TestClient) -> int:
 
 
 def _threshold_of(client: TestClient, variety_id: int) -> Any:
-    rows = client.get("/stock").json()["varieties"]
-    return next(row for row in rows if row["variety_id"] == variety_id)["threshold"]
+    rows = client.get("/stock").json()["products"]
+    return next(row for row in rows if row["product_id"] == variety_id)["threshold"]
 
 
 def test_no_property_of_the_api_document_contains_grams(app: FastAPI) -> None:
@@ -49,7 +49,7 @@ def test_a_stock_entry_written_with_grams_is_refused(client: TestClient) -> None
     variety_id = _variety(client)
 
     response = client.post(
-        "/stock/entries", json={"variety_id": variety_id, "origin": "opening_stock", "grams": "5"}
+        "/stock/entries", json={"product_id": variety_id, "origin": "opening_stock", "grams": "5"}
     )
 
     assert response.status_code == 422
@@ -71,7 +71,7 @@ def test_a_threshold_written_with_grams_is_refused_and_keeps_the_old_one(
     client: TestClient,
 ) -> None:
     variety_id = _variety(client)
-    url = f"/stock/varieties/{variety_id}/threshold"
+    url = f"/stock/products/{variety_id}/threshold"
     assert client.put(url, json={"quantity": "15"}).status_code == 200
 
     response = client.put(url, json={"grams": "20"})
@@ -82,7 +82,7 @@ def test_a_threshold_written_with_grams_is_refused_and_keeps_the_old_one(
 
 def test_an_empty_threshold_body_is_refused_and_keeps_the_old_one(client: TestClient) -> None:
     variety_id = _variety(client)
-    url = f"/stock/varieties/{variety_id}/threshold"
+    url = f"/stock/products/{variety_id}/threshold"
     assert client.put(url, json={"quantity": "15"}).status_code == 200
 
     response = client.put(url, json={})
@@ -93,7 +93,7 @@ def test_an_empty_threshold_body_is_refused_and_keeps_the_old_one(client: TestCl
 
 def test_a_null_quantity_turns_the_threshold_off(client: TestClient) -> None:
     variety_id = _variety(client)
-    url = f"/stock/varieties/{variety_id}/threshold"
+    url = f"/stock/products/{variety_id}/threshold"
     assert client.put(url, json={"quantity": "15"}).status_code == 200
 
     response = client.put(url, json={"quantity": None})

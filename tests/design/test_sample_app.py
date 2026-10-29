@@ -69,7 +69,7 @@ def test_the_sample_business_has_every_state_the_design_shows(client: TestClient
     assert owing["customer"]["name"] == "Nico Parra"
     assert client.get(f"/customers/{sample.debtor}").json()["name"] == "Nico Parra"
 
-    stock = {row["variety_id"]: row["status"] for row in client.get("/stock").json()["varieties"]}
+    stock = {row["product_id"]: row["status"] for row in client.get("/stock").json()["products"]}
     assert stock[sample.sold_out] == "sold_out"
     assert stock[sample.low] == "low"
     assert stock[sample.no_entries] == "no_entries"
@@ -83,7 +83,7 @@ def test_the_sample_business_has_every_state_the_design_shows(client: TestClient
     assert periods["week"]["promotion"]["pending"] is False
     assert periods["week"]["own_use"]["pending"] is True
     assert client.get(f"/stock/withdrawals/{sample.withdrawal}").json()["reason"] == "promotion"
-    movements = client.get(f"/stock/varieties/{sample.low}/movements").json()
+    movements = client.get(f"/stock/products/{sample.low}/movements").json()
     assert len(movements) > 3
     assert {m["reason"] for m in movements if m["kind"] == "withdrawal"} == {
         "promotion",

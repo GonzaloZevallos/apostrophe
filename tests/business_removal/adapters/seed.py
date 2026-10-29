@@ -129,7 +129,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         entry = client.post(
             "/stock/entries",
             json={
-                "variety_id": variety_id,
+                "product_id": variety_id,
                 "origin": "purchase",
                 "quantity": 100,
                 "total_cost": 300000,
@@ -184,7 +184,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         assert attributes.status_code == 200, attributes.text
 
         threshold = client.put(
-            f"/stock/varieties/{variety_id}/threshold", json={"quantity": LOW_STOCK_THRESHOLD}
+            f"/stock/products/{variety_id}/threshold", json={"quantity": LOW_STOCK_THRESHOLD}
         )
         assert threshold.status_code == 200, threshold.text
 

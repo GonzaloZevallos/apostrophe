@@ -53,7 +53,7 @@ def _register_priced_variety(client: TestClient, name: str) -> dict[str, Any]:
 def _add_stock_entry(client: TestClient, variety_id: int, quantity: str = "50") -> dict[str, Any]:
     entry: dict[str, Any] = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": quantity},
     ).json()
     return entry
 
@@ -103,7 +103,7 @@ def test_a_recorded_price_entry_triggers_an_edit(
     variety = client.post("/api/products", json={"name": "V1"}).json()
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     _publish(client)
     telegram.calls.clear()
@@ -181,7 +181,7 @@ def test_a_variety_selling_out_and_coming_back_triggers_edits(
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": sellable["id"], "origin": "opening_stock", "quantity": "10"},
+        json={"product_id": sellable["id"], "origin": "opening_stock", "quantity": "10"},
     )
     _publish(client)
     telegram.calls.clear()
@@ -209,7 +209,7 @@ def test_topping_up_an_in_catalog_variety_sends_nothing(
 
     topped_up = client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "10"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "10"},
     )
     assert topped_up.status_code == 201, topped_up.text
 
@@ -286,7 +286,7 @@ def test_too_long_text_is_not_sent_and_the_pin_keeps_its_text(
         )
         client.post(
             "/stock/entries",
-            json={"variety_id": over["id"], "origin": "opening_stock", "quantity": "50"},
+            json={"product_id": over["id"], "origin": "opening_stock", "quantity": "50"},
         )
         client.put(
             f"/catalog/varieties/{over['id']}",
@@ -325,7 +325,7 @@ def test_a_stock_entry_created_brings_a_variety_into_the_catalog(
 
     created = client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     assert created.status_code == 201, created.text
 
@@ -348,7 +348,7 @@ def test_editing_a_stock_entry_triggers_an_edit(client: TestClient, telegram: Fa
 
     edited = client.put(
         f"/stock/entries/{entry['id']}",
-        json={"variety_id": gains["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": gains["id"], "origin": "opening_stock", "quantity": "50"},
     )
     assert edited.status_code == 200, edited.text
 
@@ -481,7 +481,7 @@ def test_an_edit_moving_the_only_line_between_varieties_edits_the_pin_once(
 
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json={"reason": "promotion", "lines": [{"variety_id": beta["id"], "quantity": "50"}]},
+        json={"reason": "promotion", "lines": [{"product_id": beta["id"], "quantity": "50"}]},
     )
     assert edited.status_code == 200, edited.text
 
@@ -517,7 +517,7 @@ def test_a_note_only_edit_sends_nothing(client: TestClient, telegram: FakeTelegr
         json={
             "reason": "promotion",
             "note": "otra nota",
-            "lines": [{"variety_id": variety["id"], "quantity": "5"}],
+            "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     assert edited.status_code == 200, edited.text

@@ -51,7 +51,7 @@ def test_a_month_before_the_first_record_is_refused(client: TestClient) -> None:
     variety_id = _variety_with_price(client, "Flor", 1_000)
     client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": "50"},
     )
     client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
@@ -101,7 +101,7 @@ def test_a_purchase_is_its_own_line_never_inside_expenses(client: TestClient) ->
     client.post(
         "/stock/entries",
         json={
-            "variety_id": variety_id,
+            "product_id": variety_id,
             "origin": "purchase",
             "quantity": "50",
             "total_cost": 20_000,
@@ -122,7 +122,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
     client.post(
         "/stock/entries",
         json={
-            "variety_id": variety_id,
+            "product_id": variety_id,
             "origin": "opening_stock",
             "quantity": "10",
             "total_cost": 1_000,
@@ -140,7 +140,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
     client.post(
         "/stock/entries",
         json={
-            "variety_id": other_variety_id,
+            "product_id": other_variety_id,
             "origin": "opening_stock",
             "quantity": "5",
             "total_cost": 500,
@@ -166,7 +166,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
     cheaper_entry = client.post(
         "/stock/entries",
         json={
-            "variety_id": variety_id,
+            "product_id": variety_id,
             "origin": "opening_stock",
             "quantity": "5",
             "total_cost": 100,
@@ -218,7 +218,7 @@ def test_a_negative_adjustment_lowers_profit_on_its_date_and_moves_no_variety_ma
     client.post(
         "/stock/entries",
         json={
-            "variety_id": variety_id,
+            "product_id": variety_id,
             "origin": "opening_stock",
             "quantity": "20",
             "total_cost": 2_000,
@@ -233,7 +233,7 @@ def test_a_negative_adjustment_lowers_profit_on_its_date_and_moves_no_variety_ma
 
     adjustment = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "quantity": "-3"},
+        json={"product_id": variety_id, "origin": "adjustment", "quantity": "-3"},
     )
     assert adjustment.status_code == 201, adjustment.text
 
@@ -278,7 +278,7 @@ def _seed_bigger_history(client: TestClient) -> None:
         client.post(
             "/stock/entries",
             json={
-                "variety_id": variety_id,
+                "product_id": variety_id,
                 "origin": "opening_stock",
                 "quantity": "5000",
                 "total_cost": 100_000 + i * 1_000,
@@ -323,14 +323,14 @@ def test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded(
     variety_id = _variety_with_price(client, "Chica", 1_000)
     client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "10"},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": "10"},
     )
     client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
     )
     client.post(
         "/stock/withdrawals",
-        json={"reason": "promotion", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
+        json={"reason": "promotion", "lines": [{"product_id": variety_id, "quantity": "1"}]},
     )
 
     _seed_bigger_history(other_client)
@@ -347,7 +347,7 @@ def test_the_clock_crossing_sunday_midnight_argentina_time_changes_the_current_w
     variety_id = _variety_with_price(client, "Flor", 1_000)
     client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "10"},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": "10"},
     )
 
     clock.set(datetime(2026, 10, 5, 2, 30, tzinfo=UTC))  # Sunday 23:30 in Argentina
@@ -365,7 +365,7 @@ def test_a_seeded_history_s_figures_match_a_direct_computation(client: TestClien
     client.post(
         "/stock/entries",
         json={
-            "variety_id": variety_id,
+            "product_id": variety_id,
             "origin": "opening_stock",
             "quantity": "20",
             "total_cost": 2_000,

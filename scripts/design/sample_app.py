@@ -182,7 +182,7 @@ def seed(api: Api, today: date) -> Sample:
             "/stock/entries",
             {
                 "date": when,
-                "variety_id": variety_id,
+                "product_id": variety_id,
                 "origin": origin,
                 "quantity": quantity,
                 "total_cost": cost,
@@ -199,7 +199,7 @@ def seed(api: Api, today: date) -> Sample:
     # $ 10.000 from the same $ 5.000/g lots above — Inicio's Faltante de stock row
     # and Ganancia now carry this, and Stock shows the Ajuste entry.
     entry(ago(0), gold, "adjustment", "-2", None)
-    api.call("PUT", f"/stock/varieties/{cookies}/threshold", {"quantity": "20"})
+    api.call("PUT", f"/stock/products/{cookies}/threshold", {"quantity": "20"})
 
     def customer(name: str, phone: str, vip: bool = False) -> int:
         made: int = api.call("POST", "/customers", {"name": name, "phone": phone, "vip": vip})["id"]
@@ -267,7 +267,7 @@ def seed(api: Api, today: date) -> Sample:
                 "date": when,
                 "reason": reason,
                 "note": note,
-                "lines": [{"variety_id": v, "quantity": quantity} for v, quantity in lines],
+                "lines": [{"product_id": v, "quantity": quantity} for v, quantity in lines],
             },
         )["id"]
         return made
@@ -334,7 +334,7 @@ def seed(api: Api, today: date) -> Sample:
         f"/catalog/varieties/{archived}",
         {"shown": False, "emoji": "🫐", "indica_share": 40, "aroma": "Frutos rojos"},
     )
-    api.call("PUT", f"/stock/varieties/{archived}/threshold", {"quantity": "15"})
+    api.call("PUT", f"/stock/products/{archived}/threshold", {"quantity": "15"})
     entry(ago(40), archived, "opening_stock", "25", None)
     api.call("POST", f"/api/products/{archived}/archive")
 
@@ -385,7 +385,7 @@ def stretch(api: Api, today: date) -> None:
         "/stock/entries",
         {
             "date": when,
-            "variety_id": variety,
+            "product_id": variety,
             "origin": "purchase",
             "quantity": "1",
             "total_cost": 1,
@@ -433,7 +433,7 @@ def stretch(api: Api, today: date) -> None:
             "/stock/entries",
             {
                 "date": when,
-                "variety_id": spare,
+                "product_id": spare,
                 "origin": "purchase",
                 "quantity": "1",
                 "total_cost": purchase,
@@ -706,7 +706,7 @@ def onboarding_frame_account(env: dict[str, str], base: str, today: date, name: 
             "/stock/entries",
             {
                 "date": today.isoformat(),
-                "variety_id": variety["id"],
+                "product_id": variety["id"],
                 "origin": "opening_stock",
                 "quantity": "25",
                 "total_cost": None,

@@ -45,7 +45,7 @@ def _publish_then_change_the_text(client: TestClient, clock: MovableClock) -> No
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     clock.set(clock() + timedelta(days=1))
 
@@ -111,7 +111,7 @@ def test_one_businesss_non_telegram_failure_never_stops_the_others_syncing(
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": a_variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": a_variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     _publish(client)
 
@@ -122,7 +122,7 @@ def test_one_businesss_non_telegram_failure_never_stops_the_others_syncing(
     )
     other_client.post(
         "/stock/entries",
-        json={"variety_id": b_variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": b_variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     _publish(other_client)
 
