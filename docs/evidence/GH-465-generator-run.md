@@ -12,3 +12,7 @@ by other work, so the generator's own share is lower.
 
 The second copy had no `.venv`, so it used symlinks to the working checkout's `web/node_modules` and `.venv`.
 `lint` (ruff) and `types` (mypy strict, 658 files) pass on this tree.
+
+Review of this record (Tech Lead, integration pass 2): approved on `9f235eb3`; the declared checks
+(`tests-fast`, `lint`, `types`, `web-types`, `web-lint`, `web-tests`, `web-build`) passed on that head.
+The generator prints no size report on success; the per-block sizes are in the commit message of `0d0b41dc`.
