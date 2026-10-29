@@ -13,7 +13,7 @@
  * Plan (invariants): only `components/useLeaveGuard.ts` names `useBlocker`, so every form
  * or sheet asks its leave question through the one guard.
  *
- * ADR-0064: only `shell/ScrollSync.tsx`, `shell/scrollPlaces.ts`, `shell/scrollFollow.ts` and
+ * ADR-0065: only `shell/ScrollSync.tsx`, `shell/scrollPlaces.ts`, `shell/scrollFollow.ts` and
  * `components/useReturnToPlace.ts` move the document's scroll or set `history.scrollRestoration`,
  * so the scroll on a change of screen is decided in one place. In-page scrolling of an element
  * (`element.scrollIntoView`) is not the document's and stays allowed.
@@ -38,7 +38,7 @@ interface Rule {
   allow?: (path: string) => boolean
 }
 
-/** The files ADR-0064 lets move the document's scroll. */
+/** The files ADR-0065 lets move the document's scroll. */
 const SCROLL_OWNERS: readonly string[] = [
   'src/shell/ScrollSync.tsx',
   'src/shell/scrollPlaces.ts',

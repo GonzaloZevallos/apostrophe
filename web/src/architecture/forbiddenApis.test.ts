@@ -135,7 +135,7 @@ describe('findForbiddenUsages', () => {
     expect(violations).toEqual([])
   })
 
-  describe('the document\'s scroll (ADR-0064)', () => {
+  describe('the document\'s scroll (ADR-0065)', () => {
     const banned: Array<[string, string]> = [
       ['window.scrollTo', "window.scrollTo({ top: 0, left: 0, behavior: 'instant' })"],
       ['window.scrollBy', 'window.scrollBy(0, 40)'],

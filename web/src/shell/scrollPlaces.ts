@@ -1,6 +1,6 @@
 /**
  * Where each screen of the open tab was scrolled when the seller left it (navigation.md,
- * "Scroll on a change of screen", ADR-0064). The offsets are numbers in this module's memory,
+ * "Scroll on a change of screen", ADR-0065). The offsets are numbers in this module's memory,
  * keyed by the history entry's `location.key`: never in `localStorage`, `sessionStorage`,
  * history state or a URL, and they hold no personal data (§9). A reload empties them.
  *
