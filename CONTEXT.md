@@ -1,169 +1,169 @@
 # Apostrophe
 
-The back office of small businesses that sell flower by the gram: what each sells and at what price, what comes in and goes out of stock, who owes what, what it spends, and whether it makes money. One installation keeps several businesses, and they never mix. Replaces the spreadsheet `Control_de_ventas_y_gastos`.
+El back office de los negocios chicos que venden flor por gramo: qué vende cada uno y a qué precio, qué entra y qué sale del Stock, quién debe qué, en qué gasta y si gana plata. Una instalación guarda varios Businesses, y nunca se mezclan. Reemplaza la planilla `Control_de_ventas_y_gastos`.
 
-Each term carries `_In the app_`: the English word a user sees on screen (the app is in English, `docs/product/product-language.md`); where the glossary term would read as code, the screen word is a plainer English one. Code, tests and docs use the glossary term.
+Cada término lleva `_In the app_`: la palabra en inglés que una persona ve en pantalla (la app está en inglés, `docs/product/product-language.md`); donde el término del glosario se leería como código, la palabra de pantalla es una más simple en inglés. El código, los tests y los docs usan el término del glosario. Las definiciones están escritas en español; los términos, `_In the app_` y `_Avoid_` siguen en inglés.
 
-## Businesses and users
+## Businesses y Users
 
 **Business**:
-One seller's operation and everything recorded for it: varieties, prices, customers, sales, stock, expenses and catalog. Nothing recorded for one business is ever visible from another.
+La operación de un vendedor y todo lo que se registra para ella: Varieties, precios, Customers, Sales, Stock, Expenses y Catalog. Nada de lo registrado para un Business se ve nunca desde otro.
 _In the app_: Business
 _Avoid_: tenant, account, store, shop, organization
 
 **User**:
-A person who logs in to the app and works on exactly one business.
+Una persona que inicia sesión en la app y trabaja en exactamente un Business.
 _In the app_: User
 _Avoid_: operator, admin, member, seller, customer (customers never log in)
 
 **Invitation**:
-A link that lets one person in, once, within seven days: either to open a new business of their own, or to join the business that issued it.
+Un link que deja entrar a una persona, una sola vez, en un plazo de siete días: o bien para abrir un Business propio nuevo, o bien para sumarse al Business que lo emitió.
 _In the app_: Invitation
 _Avoid_: signup link, referral, code
 
-## Catalog and prices
+## Catalog y precios
 
 **Variety**:
-A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Varieties tab. A variety with no history can be deleted; one with history can be archived and restored. _In the app_: Variety; the tab is Varieties.
+Una cepa que un Business vende por gramo, identificada por su nombre dentro de ese Business. Su Stock, sus Stock entries, sus precios, su aviso de Stock bajo y sus Catalog attributes están todos en su propia página, en la pestaña Varieties. Una Variety sin historial se puede eliminar; una con historial se puede archivar y restaurar. _In the app_: Variety; la pestaña es Varieties.
 _Avoid_: product, strain, item, SKU
 _In the app_: Variety
 
 **Price entry**:
-A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. Planned in GH-318 (not yet in the code): what changes beside this entry is told in the closing block below. _In the app_: Price (price history).
+El List price de una Variety, y opcionalmente un Bulk price con su Bulk minimum, y opcionalmente un VIP price, que rige desde una fecha en adelante. Nunca se edita una vez registrada: una Price entry posterior la reemplaza desde su propia fecha. Una Price entry equivocada se elimina, nunca se reescribe; una Sale no se ve afectada porque cada Sale line registra el precio al que se vendió. Una regla desactivada al momento de registrar no guarda nada para esa regla. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre de abajo. _In the app_: Price (price history).
 _Avoid_: price change, price update, tariff
 _In the app_: Price (price history)
 
 **Current price**:
-For a variety on a given date, the price entry with the latest effective date on or before that date. A variety with no such entry has no price that day.
+Para una Variety en una fecha dada, la Price entry con la fecha de vigencia más reciente en esa fecha o antes. Una Variety sin una Price entry así no tiene precio ese día.
 _In the app_: Current price
 _Avoid_: today's price, active price
 
 **List price**:
-The price per gram of a variety when no other rule applies.
+El precio por gramo de una Variety cuando no se aplica ninguna otra regla.
 _In the app_: Price per gram
 _Avoid_: base price, regular price
 
 **Bulk price**:
-A lower price per gram that applies from the bulk minimum upwards. Optional: a price entry has both bulk price and bulk minimum, or neither. Only in a business with bulk pricing (Bulk price) switched on. _In the app_: Bulk price.
+Un precio por gramo más bajo que se aplica desde el Bulk minimum en adelante. Opcional: una Price entry tiene tanto Bulk price como Bulk minimum, o ninguno de los dos. Solo en un Business con la opción Bulk price activada. _In the app_: Bulk price.
 _Avoid_: discount, wholesale price
 _In the app_: Bulk price
 
 **Bulk minimum**:
-The grams from which the bulk price applies.
+Los gramos desde los cuales se aplica el Bulk price.
 _In the app_: Minimum in grams
 _Avoid_: threshold, minimum order
 
-## Customers and money owed
+## Customers y lo que se debe
 
 **Customer**:
-A person a business sells to, identified within that business by their own record. The name is how a user recognises them; the phone number, when there is one, is optional contact data and never required to register or keep selling to someone. The same person buying from two businesses is a different customer in each.
+Una persona a quien un Business le vende, identificada dentro de ese Business por su propio registro. El nombre es la forma en que un User la reconoce; el Phone number, cuando hay uno, es un dato de contacto opcional y nunca se exige para registrar a alguien ni para seguir vendiéndole. La misma persona que le compra a dos Businesses es un Customer distinto en cada uno.
 _Avoid_: client, buyer, contact, user
 _In the app_: Customer
 
 **Phone number**:
-Optional contact data for a customer, in international form: an Argentine number always as a mobile (+54 9 and 10 digits with area code), a foreign one as + and its country code and digits. A blank value means none. Two customers of a business never share one when both have one; any number of customers may have none.
+Dato de contacto opcional de un Customer, en formato internacional: un número argentino siempre como celular (+54 9 y 10 dígitos con código de área), uno extranjero como + y su código de país y dígitos. Un valor en blanco significa que no hay ninguno. Dos Customers de un Business nunca comparten uno cuando ambos tienen uno; cualquier cantidad de Customers puede no tener ninguno.
 _Avoid_: contact, handle, username, identifier
 _In the app_: Phone
 
 **VIP customer**:
-A customer who pays a variety's VIP price when it has one and it is lower than what any other rule gives. Only in a business with VIP customers switched on; while it is off, the mark stays stored but neither shows nor applies. _In the app_: VIP customer.
+Un Customer que paga el VIP price de una Variety cuando lo tiene y es menor que lo que da cualquier otra regla. Solo en un Business con la opción VIP customers activada; mientras está desactivada, la marca sigue guardada pero ni se muestra ni se aplica. _In the app_: VIP customer.
 _Avoid_: friend, Amigo, preferred customer
 _In the app_: VIP customer
 
 **Sale**:
-Everything a customer takes in one go: a date, at most one customer, the shipping charged, an optional note, and one or more sale lines. A sale counts on its own date, paid or not. Its customer may be left out only when nothing stays owed.
+Todo lo que un Customer se lleva de una vez: una fecha, como máximo un Customer, el Shipping charged, una Note opcional y una o más Sale lines. Una Sale cuenta en su propia fecha, esté paga o no. Su Customer puede omitirse solo cuando no queda nada adeudado.
 _In the app_: Sale
 _Avoid_: order, transaction, purchase (that is flower coming in)
 
 **Sale without a customer**:
-A sale paid in full on the spot to someone not registered as a customer, often a buyer who may never come back. It counts in every total and in no customer's history. A customer can be assigned to it later, once; it never moves from one customer to another.
+Una Sale pagada por completo en el acto a alguien que no está registrado como Customer, muchas veces una persona que quizá nunca vuelva a comprar. Cuenta en todos los totales y en el historial de ningún Customer. Se le puede asignar un Customer más adelante, una sola vez; nunca pasa de un Customer a otro.
 _In the app_: No customer
 _Avoid_: anonymous sale, walk-in, guest, consumidor final
 
 **Sale line**:
-One variety and its grams within a sale, with the price per gram it was sold at. The bulk minimum is measured per line, never across the sale.
+Una Variety y sus gramos dentro de una Sale, con el precio por gramo al que se vendió. El Bulk minimum se mide por Sale line, nunca en el conjunto de la Sale.
 _In the app_: Line
 _Avoid_: item, row, product
 
 **Gift**:
-Grams handed over for free inside a sale: charged $0, still taken from stock. Grams shared to promote the business are a promotion, never a gift. _In the app_: Gift.
+Gramos entregados gratis dentro de una Sale: se cobra $0 y igual se descuentan del Stock. Los gramos que se reparten para promocionar el Business son una Promotion, nunca un Gift. _In the app_: Gift.
 _Avoid_: sample, freebie
 _In the app_: Gift
 
 **Special price**:
-A whole-peso total above $0, typed by hand for one sale line, that replaces the computed one. A free line is a gift, never a $0 special price.
+Un total en pesos enteros mayor que $0, tipeado a mano para una Sale line, que reemplaza al calculado. Una Sale line gratis es un Gift, nunca un Special price de $0.
 _In the app_: Special price
 _Avoid_: override, custom price, discount
 
 **Pricing rule**:
-Which rule priced a sale line: list, bulk, VIP, gift or special price. Exactly one per line, stored with its price when the sale is recorded and never recomputed. VIP means the VIP price was charged, including when it equalled the bulk price. _In the app_: list, bulk, VIP, gift, special.
+Qué regla fijó el precio de una Sale line: list, bulk, VIP, gift o Special price. Exactamente una por Sale line, guardada con su precio cuando se registra la Sale y nunca se vuelve a calcular. VIP significa que se cobró el VIP price, incluso cuando era igual al Bulk price. _In the app_: list, bulk, VIP, gift, special.
 _Avoid_: type, price type, Amigo
 _In the app_: list, bulk, VIP, gift, special
 
 **Shipping charged**:
-What the customer pays for delivery, added on top of what they bought.
+Lo que el Customer paga por el envío, sumado a lo que compró.
 _In the app_: Shipping charged
 _Avoid_: delivery fee, shipping cost (that is an expense)
 
 **Note**:
-Free text on a sale to remember what the rest does not say, such as who bought it when there is no customer.
+Texto libre en una Sale para recordar lo que el resto no dice, como quién compró cuando no hay Customer.
 _In the app_: Note
 _Avoid_: comment, description, memo
 
 **Payment**:
-Money a customer hands over on a date, in cash or by transfer, with no note. Either an on-the-spot payment recorded with its sale, or a later payment recorded through Record payment, opened by "Collect" on a debtor row of Customers or Home or from the customer's card. Its date, amount and method never change; it is deleted and recorded again, never edited. _In the app_: Payment.
+El dinero que un Customer entrega en una fecha, en efectivo o por transferencia, sin Note. Puede ser un On-the-spot payment registrado con su Sale, o un Payment posterior registrado mediante Record payment, que se abre con "Collect" en una fila de deudor de Customers o Home o desde la ficha del Customer. Su fecha, monto y método nunca cambian; se elimina y se vuelve a registrar, nunca se edita. _In the app_: Payment.
 _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
 
 **Balance**:
-What a customer owes: what they bought and did not pay, minus their payments, worked out live. A later payment always settles the oldest debt first. Below zero it is a credit. _In the app_: Owes you.
+Lo que debe un Customer: lo que compró y no pagó, menos sus Payments; se calcula en el momento. Un Payment posterior siempre salda primero la deuda más antigua. Menor que cero es un Credit. _In the app_: Owes you.
 _Avoid_: debt account, tab, cuenta corriente
 _In the app_: Account / Owes
 
 **Owing since**:
-The date of a customer's oldest sale that is not fully paid.
+La fecha de la Sale más antigua de un Customer que no está pagada por completo.
 _In the app_: Since
 _Avoid_: overdue date, due date
 
 ## Stock
 
 **Stock entry**:
-Grams of a variety coming in on a date, with one origin: purchase, harvest, opening stock or adjustment. A purchase carries its total cost; an adjustment may be negative. Unlike a price entry, any stock entry may be edited or deleted at any time, whatever it already fed: its date, grams, cost or origin (ADR-0009).
+Gramos de una Variety que entran en una fecha, con un único origen: Purchase, Harvest, Opening stock o Adjustment. Una Purchase lleva su costo total; un Adjustment puede ser negativo. A diferencia de una Price entry, cualquier Stock entry se puede editar o eliminar en cualquier momento, sin importar lo que ya haya alimentado: su fecha, gramos, costo u origen (ADR-0009).
 _In the app_: Entry
 _Avoid_: restock, delivery, intake
 
 **Purchase**:
-A stock entry the business paid for. Its cost is money out on its date.
+Una Stock entry que el Business pagó. Su costo es dinero que sale en su fecha.
 _In the app_: Purchase
 _Avoid_: order, buy
 
 **Lot**:
-The grams of one stock entry together with their cost per gram. Grams sold, gifted or withdrawn come out of the oldest lot of their variety first, oldest by date; a stock entry or withdrawal recorded late or corrected takes its place by date, and the lots after it are worked out again (ADR-0009). _In the app_: Lot.
+Los gramos de una Stock entry junto con su costo por gramo. Los gramos vendidos, regalados o retirados salen primero del Lot más antiguo de su Variety, el más antiguo por fecha; una Stock entry o un Stock withdrawal registrados tarde o corregidos ocupan su lugar por fecha, y los Lots posteriores se vuelven a calcular (ADR-0009). _In the app_: Lot.
 _Avoid_: batch
 _In the app_: Lot
 
 **Stock**:
-The grams of a variety on hand: everything that came in minus everything sold, gifted or withdrawn. It can go negative, and the figure still shows, never hidden. _In the app_: Stock, shown on Varieties and a variety's page.
+Los gramos en existencia de una Variety: todo lo que entró menos todo lo que se vendió, regaló o retiró. Puede quedar negativo, y la cifra igual se muestra, nunca se oculta. _In the app_: Stock, que se muestra en Varieties y en la página de una Variety.
 _Avoid_: inventory, balance
 _In the app_: Stock
 
 **Pending cost**:
-What grams sold, gifted or withdrawn beyond everything recorded as coming in cost: not yet known, and never shown as $0. A later stock entry of that variety, wherever its date falls in the lot order, settles it (ADR-0009). _In the app_: Pending cost.
+Lo que cuestan los gramos vendidos, regalados o retirados más allá de todo lo registrado como ingresado: todavía no se conoce, y nunca se muestra como $0. Una Stock entry posterior de esa Variety, caiga donde caiga su fecha en el Lot order, lo salda (ADR-0009). _In the app_: Pending cost.
 _Avoid_: unknown cost, zero cost
 _In the app_: Pending cost
 
 **Draw**:
-Grams going out of a variety, taking from its lots oldest first: a sale line (gifts included), a negative adjustment or a stock withdrawal line. It has a costed part and, beyond every lot, pending grams. In the app it has no word of its own.
+Gramos que salen de una Variety, tomándolos de sus Lots primero el más antiguo: una Sale line (los Gifts incluidos), un Adjustment negativo o una línea de un Stock withdrawal. Tiene una parte con costo y, más allá de todo Lot, gramos pendientes. En la app no tiene palabra propia.
 _Avoid_: outflow, consumption, movement, out
 _In the app_: no word of its own; on screen it is the line's "Cost of goods sold".
 
 **Lot order**:
-The one order a variety's lots and draws are taken in: by date, then by recording order.
+El orden único en que se toman los Lots y los Draws de una Variety: por fecha, y después por orden de registro.
 _In the app_: no word of its own.
 _Avoid_: chain, chain position, FIFO order
 
 **Low-stock threshold**:
-Optional grams under which a variety's stock counts as low.
+Gramos opcionales por debajo de los cuales el Stock de una Variety cuenta como bajo.
 _In the app_: Warn below
 _Avoid_: reorder point, alert level
 
