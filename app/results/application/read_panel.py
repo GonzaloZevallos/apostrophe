@@ -27,7 +27,7 @@ from app.results.domain.figures import RowCost
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 
 @dataclass(frozen=True)
@@ -46,8 +46,8 @@ class PeriodFigures:
     sales: int
     sales_count: int
     average_sale: int | None
-    grams_sold: Grams
-    grams_gifted: Grams
+    quantity_sold: Quantity
+    quantity_gifted: Quantity
     cost_of_goods: int
     pending_cost: bool
     shortfall: CostLineFigures | None
@@ -81,7 +81,7 @@ def _cost_line(figure: RowCost | None) -> CostLineFigures | None:
     return (
         None
         if figure is None
-        else CostLineFigures(amount=figure.amount, pending=figure.pending_grams.hundredths > 0)
+        else CostLineFigures(amount=figure.amount, pending=figure.pending_quantity.hundredths > 0)
     )
 
 
@@ -112,17 +112,17 @@ def read_panel(
             sales=totals.sales,
             sales_count=totals.sales_count,
             average_sale=average_sale(totals.sales, totals.sales_count),
-            grams_sold=totals.grams_sold,
-            grams_gifted=totals.grams_gifted,
+            quantity_sold=totals.quantity_sold,
+            quantity_gifted=totals.quantity_gifted,
             cost_of_goods=totals.cost_of_goods.costed,
-            pending_cost=totals.cost_of_goods.pending_grams.hundredths > 0,
+            pending_cost=totals.cost_of_goods.pending_quantity.hundredths > 0,
             shortfall=_cost_line(totals.shortfall),
             promotion=_cost_line(totals.promotion),
             own_use=_cost_line(totals.own_use),
             expenses=totals.expenses,
             purchases=totals.purchases,
             profit=totals.profit.amount,
-            profit_pending=totals.profit.pending_grams.hundredths > 0,
+            profit_pending=totals.profit.pending_quantity.hundredths > 0,
             cash=totals.cash,
         )
 

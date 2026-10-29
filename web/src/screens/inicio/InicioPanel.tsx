@@ -32,7 +32,9 @@ import { salesOwingCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { detailFor, sideNoteFor } from '../../stock/detail'
-import { NOBODY_OWES, INICIO_TEXT } from '../../copy/inicio'
+import { INICIO_TEXT } from '../../copy/inicio'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import PeriodPanel from './PeriodFigures'
 import { COMMON_TEXT } from '../../copy/common'
 
@@ -118,6 +120,7 @@ function StockRow({ variety, today }: { variety: PanelVarietyOut; today: string 
 }
 
 function TeDebenBlock({ debts }: { debts: PanelDebts }) {
+  const { t } = useTranslation()
   // `oldest` is a date-or-null, never an amount (review finding: deciding this from
   // `total_owed === 0` compared an API amount inside a screen, which the plan
   // invariant forbids) — the contract sets it to `null` exactly when nobody owes.
@@ -125,7 +128,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
     return (
       <div className="bloque-deben">
         <span className="rotulo">{COMMON_TEXT.owedToYou}</span>
-        <span className="pie" tabIndex={-1} data-place={OWED_PLACE}>{NOBODY_OWES}</span>
+        <span className="pie" tabIndex={-1} data-place={OWED_PLACE}>{t(EMPTY_STATE_KEYS.nobodyOwes)}</span>
       </div>
     )
   }

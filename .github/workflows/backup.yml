@@ -1,11 +1,15 @@
 name: Daily encrypted backup
 
+# This repository is public, and anyone can download a public repository's run
+# artifacts, so the encrypted daily copy is never kept as an artifact. The ciphertext
+# is pushed over SSH to the private repository GonzaloZevallos/apostrophe-backups,
+# one branch per copy, and branches older than 30 days are pruned (the newest copy
+# never is). The deploy key that can write there is the `backup` environment's secret,
+# limited to `master`. No credential here can create, delete or overwrite a Turso
+# database: the Turso token is read-only.
+#
 # Daily, plus a manual trigger for the go-live gate and after any configuration
-# change (deploy/README.md's drill cadence). No credential here can create, delete or
-# overwrite a Turso database — the Turso token is read-only. The daily copy is kept
-# as this workflow's own run artifact, in this private repository: copies are
-# deletable by anyone with write access to the repository, or by any workflow given
-# `actions: write`, and expire after 30 days, the same as the monthly drill cadence.
+# change (deploy/README.md's drill cadence).
 on:
   schedule:
     - cron: "0 7 * * *" # 04:00 in Buenos Aires (UTC-3), outside business hours
@@ -14,11 +18,19 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
 jobs:
   backup:
+    if: github.repository == 'GonzaloZevallos/apostrophe'
+    environment: backup
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -37,11 +49,31 @@ jobs:
         run: age -R deploy/age-recipient.txt -o "$BACKUP_FILE" backup.db
       - name: Remove the plaintext copy
         run: rm backup.db
-      - name: Upload the ciphertext as this run's artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ env.BACKUP_FILE }}
-          path: ${{ env.BACKUP_FILE }}
-          if-no-files-found: error
-          retention-days: 30
-          compression-level: 0
+      - name: Refuse a copy over 90 MB (GitHub's 100 MB file limit)
+        run: test "$(stat -c %s "$BACKUP_FILE")" -le 94371840
+      - name: Write the deploy key
+        env:
+          BACKUP_DEPLOY_KEY: ${{ secrets.BACKUP_DEPLOY_KEY }}
+        run: |
+          install -m 600 /dev/null "$RUNNER_TEMP/backup_key"
+          printenv BACKUP_DEPLOY_KEY >> "$RUNNER_TEMP/backup_key"
+      - name: Push the copy to the private repository, on its own branch
+        shell: bash
+        env:
+          GIT_SSH_COMMAND: ssh -i ${{ runner.temp }}/backup_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=${{ github.workspace }}/deploy/github_known_hosts
+        run: |
+          git init -b main "$RUNNER_TEMP/copy"
+          mv "$BACKUP_FILE" "$RUNNER_TEMP/copy/"
+          git -C "$RUNNER_TEMP/copy" add -- "$BACKUP_FILE"
+          git -C "$RUNNER_TEMP/copy" -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -q -m "$BACKUP_FILE"
+          git -C "$RUNNER_TEMP/copy" push git@github.com:GonzaloZevallos/apostrophe-backups.git "HEAD:refs/heads/$BACKUP_FILE"
+      - name: Prune copies older than 30 days, never the newest
+        shell: bash
+        env:
+          GIT_SSH_COMMAND: ssh -i ${{ runner.temp }}/backup_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=${{ github.workspace }}/deploy/github_known_hosts
+        run: |
+          expired="$(git ls-remote --heads git@github.com:GonzaloZevallos/apostrophe-backups.git | uv run --no-project python scripts/newest_backup.py expired --now "$(date -u +%Y%m%dT%H%M%SZ)")"
+          if [ -n "$expired" ]; then git push --atomic git@github.com:GonzaloZevallos/apostrophe-backups.git --delete $expired; fi
+      - name: Remove the deploy key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/backup_key"

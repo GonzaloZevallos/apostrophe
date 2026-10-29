@@ -9,6 +9,7 @@ import { useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { NAME_ARCHIVED_MESSAGE, type RefusalCode } from '../../api/refusals'
 import { NAME_INVALID_MESSAGE, NAME_TAKEN_MESSAGE } from '../Variedades'
+import type { Refusal } from '../../i18n/refusalKeys'
 
 export type VarietyForm = 'rename' | 'threshold' | 'catalog'
 
@@ -28,7 +29,7 @@ export function useOpenForm(): (form: VarietyForm) => void {
 }
 
 /** The messages of the refusals of a variety's name on save (`POST /varieties`). */
-export const SAVE_OVERRIDES: Partial<Record<RefusalCode, string>> = {
+export const SAVE_OVERRIDES: Partial<Record<RefusalCode, Refusal | string>> = {
   'variety.name_taken': NAME_TAKEN_MESSAGE,
   'variety.name_archived': NAME_ARCHIVED_MESSAGE,
   'variety.name_invalid': NAME_INVALID_MESSAGE,

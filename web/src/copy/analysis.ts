@@ -3,12 +3,12 @@
  * `copy/copyLimits.test.ts`. `Analisis.tsx` renders these same bindings.
  */
 
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import type * as Self from './analysis.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const NO_HISTORY_LINE = 'There is nothing to analyze yet.'
-export const EMPTY_MONTH_LINE = 'You did not sell or give away anything this month.'
 export const VARIETY_TOTAL_NOTE = 'The variety table adds up the sales of the month without shipping.'
 export const SINCE_FIRST_RECORD_LABEL =
   'Moved since your first record, not the money you have in cash'
@@ -23,8 +23,6 @@ const PENDING_ONLY = `${SAMPLES.grams} without cost`
 const AMOUNT_AND_PENDING = `${SAMPLES.amount} and ${SAMPLES.grams} without cost`
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyLine', text: NO_HISTORY_LINE },
-  { kind: 'emptyLine', text: EMPTY_MONTH_LINE },
   { kind: 'help', text: VARIETY_TOTAL_NOTE },
   { kind: 'help', text: SINCE_FIRST_RECORD_LABEL },
   { kind: 'help', text: PURCHASES_NOTE },
@@ -40,6 +38,16 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   ),
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+
+const { grams: G } = FIXTURE
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'ANALYSIS_TEXT.porcentaje': [['35']],
+  'ANALYSIS_TEXT.pendingSuffix': [[G]],
+  'ANALYSIS_TEXT.noCostAlone': [[G]],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const ANALYSIS_TEXT = {

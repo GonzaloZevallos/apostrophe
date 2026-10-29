@@ -5,15 +5,16 @@ another business is, from here, a record that does not exist.
 
 from __future__ import annotations
 
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
+from types import MappingProxyType
 from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale, SaleLine
-from app.shared.grams import Grams
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 
 
 class PriceBook(Protocol):
@@ -115,6 +116,19 @@ class SaleViews(Protocol):
         ...
 
 
+@dataclass(frozen=True)
+class CustomerSettlement:
+    """One customer's settlement as sales reads it: the signed `balance` and, per sale
+    id, the amount still owed. `still_owed` holds exactly the sales `settle()` reports
+    (every sale not paid on the spot, a paid one at 0) and is read-only."""
+
+    balance: int
+    still_owed: Mapping[int, int]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "still_owed", MappingProxyType(dict(self.still_owed)))
+
+
 class OwingSales(Protocol):
     """Which of a business's sales settlement still shows as owed (CONTEXT.md: Sales
     still owing), from the customers' own payments. Built for one business.
@@ -132,15 +146,31 @@ class OwingSales(Protocol):
         never in it: settlement never sees one."""
         ...
 
+    def settlement_of(self, customer_id: int) -> CustomerSettlement:
+        """The customer's balance and the amount still owed per sale for every sale
+        `settle()` reports: every sale not paid on the spot, a paid one at 0; sales
+        paid on the spot are absent. A customer with no ledger answers a balance of 0
+        and an empty mapping."""
+        ...
+
+
+class BusinessNames(Protocol):
+    """The current name of the business, read fresh on every call. Built for one
+    business."""
+
+    def current(self) -> str | None:
+        """`None` when the business has no row."""
+        ...
+
 
 @dataclass(frozen=True)
 class LineCost:
     """One sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none
     of the line's grams is costed yet, never a $0 standing in for "not yet known".
-    `pending_grams` is the part of the line with no lot behind it."""
+    `pending_quantity` is the part of the line with no lot behind it."""
 
     costed: int | None
-    pending_grams: Grams
+    pending_quantity: Quantity
 
 
 class LineCosts(Protocol):

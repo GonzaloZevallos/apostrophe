@@ -3,15 +3,13 @@
  * `copy/copyLimits.test.ts`. `Inicio.tsx` renders these same bindings.
  */
 
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import type * as Self from './inicio.ts'
 import type { LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
-import { NOBODY_OWES } from './customers.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const EMPTY_TITLE = 'Start with your varieties'
-export const EMPTY_DETAIL = 'Add your first variety with its price. Without a price it cannot be sold.'
-export { NOBODY_OWES }
 export const PINNED_CATALOG_OUT_OF_DATE = 'Your Telegram catalog is out of date'
 
 export const CHECKLIST_TITLE = 'To get started'
@@ -28,9 +26,6 @@ export const IMPORT_NOTICE_DISMISS = 'Dismiss notice'
 export const NUEVA_VENTA_MISSING = 'Add a price to a variety so you can sell'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyTitle', text: EMPTY_TITLE },
-  { kind: 'emptyLine', text: EMPTY_DETAIL },
-  { kind: 'emptyTitle', text: NOBODY_OWES },
   { kind: 'notice', text: PINNED_CATALOG_OUT_OF_DATE },
   { kind: 'notice', text: IMPORT_NOTICE },
   { kind: 'help', text: NUEVA_VENTA_MISSING },
@@ -40,6 +35,16 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: STEP_SECOND_USER },
 ]
 export const LONG_REFUSALS: readonly string[] = []
+
+
+const { money: M, date: D, grams: G } = FIXTURE
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'INICIO_TEXT.desde0': [[D]],
+  'INICIO_TEXT.sinceDate': [[D]],
+  'INICIO_TEXT.n0Promedio12': [['12', M, G]],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const INICIO_TEXT = {

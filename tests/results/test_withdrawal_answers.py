@@ -31,12 +31,12 @@ def _variety(client: TestClient, name: str, price: int = 1_000) -> int:
 
 
 def _entry(
-    client: TestClient, variety_id: int, *, grams: str, on: str, total_cost: int | None = None
+    client: TestClient, variety_id: int, *, quantity: str, on: str, total_cost: int | None = None
 ) -> None:
     body: dict[str, Any] = {
         "variety_id": variety_id,
         "origin": "opening_stock",
-        "grams": grams,
+        "grams": quantity,
         "date": on,
     }
     if total_cost is not None:
@@ -45,33 +45,33 @@ def _entry(
     assert response.status_code == 201, response.text
 
 
-def _adjust(client: TestClient, variety_id: int, *, grams: str, on: str) -> None:
+def _adjust(client: TestClient, variety_id: int, *, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "grams": grams, "date": on},
+        json={"variety_id": variety_id, "origin": "adjustment", "grams": quantity, "date": on},
     )
     assert response.status_code == 201, response.text
 
 
-def _sale(client: TestClient, variety_id: int, *, grams: str, on: str) -> None:
+def _sale(client: TestClient, variety_id: int, *, quantity: str, on: str) -> None:
     response = client.post(
         "/sales",
         json={
             "date": on,
             "payment": "cash",
-            "lines": [{"variety_id": variety_id, "grams": grams}],
+            "lines": [{"variety_id": variety_id, "grams": quantity}],
         },
     )
     assert response.status_code == 201, response.text
 
 
-def _withdraw(client: TestClient, variety_id: int, *, reason: str, grams: str, on: str) -> None:
+def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/withdrawals",
         json={
             "reason": reason,
             "date": on,
-            "lines": [{"variety_id": variety_id, "grams": grams}],
+            "lines": [{"variety_id": variety_id, "grams": quantity}],
         },
     )
     assert response.status_code == 201, response.text
@@ -88,15 +88,15 @@ def _seed_the_history(client: TestClient) -> None:
     """
     a = _variety(client, "A")
     b = _variety(client, "B")
-    _entry(client, a, grams="100", total_cost=10_000, on="2026-09-01")
-    _withdraw(client, a, reason="promotion", grams="1", on="2026-09-10")
-    _withdraw(client, a, reason="promotion", grams="4", on="2026-09-29")
-    _adjust(client, a, grams="-2", on="2026-09-30")
-    _withdraw(client, a, reason="own_use", grams="3", on="2026-10-01")
-    _sale(client, a, grams="5", on=HOY)
-    _withdraw(client, b, reason="promotion", grams="2", on=HOY)
-    _adjust(client, b, grams="-1", on=HOY)
-    _sale(client, b, grams="1", on=HOY)
+    _entry(client, a, quantity="100", total_cost=10_000, on="2026-09-01")
+    _withdraw(client, a, reason="promotion", quantity="1", on="2026-09-10")
+    _withdraw(client, a, reason="promotion", quantity="4", on="2026-09-29")
+    _adjust(client, a, quantity="-2", on="2026-09-30")
+    _withdraw(client, a, reason="own_use", quantity="3", on="2026-10-01")
+    _sale(client, a, quantity="5", on=HOY)
+    _withdraw(client, b, reason="promotion", quantity="2", on=HOY)
+    _adjust(client, b, quantity="-1", on=HOY)
+    _sale(client, b, quantity="1", on=HOY)
 
 
 def _same_line(panel_line: dict[str, Any] | None, analysis_line: dict[str, Any] | None) -> bool:
@@ -196,9 +196,9 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
     client: TestClient,
 ) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="promotion", grams="2", on="2026-10-01")
-    _entry(client, a, grams="10", total_cost=1_000, on=HOY)
-    _sale(client, a, grams="1", on=HOY)
+    _withdraw(client, a, reason="promotion", quantity="2", on="2026-10-01")
+    _entry(client, a, quantity="10", total_cost=1_000, on=HOY)
+    _sale(client, a, quantity="1", on=HOY)
 
     panel = client.get("/panel").json()["periods"]
     analysis = client.get("/analysis").json()
@@ -230,7 +230,7 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
 
 def test_a_business_whose_only_record_is_a_withdrawal_has_a_history(client: TestClient) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="own_use", grams="3", on=HOY)
+    _withdraw(client, a, reason="own_use", quantity="3", on=HOY)
 
     analysis = client.get("/analysis").json()
     panel = client.get("/panel").json()["periods"]
@@ -263,14 +263,14 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
     client: TestClient,
 ) -> None:
     a = _variety(client, "A")
-    _entry(client, a, grams="50", total_cost=5_000, on="2026-09-01")
-    _sale(client, a, grams="5", on=HOY)
-    _adjust(client, a, grams="-1", on=HOY)
+    _entry(client, a, quantity="50", total_cost=5_000, on="2026-09-01")
+    _sale(client, a, quantity="5", on=HOY)
+    _adjust(client, a, quantity="-1", on=HOY)
     before_panel = client.get("/panel").json()["periods"]
     before_analysis = client.get("/analysis").json()
 
-    _withdraw(client, a, reason="promotion", grams="4", on=HOY)
-    _withdraw(client, a, reason="own_use", grams="60", on=HOY)
+    _withdraw(client, a, reason="promotion", quantity="4", on=HOY)
+    _withdraw(client, a, reason="own_use", quantity="60", on=HOY)
 
     after_panel = client.get("/panel").json()["periods"]
     after_analysis = client.get("/analysis").json()
@@ -317,7 +317,7 @@ def test_another_business_s_withdrawals_never_reach_the_answers(
     client: TestClient, other_client: TestClient
 ) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="promotion", grams="2", on=HOY)
+    _withdraw(client, a, reason="promotion", quantity="2", on=HOY)
 
     panel = other_client.get("/panel").json()["periods"]
     analysis = other_client.get("/analysis").json()

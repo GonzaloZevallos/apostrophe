@@ -1,0 +1,395 @@
+{
+  "refusals.ts:REFUSAL_BY_CODE.RequestInvalid": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.business_name_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.current_password_wrong\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.email_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.email_taken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.invitation_not_usable\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.login_locked\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.password_weak\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.reset_link_gone\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"account.rule_broken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"analysis.month_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"analysis.month_out_of_range\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"analysis.rule_broken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"business.language_not_selectable\"]": {
+    "key": "refusals:languageNotSelectable"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"catalog.aroma_too_long\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"catalog.emoji_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"catalog.footer_too_long\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"catalog.header_too_long\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"catalog.indica_share_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"catalog.variety_not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"customer.name_missing\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"customer.name_too_long\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"customer.not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"customer.phone_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"customer.phone_taken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"customer.required_field_cleared\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"customer.rule_broken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense.amount_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense.date_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense.detail_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense.month_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense.not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense.rule_broken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense_category.in_use\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense_category.name_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense_category.name_taken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"expense_category.not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"grams.invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"onboarding.not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"onboarding.required_steps_unmet\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"onboarding.step_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"payment.above_balance\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"payment.amount_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"payment.customer_not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"payment.future_date\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"payment.method_required\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"payment.not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"payment.on_the_spot\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.bot_cannot_post\"]": {
+    "key": "refusals:pinReasonBotCannotPost"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.no_messages\"]": {
+    "key": "refusals:lookupNoMessages"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.not_ready\"]": {
+    "key": "refusals:pinnedNotReady"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.own_chat_not_found\"]": {
+    "key": "refusals:probarloOwnChatNotFound"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.own_chat_not_started\"]": {
+    "key": "refusals:probarloOwnChatNotStarted"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.own_chat_required\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.several_chats\"]": {
+    "key": "refusals:lookupSeveralChats"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.telegram_unreachable\"]": {
+    "key": "refusals:pinReasonTelegramUnreachable"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.test_failed\"]": {
+    "key": "refusals:probarloTestFailed"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.token_invalid\"]": {
+    "key": "refusals:probarloTokenInvalid"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.token_required\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.too_long\"]": {
+    "key": "refusals:pinReasonTooLong"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"pinned_catalog.updates_unreadable\"]": {
+    "key": "refusals:lookupUpdatesUnreadable"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.customer_already_assigned\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.customer_not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.date_in_future\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.gift_with_special_price\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.grams_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.lines_missing\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.no_price_that_day\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.note_too_long\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.owing_without_customer\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.payment_required\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.price_quote_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.rule_broken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.shipping_negative\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.special_price_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"sale.variety_not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.cost_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.cost_on_negative_adjustment\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.cost_required\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.date_in_future\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.entry_not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.grams_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.note_too_long\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.threshold_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_date_in_future\"]": {
+    "key": "refusals:withdrawalDateInFuture"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_grams_not_positive\"]": {
+    "key": "refusals:withdrawalGramsNotPositive"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_grams_too_precise\"]": {
+    "key": "refusals:withdrawalGramsTooPrecise"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_no_lines\"]": {
+    "key": "refusals:withdrawalNoLines"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_note_too_long\"]": {
+    "key": "refusals:withdrawalNoteTooLong"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_reason_required\"]": {
+    "key": "refusals:withdrawalReasonRequired"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_variety_not_found\"]": {
+    "key": "refusals:withdrawalVarietyNotFound"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.archived\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.duplicate_effective_date\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.has_history\"]": {
+    "key": "refusals:hasHistory"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.name_archived\"]": {
+    "key": "refusals:nameArchived"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.name_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.name_taken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.price_entry_invalid\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.price_entry_not_found\"]": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.rule_broken\"]": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"variety.vip_price_not_below_list\"]": {
+    "key": "refusals:vipPriceNotBelowList"
+  },
+  "refusals.ts:REFUSAL_TEXT.goneDetail": {
+    "key": "refusals:goneDetail"
+  },
+  "refusals.ts:REFUSAL_TEXT.goneNotice": {
+    "key": "refusals:goneNotice"
+  },
+  "refusals.ts:REFUSAL_TEXT.hasHistory": {
+    "key": "refusals:hasHistory"
+  },
+  "refusals.ts:REFUSAL_TEXT.languageNotSelectable": {
+    "key": "refusals:languageNotSelectable"
+  },
+  "refusals.ts:REFUSAL_TEXT.lookupNoMessages": {
+    "key": "refusals:lookupNoMessages"
+  },
+  "refusals.ts:REFUSAL_TEXT.lookupSeveralChats": {
+    "key": "refusals:lookupSeveralChats"
+  },
+  "refusals.ts:REFUSAL_TEXT.lookupUpdatesUnreadable": {
+    "key": "refusals:lookupUpdatesUnreadable"
+  },
+  "refusals.ts:REFUSAL_TEXT.nameArchived": {
+    "key": "refusals:nameArchived"
+  },
+  "refusals.ts:REFUSAL_TEXT.pinReason.bot_cannot_post": {
+    "key": "refusals:pinReasonBotCannotPost"
+  },
+  "refusals.ts:REFUSAL_TEXT.pinReason.message_gone": {
+    "key": "refusals:pinReasonMessageGone"
+  },
+  "refusals.ts:REFUSAL_TEXT.pinReason.missing_publish": {
+    "key": "refusals:pinReasonMissingPublish"
+  },
+  "refusals.ts:REFUSAL_TEXT.pinReason.telegram_unreachable": {
+    "key": "refusals:pinReasonTelegramUnreachable"
+  },
+  "refusals.ts:REFUSAL_TEXT.pinReason.too_long": {
+    "key": "refusals:pinReasonTooLong"
+  },
+  "refusals.ts:REFUSAL_TEXT.pinnedGeneric": {
+    "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_TEXT.pinnedNotReady": {
+    "key": "refusals:pinnedNotReady"
+  },
+  "refusals.ts:REFUSAL_TEXT.probarloOwnChatNotFound": {
+    "key": "refusals:probarloOwnChatNotFound"
+  },
+  "refusals.ts:REFUSAL_TEXT.probarloOwnChatNotStarted": {
+    "key": "refusals:probarloOwnChatNotStarted"
+  },
+  "refusals.ts:REFUSAL_TEXT.probarloTestFailed": {
+    "key": "refusals:probarloTestFailed"
+  },
+  "refusals.ts:REFUSAL_TEXT.probarloTokenInvalid": {
+    "key": "refusals:probarloTokenInvalid"
+  },
+  "refusals.ts:REFUSAL_TEXT.vipPriceNotBelowList": {
+    "key": "refusals:vipPriceNotBelowList"
+  },
+  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_date_in_future\"]": {
+    "key": "refusals:withdrawalDateInFuture"
+  },
+  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_grams_not_positive\"]": {
+    "key": "refusals:withdrawalGramsNotPositive"
+  },
+  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_grams_too_precise\"]": {
+    "key": "refusals:withdrawalGramsTooPrecise"
+  },
+  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_no_lines\"]": {
+    "key": "refusals:withdrawalNoLines"
+  },
+  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_note_too_long\"]": {
+    "key": "refusals:withdrawalNoteTooLong"
+  },
+  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_reason_required\"]": {
+    "key": "refusals:withdrawalReasonRequired"
+  },
+  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_variety_not_found\"]": {
+    "key": "refusals:withdrawalVarietyNotFound"
+  }
+}

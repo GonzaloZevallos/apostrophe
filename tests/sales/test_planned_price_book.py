@@ -7,7 +7,7 @@ answers once written.
 from datetime import date
 
 from app.sales.adapters.price_book import PlannedPriceBook
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
 
 REF = SheetRef(sheet="Ajustes", row=37)
@@ -20,7 +20,7 @@ def _row(
     list_price: int,
     *,
     bulk_price: int | None = None,
-    bulk_minimum: Grams | None = None,
+    bulk_minimum: Quantity | None = None,
     variety: str = "Blue Dream",
 ) -> PriceHistoryRow:
     return PriceHistoryRow(

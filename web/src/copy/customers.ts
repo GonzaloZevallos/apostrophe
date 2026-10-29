@@ -5,17 +5,15 @@
  * (docs/product/icon-and-text-rule.md).
  */
 
+import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import type * as Self from './customers.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { SHELL_TEXT } from './shell.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-/** Clientes' empty list. */
-export const EMPTY_CUSTOMERS = 'You have not added any customers yet.'
 /** Heads everyone A–Z, under "Owed to you" (`Clientes.dc.html`). */
 export const EVERYONE = 'Everyone · A–Z'
-/** "Owed to you" with nobody owing. */
-export const NOBODY_OWES = 'Nobody owes you'
 
 export const LONG_REFUSALS: readonly string[] = []
 
@@ -58,11 +56,21 @@ export const CUSTOMERS_TEXT = {
 /** The ledger's fixed words, registered with the filled placeholder the screen shows
  * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyTitle', text: EMPTY_CUSTOMERS },
-  { kind: 'emptyTitle', text: NOBODY_OWES },
   { kind: 'help', text: CUSTOMERS_TEXT.saleTitle },
   { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },
   { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },
   { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(CUSTOMERS_TEXT.methodTransfer) },
   { kind: 'help', text: CUSTOMERS_TEXT.onAccountOf(SAMPLES.date) },
 ]
+
+
+const { money: M, date: D } = FIXTURE
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'CUSTOMERS_TEXT.deletePaymentOf': [[M, 'cash', D]],
+  'CUSTOMERS_TEXT.paymentTitle': [['cash']],
+  'CUSTOMERS_TEXT.onAccountOf': [[D]],
+  'CUSTOMERS_TEXT.creditAmount': [[M]],
+  'CUSTOMERS_TEXT.balanceAmount': [[M]],
+})

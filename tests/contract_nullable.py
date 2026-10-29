@@ -157,6 +157,11 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "customer": ShapeOf("sale-detail", "customer"),
         "note": "string",
         "lines[].cost.costed": "integer",
+        "bill": ShapeOf("sale-detail", "bill"),
+        "bill.lines[].rule": "string",
+        "bill.lines[].unit_price": "integer",
+        "bill.payment.still_owed": "integer",
+        "bill.balance": "integer",
     },
     "sale-detail-gift": {
         # `sale-detail-gift.json`'s own `customer` is `null`: the sibling fixture
@@ -164,6 +169,11 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "customer": ShapeOf("sale-detail", "customer"),
         "note": "string",
         "lines[].cost.costed": "integer",
+        "bill": ShapeOf("sale-detail", "bill"),
+        "bill.lines[].rule": "string",
+        "bill.lines[].unit_price": "integer",
+        "bill.payment.still_owed": "integer",
+        "bill.balance": "integer",
     },
     "withdrawal": {
         "note": "string",

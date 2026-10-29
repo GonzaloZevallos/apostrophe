@@ -7,20 +7,24 @@
  * rule 2): the rule is never told by color alone.
  */
 
+import { useTranslation } from 'react-i18next'
 import type { PricingRule } from '../sales/pricing'
 import Insignia from './Insignia'
-import { COMMON_TEXT } from '../copy/common'
 import { SALES_TEXT } from '../copy/sales'
 
-const RULE_BADGE: Record<PricingRule, { text: string; tone: 'neutro' | 'acento' }> = {
-  list: { text: SALES_TEXT.ruleList, tone: 'neutro' },
-  bulk: { text: SALES_TEXT.ruleBulk, tone: 'acento' },
-  vip: { text: COMMON_TEXT.vip, tone: 'acento' },
-  gift: { text: SALES_TEXT.ruleGift, tone: 'acento' },
-  special: { text: SALES_TEXT.ruleSpecial, tone: 'acento' },
+type Tone = 'neutro' | 'acento'
+
+/** The word is plain copy of the sales area or a `common:` key resolved in render. */
+const RULE_BADGE: Record<PricingRule, { word: string | { common: 'common:vip' }; tone: Tone }> = {
+  list: { word: SALES_TEXT.ruleList, tone: 'neutro' },
+  bulk: { word: SALES_TEXT.ruleBulk, tone: 'acento' },
+  vip: { word: { common: 'common:vip' }, tone: 'acento' },
+  gift: { word: SALES_TEXT.ruleGift, tone: 'acento' },
+  special: { word: SALES_TEXT.ruleSpecial, tone: 'acento' },
 }
 
 export default function ReglaInsignia({ rule }: { rule: PricingRule }) {
+  const { t } = useTranslation()
   const badge = RULE_BADGE[rule]
-  return <Insignia tono={badge.tone}>{badge.text}</Insignia>
+  return <Insignia tono={badge.tone}>{typeof badge.word === 'string' ? badge.word : t(badge.word.common)}</Insignia>
 }

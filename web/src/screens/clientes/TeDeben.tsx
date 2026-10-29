@@ -13,10 +13,12 @@ import { salesOwingCount } from '../../format/counts'
 import { formatMoney } from '../../format/money'
 import { OWED_PLACE } from '../../components/useReturnToPlace'
 import ClienteFila from './ClienteFila'
-import { NOBODY_OWES } from '../../copy/customers'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { COMMON_TEXT } from '../../copy/common'
 
 export default function TeDeben() {
+  const { t } = useTranslation()
   const { data } = useQuery(debtorsQuery)
 
   // Nothing while it loads or when it fails: Clientes' own list already shows its loading and
@@ -34,7 +36,7 @@ export default function TeDeben() {
 
       {data.debtors.length === 0 ? (
         <span className="encabezado__titulo" data-copy="emptyTitle" tabIndex={-1} data-place={OWED_PLACE}>
-          {NOBODY_OWES}
+          {t(EMPTY_STATE_KEYS.nobodyOwes)}
         </span>
       ) : (
         <div className="ventas__resumen">

@@ -12,7 +12,7 @@ ENGLISH_WORDS = CatalogWords(
     indica=lambda indica, sativa: f"• {indica}% indica / {sativa}% sativa",
     aroma=lambda aroma: f"• Aroma/flavor: {aroma}",
     price_per_gram=lambda price: f"• Price per gram: {price}",
-    bulk=lambda grams, price: f"• From {grams}: {price} each",
+    bulk=lambda quantity, price: f"• From {quantity}: {price} each",
 )
 
 
@@ -33,7 +33,7 @@ def test_words_with_reordered_holes_reorder_the_line_and_keep_the_formatted_valu
         indica=lambda indica, sativa: f"{sativa}% sativa | {indica}% indica",
         aroma=lambda aroma: f"{aroma} <- aroma",
         price_per_gram=lambda price: f"{price} por gramo",
-        bulk=lambda grams, price: f"{price} c/u desde {grams}",
+        bulk=lambda quantity, price: f"{price} c/u desde {quantity}",
     )
     full = entry(
         "A",

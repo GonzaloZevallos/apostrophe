@@ -627,3 +627,63 @@ Success criteria:
 - Editing anything from an archived variety's page or its "See all" lists.
 - A name-clash refusal or error state for Restore.
 - Usage metrics for archived pages.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+The epic lets a business describe what it sells in its own words. Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### The product word
+
+Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md and docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; delivered by the product word part, with the Product rename on the wire for the API path.
+
+- The seller will choose the word for what is sold, singular and plural. The default will be "Product" / "Products". It will be shown as typed and never translated, because it is the seller's own data.
+- Code, tests and docs will say Product, and the API path will become `/api/products`. Columns that reference a variety's id will stay `variety_id` until #75 (ADR-0061). The front paths under `/varieties/*` will not move.
+- It will replace: "**Variety**: a name, trimmed, inner spaces collapsed, up to 60 characters. Renaming keeps its prices. Varieties are listed by name." and the capability's title, "The varieties a business sells and the price history of each".
+
+### Categories, subcategories and attributes
+
+Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the categories part.
+
+- Products will be grouped in categories and subcategories, two levels deep, and every product will belong to exactly one subcategory. The list, the pickers and the filters will group by category and subcategory.
+- A subcategory will be archivable only when it holds no unarchived product; a category only when none of its subcategories is unarchived; the business's last unarchived subcategory never. Restoring a product whose subcategory is archived will be refused until that subcategory is restored.
+- Attributes will be defined per subcategory (name, type, required or not, shown in the catalog or not). An attribute no product has a value for will be deletable; one with any value will only be archivable, and every value will be kept.
+- Moving a product to another subcategory will keep the values of the attributes both subcategories share and tell the seller, before confirming, which values the product loses. The hidden flag will stay on the product, never an attribute.
+- It will replace: "its catalog attributes (`catalog.md`)." in the list of what the page holds, and the fixed attributes of catalog.md's "### Catalog attributes, per variety" (quoted in `catalog.md`'s own Planned section).
+
+### Units and quantities
+
+Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
+
+- Each product will have one unit with a name, a short label and 0 to 2 decimals, used for its stock, price, sale quantity, bulk minimum and low-stock threshold. A business will be able to mix units. The unit will be locked once the product has history.
+- A quantity will be stored as a whole number of hundredths whatever the unit; the unit's decimals will only validate input and decide display (ADR-0056). Quantities of different units will never be added: a figure that totals quantities will show one amount per unit.
+- It will replace: "a list price per gram in whole pesos", "a bulk price per gram with its bulk minimum in grams (up to two decimals)" and "**Low-stock threshold**: optional grams, above zero, up to two decimals".
+
+### Money
+
+Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
+
+- Prices will cross the wire in currency units, parsed as Decimal, and be stored at the business's own scale, 0 or 2. The business will have its own currency symbol and money decimals (0 to 2).
+- It will replace "whole pesos" wherever this file says it, and "Every amount is above zero." keeps holding.
+
+### Customer types
+
+Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; delivered by the customer-type prices part.
+
+- Customer types will replace the single VIP mark: each type will have its own price per product, kept as effective-dated rows. The `vip` mark and `vip_price` columns will stay frozen in place.
+- It will replace: "a VIP price per gram, in whole pesos, lower than the list price. It is independent of the bulk price and minimum (an entry may have either one alone) and is never compared with the bulk price." and the refusal "**A VIP price at or above the list price**".
+- Out of scope: the line "Other VIP rules (a percent off list); price promotions by date." will be split. "price promotions by date" will be reversed by the promotions part (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; see `sales.md`); "Other VIP rules (a percent off list)" will stay out.
+
+### The business day
+
+Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; delivered by the time-zone part.
+
+- Each business will have a time zone, and "today" will be worked out per business. Recorded dates will never be rewritten.
+- It will replace: "Today is the business day in Argentina time."
+
+### Existing businesses
+
+Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the parts that build each configuration, each seeding existing businesses with its own default.
+
+- Each existing business will be migrated, with no stored row rewritten, to one category and one subcategory holding emoji, indica share and aroma as attributes; the "grams" / "g" unit with 2 decimals; "Variety" / "Varieties" as its word; "$" with whole pesos; and VIP as a customer type. The hidden flag will stay on each product. It will be able to add categories and subcategories; nothing else will be forced on it.

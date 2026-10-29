@@ -1,10 +1,13 @@
 # Deploy, from zero (docs/adr/0016, docs/adr/0017)
 
 Render hosts the app, Turso hosts the database, UptimeRobot watches `/health`, and a
-GitHub Actions workflow takes a daily encrypted copy, kept as that workflow's own run
-artifact in this private repository (docs/adr/0017's amendment: Cloudflare R2 needed a
-credit card even on its free tier). No secret of any kind lives in this repository:
-everything below with a value is set by hand, outside git.
+GitHub Actions workflow takes a daily encrypted copy. This repository is public and
+anyone can download a public repository's run artifacts, so the copy is not kept as an
+artifact: the workflow pushes it over SSH to the private repository
+`GonzaloZevallos/apostrophe-backups`, one branch per copy, and prunes branches older than
+30 days (docs/adr/0017's second amendment; the first one, Cloudflare R2, needed a credit
+card even on its free tier). No secret of any kind lives in this repository: everything
+below with a value is set by hand, outside git.
 
 ## 1. Turso
 
@@ -15,7 +18,8 @@ everything below with a value is set by hand, outside git.
 3. Create a **full-access** token for the app itself (`turso db tokens create`) —
    `APOSTROPHE_DATABASE_AUTH_TOKEN`, Render's secret, below.
 4. Create a second, **read-only** token (`turso db tokens create --read-only`) for the
-   daily backup — `TURSO_READONLY_TOKEN`, a GitHub secret, below.
+   daily backup — `TURSO_READONLY_TOKEN`, an environment secret of GitHub's `backup`
+   environment, below.
    - A per-database token (read-only or not) authenticates libSQL's own client
      protocol; it does **not** carry the `turso` CLI's own login, so `turso db shell
      <db> .dump` and `turso db export` refuse it — both read the CLI's own
@@ -95,23 +99,52 @@ everything below with a value is set by hand, outside git.
    GitHub, and never committed: `tests/test_no_secrets.py` fails the build if it ever
    is.
 
-## 4. GitHub secrets (`.github/workflows/backup.yml`)
+## 4. The private backups repository and its secrets (`.github/workflows/backup.yml`)
 
-Add, under the repository's Settings → Secrets and variables → Actions:
+The owner does these by hand, once, in this order. Until all of them are done the
+workflow's first run fails (and the failed-run email tells you):
 
-- `TURSO_DATABASE_URL` — the same URL as `APOSTROPHE_DATABASE_URL` (step 1.2).
-- `TURSO_READONLY_TOKEN` — the read-only token (step 1.4), never the full-access one.
+1. Create the repository `apostrophe-backups` under the same account, **private**, with
+   "Add a README" ticked, and confirm its default branch is `main` (the workflow's
+   `git init -b main` and the prune's "never `main`" rule both rely on it).
+2. On your own machine, generate a key pair with no passphrase:
+   `ssh-keygen -t ed25519 -N '' -f backup_deploy_key`.
+3. In the backups repository's Settings → Deploy keys, add the public half
+   (`backup_deploy_key.pub`) with **Allow write access** ticked.
+4. In this repository's Settings → Environments, create the environment `backup`, limited
+   to deployment branches `master` only, so that no other branch's workflow can read its
+   secrets.
+5. In that environment, add the secrets `BACKUP_DEPLOY_KEY` (the whole private file),
+   `TURSO_DATABASE_URL` (the same URL as `APOSTROPHE_DATABASE_URL`, step 1.2) and
+   `TURSO_READONLY_TOKEN` (the read-only token, step 1.4, never the full-access one).
+   These are the environment secrets' own names: the workflow maps the first two to the
+   `APOSTROPHE_*` variables `scripts/backup_copy.py` reads. Add **none** of the three at
+   repository level.
+6. Delete the local key files (`backup_deploy_key` and `backup_deploy_key.pub`) from your
+   machine; the secret is now the only copy.
+7. Confirm failed-run email is on: Settings → Notifications → Actions in your own GitHub
+   account. It is the only trip-wire between drills, and GitHub sends it to whoever last
+   changed the workflow's cron, only while their notification settings allow it.
 
-No secret here can create, delete or overwrite a Turso database (the token is scoped
-to one database, read-only). The daily copy itself carries this plan's accepted
-guarantee: copies are deletable by anyone with write access to the repository, or by
-any workflow given `actions: write`, and expire after 30 days, the same as the monthly
-drill cadence (section 6). Nothing replaces Object Lock.
+**Key rotation.** A deploy key has no expiry. Rotate it (repeat steps 2, 3, 5 and 6, then
+remove the old key from Deploy keys) when anyone with write access to this repository or to
+the backups repository leaves, and on any suspicion that it leaked.
 
-The only trip-wire between drills is GitHub's own default failed-run email, sent to
-whoever last changed the workflow's cron. Check that your own GitHub notification
-settings keep failed-run email on for this repository (Settings → Notifications →
-Actions), so that email actually reaches you.
+**The host key.** `deploy/github_known_hosts` pins GitHub's ed25519 SSH host key, so the
+workflow refuses any other server. Check it by hand when you touch it:
+`ssh-keygen -lf deploy/github_known_hosts` must print
+`SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU`, the ed25519 fingerprint on GitHub's
+"GitHub's SSH key fingerprints" documentation page (the same key is in the `ssh_keys` field
+of `api.github.com/meta`). `tests/deploy/test_backup_workflow.py` pins the same fingerprint.
+
+**Size.** GitHub refuses a file over 100 MB, so the workflow refuses to push a copy over
+90 MB. When a copy gets near that, the remedy is to move the destination through a new
+ADR-0017 amendment, not to raise the limit here.
+
+No secret here can create, delete or overwrite a Turso database (the token is scoped to one
+database, read-only). The deploy key can write only to the backups repository. Whoever can
+change `master`, the `backup` environment, or holds the key can delete copies; nothing
+replaces Object Lock (docs/adr/0017).
 
 ## 5. UptimeRobot
 
@@ -139,24 +172,28 @@ start with `umask 077; d="$(mktemp -d)"`, and finish with `rm -rf "$d"` once you
 read the report. If a run is interrupted before that last command, `$d` is left behind
 with decrypted data in it — find it and remove it by hand.
 
-**The daily `age`-encrypted copy** (an artifact of the backup workflow's own run,
-named `backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age` — the one format the workflow,
-this README and `scripts/newest_backup.py`'s own filter all share):
+**The daily `age`-encrypted copy** (a branch of the private backups repository, named
+`backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age` and holding one file of the same name — the
+one format the workflow, this README and `scripts/newest_backup.py`'s own filter all
+share). The restore uses your own SSH access to the private repository, never the
+workflow's deploy key:
 
 ```
 umask 077; d="$(mktemp -d)"
-gh api "repos/{owner}/{repo}/actions/artifacts?per_page=100" \
+git ls-remote --heads git@github.com:GonzaloZevallos/apostrophe-backups.git \
   | uv run --no-project python scripts/newest_backup.py
-# read that command's `name:` and `run_id:` lines, then:
-gh run download <run_id> -n <name> -D "$d"
-age -d -i identity.txt -o "$d/restored.db" "$d/<name>"
+# read that command's `name:` and `created_at:` lines, then:
+git clone --depth 1 --single-branch --branch <name> \
+  git@github.com:GonzaloZevallos/apostrophe-backups.git "$d/copy"
+age -d -i identity.txt -o "$d/restored.db" "$d/copy/<name>"
 uv run --no-project python scripts/drill.py "$d/restored.db" "$d/scratch.db"
 rm -rf "$d"
 ```
 
-`scripts/newest_backup.py` is the only way to choose which copy is newest — never
-`gh run list`, which orders runs, not artifacts, and says nothing about an artifact's
-own expiry.
+`scripts/newest_backup.py` is the only way to choose which copy is newest — it reads the
+branch names, never a commit time and never a list of workflow runs, which says nothing
+about which copies exist. The monthly drill also checks the latest copy's size: a copy
+close to the 90 MB guard (section 4) means the destination needs moving.
 
 **Turso's point-in-time restore**, for anything inside the last 24 hours:
 
@@ -204,8 +241,13 @@ daily copy's own 30-day retention is sized against.
 - [ ] The restore drill (section 6) passes against a real restored copy.
 - [ ] A sale recorded on the published app is still there after a Turso point-in-time
       restore to a scratch target.
-- [ ] The newest artifact's `created_at` (`scripts/newest_backup.py`'s own output) is
-      under 2 days old.
+- [ ] The newest copy's `created_at` (`scripts/newest_backup.py`'s own output over
+      `git ls-remote --heads`) is under 2 days old.
+- [ ] Prune dry run: `git ls-remote --heads git@github.com:GonzaloZevallos/apostrophe-backups.git
+      | uv run --no-project python scripts/newest_backup.py expired --now <today + 31 days, as
+      YYYYmmddTHHMMSSZ>` lists the copies and never `main`.
+- [ ] The `backup` environment exists, is limited to `master`, and holds the three secrets;
+      no repository-level secret of those names exists (section 4).
 - [ ] The backup workflow's last run (Actions tab) is green, and the failed-run email
       (section 4) is confirmed on.
 - [ ] Two-network check: from network A, 20 failed logins lock network A's address;

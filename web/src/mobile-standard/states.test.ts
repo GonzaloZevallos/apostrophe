@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { STATES } from './allStates.ts'
+import { MissingKeyError } from '../i18n/resolve.ts'
+import { GONE_NOTICE } from '../api/refusals.ts'
 import { HOME } from '../routes.ts'
 import { STATE_NAMES } from './registry.ts'
+import { common, refusal } from './copy.ts'
+import { PENDING_TAPS } from './pending.ts'
 import { stateNameProblems, type WalkState } from './states.ts'
 
 describe('the walked states and their names', () => {
@@ -24,5 +28,41 @@ describe('the walked states and their names', () => {
       expect(state.route.startsWith(HOME), state.screen).toBe(true)
       expect(state.visible, state.screen).not.toBe('')
     }
+  })
+})
+
+describe('the walk reads the shared words from the English bundle', () => {
+  const state = (screen: string): WalkState => {
+    const found = STATES.find((candidate) => candidate.screen === screen)
+    if (found === undefined) throw new Error(`${screen} is not walked`)
+    return found
+  }
+
+  it('waits on the retry and the gone notice as the screens say them', () => {
+    expect(state('EstadosReintento').visible).toBe('Something went wrong. Try again.')
+    expect(state('EstadosGoneAviso').visible).toBe(refusal(GONE_NOTICE))
+    expect(refusal(GONE_NOTICE)).toBe('That is gone. The list is up to date.')
+    expect(state('EstadosGoneAviso').steps).toContainEqual({ click: 'Yes, delete it' })
+  })
+
+  it('taps the payment form by the words the form shows', () => {
+    const payment = PENDING_TAPS.find((tap) => tap.screen === 'CobroDesdeClientes')
+    expect(payment?.steps).toEqual([
+      { click: 'Nico Parra' },
+      { click: 'Record payment' },
+      { fill: { label: 'Amount', value: '1000' } },
+      { click: 'Cash' },
+    ])
+    expect(payment?.button).toBe('Save')
+  })
+
+  it('leaves no unfilled placeholder in any state or pending tap', () => {
+    const dump = JSON.stringify({ STATES, PENDING_TAPS }, (_key, value: unknown) => (value instanceof RegExp ? value.source : value))
+    expect(dump).not.toContain('{{')
+    expect(dump).not.toContain('common:')
+  })
+
+  it('refuses a key the English bundle does not have', () => {
+    expect(() => common('common:noSuchWord' as Parameters<typeof common>[0])).toThrow(MissingKeyError)
   })
 })

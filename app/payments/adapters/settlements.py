@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.customers.application.ports import CustomerBalance
 from app.payments.adapters.sql_ledgers import SqlLedgers
 from app.payments.domain.settlement import settle
+from app.sales.application.ports import CustomerSettlement
 
 
 class SqlBalances:
@@ -47,3 +48,12 @@ class SqlOwingSales:
         for ledger in ledgers.values():
             owing |= settle(ledger).still_owing
         return frozenset(owing)
+
+    def settlement_of(self, customer_id: int) -> CustomerSettlement:
+        ledger = self._ledgers.for_customers([customer_id]).get(customer_id)
+        if ledger is None:
+            return CustomerSettlement(0, {})
+        result = settle(ledger)
+        return CustomerSettlement(
+            result.balance, {sale.sale_id: sale.still_owed for sale in result.sales}
+        )

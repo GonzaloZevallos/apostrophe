@@ -25,11 +25,13 @@ import Analisis, {
   BEST_WEEKDAY_MARK,
   BEST_WEEK_MARK,
   BEST_WEEK_TABLE_MARK,
-  EMPTY_MONTH_LINE,
   NO_BEST_WEEK_LINE,
-  NO_HISTORY_LINE,
   SINCE_FIRST_RECORD_LABEL,
 } from './Analisis'
+import { baselineText } from '../i18n/testing'
+
+const EMPTY_MONTH_LINE = baselineText('analysis.ts:EMPTY_MONTH_LINE')
+const NO_HISTORY_LINE = baselineText('analysis.ts:NO_HISTORY_LINE')
 
 /** The summary strip: the hero group's own container, holding the figures line and the withdrawal rows. */
 function strip(): HTMLElement {

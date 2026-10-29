@@ -8,9 +8,15 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
+import * as clipboard from '../../clipboard'
+import * as share from '../../share'
 import InvitePartner from './InvitePartner'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
+vi.mock('../../share', () => ({
+  canShare: () => true,
+  shareText: vi.fn(),
+}))
 
 const LINK_URL = 'https://apostrophe.app/invitation/secret-token-123'
 
@@ -102,4 +108,41 @@ test('with no action it renders today\'s soft "Invite a partner"', () => {
   render(<InvitePartner onLinkCreated={() => undefined} />)
   const button = screen.getByRole('button', { name: 'Invite a partner' })
   expect(button).toHaveClass('boton--suave')
+})
+
+async function renderWithLink(): Promise<void> {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(jsonResponse(201, { url: LINK_URL, expires_at: '2026-10-09T00:00:00Z' })),
+  )
+  render(<InvitePartner onLinkCreated={() => undefined} />)
+  await userEvent.click(screen.getByRole('button', { name: 'Invite a partner' }))
+  await screen.findByText(LINK_URL)
+}
+
+test('a share that never settles holds nothing: Copy, Share again and the invite button all work', async () => {
+  vi.mocked(share.shareText).mockReturnValueOnce(new Promise(() => {})).mockReturnValueOnce(new Promise(() => {}))
+  await renderWithLink()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Copy' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }))
+
+  expect(share.shareText).toHaveBeenCalledTimes(2)
+  expect(vi.mocked(share.shareText).mock.calls.map(([text]) => text)).toEqual([LINK_URL, LINK_URL])
+  expect(clipboard.copyText).toHaveBeenCalledWith(LINK_URL)
+  expect(screen.getByRole('button', { name: 'Invite a partner' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Share' })).toBeEnabled()
+})
+
+test.each(['failed', 'cancelled'] as const)('a share that resolves %s shows nothing new', async (outcome) => {
+  vi.mocked(share.shareText).mockResolvedValueOnce(outcome)
+  await renderWithLink()
+  const before = document.body.innerHTML
+
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }))
+
+  expect(share.shareText).toHaveBeenCalledTimes(1)
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(document.body.innerHTML).toBe(before)
 })

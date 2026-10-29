@@ -7,7 +7,7 @@
  * screen's own `navigate(..., { state: {...} })`.
  *
  * Three kinds of marker live here:
- * - a success toast from `TOAST_MESSAGES`, written through `toast(message)`,
+ * - a success toast key from `TOAST_MESSAGES`, written through `toast(key)`,
  *   or the gone notice (`GONE_NOTICE`, from `refusals.ts`), written through
  *   `gone()` — both read back through `readFeedback` into a `Feedback` that
  *   `Notice` renders;
@@ -28,41 +28,45 @@
  */
 
 import { GONE_NOTICE } from '../api/refusals'
-import { COMMON_TEXT } from '../copy/common'
+import type { Refusal } from '../i18n/refusalKeys'
 
 /** Every plain success toast a screen can show by navigating away (PRD,
- * "Feedback"; sales.md round 3). "Venta guardada" is deliberately not here —
- * it carries Deshacer, so it is the separate `'saved'` marker below, never a
- * plain toast string. */
+ * "Feedback"; sales.md round 3), as `common:` keys: history state carries a key,
+ * never the English words, and `Notice` resolves it with `t`. "Sale saved" is
+ * deliberately not here — it carries Deshacer, so it is the separate `'saved'`
+ * marker below, never a plain toast. */
 export const TOAST_MESSAGES = [
-  COMMON_TEXT.customerSaved,
-  COMMON_TEXT.saleDeleted,
-  COMMON_TEXT.saleDeletedGramsBack,
-  COMMON_TEXT.entrySaved,
-  COMMON_TEXT.entryDeleted,
+  'common:customerSaved',
+  'common:saleDeleted',
+  'common:saleDeletedGramsBack',
+  'common:entrySaved',
+  'common:entryDeleted',
 ] as const
 
-export type ToastMessage = (typeof TOAST_MESSAGES)[number]
+export type SuccessToast = (typeof TOAST_MESSAGES)[number]
 
-function isToastMessage(value: unknown): value is ToastMessage {
+export function isSuccessToast(value: unknown): value is SuccessToast {
   return typeof value === 'string' && (TOAST_MESSAGES as readonly string[]).includes(value)
 }
 
-/** The fixed text `VentaDetalle` announces alongside its own Deshacer button
+/** The key of the text `VentaDetalle` announces alongside its own Deshacer button
  * (plan, invariants: "Venta guardada" is the only success notice with
  * Deshacer) — exported so that screen never invents the copy itself. */
-export const SALE_SAVED = COMMON_TEXT.saleSaved
+export const SALE_SAVED = 'common:saleSaved'
 
-export interface Feedback {
-  kind: 'toast' | 'notice' | 'saved'
-  message: string
-}
+/** What `Notice` renders: a keyed toast or the keyed "just saved" marker (a `common:` key in
+ * `message`, resolved with `t`), or the gone notice, a `Refusal` the banner resolves at render
+ * (it is never a string here). */
+export type Feedback =
+  | { kind: 'toast'; message: SuccessToast }
+  | { kind: 'saved'; message: typeof SALE_SAVED }
+  | { kind: 'notice'; refusal: Refusal }
 
 export function readFeedback(state: unknown): Feedback | null {
   if (state === null || typeof state !== 'object') return null
   const record = state as Record<string, unknown>
-  if (isToastMessage(record.toast)) return { kind: 'toast', message: record.toast }
-  if (record.notice === GONE_NOTICE) return { kind: 'notice', message: GONE_NOTICE }
+  if (isSuccessToast(record.toast)) return { kind: 'toast', message: record.toast }
+  if (record.notice === GONE_NOTICE.key) return { kind: 'notice', refusal: GONE_NOTICE }
   if (record.saleJustSaved === true) return { kind: 'saved', message: SALE_SAVED }
   return null
 }
@@ -72,15 +76,16 @@ export function readFeedback(state: unknown): Feedback | null {
  * builds `{ toast: ... }` by hand (plan, invariants: "feedback.ts" is the only
  * reader and writer of navigation state"). Pair of `readFeedback`'s `'toast'`
  * case. */
-export function toast(message: ToastMessage): { toast: ToastMessage } {
-  return { toast: message }
+export function toast(key: SuccessToast): { toast: SuccessToast } {
+  return { toast: key }
 }
 
 /** Writes the gone notice into history state — `toast`'s counterpart for
  * `GONE_NOTICE`, so a screen that lands on a gone record after navigating
- * away never builds `{ notice: GONE_NOTICE }` by hand either. */
-export function gone(): { notice: typeof GONE_NOTICE } {
-  return { notice: GONE_NOTICE }
+ * away never builds `{ notice: ... }` by hand either. Only the key string rides in history
+ * state, never a `Refusal` object: `readFeedback` compares it with `===`. */
+export function gone(): { notice: typeof GONE_NOTICE.key } {
+  return { notice: GONE_NOTICE.key }
 }
 
 /** Written once, by `NuevaVenta` on a successful save, alongside

@@ -43,9 +43,7 @@ import { TarjetasMeses, TarjetasSemanas, TarjetasVariedades } from './AnalisisTa
 import { useViewport } from '../shell/useViewport'
 import {
   COST_OF_GOODS_LABEL,
-  EMPTY_MONTH_LINE,
   NO_BEST_WEEK_LINE,
-  NO_HISTORY_LINE,
   OWN_USE_LABEL,
   PROMOTION_LABEL,
   PURCHASES_NOTE,
@@ -53,13 +51,13 @@ import {
   SINCE_FIRST_RECORD_LABEL,
   VARIETY_TOTAL_NOTE, ANALYSIS_TEXT,
 } from '../copy/analysis'
+import { useTranslation } from 'react-i18next'
+import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import { COMMON_TEXT } from '../copy/common'
 
 export {
   COST_OF_GOODS_LABEL,
-  EMPTY_MONTH_LINE,
   NO_BEST_WEEK_LINE,
-  NO_HISTORY_LINE,
   OWN_USE_LABEL,
   PROMOTION_LABEL,
   PURCHASES_NOTE,
@@ -150,6 +148,7 @@ function AnalisisContenido({
   data: Analysis
   onMonth: (next: string) => void
 }) {
+  const { t } = useTranslation()
   const m = data.month
   const phone = useViewport() === 'phone'
   const ids = useId()
@@ -207,7 +206,7 @@ function AnalisisContenido({
       <div className="analisis__columnas">
         <div className="analisis__principal">
           <span className="pie">{ANALYSIS_TEXT.porVariedad}</span>
-          {m.varieties.length === 0 && <span className="pie">{EMPTY_MONTH_LINE}</span>}
+          {m.varieties.length === 0 && <span className="pie">{t(EMPTY_STATE_KEYS.analysisEmptyMonth)}</span>}
           {m.varieties.length > 0 &&
             (phone ? (
               <TarjetasVariedades varieties={m.varieties} />
@@ -293,6 +292,7 @@ function AnalisisContenido({
 }
 
 export default function Analisis() {
+  const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const [month, setMonth] = useState(() => me.today.slice(0, 7))
 
@@ -316,7 +316,7 @@ export default function Analisis() {
         {query.isError && !(query.error instanceof NetworkError) && <ErrorGenerico />}
 
         {query.data !== undefined && query.data.first_record === null && (
-          <span className="pie">{NO_HISTORY_LINE}</span>
+          <span className="pie">{t(EMPTY_STATE_KEYS.analysisNoHistory)}</span>
         )}
 
         {query.data !== undefined && query.data.first_record !== null && (

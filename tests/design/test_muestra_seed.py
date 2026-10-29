@@ -82,7 +82,7 @@ def amounts(line: dict[str, Any] | None) -> tuple[int, bool] | None:
 
 # The figures below also stand in muestra.md; they are literals on purpose, so a deliberate
 # change of the seed fails here until muestra.md is recaptured and these are read again.
-MONTH_PENDING_GRAMS = 1  # "Consumo propio | $ 14.000 | y 1 g sin costo", and "Ganancia".
+MONTH_PENDING_QUANTITY = 1  # "Consumo propio | $ 14.000 | y 1 g sin costo", and "Ganancia".
 OWN_USE_AMOUNT = 14_000  # Golden Cookies' 2 g at $ 7.000; Sir Jack's gram has no lot.
 SHORTFALL_AMOUNT = 10_000  # 24K Gold's 2 g at $ 5.000, "Faltante de stock" in muestra.md.
 HINT = (
@@ -147,7 +147,7 @@ def assert_seed_states(client: TestClient) -> None:
     assert [n for n, found in adjustments.items() if found and n != "24K Gold"] == [], HINT
 
     # The month's "y N g sin costo", on its row and on the panel's mark.
-    assert month["profit"]["pending_grams"] == MONTH_PENDING_GRAMS, "sin costo" + HINT
+    assert month["profit"]["pending_grams"] == MONTH_PENDING_QUANTITY, "sin costo" + HINT
     assert periods["month"]["profit_pending"] is True, HINT
 
 

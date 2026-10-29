@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import flush_or_refuse
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.adapters.tables import StockEntryRow
 from app.stock.domain.entry import Origin, StockEntry
 
@@ -28,7 +28,7 @@ class SqlStockEntries:
             entry_date=entry.entry_date,
             variety_id=entry.variety_id,
             origin=entry.origin.value,
-            grams_hundredths=entry.grams.hundredths,
+            grams_hundredths=entry.quantity.hundredths,
             total_cost=entry.total_cost,
             note=entry.note,
             recorded_at=entry.recorded_at,
@@ -44,7 +44,7 @@ class SqlStockEntries:
         row.entry_date = entry.entry_date
         row.variety_id = entry.variety_id
         row.origin = entry.origin.value
-        row.grams_hundredths = entry.grams.hundredths
+        row.grams_hundredths = entry.quantity.hundredths
         row.total_cost = entry.total_cost
         row.note = entry.note
         flush_or_refuse(self._session)
@@ -74,7 +74,7 @@ def _entry(row: StockEntryRow) -> StockEntry:
         entry_date=row.entry_date,
         variety_id=row.variety_id,
         origin=Origin(row.origin),
-        grams=Grams(row.grams_hundredths),
+        quantity=Quantity(row.grams_hundredths),
         total_cost=row.total_cost,
         note=row.note,
         recorded_at=row.recorded_at,

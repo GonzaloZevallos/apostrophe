@@ -103,7 +103,7 @@ class SalesImport:
                     lines=[
                         LineRequest(
                             variety_id=ordinal,
-                            grams=sale.grams,
+                            quantity=sale.quantity,
                             quote=quote,
                             gift=sale.gift,
                             special_price=sale.special_total,
@@ -143,7 +143,7 @@ class SalesImport:
             lines=[
                 LineInput(
                     variety_id=variety_id,
-                    grams=sale.grams,
+                    quantity=sale.quantity,
                     gift=sale.gift,
                     special_price=sale.special_total,
                 )

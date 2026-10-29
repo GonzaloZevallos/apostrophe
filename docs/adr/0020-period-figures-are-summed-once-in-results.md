@@ -100,3 +100,15 @@ decided it (stock shortfall, CONTEXT.md).
   `SinceFirstRecordOut` (`shortfall`, `promotion`, `own_use` become `RowCostOut | None`).
   Profit and margin keep `AmountWithPendingOut` and `MarginOut`.
 - **`/panel` is unchanged**: no model, no fixture.
+
+## Amendment (GH-384): quantity figures summed across products are grouped by unit
+
+Planned in GH-318, not yet in the code. One sentence of this ADR is narrowed by docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md, in the units
+part; until that part ships the sentence describes what runs.
+
+> - **Each pending mark's N is the grams behind that figure** (PM)
+
+Narrowed: N, and every other figure that sums quantities across products (quantity sold and gifted,
+shortfall and pending marks), becomes a `QuantityByUnit`, which the units part creates: one amount per
+unit with its label. Two quantities of different units are never added; a business with one unit sees
+one amount. Which figures count in which period is unchanged.

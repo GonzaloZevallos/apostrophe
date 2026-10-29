@@ -25,11 +25,11 @@ def _post(client: TestClient, path: str, body: dict[str, Any]) -> None:
     assert response.status_code == 201, response.text
 
 
-def _entry(client: TestClient, variety_id: int, grams: str) -> None:
+def _entry(client: TestClient, variety_id: int, quantity: str) -> None:
     _post(
         client,
         "/stock/entries",
-        {"variety_id": variety_id, "origin": "opening_stock", "grams": grams},
+        {"variety_id": variety_id, "origin": "opening_stock", "grams": quantity},
     )
 
 

@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.ports import LineCost
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.varieties.adapters.tables import VarietyRow
 
@@ -71,4 +71,4 @@ def test_a_line_spanning_two_lots_is_split_between_costed_and_pending(
     # 8 g drawn from the two lots (5 g @ $5 000 + 3 g @ $6 000 = $11 000 exactly);
     # the remaining 2 g of the 10 g line have no lot behind them, so they are
     # pending, never a $0 cost.
-    assert costs == [LineCost(costed=11_000, pending_grams=Grams.of("2"))]
+    assert costs == [LineCost(costed=11_000, pending_quantity=Quantity.of("2"))]

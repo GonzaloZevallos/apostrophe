@@ -64,3 +64,39 @@ function or the pairing rule.
 - The preview this ADR describes ("Cómo se ve en Telegram") lives at
   `web/src/screens/telegramPreview.ts`; `web/src/catalog/` is not where it is — that
   path was this ADR's placeholder, not the file that shipped.
+
+## Amendment (2026-10-25): what Copiar and Compartir hand out, after GH-364
+
+**Supersedes** this ADR's "the copied text is always the raw text". Everything else
+above stands.
+
+- **Copiar and Compartir hand out `plainCopy(catalog.text)`**
+  (`web/src/screens/catalogCopy.ts`): the API's text with every paired `**` removed and
+  every line break kept. Telegram on iPhone reads Markdown in pasted plain text, so the
+  `**` around each name became bold and a lone `\n` collapsed to a space (the owner's
+  screenshot). Without a paired marker there is nothing for that parse to act on.
+- **The pairing is still written once.** `plainCopy` joins the text of
+  `telegramPreview`'s segments, so it pairs left to right exactly as the preview does,
+  keeps a final unpaired `**` as typed, and no other module splits, strips or matches
+  `**`.
+- **`catalog.text`, the preview and the bot keep the markers.** The server's text and
+  the pinned catalog Telegram's API receives are unchanged; the preview still shows bold.
+- **A rich `text/html` clipboard entry was considered and held.** It would keep the
+  names bold in a paste, but no paste before merge could show that it survives Telegram
+  iOS, WhatsApp and a desktop target with every line break intact, and it must never
+  outrank the plain version reading right everywhere. If bold names are wanted back, it
+  is a later task backed by the owner's pastes.
+- The preview's path is `web/src/screens/telegramPreview.ts`, as the amendment above
+  already says; the Decision's `web/src/catalog/telegramPreview.ts` was a placeholder.
+
+## Amendment (GH-384): the catalog's money and quantity formats follow the business
+
+Planned in GH-318, not yet in the code. One sentence of this ADR is narrowed by docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md, in the money
+part, and by docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md, in the units part; until those parts ship the sentence describes what runs.
+
+> It owns the catalog's own formats, `$11.000` and
+> `10 g` / `2,5 g`
+
+Narrowed: the amount follows the business's currency symbol and money decimals (ADR-0058), and the
+quantity takes its places from its unit's decimals and its label from the unit itself (ADR-0056). The
+text is still written by this one function.
