@@ -48,6 +48,14 @@ export default defineConfig({
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.
     exclude: CONFIG_EXCLUDE,
+    // Opt-in: only `vitest run --coverage` measures (`enabled` stays false), so plain
+    // `npm test` writes nothing. The report lands in `web/coverage`.
+    coverage: {
+      provider: 'v8',
+      enabled: false,
+      reporter: ['json-summary', 'html'],
+      reportsDirectory: 'coverage',
+    },
     // Vitest turns every `.css` import into an empty module, `?raw` ones included, so
     // the architecture tests that read stylesheets as text (`import.meta.glob(...,
     // { query: '?raw' })`) saw '' and passed on nothing. Only `?raw` loads are let
