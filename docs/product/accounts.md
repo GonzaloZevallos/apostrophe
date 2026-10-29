@@ -382,7 +382,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
     - the screens before login have no theme control.
   - Native controls and scrollbars follow the resolved theme: light with no attribute, dark with `data-tema="oscuro"`.
   - Both themes carry the Yerba tokens, and every state rule holds in both.
-  - The manifest's colours and the splash are static and light. The status bar follows the app's chosen theme (`data-tema`), never the system's; on iOS it stays light, because iOS fixes its style at launch.
+  - The manifest's colours and the splash are static and light. The status bar follows the resolved theme the app shows (`data-tema`, which on Automatic already tracks the phone), not the system's setting directly; on iOS it stays light, because iOS fixes its style at launch.
   - The font is self-hosted.
 - **Language and formats**: every word on screen in English (product-language.md, which supersedes the earlier Spanish rule). Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Go to sign in`, the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), the reset screen):
