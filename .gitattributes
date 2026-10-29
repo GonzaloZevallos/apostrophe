@@ -1,1 +1,3 @@
 *.mo binary
+docs/api/** linguist-generated=true
+docs/architecture/generated/** linguist-generated=true

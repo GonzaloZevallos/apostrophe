@@ -5,6 +5,24 @@ const fence = (body: string): string => '```mermaid\n' + body + '\n```\n'
 const VALID = 'classDiagram\n  class A {\n    +int x\n  }'
 const INVALID = 'classDiagram\n  class A {{{ ['
 
+// Captured by hand: depcruise 18.7.0, `--output-type mermaid --include-only "^src/flash/" src/flash`
+// with `reporterOptions.mermaid.minify: false`, run from web/. Ids are derived from paths.
+const DEPCRUISE_FLASH = [
+  'flowchart LR',
+  '',
+  'subgraph src["src"]',
+  '  subgraph src_flash["flash"]',
+  '    src_flash_FlashProvider_tsx["FlashProvider.tsx"]',
+  '    src_flash_flashContext_ts["flashContext.ts"]',
+  '    src_flash_flashReducer_ts["flashReducer.ts"]',
+  '    src_flash_useFlash_ts["useFlash.ts"]',
+  '  end',
+  'end',
+  'src_flash_FlashProvider_tsx-->src_flash_flashContext_ts',
+  'src_flash_FlashProvider_tsx-->src_flash_flashReducer_ts',
+  'src_flash_useFlash_ts-->src_flash_flashContext_ts',
+].join('\n')
+
 describe('parseMarkdown', () => {
   it('accepts a valid diagram', async () => {
     expect(await parseMarkdown(fence(VALID))).toEqual([])
@@ -29,6 +47,10 @@ describe('parseMarkdown', () => {
       '  }',
     ].join('\n')
     expect(await parseMarkdown(fence(diagram))).toEqual([])
+  })
+
+  it('accepts a real depcruise flowchart with nested subgraphs and path-derived ids', async () => {
+    expect(await parseMarkdown(fence(DEPCRUISE_FLASH))).toEqual([])
   })
 
   it('names the bad block among two', async () => {

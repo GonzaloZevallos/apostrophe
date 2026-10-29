@@ -1,0 +1,17 @@
+[
+  "\\.test\\.tsx?$",
+  "^src/test/",
+  "^src/test-[^/]+\\.ts$",
+  "^src/architecture/",
+  "^src/mobile-standard/",
+  "^src/design/copyTexts\\.ts$",
+  "^src/format/breakpoints\\.ts$",
+  "^src/i18n/parity\\.ts$",
+  "^src/i18n/testing\\.ts$",
+  "^src/screens/withdrawals/renderWithdrawals\\.tsx$",
+  "^src/screens/varieties/renderVarieties\\.tsx$",
+  "^src/screens/expenses/renderExpenses\\.tsx$",
+  "^src/screens/analisis/rowOf\\.ts$",
+  "^src/screens/stubFetchWithSettings\\.ts$",
+  "^src/i18n/switchFixture\\.ts$"
+]
