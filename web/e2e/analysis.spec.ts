@@ -424,8 +424,10 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
     expect(edges.at(-1)).not.toBe(edges[0])
   }
 
-  // Growing only the height moves nothing: the month arrows and the "Nueva venta" button keep
-  // their tops. The measure rejects the two rules that once made them slide.
+  // Growing only the height moves nothing: the month arrows keep their tops, the floating
+  // "Nueva venta" button keeps its distance from the viewport's bottom edge, and the document does
+  // not outgrow the viewport it was grown to. The measure rejects the two rules that once made
+  // them slide.
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto(ANALYSIS)
   await expect(page.getByText('You sold in the month')).toBeVisible()
