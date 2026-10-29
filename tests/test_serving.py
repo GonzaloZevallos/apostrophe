@@ -309,6 +309,22 @@ def test_an_unmatched_spanish_path_is_not_redirected(served_client: TestClient) 
     assert "location" not in response.headers
 
 
+def test_the_varieties_front_paths_are_the_shell_and_a_trailing_slash_redirects(
+    served_client: TestClient,
+) -> None:
+    # Characterization (GH-388): the front's own `/varieties` paths answer the same however
+    # the API names its products. Unchanged through every slice of the rename.
+    for path in ("/varieties", "/varieties/7"):
+        response = _request(served_client, "GET", path, HTML)
+
+        assert response.status_code == 200, path
+        assert "the app shell" in response.text, path
+    redirect = _request(served_client, "GET", "/varieties/7/", HTML, "?a=1")
+
+    assert redirect.status_code == 308
+    assert redirect.headers["location"] == "/varieties/7?a=1"
+
+
 # What a shared template with {id} = 7 is, concretely: `/sales/{id}` -> `/sales/7`.
 SHARED_CONCRETE = sorted(path.replace("{id}", "7") for path in SHARED_FRONT_PATHS)
 
