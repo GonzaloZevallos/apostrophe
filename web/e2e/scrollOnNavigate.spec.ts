@@ -1,6 +1,6 @@
 /**
  * Where the page is scrolled when the seller changes screen (GH-480, navigation.md criteria
- * 21-23, ADR-0063), measured as the real `window.scrollY` of a real browser at 320, 375 and 430
+ * 21-23, ADR-0064), measured as the real `window.scrollY` of a real browser at 320, 375 and 430
  * px and on a computer (1280x800); `test-setup.ts` stubs `scrollTo` in the unit tests, so only
  * this spec can show it.
  *   - 21: a tab or a row into a detail opens the new screen at the top.

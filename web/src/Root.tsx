@@ -4,7 +4,7 @@
  * knows whether the screen it happened on is public (plan, invariants: "a 401
  * does nothing on a public route"). The offline banner renders once for every
  * route, public or gated. `ScrollSync` decides where the document is scrolled on each location
- * change (ADR-0063).
+ * change (ADR-0064).
  */
 
 import { useEffect } from 'react'

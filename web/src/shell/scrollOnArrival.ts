@@ -1,6 +1,6 @@
 /**
  * Where the document is scrolled when the location changes (navigation.md, "Scroll on a change
- * of screen", GH-480, ADR-0063): one pure decision, from the pathname change, the navigation
+ * of screen", GH-480, ADR-0064): one pure decision, from the pathname change, the navigation
  * type, the viewport and the registry (`kind`, `pane`, `modalOnComputer`, `ONBOARDING_SCREENS`),
  * and from nothing else: never the history key, the query, the fragment or the location state.
  *   - `restore`: Back or Forward, the screen returns to the offset it had when it was left.

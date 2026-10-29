@@ -1,7 +1,7 @@
 /**
  * `startFollow`: brings the document to a saved offset on Back or Forward, and keeps trying
  * while the screen's content loads (navigation.md: "restored once the content has loaded, or
- * as far down as shorter content reaches", ADR-0063). Each animation frame scrolls to the
+ * as far down as shorter content reaches", ADR-0064). Each animation frame scrolls to the
  * smaller of the offset and the farthest the page reaches, until the first of:
  *   - the page is at the offset;
  *   - `FOLLOW_CAP_MS` have passed;

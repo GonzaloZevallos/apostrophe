@@ -1,7 +1,7 @@
 /**
  * Applies the scroll decision (`scrollOnArrival.ts`) on every location change, once and at the
  * router, so no screen resets or restores its own scroll (navigation.md, "Scroll on a change of
- * screen", ADR-0063). Mounted by `Root` beside `RouterSync`. On each change, in a layout effect
+ * screen", ADR-0064). Mounted by `Root` beside `RouterSync`. On each change, in a layout effect
  * (before the browser paints the new screen):
  *   1. a restore still in flight is cancelled, before this change's own decision applies;
  *   2. the decision is taken from the two pathnames, their screens, the navigation type and the

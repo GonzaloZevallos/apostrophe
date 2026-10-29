@@ -194,6 +194,6 @@ export const router = createBrowserRouter([
   },
 ])
 
-// Offsets are read in `router.subscribe`, before the new screen is drawn (ADR-0063).
+// Offsets are read in `router.subscribe`, before the new screen is drawn (ADR-0064).
 watchScroll(router)
 holdScrollRestoration()
