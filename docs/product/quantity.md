@@ -13,6 +13,7 @@ En el contrato JSON de stock, ventas y resultados, la cantidad de una variedad s
 - En los schemas de stock, ventas y resultados, todo campo que decía "grams" dice "quantity" y conserva el resto del nombre: `grams` → `quantity`, `grams_sold` → `quantity_sold`, `grams_gifted` → `quantity_gifted`, `pending_grams` → `pending_quantity`, `total_grams` → `total_quantity`. Cualquier otro compuesto de esos schemas sigue el mismo patrón. Vale para pedidos y respuestas.
 - El tipo compartido `GramsOut` lleva un nombre de cantidad.
 - Los nombres viejos se dejan de aceptar en el acto, sin alias. Un pedido que manda `grams` en vez de `quantity` se rechaza porque falta `quantity`, con el mismo status que cualquier campo obligatorio ausente. El trato de los campos de más no cambia.
+- Umbral de stock bajo (`PUT /stock/varieties/{id}/threshold`): `quantity` es obligatorio y puede ser null. `{"quantity": null}` apaga el umbral, como antes `{"grams": null}`. `{"grams": "20"}` y un cuerpo vacío `{}` responden 422, así un pedido con el nombre viejo nunca borra el umbral en silencio. El front apaga el umbral mandando `{"quantity": null}`, nunca un cuerpo vacío. Es el único rechazo que esta parte agrega fuera del cambio de nombres.
 - Cada respuesta lleva los mismos números que antes bajo los nombres nuevos: nada se reescala, nada se redondea, nada se reinterpreta.
 - Todo `detail` de rechazo de stock, ventas y resultados que nombraba gramos ahora nombra la cantidad, en inglés llano (por ejemplo "the quantity must be more than zero"). La condición, el status y el momento del rechazo no cambian. Un `detail` nunca se muestra (Product language) y el front nunca compara su texto.
 - El front (tipos, fakes de fetch, e2e) usa los nombres nuevos. El snapshot de OpenAPI los sigue.
@@ -36,7 +37,7 @@ Cada caso queda para la parte que lo posee. El plan del Tech Lead completa la li
 ## Métricas
 
 - Campos `grams` en los schemas de stock, ventas y resultados, en los tipos del front, en los fakes de fetch y en los e2e: 0 (búsqueda en el repositorio).
-- Diff de los tests de API y del test de importación: solo nombres de campos y redacción de `detail`; 0 valores cambiados.
+- Diff de los tests de API y del test de importación: solo nombres de campos y redacción de `detail`, más los dos casos 422 nuevos del umbral; 0 valores cambiados.
 - Importación de la planilla: mismos registros y mismos valores que antes del cambio.
 - Gate (pytest, vitest, e2e): pasa.
 - Cambios visibles para el vendedor (texto de pantalla, catálogo, cifras): 0.
