@@ -5,7 +5,7 @@
  * (before the browser paints the new screen):
  *   1. a restore still in flight is cancelled, before this change's own decision applies;
  *   2. the decision is taken from the two pathnames, their screens, the navigation type and the
- *      viewport now;
+ *      viewport of the render;
  *   3. `top` scrolls to 0, `keep` does nothing, and `restore` follows the offset the entry was
  *      left at (`scrollPlaces.ts`) as its content loads (`scrollFollow.ts`), unless Record
  *      payment's own hand-off is pending: `useReturnToPlace` owns that return.
@@ -19,7 +19,7 @@ import { isScreenId, type ScreenId } from '../routes'
 import { browserFollowDeps, startFollow } from './scrollFollow'
 import { offsetFor } from './scrollPlaces'
 import { scrollOnArrival, type Arrival } from './scrollOnArrival'
-import { currentViewport } from './useViewport'
+import { useViewport } from './useViewport'
 
 /** The screen of the deepest matched route that declares one (`handle.screen`). */
 function useScreen(): ScreenId | undefined {
@@ -37,13 +37,20 @@ export default function ScrollSync() {
   const navigationType = useNavigationType()
   const screen = useScreen()
   const previous = useRef<Arrival | null>(null)
+  // The viewport as of this render, read by the effect without being one of its triggers: a
+  // resize across 900 px is not a change of screen.
+  const current = useViewport()
+  const viewport = useRef(current)
+  useLayoutEffect(() => {
+    viewport.current = current
+  }, [current])
 
   useLayoutEffect(() => {
     const left = previous.current
     const arrival: Arrival = { pathname, screen }
     previous.current = arrival
     if (left === null) return undefined
-    const decision = scrollOnArrival(left, arrival, navigationType, currentViewport())
+    const decision = scrollOnArrival(left, arrival, navigationType, viewport.current)
     if (decision === 'top') {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
       return undefined
