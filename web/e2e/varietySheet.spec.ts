@@ -30,8 +30,20 @@ test('the rename sheet keeps its action at the bottom, and the page stays locked
   await page.goto(pathTo(VARIETY, { id: records.variety }))
   // A short window makes the page scroll; scroll it to the bottom first, so "where it was" is a
   // real, non-zero position. The opener is clicked without scrolling it into view.
+  await expect(page.getByRole('button', { name: 'Edit name' })).toBeVisible()
   await page.setViewportSize({ width: 390, height: 480 })
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+  // Under load the page can still be filling in (its height shrinks when the placeholders give
+  // way to the loaded rows, which clamps scrollY): scroll until the position holds still at the
+  // bottom of the page, and only then take it as the starting point.
+  await page.waitForLoadState('networkidle')
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        window.scrollTo(0, document.documentElement.scrollHeight)
+        return Math.round(window.scrollY) === Math.round(document.documentElement.scrollHeight - window.innerHeight)
+      }),
+    )
+    .toBe(true)
   const startedAt = await page.evaluate(() => window.scrollY)
   expect(startedAt).toBeGreaterThan(0)
   await page.getByRole('button', { name: 'Edit name' }).dispatchEvent('click')
