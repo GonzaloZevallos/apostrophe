@@ -1,17 +1,5 @@
 [
   {
-    "screen": "Analisis",
-    "rule": "touch-action",
-    "target": "button:Next month",
-    "issue": 48
-  },
-  {
-    "screen": "Analisis",
-    "rule": "touch-action",
-    "target": "button:Previous month",
-    "issue": 48
-  },
-  {
     "screen": "Archivadas",
     "rule": "touch-action",
     "target": "button:Restore",

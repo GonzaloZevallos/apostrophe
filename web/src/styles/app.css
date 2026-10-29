@@ -3108,38 +3108,6 @@ body {
   gap: var(--espacio-md);
 }
 
-.analisis__variedad {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espacio-xs);
-  padding: var(--espacio-sm) 0;
-  border-bottom: 1px solid var(--linea);
-}
-
-.analisis__variedad-cabecera {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  font-weight: 600;
-}
-
-.analisis__variedad-detalle {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-.analisis__variedad-margen {
-  margin-left: auto;
-  color: var(--acento);
-  font-weight: 600;
-}
-
-.analisis__semana,
-.analisis__mes-fila,
 .analisis__dia {
   display: flex;
   flex-wrap: wrap;
@@ -3261,14 +3229,9 @@ body {
   flex-direction: column;
 }
 
-/* `AnalisisCompu.dc.html`'s own tables (variety, week and month): hidden below
-   900px, where the cards above carry the same rows instead — only one of the two
-   is ever on screen, the same switch `.bar-inferior`/`.riel-lateral` already make,
-   never both at once (PM: "the computer gets the phone's cards" was the bug). */
-.analisis__tabla-contenedor {
-  display: none;
-}
-
+/* `AnalisisCompu.dc.html`'s own tables (variety, week and month). `Analisis.tsx`
+   renders them only at computer width and the cards only on the phone
+   (`useViewport()`), so no rule hides one of the two. */
 .analisis__tabla {
   width: 100%;
   border-collapse: collapse;
@@ -3325,6 +3288,153 @@ body {
   margin-left: var(--espacio-xs);
   font-weight: 600;
   color: var(--acento);
+}
+
+/* Analysis on the phone (GH-319): the month selector first, 44 px arrows, and one card per
+   variety, week and month (`AnalisisTarjeta`). Everything is under `.analisis` and the phone
+   query; the computer keeps its tables. Colours, spacing and type come from tokens only. */
+@media (max-width: 899.98px) {
+  /* `.gastos__mes` takes `flex-basis: 100%` to fill Expenses' wrapping header row. Here its
+     parent is a column (`.cuerpo`), where that basis is a height: once the page is taller
+     than its content the selector stretched with it and the arrows slid down the page. In
+     Analysis it keeps its own 48 px. */
+  .analisis .gastos__mes {
+    flex: 0 0 auto;
+  }
+
+  /* `.pantalla` asks for `min-height: 100dvh`. On a page taller than its viewport that grows
+     with the viewport and pushes the "Nueva venta" button and the bar below it down, so the
+     page changes when only its height does. Analysis fills the column's leftover room
+     instead, which keeps the bar at the bottom of a short page and moves nothing on a tall one. */
+  .analisis.pantalla {
+    min-height: 0;
+    flex: 1 0 auto;
+  }
+
+  /* The screen is as tall as its content and no more: with the base `min-height: 100dvh` a page
+     taller than the viewport grows by the button and bar below it when the viewport grows to
+     fit it. `.columna-principal` still fills the screen, so a short page keeps its bar at the
+     bottom. */
+  .analisis.pantalla {
+    min-height: 0;
+    flex: 1 0 auto;
+  }
+
+  /* Expenses' `flex-basis: 100%` is a width in its wrapping row; in Analysis's column it would be
+     a height, and the selector would stretch with a tall page. */
+  .analisis .gastos__mes {
+    flex-basis: auto;
+  }
+
+  .analisis .gastos__mes-boton {
+    min-width: var(--alto-tocable);
+    min-height: var(--alto-tocable);
+    touch-action: manipulation;
+  }
+
+  .analisis .analisis__tarjeta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    min-width: 0;
+    padding: var(--espacio-md);
+    border: 1px solid var(--linea);
+    border-radius: var(--radio-panel);
+    font-size: 14px;
+    color: var(--tinta2);
+  }
+
+  /* The current week is set apart by an edge, never by a fill alone. */
+  .analisis .analisis__tarjeta--actual {
+    border-inline-start: 4px solid var(--acento);
+  }
+
+  .analisis .analisis__tarjeta-cabecera {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+    min-width: 0;
+  }
+
+  /* Only names and period labels end in an ellipsis. */
+  .analisis .analisis__tarjeta-titulo {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--tinta);
+  }
+
+  .analisis .analisis__tarjeta-titular {
+    flex: none;
+    font-size: 17px;
+    color: var(--tinta);
+  }
+
+  .analisis .analisis__tarjeta-fila {
+    min-width: 0;
+  }
+
+  /* The figure never wraps or splits: its "$" stays with its digits. */
+  .analisis .analisis__tarjeta-cifra {
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--tinta);
+  }
+
+  /* The pending text is a line of its own under its figure, whole. */
+  .analisis .analisis__tarjeta-pendiente {
+    font-size: 13px;
+    color: var(--tinta2);
+  }
+
+  .analisis .analisis__tarjeta > .analisis__barra-pista {
+    flex: none;
+    align-self: stretch;
+  }
+
+  /* The hero (GH-319): the month's sales is one unbreakable unit that shrinks with the
+     width, as the sale detail's total does, so nine digits and their "$" fit at 246 px. */
+  .analisis .cifra-xl {
+    font-size: clamp(20px, 8.5vw, 54px);
+    white-space: nowrap;
+  }
+
+  .analisis .analisis__monto-cifra,
+  .analisis .analisis__dia-cifra {
+    white-space: nowrap;
+  }
+
+  /* The aside: the page's column may not be wider than the screen, whatever it holds. */
+  .analisis .analisis__aside,
+  .analisis .analisis__dias,
+  .analisis .analisis__gastos {
+    min-width: 0;
+  }
+
+  /* An expense category's name ends in an ellipsis and its subtotal stays whole. The last
+     row (the purchases line, with its note) is not a name: it wraps and is never cut. */
+  .analisis .analisis__gastos > .gastos__categoria-cabecera:not(:last-child) > .gastos__categoria-nombre {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .analisis .analisis__gastos > .gastos__categoria-cabecera:last-child > .gastos__categoria-nombre {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .analisis .gastos__categoria-subtotal {
+    flex: none;
+    white-space: nowrap;
+  }
 }
 
 @media (min-width: 900px) {
@@ -3413,16 +3523,6 @@ body {
   .analisis__aside {
     flex: 1 1 300px;
     max-width: 380px;
-  }
-
-  .analisis__variedades,
-  .analisis__semanas,
-  .analisis__meses {
-    display: none;
-  }
-
-  .analisis__tabla-contenedor {
-    display: block;
   }
 
   /* `InicioCompu`: Te deben and Lo que te queda sit side by side instead of
