@@ -3311,6 +3311,15 @@ body {
     flex: 1 0 auto;
   }
 
+  /* The screen is as tall as its content and no more: with the base `min-height: 100dvh` a page
+     taller than the viewport grows by the button and bar below it when the viewport grows to
+     fit it. `.columna-principal` still fills the screen, so a short page keeps its bar at the
+     bottom. */
+  .analisis.pantalla {
+    min-height: 0;
+    flex: 1 0 auto;
+  }
+
   /* Expenses' `flex-basis: 100%` is a width in its wrapping row; in Analysis's column it would be
      a height, and the selector would stretch with a tall page. */
   .analisis .gastos__mes {
