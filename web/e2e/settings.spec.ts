@@ -12,6 +12,7 @@
 import { CATALOG, HOME, LOGIN } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
+import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
@@ -43,8 +44,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount').fill('4500')
   await page.getByLabel('Details').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Save the expense' }).click()
-  await expect(page.getByText('Expense saved')).toBeVisible()
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
   // One tap from Inicio's avatar: the list of groups, then a group, then "Close" back.
   const openGroup = async (name: string): Promise<void> => {
@@ -62,8 +62,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   const renamedTo = `${businessName} Renombrado`
   await openGroup('Business')
   await page.getByLabel('Business name').fill(renamedTo)
-  await page.getByRole('button', { name: 'Save the name' }).click()
-  await expect(page.getByText('Business renamed')).toBeVisible()
+  await expectToast(page, 'Business renamed', () => page.getByRole('button', { name: 'Save the name' }).click())
   await close()
 
   // Usuarios: a fresh join link.
@@ -76,8 +75,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await openGroup('Integrations')
   await page.getByLabel('Bot token').fill('123456:fake-token-for-e2e')
   await page.getByLabel('Your chat').fill('111111')
-  await page.getByRole('button', { name: 'Test it' }).click()
-  await expect(page.getByText('Test sent')).toBeVisible()
+  await expectToast(page, 'Test sent', () => page.getByRole('button', { name: 'Test it' }).click())
   await page.getByRole('link', { name: 'Go to the catalog' }).click()
   await expectPath(page, CATALOG)
   await page.goBack()
@@ -87,8 +85,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await openGroup('Catalog message')
   await page.getByLabel('Header').fill('🌿 Catálogo de la semana')
   await page.getByLabel('Footer').fill('Consultas por privado.')
-  await page.getByRole('button', { name: 'Save the message' }).click()
-  await expect(page.getByText('Catalog saved')).toBeVisible()
+  await expectToast(page, 'Catalog saved', () => page.getByRole('button', { name: 'Save the message' }).click())
   await close()
 
   // Categorías de gastos: add, rename, a refused removal, then remove.
@@ -126,8 +123,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Current password').fill(PASSWORD)
   await sheet.getByLabel('New password').fill(NEW_PASSWORD)
-  await sheet.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Password changed · we signed out your other sessions')).toBeVisible()
+  await expectToast(page, 'Password changed · we signed out your other sessions', () => sheet.getByRole('button', { name: 'Save' }).click())
   await page.getByRole('button', { name: 'Sign out' }).click()
   await expectPath(page, LOGIN)
 

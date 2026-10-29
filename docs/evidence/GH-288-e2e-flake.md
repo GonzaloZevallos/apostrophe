@@ -114,7 +114,8 @@ changed.
 
 ## Kept sites and proofs
 
-The guard (`web/src/architecture/e2eToastRule.test.ts`) prints, from `npm --prefix web test -- e2eToastRule`:
+The guard (`web/src/architecture/e2eToastRule.test.ts`) prints, from `npm --prefix web test -- e2eToastRule`
+(at part 1, kept as history; the current counts are under "After part 3" below):
 
 ```
 e2eToastRule: 27 sites observed in the page, 6 kept on page text, 86 pending
@@ -133,6 +134,8 @@ Kept on page text, with the reason (each is also a `KEPT` line in the guard):
 | `flow.spec.ts:176` | Category saved | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:180` | Category deleted | `.aviso-toast`: the recorder does not watch the category toasts |
 | `flow.spec.ts:188` | Business renamed | no product timer: page visibility is the stronger check (`expectToast` runs on the click as well) |
+| `settings.spec.ts:95` | Category saved | `.aviso-toast`: the recorder does not watch the category toasts |
+| `settings.spec.ts:108` | Category deleted | `.aviso-toast`: the recorder does not watch the category toasts |
 
 Not flagged and left alone: "Sale saved" and "Sale deleted" (`.venta-guardada`, not in `SuccessToast`).
 One migrated step replaced by a comment: the second "Expense saved" in `flow.spec.ts` (editing the
@@ -167,3 +170,88 @@ the 4.7 min seen (about 282 s) sits between the two-core figure and the loaded o
 `withToastRecorder` around `newContext` in `web/e2e/mobile/cells.ts`; the recorder does constant work
 per mutation record (`matches`, `querySelectorAll` on added nodes, `closest`). Not measured: local e2e is
 off, so this is read from the code and the config. `11dc1586` passed the full run in 995.6 s.
+
+## After part 3
+
+Part 3 migrates the 12 specs `analysis`, `withdrawals`, `settings`, `catalog`, `archivadas`, `pinnedCatalog`,
+`catalogInsecureOrigin`, `insets`, `varietiesAutoSelect`, `priceModal`, `tapBudget` and `passwords`. They held 47
+`PENDING` sites. 44 are wrapped in `expectToast`, 2 are kept (the `.aviso-toast` category toasts, in the kept table above)
+and 1 is a repeat. The guard prints, from `npm --prefix web test -- e2eToastRule`:
+
+```
+e2eToastRule: 71 sites observed in the page, 8 kept on page text, 39 pending
+```
+
+The 39 sites left are in the specs of part 2. `PENDING_CEILING` is 39, equal to `PENDING.length`, because part 2 has not
+merged. Whichever of parts 2 and 3 merges second sets the ceiling to 0 and empties `PENDING`; the existing shrink test then asserts it stays empty.
+
+**Classification of the 47 sites**, made before any edit. Lines are those of the base (`8d77fe04`), before the specs changed;
+the kept rows give the new line too. A migrated site is wrapped in `expectToast(page, text, action)`: no earlier toast with
+the same text was raised in the same document without a `goto` or a route change since, so the recorder sees a new element.
+
+| Site (base) | Text | Class | Action, and what separates it from an earlier toast with the same text |
+|---|---|---|---|
+| `analysis.spec.ts:41` | Variety saved | migrate | click "Add the variety"; `goto(VARIETIES)` before, first in its document |
+| `analysis.spec.ts:46` | Price saved | migrate | click "Save the price"; different text from :41, and routes changed since |
+| `analysis.spec.ts:57` | Entry saved | migrate | click "Save the entry"; `goto(STOCK_ENTRY_NEW)` before, first in its document |
+| `analysis.spec.ts:75` | Expense saved | migrate | click "Save the expense"; `goto(SALE_NEW)` and route changes before, first in its document |
+| `analysis.spec.ts:167` | Entry saved | migrate | `recordEntry` click "Save the entry"; `goto(STOCK_ENTRY_NEW)` at the top of the helper |
+| `analysis.spec.ts:180` | Withdrawal saved | migrate | `recordWithdrawal` click "Save the withdrawal"; `goto(WITHDRAWAL_NEW)` at the top of the helper |
+| `analysis.spec.ts:198` | Variety saved | migrate | click "Add the variety" in the loop; `goto(VARIETIES)` at the top of each round |
+| `analysis.spec.ts:209` | Price saved | migrate | click "Save the price"; `goto(VARIETIES)` and route changes since the last toast |
+| `archivadas.spec.ts:41` | Variety saved | migrate | `addVariety` click "Add the variety"; `goto(VARIETIES)` at the top of the helper (called twice) |
+| `archivadas.spec.ts:51` | Variety deleted | migrate | click "Yes, delete it"; different text, `goto(VARIETIES)` before |
+| `archivadas.spec.ts:61` | Price saved | migrate | click "Save the price"; `goto(VARIETIES)` before |
+| `archivadas.spec.ts:71` | Variety archived | migrate | click "Yes, archive it"; different text, `goto(VARIETIES)` before |
+| `archivadas.spec.ts:106` | Variety restored | migrate | click "Restore"; different text, `goto(VARIETIES)` and route changes before. The comment lines between click and assertion stay after the wrapped click |
+| `catalog.spec.ts:65` | Variety saved | migrate | click "Add the variety"; `goto(VARIETIES)` before, first in its document |
+| `catalog.spec.ts:70` | Price saved | migrate | click "Save the price"; different text, route changes since |
+| `catalog.spec.ts:77` | Entry saved | migrate | click "Save the entry"; `goto(STOCK_ENTRY_NEW)` before |
+| `catalog.spec.ts:91` | Catalog saved | migrate | click "Save the catalog"; `goto(VARIETIES)` before, first in its document |
+| `catalog.spec.ts:102` | Catalog saved | migrate | click "Save the message"; `goto(CATALOG)` and a route change since :91 |
+| `catalog.spec.ts:127` | Catalog copied | migrate | click "Copy"; different text, first in its document |
+| `catalogInsecureOrigin.spec.ts:108` | Price saved | migrate | click "Save the price"; `goto(VARIETIES)` before, first in its document |
+| `catalogInsecureOrigin.spec.ts:115` | Entry saved | migrate | click "Save the entry"; `goto(STOCK_ENTRY_NEW)` before |
+| `catalogInsecureOrigin.spec.ts:124` | Catalog copied | migrate | click "Copy"; `goto(CATALOG)` before, first in its document |
+| `insets.spec.ts:119` | Variety saved | migrate | click "Add the variety"; `goto(VARIETIES)` before, first in its document |
+| `insets.spec.ts:124` | Price saved | migrate | click "Save the price"; different text, route changes since |
+| `passwords.spec.ts:70` | Password changed · we signed out your other sessions | migrate | sheet click "Save"; `goto(SETTINGS_ACCOUNT)` before, first in its document |
+| `pinnedCatalog.spec.ts:43` | Variety saved | migrate | click "Add the variety"; `goto(VARIETIES)` before, first in its document |
+| `pinnedCatalog.spec.ts:48` | Price saved | migrate | click "Save the price"; different text, route changes since |
+| `pinnedCatalog.spec.ts:88` | Test sent | migrate | click "Test it"; the earlier Probarlo at :72 raised an alert, not a toast, so first in its document |
+| `pinnedCatalog.spec.ts:100` | Test sent | repeat | second identical "Test sent" on the still-mounted toast of :88, no location change and no assertion that saw the first go away; the recorder's per-element `lastText` records nothing. The `tested` response wait stays, the assertion becomes a one-line comment and the link, Publish and "Up to date" steps after it carry the proof |
+| `pinnedCatalog.spec.ts:108` | Catalog published | migrate | click "Publish"; different text, route changed to the catalog screen since |
+| `priceModal.spec.ts:21` | Variety saved | migrate | `addVariety` click "Add the variety"; `goto(VARIETIES)` at the top of the helper (called twice) |
+| `settings.spec.ts:47` | Expense saved | migrate | click "Save the expense"; first in its document |
+| `settings.spec.ts:66` | Business renamed | migrate | click "Save the name"; different text, `goto(HOME)` and route changes since :47 |
+| `settings.spec.ts:80` | Test sent | migrate | click "Test it"; different text, route changes (`close()`, `openGroup`) since |
+| `settings.spec.ts:91` | Catalog saved | migrate | click "Save the message"; different text, route changes since |
+| `settings.spec.ts:98` | Category saved | keep | `.aviso-toast` (`Aviso.tsx`): the recorder does not watch the category toasts; now `settings.spec.ts:95` |
+| `settings.spec.ts:111` | Category deleted | keep | `.aviso-toast` (`Aviso.tsx`): the recorder does not watch the category toasts; now `settings.spec.ts:108` |
+| `settings.spec.ts:130` | Password changed · we signed out your other sessions | migrate | sheet click "Save"; different text, route changes since |
+| `tapBudget.spec.ts:106` | Expense saved | migrate | click "Save the expense" plus the `expectPath(MORE)` that belongs to it; `goto(MORE)` before, first in its document |
+| `varietiesAutoSelect.spec.ts:31` | Variety saved | migrate | click "Add the variety"; `goto(VARIETIES)` before, first in its document |
+| `withdrawals.spec.ts:33` | Variety saved | migrate | click "Add the variety"; `goto(VARIETIES)` before, first in its document |
+| `withdrawals.spec.ts:40` | Entry saved | migrate | click "Save the entry"; different text, `goto(VARIETIES)` before |
+| `withdrawals.spec.ts:52` | Withdrawal saved | migrate | click "Save the withdrawal"; first in its document (from Más) |
+| `withdrawals.spec.ts:64` | Withdrawal saved | migrate | click "Save the withdrawal"; `goto(VARIETIES)` since :52 |
+| `withdrawals.spec.ts:74` | Withdrawal saved | migrate | click "Save the withdrawal"; route changes (`openMas`, the link to the form) since :64 |
+| `withdrawals.spec.ts:85` | Withdrawal deleted | migrate | click "Yes, delete it"; different text, `goto(VARIETIES)` before |
+| `withdrawals.spec.ts:96` | Withdrawal saved | migrate | click "Yes, save"; `goto(VARIETIES)` since :74 |
+
+**Repeat.** `pinnedCatalog.spec.ts:100`: the second identical "Test sent" lands on the toast of `:88`, still mounted; the
+recorder keeps `lastText` per element (`web/e2e/toastRecorder.ts`), so `expectToast` cannot see it. The spec keeps its
+`tested` response wait and replaces the assertion with a one-line comment; it adds no wait.
+
+**`catalogInsecureOrigin.spec.ts`** uses the `page` fixture, whose context already installs the recorder (`fixtures.ts`), so it needs no `withToastRecorder`.
+
+**Looked at, not flagged** (a `getByText`/`filter` with a regex, a substring or a held text in the 12 specs, code left as it is):
+
+- `settings.spec.ts:107` "It can't be deleted: it still has expenses. You can rename it." is a refusal alert, not a success toast.
+- `withdrawals.spec.ts:83` `/1 g go back to stock\./` is the confirmation's page text.
+- `archivadas.spec.ts:108, 111` `/Archived \(/` are the list's page text, as negative assertions.
+- `pinnedCatalog.spec.ts:85, 89` "Saved on" is page text.
+- `analysis.spec.ts:64, 230` and `archivadas.spec.ts:65` "Sale saved" is `.venta-guardada`, not in `SuccessToast`.
+- `passwords.spec.ts:128` the dead-link message is page text.
+
+**Not run here.** Local e2e is suspended (PR #434): no local e2e run is claimed. The e2e proof for these steps is the pull request's CI `e2e` job.
