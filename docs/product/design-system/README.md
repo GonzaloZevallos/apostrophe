@@ -137,6 +137,8 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--serie3` | ícono | — | — | — | |
 | `--serie4` | ícono | — | — | — | |
 | `--serie5` | ícono | — | — | — | |
+| `--linea` | ícono | — | — | — | |
+| `--deuda-linea` | ícono | — | — | — | |
 <!-- contraste:fin -->
 
 ### La paleta Yerba
@@ -167,6 +169,10 @@ token, entero, al valor más cercano que pasa; es la única):
 
 - `--deuda` en claro: `#a85a06` → `#a35706`. Sobre `--acento-suave` medía 4,35 y la
   tabla exige 4,5. Sobre `--papel` pasa de 4,73 a 4,98.
+
+**Bordes decorativos** (`--linea`, `--deuda-linea`). Sólo se usan como `border` o
+`background-color` de una línea, nunca como `color` de texto ni de un ícono con significado:
+están exentos de los 4,5:1 y por eso llevan fila `ícono` sin selectores, igual que las series.
 
 Ningún otro valor de la dueña se movió. `--deuda-fondo` en claro no es de la dueña: se
 aclaró de `#f6e8d4` a `#fbf1e3` para que `--deuda`, `--positivo` y `--negativo` lleguen a

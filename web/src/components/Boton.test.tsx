@@ -61,6 +61,7 @@ test('the destructive variant carries both the base and the destructive class', 
   )
   const button = screen.getByRole('button', { name: 'Sí, borrala' })
   expect(button.className).toBe('boton boton--destructivo')
+  expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
 })
 
 test('the critical variant is icon + text in its own class, never the filled destructive one', () => {
