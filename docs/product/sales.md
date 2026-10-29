@@ -1,479 +1,481 @@
-# Sales
-
-What a customer takes in one go, each line priced from the day's prices and the business's pricing settings, and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). This capability reads:
-- current prices from varieties;
-- customers, with their VIP status, from customers;
-- which pricing rules the business uses from pricing settings (pricing-settings.md).
-
-Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: New sale, Sales and a sale's detail, on the phone and on a computer, and the sale bill shared from a sale's detail. Where they sit is navigation.md.
-
 ## Jobs
 
-**When** I hand over an order (one or several varieties, maybe with shipping, paid on the spot or left owing), **I want** to record it in a few taps (varieties, grams, who took it, how they paid) with each line priced from that day's current prices and the price kept on the line, **so I** never price from memory, a later price change never rewrites what I charged, and nothing left owing is lost or lands on the wrong person.
+**Cuando** entrego un pedido (una o varias variedades, quizás con envío, pagado en el momento o dejado debiendo), **quiero** registrarlo en pocos toques (variedades, gramos, quién se lo llevó, cómo pagó) con cada línea cotizada con los precios vigentes de ese día y el precio guardado en la línea, **para** no cotizar nunca de memoria, que un cambio de precio posterior nunca reescriba lo que cobré, y que nada de lo que quedó debiendo se pierda ni caiga en la persona equivocada.
 
-**When** a customer orders over Telegram or WhatsApp and I'm handing it over, **I want** to load the order on my phone in a few taps (varieties, grams, who takes it, how they paid) and watch each line's price, rule and total, and the sale's total, update as I type, **so I can** confirm the total to the customer in the chat, never price from memory, and never have to redo a sale after saving it.
+**Cuando** un cliente pide por Telegram o WhatsApp y se lo estoy entregando, **quiero** cargar el pedido en el teléfono en pocos toques (variedades, gramos, quién se lo lleva, cómo pagó) y ver cómo se actualizan mientras escribo el precio, la regla y el total de cada línea, y el total de la venta, **para** confirmarle el total al cliente en el chat, no cotizar nunca de memoria y no tener que rehacer nunca una venta después de guardarla.
 
-**When** I'm handing over an order on my phone, mid-chat with the customer on Telegram or WhatsApp and often with one hand free, **I want** to fill in and save the sale with my thumb, with every field whole and readable, the total and "Save sale" always in reach, and the keyboard never hiding what I'm typing, **so I can** confirm the total in the chat and get back to the customer in under a minute, without zooming, mis-tapping, losing the order or redoing the sale. (This refines the two jobs above for the phone; it is not a new job.)
+**Cuando** estoy entregando un pedido con el teléfono, en medio del chat con el cliente por Telegram o WhatsApp y muchas veces con una sola mano libre, **quiero** completar y guardar la venta con el pulgar, con cada campo entero y legible, el total y "Save sale" siempre a mano, y el teclado sin tapar nunca lo que estoy escribiendo, **para** confirmar el total en el chat y volver con el cliente en menos de un minuto, sin hacer zoom, sin tocar mal, sin perder el pedido y sin rehacer la venta. (Afina las dos historias anteriores para el teléfono; no es un trabajo nuevo).
 
-**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has (a bulk price if I sell by quantity, and a VIP price I set per variety if I have VIP customers), **so I can** charge every customer exactly what I mean to without typing a special price by hand, without seeing fields that don't apply to me, and without anyone's price changing by surprise. (This refines the first job; it is not a new job. Defined in pricing-settings.md.)
+**Cuando** configuro cómo cotiza mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las reglas de precio que tiene mi negocio (un precio por cantidad si vendo por volumen, y un precio VIP que fijo por variedad si tengo clientes VIP), **para** cobrarle a cada cliente exactamente lo que quiero cobrarle sin tipear un precio especial a mano, sin ver campos que no me aplican y sin que a nadie le cambie el precio por sorpresa. (Afina la primera historia; no es un trabajo nuevo. Definido en pricing-settings.md).
 
-**When** I want to check what I sold today, this week or this month, **I want** to see that period's sales with their total and count, **so I can** tell how it's going between orders and find a particular sale to fix.
+**Cuando** quiero revisar lo que vendí hoy, esta semana o este mes, **quiero** ver las ventas de ese período con su total y su cantidad, **para** saber cómo viene la cosa entre pedido y pedido y encontrar una venta puntual para corregirla.
 
-**When** I check between orders what I sold today, this week or this month, **I want** to switch period and open a sale on my phone without mis-tapping and without a blank screen while it loads, **so I can** find the sale to fix and assign its customer or delete it in a few taps. (This refines the job above and criterion 11 for the phone; fixing a sale still means exactly those two things.)
+**Cuando** reviso entre pedidos lo que vendí hoy, esta semana o este mes, **quiero** cambiar de período y abrir una venta en el teléfono sin tocar mal y sin una pantalla en blanco mientras carga, **para** encontrar la venta a corregir y asignarle su cliente o borrarla en pocos toques. (Afina la historia anterior y el criterio 11 para el teléfono; corregir una venta sigue siendo exactamente esas dos cosas).
 
-**When** I have recorded a sale, or a customer later asks what they took or what they owe, **I want** to send them a short plain-text bill of that sale in one tap (its lines, shipping, total, how they paid, what is still owed on it and their balance now), **so I can** answer in our chat without retyping or working out figures, and the customer sees the same numbers I do. (The sale bill; the story names "the chat", never a channel, by Assume nothing.)
+**Cuando** registré una venta, o un cliente me pregunta después qué se llevó o cuánto me debe, **quiero** mandarle en un toque el comprobante de esa venta en texto plano y corto (sus líneas, el envío, el total, cómo pagó, lo que todavía debe de esa venta y su saldo de ahora), **para** contestarle en nuestro chat sin volver a tipear ni sacar cuentas, y que el cliente vea los mismos números que veo yo. (El comprobante de venta, **Sale bill**; la historia dice "el chat" y no nombra ningún canal, por Assume nothing).
 
-**When** a customer pays me part or all of what they owe, in cash or by transfer, on the day or weeks later, **I want** to record it from my phone in a few taps and see their balance and "owing since" drop right away, **so I** always know who owes me what and since when, and nothing they paid or still owe gets lost or lands on the wrong person. (Served here by the "owes you" mark in Sales; defined in `payments.md`.)
+**Cuando** un cliente me paga parte o todo lo que me debe, en efectivo o por transferencia, el mismo día o semanas después, **quiero** registrarlo desde el teléfono en pocos toques y ver que su saldo y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Acá lo sirve la marca "owes you" en Sales; definido en `payments.md`).
 
-**When** I register a customer (from Customers, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by Pick a customer's "New customer"; defined in `customers.md`.)
+**Cuando** doy de alta un cliente (desde Customers, en medio de una venta o con la importación única de la planilla) y no tengo su número de teléfono, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app. (Acá lo sirve "New customer" de Pick a customer; definido en `customers.md`).
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "+ New sale", one tap from every tab root.)
+**Cuando** manejo mi negocio desde el teléfono entre pedido y pedido o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver con el cliente en lugar de buscar entre menús. (La historia de navegación, navigation.md: acá la sirve "+ New sale", a un toque desde cada raíz de pestaña).
 
-The protagonist of the phone jobs is the seller. The computer layouts (`NuevaVentaCompu`, `VentasCompu`) are the same jobs on a bigger screen. Before the phone redesign the seller recorded sales on the phone with friction (scrolling to find the save button, zooming to hit small controls, sometimes recording later from memory), with no fallback outside the app.
+# Ventas
 
-The sale bill serves two moments: right after saving, with the customer still waiting in the chat (the main one), and later, when the customer asks and the seller opens that sale's detail. Assumed today: the seller retypes the order and total, or sends a screenshot, and works out the balance by hand.
+Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios del día y la configuración de precios del negocio, y ese precio guardado en la línea (ADR-0003). Las ventas las ve solo su negocio (ADR-0004). Esta capacidad lee:
+- los precios vigentes, de las variedades;
+- los clientes, con su estado VIP, de clientes;
+- qué reglas de precio usa el negocio, de la configuración de precios (pricing-settings.md).
 
-Success criteria, recording (API):
+Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo. El stock (`stock.md`) saca los gramos de cada línea de los lotes de su variedad y le da a la línea su costo de mercadería, que sigue a los lotes y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el comprobante de venta que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
 
-1. **Speed**: from the phone, a sale is recorded in under 60 s, from opening the form to saved.
-   - This holds with an existing customer, a new one (with or without a phone number), or none, and a sale without a customer is the fastest.
-   - It is one minute shared with customers.md's find-or-register budget, not a second minute on top.
-2. **One order is one sale**: an order is one sale however many varieties it has, with shipping charged once. Its total is the sum of its lines plus shipping. Counts and averages count sales, not lines.
-3. **Right price, kept**:
-   - Each line is priced by the rules below, from the variety's current price on the sale's date and the business's pricing settings when it is saved. It stores its price per gram and pricing rule.
-   - Later changes never alter what an existing sale charged: price entries, the pricing settings, a change to a customer's VIP status, a customer assigned afterwards, any stock entry, or any payment.
-   - A line whose variety has no price that day is refused, unless it has a special price.
-4. **No limbo, no lost debt**:
-   - A sale with missing or invalid data is refused whole.
-   - A sale left owing always has a customer. Only a sale where nothing stays owed may have none.
-   - A customer can be added to it later, once, and never swapped for another.
-5. **Businesses never mix** (ADR-0004): a sale references only its own business's customers and varieties. Another business's sale answers 404, and lists show none of it. The note never appears in error answers or logs (ADR-0005).
+La protagonista de las historias del teléfono es la vendedora. Los diseños de computadora (`NuevaVentaCompu`, `VentasCompu`) son las mismas historias en una pantalla más grande. Antes del rediseño para teléfono, la vendedora registraba ventas en el teléfono con fricción (bajar para encontrar el botón de guardar, hacer zoom para acertar controles chicos, a veces registrar después de memoria), sin ninguna alternativa fuera de la app.
 
-Success criteria, pricing rules (pricing-settings.md):
+El comprobante de venta sirve en dos momentos: justo después de guardar, con el cliente todavía esperando en el chat (el principal), y más tarde, cuando el cliente pregunta y la vendedora abre el detalle de esa venta. Supuesto sobre hoy: la vendedora vuelve a tipear el pedido y el total, o manda una captura, y saca el saldo a mano.
 
-17. **Only the business's rules apply.** With a rule switched off, a sale is priced as if the rule did not exist, and New sale shows nothing about it. With both off, every line that is neither a gift nor a special price takes the list price.
-18. **A VIP never pays more than a regular customer.** A VIP customer is charged the lowest of the rules that apply to the line. A variety with no VIP price charges a VIP like anyone else.
-19. **Nobody's price moves by surprise.** After the migration, every existing VIP customer is charged exactly what they were charged before, for the same variety, day and grams.
+Criterios de éxito, registro (API):
 
-Success criteria, on screen:
+1. **Velocidad**: desde el teléfono, una venta se registra en menos de 60 s, desde que se abre el formulario hasta que queda guardada.
+   - Vale con un cliente existente, uno nuevo (con o sin número de teléfono) o ninguno, y la venta sin cliente es la más rápida.
+   - Es un minuto compartido con el presupuesto de buscar o dar de alta de customers.md, no un segundo minuto aparte.
+2. **Un pedido es una venta**: un pedido es una sola venta por más variedades que tenga, con el envío cobrado una vez. Su total es la suma de sus líneas más el envío. Cantidades y promedios cuentan ventas, no líneas.
+3. **Precio correcto y guardado**:
+   - Cada línea se cotiza con las reglas de abajo, a partir del precio vigente de la variedad en la fecha de la venta y de la configuración de precios del negocio al momento de guardar. Guarda su precio por gramo y su regla de precio.
+   - Los cambios posteriores nunca alteran lo que cobró una venta existente: entradas de precio, la configuración de precios, un cambio en el estado VIP de un cliente, un cliente asignado después, cualquier entrada de stock o cualquier pago.
+   - Se rechaza una línea cuya variedad no tiene precio ese día, salvo que tenga precio especial.
+4. **Sin limbo, sin deuda perdida**:
+   - Una venta con datos faltantes o inválidos se rechaza entera.
+   - Una venta que queda debiendo siempre tiene cliente. Solo puede no tenerlo una venta en la que no queda nada debiendo.
+   - Se le puede agregar un cliente después, una sola vez, y nunca cambiarlo por otro.
+5. **Los negocios nunca se mezclan** (ADR-0004): una venta referencia solo clientes y variedades de su propio negocio. La venta de otro negocio responde 404 y las listas no muestran nada de ella. La nota nunca aparece en respuestas de error ni en logs (ADR-0005).
 
-6. **What I see is what I get**: if prices and the pricing settings don't change between preview and save, every line's price per gram, rule and total, and the sale's total, match what the API stores, with 0 differences. After saving, the screen shows what the API answered, not the preview.
-7. **No surprises at save time**:
-   - Owing is disabled with "To leave it owing, pick a customer", and a line with no price that day shows "<variety> has no price for that date", both before saving.
-   - Any other refusal comes back with its code, shows in Spanish on its field, and everything typed stays.
-   - A refused sale never loses the order.
-8. **One order is one sale on screen**: one form, one total and shipping charged once.
-9. **Undo in one tap**: a sale saved by mistake is undone in one tap from the "Sale saved" notice, and nothing of it remains: no lines, no on-the-spot payment, and it is in no list.
-10. **Glance between orders**: switching between Today, Week (Monday to Sunday) and Month, or picking Dates, answers fast enough to glance at in the middle of a chat.
-11. **Find and fix**: any sale in the period can be found and opened. In its detail, a sale with no customer can be given one (once, never changed), and a wrong sale can be deleted. Fixing a sale means exactly these two things.
+Criterios de éxito, reglas de precio (pricing-settings.md):
 
-Success criteria, on the phone:
+17. **Solo aplican las reglas del negocio.** Con una regla apagada, la venta se cotiza como si la regla no existiera, y New sale no muestra nada de ella. Con las dos apagadas, toda línea que no es regalo ni precio especial toma el precio de lista.
+18. **Un VIP nunca paga más que un cliente común.** A un cliente VIP se le cobra el menor de los precios de las reglas que aplican a la línea. Una variedad sin precio VIP le cobra a un VIP como a cualquiera.
+19. **A nadie le cambia el precio por sorpresa.** Después de la migración, a cada cliente VIP existente se le cobra exactamente lo mismo que antes, para la misma variedad, día y gramos.
 
-12. **Nothing clipped, save in reach**: at 320, 375 and 430 px wide and at 130 % text, nothing in New sale, Sales or a sale's detail overflows or is clipped. In New sale the total and "Save sale" are visible without scrolling, above the keyboard and the home indicator, and the last field can be scrolled fully into view.
-13. **Thumb-sized, no zoom**: every control on these screens, dialog buttons included, is at least 44 px tall; every input is at least 16 px, the date included, so iOS never zooms on focus. Grams open a decimal keypad and pesos a numeric one, with `enterkeyhint` to move through a line.
-14. **Never blank**: nothing on these screens that waits for the server shows a blank screen; the sale is still recorded in under 60 s (criterion 1).
-15. **The order is never lost by accident**: the system back gesture asks "Discard the sale?" under exactly the same condition as "Close".
-16. **Nothing else changes**: pricing, the preview, the flow, the texts and the computer layouts behave as defined here; existing sales and navigation tests pass without being edited to fit the phone layout.
+Criterios de éxito, en pantalla:
 
-Success criteria, sale bill:
+6. **Lo que ves es lo que queda**: si los precios y la configuración de precios no cambian entre la vista previa y el guardado, el precio por gramo, la regla y el total de cada línea, y el total de la venta, coinciden con lo que guarda la API, con 0 diferencias. Después de guardar, la pantalla muestra lo que respondió la API, no la vista previa.
+7. **Sin sorpresas al guardar**:
+   - Owing queda deshabilitado con "To leave it owing, pick a customer", y una línea sin precio ese día muestra "<variety> has no price for that date", las dos cosas antes de guardar.
+   - Cualquier otro rechazo vuelve con su código, se muestra sobre su campo y todo lo tipeado se conserva.
+   - Una venta rechazada nunca pierde el pedido.
+8. **Un pedido es una venta en pantalla**: un formulario, un total y el envío cobrado una vez.
+9. **Deshacer en un toque**: una venta guardada por error se deshace en un toque desde el aviso "Sale saved", y no queda nada de ella: ni líneas, ni pago en el momento, y no aparece en ninguna lista.
+10. **Un vistazo entre pedidos**: pasar entre Today, Week (de lunes a domingo) y Month, o elegir Dates, responde lo bastante rápido como para mirarlo en medio de un chat.
+11. **Encontrar y corregir**: cualquier venta del período se puede encontrar y abrir. En su detalle, a una venta sin cliente se le puede dar uno (una vez, nunca cambiarlo), y una venta equivocada se puede borrar. Corregir una venta es exactamente esas dos cosas.
 
-20. **One tap, no typing.** On the sale's detail, one tap on the phone opens the phone's share sheet with the bill ready or puts it on the clipboard; choosing the chat and sending are the phone's own steps. If sharing or copying fails, the seller still gets the text with no typing.
-21. **The figures match the app.** The bill's total, payment state, still-owed amount and balance always agree with the sale's detail, because they come from the same settlement pass in the same response. Evidence: the hand-written reference set, 0 mismatches.
-22. **Nothing private leaks.** No note, customer name, VIP, special or list wording, ids or links; a VIP or special line reads like a list line. The bill adds no formatting of its own, while names the seller typed (the business and its varieties) go out exactly as typed. Evidence: the leak test.
-23. **Assume nothing holds.** Every fixed word and the unit come from the copy module; the unit is one entry, "g" by default, until #318. Evidence: with the unit set to "u", the text reads "3,5 u" and "/u".
+Criterios de éxito, en el teléfono:
 
-## Behaviour
+12. **Nada recortado, guardar a mano**: a 320, 375 y 430 px de ancho y con el texto al 130 %, nada de New sale, Sales o el detalle de una venta desborda ni queda recortado. En New sale, el total y "Save sale" se ven sin desplazar, por encima del teclado y del indicador de inicio, y el último campo se puede llevar entero a la vista.
+13. **Del tamaño del pulgar, sin zoom**: todo control de estas pantallas, botones de diálogo incluidos, mide al menos 44 px de alto; todo campo tiene al menos 16 px, la fecha incluida, para que iOS nunca haga zoom al enfocar. Los gramos abren un teclado decimal y los pesos uno numérico, con `enterkeyhint` para avanzar por una línea.
+14. **Nunca en blanco**: nada de estas pantallas que espera al servidor muestra una pantalla en blanco; la venta se sigue registrando en menos de 60 s (criterio 1).
+15. **El pedido nunca se pierde por accidente**: el gesto de volver del sistema pregunta "Discard the sale?" exactamente con la misma condición que "Close".
+16. **Nada más cambia**: la cotización, la vista previa, el flujo, los textos y los diseños de computadora se comportan como se define acá; los tests existentes de ventas y de navegación pasan sin editarlos para acomodarlos al diseño del teléfono.
 
-- **Sale**:
-  - It has a date, at most one customer, shipping charged, an optional note, how it was paid, and one or more lines.
-  - A sale with no lines is refused.
-- **Date**:
-  - Defaults to today, the business day in Argentina time.
-  - It cannot be later than today. Earlier dates are allowed.
-- **Line**:
-  - It has a variety of the same business and grams above zero, with at most two decimals, whatever its rule.
-  - A line may optionally be marked as a gift or given a special price.
-  - The same variety may appear in several lines of one sale, each priced on its own, with no merging or warning.
-- **Stock**: recording a sale or gift is never refused because of stock (ADR-0009). Its grams leave its variety's stock, which may go negative.
-- **Pricing**: computed when the sale is recorded, and stored on the line with its pricing rule (ADR-0003). It uses the variety's current price on the sale's date and the business's pricing settings at the moment of saving. The first step that applies wins:
-  1. **Gift**: $0.
-  2. **Special price**: the total typed for the line, in whole pesos and above $0.
-  3. **Otherwise, the lowest price per gram** among the rules that apply to the line:
-     - **List**: always applies.
-     - **Bulk**: Bulk price is on, the current price has a bulk price, and the line's grams are at or above the bulk minimum. The minimum is measured per line, never across lines.
-     - **VIP**: Customers VIP is on, the customer is VIP at recording time, and the current price has a VIP price.
-  - **Naming the rule**:
-    - On a tie between VIP and bulk, the line is stored as VIP.
-    - Otherwise the strictly lowest rule names the line.
-    - A bulk price and a VIP price are always below list, so list applies only when neither of the others does.
-  - **A VIP customer is priced like anyone else** when that day's price has no VIP price. A VIP price above the bulk price, on a line at or above the bulk minimum, gives the bulk price, stored as "bulk".
-  - **With both switches off**, every line that is neither a gift nor a special price takes the list price.
-  - **Refused**:
-    - a line both marked as a gift and given a special price;
-    - a line without a special price whose variety has no current price that day.
-  - **Switches changed while a form is open**: a sale is priced by the switches in force when it is saved, as it is by the price entries in force. The save goes through with no refusal and no notice.
-- **Line total**:
-  - For list, bulk and VIP lines: grams × the stored price per gram, rounded to the nearest whole peso, with exactly half rounding up. For example, 1.55 g × $10 001 = $15 501.55 → $15 502, and $7 502.50 → $7 503.
-  - A gift line is $0. A special price line is its typed total, so it needs no rounding.
-  - A line total never changes once the sale is recorded.
-- **Line cost of goods**:
-  - Every line, gifts included, has a cost of goods from the lots its grams came out of, oldest first, computed by stock as the lots stand now (ADR-0009).
-  - Part or all of it may be pending cost.
-  - It is not frozen like the price, and a change to it never moves the line's price or total.
-- **Total**: the sum of the rounded line totals plus shipping charged. Lines are rounded one by one, never as a sum.
-- **Shipping charged**: whole pesos, zero or more, $0 by default. A negative value is refused.
-- **How it was paid**:
-  - **Paid in full on the spot, by cash or transfer.** This records an on-the-spot payment for the full total, on the sale's date, with its method (ADR-0007). It settles this sale alone (`payments.md`).
-  - **Left owing**: no method, and the sale needs a customer. Later payments settle it oldest debt first (`payments.md`).
-  - **Total of $0**: settled with no method and nothing owed. A method sent with it is ignored and not stored.
-  - A total above $0 needs a method or "left owing".
-  - Partial payment on the spot does not exist.
-- **Customer**:
-  - Optional only when nothing stays owed.
-  - It must belong to the same business; another business's customer is not found.
-  - A customer with or without a phone number is chosen the same way (customers.md).
-- **Sale without a customer**: counts in every total and in no customer's history.
-- **Assign a customer later**:
-  - Only to a sale with none, and only a customer of the same business.
-  - A sale that already has a customer is refused.
-  - Stored lines are never repriced.
-- **Note**:
-  - Optional. It is trimmed and holds up to 200 characters; empty after trimming means none.
-  - It is not unique and is never searched, logged or repeated in errors.
-- **List**:
-  - Filters by date range. Both ends are optional and inclusive; a missing end has no limit.
-  - An inverted range is empty.
-  - Order: newest date first, then most recently recorded first.
-  - Each sale says whether it is still owing, worked out live by payments.
-- **See one**: date, customer or none, shipping, note, how it was paid, total, and each line's variety, grams, stored price per gram, pricing rule, line total and cost of goods (costed amount and pending grams). It also carries the sale's **sale bill** (below), or none.
-- **Sale bill** (the facts behind the shared text):
-  - The business name, the date, each line's variety, quantity, amount and rule (bulk, gift or none: list, VIP and special all read as none), with the unit price on bulk lines; shipping charged; the total; the payment state (cash, transfer, paid, owed, none) with what is still owed on this sale; and the customer's balance, or none when the sale has no customer.
-  - The business name and variety names are the seller's own data, carried exactly as stored, never escaped, stripped or rewritten.
-  - Payment state, still owed and balance come from the one settlement pass behind the detail's "still owing", in the same response; nothing recomputes settlement elsewhere.
-  - The balance is the customer's whole account at the moment the detail is read, not on the sale's date.
-  - It is closed: it has no field for the note, the customer's name or id, any sale or line id, the VIP flag, a pricing rule other than bulk or gift, cost, margin or a link. The business comes from the session only.
-  - When it cannot be worked out, the detail answers no bill and the rest of the detail is unaffected; the error names the rule broken and no sale, customer or amount.
-  - Nothing of it is stored or logged.
-- **Delete**:
-  - A hard delete, lines and on-the-spot payment included; nothing remains to list or restore.
-  - Its grams return to stock, landing back on lots by date (ADR-0009). The answer says the grams returned per variety.
-  - Later payments that had settled it apply to the customer's next oldest debt, or become a credit (`payments.md`).
-- **Refusals** (ADR-0005, ADR-0008):
-  - They are fixed messages that never repeat the input, the note, amounts or names.
-  - Each one carries its own namespaced `code`, listed in `web/src/api/contract.json` and checked by `tests/test_refusal_codes.py`. The rules with a code:
-    - missing lines;
-    - invalid grams;
-    - gift with a special price;
-    - special price at or below $0;
-    - no price that day;
-    - negative shipping;
-    - future date;
-    - a total above $0 with no method and not left owing;
-    - left owing without a customer;
-    - note too long;
-    - assigning to a sale that already has a customer;
-    - another business's sale, customer or variety (gone).
-- **Isolation (ADR-0004)**:
-  - The business comes from the session.
-  - Every sales table carries `business_id`.
-  - Another business's sale answers 404 for reading, assigning and deleting.
-  - Lists show none of another business's sales.
-  - The routes are in `tests/test_business_isolation.py`.
+Criterios de éxito, comprobante de venta:
 
-### On screen: New sale (`NuevaVenta`, `NuevaVentaCompu`)
+20. **Un toque, sin tipear.** En el detalle de la venta, un toque en el teléfono abre la hoja de compartir del teléfono con el comprobante listo o lo deja en el portapapeles; elegir el chat y enviar son pasos del propio teléfono. Si compartir o copiar falla, la vendedora igual obtiene el texto sin tipear.
+21. **Las cifras coinciden con la app.** El total, el estado de pago, lo que todavía se debe y el saldo del comprobante coinciden siempre con el detalle de la venta, porque salen de la misma pasada de imputación en la misma respuesta. Evidencia: el juego de referencia escrito a mano, 0 diferencias.
+22. **No se filtra nada privado.** Ni la nota, ni el nombre del cliente, ni las palabras VIP, special o list, ni ids ni links; una línea VIP o con precio especial se lee como una línea de lista. El comprobante no agrega formato propio, y los nombres que tipeó la vendedora (el del negocio y los de sus variedades) salen exactamente como se tipearon. Evidencia: el test de filtraciones.
+23. **Se cumple Assume nothing.** Cada palabra fija y la unidad salen del módulo de textos; la unidad es una sola entrada, "g" por defecto, hasta #318. Evidencia: con la unidad puesta en "u", el texto dice "3,5 u" y "/u".
 
-- **Opening the form**:
-  - from the fixed "+ New sale" button, on every tab root (navigation.md);
-  - or from "New sale to <name>" on a customer's card, with that customer already chosen.
-  - With no variety priced today, "+ New sale" stays visible and says in words what is missing (navigation.md).
-- **A form** (navigation.md): no bar and no "+ New sale"; it closes with "Close".
-- **Fields**:
-  - the date: today by default, shown as "Today 02/10", never a later day;
-  - the customer;
-  - one or more lines. Each line has a variety, grams, "Gift", and "Special price" (the line's total);
-  - shipping charged;
-  - the note;
-  - how it was paid: Cash · Transfer · Owing.
-- **The sale's total** shows with the grams sold and the grams gifted.
-- **Live preview**:
-  - Each line shows its price per gram, its rule badge (lista, por cantidad, VIP, regalo, especial) and its total. The sale's total updates as the seller types.
-  - It applies exactly the pricing, rounding and total rules above, with the business's pricing settings.
-  - It shows only rules that can apply now: with a rule switched off, its badge never appears.
-  - Prices and the pricing settings are loaded when the form opens and again when the date changes; a date change reprices every line from that day's current prices.
-  - Prices are never re-checked live while the seller types.
-- **Waiting for prices**: while the form waits for prices on opening, it shows the shared loading state (accounts.md, `Estados`). On a date change the form stays on screen with everything typed; each line's price, rule and total show the loading state, never a placeholder figure, until that day's prices arrive, then every line is repriced.
-- **Gift and Special price exclude each other**:
-  - Choosing one clears and disables the other, and turning it off frees the other.
-  - Special price doesn't accept $0.
-  - The domain's gift-plus-special refusal stays as an unreachable backstop.
-- **No price that day**: a line whose variety has no current price on the sale's date shows "<variety> has no price for that date". The name comes from the screen's own line.
-- **Customer and payment stay in step**, whichever changes last:
-  - Owing is available exactly when a customer is chosen. Otherwise it is disabled and shows "To leave it owing, pick a customer".
-  - Removing the customer or choosing "No customer" while Owing is selected resets how it was paid to unselected. It never falls back to Cash on its own.
-  - A $0 sale needs no method.
-- **Saving**:
-  - On success, the app opens the sale's detail as the API answered it, with the "Sale saved" notice.
-  - A refusal shows on its field in Spanish and keeps everything typed.
-  - A price deleted by a partner before saving: the save is refused, and the line shows the no-price message.
-  - A price or the pricing settings changed before saving: the save goes through, and the detail shows what was stored.
-  - A customer or variety not found when saving shows the generic line and keeps the form.
-- **Leaving**:
-  - "Close", or the system back gesture, after a line, a customer, shipping or a note has been entered asks "Discard the sale?", with "No, keep entering" and "Yes, discard it".
-  - "No, keep entering" keeps the user on the form with everything intact; the next back gesture asks again.
-  - An untouched form closes at once.
-  - With a sheet open over the form (Pick a customer, or New customer inside it), back does exactly what that sheet's own "Close" does: it closes only the top sheet, and the form keeps everything typed. It never asks "Discard the sale?".
-  - There are no drafts or autosave.
+## Comportamiento
+
+- **Venta**:
+  - Tiene una fecha, a lo sumo un cliente, el envío cobrado, una nota opcional, cómo se pagó y una o más líneas.
+  - Una venta sin líneas se rechaza.
+- **Fecha**:
+  - Por defecto es hoy, el día del negocio en hora de Argentina.
+  - No puede ser posterior a hoy. Se permiten fechas anteriores.
+- **Línea**:
+  - Tiene una variedad del mismo negocio y gramos por encima de cero, con a lo sumo dos decimales, sea cual sea su regla.
+  - Una línea puede marcarse opcionalmente como regalo o llevar un precio especial.
+  - La misma variedad puede aparecer en varias líneas de una venta, cada una cotizada por su lado, sin unirlas ni avisar.
+- **Stock**: registrar una venta o un regalo nunca se rechaza por stock (ADR-0009). Sus gramos salen del stock de su variedad, que puede quedar negativo.
+- **Cotización**: se calcula cuando se registra la venta y se guarda en la línea con su regla de precio (ADR-0003). Usa el precio vigente de la variedad en la fecha de la venta y la configuración de precios del negocio al momento de guardar. Gana el primer paso que aplica:
+  1. **Regalo**: $0.
+  2. **Precio especial**: el total tipeado para la línea, en pesos enteros y por encima de $0.
+  3. **Si no, el menor precio por gramo** entre las reglas que aplican a la línea:
+     - **Lista**: aplica siempre.
+     - **Por cantidad**: Bulk price está encendido, el precio vigente tiene precio por cantidad y los gramos de la línea están en el mínimo por cantidad o por encima. El mínimo se mide por línea, nunca entre líneas.
+     - **VIP**: Customers VIP está encendido, el cliente es VIP al momento de registrar y el precio vigente tiene precio VIP.
+  - **Cómo se nombra la regla**:
+    - Si VIP y por cantidad empatan, la línea se guarda como VIP.
+    - Si no, nombra la línea la regla estrictamente menor.
+    - Un precio por cantidad y un precio VIP siempre están por debajo de lista, así que lista aplica solo cuando no aplica ninguna de las otras.
+  - **A un cliente VIP se lo cotiza como a cualquiera** cuando el precio de ese día no tiene precio VIP. Un precio VIP por encima del precio por cantidad, en una línea en el mínimo por cantidad o por encima, da el precio por cantidad, guardado como "bulk".
+  - **Con las dos llaves apagadas**, toda línea que no es regalo ni precio especial toma el precio de lista.
+  - **Se rechaza**:
+    - una línea marcada como regalo y con precio especial a la vez;
+    - una línea sin precio especial cuya variedad no tiene precio vigente ese día.
+  - **Llaves cambiadas con un formulario abierto**: una venta se cotiza con las llaves vigentes al guardarla, igual que con las entradas de precio vigentes. El guardado pasa sin rechazo y sin aviso.
+- **Total de la línea**:
+  - Para líneas de lista, por cantidad y VIP: gramos × el precio por gramo guardado, redondeado al peso entero más cercano, con la mitad exacta hacia arriba. Por ejemplo, 1,55 g × $10 001 = $15 501,55 → $15 502, y $7 502,50 → $7 503.
+  - Una línea de regalo es $0. Una línea con precio especial es su total tipeado, así que no necesita redondeo.
+  - El total de una línea nunca cambia una vez registrada la venta.
+- **Costo de mercadería de la línea**:
+  - Toda línea, regalos incluidos, tiene un costo de mercadería sacado de los lotes de donde salieron sus gramos, los más viejos primero, que calcula stock según cómo están los lotes ahora (ADR-0009).
+  - Una parte o todo puede ser costo pendiente.
+  - No queda congelado como el precio, y un cambio en él nunca mueve el precio ni el total de la línea.
+- **Total**: la suma de los totales redondeados de las líneas más el envío cobrado. Las líneas se redondean de a una, nunca como suma.
+- **Envío cobrado**: pesos enteros, cero o más, $0 por defecto. Un valor negativo se rechaza.
+- **Cómo se pagó**:
+  - **Pagada entera en el momento, en efectivo o por transferencia.** Registra un pago en el momento por el total, en la fecha de la venta, con su medio (ADR-0007). Salda solo esta venta (`payments.md`).
+  - **Queda debiendo**: sin medio, y la venta necesita cliente. Los pagos posteriores la saldan empezando por la deuda más vieja (`payments.md`).
+  - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
+  - Un total por encima de $0 necesita un medio o "queda debiendo".
+  - No existe el pago parcial en el momento.
+- **Cliente**:
+  - Opcional solo cuando no queda nada debiendo.
+  - Tiene que ser del mismo negocio; el cliente de otro negocio no se encuentra.
+  - Un cliente con o sin número de teléfono se elige igual (customers.md).
+- **Venta sin cliente**: cuenta en todos los totales y en la historia de ningún cliente.
+- **Asignar un cliente después**:
+  - Solo a una venta que no tiene, y solo un cliente del mismo negocio.
+  - Una venta que ya tiene cliente se rechaza.
+  - Las líneas guardadas nunca se vuelven a cotizar.
+- **Nota**:
+  - Opcional. Se recorta y admite hasta 200 caracteres; vacía después de recortar significa que no hay.
+  - No es única y nunca se busca, se loguea ni se repite en errores.
+- **Lista**:
+  - Filtra por rango de fechas. Los dos extremos son opcionales e inclusivos; un extremo que falta no tiene límite.
+  - Un rango invertido da vacío.
+  - Orden: la fecha más nueva primero, después la registrada más recientemente primero.
+  - Cada venta dice si sigue debiendo, calculado en vivo por pagos.
+- **Ver una**: fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea la variedad, los gramos, el precio por gramo guardado, la regla de precio, el total de la línea y el costo de mercadería (monto costeado y gramos pendientes). Trae también el **comprobante de venta** (abajo), o ninguno.
+- **Comprobante de venta** (los hechos detrás del texto compartido):
+  - El nombre del negocio, la fecha, de cada línea la variedad, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP y precio especial se leen todas como ninguna), con el precio unitario en las líneas por cantidad; el envío cobrado; el total; el estado de pago (cash, transfer, paid, owed, none) con lo que todavía se debe de esta venta; y el saldo del cliente, o ninguno cuando la venta no tiene cliente.
+  - El nombre del negocio y los nombres de las variedades son datos de la vendedora, y viajan exactamente como están guardados: nunca se escapan, se recortan ni se reescriben.
+  - El estado de pago, lo que todavía se debe y el saldo salen de la única pasada de imputación detrás del "still owing" del detalle, en la misma respuesta; nada vuelve a calcular la imputación en otro lado.
+  - El saldo es la cuenta entera del cliente al momento de leer el detalle, no en la fecha de la venta.
+  - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, una regla de precio que no sea bulk o gift, costo, margen ni link. El negocio sale solo de la sesión.
+  - Cuando no se puede calcular, el detalle responde sin comprobante y el resto del detalle no se ve afectado; el error nombra la regla incumplida y ninguna venta, cliente ni monto.
+  - No se guarda ni se loguea nada de él.
+- **Borrar**:
+  - Un borrado definitivo, líneas y pago en el momento incluidos; no queda nada para listar ni restaurar.
+  - Sus gramos vuelven al stock y caen de nuevo en los lotes por fecha (ADR-0009). La respuesta dice los gramos devueltos por variedad.
+  - Los pagos posteriores que la habían saldado pasan a la siguiente deuda más vieja del cliente, o quedan como crédito (`payments.md`).
+- **Rechazos** (ADR-0005, ADR-0008):
+  - Son mensajes fijos que nunca repiten lo ingresado, la nota, montos ni nombres.
+  - Cada uno lleva su propio `code` con espacio de nombres, listado en `web/src/api/contract.json` y verificado por `tests/test_refusal_codes.py`. Las reglas con código:
+    - faltan líneas;
+    - gramos inválidos;
+    - regalo con precio especial;
+    - precio especial en $0 o menos;
+    - sin precio ese día;
+    - envío negativo;
+    - fecha futura;
+    - un total por encima de $0 sin medio y sin quedar debiendo;
+    - queda debiendo sin cliente;
+    - nota demasiado larga;
+    - asignar a una venta que ya tiene cliente;
+    - venta, cliente o variedad de otro negocio (no existe).
+- **Aislamiento (ADR-0004)**:
+  - El negocio sale de la sesión.
+  - Toda tabla de ventas lleva `business_id`.
+  - La venta de otro negocio responde 404 al leer, asignar y borrar.
+  - Las listas no muestran ninguna venta de otro negocio.
+  - Las rutas están en `tests/test_business_isolation.py`.
+
+### En pantalla: New sale (`NuevaVenta`, `NuevaVentaCompu`)
+
+- **Cómo se abre el formulario**:
+  - desde el botón fijo "+ New sale", en cada raíz de pestaña (navigation.md);
+  - o desde "New sale to <name>" en la ficha de un cliente, con ese cliente ya elegido.
+  - Sin ninguna variedad con precio hoy, "+ New sale" sigue visible y dice con palabras qué falta (navigation.md).
+- **Un formulario** (navigation.md): sin barra y sin "+ New sale"; se cierra con "Close".
+- **Campos**:
+  - la fecha: hoy por defecto, mostrada como "Today 02/10", nunca un día posterior;
+  - el cliente;
+  - una o más líneas. Cada línea tiene variedad, gramos, "Gift" y "Special price" (el total de la línea);
+  - el envío cobrado;
+  - la nota;
+  - cómo se pagó: Cash · Transfer · Owing.
+- **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
+- **Vista previa en vivo**:
+  - Cada línea muestra su precio por gramo, su insignia de regla (lista, por cantidad, VIP, regalo, especial) y su total. El total de la venta se actualiza mientras la vendedora escribe.
+  - Aplica exactamente las reglas de cotización, redondeo y total de arriba, con la configuración de precios del negocio.
+  - Muestra solo reglas que pueden aplicar ahora: con una regla apagada, su insignia nunca aparece.
+  - Los precios y la configuración de precios se cargan al abrir el formulario y otra vez al cambiar la fecha; un cambio de fecha vuelve a cotizar cada línea con los precios vigentes de ese día.
+  - Los precios nunca se vuelven a consultar en vivo mientras la vendedora escribe.
+- **Esperando precios**: mientras el formulario espera los precios al abrirse, muestra el estado de carga compartido (accounts.md, `Estados`). Al cambiar la fecha, el formulario queda en pantalla con todo lo tipeado; el precio, la regla y el total de cada línea muestran el estado de carga, nunca una cifra de relleno, hasta que llegan los precios de ese día, y entonces se vuelve a cotizar cada línea.
+- **Gift y Special price se excluyen**:
+  - Elegir uno limpia y deshabilita el otro, y apagarlo libera el otro.
+  - Special price no acepta $0.
+  - El rechazo de regalo con precio especial del dominio queda como respaldo inalcanzable.
+- **Sin precio ese día**: una línea cuya variedad no tiene precio vigente en la fecha de la venta muestra "<variety> has no price for that date". El nombre sale de la propia línea en pantalla.
+- **Cliente y pago van de la mano**, cambie el que cambie último:
+  - Owing está disponible exactamente cuando hay un cliente elegido. Si no, queda deshabilitado y muestra "To leave it owing, pick a customer".
+  - Sacar el cliente o elegir "No customer" con Owing seleccionado deja cómo se pagó sin seleccionar. Nunca vuelve solo a Cash.
+  - Una venta de $0 no necesita medio.
+- **Guardar**:
+  - Si sale bien, la app abre el detalle de la venta tal como lo respondió la API, con el aviso "Sale saved".
+  - Un rechazo se muestra sobre su campo y conserva todo lo tipeado.
+  - Un precio que borró una socia antes de guardar: el guardado se rechaza y la línea muestra el mensaje de sin precio.
+  - Un precio o la configuración de precios cambiados antes de guardar: el guardado pasa y el detalle muestra lo que se guardó.
+  - Un cliente o una variedad que no se encuentran al guardar muestran la línea genérica y conservan el formulario.
+- **Salir**:
+  - "Close", o el gesto de volver del sistema, después de haber cargado una línea, un cliente, envío o una nota, pregunta "Discard the sale?", con "No, keep entering" y "Yes, discard it".
+  - "No, keep entering" deja a la usuaria en el formulario con todo intacto; el siguiente gesto de volver vuelve a preguntar.
+  - Un formulario sin tocar se cierra en el acto.
+  - Con una hoja abierta sobre el formulario (Pick a customer, o New customer adentro), volver hace exactamente lo que hace el "Close" propio de esa hoja: cierra solo la hoja de arriba y el formulario conserva todo lo tipeado. Nunca pregunta "Discard the sale?".
+  - No hay borradores ni guardado automático.
 - **Pick a customer** (`NuevaVentaCliente`):
-  - A sheet over the sale.
-  - It offers search by phone or part of the name, "No customer", and "New customer", which creates the customer and uses it. "New customer" is the same form as in Customers: only the name required; the phone optional; VIP only while Customers VIP is on (customers.md); no channel.
-  - It shows a customer's VIP mark only while Customers VIP is on.
-  - Its results show the shared loading state before their first answer.
-  - Closing the sheet only returns to the form.
+  - Una hoja sobre la venta.
+  - Ofrece buscar por teléfono o por parte del nombre, "No customer" y "New customer", que crea el cliente y lo usa. "New customer" es el mismo formulario que en Customers: solo el nombre es obligatorio; el teléfono es opcional; VIP solo mientras Customers VIP está encendido (customers.md); sin canal.
+  - Muestra la marca VIP de un cliente solo mientras Customers VIP está encendido.
+  - Sus resultados muestran el estado de carga compartido antes de su primera respuesta.
+  - Cerrar la hoja solo vuelve al formulario.
 - **"Sale saved"** (`Estados`):
-  - It carries **Undo** and no amount or name. It is announced like a toast and lasts a fixed few seconds.
-  - Undo deletes the sale with no confirmation, then shows "Sale deleted · the grams go back to stock" and returns to Sales.
-  - If the sale is already gone, Undo shows "That is gone. The list is up to date."
-  - After the notice is gone, the way to undo is "Delete sale".
-  - It never holds the Share/Copy button; that lives on the sale's detail.
+  - Lleva **Undo** y ningún monto ni nombre. Se anuncia como un toast y dura unos pocos segundos fijos.
+  - Undo borra la venta sin confirmación, después muestra "Sale deleted · the grams go back to stock" y vuelve a Sales.
+  - Si la venta ya no existe, Undo muestra "That is gone. The list is up to date."
+  - Una vez que el aviso se fue, la forma de deshacer es "Delete sale".
+  - Nunca contiene el botón Share/Copy; ese vive en el detalle de la venta.
 
-#### New sale on the phone
+#### New sale en el teléfono
 
-The phone layout only; `NuevaVentaCompu` keeps its own.
+Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
 
-- **Full screen, three zones**: a fixed header, a scrolling body and a fixed footer.
-- **Header**: fixed, never scrolls away; "Close" and the date. The date input is at least 16 px and at least 44 px tall.
-- **Body**: scrolls between header and footer, in this order: the customer, the lines, shipping charged, the note, and how it was paid last. It scrolls so that how it was paid, and the "To leave it owing, pick a customer" line under it, come fully into view above the footer; that line has the screen's normal side margin.
-- **Footer**: fixed within thumb reach, above the keyboard and the home indicator. It holds the sale's total, the grams sold and gifted on one compact line, and "Save sale". With the keyboard open it shrinks to the total and the button and stays visible. Its exact look is design's call.
-- **A line**: one fixed layout on every phone width from 320 to 430 px and at 130 % text, never switched by measuring the screen. First row: the variety and the grams. Under it: "Gift", a toggle row at least 44 px tall, and "Special price". Below those: the line's price per gram, rule badge and total.
-- **No field overflows or is clipped** at 320 px or at 130 % text.
-- **Targets**: the payment options, "Add another variety" and the dialog buttons are at least 44 px tall; every input is at least 16 px.
-- **Keypads**: grams `inputmode="decimal"`; pesos (shipping, Special price) `inputmode="numeric"`; a line's fields carry `enterkeyhint` so the keyboard's action key moves through them.
+- **Pantalla completa, tres zonas**: un encabezado fijo, un cuerpo que se desplaza y un pie fijo.
+- **Encabezado**: fijo, nunca se va al desplazar; "Close" y la fecha. El campo de fecha tiene al menos 16 px y al menos 44 px de alto.
+- **Cuerpo**: se desplaza entre encabezado y pie, en este orden: el cliente, las líneas, el envío cobrado, la nota y, al final, cómo se pagó. Se desplaza de modo que cómo se pagó, y la línea "To leave it owing, pick a customer" debajo, quedan enteros a la vista por encima del pie; esa línea tiene el margen lateral normal de la pantalla.
+- **Pie**: fijo al alcance del pulgar, por encima del teclado y del indicador de inicio. Contiene el total de la venta, los gramos vendidos y regalados en una línea compacta, y "Save sale". Con el teclado abierto se achica al total y el botón y sigue visible. Su aspecto exacto lo decide diseño.
+- **Una línea**: un único diseño fijo en todo ancho de teléfono de 320 a 430 px y con el texto al 130 %, nunca elegido midiendo la pantalla. Primera fila: la variedad y los gramos. Debajo: "Gift", una fila con interruptor de al menos 44 px de alto, y "Special price". Debajo de eso: el precio por gramo, la insignia de regla y el total de la línea.
+- **Ningún campo desborda ni queda recortado** a 320 px ni con el texto al 130 %.
+- **Objetivos táctiles**: las opciones de pago, "Add another variety" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px.
+- **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
 
-### On screen: Sales (`Sales`, `VentasCompu`)
+### En pantalla: Sales (`Sales`, `VentasCompu`)
 
-- **A tab root** (navigation.md): the bar or sidebar and "+ New sale".
-- **Periods**: Today · Week · Month · Dates, in Argentina time.
-  - Week is the Monday-to-Sunday week containing today.
-  - Month is the current calendar month.
-  - Dates opens on the current month's first and last day. The start can't be set later than the end.
-- **The period's total and count**:
-  - the total is the sum of the sale totals shown, paid or not, shipping included;
-  - the count is of sales, not lines;
-  - the total is never presented as profit or cash.
-- **Each sale** shows:
-  - its date;
-  - its customer, or "No customer" in grey;
-  - a VIP badge, only while Customers VIP is on;
-  - its varieties and grams;
-  - its total. A sale still owing, partially paid ones included, shows its total in amber with "owes you" under it, as the API answers it.
-- **The VIP badge shows the customer's current VIP status**, not how the sale was priced.
-  - Each line's rule badge in the detail is the record of how it was priced.
-  - A customer who stops being VIP loses the badge on past sales, while their lines still read "VIP". That is not a reprice (ADR-0003).
-  - While Customers VIP is off, no row shows the badge, and the customers' marks stay stored (customers.md).
-- **Loading**: before its first answer, the list shows the shared loading state, never a blank screen.
-- **On the phone** (`VentasCompu` unchanged):
-  - each period tab is at least 44 px tall;
-  - at normal text the four tabs share one row equally; when they don't fit (e.g. at 320 px or 130 % text) they wrap into equal-width cells, two by two, each at least 44 px tall; never horizontal scrolling, never a shortened label;
-  - the selected tab is marked by more than color;
-  - Dates' two date inputs are at least 16 px and at least 44 px tall and never overflow at 320 px or 130 % text.
+- **Una raíz de pestaña** (navigation.md): la barra o la barra lateral y "+ New sale".
+- **Períodos**: Today · Week · Month · Dates, en hora de Argentina.
+  - Week es la semana de lunes a domingo que contiene hoy.
+  - Month es el mes calendario actual.
+  - Dates abre en el primer y el último día del mes actual. El inicio no puede quedar después del fin.
+- **El total y la cantidad del período**:
+  - el total es la suma de los totales de las ventas mostradas, pagadas o no, envío incluido;
+  - la cantidad es de ventas, no de líneas;
+  - el total nunca se presenta como ganancia ni como caja.
+- **Cada venta** muestra:
+  - su fecha;
+  - su cliente, o "No customer" en gris;
+  - una insignia VIP, solo mientras Customers VIP está encendido;
+  - sus variedades y gramos;
+  - su total. Una venta que sigue debiendo, las pagadas en parte incluidas, muestra su total en ámbar con "owes you" debajo, tal como lo responde la API.
+- **La insignia VIP muestra el estado VIP actual del cliente**, no cómo se cotizó la venta.
+  - La insignia de regla de cada línea en el detalle es el registro de cómo se cotizó.
+  - Un cliente que deja de ser VIP pierde la insignia en ventas pasadas, mientras sus líneas siguen diciendo "VIP". Eso no es volver a cotizar (ADR-0003).
+  - Mientras Customers VIP está apagado, ninguna fila muestra la insignia, y las marcas de los clientes quedan guardadas (customers.md).
+- **Carga**: antes de su primera respuesta, la lista muestra el estado de carga compartido, nunca una pantalla en blanco.
+- **En el teléfono** (`VentasCompu` sin cambios):
+  - cada pestaña de período mide al menos 44 px de alto;
+  - con el texto normal, las cuatro pestañas comparten una fila en partes iguales; cuando no entran (por ejemplo a 320 px o con el texto al 130 %) pasan a celdas de igual ancho, de a dos, cada una de al menos 44 px de alto; nunca desplazamiento horizontal, nunca una etiqueta acortada;
+  - la pestaña elegida se marca con algo más que el color;
+  - los dos campos de fecha de Dates tienen al menos 16 px y al menos 44 px de alto y nunca desbordan a 320 px ni con el texto al 130 %.
 
-### On screen: Sale of <date> (`VentaDetalle`, the sale detail)
+### En pantalla: Sale of <date> (`VentaDetalle`, el detalle de la venta)
 
-- **A detail** (navigation.md): the bar or sidebar and "‹ Sales", without "+ New sale".
-- **Loading**: while the sale loads, it shows the shared loading state (accounts.md, `Estados`), never a blank page.
-- **Shows**:
-  - the total;
-  - each line's variety, grams, price per gram, rule badge and line total;
-  - shipping, the note, how it was paid, and the customer or "No customer".
-- **Recorded rule badges** ("VIP", "bulk") always show what was recorded, whatever the pricing settings say today. They are history (ADR-0003).
-- **Share the bill** (Share / Copy): see "Sale bill" below.
+- **Un detalle** (navigation.md): la barra o la barra lateral y "‹ Sales", sin "+ New sale".
+- **Carga**: mientras carga la venta, muestra el estado de carga compartido (accounts.md, `Estados`), nunca una página en blanco.
+- **Muestra**:
+  - el total;
+  - de cada línea la variedad, los gramos, el precio por gramo, la insignia de regla y el total de la línea;
+  - el envío, la nota, cómo se pagó, y el cliente o "No customer".
+- **Las insignias de regla registradas** ("VIP", "bulk") muestran siempre lo que se registró, diga lo que diga hoy la configuración de precios. Son historia (ADR-0003).
+- **Compartir el comprobante** (Share / Copy): ver "Comprobante de venta" abajo.
 - **Assign customer**:
-  - It shows only when the sale has none, and opens Pick a customer without "No customer".
-  - The system back gesture with its sheet open does what the sheet's own "Close" does: it closes only the sheet and asks nothing.
-  - On success, the toast "Customer assigned".
-  - If someone assigned one first, "This sale already has a customer." and the detail refreshes.
+  - Se muestra solo cuando la venta no tiene cliente, y abre Pick a customer sin "No customer".
+  - El gesto de volver del sistema con su hoja abierta hace lo que hace el "Close" propio de la hoja: cierra solo la hoja y no pregunta nada.
+  - Si sale bien, el aviso "Customer assigned".
+  - Si alguien asignó uno antes, "This sale already has a customer." y el detalle se actualiza.
+  - Después de asignar, el detalle se vuelve a leer del servidor, para que el comprobante traiga el saldo del cliente recién asignado; nada arma el detalle a mano en el front.
 - **Delete sale**:
-  - On the phone it, and its confirmation's buttons, are at least 44 px tall.
-  - It is confirmed with `Before deleting`, naming the date, the amount and the total grams of its lines that return to stock, gifts included. For example: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." The buttons are "No, keep it / Yes, delete it".
-  - Then the toast "Sale deleted" and back to Sales.
-  - The copy never mentions debt or credit; the customer's account shows the effect afterwards (`payments.md`).
-- **A sale that is gone** follows accounts.md:
-  - opening it shows "That is gone." with "Back to Sales";
-  - assigning, deleting or undoing shows "That is gone. The list is up to date."
-- No names, notes or amounts go to the console or browser storage, and no business id appears in a URL.
+  - En el teléfono, el control y los botones de su confirmación miden al menos 44 px de alto.
+  - Se confirma con `Before deleting`, que nombra la fecha, el monto y el total de gramos de sus líneas que vuelven al stock, regalos incluidos. Por ejemplo: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." Los botones son "No, keep it / Yes, delete it".
+  - Después, el aviso "Sale deleted" y de vuelta a Sales.
+  - El texto nunca menciona deuda ni crédito; la cuenta del cliente muestra el efecto después (`payments.md`).
+- **Una venta que ya no existe** sigue accounts.md:
+  - abrirla muestra "That is gone." con "Back to Sales";
+  - asignar, borrar o deshacer muestra "That is gone. The list is up to date."
+- No van nombres, notas ni montos a la consola ni al almacenamiento del navegador, y ningún id de negocio aparece en una URL.
 
-### Sale bill (on the sale's detail)
+### Comprobante de venta (en el detalle de la venta)
 
-A short plain-text bill of one sale that the seller sends to the customer in one tap. Facts only, never an invoice.
+Un comprobante corto en texto plano de una venta, que la vendedora le manda al cliente en un toque. Solo hechos, nunca una factura.
 
-**The text**, in order:
-1. The business name, then on a new line the date as dd/mm, with no year. A blank line.
-2. One line per sale line:
-   - list, VIP or special: `{product} {quantity} {unit} · {amount}`;
-   - bulk: `{product} {quantity} {unit} · bulk price {unitPrice}/{unit} · {amount}`;
-   - gift: `{product} {quantity} {unit} · Gift · $ 0`.
-3. `Shipping · {amount}`, only when shipping charged is above $0.
-4. A blank line, then `Total · {amount}`.
-5. The payment line: "Paid in cash" or "Paid by transfer" for an on-the-spot payment; "Paid" when paid in full later; `Still owed on this sale: {amount}` when something is owed on it, partly or fully; none when the payment state is none.
-6. The balance line: `Your balance: {amount}` when the balance is above $0; `In your favor: {amount}` for a credit, as its magnitude.
+**El texto**, en orden (las palabras fijas son las de la app, en inglés):
+1. El nombre del negocio, y en una línea nueva la fecha como dd/mm, sin año. Una línea en blanco.
+2. Una línea por cada línea de la venta:
+   - lista, VIP o precio especial: `{product} {quantity} {unit} · {amount}`;
+   - por cantidad: `{product} {quantity} {unit} · bulk price {unitPrice}/{unit} · {amount}`;
+   - regalo: `{product} {quantity} {unit} · Gift · $ 0`.
+3. `Shipping · {amount}`, solo cuando el envío cobrado está por encima de $0.
+4. Una línea en blanco, después `Total · {amount}`.
+5. La línea de pago: "Paid in cash" o "Paid by transfer" para un pago en el momento; "Paid" cuando se pagó entera después; `Still owed on this sale: {amount}` cuando todavía se debe algo de ella, en parte o entera; ninguna cuando el estado de pago es none.
+6. La línea de saldo: `Your balance: {amount}` cuando el saldo está por encima de $0; `In your favor: {amount}` para un crédito, como su valor absoluto.
 
-**Absent lines**: shipping at $0; the payment line when the state is none; the balance line when the sale has no customer or the balance is exactly $0.
+**Líneas que pueden faltar**: el envío cuando es $0; la línea de pago cuando el estado es none; la línea de saldo cuando la venta no tiene cliente o el saldo es exactamente $0.
 
-**The balance** is the customer's whole account at the moment of sharing, not on the sale's date; for a sale shared later the two can differ, and that is intended.
+**El saldo** es la cuenta entera del cliente al momento de compartir, no en la fecha de la venta; para una venta compartida más tarde los dos pueden diferir, y es a propósito.
 
-**Formats**:
-- Quantities are formatted from integer hundredths, never a float: Argentine separators, trailing zeros dropped (0,01 · 0,1 · 1,05 · 3,5 · 1.000). The existing grams display reads exactly as before.
-- Money reads `$ 11.000`, never the catalog's format.
+**Formatos**:
+- Las cantidades se formatean a partir de centésimos enteros, nunca de un float: separadores argentinos, sin ceros finales (0,01 · 0,1 · 1,05 · 3,5 · 1.000). La forma en que la app ya muestra los gramos se lee exactamente igual que antes.
+- La plata se lee `$ 11.000`, nunca con el formato del catálogo.
 
-**The unit entry**: the unit is one keyed copy entry, "g", until #318 makes it customizable. Every fixed word of the bill lives in the copy module (`saleBill` group); no sale bill module holds a "g" literal or calls the grams formatter.
+**La entrada de unidad**: la unidad es una sola entrada con clave del módulo de textos, "g", hasta que #318 la haga configurable. Cada palabra fija del comprobante vive en el módulo de textos (grupo `saleBill`); ningún módulo del comprobante tiene un literal "g" ni llama al formateador de gramos.
 
-**Never in the bill**: the note, the customer's name, VIP, special or list wording, ids or links.
+**Nunca en el comprobante**: la nota, el nombre del cliente, las palabras VIP, special o list, ids ni links.
 
-**No formatting of its own**: no fixed word, separator or format of the bill carries `*`, `_` or a backtick. Text the seller typed (the business name and variety names) goes out exactly as typed, those characters included: never escaped, stripped or replaced, so the customer reads the same name the seller sees. How a chat app displays it is the chat's affair; escaping for one app would hard-code a channel (Assume nothing).
+**Sin formato propio**: ninguna palabra fija, separador ni formato del comprobante lleva `*`, `_` ni comilla invertida. El texto que tipeó la vendedora (el nombre del negocio y los de las variedades) sale exactamente como se tipeó, esos caracteres incluidos: nunca se escapa, se recorta ni se reemplaza, para que el cliente lea el mismo nombre que ve la vendedora. Cómo lo muestra una app de chat es asunto del chat; escapar para una app fijaría un canal (Assume nothing).
 
-**The button** (on the detail, never inside the "Sale saved" notice):
-- **Where**: the first item of the detail's bottom action stack, above Assign customer and Delete sale.
-- **Label**: Share where the phone can share, otherwise Copy.
-- **Share**: success shows nothing (the sheet closing is the confirmation); a cancel shows nothing; a failure shows "Couldn't share. Tap Copy and paste it into the chat." with the attention icon, and the label becomes Copy.
-- **Copy**: success shows the toast "Bill copied"; a failure shows "Couldn't copy. Select the text below and copy it by hand." with the attention icon, and the bill in a selectable block directly beneath it, accessible name "Sale bill".
-- **No preview**: the text appears on screen only when copying fails.
-- **No bill**: the button is hidden when the detail answers no bill. A sale with no customer keeps it, with no balance line.
-- **Loading**: the button keeps its label, is disabled and busy (`aria-busy`), and shows no digits or `$`. It stays busy after Assign customer until the detail read back shows the customer.
-- **Not found**: a missing sale takes the existing not-found path.
-- **Fresh text**: built from the latest detail the screen holds; the detail keeps its existing refreshes.
-- **Phone**: at least 44 px, tokens only, works over plain http on the home network because the share or copy call runs synchronously inside the tap (ADR-0002); passes the mobile check with no new offender.
-- **Silent**: nothing of the bill goes to the console or storage, and no "already shared" state exists.
+**El botón** (en el detalle, nunca dentro del aviso "Sale saved"):
+- **Dónde**: el primer elemento de la fila de acciones del detalle, antes de Assign customer y de borrar la venta, como parte del contenido de la pantalla.
+- **Etiqueta**: Share donde el teléfono puede compartir; si no, Copy. Lleva su ícono decorativo (compartir o copiar) y la palabra sola como nombre accesible.
+- **Share**: si sale bien no muestra nada (que se cierre la hoja es la confirmación); si se cancela no muestra nada; si falla muestra "Couldn't share. Tap Copy and paste it into the chat." con el ícono de atención debajo del botón, y la etiqueta pasa a Copy.
+- **Copy**: si sale bien muestra el aviso "Bill copied", en el mismo lugar de avisos de la pantalla que usa "Customer assigned"; si falla muestra "Couldn't copy. Select the text below and copy it by hand." con el ícono de atención debajo del botón, y justo debajo el comprobante en un bloque seleccionable, con nombre accesible "Sale bill".
+- **Sin vista previa**: el texto aparece en pantalla solo cuando falla la copia.
+- **Sin comprobante**: el botón se oculta cuando el detalle responde sin comprobante. Una venta sin cliente lo conserva, sin línea de saldo.
+- **Cargando**: el botón conserva su etiqueta, queda deshabilitado y ocupado (`aria-busy`), y no muestra dígitos ni `$`. Después de Assign customer sigue ocupado hasta que el detalle leído de nuevo muestra el cliente.
+- **No encontrada**: una venta que falta sigue el camino de no encontrada que ya existe.
+- **Texto fresco**: se arma con el último detalle que tiene la pantalla; el detalle mantiene sus actualizaciones de siempre.
+- **Toques repetidos**: un segundo toque mientras el primero sigue pendiente no hace nada; cuando la página vuelve a estar visible, el botón se libera aunque la hoja de compartir nunca haya respondido.
+- **Teléfono**: al menos 44 px, solo tokens, funciona por http plano en la red de casa porque la llamada de compartir o copiar corre de forma sincrónica dentro del toque (ADR-0002); pasa el chequeo móvil sin ningún infractor nuevo.
+- **Silencioso**: nada del comprobante va a la consola ni al almacenamiento, y no existe un estado de "ya compartido".
 
-### Shared loading state
+### Estado de carga compartido
 
-- On these screens it applies to the sale's detail, Sales' list before its first answer, New sale while it waits for prices (on opening and on a date change), Pick a customer's results before their first answer, and the sale bill button while the detail loads.
-- It carries no digit, currency symbol or placeholder figure (accounts.md, criterion 7).
+- En estas pantallas aplica al detalle de la venta, a la lista de Sales antes de su primera respuesta, a New sale mientras espera precios (al abrirse y al cambiar la fecha), a los resultados de Pick a customer antes de su primera respuesta, y al botón del comprobante mientras carga el detalle.
+- No lleva ningún dígito, símbolo de moneda ni cifra de relleno (accounts.md, criterio 7).
 
-## Metrics
+## Métricas
 
-- **Pricing matrix**: 100% passing. (Criteria 3, 17, 18) It covers:
-  - both switches off, only bulk on, only VIP on, and both on;
-  - gift and special price first, and the order of the steps;
-  - the lowest-price rule below, at and above the bulk minimum;
-  - the VIP-bulk tie stored as "VIP";
-  - a VIP price above the bulk price, stored as "bulk" at the minimum;
-  - a variety with no VIP price, for a VIP;
-  - bulk measured per line;
-  - no price that day, with and without a special price;
-  - gift plus special refused;
-  - rounding below .50, exactly .50 and above .50;
-  - a multi-line sale whose total is the sum of the rounded lines.
-- **Stored price immutability**: 100% passing. (Criterion 3) Existing lines' price, rule and total stay unchanged after:
-  - a price entry is added or deleted, a VIP price included;
-  - either pricing switch is changed;
-  - VIP is toggled;
-  - a customer is assigned;
-  - a stock entry is added, edited or deleted;
-  - a payment is recorded or deleted.
-- **No surprise for existing VIPs (criterion 19)**: after the migration, for every existing VIP customer, a sale's price, rule and total equal what they were before, for the same variety, day and grams. 0 differences.
-- **One sale per order**: a multi-variety sale is one sale, with total = rounded lines + shipping once, through the API and the form. (Criteria 2, 8)
-- **Whole or nothing**: a refused sale leaves 0 new rows in sales, lines and payments. (Criterion 4)
-- **Owing without a customer**: 0 stored; the domain refuses it and a test covers it. (Criterion 4)
-- **Delete returns grams**: after deleting a sale, its varieties' stock rises by exactly its lines' grams, and the answer names them. Delete sale's confirmation names the grams, and Undo's notice says they return.
-- **Isolation coverage**: every sales route is in the sweep and answers 404 or empty from another business, including references to another business's customer or variety. On screen, another business's sale opened by id shows "That is gone." (Criterion 5)
-- **No echo**: (Criterion 5)
-  - no refusal body or log line contains the note, a customer's name or a submitted amount;
-  - after a full front run, the console and browser storage hold none of them.
-- **Record time**: the front run records a sale from a phone viewport with an existing, new (with or without a number) or no customer (`web/e2e/sales.spec.ts`, `web/e2e/ventasTelefono.spec.ts`), and the tap budget holds (`web/e2e/tapBudget.spec.ts`); its duration is not measured by any test. Recording answers in under 300 ms with a few dozen varieties and customers. (Criteria 1, 14)
-- **Preview = stored**: (Criterion 6)
-  - the front preview passes the same pricing matrix as the domain, for every combination of switches;
-  - the end-to-end run compares the preview with the saved detail: 0 differences.
-- **Switches on screen (criterion 17)**: front tests show, for each switch off, no badge or field of that rule in New sale, no VIP badge in Sales and no VIP mark in Pick a customer, while a sale's detail keeps its recorded badges.
-- **Caught before save**: (Criterion 7)
-  - Owing is disabled with no customer, and removing the customer resets the method;
-  - a no-price line shows its message before saving;
-  - a forced API refusal keeps every field typed;
-  - every sales refusal has a code in `contract.json`, checked by `tests/test_refusal_codes.py`.
-- **Undo leaves nothing**: after Undo, 0 rows remain for that sale in sales, lines and payments, and it is in no list. (Criterion 9)
-- **Sales**: (Criteria 10, 11)
-  - each period's total and count equal the sum and number of the sales shown;
-  - the week runs Monday to Sunday;
-  - the "owes you" mark matches the API's settlement;
-  - the list answers in under 300 ms with a few hundred sales: checked by `tests/sales/test_list_cost.py` through the query plan of the list statements (the indexes are searched, no table is scanned) and the statement count at 30 and 300 sales, never by time (docs/adr/0038).
-- **Fixing**: the end-to-end run assigns a customer to a sale that had none (Assign customer then disappears) and deletes a sale through its confirmation. (Criterion 11)
-- **No overflow on the phone (criterion 12)**: front tests at 320, 375 and 430 px and at 130 % text, for New sale, Sales and the sale's detail, show nothing clipped or overflowing horizontally, "Special price", shipping and Dates' inputs included; Sales' tabs covered on one row and wrapped two by two.
-- **Save in reach (criterion 12)**: at those widths the footer's total and "Save sale" are visible on load; the header stays while the body scrolls; with a simulated keyboard the footer stays visible; the payment options and the Owing hint (with side margin) scroll fully above the footer.
-- **Targets and inputs (criterion 13)**: every interactive element of the three screens, dialog buttons included, is at least 44 px tall; every input has a computed font size of at least 16 px; grams carry `inputmode="decimal"`, pesos `"numeric"`, and a line's fields `enterkeyhint`.
-- **Never blank (criterion 14)**: front tests show the shared loading state on the detail, Sales' list, New sale's price wait (opening and date change) and Pick a customer's results, holding no digit, currency symbol or placeholder figure.
-- **Date change**: a front test shows everything typed is kept, the lines show loading, then every line is repriced.
-- **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "Discard the sale?" under the Close condition; "No, keep entering" keeps the form and the next back asks again; an untouched form closes at once; with Pick a customer, New customer or Assign customer open, back closes only the top sheet as its own "Close" does, the sale or detail underneath stays intact, and "Discard the sale?" never appears.
-- **No regression (criterion 16)**: the existing sales and navigation tests pass without being edited; the pricing matrix and "preview = stored" stay at 0 differences; `NuevaVentaCompu` and `VentasCompu` are unchanged.
-- **Sale bill reference set (criterion 21)**: `saleBill.cases.json`, expected texts written by hand against this definition, never generated; 0 mismatches. Cases: with and without bulk; a VIP and a special line reading like list lines; a gift; a $0 gifts-only sale with a non-zero balance; cash, transfer, paid later, partly owed, fully owed; a balance, a credit and a balance of exactly $0; no customer; with and without shipping; one line and several lines; quantities 0.01, 0.1, 1.05 and 1000; a variety whose name holds `*`, `_` and a backtick, shown unchanged.
-- **Quantity format (criterion 21)**: `formatQuantity` gives 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" from integer hundredths; the existing `formatGrams` tests pass unedited.
-- **Sale bill leak test (criterion 22)**: with business and variety names free of `*`, `_` and backticks, no text across the cases contains the note, the customer's name, "VIP", "special", "list", an id, "http", `*`, `_` or a backtick; the API's sale bill schema is closed and has no such field.
-- **Contract kept**: a vitest reads `tests/fixtures/openapi_snapshot.json`'s `SaleBillOut` schemas and asserts their property names and enums equal the front's key lists; the front and the API never drift.
-- **Unit and words from the copy module (criterion 23)**: with the unit entry set to "u", the text reads "3,5 u" and "/u"; a guard finds no "g" literal or `formatGrams` call in any `saleBill*` source; `en-XA` is regenerated and the copy staleness tests pass.
-- **One tap (criterion 20)**: front tests (fetch faked) show Share calls the share with the bill text; with `isSecureContext=false`, `execCommand('copy')` is called synchronously right after the click and the toast "Bill copied" shows; cancel shows nothing; share failed shows its line with the attention icon and flips the label to Copy; copy failed shows its line and the selectable block; `bill` null hides the button; loading keeps the label, disabled and busy, with no digit or `$`. The sale's detail is walked by the mobile project through its registry row, loaded and held, and the project passes with no new offender. No `WalkState` is added for the copy-failed or loading states: a new state on the sale's route brings that route's existing offenders under a new screen name, which the offender lists may not take (`gate.md`). Both states are covered by the front tests above.
-- **Sale bill stays silent**: after the front tests, the console and browser storage hold nothing of the bill.
+- **Matriz de cotización**: 100 % pasando. (Criterios 3, 17, 18) Cubre:
+  - las dos llaves apagadas, solo por cantidad encendida, solo VIP encendida y las dos encendidas;
+  - regalo y precio especial primero, y el orden de los pasos;
+  - la regla del menor precio por debajo, en y por encima del mínimo por cantidad;
+  - el empate VIP–por cantidad guardado como "VIP";
+  - un precio VIP por encima del precio por cantidad, guardado como "bulk" en el mínimo;
+  - una variedad sin precio VIP, para un VIP;
+  - por cantidad medido por línea;
+  - sin precio ese día, con y sin precio especial;
+  - regalo más precio especial rechazado;
+  - redondeo por debajo de ,50, exactamente ,50 y por encima de ,50;
+  - una venta de varias líneas cuyo total es la suma de las líneas redondeadas.
+- **Precio guardado inmutable**: 100 % pasando. (Criterio 3) El precio, la regla y el total de las líneas existentes no cambian después de:
+  - agregar o borrar una entrada de precio, un precio VIP incluido;
+  - cambiar cualquiera de las llaves de precio;
+  - prender o apagar VIP;
+  - asignar un cliente;
+  - agregar, editar o borrar una entrada de stock;
+  - registrar o borrar un pago.
+- **Sin sorpresa para los VIP existentes (criterio 19)**: después de la migración, para cada cliente VIP existente, el precio, la regla y el total de una venta son iguales a los de antes, para la misma variedad, día y gramos. 0 diferencias.
+- **Una venta por pedido**: una venta de varias variedades es una venta, con total = líneas redondeadas + envío una vez, por la API y por el formulario. (Criterios 2, 8)
+- **Todo o nada**: una venta rechazada deja 0 filas nuevas en ventas, líneas y pagos. (Criterio 4)
+- **Debiendo sin cliente**: 0 guardadas; el dominio lo rechaza y un test lo cubre. (Criterio 4)
+- **Borrar devuelve gramos**: después de borrar una venta, el stock de sus variedades sube exactamente los gramos de sus líneas, y la respuesta los nombra. La confirmación de Delete sale nombra los gramos, y el aviso de Undo dice que vuelven.
+- **Cobertura de aislamiento**: cada ruta de ventas está en el barrido y responde 404 o vacío desde otro negocio, incluidas referencias a un cliente o una variedad de otro negocio. En pantalla, la venta de otro negocio abierta por id muestra "That is gone." (Criterio 5)
+- **Sin eco**: (Criterio 5)
+  - ningún cuerpo de rechazo ni línea de log contiene la nota, el nombre de un cliente ni un monto enviado;
+  - después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
+- **Tiempo de registro**: la corrida del front registra una venta desde un viewport de teléfono con un cliente existente, uno nuevo (con o sin número) o ninguno (`web/e2e/sales.spec.ts`, `web/e2e/ventasTelefono.spec.ts`), y el presupuesto de toques se cumple (`web/e2e/tapBudget.spec.ts`); ningún test mide su duración. Registrar responde en menos de 300 ms con unas pocas docenas de variedades y clientes. (Criterios 1, 14)
+- **Vista previa = guardado**: (Criterio 6)
+  - la vista previa del front pasa la misma matriz de cotización que el dominio, para cada combinación de llaves;
+  - la corrida de punta a punta compara la vista previa con el detalle guardado: 0 diferencias.
+- **Llaves en pantalla (criterio 17)**: tests del front muestran, para cada llave apagada, ninguna insignia ni campo de esa regla en New sale, ninguna insignia VIP en Sales y ninguna marca VIP en Pick a customer, mientras el detalle de una venta conserva sus insignias registradas.
+- **Detectado antes de guardar**: (Criterio 7)
+  - Owing deshabilitado sin cliente, y sacar el cliente reinicia el medio;
+  - una línea sin precio muestra su mensaje antes de guardar;
+  - un rechazo forzado de la API conserva cada campo tipeado;
+  - cada rechazo de ventas tiene un código en `contract.json`, verificado por `tests/test_refusal_codes.py`.
+- **Undo no deja nada**: después de Undo quedan 0 filas de esa venta en ventas, líneas y pagos, y no está en ninguna lista. (Criterio 9)
+- **Sales**: (Criterios 10, 11)
+  - el total y la cantidad de cada período son iguales a la suma y al número de las ventas mostradas;
+  - la semana va de lunes a domingo;
+  - la marca "owes you" coincide con la imputación de la API;
+  - la lista responde en menos de 300 ms con unos pocos cientos de ventas: lo verifica `tests/sales/test_list_cost.py` con el plan de consulta de las sentencias de la lista (se buscan los índices, no se recorre ninguna tabla) y la cantidad de sentencias con 30 y 300 ventas, nunca por tiempo (docs/adr/0038).
+- **Corregir**: la corrida de punta a punta asigna un cliente a una venta que no tenía (Assign customer desaparece) y borra una venta con su confirmación. (Criterio 11)
+- **Sin desbordes en el teléfono (criterio 12)**: tests del front a 320, 375 y 430 px y con el texto al 130 %, para New sale, Sales y el detalle de la venta, muestran que nada queda recortado ni desborda en horizontal, "Special price", el envío y los campos de Dates incluidos; las pestañas de Sales cubiertas en una fila y de a dos.
+- **Guardar a mano (criterio 12)**: en esos anchos, el total del pie y "Save sale" se ven al cargar; el encabezado se queda mientras el cuerpo se desplaza; con un teclado simulado el pie sigue visible; las opciones de pago y la ayuda de Owing (con margen lateral) se desplazan enteras por encima del pie.
+- **Objetivos y campos (criterio 13)**: todo elemento interactivo de las tres pantallas, botones de diálogo incluidos, mide al menos 44 px de alto; todo campo tiene un tamaño de letra calculado de al menos 16 px; los gramos llevan `inputmode="decimal"`, los pesos `"numeric"`, y los campos de una línea `enterkeyhint`.
+- **Nunca en blanco (criterio 14)**: tests del front muestran el estado de carga compartido en el detalle, la lista de Sales, la espera de precios de New sale (al abrir y al cambiar la fecha) y los resultados de Pick a customer, sin ningún dígito, símbolo de moneda ni cifra de relleno.
+- **Cambio de fecha**: un test del front muestra que todo lo tipeado se conserva, las líneas muestran carga, y después cada línea se vuelve a cotizar.
+- **Guarda del volver (criterio 15)**: tests del front usan el gesto de volver del sistema: pregunta "Discard the sale?" con la condición de Close; "No, keep entering" conserva el formulario y el siguiente volver vuelve a preguntar; un formulario sin tocar se cierra en el acto; con Pick a customer, New customer o Assign customer abiertos, volver cierra solo la hoja de arriba como su propio "Close", la venta o el detalle de abajo quedan intactos y "Discard the sale?" nunca aparece.
+- **Sin regresiones (criterio 16)**: los tests existentes de ventas y de navegación pasan sin editarlos; la matriz de cotización y "vista previa = guardado" siguen en 0 diferencias; `NuevaVentaCompu` y `VentasCompu` no cambian.
+- **Juego de referencia del comprobante (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea por cantidad; una línea VIP y una con precio especial que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con saldo distinto de cero; efectivo, transferencia, pagada después, debiendo en parte, debiendo entera; un saldo, un crédito y un saldo de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; una variedad cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios.
+- **Formato de cantidades (criterio 21)**: `formatQuantity` da 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" a partir de centésimos enteros; los tests existentes de `formatGrams` pasan sin editarlos.
+- **Test de filtraciones del comprobante (criterio 22)**: con nombres de negocio y de variedades sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, "VIP", "special", "list", un id, "http", `*`, `_` ni una comilla invertida; el esquema del comprobante en la API es cerrado y no tiene ningún campo así.
+- **Contrato cumplido**: un vitest lee los esquemas `SaleBillOut` de `tests/fixtures/openapi_snapshot.json` y verifica que sus nombres de propiedad y sus enums son iguales a las listas de claves del front; el front y la API nunca se separan.
+- **Unidad y palabras del módulo de textos (criterio 23)**: con la entrada de unidad puesta en "u", el texto dice "3,5 u" y "/u"; una guarda no encuentra ningún literal "g" ni llamada a `formatGrams` en ningún fuente `saleBill*`; `en-XA` está regenerado y los tests de vigencia de textos pasan.
+- **Un toque (criterio 20)**: tests del front (fetch simulado) muestran que Share llama a compartir con el texto del comprobante; con `isSecureContext=false`, `execCommand('copy')` se llama de forma sincrónica justo después del clic y aparece el aviso "Bill copied"; cancelar no muestra nada; si compartir falla aparece su línea con el ícono de atención y la etiqueta pasa a Copy; si copiar falla aparece su línea y el bloque seleccionable; `bill` nulo oculta el botón; cargando conserva la etiqueta, deshabilitado y ocupado, sin dígitos ni `$`. El proyecto móvil recorre el detalle de la venta por su fila del registro, cargado y retenido, y pasa sin ningún infractor nuevo. No se agrega ningún `WalkState` para los estados de copia fallida ni de carga: un estado nuevo en la ruta de la venta trae los infractores que esa ruta ya tiene bajo un nombre de pantalla nuevo, y las listas de infractores no pueden aceptarlo (`gate.md`). Los dos estados los cubren los tests del front de arriba.
+- **El comprobante no deja rastro**: después de los tests del front, la consola y el almacenamiento del navegador no tienen nada del comprobante.
 
-## Out of scope
+## Fuera de alcance
 
-- Later and partial payments, balances, owing since and credit: `payments.md`.
-- Refusing a sale for lack of stock: never (ADR-0009).
-- Editing a sale: delete and record it again.
-- Moving a sale between customers or removing its customer.
-- Drafts or autosave of a sale.
-- Profit and cash in Sales: the results capability.
-- Live updates between partners while a form or list is open.
-- Importing sales from the spreadsheet.
-- A measurement-driven switch between line layouts on the phone; horizontal scrolling or shortened labels for Sales' period tabs.
-- Changes to the computer layouts as part of the phone redesign; English screen texts (#53); the bar and back rule (#59).
-- Building New customer's unsaved-changes confirmation (customers.md): its own issue, with its own copy, for Customers and Pick a customer alike.
-- Other VIP rules (a percent off list); price promotions by date.
-- Refusing or warning a sale because the pricing settings changed mid-sale.
-- For the sale bill: a year in the date; a preview step; an "already shared" state; a payment receipt; choosing a channel or sending from the app; an invoice; escaping or rewriting seller-typed names for any chat app's formatting; making the unit customizable (#318); any other language (#317).
+- Pagos posteriores y parciales, saldos, owing since y crédito: `payments.md`.
+- Rechazar una venta por falta de stock: nunca (ADR-0009).
+- Editar una venta: se borra y se registra de nuevo.
+- Pasar una venta de un cliente a otro o sacarle el cliente.
+- Borradores o guardado automático de una venta.
+- Ganancia y caja en Sales: la capacidad de resultados.
+- Actualizaciones en vivo entre socias mientras hay un formulario o una lista abiertos.
+- Importar ventas desde la planilla.
+- Un cambio de diseño de línea en el teléfono decidido por medición; desplazamiento horizontal o etiquetas acortadas en las pestañas de período de Sales.
+- Cambios en los diseños de computadora como parte del rediseño para teléfono; textos de pantalla en inglés (#53); la regla de barra y volver (#59).
+- Construir la confirmación de cambios sin guardar de New customer (customers.md): su propio issue, con sus propios textos, para Customers y Pick a customer por igual.
+- Otras reglas VIP (un porcentaje sobre lista); promociones de precio por fecha.
+- Rechazar o avisar en una venta porque la configuración de precios cambió en medio de la venta.
+- Para el comprobante de venta: un año en la fecha; un paso de vista previa; un estado de "ya compartido"; un recibo de pago; elegir un canal o enviar desde la app; una factura; escapar o reescribir los nombres que tipeó la vendedora para el formato de alguna app de chat; hacer configurable la unidad (#318); cualquier otro idioma (#317).
 
-## Planned in GH-318
+## Planeado en GH-318
 
-Not built yet. Until the part named ships, the sections above are what the app does.
+Todavía no está construido. Hasta que salga la parte nombrada, lo que hace la app son las secciones de arriba.
 
-Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la frase actual que va a reemplazar. La parte que entrega un pasaje lo saca de acá y edita Comportamiento y Fuera de alcance en el mismo diff.
 
-### Units
+### Unidades
 
-Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
+Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte de unidades.
 
-- A line's quantity will be in its product's unit, stored as a whole number of hundredths whatever the unit; the unit's 0 to 2 decimals will only validate what is typed and decide display. The sale's footer and total will show the quantity sold and the quantity gifted as one amount per unit, each with its label, never added across units.
-- It will replace: "It has a variety of the same business and grams above zero, with at most two decimals, whatever its rule." and "**The sale's total** shows with the grams sold and the grams gifted."
+- La cantidad de una línea va a estar en la unidad de su producto, guardada como un número entero de centésimos sea cual sea la unidad; los 0 a 2 decimales de la unidad solo van a validar lo tipeado y decidir cómo se muestra. El pie y el total de la venta van a mostrar la cantidad vendida y la cantidad regalada como un monto por unidad, cada uno con su etiqueta, nunca sumados entre unidades.
+- Va a reemplazar: "Tiene una variedad del mismo negocio y gramos por encima de cero, con a lo sumo dos decimales, sea cual sea su regla." y "**El total de la venta** se muestra con los gramos vendidos y los gramos regalados."
 
-### Customer types and pricing rules
+### Tipos de cliente y reglas de precio
 
-Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; delivered by the customer-type prices part.
+Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; lo entrega la parte de precios por tipo de cliente.
 
-- Customer types will replace the single VIP mark. A line's rules will be list, bulk or the customer type's price, from effective-dated rows; bulk and customer-type prices will stay switchable per business. The `vip` mark and `vip_price` columns will stay frozen in place, so a sale will keep the price it charged.
-- It will replace: "**VIP**: Customers VIP is on, the customer is VIP at recording time, and the current price has a VIP price." and the naming rule "On a tie between VIP and bulk, the line is stored as VIP."
+- Los tipos de cliente van a reemplazar la marca VIP única. Las reglas de una línea van a ser lista, por cantidad o el precio del tipo de cliente, a partir de filas con fecha de vigencia; por cantidad y los precios por tipo de cliente van a seguir pudiéndose prender y apagar por negocio. Las columnas `vip` y `vip_price` van a quedar congeladas en su lugar, así una venta conserva el precio que cobró.
+- Va a reemplazar: "**VIP**: Customers VIP está encendido, el cliente es VIP al momento de registrar y el precio vigente tiene precio VIP." y la regla de nombre "Si VIP y por cantidad empatan, la línea se guarda como VIP."
 
-### Money
+### Plata
 
-Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
+Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; lo entrega la parte de plata.
 
-- Amounts will cross the wire in currency units as Decimal and be stored at the business's scale (0 or 2). Half-up rounding of a line will go through one helper, `round_half_up`, which the money part creates in `app/shared/money.py`; raising a business's decimals will change no recorded amount's value.
-- It will replace: "**Special price**: the total typed for the line, in whole pesos and above $0.", "grams × the stored price per gram, rounded to the nearest whole peso, with exactly half rounding up" and "**Shipping charged**: whole pesos, zero or more, $0 by default."
+- Los montos van a viajar en unidades de moneda como Decimal y se van a guardar en la escala del negocio (0 o 2). El redondeo con la mitad hacia arriba de una línea va a pasar por un único helper, `round_half_up`, que la parte de plata crea en `app/shared/money.py`; subir los decimales de un negocio no va a cambiar el valor de ningún monto registrado.
+- Va a reemplazar: "**Precio especial**: el total tipeado para la línea, en pesos enteros y por encima de $0.", "gramos × el precio por gramo guardado, redondeado al peso entero más cercano, con la mitad exacta hacia arriba" y "**Envío cobrado**: pesos enteros, cero o más, $0 por defecto."
 
-### Payment methods
+### Medios de pago
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the payment methods part.
+Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte de medios de pago.
 
-- Payment methods will be the business's own list; a new business will start with "Cash" and "Transfer", and an existing one will keep both.
-- It will replace: "how it was paid: Cash · Transfer · Owing." and "**Paid in full on the spot, by cash or transfer.**" ("Owing" stays a state, not a method.)
+- Los medios de pago van a ser la lista propia del negocio; un negocio nuevo va a empezar con "Cash" y "Transfer", y uno existente va a conservar los dos.
+- Va a reemplazar: "cómo se pagó: Cash · Transfer · Owing." y "**Pagada entera en el momento, en efectivo o por transferencia.**" ("Owing" sigue siendo un estado, no un medio).
 
-### The business day
+### El día del negocio
 
-Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; delivered by the time-zone part.
+Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; lo entrega la parte de zona horaria.
 
-- It will replace: "Defaults to today, the business day in Argentina time." and "**Periods**: Today · Week · Month · Dates, in Argentina time."; both will read the business's own time zone.
+- Va a reemplazar: "Por defecto es hoy, el día del negocio en hora de Argentina." y "**Períodos**: Today · Week · Month · Dates, en hora de Argentina."; las dos van a leer la zona horaria propia del negocio.
 
-### Applied promotions
+### Promociones aplicadas
 
-Decided in docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; delivered by the promotions-at-sale-time part.
+Decidido en docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; lo entrega la parte de promociones al vender.
 
-- The seller will define the business's own promotions (a discount, a set price per unit, take N pay M, a combo, a gift, a threshold), each with what it applies to and when. Those that qualify will apply on their own at sale time; the seller will see every applied promotion and be able to remove any before saving.
-- A line will keep its pricing rule and the discount will be recorded on top of it. A line with a special price, and a gift line, will get no promotion. A promotion's free item will be recorded as a gift line.
-- The sale will record which promotions applied and how much each discounted, as they stood when it was saved, as typed `sale_promotion` rows, which the promotions-at-sale-time part creates (ADR-0060). Editing, pausing or archiving a promotion will never touch past sales; deleting a sale will give its use back.
-- It will replace, in Out of scope: "Other VIP rules (a percent off list); price promotions by date." (the "price promotions by date" half).
-- The withdrawal reason "Promotion" will be renamed "Marketing" before any applied-promotion code ships (`stock.md`), so the two words will never meet on one screen.
+- La vendedora va a definir las promociones propias del negocio (un descuento, un precio fijo por unidad, llevá N pagá M, un combo, un regalo, un umbral), cada una con a qué aplica y cuándo. Las que califican se van a aplicar solas al vender; la vendedora va a ver cada promoción aplicada y va a poder sacar cualquiera antes de guardar.
+- Una línea va a conservar su regla de precio y el descuento se va a registrar encima. Una línea con precio especial, y una línea de regalo, no van a recibir promoción. El ítem gratis de una promoción se va a registrar como línea de regalo.
+- La venta va a registrar qué promociones aplicaron y cuánto descontó cada una, tal como estaban al guardarla, como filas tipadas `sale_promotion`, que crea la parte de promociones al vender (ADR-0060). Editar, pausar o archivar una promoción nunca va a tocar ventas pasadas; borrar una venta le va a devolver su uso.
+- Va a reemplazar, en Fuera de alcance: "Otras reglas VIP (un porcentaje sobre lista); promociones de precio por fecha." (la mitad de "promociones de precio por fecha").
+- El motivo de retiro "Promotion" se va a renombrar "Marketing" antes de que salga cualquier código de promociones aplicadas (`stock.md`), para que las dos palabras nunca se crucen en una misma pantalla.
