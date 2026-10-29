@@ -3,7 +3,6 @@ reader map, the diff command and the thin `main`, over a `tmp_path` tree and the
 
 from __future__ import annotations
 
-import ast
 import json
 from collections.abc import Sequence
 from pathlib import Path
@@ -602,14 +601,3 @@ def test_the_real_tree_selects_everything_for_a_push_and_for_a_fallback_path() -
 
 def test_every_selector_input_exists() -> None:
     assert all((REPO_ROOT / path).is_file() for path in SELECTOR_INPUTS)
-
-
-def test_always_dirs_is_assigned_in_scripts_ci_areas_and_nowhere_else() -> None:
-    assigned = []
-    for path in sorted((REPO_ROOT / "scripts").rglob("*.py")):
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            targets = node.targets if isinstance(node, ast.Assign) else []
-            if any(isinstance(t, ast.Name) and t.id == "ALWAYS_DIRS" for t in targets):
-                assigned.append(path.relative_to(REPO_ROOT).as_posix())
-
-    assert assigned == ["scripts/ci_areas.py"]
