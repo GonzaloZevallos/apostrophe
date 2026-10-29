@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs the pinned CI-only tools of the `docs` job (ADR-0065): oasdiff and lychee into
+# Installs the pinned CI-only tools of the `docs` job (ADR-0066): oasdiff and lychee into
 # $RUNNER_TEMP/bin (on $GITHUB_PATH), and the Mermaid CLI under $RUNNER_TEMP/mmdc. Every version
 # and checksum of these tools lives here and nowhere else. Writes nothing into the repository.
 set -euo pipefail

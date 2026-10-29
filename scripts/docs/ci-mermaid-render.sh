@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Renders every generated Mermaid block with the pinned mmdc (ADR-0065) into $RUNNER_TEMP, so a
+# Renders every generated Mermaid block with the pinned mmdc (ADR-0066) into $RUNNER_TEMP, so a
 # diagram the real renderer rejects fails the job. Writes nothing into the repository, and fails
 # when it rendered nothing or fewer svg files than there are mermaid blocks.
 set -euo pipefail

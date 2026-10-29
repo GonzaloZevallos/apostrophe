@@ -1,4 +1,4 @@
-"""The OpenAPI breaking-change check of the CI `docs` job (ADR-0065).
+"""The OpenAPI breaking-change check of the CI `docs` job (ADR-0066).
 
 On a pull request, compares `docs/api/openapi.json` with the one at the base ref using the
 pinned `oasdiff` binary. A break fails the job unless the pull request body has a line

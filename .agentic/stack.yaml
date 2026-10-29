@@ -134,7 +134,7 @@ forbidden:
 # rerunning every check locally. `test` and `web` of `.github/workflows/ci.yml` gate the merge and
 # together run every check above in full (pytest, ruff, mypy; web typecheck, lint, test, build);
 # `docs` gates too and runs no declared check: the generator's stale check, the Mermaid render,
-# the offline link check and the OpenAPI breaking-change check (ADR-0065). The `e2e` job runs on
+# the offline link check and the OpenAPI breaking-change check (ADR-0066). The `e2e` job runs on
 # every pull request and gates nothing (tests/test_stack_ci.py, PARKED).
 # e2e joins `ci:` when the owner turns local e2e back on and #428 has fixed the flake.
 ci: [test, web, docs]
