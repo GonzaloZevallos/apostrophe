@@ -398,7 +398,7 @@ The step-by-step setup a brand-new business is walked through after its new-busi
 _Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
-La elección de un dispositivo entre Automatic, Light o Dark, hecha solo en Settings → Appearance y aplicada en el acto. Sin nada guardado la app sigue al teléfono en vivo; una elección guardada es solo de ese dispositivo, sobrevive al cierre de sesión y gana sobre el teléfono. _In the app_: Theme (Automatic · Light · Dark).
+A device's choice between Automatic, Light or Dark, made only in Settings → Appearance and applied at once. With nothing stored, the app follows the phone live. A stored choice is that device's alone, survives signing out, and wins over the phone. _In the app_: Theme (Automatic · Light · Dark).
 _Avoid_: preference, dark mode setting, skin, user setting, system theme
 
 **Own chat lookup**:

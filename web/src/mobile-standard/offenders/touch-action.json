@@ -156,18 +156,6 @@
     "issue": 60
   },
   {
-    "screen": "ConfiguracionApariencia",
-    "rule": "touch-action",
-    "target": "radio:Light",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionApariencia",
-    "rule": "touch-action",
-    "target": "radio:Dark",
-    "issue": 60
-  },
-  {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
     "target": "button:+ Category",

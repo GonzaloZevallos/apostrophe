@@ -15,7 +15,9 @@
  */
 
 type Theme = 'claro' | 'oscuro'
-type Choice = 'automatic' | 'light' | 'dark'
+
+/** The device's theme choice, as the Theme control names it. */
+export type ThemeChoice = 'automatic' | 'light' | 'dark'
 
 /** What the phone says: `isDark` is read fresh each time; `onChange` returns what stops it. */
 export type SystemTheme = {
@@ -39,7 +41,7 @@ function applyResolved(theme: Theme): void {
   else document.documentElement.removeAttribute('data-tema')
 }
 
-function readChoice(): Choice {
+function readChoice(): ThemeChoice {
   try {
     const stored = window.localStorage.getItem(KEY)
     if (stored === LIGHT) return 'light'
@@ -51,7 +53,7 @@ function readChoice(): Choice {
 }
 
 /** The theme a choice shows, given what the phone says; pure. */
-export function resolveTheme(choice: Choice, systemIsDark: boolean): Theme {
+export function resolveTheme(choice: ThemeChoice, systemIsDark: boolean): Theme {
   if (choice === 'light') return LIGHT
   if (choice === 'dark') return DARK
   return systemIsDark ? DARK : LIGHT
@@ -83,13 +85,8 @@ function follow(): void {
   resolveAutomatic()
 }
 
-/** The theme the page shows now, for a control that marks it; the attribute stays this module's. */
-export function currentTheme(): Theme {
-  return document.documentElement.getAttribute('data-tema') === DARK ? DARK : LIGHT
-}
-
 /** What the device chose, read from storage: Automatic where nothing usable is stored. */
-export function currentChoice(): Choice {
+export function currentChoice(): ThemeChoice {
   return readChoice()
 }
 
