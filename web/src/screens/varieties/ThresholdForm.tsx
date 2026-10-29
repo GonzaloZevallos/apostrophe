@@ -20,6 +20,7 @@ import { parseGrams } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { THRESHOLD_INVALID_MESSAGE, THRESHOLD_OVERRIDES, THRESHOLD_SAVED, VARIETIES_TEXT } from '../../copy/varieties'
 import Boton from '../../components/Boton'
+import { SheetActions } from '../../components/Sheet'
 import { COMMON_TEXT } from '../../copy/common'
 
 /** The saved amount as a person types it: a comma, no unit. */
@@ -107,10 +108,12 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
             </span>
           )}
         </label>
-        {offline && <SinConexion />}
-        <Boton textOnly="submit" type="submit" disabled={sending}>
-          {VARIETIES_TEXT.guardaElAviso}
-        </Boton>
+        <SheetActions>
+          {offline && <SinConexion />}
+          <Boton textOnly="submit" type="submit" disabled={sending}>
+            {VARIETIES_TEXT.guardaElAviso}
+          </Boton>
+        </SheetActions>
       </form>
     </div>
   )

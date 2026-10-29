@@ -105,11 +105,11 @@ def full_imports_of(module: Path) -> Iterator[str]:
     """Every name a statement in `module` binds, with a `from X import name` or its
     relative equivalent resolved to `X.name` rather than the bare `X`.
 
-    `imports_of` stops at the bare module for `from app import varieties`, because the
+    `imports_of` stops at the bare module for `from app import products`, because the
     other rules only ever check a module's own dotted name against an allow-list of
     packages. The no-other-hexagon rule needs the imported name too, so `from app
-    import varieties` and `from ... import varieties` (written where `...` reaches
-    `app`) are both seen as reaching `app.varieties`, not the harmless-looking `app`.
+    import products` and `from ... import products` (written where `...` reaches
+    `app`) are both seen as reaching `app.products`, not the harmless-looking `app`.
     """
     tree = ast.parse(module.read_text(), filename=str(module))
     for node in ast.walk(tree):

@@ -43,7 +43,6 @@ import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 import { COMMON_TEXT } from '../copy/common'
 import { OUT_OF_DATE_JOINER } from '../copy/pinnedCatalog'
 
-
 function Card({ children }: { children: React.ReactNode }) {
   return (
     <main className="pantalla">
@@ -111,8 +110,7 @@ export default function EntriesList({ varietyId }: Props) {
     varietyId === undefined || movementsQuery.data === undefined
       ? stock.entries.map((entry) => ({ ...entry, kind: 'entry' as const }))
       : movementsQuery.data
-  const nameOf = (id: number): string =>
-    (varietiesQuery.data ?? []).find((variety) => variety.id === id)?.name ?? ''
+  const nameOf = (id: number): string => (varietiesQuery.data ?? []).find((variety) => variety.id === id)?.name ?? ''
 
   async function onConfirmDelete(entry: StockEntry): Promise<void> {
     setDeleting(true)
@@ -134,79 +132,43 @@ export default function EntriesList({ varietyId }: Props) {
 
   return (
     <Card>
-      <h1 className="encabezado__titulo">
-        {varietyId === undefined ? COMMON_TEXT.allEntries : COMMON_TEXT.entries}
-      </h1>
+      <h1 className="encabezado__titulo">{varietyId === undefined ? COMMON_TEXT.allEntries : COMMON_TEXT.entries}</h1>
       {(goneNotice || goneExited) && <GoneNotice />}
       {offline && <SinConexion />}
-      {failed && <span className="campo__error" role="alert">{ERROR_GENERICO_MENSAJE}</span>}
+      {failed && (
+        <span className="campo__error" role="alert">
+          {ERROR_GENERICO_MENSAJE}
+        </span>
+      )}
 
       {rows.length === 0 ? (
         <div className="estado-vacio">
-          <span className="estado-vacio__titulo" data-copy="emptyTitle">{t(EMPTY_STATE_KEYS.stockTitle)}</span>
-          <span className="estado-vacio__detalle" data-copy="emptyLine">{t(EMPTY_STATE_KEYS.stockDetail)}</span>
+          <span className="estado-vacio__titulo" data-copy="emptyTitle">
+            {t(EMPTY_STATE_KEYS.stockTitle)}
+          </span>
+          <span className="estado-vacio__detalle" data-copy="emptyLine">
+            {t(EMPTY_STATE_KEYS.stockDetail)}
+          </span>
         </div>
       ) : (
-        <ul className="lista-entradas">
-          {rows.map((entry) =>
-            entry.kind === 'withdrawal' ? (
-              <li key={`withdrawal-${entry.id}`} className="fila-entrada">
-                <InAppLink to={pathTo(WITHDRAWAL, { id: entry.id })} className="fila-entrada__enlace">
-                  <span className="fila-entrada__texto">
-                    <span className="fila-entrada__linea1">
-                      {formatDate(entry.date, me.today)}{OUT_OF_DATE_JOINER}{nameOf(varietyId ?? 0)}
-                    </span>
-                    <span className="fila-entrada__linea2">
-                      {REASON_LABEL[entry.reason]}{OUT_OF_DATE_JOINER}{`−${formatGrams(entry.grams)}`}
-                    </span>
-                  </span>
-                </InAppLink>
-              </li>
-            ) : (
-              <li key={`entry-${entry.id}`} className="fila-entrada">
-                <span className="fila-entrada__texto">
-                  <span className="fila-entrada__linea1">
-                    {formatDate(entry.date, me.today)}{OUT_OF_DATE_JOINER}{nameOf(entry.variety_id)}
-                  </span>
-                  <span className="fila-entrada__linea2">
-                    {t(ORIGIN_LABEL[entry.origin])}{OUT_OF_DATE_JOINER}{formatGrams(entry.grams)}
-                  </span>
-                </span>
-                <span className="fila-entrada__cifras">
-                  {entry.total_cost === null ? (
-                    <span className="fila-entrada__costo fila-entrada__costo--sin">{STOCK_TEXT.sinCosto}</span>
-                  ) : (
-                    <>
-                      <span className="fila-entrada__costo">{formatMoney(entry.total_cost)}</span>
-                      {entry.cost_per_gram !== null && (
-                        <span className="fila-entrada__linea2">
-                          {formatMoney(entry.cost_per_gram)}{COMMON_TEXT.perGram}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </span>
-                {!readOnly && (
-                  <span className="fila-entrada__acciones">
-                    <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(STOCK_ENTRY, { id: entry.id })} />
-                    <Boton
-                      variant="icon"
-                      action="delete"
-                      ariaLabel={STOCK_TEXT.borrar}
-                      onClick={() => setConfirming(entry)}
-                    />
-                  </span>
-                )}
-              </li>
-            ),
-          )}
-        </ul>
+        <EntryRows
+          rows={rows}
+          today={me.today}
+          nameOf={nameOf}
+          varietyId={varietyId}
+          readOnly={readOnly}
+          onDelete={setConfirming}
+        />
       )}
 
       {confirming !== null && (
         <ConfirmDialog
           title={STOCK_TEXT.antesDeBorrar}
-          detail={STOCK_TEXT.borrasLaEntradaDel(formatDate(confirming.date, me.today), nameOf(confirming.variety_id), formatGrams(confirming.grams))}
+          detail={STOCK_TEXT.borrasLaEntradaDel(
+            formatDate(confirming.date, me.today),
+            nameOf(confirming.variety_id),
+            formatGrams(confirming.grams),
+          )}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
@@ -216,5 +178,89 @@ export default function EntriesList({ varietyId }: Props) {
         />
       )}
     </Card>
+  )
+}
+
+/** The list's rows, shared with the screen drawn behind the entry sheet (`EntriesBehind`). */
+export function EntryRows({
+  rows,
+  today,
+  nameOf,
+  varietyId,
+  readOnly,
+  onDelete,
+}: {
+  rows: Movement[]
+  today: string
+  nameOf: (id: number) => string
+  varietyId: number | undefined
+  readOnly: boolean
+  onDelete: (entry: StockEntry) => void
+}) {
+  const { t } = useTranslation()
+  return (
+    <ul className="lista-entradas">
+      {rows.map((entry) =>
+        entry.kind === 'withdrawal' ? (
+          <li key={`withdrawal-${entry.id}`} className="fila-entrada">
+            <InAppLink to={pathTo(WITHDRAWAL, { id: entry.id })} className="fila-entrada__enlace">
+              <span className="fila-entrada__texto">
+                <span className="fila-entrada__linea1">
+                  {formatDate(entry.date, today)}
+                  {OUT_OF_DATE_JOINER}
+                  {nameOf(varietyId ?? 0)}
+                </span>
+                <span className="fila-entrada__linea2">
+                  {REASON_LABEL[entry.reason]}
+                  {OUT_OF_DATE_JOINER}
+                  {`−${formatGrams(entry.grams)}`}
+                </span>
+              </span>
+            </InAppLink>
+          </li>
+        ) : (
+          <li key={`entry-${entry.id}`} className="fila-entrada">
+            <span className="fila-entrada__texto">
+              <span className="fila-entrada__linea1">
+                {formatDate(entry.date, today)}
+                {OUT_OF_DATE_JOINER}
+                {nameOf(entry.variety_id)}
+              </span>
+              <span className="fila-entrada__linea2">
+                {t(ORIGIN_LABEL[entry.origin])}
+                {OUT_OF_DATE_JOINER}
+                {formatGrams(entry.grams)}
+              </span>
+            </span>
+            <span className="fila-entrada__cifras">
+              {entry.total_cost === null ? (
+                <span className="fila-entrada__costo fila-entrada__costo--sin">{STOCK_TEXT.sinCosto}</span>
+              ) : (
+                <>
+                  <span className="fila-entrada__costo">{formatMoney(entry.total_cost)}</span>
+                  {entry.cost_per_gram !== null && (
+                    <span className="fila-entrada__linea2">
+                      {formatMoney(entry.cost_per_gram)}
+                      {COMMON_TEXT.perGram}
+                    </span>
+                  )}
+                </>
+              )}
+            </span>
+            {!readOnly && (
+              <span className="fila-entrada__acciones">
+                <BotonLink
+                  variant="icon"
+                  action="edit"
+                  ariaLabel={COMMON_TEXT.edit}
+                  to={pathTo(STOCK_ENTRY, { id: entry.id })}
+                />
+                <Boton variant="icon" action="delete" ariaLabel={STOCK_TEXT.borrar} onClick={() => onDelete(entry)} />
+              </span>
+            )}
+          </li>
+        ),
+      )}
+    </ul>
   )
 }

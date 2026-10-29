@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from app.catalog.application.read_archived import ArchivedCatalogVarietyView
 from app.catalog.application.read_catalog import CatalogVarietyView, CatalogView
-from app.catalog.domain.variety import CatalogState
+from app.catalog.domain.product import CatalogState
 
 
 class CatalogAttributesIn(BaseModel):

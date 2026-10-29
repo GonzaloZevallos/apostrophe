@@ -1,5 +1,5 @@
-from app import varieties
+from app import products
 
 
 def use() -> object:
-    return varieties
+    return products

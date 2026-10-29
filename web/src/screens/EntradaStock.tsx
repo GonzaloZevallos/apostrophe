@@ -18,7 +18,9 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { isGone } from '../api/refusals'
 import { type StockEntry, entriesOf, getEntry, readStock } from '../api/stock'
-import ConfirmDialog from '../components/ConfirmDialog'
+import LeaveConfirm from '../components/LeaveConfirm'
+import Sheet from '../components/Sheet'
+import { useViewport } from '../shell/useViewport'
 import ErrorGenerico from '../components/ErrorGenerico'
 import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
@@ -124,6 +126,7 @@ interface BodyProps {
 
 function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEntries }: BodyProps) {
   const flash = useFlash()
+  const viewport = useViewport()
   const back = useBackOr(mode === 'nuevo' ? VARIETIES : STOCK)
   const goneExit = useGoneExit('stock-entry', { id: entryId })
   const [dirty, setDirty] = useState(false)
@@ -148,42 +151,51 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
     goneExit()
   }
 
+  const title = mode === 'nuevo' ? STOCK_TEXT.nuevaEntrada : STOCK_TEXT.editarEntrada
+
   return (
-    <main className="pantalla">
-      <div className="cuerpo">
-        <div className="gasto-form__cabecera">
-          <span className="gasto-form__titulo">
-            {mode === 'nuevo' ? STOCK_TEXT.nuevaEntrada : STOCK_TEXT.editarEntrada}
-          </span>
-          <span className="gasto-form__cerrar">
-            <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={back} />
-          </span>
-        </div>
-        <StockEntryForm
-          mode={mode}
-          today={today}
-          entryId={entryId}
-          initial={initial}
-          preselectedVarietyId={chosenVariety}
-          preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : undefined}
-          onSaved={() => leave('common:entrySaved')}
-          onDeleted={() => leave('common:entryDeleted')}
-          onGone={entryIsGone}
-          onDirtyChange={onDirtyChange}
-          dialogHost={dialogHost}
-        />
+    <Sheet
+      computer={viewport === 'computer'}
+      computerClass="pantalla"
+      computerDialog={false}
+      label={title}
+      touched={dirty}
+      onClose={back}
+      aside={
+        <>
+          <div ref={setDialogHost} className="sin-caja" />
+          {blocker.state === 'blocked' && (
+            <LeaveConfirm
+              blocker={blocker}
+              question={mode === 'nuevo' ? STOCK_TEXT.descartasLaEntrada : COMMON_TEXT.discardTheChanges}
+              detail={COMMON_TEXT.losesWhatYouEntered}
+              keepLabel={COMMON_TEXT.noKeepEntering}
+              discardLabel={COMMON_TEXT.yesDiscard}
+            />
+          )}
+        </>
+      }
+    >
+      <div className="gasto-form__cabecera">
+        <span className="gasto-form__titulo">{title}</span>
+        <span className="gasto-form__cerrar">
+          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={back} />
+        </span>
       </div>
-      <div ref={setDialogHost} className="sin-caja" />
-      {blocker.state === 'blocked' && (
-        <ConfirmDialog
-          title={mode === 'nuevo' ? STOCK_TEXT.descartasLaEntrada : COMMON_TEXT.discardTheChanges}
-          detail={COMMON_TEXT.losesWhatYouEntered}
-          confirmText={COMMON_TEXT.yesDiscard}
-          cancelText={COMMON_TEXT.noKeepEntering}
-          onConfirm={() => blocker.proceed()}
-          onCancel={() => blocker.reset()}
-        />
-      )}
-    </main>
+      <StockEntryForm
+        mode={mode}
+        today={today}
+        entryId={entryId}
+        initial={initial}
+        preselectedVarietyId={chosenVariety}
+        preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : undefined}
+        onSaved={() => leave('common:entrySaved')}
+        onDeleted={() => leave('common:entryDeleted')}
+        onGone={entryIsGone}
+        onDirtyChange={onDirtyChange}
+        dialogHost={dialogHost}
+        pinned
+      />
+    </Sheet>
   )
 }

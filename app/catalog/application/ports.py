@@ -1,6 +1,6 @@
 """Ports the catalog declares over the other hexagons and its own storage
 (docs/adr/0006). No implementation lives here; `app/catalog/adapters/` implements each
-one, the only place in the catalog allowed to import `app.varieties`, `app.stock` or
+one, the only place in the catalog allowed to import `app.products`, `app.stock` or
 `app.accounts`.
 """
 
@@ -11,19 +11,19 @@ from typing import Protocol
 
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.header_footer import CatalogHeaderFooter
-from app.catalog.domain.variety import ArchivedCatalogVariety, CatalogVariety, StockStatus
+from app.catalog.domain.product import ArchivedCatalogProduct, CatalogProduct, StockStatus
 from app.catalog.domain.words import CatalogWords
 from app.shared.language import Language
 from app.shared.pricing_settings import PricingSettings
 
 
 class CatalogVarieties(Protocol):
-    def on(self, day: date) -> list[CatalogVariety]:
+    def on(self, day: date) -> list[CatalogProduct]:
         """Every variety of the business, in name-key order, with its current price on
         `day` or `None`."""
         ...
 
-    def archived(self) -> list[ArchivedCatalogVariety]:
+    def archived(self) -> list[ArchivedCatalogProduct]:
         """Every archived variety of the business, in name-key order."""
         ...
 

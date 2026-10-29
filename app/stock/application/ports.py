@@ -102,7 +102,7 @@ class Thresholds(Protocol):
 class VarietyCatalog(Protocol):
     """Whether a variety id belongs to this business, for a stock use case that takes
     one (docs/adr/0004). Built for one business; stock's application layer never
-    imports `app.varieties` (CODING_STANDARDS section 1) — only its adapters do."""
+    imports `app.products` (CODING_STANDARDS section 1) — only its adapters do."""
 
     def exists(self, variety_id: int) -> bool:
         """The variety is this business's, archived or not."""

@@ -3,7 +3,11 @@
   "web/src/screens/EntradaStock.tsx",
   "web/src/screens/EntriesList.tsx",
   "web/src/screens/StockEntryForm.tsx",
+  "web/src/screens/StockEntrySheet.test.tsx",
+  "web/src/screens/varieties/EntriesBehind.tsx",
   "web/src/screens/withdrawals/WithdrawalDetail.tsx",
+  "web/src/screens/withdrawals/WithdrawalFacts.tsx",
   "web/src/screens/withdrawals/WithdrawalForm.tsx",
-  "web/src/screens/withdrawals/WithdrawalFormRoute.tsx"
+  "web/src/screens/withdrawals/WithdrawalFormRoute.tsx",
+  "web/src/screens/withdrawals/WithdrawalSheet.test.tsx"
 ]

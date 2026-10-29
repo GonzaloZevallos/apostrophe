@@ -16,8 +16,8 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.products.adapters.tables import ProductRow
 from app.stock.adapters.draw_costs import SqlDrawCosts
-from app.varieties.adapters.tables import VarietyRow
 
 
 def _variety_id(client: TestClient, name: str, list_price: int = 10_000) -> int:
@@ -39,7 +39,7 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
 
 def _business_id_of_variety(engine: Engine, variety_id: int) -> int:
     with Session(engine) as session:
-        row = session.scalar(select(VarietyRow).where(VarietyRow.id == variety_id))
+        row = session.scalar(select(ProductRow).where(ProductRow.id == variety_id))
         assert row is not None
         return row.business_id
 

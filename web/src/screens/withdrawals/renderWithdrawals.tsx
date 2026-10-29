@@ -36,21 +36,26 @@ export const VARIETIES = [
 export const STOCK = { total: 0, varieties: [], entries: [] }
 
 /** Answers the reads every screen here makes; `rest` answers the rest (writes, the withdrawal). */
-export function withReads(rest: FetchImpl, varieties?: () => Promise<Response>): FetchImpl {
+export function withReads(
+  rest: FetchImpl,
+  varieties?: () => Promise<Response>,
+  stock: unknown = STOCK,
+): FetchImpl {
   return async (url, init) => {
     if (url === '/varieties') return varieties === undefined ? jsonResponse(200, VARIETIES) : varieties()
-    if (url === '/stock') return jsonResponse(200, STOCK)
+    if (url === '/stock') return jsonResponse(200, stock)
     return rest(url, init)
   }
 }
 
-/** `varieties` answers `GET /varieties` when a test needs the list to change over time. */
+/** `varieties` answers `GET /varieties` when a test needs the list to change over time; `stock` is what `GET /stock` holds. */
 export function renderWithdrawals(
   initialEntries: string[],
   fetchImpl: FetchImpl,
   varieties?: () => Promise<Response>,
+  stock?: unknown,
 ) {
-  const fetchMock = vi.fn(withReads(fetchImpl, varieties))
+  const fetchMock = vi.fn(withReads(fetchImpl, varieties, stock))
   vi.stubGlobal('fetch', fetchMock)
   const router = createMemoryRouter(
     [

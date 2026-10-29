@@ -156,7 +156,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
             >
               <span className="lista-clientes__fila-contenido">
                 <span className="lista-clientes__nombre">
-                  {customer.name}
+                  <span className="lista-clientes__nombre-texto">{customer.name}</span>
                   {vipCustomers && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                 </span>
                 {customer.phone !== null && (

@@ -221,6 +221,7 @@ function Categories({
             <input
               ref={inputRef}
               className="campo__input"
+              autoComplete="off"
               value={newName}
               onChange={(event) => setNewName(event.target.value)}
             />
@@ -328,6 +329,7 @@ function CategoryRow({
       <form className="fila" onSubmit={save}>
         <input
           className="campo__input"
+          autoComplete="off"
           value={draft}
           onChange={(event) => onDraft(event.target.value)}
           aria-label={SETTINGS_TEXT.nameOf(category.name)}

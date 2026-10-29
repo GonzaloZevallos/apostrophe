@@ -31,7 +31,9 @@ import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/ref
 import type { SuccessToast } from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import { SheetActions } from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
+import { useViewport } from '../../shell/useViewport'
 import { parseMoney } from '../../format/parse'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
@@ -99,6 +101,7 @@ export default function ExpenseForm({
   onGone,
 }: ExpenseFormProps) {
   const me = useOutletContext<Me>()
+  const phone = useViewport() === 'phone'
   const queryClient = useQueryClient()
   const categoriesQuery = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
   const [initial] = useState<FormState>(() => initialForm(target, me.today))
@@ -203,6 +206,12 @@ export default function ExpenseForm({
     </div>
   )
 
+  // On a phone the destructive action sits above the main action, in the pinned actions; on a
+  // computer the form keeps the order it had (ADR-0062).
+  const deleteButton = target !== 'nuevo' && onRequestDelete !== undefined && (
+    <Boton variant="icon" action="delete" ariaLabel={EXPENSES_TEXT.deleteExpense} onClick={() => onRequestDelete(target)} />
+  )
+
   if (categoriesQuery.isError) {
     return (
       <div className="gasto-form">
@@ -300,23 +309,19 @@ export default function ExpenseForm({
             required
           />
         </label>
-        {formError !== null && (
-          <span className="campo__error" role="alert">
-            {formError}
-          </span>
-        )}
-        {offline && <SinConexion />}
-        <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-          {EXPENSES_TEXT.saveTheExpense}
-        </Boton>
-        {target !== 'nuevo' && onRequestDelete !== undefined && (
-          <Boton
-            variant="icon"
-            action="delete"
-            ariaLabel={EXPENSES_TEXT.deleteExpense}
-            onClick={() => onRequestDelete(target)}
-          />
-        )}
+        <SheetActions>
+          {formError !== null && (
+            <span className="campo__error" role="alert">
+              {formError}
+            </span>
+          )}
+          {offline && <SinConexion />}
+          {phone && deleteButton}
+          <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
+            {EXPENSES_TEXT.saveTheExpense}
+          </Boton>
+          {!phone && deleteButton}
+        </SheetActions>
       </form>
     </div>
   )

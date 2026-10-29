@@ -4,7 +4,7 @@ price/none x the four stock statuses, in priority order."""
 import pytest
 
 from app.catalog.domain.attributes import CatalogAttributes
-from app.catalog.domain.variety import CatalogPrice, StockStatus, catalog_state
+from app.catalog.domain.product import CatalogPrice, StockStatus, catalog_state
 from app.shared.quantity import Quantity
 
 PRICE = CatalogPrice(list_price=11000, bulk_price=None, bulk_minimum=None)

@@ -10,6 +10,7 @@
   "web/src/screens/varieties/PriceRows.tsx",
   "web/src/screens/varieties/RenameForm.tsx",
   "web/src/screens/varieties/ThresholdForm.tsx",
+  "web/src/screens/varieties/VarietiesBehind.tsx",
   "web/src/screens/varieties/VarietyNameForm.tsx",
   "web/src/screens/varieties/VarietyNew.tsx",
   "web/src/screens/varieties/VarietyPage.test.tsx",
@@ -17,6 +18,7 @@
   "web/src/screens/varieties/VarietyPricesSection.tsx",
   "web/src/screens/varieties/VarietyRemoval.tsx",
   "web/src/screens/varieties/VarietyRoute.tsx",
+  "web/src/screens/varieties/VarietySheet.test.tsx",
   "web/src/screens/varieties/VarietyThresholdSection.tsx",
   "web/src/screens/varieties/renderVarieties.tsx"
 ]

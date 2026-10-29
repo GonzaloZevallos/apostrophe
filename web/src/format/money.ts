@@ -27,6 +27,13 @@ export function formatQuantity(hundredths: number): string {
   return `${sign}${WHOLE_FMT.format(whole)}${decimals}`
 }
 
+/** Keeps every "$ 11.000" in a sentence on one line: the space after "$" becomes a
+ * no-break space, so a narrow phone wraps before the "$" and never between it and
+ * the number. The text a person reads is the same; only where it may break changes. */
+export function keepMoneyTogether(text: string): string {
+  return text.replace(/\$ (?=\d)/g, '$\u00a0')
+}
+
 /** `3.5` → `"3,5 g"`. Takes the `GramsOut` float the API answers, or the decimal
  * string a form field holds before it is sent. */
 export function formatGrams(grams: number | string): string {

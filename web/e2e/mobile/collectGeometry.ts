@@ -237,7 +237,7 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
     let expected: string | null = null
     if (!typed) expected = null
     else if (inCustomer) expected = 'off'
-    else if (type === 'password') expected = /actual/.test(name) || onSignIn ? 'current-password' : 'new-password'
+    else if (type === 'password') expected = /actual|current/.test(name) || onSignIn ? 'current-password' : 'new-password'
     else if (onSignIn && /email/.test(name)) expected = 'username'
     else if (/negocio/.test(name) && /^(nombre|negocio)/.test(name)) expected = 'organization'
     if (own === null || own === '' || (expected !== null && own !== expected)) add('autocomplete', element)

@@ -39,3 +39,13 @@ test('shows the error inline as an alert, and no alert without one', () => {
   rerender(<Harness error="Muy corta" />)
   expect(screen.getByRole('alert')).toHaveTextContent('Muy corta')
 })
+
+test('passes the autocomplete hint it is given to the input, and none when it has none', () => {
+  const { rerender } = render(
+    <PasswordField label="Password" autoComplete="current-password" value="" onChange={() => {}} />,
+  )
+  expect(screen.getByLabelText('Password')).toHaveAttribute('autocomplete', 'current-password')
+
+  rerender(<PasswordField label="Password" value="" onChange={() => {}} />)
+  expect(screen.getByLabelText('Password')).not.toHaveAttribute('autocomplete')
+})

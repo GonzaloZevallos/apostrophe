@@ -12,6 +12,8 @@ This is the same "run my business from my phone" job as every other capability. 
 
 **When** a customer pays me while I'm chatting with them on my phone, **I want** to open Record payment from their card or debtor row, record the payment and be back on that customer straight away, **so I** see their balance drop without losing my place. (GH-46 follow-up: on the phone Record payment is a sheet over the screen it was opened from, never a page of its own, and that screen keeps its scroll position.)
 
+**When** I'm in the middle of serving a customer with my phone in hand, **I want** the app to behave like a phone app (a form that fills the screen with its main action under my thumb, and nothing I need hidden behind the keyboard), **so I can** record a payment without fighting the screen or losing what I typed. (The phone layout job, navigation.md, GH-319: served here by Record payment drawn by the one shared `Sheet`.)
+
 Success criteria:
 
 1. **Fast from the phone**: a payment is recorded in under a minute, with the date already set to today. Record payment, with the customer chosen, opens in at most 2 taps from any tab root ("Collect" on Customers or Home). Paying everything owed takes one tap ("All").
@@ -82,7 +84,7 @@ Success criteria:
   - The count reads "1 sale owing" for one sale still owing, and "N sales owing" for two or more (e.g. "4 sales owing"). This is the same singular and plural rule Home's "Owed to you" block uses for the same count (results.md).
 - **Its rows**: only customers whose balance is above $0, by owing since (oldest first), ties by name.
   - Each row shows the balance in amber and "since dd/mm", never as a chip.
-  - Each row carries **"Collect"** (accessible name "Collect from <name>"), which opens Record payment with that customer already chosen. Tapping the rest of the row opens the customer's card.
+  - Each row carries **"Collect"** (accessible name "Collect from <name>"), which opens Record payment with that customer already chosen. Tapping the rest of the row opens the customer's card. On the phone, "Collect" and "Owed to you" are tap targets of at least 44×44 (navigation.md, Phone layout).
 - **Nobody owes**: the section reads a fixed "Nobody owes you", with nothing to tap.
 - **Customers' header** carries no tappable debt figure: the section itself is on screen.
 - **Search**: while a query is typed, Customers collapses into one flat list by name (customers.md); a customer who owes keeps their balance, "owes you since dd/mm" and "Collect" there.
@@ -115,10 +117,14 @@ Success criteria:
 
 - **Opened from**: "Collect" on a debtor row of Customers (either section, or search results) or of Home's "Owed to you" block, and "Record payment" on the customer's card. Each opens it with that customer already chosen.
 - **A sheet on the phone, a modal on the computer** (navigation.md):
-  - On the phone it is a sheet over the screen it was opened from (the customer's card, Customers or Home), never a page of its own. That screen stays underneath.
-  - On the computer it is a modal over the same screen.
+  - On the phone it is a full-screen sheet drawn by the one shared `Sheet` (ADR-0062), over the screen it was opened from (the customer's card, Customers or Home), never a page of its own. That screen stays underneath. It has no handle and no peek of the screen behind.
+  - On the phone the sheet has no outside: "Close" at the top and the phone's back gesture, which are the same action, are its only exits. A tap on the safe-area strip by the status bar does nothing.
+  - On the phone the main action is pinned at the bottom of the form, above the keyboard, with the inline refusals above it. The sheet's height follows the visible viewport.
+  - On the computer it is a modal over the same screen, exactly as before: tapping its backdrop closes it only when nothing was typed.
   - No bar and no "+ New sale". "Close", with a confirmation when leaving with something typed.
   - Saving or "Close" lands the seller back on the screen it was opened from.
+  - Resizing across 900 px or rotating the phone keeps what was typed.
+- **Focus on opening**: on the phone, focus goes to the sheet's first field; the computer modal focuses its title.
 - **Back where you were**: on closing, by "Close" or by saving, the screen underneath is at the scroll position it had when "Collect" or "Record payment" was tapped, on the phone and on the computer.
   - The refresh after saving updates rows in place and never resets the scroll.
   - Focus returns to the "Collect" (or "Record payment") that was tapped.
@@ -133,8 +139,8 @@ Success criteria:
   - "Payment saved · still owing $ X" when something remains;
   - "Payment saved" when nothing does.
 
-  This is the second deliberate exception to accounts.md's no-data toast rule. The screen it was opened from refreshes from the API, so the lower balance is already there when the sheet closes.
-- **Refusals** show inline and keep everything typed:
+  This is the second deliberate exception to accounts.md's no-data toast rule. The screen it was opened from refreshes from the API, so the lower balance is already there when the sheet closes. On the phone the toast sits above the bar of that screen (navigation.md, Phone layout).
+- **Refusals** show inline, above the main action, and keep everything typed:
   - above the balance;
   - future date;
   - amount at or below $0;
@@ -155,6 +161,7 @@ Success criteria:
 - No amount or name in refusals, logs, the console or browser storage (ADR-0005).
 - Every balance, owing since, settlement split, total and count on screen is read from the API.
 - The screens registry carries no key for "modal on the computer"; no registry check tells a sheet from a page. The design capture and the e2e run are the evidence.
+- `CobroFrame`'s computer branch is not edited by the phone layout; only its phone branch is drawn by `Sheet`.
 
 ## Metrics
 
@@ -186,8 +193,9 @@ Success criteria:
   - "Close" returns to that same screen;
   - a save returns there with the balance read lower;
   - at a computer viewport, the same entry points open a modal.
+- **Focus and typed text (GH-319)**: a front test shows focus on the first field when the phone sheet opens; a viewport-flip test (phone to computer and back) keeps the typed amount; Record payment's unsaved-changes tests pass unedited; no Mobile check offender entry names Record payment's walked sheet states.
 - **Place kept (criterion 9)**: an end-to-end run scrolls Customers and Home so the tapped debtor row is below the first screenful, then opens Record payment and closes it, once by "Close" and once by a partial save. Each time the scroll offset is unchanged and focus is on the tapped "Collect". After a save that settles the whole balance, the offset is unchanged and focus is on the "Owed to you" heading (or "Nobody owes you").
-- **Design agreement (criterion 9)**: the design capture of Record payment on the phone shows the drawing and the built app both as a sheet. The evidence note leaves no open difference.
+- **Design agreement (criterion 9)**: the design capture of Record payment on the phone shows the drawing and the built app both as a sheet. The evidence note leaves no open difference; the drawing's handle and peek are a known difference, dropped on purpose (ADR-0062).
 
 ## Out of scope
 
@@ -196,7 +204,8 @@ Success criteria:
 - Assigning a payment to a sale by hand.
 - Deleting an on-the-spot payment on its own; editing a payment.
 - A separate Owed to you screen.
-- Record payment as a full page on the phone.
+- Record payment as a page of its own on the phone (the full-screen sheet stays over the screen it was opened from).
+- A tap-outside close on the phone's full-screen sheet.
 - A screens-registry key or check telling a sheet from a page.
 - Scroll restoration anywhere other than closing Record payment.
 - Cash and profit: the results capability (#7).

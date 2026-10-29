@@ -38,6 +38,7 @@ from app.migrations.runner import upgrade_to_head
 from app.onboarding.adapters.import_port import OnboardingEnding
 from app.payments.adapters.import_port import PaymentsImport
 from app.pricing_settings.adapters.import_port import PricingSettingsImport
+from app.products.adapters.import_port import ProductsImport as SqlProductsImport
 from app.sales.adapters.import_port import SalesImport
 from app.settings import Settings
 from app.shared.copy import OperatorText
@@ -54,7 +55,6 @@ from app.spreadsheet_import.domain.rows import (
     SheetRef,
 )
 from app.stock.adapters.import_port import SqlStockImport
-from app.varieties.adapters.import_port import VarietiesImport as SqlVarietiesImport
 
 
 class _BusinessUnknown(Exception):
@@ -132,7 +132,7 @@ def _run(
         instant = clock()
         today = business_day(instant)
 
-        varieties = SqlVarietiesImport(session, args.business_id)
+        varieties = SqlProductsImport(session, args.business_id)
         stock = SqlStockImport(session, args.business_id)
         catalog = CatalogImport(session, args.business_id)
         expenses = ExpensesImport(session, args.business_id)
