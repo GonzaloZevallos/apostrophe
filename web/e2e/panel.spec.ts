@@ -247,10 +247,10 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const extraDatesIso = [...new Set([mondayIso, monthStartIso])].filter((iso) => iso !== todayIso)
   if (extraDatesIso.length > 0) {
     const varietiesAnswer: { id: number; name: string }[] = await (
-      await page.request.get(`/varieties?on=${todayIso}`)
+      await page.request.get(`/api/products?on=${todayIso}`)
     ).json()
     const rosaId = varietiesAnswer.find((variety) => variety.name === 'Rosa')?.id
-    if (rosaId === undefined) throw new Error('Rosa missing from GET /varieties?on=')
+    if (rosaId === undefined) throw new Error('Rosa missing from GET /api/products?on=')
     for (const dateIso of extraDatesIso) {
       const extraResponse = await page.request.post('/sales', {
         data: {

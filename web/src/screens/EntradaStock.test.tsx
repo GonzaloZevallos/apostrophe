@@ -136,7 +136,7 @@ test('a new entry starts dated today and shows "Hoy tiene N g" once a variety is
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(500, {}))
     }),
@@ -156,7 +156,7 @@ test('records an entry and lands back on the list with the saved toast', async (
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(
         jsonResponse(201, {
@@ -188,7 +188,7 @@ test('an adjustment can carry negative grams, sent through to the API as typed',
     'fetch',
     vi.fn((input: string | URL | Request, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       expect(init?.body).toEqual(expect.stringContaining('"-4.5"'))
       return Promise.resolve(
@@ -221,7 +221,7 @@ test('re-saving an existing negative adjustment keeps its negative grams through
     'fetch',
     vi.fn((input: string | URL | Request, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (init?.method === 'GET') {
         return Promise.resolve(
@@ -267,7 +267,7 @@ test('a purchase refused for missing cost shows the refusal on its own field, ke
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(422, { detail: 'needs a cost', code: 'stock.cost_required' }))
     }),
@@ -287,7 +287,7 @@ test('editing an entry confirms before saving', async () => {
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (url === '/stock/entries/10') {
         return Promise.resolve(
@@ -339,7 +339,7 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (url === '/stock/entries/10') {
         return Promise.resolve(
@@ -390,7 +390,7 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
     'fetch',
     vi.fn((input: string | URL | Request, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (url === '/stock/entries/10' && init?.method === 'DELETE') {
         return Promise.resolve(new Response(null, { status: 204 }))
@@ -445,7 +445,7 @@ function fakeFor(stock: unknown, extra: Record<string, () => Response> = {}) {
       const key = `${init?.method ?? 'GET'} ${url}`
       const hit = extra[key]
       if (hit !== undefined) return Promise.resolve(hit())
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, stock))
       return Promise.resolve(jsonResponse(500, {}))
     }),
@@ -739,7 +739,7 @@ test('editing an entry of an archived variety shows it as the chosen one, and of
         cost_per_gram: null,
         note: null,
       }),
-    'GET /varieties?archived=true': () =>
+    'GET /api/products?archived=true': () =>
       jsonResponse(200, [
         { id: 8, name: 'Vieja', archived: true, current_price: null },
         { id: 9, name: 'Otra archivada', archived: true, current_price: null },
@@ -759,7 +759,7 @@ test('a new entry never asks for the archived varieties', async () => {
   renderForm(STOCK_ENTRY_NEW)
 
   await screen.findByRole('option', { name: 'Sir Jack' })
-  expect(fetch).not.toHaveBeenCalledWith('/varieties?archived=true', expect.anything())
+  expect(fetch).not.toHaveBeenCalledWith('/api/products?archived=true', expect.anything())
 })
 
 test('the form keeps the icon and text rule, its help lines within their limits', async () => {
@@ -767,7 +767,7 @@ test('the form keeps the icon and text rule, its help lines within their limits'
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(500, {}))
     }),

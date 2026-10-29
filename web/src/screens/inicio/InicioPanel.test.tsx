@@ -152,7 +152,7 @@ beforeEach(() => {
     const url = String(input)
     const method = init?.method ?? 'GET'
     if (url === '/panel') return Promise.resolve(jsonResponse(200, panelNow))
-    if (url === '/varieties') return Promise.resolve(jsonResponse(200, [{ current_price: { id: 1 } }]))
+    if (url === '/api/products') return Promise.resolve(jsonResponse(200, [{ current_price: { id: 1 } }]))
     if (url === '/pinned-catalog/status') return Promise.resolve(jsonResponse(200, { status: null }))
     if (url === '/onboarding-progress') return Promise.resolve(jsonResponse(200, { offered: false }))
     if (url === '/customers/1') return Promise.resolve(jsonResponse(200, OWING_CUSTOMER))

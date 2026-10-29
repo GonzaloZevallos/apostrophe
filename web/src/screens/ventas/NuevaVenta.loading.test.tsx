@@ -13,7 +13,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
-import { CUSTOMERS, pathTo, SALE_NEW, VARIETIES } from '../../routes'
+import { CUSTOMERS, pathTo, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -78,7 +78,7 @@ function renderForm() {
 
 async function openAndPriceToday() {
   renderForm()
-  answer(`${pathTo(VARIETIES)}?on=2026-10-02`, [ROSA_TODAY])
+  answer(`/api/products?on=2026-10-02`, [ROSA_TODAY])
   await screen.findByRole('button', { name: 'Save sale' })
 }
 
@@ -135,7 +135,7 @@ test('a date change keeps what was typed and shows compact bars where prices wer
   // Grams stay: they are what was typed, not a price.
   expect(within(footer).getByText('2 g sold')).toBeInTheDocument()
 
-  answer(`${pathTo(VARIETIES)}?on=2026-10-01`, [ROSA_YESTERDAY])
+  answer(`/api/products?on=2026-10-01`, [ROSA_YESTERDAY])
 
   expect(await screen.findByText('$ 1.500 x g')).toBeInTheDocument()
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()

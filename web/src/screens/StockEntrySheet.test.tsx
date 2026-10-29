@@ -71,7 +71,7 @@ type Answers = Record<string, () => Response | Promise<Response>>
 function renderApp(entries: { pathname: string }[], viewport: Viewport, answers: Answers = {}) {
   const table: Answers = {
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties': () => jsonResponse(200, VARIETIES),
+    'GET /api/products': () => jsonResponse(200, VARIETIES),
     'GET /stock': () => jsonResponse(200, STOCK),
     'GET /stock/entries/12': () => jsonResponse(200, ENTRY),
     'GET /catalog': () => jsonResponse(200, { varieties: [] }),
@@ -164,7 +164,7 @@ describe('on a phone, a direct address', () => {
   test('the panes are empty while their data is pending, and after an error', async () => {
     const pending = (): Promise<Response> => new Promise<Response>(() => undefined)
     renderApp([{ pathname: STOCK_ENTRY_NEW }], 'phone', {
-      'GET /varieties': pending,
+      'GET /api/products': pending,
     })
     await screen.findByRole('dialog', { name: STOCK_TEXT.nuevaEntrada })
     expectBehindPaneEmpty(behindPane())

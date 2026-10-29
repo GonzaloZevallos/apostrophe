@@ -128,7 +128,7 @@ export default function StockEntryForm({
   const queryClient = useQueryClient()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>('/varieties'),
+    queryFn: () => get<Variety[]>('/api/products'),
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   // An entry of an archived variety keeps it: editing may keep that variety but the picker
@@ -138,7 +138,7 @@ export default function StockEntryForm({
     initial === undefined || listedVarieties === undefined || listedVarieties.some((v) => v.id === initial.variety_id)
   const archivedQuery = useQuery({
     queryKey: keys.archivedVarieties(),
-    queryFn: () => get<Variety[]>('/varieties?archived=true'),
+    queryFn: () => get<Variety[]>('/api/products?archived=true'),
     enabled: !entryVarietyIsListed,
   })
   const pickable = [

@@ -196,7 +196,7 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   expect(router.state.location.pathname).toBe(WITHDRAWAL_NEW)
   expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
   // the list was fetched again to learn who is gone
-  expect(fetchMock.mock.calls.filter(([url]) => url === '/varieties').length).toBeGreaterThanOrEqual(2)
+  expect(fetchMock.mock.calls.filter(([url]) => url === '/api/products').length).toBeGreaterThanOrEqual(2)
   expect(state.writes).toHaveLength(1)
 
   // choosing another variety clears the message and frees the save
@@ -384,7 +384,7 @@ test('the form never calls onGone on variety.archived', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init?: RequestInit) => {
-      if (url === '/varieties') return jsonResponse(200, state.listed)
+      if (url === '/api/products') return jsonResponse(200, state.listed)
       return serve(state, url, init)
     }),
   )

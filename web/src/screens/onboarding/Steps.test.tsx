@@ -134,21 +134,21 @@ afterEach(() => {
 })
 
 const STOCK_FORM_READS = {
-  'GET /varieties': () => json([{ id: 7, name: 'Mango Bomb', current_price: null }]),
+  'GET /api/products': () => json([{ id: 7, name: 'Mango Bomb', current_price: null }]),
   'GET /stock': () => json({ total: 0, varieties: [], entries: [] }),
 }
 
-test('step 1 with a price target shows the price form only and ends with one variety: no name field, no POST /varieties', async () => {
+test('step 1 with a price target shows the price form only and ends with one variety: no name field, no POST /api/products', async () => {
   const afterPrice = answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending'], {
     stock_target: MANGO,
   })
   const priceBodies: unknown[] = []
   stubFetch(answer(NONE, { price_target: MANGO }), {
-    'POST /varieties/7/prices': (body) => {
+    'POST /api/products/7/prices': (body) => {
       priceBodies.push(body)
       return json({})
     },
-    'GET /onboarding-progress': () => json(calls.includes('POST /varieties/7/prices') ? afterPrice : answer(NONE, { price_target: MANGO })),
+    'GET /onboarding-progress': () => json(calls.includes('POST /api/products/7/prices') ? afterPrice : answer(NONE, { price_target: MANGO })),
   })
   const user = userEvent.setup()
   renderAt(ONBOARDING_VARIETY)
@@ -166,7 +166,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
   expect(await screen.findByRole('heading', { name: 'Add what you have today' })).toBeInTheDocument()
-  expect(calls).not.toContain('POST /varieties')
+  expect(calls).not.toContain('POST /api/products')
   expect(priceBodies).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
 })
 
@@ -194,8 +194,8 @@ test('step 1 follows the pricing switches: with both on, the price form offers t
 test('step 1 with no target saves the variety and its price with one action; a refused price keeps what was typed and the retry sends only the price', async () => {
   let refuse = true
   stubFetch(answer(NONE), {
-    'POST /varieties': () => json({ id: 7, name: 'Mango Bomb', current_price: null }, 201),
-    'POST /varieties/7/prices': () =>
+    'POST /api/products': () => json({ id: 7, name: 'Mango Bomb', current_price: null }, 201),
+    'POST /api/products/7/prices': () =>
       refuse ? json({ code: 'variety.price_entry_invalid' }, 422) : json({}),
   })
   const user = userEvent.setup()
@@ -210,8 +210,8 @@ test('step 1 with no target saves the variety and its price with one action; a r
 
   refuse = false
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
-  await waitFor(() => expect(calls.filter((call) => call === 'POST /varieties/7/prices')).toHaveLength(2))
-  expect(calls.filter((call) => call === 'POST /varieties')).toHaveLength(1)
+  await waitFor(() => expect(calls.filter((call) => call === 'POST /api/products/7/prices')).toHaveLength(2))
+  expect(calls.filter((call) => call === 'POST /api/products')).toHaveLength(1)
 })
 
 test('step 2 saves the opening stock of the stock target through the owner, then offers Seguir (advance) and Agregar otra variedad', async () => {

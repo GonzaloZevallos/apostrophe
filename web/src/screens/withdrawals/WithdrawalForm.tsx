@@ -136,7 +136,7 @@ function unchangedSince(form: FormState, sent: readonly LineState[], keys: Itera
   return kept
 }
 
-const fetchVarieties = () => get<Variety[]>('/varieties')
+const fetchVarieties = () => get<Variety[]>('/api/products')
 
 /** Equal by what was typed: the lines' keys are only React's. */
 function sameForm(a: FormState, b: FormState): boolean {

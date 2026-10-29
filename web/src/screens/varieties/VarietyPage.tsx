@@ -118,10 +118,10 @@ function VarietyPageView({
   const { blocker, disarm } = useGuard(dirty)
   const onDirtyChange = useCallback((value: boolean) => setDirty(value), [])
 
-  const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/varieties/${id}`) })
+  const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/api/products/${id}`) })
   const pricesQuery = useQuery({
     queryKey: keys.varietyPrices(id),
-    queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
+    queryFn: () => get<PriceRow[]>(`/api/products/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
   useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: COMMON_TEXT.varieties })

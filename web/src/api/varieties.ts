@@ -1,5 +1,5 @@
 /**
- * The variety lifecycle calls (`varieties.md`, "Deleting and archiving"): `GET /varieties/{id}`
+ * The variety lifecycle calls (`varieties.md`, "Deleting and archiving"): `GET /api/products/{id}`
  * also says which one removal the page offers (`removal`, worked out from history when it
  * is read), and the three writes. Archive and restore are never refused for history; only a
  * delete is (`variety.has_history`).
@@ -17,13 +17,13 @@ export interface VarietyDetail {
 }
 
 export function archiveVariety(varietyId: number): Promise<VarietyDetail> {
-  return post<VarietyDetail>(`/varieties/${varietyId}/archive`)
+  return post<VarietyDetail>(`/api/products/${varietyId}/archive`)
 }
 
 export function restoreVariety(varietyId: number): Promise<VarietyDetail> {
-  return post<VarietyDetail>(`/varieties/${varietyId}/restore`)
+  return post<VarietyDetail>(`/api/products/${varietyId}/restore`)
 }
 
 export function deleteVariety(varietyId: number): Promise<void> {
-  return del<void>(`/varieties/${varietyId}`)
+  return del<void>(`/api/products/${varietyId}`)
 }

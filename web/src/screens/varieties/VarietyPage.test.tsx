@@ -98,8 +98,8 @@ type Answers = Record<string, () => Response>
 
 function defaults(): Answers {
   return {
-    'GET /varieties/1': () => json(200, VARIETY_ROW),
-    'GET /varieties/1/prices': () => json(200, PRICES),
+    'GET /api/products/1': () => json(200, VARIETY_ROW),
+    'GET /api/products/1/prices': () => json(200, PRICES),
     'GET /stock': () => json(200, stockOf(STOCK_ROW)),
     'GET /catalog': () => json(200, CATALOG),
     'GET /catalog/archived': () => json(200, [archivedRow(true)]),
@@ -202,7 +202,7 @@ describe('the summary line', () => {
   })
 
   test('no price in force says it cannot be sold', async () => {
-    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, NO_PRICE_ROW) })
+    renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, NO_PRICE_ROW) })
 
     expect(await screen.findByText(/No price: cannot be sold/)).toBeInTheDocument()
   })
@@ -241,7 +241,7 @@ describe('the icon and text rule', () => {
   })
 
   test('"Delete variety" is the critical icon + text action with its current word as its name', async () => {
-    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
+    renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
 
     const button = await screen.findByRole('button', { name: 'Delete variety' })
     expect(button).toHaveClass('boton--critico')
@@ -251,7 +251,7 @@ describe('the icon and text rule', () => {
   })
 
   test('what the live page keeps as text is only its links and the switch; Archive variety has its icon', async () => {
-    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
+    renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
 
     await screen.findByRole('link', { name: '+ Entry' })
     expect(await screen.findByRole('button', { name: 'Archive variety' })).toBeInTheDocument()
@@ -263,7 +263,7 @@ describe('the icon and text rule', () => {
 
   test('an archived variety keeps only Restore, with its icon', async () => {
     renderPage(VARIETY_ONE, {
-      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
       'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
     })
 
@@ -274,7 +274,7 @@ describe('the icon and text rule', () => {
 
 describe("an archived variety's summary line and its one action", () => {
   const ARCHIVED: Answers = {
-    'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+    'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
     'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
   }
 
@@ -295,7 +295,7 @@ describe("an archived variety's summary line and its one action", () => {
   test('its grams show as a figure even when negative, and no price says No price', async () => {
     renderPage(VARIETY_ONE, {
       ...ARCHIVED,
-      'GET /varieties/1': () => json(200, { ...NO_PRICE_ROW, archived: true, removal: null }),
+      'GET /api/products/1': () => json(200, { ...NO_PRICE_ROW, archived: true, removal: null }),
       'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, quantity: -4, status: 'sold_out' })),
     })
 
@@ -319,7 +319,7 @@ describe("an archived variety's summary line and its one action", () => {
 
 describe("an archived variety's four sections, read-only", () => {
   const ARCHIVED: Answers = {
-    'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+    'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
     'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
     'GET /catalog/archived': () => json(200, [archivedRow(false)]),
   }
@@ -434,7 +434,7 @@ describe('the actions and the sections', () => {
   test('Precios follows the switches: each rule shows only while it is on, and comes back when on again', async () => {
     renderPage(pathTo(VARIETY, { id: 1 }), {
       'GET /pricing-settings': () => json(200, { is_bulk_pricing: false, is_vip_customers: true }),
-      'GET /varieties/1/prices': () =>
+      'GET /api/products/1/prices': () =>
         json(200, [{ ...PRICES[1], vip_price: 9000 }, { ...PRICES[0], vip_price: null }]),
     })
 
@@ -457,10 +457,10 @@ describe('the actions and the sections', () => {
 
   test("an archived variety's Precios follows the switches too, read-only", async () => {
     renderPage(pathTo(VARIETY, { id: 1 }), {
-      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true }),
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true }),
       'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
       'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: false }),
-      'GET /varieties/1/prices': () => json(200, [{ ...PRICES[1], vip_price: 9000 }, PRICES[0]]),
+      'GET /api/products/1/prices': () => json(200, [{ ...PRICES[1], vip_price: 9000 }, PRICES[0]]),
     })
 
     const section = (await screen.findByRole('heading', { name: 'Prices' })).closest('section')
@@ -520,8 +520,8 @@ describe('the actions and the sections', () => {
 describe('gone and foreign varieties', () => {
   test('a variety that is not there, or is another business\'s, shows "That is gone."', async () => {
     renderPage(VARIETY_ONE, {
-      'GET /varieties/1': () => json(404, { code: 'variety.not_found' }),
-      'GET /varieties/1/prices': () => json(404, { code: 'variety.not_found' }),
+      'GET /api/products/1': () => json(404, { code: 'variety.not_found' }),
+      'GET /api/products/1/prices': () => json(404, { code: 'variety.not_found' }),
     })
 
     expect(await screen.findByText('That is gone.')).toBeInTheDocument()
@@ -625,7 +625,7 @@ describe('renaming from the page', () => {
   test('saving renames, closes the form and toasts "Variety saved"', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage(VARIETY_ONE, {
-      'PATCH /varieties/1': () => json(200, { ...VARIETY_ROW, name: 'Gold' }),
+      'PATCH /api/products/1': () => json(200, { ...VARIETY_ROW, name: 'Gold' }),
     })
     await user.click(await screen.findByRole('button', { name: 'Edit name' }))
     const field = await screen.findByLabelText('Name')
@@ -635,7 +635,7 @@ describe('renaming from the page', () => {
 
     expect(await screen.findByText('Variety saved')).toBeInTheDocument()
     expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
-    expect(writes(fetchMock)).toEqual(['PATCH /varieties/1'])
+    expect(writes(fetchMock)).toEqual(['PATCH /api/products/1'])
   })
 
   test('leaving with a changed name asks first, and keeping stays on the form', async () => {
@@ -667,7 +667,7 @@ describe('renaming from the page', () => {
 
   test('a name already taken is refused inline and keeps what was typed', async () => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PATCH /varieties/1': () => json(409, { code: 'variety.name_taken' }) })
+    renderPage(VARIETY_ONE, { 'PATCH /api/products/1': () => json(409, { code: 'variety.name_taken' }) })
     await user.click(await screen.findByRole('button', { name: 'Edit name' }))
     const field = await screen.findByLabelText('Name')
     await user.clear(field)

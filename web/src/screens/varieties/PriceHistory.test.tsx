@@ -50,7 +50,7 @@ test('while the variety loads there is no back, not even a placeholder; once it 
   })
   const served = api()
   renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], (url, init) =>
-    url === '/varieties/1' ? pending : served(url, init),
+    url === '/api/products/1' ? pending : served(url, init),
   )
 
   await waitFor(() => expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0))
@@ -66,7 +66,7 @@ test('a variety that is gone shows no back, only its own way out', async () => {
   const gone = () => jsonResponse(404, { code: 'variety.not_found', detail: 'No existe' })
   renderVarieties(
     [pathTo(VARIETY_PRICES, { id: 1 })],
-    api({ 'GET /varieties/1': gone, 'GET /varieties/1/prices': gone }),
+    api({ 'GET /api/products/1': gone, 'GET /api/products/1/prices': gone }),
   )
 
   expect(await screen.findByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
@@ -87,7 +87,7 @@ test('deleting says what takes the entry\'s place, then toasts "Price deleted"',
   const user = userEvent.setup()
   const { fetchMock } = renderVarieties(
     [pathTo(VARIETY_PRICES, { id: 1 })],
-    api({ 'DELETE /varieties/1/prices/3': () => new Response(null, { status: 204 }) }),
+    api({ 'DELETE /api/products/1/prices/3': () => new Response(null, { status: 204 }) }),
   )
 
   const buttons = await screen.findAllByRole('button', { name: 'Delete this price' })
@@ -98,14 +98,14 @@ test('deleting says what takes the entry\'s place, then toasts "Price deleted"',
   await user.click(within(dialog).getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('Price deleted')).toBeInTheDocument()
-  expect(writes(fetchMock)).toEqual([{ call: 'DELETE /varieties/1/prices/3', body: undefined }])
+  expect(writes(fetchMock)).toEqual([{ call: 'DELETE /api/products/1/prices/3', body: undefined }])
 })
 
 test('a delete marks the catalog stale', async () => {
   const user = userEvent.setup()
   const { queryClient } = renderVarieties(
     [pathTo(VARIETY_PRICES, { id: 1 })],
-    api({ 'DELETE /varieties/1/prices/3': () => new Response(null, { status: 204 }) }),
+    api({ 'DELETE /api/products/1/prices/3': () => new Response(null, { status: 204 }) }),
   )
   queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
 
@@ -121,8 +121,8 @@ test('a variety that is gone says "That is gone." and goes back to Variedades', 
   renderVarieties(
     [pathTo(VARIETY_PRICES, { id: 1 })],
     api({
-      'GET /varieties/1': () => jsonResponse(404, { code: 'variety.not_found' }),
-      'GET /varieties/1/prices': () => jsonResponse(404, { code: 'variety.not_found' }),
+      'GET /api/products/1': () => jsonResponse(404, { code: 'variety.not_found' }),
+      'GET /api/products/1/prices': () => jsonResponse(404, { code: 'variety.not_found' }),
     }),
   )
 
@@ -141,7 +141,7 @@ test('a delete that finds the price gone says so and refreshes the list', async 
   const user = userEvent.setup()
   renderVarieties(
     [pathTo(VARIETY_PRICES, { id: 1 })],
-    api({ 'DELETE /varieties/1/prices/3': () => jsonResponse(404, { code: 'variety.price_entry_not_found' }) }),
+    api({ 'DELETE /api/products/1/prices/3': () => jsonResponse(404, { code: 'variety.price_entry_not_found' }) }),
   )
 
   const buttons = await screen.findAllByRole('button', { name: 'Delete this price' })
@@ -188,7 +188,7 @@ test('with both rules off only list prices show, and an entry without a VIP pric
 
 test('an entry with no VIP price shows no VIP line even with Clientes VIP on', async () => {
   const bare = HISTORY.map((entry) => ({ ...entry, vip_price: null }))
-  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api({ 'GET /varieties/1/prices': () => jsonResponse(200, bare) }))
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api({ 'GET /api/products/1/prices': () => jsonResponse(200, bare) }))
 
   await screen.findByText('From 10 g · $ 10.000')
   expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
@@ -197,7 +197,7 @@ test('an entry with no VIP price shows no VIP line even with Clientes VIP on', a
 test("an archived variety's price history is read-only: rows with no delete", async () => {
   renderVarieties(
     [pathTo(VARIETY_PRICES, { id: 1 })],
-    api({ 'GET /varieties/1': () => jsonResponse(200, { ...VARIETY_ROW, archived: true }) }),
+    api({ 'GET /api/products/1': () => jsonResponse(200, { ...VARIETY_ROW, archived: true }) }),
   )
 
   expect(await screen.findAllByText(/^Effective from/)).toHaveLength(3)
@@ -216,7 +216,7 @@ test('the history follows the rule: its help line is measured copy and each dele
 })
 
 test("an archived variety's price history follows the switches like a live one", async () => {
-  const archived = { 'GET /varieties/1': () => jsonResponse(200, { ...VARIETY_ROW, archived: true }) }
+  const archived = { 'GET /api/products/1': () => jsonResponse(200, { ...VARIETY_ROW, archived: true }) }
   renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api({ ...archived, ...switches(true, false) }))
 
   expect(await screen.findByText('From 10 g · $ 10.000')).toBeInTheDocument()

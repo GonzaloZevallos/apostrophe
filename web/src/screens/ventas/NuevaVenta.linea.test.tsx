@@ -27,7 +27,7 @@ function jsonResponse(status: number, body: unknown): Response {
 async function openForm(): Promise<ReturnType<typeof vi.fn>> {
   const fetchMock = vi.fn((path: string) => {
     if (path === '/auth/me') return Promise.resolve(jsonResponse(200, ME))
-    if (path === '/varieties?on=2026-10-02') return Promise.resolve(jsonResponse(200, [ROSA]))
+    if (path === '/api/products?on=2026-10-02') return Promise.resolve(jsonResponse(200, [ROSA]))
     return Promise.reject(new Error(`unexpected request: ${path}`))
   })
   vi.stubGlobal('fetch', fetchMock)

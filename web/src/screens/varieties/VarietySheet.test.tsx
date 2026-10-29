@@ -57,9 +57,9 @@ function renderApp(
 ) {
   const table: Answers = {
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties': () => jsonResponse(200, VARIETIES),
-    'GET /varieties/1': () => jsonResponse(200, VARIETIES[0]),
-    'GET /varieties/1/prices': () => jsonResponse(200, []),
+    'GET /api/products': () => jsonResponse(200, VARIETIES),
+    'GET /api/products/1': () => jsonResponse(200, VARIETIES[0]),
+    'GET /api/products/1/prices': () => jsonResponse(200, []),
     'GET /stock': () => jsonResponse(200, STOCK),
     'GET /stock/varieties/1/movements': () => jsonResponse(200, []),
     'GET /catalog': () => jsonResponse(200, CATALOG),
@@ -125,7 +125,7 @@ describe('New variety on a phone', () => {
 
   test('while Varieties is pending, and after an error, the pane is empty', async () => {
     renderApp({ pathname: VARIETY_NEW }, 'phone', {
-      'GET /varieties': () => new Promise<Response>(() => undefined),
+      'GET /api/products': () => new Promise<Response>(() => undefined),
     })
     await screen.findByRole('dialog', { name: COMMON_TEXT.newVariety })
     expectBehindPaneEmpty(behindPane())

@@ -1,6 +1,6 @@
 /**
- * Step 1's two writes behind one action, each through its owner: `POST /varieties` (only
- * while no variety is saved) and then `POST /varieties/{id}/prices`, effective today. The
+ * Step 1's two writes behind one action, each through its owner: `POST /api/products` (only
+ * while no variety is saved) and then `POST /api/products/{id}/prices`, effective today. The
  * variety stays saved when the price is refused: everything typed stays, the refusal shows
  * on its field, and the retry sends only the price. What was typed is read before anything
  * is written, so a bad amount writes nothing. A name refusal stops before the price.
@@ -87,7 +87,7 @@ export function useVarietyWithPrice({
   async function saveVariety(name: string): Promise<OnboardingTarget | null> {
     let created: OnboardingTarget
     try {
-      const answer = await post<Variety>('/varieties', { name })
+      const answer = await post<Variety>('/api/products', { name })
       created = { id: answer.id, name: answer.name }
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
@@ -110,7 +110,7 @@ export function useVarietyWithPrice({
 
   async function savePrice(variety: OnboardingTarget, amounts: PriceAmounts): Promise<boolean> {
     try {
-      await post(`/varieties/${variety.id}/prices`, { effective_from: today, ...amounts })
+      await post(`/api/products/${variety.id}/prices`, { effective_from: today, ...amounts })
       invalidateResource(queryClient, 'varieties')
       return true
     } catch (caught) {

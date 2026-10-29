@@ -163,9 +163,9 @@ for (const viewport of VIEWPORTS) {
 /** Gives the business `count` more customers, each owing a gram of Rosa, through the session's own requests. */
 async function owingCustomers(page: Page, count: number): Promise<void> {
   const me: { today: string } = await (await page.request.get('/auth/me')).json()
-  const varieties: { id: number; name: string }[] = await (await page.request.get(`/varieties?on=${me.today}`)).json()
+  const varieties: { id: number; name: string }[] = await (await page.request.get(`/api/products?on=${me.today}`)).json()
   const rosa = varieties.find((variety) => variety.name === 'Rosa')
-  if (rosa === undefined) throw new Error('Rosa missing from GET /varieties')
+  if (rosa === undefined) throw new Error('Rosa missing from GET /api/products')
   for (let index = 1; index <= count; index += 1) {
     const created = await page.request.post('/customers', {
       data: { name: `Zeta ${String(index).padStart(2, '0')}`, phone: null, vip: false },
@@ -186,7 +186,7 @@ async function owingCustomers(page: Page, count: number): Promise<void> {
 /** Gives the business `count` more varieties, so Home's "What you have left" is long enough to scroll on a computer. */
 async function moreVarieties(page: Page, count: number): Promise<void> {
   for (let index = 1; index <= count; index += 1) {
-    const created = await page.request.post('/varieties', { data: { name: `Tulipan ${String(index).padStart(2, '0')}` } })
+    const created = await page.request.post('/api/products', { data: { name: `Tulipan ${String(index).padStart(2, '0')}` } })
     expect(created.ok()).toBe(true)
   }
 }
@@ -194,9 +194,9 @@ async function moreVarieties(page: Page, count: number): Promise<void> {
 /** Gives Carla `count` more sales on credit, so her card is long enough to scroll on a computer. */
 async function moreSalesFor(page: Page, name: string, count: number): Promise<void> {
   const me: { today: string } = await (await page.request.get('/auth/me')).json()
-  const varieties: { id: number; name: string }[] = await (await page.request.get(`/varieties?on=${me.today}`)).json()
+  const varieties: { id: number; name: string }[] = await (await page.request.get(`/api/products?on=${me.today}`)).json()
   const rosa = varieties.find((variety) => variety.name === 'Rosa')
-  if (rosa === undefined) throw new Error('Rosa missing from GET /varieties')
+  if (rosa === undefined) throw new Error('Rosa missing from GET /api/products')
   const found: { id: number; name: string }[] = await (
     await page.request.get(`/customers?q=${encodeURIComponent(name)}`)
   ).json()

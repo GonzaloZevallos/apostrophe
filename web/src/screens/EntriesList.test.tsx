@@ -94,13 +94,13 @@ function fakeApi(overrides: Record<string, () => Response> = {}) {
       const override = overrides[key]
       if (override !== undefined) return Promise.resolve(override())
       if (key === 'GET /stock') return Promise.resolve(jsonResponse(200, STOCK))
-      if (key === 'GET /varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (key === 'GET /api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       const movements = /^GET \/stock\/varieties\/(\d+)\/movements$/.exec(key)
       if (movements !== null) {
         const own = STOCK.entries.filter((row) => String(row.variety_id) === movements[1])
         return Promise.resolve(jsonResponse(200, own.map((row) => ({ ...row, kind: 'entry' }))))
       }
-      const one = /^GET \/varieties\/(\d+)$/.exec(key)
+      const one = /^GET \/api\/products\/(\d+)$/.exec(key)
       if (one !== null) {
         const found = VARIETIES.find((variety) => String(variety.id) === one[1])
         return Promise.resolve(
@@ -188,7 +188,7 @@ test("a variety's list shows only its entries", async () => {
 const ARCHIVED_VARIETY = { id: 3, name: '24K Gold', current_price: null, archived: true }
 
 test("an archived variety's list is read-only: entry rows have no edit, no delete and open nothing", async () => {
-  fakeApi({ 'GET /varieties/3': () => jsonResponse(200, ARCHIVED_VARIETY) })
+  fakeApi({ 'GET /api/products/3': () => jsonResponse(200, ARCHIVED_VARIETY) })
   renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
 
   const rows = await screen.findAllByRole('listitem')
@@ -201,7 +201,7 @@ test("an archived variety's list is read-only: entry rows have no edit, no delet
 
 test("an archived variety's withdrawal rows still open the withdrawal's detail", async () => {
   fakeApi({
-    'GET /varieties/3': () => jsonResponse(200, ARCHIVED_VARIETY),
+    'GET /api/products/3': () => jsonResponse(200, ARCHIVED_VARIETY),
     'GET /stock/varieties/3/movements': () =>
       jsonResponse(200, [
         { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },

@@ -103,8 +103,8 @@ function fakeApi(): void {
       const answers: Record<string, unknown> = {
         'GET /auth/me': ME,
         'GET /pricing-settings': SETTINGS_ON,
-        'GET /varieties/1': VARIETY_ROW,
-        'GET /varieties/1/prices': HISTORY,
+        'GET /api/products/1': VARIETY_ROW,
+        'GET /api/products/1/prices': HISTORY,
         'GET /sales/1': SALE,
         'GET /customers/1': CUSTOMER,
         'GET /customers/1/account': ACCOUNT,
@@ -112,8 +112,8 @@ function fakeApi(): void {
         'GET /stock?archived=true': STOCK,
         'GET /stock/varieties/1/movements': [],
         'GET /stock/withdrawals/1': WITHDRAWAL,
-        'GET /varieties': [VARIETY_ROW],
-        'GET /varieties?archived=true': [ARCHIVED],
+        'GET /api/products': [VARIETY_ROW],
+        'GET /api/products?archived=true': [ARCHIVED],
         'GET /catalog': CATALOG,
         'GET /catalog/archived': [],
       }

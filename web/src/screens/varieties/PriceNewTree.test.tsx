@@ -35,10 +35,10 @@ type Answers = Record<string, () => Response>
 function defaults(): Answers {
   return {
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties': () => jsonResponse(200, [VARIETY_ROW]),
-    'GET /varieties?archived=true': () => jsonResponse(200, []),
-    'GET /varieties/1': () => jsonResponse(200, VARIETY_ROW),
-    'GET /varieties/1/prices': () => jsonResponse(200, HISTORY),
+    'GET /api/products': () => jsonResponse(200, [VARIETY_ROW]),
+    'GET /api/products?archived=true': () => jsonResponse(200, []),
+    'GET /api/products/1': () => jsonResponse(200, VARIETY_ROW),
+    'GET /api/products/1/prices': () => jsonResponse(200, HISTORY),
     'GET /pricing-settings': () => jsonResponse(200, SETTINGS_ON),
     'GET /stock': () => jsonResponse(200, STOCK),
     'GET /stock/varieties/1/movements': () => jsonResponse(200, []),
@@ -250,10 +250,10 @@ describe('saving', () => {
     let release: (response: Response) => void = () => undefined
     let saved = false
     const { router } = renderApp([VARIETY_PATH, NEW_PATH], 'computer', {
-      'POST /varieties/1/prices': () => {
+      'POST /api/products/1/prices': () => {
         throw new Error('replaced below')
       },
-      'GET /varieties/1/prices': () =>
+      'GET /api/products/1/prices': () =>
         jsonResponse(
           200,
           saved
@@ -296,7 +296,7 @@ describe('saving', () => {
   test('a refusal keeps the modal open with everything typed', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer', {
-      'POST /varieties/1/prices': () => jsonResponse(409, { code: 'price_date_taken' }),
+      'POST /api/products/1/prices': () => jsonResponse(409, { code: 'price_date_taken' }),
     })
     await user.type(await screen.findByLabelText(/^List price/), '12000')
     await user.click(screen.getByRole('button', { name: 'Save the price' }))

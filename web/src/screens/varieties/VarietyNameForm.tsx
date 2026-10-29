@@ -1,5 +1,5 @@
 /**
- * `VarietyNameForm`: the name field and its save (`POST /varieties`), taken out of
+ * `VarietyNameForm`: the name field and its save (`POST /api/products`), taken out of
  * `VarietyNew` so the Onboarding's first step can reuse it. It knows nothing of the router:
  * its host decides what follows a save (`onSaved`, with the new variety's id and name) and
  * learns whether something was typed (`onDirtyChange`). A refusal shows under the name and
@@ -50,7 +50,7 @@ export default function VarietyNameForm({ onSaved, onDirtyChange, sheet = false 
     setOffline(false)
     setSending(true)
     try {
-      const saved = await post<Variety>('/varieties', { name })
+      const saved = await post<Variety>('/api/products', { name })
       invalidateResource(queryClient, 'varieties')
       onSaved({ id: saved.id, name: saved.name })
     } catch (caught) {

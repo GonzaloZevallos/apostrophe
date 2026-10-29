@@ -7,7 +7,7 @@
  * except when the seller walked in by a link of the app: then there is nothing to show and the
  * card goes on to Variedades (a restore of the last one pops back here; ADR-0032 amendment).
  *
- * Nothing here decides anything: the list is `GET /varieties?archived=true`, by name, and
+ * Nothing here decides anything: the list is `GET /api/products?archived=true`, by name, and
  * whether a row is hidden is the stored `shown` of `GET /catalog/archived`.
  */
 

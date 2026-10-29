@@ -169,10 +169,10 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const todayIso = await page.getByLabel('Date').inputValue()
 
   const varieties: VarietyAnswer[] = await (
-    await page.request.get(`/varieties?on=${todayIso}`)
+    await page.request.get(`/api/products?on=${todayIso}`)
   ).json()
   const jazmin = varieties.find((variety) => variety.name === 'Jazmín')
-  if (jazmin === undefined) throw new Error('Jazmín missing from GET /varieties?on=')
+  if (jazmin === undefined) throw new Error('Jazmín missing from GET /api/products?on=')
   const jazminId = jazmin.id
 
   // Debiendo is disabled and explained while there is no customer.

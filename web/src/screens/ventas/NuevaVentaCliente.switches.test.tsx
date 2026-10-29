@@ -22,7 +22,7 @@ function json(body: unknown): Response {
 async function openChooser(vip: boolean): Promise<ReturnType<typeof userEvent.setup>> {
   const answers: Record<string, unknown> = {
     'GET /auth/me': ME,
-    'GET /varieties?on=2026-10-02': [],
+    'GET /api/products?on=2026-10-02': [],
     'GET /pricing-settings': { is_bulk_pricing: true, is_vip_customers: vip },
     'GET /customers': [VIP_ANA],
   }

@@ -6,7 +6,7 @@
  * or "‹ <variety>" for one variety's list, declared through `useBackParent`). Each row
  * links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
  * date, variety and grams. Every figure is what `GET /stock` answered; a variety's name
- * comes from `GET /varieties`, joined by id. One archived variety's list is read-only: its
+ * comes from `GET /api/products`, joined by id. One archived variety's list is read-only: its
  * entry rows have no edit or delete and open nothing (they stay editable and deletable from
  * "Todas las entradas"); its withdrawal rows still open the withdrawal's detail.
  */
@@ -64,11 +64,11 @@ export default function EntriesList({ varietyId }: Props) {
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>('/varieties'),
+    queryFn: () => get<Variety[]>('/api/products'),
   })
   const varietyQuery = useQuery({
     queryKey: keys.variety(String(varietyId)),
-    queryFn: () => get<Variety>(`/varieties/${varietyId}`),
+    queryFn: () => get<Variety>(`/api/products/${varietyId}`),
     enabled: varietyId !== undefined,
   })
   const movementsQuery = useQuery({

@@ -66,10 +66,10 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
   const me: { today: string } = await (await page.request.get('/auth/me')).json()
   const today = me.today
   const varieties: { id: number; name: string }[] = await (
-    await page.request.get(`/varieties?on=${today}`)
+    await page.request.get(`/api/products?on=${today}`)
   ).json()
   const jazmin = varieties.find((variety) => variety.name === 'Jazmín')
-  if (jazmin === undefined) throw new Error('Jazmín missing from GET /varieties?on=')
+  if (jazmin === undefined) throw new Error('Jazmín missing from GET /api/products?on=')
   const saved = await page.request.post('/sales', {
     data: {
       date: today,

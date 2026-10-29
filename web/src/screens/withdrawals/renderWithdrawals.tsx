@@ -42,13 +42,13 @@ export function withReads(
   stock: unknown = STOCK,
 ): FetchImpl {
   return async (url, init) => {
-    if (url === '/varieties') return varieties === undefined ? jsonResponse(200, VARIETIES) : varieties()
+    if (url === '/api/products') return varieties === undefined ? jsonResponse(200, VARIETIES) : varieties()
     if (url === '/stock') return jsonResponse(200, stock)
     return rest(url, init)
   }
 }
 
-/** `varieties` answers `GET /varieties` when a test needs the list to change over time; `stock` is what `GET /stock` holds. */
+/** `varieties` answers `GET /api/products` when a test needs the list to change over time; `stock` is what `GET /stock` holds. */
 export function renderWithdrawals(
   initialEntries: string[],
   fetchImpl: FetchImpl,

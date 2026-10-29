@@ -47,8 +47,8 @@ function fakeApi(hidden: readonly number[] = [], overrides: Answers = {}): Answe
   const archivedIds = () => [5, 4].filter((id) => !live.has(id))
   const rowOf = (id: number) => ({ id, name: NAMES[id], archived: !live.has(id), current_price: null })
   const answers: Answers = {
-    'GET /varieties': () => json(200, [4, 5].filter((id) => live.has(id)).map(rowOf)),
-    'GET /varieties?archived=true': () => json(200, archivedIds().map(rowOf)),
+    'GET /api/products': () => json(200, [4, 5].filter((id) => live.has(id)).map(rowOf)),
+    'GET /api/products?archived=true': () => json(200, archivedIds().map(rowOf)),
     'GET /stock': () =>
       json(200, {
         total: 0,
@@ -69,11 +69,11 @@ function fakeApi(hidden: readonly number[] = [], overrides: Answers = {}): Answe
       ),
   }
   for (const id of [4, 5]) {
-    answers[`GET /varieties/${id}`] = () =>
+    answers[`GET /api/products/${id}`] = () =>
       json(200, { ...rowOf(id), removal: live.has(id) ? 'archive' : null })
-    answers[`GET /varieties/${id}/prices`] = () => json(200, [])
+    answers[`GET /api/products/${id}/prices`] = () => json(200, [])
     answers[`GET /stock/varieties/${id}/movements`] = () => json(200, [])
-    answers[`POST /varieties/${id}/restore`] = () => {
+    answers[`POST /api/products/${id}/restore`] = () => {
       live.add(id)
       return json(200, { id, name: NAMES[id], archived: false, removal: 'archive' })
     }
@@ -161,7 +161,7 @@ describe('Archivadas (N) on Variedades', () => {
   })
 
   test('shows nothing when there are none', async () => {
-    renderAt(VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    renderAt(VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
     await screen.findByText('All entries')
     await waitFor(() => expect(screen.queryByText(/Archived \(/)).toBeNull())
   })
@@ -169,7 +169,7 @@ describe('Archivadas (N) on Variedades', () => {
 
 describe('the Archivadas card', () => {
   test('its empty state is measured copy and the screen follows the rule', async () => {
-    renderAt(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    renderAt(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
     const title = await screen.findByText('You have no archived varieties')
 
     expect(title).toHaveAttribute('data-copy', 'emptyTitle')
@@ -209,13 +209,13 @@ describe('the Archivadas card', () => {
   test('an empty list reached by an in-app link goes on to Variedades (a typed address keeps the fixed line, below)', async () => {
     const { router } = renderAt(
       [{ pathname: VARIETIES }, { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) }],
-      { 'GET /varieties?archived=true': () => json(200, []) },
+      { 'GET /api/products?archived=true': () => json(200, []) },
     )
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
   })
 
   test('says so with a fixed line when there are none', async () => {
-    renderAt(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    renderAt(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
     expect(await screen.findByText('You have no archived varieties')).toBeTruthy()
   })
 
@@ -227,13 +227,13 @@ describe('the Archivadas card', () => {
     expect(await screen.findByText('Variety restored')).toBeTruthy()
     expect(screen.queryByRole('dialog')).toBeNull()
     const requested = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST').map(([url]) => url)
-    expect(requested).toEqual(['/varieties/4/restore'])
+    expect(requested).toEqual(['/api/products/4/restore'])
   })
 
   test('a variety already gone shows the generic gone notice', async () => {
     const user = userEvent.setup()
     renderAt(ARCHIVED_VARIETIES, {
-      'POST /varieties/4/restore': () => json(404, { code: 'variety.not_found', detail: 'x' }),
+      'POST /api/products/4/restore': () => json(404, { code: 'variety.not_found', detail: 'x' }),
     })
     await screen.findByText('Alfa Vieja')
     await user.click(screen.getAllByRole('button', { name: 'Restore' })[0]!)
@@ -281,7 +281,7 @@ describe("an archived variety's page", () => {
     // Nothing refetched the page under the seller's finger before it left.
     const posted = fetchMock.mock.calls.findIndex(([, init]) => init?.method === 'POST')
     const requested = fetchMock.mock.calls.slice(posted + 1).map(([url]) => url)
-    expect(requested).not.toContain('/varieties/4')
+    expect(requested).not.toContain('/api/products/4')
     expect(requested).not.toContain('/stock?archived=true')
     watch.stop()
     expect(watch.seen()).toBe(false)
@@ -355,7 +355,7 @@ describe("an archived variety's page", () => {
   test('a variety gone meanwhile shows the gone notice and navigates nowhere', async () => {
     const user = userEvent.setup()
     const { router } = renderAt([VARIETIES, ARCHIVED_VARIETIES], {
-      'POST /varieties/4/restore': () => json(404, { code: 'variety.not_found', detail: 'x' }),
+      'POST /api/products/4/restore': () => json(404, { code: 'variety.not_found', detail: 'x' }),
     })
     await user.click(await screen.findByRole('link', { name: /Alfa Vieja/ }))
     await user.click(await screen.findByRole('button', { name: 'Restore' }))
@@ -415,7 +415,7 @@ describe('on a computer (two panes)', () => {
   })
 
   test('with none archived, Archivadas selects nothing and says so on the left', async () => {
-    const { router } = renderComputer(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    const { router } = renderComputer(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
     expect(await screen.findByText('You have no archived varieties')).toBeTruthy()
     expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
   })
@@ -497,10 +497,10 @@ describe('on a computer (two panes)', () => {
     let elsewhere = false
     const api = fakeApi()
     const { router } = renderComputer([VARIETIES, pathTo(VARIETY, { id: 4 })], {
-      'GET /varieties/5': () =>
+      'GET /api/products/5': () =>
         elsewhere
           ? json(200, { id: 5, name: 'Zeta Vieja', archived: false, removal: 'archive', current_price: null })
-          : api['GET /varieties/5']!(),
+          : api['GET /api/products/5']!(),
     })
     await screen.findByText('Zeta Vieja')
     elsewhere = true

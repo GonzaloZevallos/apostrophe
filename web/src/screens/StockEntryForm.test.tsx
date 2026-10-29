@@ -49,7 +49,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   const onSaved = vi.fn()
   const fetchMock = vi.fn((input: string | URL | Request, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input.toString()
-    if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+    if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
     if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
     if (url === '/stock/entries' && init?.method === 'POST') {
       return Promise.resolve(
@@ -101,7 +101,7 @@ test('the locked form asks only for grams and the optional cost, and the no-cost
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(500, {}))
     }),
@@ -123,7 +123,7 @@ test('the locked form asks only for grams and the optional cost, and the no-cost
 test('with a cost typed, the locked form posts it', async () => {
   const fetchMock = vi.fn((input: string | URL | Request, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input.toString()
-    if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+    if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
     if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
     if (init?.method === 'POST') return Promise.resolve(jsonResponse(201, {}))
     return Promise.resolve(jsonResponse(500, {}))
@@ -146,7 +146,7 @@ test('without the locked props the form is the owner\'s whole form', async () =>
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(500, {}))
     }),
@@ -187,7 +187,7 @@ test('the owner refuses the entry inline and the form does not report it saved',
     'fetch',
     vi.fn((input: string | URL | Request, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (init?.method === 'POST') {
         return Promise.resolve(jsonResponse(422, { code: 'stock.date_in_future' }))

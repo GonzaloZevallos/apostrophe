@@ -8,7 +8,7 @@
  * "Venta guardada" notice as history state; `VentaDetalle` (`sales-list-and-detail`)
  * owns rendering that notice and its Deshacer.
  *
- * Prices (`GET /varieties?on=`) and, when opened via "Nueva venta a <name>", the
+ * Prices (`GET /api/products?on=`) and, when opened via "Nueva venta a <name>", the
  * chosen customer, are fetched under the frozen `sale-form` keys
  * (`api/keys.ts`): `gcTime: 0`, `staleTime: Infinity`, no refetch on focus,
  * reconnect or an interval (plan, invariants) — every mount and every date change
@@ -208,7 +208,7 @@ function NuevaVentaForm() {
 
   const varietiesQuery = useQuery({
     queryKey: keys.saleFormVarieties(date),
-    queryFn: () => get<Variety[]>(`/varieties?on=${encodeURIComponent(date)}`),
+    queryFn: () => get<Variety[]>(`/api/products?on=${encodeURIComponent(date)}`),
     // A date change keeps the form's varieties (names, options) while that day's prices
     // come; no figure of the previous day is ever shown (`repricing` below).
     placeholderData: keepPreviousData,
