@@ -22,5 +22,14 @@ El dibujo es una guía, no un contrato (DESIGN_STANDARDS.md, "Drawing as guide")
 | Pedidos, modo oscuro | 14-pedidos-oscuro.png | #493, #500 |
 | Nueva venta, modo oscuro | 15-nueva-venta-oscuro.png | #493, #496 |
 | Marca Yerba | 16-marca-yerba.png | #493 |
+| Detalle de venta y compartir la factura | 17-detalle-de-venta.png | #376, #322 |
+| Registrar pago | 18-registrar-pago.png | #498 |
+| Ficha de producto | 19-ficha-de-producto.png | #499, #323, #406 |
+| Nueva promoción | 20-nueva-promocion.png | #411, #412 |
+| Stock | 21-stock.png | #499 |
+| Nuevo gasto | 22-nuevo-gasto.png | #497 |
+| Tienda en Telegram (lo que ve el cliente) | 23-tienda-telegram-cliente.png | #325 |
+| Configuración inicial | 24-configuracion-inicial.png | #418, #329 |
+| Ingreso | 25-ingreso.png | #510 |
 
 Las capturas están a 2× (780 px de ancho para un teléfono de 390 px).
