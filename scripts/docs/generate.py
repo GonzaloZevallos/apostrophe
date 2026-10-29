@@ -11,6 +11,10 @@ Three stages, so a bad run never leaves half a tree behind:
    produce. Otherwise every problem is printed as `<file>: block <n>: <rule>: <detail>`, the
    exit code is 1, and `docs/` is byte-identical to before.
 
+The API reference is one more file in the same tree: Redocly turns the in-memory OpenAPI
+document into `docs/api/index.html`, and the staging stage rejects an external link or a
+machine path in it before anything is written.
+
 Which packages, layers and children get a diagram is read from the filesystem.
 """
 
@@ -23,6 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
 from scripts.docs.discover import discover
+from scripts.docs.reference import offline_problems, reference_file, strip_attribution
 from scripts.docs.text import (
     MAX_BLOCK_CHARS,
     MAX_BLOCK_EDGES,
@@ -38,8 +43,10 @@ from scripts.docs.tools import (
     RunTool,
     ToolCall,
     ToolError,
+    node_worker_count,
     paracelsus_call,
     pyreverse_call,
+    redocly_call,
     run_all,
     subprocess_runner,
 )
@@ -239,6 +246,13 @@ def _real_openapi() -> str:
     return export_openapi(build_docs_app())
 
 
+def _reference_section(run_tool: RunTool, openapi_text: str) -> dict[PurePosixPath, str]:
+    """`docs/api/index.html`: Redocly's page for `openapi_text`, minus its attribution link."""
+    calls = [redocly_call("reference/api", openapi_text)]
+    html = run_all(calls, run_tool, node_worker_count())["reference/api"]
+    return {API / "index.html": reference_file(strip_attribution(html))}
+
+
 def produce(
     repo_root: Path,
     run_tool: RunTool,
@@ -272,9 +286,11 @@ def produce(
     outputs[API / "README.md"] = finalize(
         "index",
         "# API\n\nThe OpenAPI document of the app, exported without starting a server: "
-        "[openapi.json](openapi.json).",
+        "[openapi.json](openapi.json). The same document as a static page that needs no "
+        "network: [index.html](index.html).",
     )
     outputs[API / "openapi.json"] = openapi()
+    outputs.update(_reference_section(run_tool, outputs[API / "openapi.json"]))
     return outputs
 
 
@@ -294,6 +310,11 @@ def _staged_findings(
     markdown: list[Path] = []
     fences = 0
     for path in sorted(outputs):
+        if path.suffix == ".html":
+            html = outputs[path]
+            findings += _located(
+                str(path), [*offline_problems(html, repo_root), *absolute_paths(html, roots)]
+            )
         if path.suffix != ".md":
             continue
         text = outputs[path]
