@@ -513,6 +513,10 @@ _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 The facts about one recorded sale that a seller may share with that sale's customer: business name, date, lines, shipping charged, total, payment state and the customer's current balance. They are worked out live from settlement when the sale's detail is read and never stored, and the balance is the customer's whole account at the moment of sharing. On screen it is shared as plain text by Share or Copy on the sale's detail; In the app: Sale bill (the accessible name of its selectable block), the action reads Share / Copy.
 _Avoid_: invoice, receipt, statement, ticket
 
+**Documentation language**:
+El idioma en que se escribe la documentación funcional y técnica del producto, `docs/product/` y las definiciones de `CONTEXT.md` incluidas: español rioplatense, con identificadores, nombres de clases, nombres UML, términos del glosario y palabras de pantalla en inglés. No es el Product language, que sigue en inglés, y no cambia nada de lo que muestra la app. En la app: no tiene palabra propia.
+_Avoid_: Product language, locale, idioma de la app, traducción
+
 ## Planned in GH-318 (not yet in the code)
 
 These terms are not entries of the present glossary. Code, tests and screens keep the present terms until the part named on each line ships; only that part moves its term into the glossary proper and amends the entry it replaces. Each line gives the term, the ADR that decides it, and its owning part by capability.

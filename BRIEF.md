@@ -62,7 +62,7 @@ model customizable.
   installation except each business's catalog, sent through its own Telegram bot.
 - A customer is identified by their phone number within their business.
 - Whole Argentine pesos; grams to the hundredth; days in Argentina time.
-- Interface in English; code and docs in English (docs/product/product-language.md).
+- Interface in English; code in English; functional and technical documentation in Spanish (identifiers, class names and UML names in English).
 - Maintained by an agentic development system: every capability needs fast,
   self-contained tests.
 
