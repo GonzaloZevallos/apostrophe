@@ -24,6 +24,19 @@ CI_ONLY: dict[str, str] = {
     "npx --prefix web playwright install --with-deps chromium": (
         "the runner needs the root `--with-deps` form of `setup.web-browsers`"
     ),
+    "uv run --no-project python -m scripts.docs.generate": (
+        "the docs generator, until `docs:` is declared"
+    ),
+    (
+        'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
+        '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
+    ): "the CI form of the reserved `docs` check",
+    "bash scripts/docs/install-ci-tools.sh": "binaries on no package manager the repo uses",
+    "bash scripts/docs/ci-mermaid-render.sh": "needs Chromium",
+    "lychee --offline --no-progress docs/architecture docs/api/README.md": (
+        "binary installed only in CI"
+    ),
+    "uv run --no-project python -m scripts.docs.api_breaks": "needs the base ref and the PR body",
 }
 
 # Commands CI runs on every pull request that gate no merge, each with the reason it is parked
@@ -44,7 +57,7 @@ def _load(path: Path) -> Data:
 
 STACK = _load(REPO_ROOT / ".agentic" / "stack.yaml")
 WORKFLOW = _load(REPO_ROOT / ".github" / "workflows" / "ci.yml")
-GATED = ["test", "web"]
+GATED = ["test", "web", "docs"]
 
 
 def _runs(workflow: Data) -> dict[str, list[str]]:
@@ -149,7 +162,7 @@ def test_a_ci_only_command_in_an_ungated_job_is_refused_when_ci_is_on() -> None:
 
 
 def test_a_parked_command_in_a_gated_job_is_refused() -> None:
-    problems = stack_ci_problems(_with_ci(STACK, ["test", "web", "e2e"]), WORKFLOW, CI_ONLY, PARKED)
+    problems = stack_ci_problems(_with_ci(STACK, [*GATED, "e2e"]), WORKFLOW, CI_ONLY, PARKED)
     assert problems == ["PARKED command (npm --prefix web run e2e) is in gated job 'e2e'"]
 
 
