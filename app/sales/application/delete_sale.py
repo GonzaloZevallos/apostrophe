@@ -7,28 +7,28 @@ from dataclasses import dataclass
 
 from app.sales.application.errors import SaleNotFound
 from app.sales.application.ports import Sales
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.transaction import Transaction
 
 
 @dataclass(frozen=True)
-class ReturnedGrams:
-    """Grams a deleted sale gives back to one variety's stock."""
+class ReturnedQuantity:
+    """Quantity a deleted sale gives back to one variety's stock."""
 
     variety_id: int
-    grams: Grams
+    quantity: Quantity
 
 
-def delete_sale(sales: Sales, transaction: Transaction, sale_id: int) -> list[ReturnedGrams]:
+def delete_sale(sales: Sales, transaction: Transaction, sale_id: int) -> list[ReturnedQuantity]:
     sale = sales.get(sale_id)
     if sale is None:
         raise SaleNotFound()
 
-    totals: dict[int, Grams] = {}
+    totals: dict[int, Quantity] = {}
     for line in sale.lines:
-        totals[line.variety_id] = totals.get(line.variety_id, Grams(0)) + line.grams
+        totals[line.variety_id] = totals.get(line.variety_id, Quantity(0)) + line.quantity
 
     sales.delete(sale_id)
     transaction.commit()
 
-    return [ReturnedGrams(variety_id, totals[variety_id]) for variety_id in sorted(totals)]
+    return [ReturnedQuantity(variety_id, totals[variety_id]) for variety_id in sorted(totals)]

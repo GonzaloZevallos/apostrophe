@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.text import CatalogEntry
 from app.catalog.domain.variety import CatalogPrice
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 
 def entry(
@@ -30,7 +30,7 @@ def entry(
     price = CatalogPrice(
         list_price=list_price,
         bulk_price=bulk_price,
-        bulk_minimum=Grams.of(bulk_minimum) if bulk_minimum is not None else None,
+        bulk_minimum=Quantity.of(bulk_minimum) if bulk_minimum is not None else None,
     )
     return CatalogEntry(name=name, attributes=attributes, price=price)
 

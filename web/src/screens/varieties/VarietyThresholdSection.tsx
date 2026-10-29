@@ -21,6 +21,7 @@ import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams } from '../../format/money'
+import { useLabel } from '../../i18n/label'
 import { warningFor } from '../../stock/detail'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED, VARIETIES_TEXT } from '../../copy/varieties'
@@ -43,6 +44,7 @@ export default function VarietyThresholdSection({
   readOnly?: boolean
 }) {
   const queryClient = useQueryClient()
+  const resolve = useLabel()
   const flash = useFlash()
   const openForm = useOpenForm()
   const [saving, setSaving] = useState(false)
@@ -100,7 +102,7 @@ export default function VarietyThresholdSection({
       </div>
       <div className="seccion-variedad__fila">
         <span className={row.status === 'low' ? 'seccion-variedad__valor seccion-variedad__valor--aviso' : 'seccion-variedad__valor'}>
-          {warningFor(row)}
+          {resolve(warningFor(row))}
         </span>
         <button
           type="button"

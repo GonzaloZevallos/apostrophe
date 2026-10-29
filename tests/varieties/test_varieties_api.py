@@ -218,7 +218,7 @@ def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
     assert bad_name.json()["code"] == "variety.name_invalid"
 
     variety_id = _register(client)["id"]
-    bad_grams = client.post(
+    bad_quantity = client.post(
         f"/varieties/{variety_id}/prices",
         json={
             "effective_from": "2026-01-01",
@@ -227,8 +227,8 @@ def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
             "bulk_minimum": "3.555",
         },
     )
-    assert bad_grams.status_code == 422
-    assert bad_grams.json()["code"] == "grams.invalid"
+    assert bad_quantity.status_code == 422
+    assert bad_quantity.json()["code"] == "grams.invalid"
 
 
 GOLD_WITH_VIP = {**GOLD_JANUARY, "vip_price": 9_000}
@@ -368,6 +368,8 @@ def test_one_business_s_switches_never_gate_another_business_s_entries(
 
     assert (mine["bulk_price"], mine["vip_price"]) == (None, None)
     assert (theirs["bulk_price"], theirs["vip_price"]) == (10_000, 9_000)
+
+
 def test_an_archived_variety_is_absent_from_the_list_but_still_found_by_id(
     client: TestClient, engine: Engine
 ) -> None:

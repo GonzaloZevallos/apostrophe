@@ -22,7 +22,7 @@
  */
 
 /** Names a copy module exports that are not texts: the baseline never walks them. */
-export type NotCopy = 'LIMITED_COPY' | 'LONG_REFUSALS' | 'BASELINE_ARGS'
+export type NotCopy = 'LIMITED_COPY' | 'LONG_REFUSALS' | 'BASELINE_ARGS' | 'NAMESPACE' | 'MOVED_TO_KEYS'
 
 type Fn = (...args: never[]) => unknown
 

@@ -54,9 +54,7 @@ def _row_counts(engine: Engine) -> tuple[int, int, int]:
 
 
 def _customer(client: TestClient) -> int:
-    customer = client.post(
-        "/customers", json={"name": "Juana", "phone": "11 2345-6789"}
-    ).json()
+    customer = client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}).json()
     return int(customer["id"])
 
 
@@ -165,9 +163,7 @@ def test_record_sale_with_no_payment_field_and_a_positive_total_needs_a_method(
     # missing required field.
     variety_id = _variety(client)
 
-    response = client.post(
-        "/sales", json={"lines": [{"variety_id": variety_id, "grams": "10"}]}
-    )
+    response = client.post("/sales", json={"lines": [{"variety_id": variety_id, "grams": "10"}]})
 
     assert response.status_code == 422, response.text
     assert response.json()["code"] == "sale.payment_required"
@@ -417,9 +413,7 @@ def test_list_sales_with_an_inverted_range_answers_an_empty_list(client: TestCli
         },
     )
 
-    response = client.get(
-        "/sales", params={"date_from": "2026-09-20", "date_to": "2026-09-01"}
-    )
+    response = client.get("/sales", params={"date_from": "2026-09-20", "date_to": "2026-09-01"})
 
     assert response.status_code == 200
     assert response.json() == []
@@ -637,6 +631,8 @@ def test_switching_a_rule_off_leaves_a_recorded_sale_as_it_was(
         {k: line[k] for k in stored} for line in created["lines"]
     ]
     assert after["total"] == created["total"]
+
+
 def _archived_variety(client: TestClient, engine: Engine) -> int:
     variety_id = _variety(client)
     archive_by_hand(engine, variety_id)

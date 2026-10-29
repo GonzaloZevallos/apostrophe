@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
@@ -52,7 +52,7 @@ def _withdraw(
             reason,
             TODAY,
             None,
-            tuple(WithdrawalLine.of(variety_id, grams) for variety_id, grams in lines),
+            tuple(WithdrawalLine.of(variety_id, quantity) for variety_id, quantity in lines),
             TODAY,
             datetime(2026, 10, 2, 19, 0, tzinfo=UTC),
         )
@@ -83,14 +83,14 @@ def test_history_orders_a_sale_line_and_a_withdrawal_line_by_recording_and_costs
         )
 
     lots, draws = grouped[variety_id]
-    assert [(d.source, d.grams) for d in draws] == [
-        (DrawSource.SALE_LINE, Grams.of("4")),
-        (DrawSource.OWN_USE, Grams.of("3")),
+    assert [(d.source, d.quantity) for d in draws] == [
+        (DrawSource.SALE_LINE, Quantity.of("4")),
+        (DrawSource.OWN_USE, Quantity.of("3")),
     ]
     # 10 g @ $10 000: the sale takes 4 g ($4 000) and the withdrawal the next 3 g ($3 000).
     assert [(r.costed, r.pending) for r in allocate(lots, draws)] == [
-        (4_000, Grams(0)),
-        (3_000, Grams(0)),
+        (4_000, Quantity(0)),
+        (3_000, Quantity(0)),
     ]
 
 
@@ -119,6 +119,6 @@ def test_history_narrowed_to_one_variety_gives_that_variety_the_same_draws_and_c
     # One 2 g lot ($4 000): the sale takes 1 g ($2 000), the promotion's 3 g get the
     # last gram ($2 000) and 2 g are pending, never $0.
     assert [(r.costed, r.pending) for r in allocate(lots, variety_draws)] == [
-        (2_000, Grams(0)),
-        (2_000, Grams.of("2")),
+        (2_000, Quantity(0)),
+        (2_000, Quantity.of("2")),
     ]

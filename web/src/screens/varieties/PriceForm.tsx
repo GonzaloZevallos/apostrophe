@@ -7,6 +7,8 @@
  * "Precio de lista", a grams refusal under "Mínimo en gramos".
  */
 
+import { useTranslation } from 'react-i18next'
+import { messageText } from '../../i18n/refusalKeys'
 import { type FormEvent, type Ref, useEffect, useId, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
@@ -58,6 +60,7 @@ export default function PriceForm({
   titleRef,
 }: PriceFormProps) {
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
   const [values, setValues] = useState<PriceValues>({
     listPrice: '',
@@ -106,7 +109,7 @@ export default function PriceForm({
         onGone()
       } else if (caught instanceof ApiError) {
         const mapped = fieldOfCode(caught.code)
-        if (mapped !== undefined) setErrors({ [mapped.field]: mapped.message })
+        if (mapped !== undefined) setErrors({ [mapped.field]: messageText(t, mapped.message) })
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setErrors({ form: GENERIC_REFUSAL_MESSAGE })
         } else setErrors({ form: ERROR_GENERICO_MENSAJE })
@@ -142,7 +145,7 @@ export default function PriceForm({
               ariaControls={choiceId}
               onClick={() => setChoosingDate((open) => !open)}
             >
-              {chipDate(effectiveFrom, today)}
+              {chipDate(effectiveFrom, today, t)}
             </Boton>
           </span>
           {choosingDate && (

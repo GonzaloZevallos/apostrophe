@@ -14,7 +14,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, VarietyKey
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
@@ -37,7 +37,7 @@ def _price_row(
     effective: date = date(2026, 1, 1),
     list_price: int = 1_000,
     bulk_price: int | None = None,
-    bulk_minimum: Grams | None = None,
+    bulk_minimum: Quantity | None = None,
 ) -> PriceHistoryRow:
     return PriceHistoryRow(
         ref=SheetRef(sheet="Ajustes", row=row),
@@ -113,7 +113,7 @@ def test_check_price_history_flags_a_bulk_price_not_below_the_list_price(
             row=37,
             list_price=1_000,
             bulk_price=1_000,
-            bulk_minimum=Grams.of(10),
+            bulk_minimum=Quantity.of(10),
         )
     ]
     keys = {"Blue Dream": "blue dream"}
@@ -145,7 +145,7 @@ def test_check_price_history_flags_a_bulk_minimum_with_no_bulk_price(
     client: TestClient, engine: Engine
 ) -> None:
     business_id = _business_id(engine, "uno@example.com")
-    rows = [_price_row(row=37, list_price=1_000, bulk_price=None, bulk_minimum=Grams.of(10))]
+    rows = [_price_row(row=37, list_price=1_000, bulk_price=None, bulk_minimum=Quantity.of(10))]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
         imports = VarietiesImport(session, business_id)
@@ -179,7 +179,7 @@ def test_write_variety_then_write_price_entry_round_trips_through_a_real_session
         effective=date(2026, 2, 1),
         list_price=900,
         bulk_price=700,
-        bulk_minimum=Grams.of(5),
+        bulk_minimum=Quantity.of(5),
     )
     with Session(engine) as session:
         imports = VarietiesImport(session, business_id)
@@ -198,5 +198,5 @@ def test_write_variety_then_write_price_entry_round_trips_through_a_real_session
         assert entry.list_price == 900
         assert entry.bulk is not None
         assert entry.bulk.price == 700
-        assert entry.bulk.minimum == Grams.of(5)
+        assert entry.bulk.minimum == Quantity.of(5)
         assert entry.vip_price == 700  # the import writes VIP price = bulk price

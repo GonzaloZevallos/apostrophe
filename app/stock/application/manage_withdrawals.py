@@ -69,7 +69,7 @@ def _built(
         reason,
         withdrawn_on,
         note,
-        tuple(WithdrawalLine.of(variety_id, grams) for variety_id, grams in lines),
+        tuple(WithdrawalLine.of(variety_id, quantity) for variety_id, quantity in lines),
         today,
         recorded_at,
         withdrawal_id,

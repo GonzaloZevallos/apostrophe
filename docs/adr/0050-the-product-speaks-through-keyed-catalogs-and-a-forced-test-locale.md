@@ -95,6 +95,78 @@ amends ADR-0049, which assumed one language for good.
   `npm run i18n:types`. Parts that conflict on it resolve by rerunning that script, never by
   hand.
 
+## Amendment: the front's key seam (GH-378, part 1)
+
+The shared words of the front move onto keys on this runtime. Part 1 builds the seam and
+moves no copy; nothing visible changes. No copy module under `web/src/copy/` and nothing
+under `web/src/copy/locales/` changes, and `baseline_exceptions.json` stays `[]`. The two
+files that hold the checks do change, because the keyed check lives in them:
+`web/src/copy/limits.ts` and `web/src/copy/copyLimits.test.ts`.
+
+- **`web/src/i18n/options.ts`** exports `productionOptions` (`lng`, `fallbackLng`,
+  `initAsync: false`, `interpolation.escapeValue: false`, `react.useSuspense: false`).
+  The singleton in `index.ts` spreads it; the parity instance of the resolver tests spreads
+  it too and never sets `saveMissing`. Its only import is the `InitOptions` type.
+- **`web/src/i18n/resolve.ts`**: `resolveKey(bundle, 'ns:path', args?, tag = 'en')`, a pure
+  function with no import at all (not even a type), so node, Playwright and the checks read
+  English without the instance.
+  - It walks the namespace, then the dotted path.
+  - **Plurals.** With a numeric `count`: `<base>_zero` at 0 when it exists, otherwise
+    `<base>_<Intl.PluralRules(tag).select(count)>`, otherwise `<base>_other`; if that is
+    missing too, it throws.
+  - **Interpolation.** `{{name}}` is filled in one pass: a substituted value is never
+    interpolated again, and nothing is escaped.
+  - **Throws** on a missing key (a plural key called without `count` included), on an
+    object where a string was expected, on `$t(` in a value, and on a placeholder with no
+    argument. Messages name the key and the placeholder, never a value.
+  - `loadBundle(tag, root?)` (`web/scripts/i18n/loadBundle.ts`) reads
+    `web/src/copy/locales/<tag>/*.json` from disk.
+  - Parity: `web/src/i18n/parity.ts` is the reference. It builds a fresh instance on the
+    production options (never the app singleton) and lists the cases; a test pins `resolveKey` to a fresh `i18next.createInstance()` initialised with
+    `{...productionOptions, ns, resources}`, over every plural base at count 0, 1 and 2 and
+    every other leaf, over a committed fixture and over the real `en` folder.
+- **`web/src/i18n/placeholders.ts`**: `PLACEHOLDERS` maps a placeholder name to a `SAMPLES`
+  kind (`web/src/copy/limits.ts` is the only place a worst-case value is defined). **Naming
+  rule:** a placeholder is named by the CONTEXT.md term it holds, in camelCase (`variety`,
+  `customer`, `date`, `amount`, `grams`); it takes a role prefix only when one string holds
+  two of the same term (`fromDate`, `toDate`); the plural count is always `count`. A name
+  missing from the registry is a problem for both checks below.
+- **Keyed copy limits.** `LimitedCopy` stays `{kind, text}` (a module that still holds
+  words, checked exactly as before); the keyed form is its own type beside it,
+  `KeyedCopy` `{kind, key, args?}`, and a module lists `LimitedCopy | KeyedCopy` entries.
+  A keyed module exports `NAMESPACE`,
+  its `LONG_REFUSALS` holds keys, and `copyProblems(path, mod, locales)` resolves in `en`
+  and in every real locale folder, excluding `en-XA` by name. A key missing in `en` fails;
+  one missing in another real language is skipped; a key outside `NAMESPACE` fails; the
+  over-80 scan walks the namespace's leaves (a plural base listed covers its forms).
+- **`web/src/copy/baselineKeys/<ns>.json`** maps a baseline `source` to
+  `{key, params?}`, `params[i]` naming the placeholder that receives `args[i]` of each
+  recorded row. Every mapped row renders in `en` equal to its baseline `text`. Every
+  committed baseline entry is **either still exported by a `.ts` file or mapped exactly
+  once, never both and never neither**; every entry the modules hold is in the committed
+  baseline. A function wrapped in `counted()` maps to a plural base with `count` among its
+  params; any other branching function is not mappable and stays in `.ts`.
+- **`web/scripts/i18n/codemod.ts`** (committed, on the TypeScript compiler API, no new
+  dependency) rewrites `OBJ.name` into `t('<ns>:name')` and `OBJ.fn(a, b)` into
+  `t('<ns>:fn', {p1: a, p2: b})` with the parameter names from `baselineKeys/<ns>.json`,
+  and adds `useTranslation` to the enclosing component. It exits non-zero, naming the file
+  and line and leaving the file byte-identical, on an alias, a spread or a computed access,
+  a use at module top level, any file under `web/src/copy/`, and a wrong argument count
+  (a spread argument and a function read without its call included), and also on:
+  a use inside a function that is neither a component (PascalCase) nor a hook (`use*`); an
+  existing local named `t`, or a `useTranslation` that is not a plain
+  `const { t } = useTranslation()` at the top of the body; a type position
+  (`typeof OBJ.x`); a copy read concatenated into a string or put in a template literal; a
+  dependency list that is not an array literal; and an anonymous `memo` or `forwardRef`
+  wrapper. It computes every file first and writes only if there is no error.
+- **Two files later parts create**, listed here so the amendment names them all:
+  `refusalKeys.json` maps a refusal code to a `refusals:` key (only the refusals part
+  writes it); `commonTextReaders/<area>.json` lists the files that read `COMMON_TEXT` for
+  one area (only that area's part writes it).
+- **No front code imports the instance outside `web/src/i18n/`** (`main.tsx`'s side-effect
+  import excepted): a helper takes `t` from its caller or returns a key, and nothing calls
+  `t()` at module top level.
+
 ## Consequences
 
 - A new language ships by adding a complete catalog and letting the operator choose it

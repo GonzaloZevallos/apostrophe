@@ -9,7 +9,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.adapters.tables import StockThresholdRow
 from app.stock.domain.threshold import Threshold
 
@@ -21,14 +21,14 @@ class SqlThresholds:
 
     def get(self, variety_id: int) -> Threshold | None:
         row = self._row(variety_id)
-        return None if row is None else Threshold(Grams(row.threshold_hundredths))
+        return None if row is None else Threshold(Quantity(row.threshold_hundredths))
 
     def all(self) -> dict[int, Threshold]:
         statement = select(StockThresholdRow).where(
             StockThresholdRow.business_id == self._business_id
         )
         return {
-            row.variety_id: Threshold(Grams(row.threshold_hundredths))
+            row.variety_id: Threshold(Quantity(row.threshold_hundredths))
             for row in self._session.scalars(statement)
         }
 
@@ -39,11 +39,11 @@ class SqlThresholds:
                 StockThresholdRow(
                     business_id=self._business_id,
                     variety_id=variety_id,
-                    threshold_hundredths=threshold.grams.hundredths,
+                    threshold_hundredths=threshold.quantity.hundredths,
                 )
             )
         else:
-            row.threshold_hundredths = threshold.grams.hundredths
+            row.threshold_hundredths = threshold.quantity.hundredths
         self._session.flush()
 
     def clear(self, variety_id: int) -> None:

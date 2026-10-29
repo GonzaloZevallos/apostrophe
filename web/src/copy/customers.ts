@@ -12,12 +12,8 @@ import { SHELL_TEXT } from './shell.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-/** Clientes' empty list. */
-export const EMPTY_CUSTOMERS = 'You have not added any customers yet.'
 /** Heads everyone A–Z, under "Owed to you" (`Clientes.dc.html`). */
 export const EVERYONE = 'Everyone · A–Z'
-/** "Owed to you" with nobody owing. */
-export const NOBODY_OWES = 'Nobody owes you'
 
 export const LONG_REFUSALS: readonly string[] = []
 
@@ -60,8 +56,6 @@ export const CUSTOMERS_TEXT = {
 /** The ledger's fixed words, registered with the filled placeholder the screen shows
  * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyTitle', text: EMPTY_CUSTOMERS },
-  { kind: 'emptyTitle', text: NOBODY_OWES },
   { kind: 'help', text: CUSTOMERS_TEXT.saleTitle },
   { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },
   { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },

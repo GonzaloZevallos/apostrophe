@@ -10,6 +10,7 @@ import { VARIETY_REFUSAL_TEXT, type RefusalCode } from '../../api/refusals'
 import { parseGrams, parseMoney } from '../../format/parse'
 import { GRAMS_INVALID } from '../../copy/stock'
 import { VARIETIES_TEXT } from '../../copy/varieties'
+import type { Refusal } from '../../i18n/refusalKeys'
 
 export const DUPLICATE_DATE_MESSAGE = VARIETIES_TEXT.yaCargasteUnPrecio
 export const PRICE_INVALID_MESSAGE = VARIETIES_TEXT.revisaLosPreciosCargados
@@ -24,7 +25,7 @@ export interface PriceValues {
   vipPrice: string
 }
 
-const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: PriceField; message: string }>> = {
+const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: PriceField; message: Refusal | string }>> = {
   'variety.duplicate_effective_date': { field: 'effectiveFrom', message: DUPLICATE_DATE_MESSAGE },
   'variety.price_entry_invalid': { field: 'listPrice', message: PRICE_INVALID_MESSAGE },
   'grams.invalid': { field: 'bulkMinimum', message: GRAMS_INVALID },
@@ -34,8 +35,8 @@ const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: PriceField; message: s
   },
 }
 
-export function fieldOfCode(code: string): { field: PriceField; message: string } | undefined {
-  return (FIELD_OF_CODE as Record<string, { field: PriceField; message: string } | undefined>)[code]
+export function fieldOfCode(code: string): { field: PriceField; message: Refusal | string } | undefined {
+  return (FIELD_OF_CODE as Record<string, { field: PriceField; message: Refusal | string } | undefined>)[code]
 }
 
 /** What a price entry carries besides its date: the amounts that were typed and are in force. */

@@ -208,7 +208,9 @@ test('"Done" entered with the flag has one line per step and never an amount', a
 })
 
 test('the resume notice names the partner step in English', () => {
-  expect(ONBOARDING_TEXT.missing(stepInfo('partner').shortName)).toBe('Missing: partner')
+  const label = stepInfo('partner').shortName
+  expect(label).toEqual({ kind: 'text', text: 'partner' })
+  expect(ONBOARDING_TEXT.missing(label.kind === 'text' ? label.text : '')).toBe('Missing: partner')
 })
 
 test('"Skip the rest" is hidden until both required steps are done', async () => {

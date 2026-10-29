@@ -1,0 +1,18 @@
+{
+  "title": "Sample title",
+  "hello": "Hello",
+  "greeting": "Hello {{name}}",
+  "price": "Total {{amount}}",
+  "range": "From {{fromDate}} to {{toDate}}",
+  "inbox_zero": "No messages",
+  "inbox_one": "{{count}} message",
+  "inbox_other": "{{count}} messages",
+  "sales_one": "{{count}} sale",
+  "sales_other": "{{count}} sales",
+  "nested": {
+    "bye": "Bye",
+    "deep": {
+      "leaf": "Deep leaf"
+    }
+  }
+}

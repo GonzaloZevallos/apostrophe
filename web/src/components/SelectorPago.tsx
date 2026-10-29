@@ -23,8 +23,8 @@
  */
 
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { PaymentChoice } from '../sales/pricing'
-import { COMMON_TEXT } from '../copy/common'
 import SegmentedChoice from './SegmentedChoice'
 
 export interface SelectorPagoProps {
@@ -34,10 +34,11 @@ export interface SelectorPagoProps {
   owingDescription?: string
 }
 
-const OPTIONS: { value: PaymentChoice; label: string }[] = [
-  { value: 'cash', label: COMMON_TEXT.cashMethod },
-  { value: 'transfer', label: COMMON_TEXT.transfer },
-  { value: 'owing', label: COMMON_TEXT.owing },
+/** Keys, resolved in render: a module-level table never calls `t`. */
+const OPTIONS: { value: PaymentChoice; label: 'common:cashMethod' | 'common:transfer' | 'common:owing' }[] = [
+  { value: 'cash', label: 'common:cashMethod' },
+  { value: 'transfer', label: 'common:transfer' },
+  { value: 'owing', label: 'common:owing' },
 ]
 
 export default function SelectorPago({
@@ -46,17 +47,19 @@ export default function SelectorPago({
   owingDisabled = false,
   owingDescription,
 }: SelectorPagoProps) {
+  const { t } = useTranslation()
   const descriptionId = useId()
   const showDescription = owingDisabled && owingDescription !== undefined
-  const options = OPTIONS.map((option) =>
-    option.value === 'owing'
+  const options = OPTIONS.map(({ value: choice, label }) => {
+    const option = { value: choice, label: t(label) }
+    return choice === 'owing'
       ? { ...option, disabled: owingDisabled, describedBy: showDescription ? descriptionId : undefined }
-      : option,
-  )
+      : option
+  })
 
   return (
     <div>
-      <SegmentedChoice options={options} value={value} onChange={onChange} ariaLabel={COMMON_TEXT.howPaid} />
+      <SegmentedChoice options={options} value={value} onChange={onChange} ariaLabel={t('common:howPaid')} />
       {showDescription && (
         <span id={descriptionId} className="selector-pago__ayuda">
           {owingDescription}

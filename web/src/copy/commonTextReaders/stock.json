@@ -1,0 +1,9 @@
+[
+  "web/src/copy/stock.ts",
+  "web/src/screens/EntradaStock.tsx",
+  "web/src/screens/EntriesList.tsx",
+  "web/src/screens/StockEntryForm.tsx",
+  "web/src/screens/withdrawals/WithdrawalDetail.tsx",
+  "web/src/screens/withdrawals/WithdrawalForm.tsx",
+  "web/src/screens/withdrawals/WithdrawalFormRoute.tsx"
+]

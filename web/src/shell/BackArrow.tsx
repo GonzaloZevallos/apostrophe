@@ -13,10 +13,11 @@
  */
 
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 import Boton from '../components/Boton'
-import { COMMON_TEXT } from '../copy/common'
 import { useBackOr } from '../components/useBackOr'
+import { useLabel, type Label } from '../i18n/label'
 import { HOME, parentOf, pathTo, screenOf, type ScreenId } from '../routes'
 import { BackParentContext, type BackOverride } from './useBackParent'
 import { useViewport } from './useViewport'
@@ -30,7 +31,8 @@ function filled(params: Readonly<Record<string, string | undefined>>): Record<st
 
 interface Target {
   path: string
-  title: string
+  /** A registry word is a key; a record's own name is text and is never read as a key. */
+  title: Label
 }
 
 /** Where a declared override points: another screen (its path and word), or the registry
@@ -38,12 +40,14 @@ interface Target {
 function targetOf(declared: BackOverride, registryPath: string | undefined): Target | undefined {
   if ('parent' in declared) {
     const parent = screenOf(declared.parent)
-    return { path: parent.path, title: parent.title }
+    return { path: parent.path, title: { kind: 'key', key: parent.titleKey } }
   }
-  return registryPath === undefined ? undefined : { path: registryPath, title: declared.title }
+  return registryPath === undefined ? undefined : { path: registryPath, title: { kind: 'text', text: declared.title } }
 }
 
 export default function BackArrow({ id }: { id: ScreenId }) {
+  const { t } = useTranslation()
+  const resolve = useLabel()
   const params = filled(useParams())
   const slot = useContext(BackParentContext)?.slot
   const registryParent = parentOf(id, useViewport())
@@ -51,12 +55,16 @@ export default function BackArrow({ id }: { id: ScreenId }) {
   const declared = slot !== undefined && slot.screen === id && slot.param === params.id ? slot.override : undefined
   const override = declared === undefined ? undefined : targetOf(declared, registryPath)
   const back = useBackOr(override?.path ?? registryPath ?? HOME)
-  const word = screenOf(id).backLabel === 'record' ? override?.title : registryParent?.title
-  if (word === undefined) return null
+  const label: Label | undefined =
+    screenOf(id).backLabel === 'record'
+      ? override?.title
+      : registryParent && { kind: 'key', key: registryParent.titleKey }
+  if (label === undefined) return null
+  const word = resolve(label)
   return (
     <div className="flecha-atras">
       <Boton variant="back" onClick={back}>
-        {COMMON_TEXT.backArrow(word)}
+        {t('common:backArrow', { parent: word })}
       </Boton>
     </div>
   )

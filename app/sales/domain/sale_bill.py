@@ -13,7 +13,7 @@ from typing import Literal, assert_never
 
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import PaymentMethod
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 BillState = Literal["cash", "transfer", "paid", "owed", "none"]
 BillRule = Literal["bulk", "gift"]
@@ -98,7 +98,7 @@ def bill_rule(rule: PricingRule) -> BillRule | None:
 @dataclass(frozen=True)
 class SaleBillLine:
     product: str
-    quantity: Grams
+    quantity: Quantity
     amount: int
     rule: BillRule | None
     unit_price: int | None

@@ -9,8 +9,6 @@ import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const NO_HISTORY_LINE = 'There is nothing to analyze yet.'
-export const EMPTY_MONTH_LINE = 'You did not sell or give away anything this month.'
 export const VARIETY_TOTAL_NOTE = 'The variety table adds up the sales of the month without shipping.'
 export const SINCE_FIRST_RECORD_LABEL =
   'Moved since your first record, not the money you have in cash'
@@ -25,8 +23,6 @@ const PENDING_ONLY = `${SAMPLES.grams} without cost`
 const AMOUNT_AND_PENDING = `${SAMPLES.amount} and ${SAMPLES.grams} without cost`
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
-  { kind: 'emptyLine', text: NO_HISTORY_LINE },
-  { kind: 'emptyLine', text: EMPTY_MONTH_LINE },
   { kind: 'help', text: VARIETY_TOTAL_NOTE },
   { kind: 'help', text: SINCE_FIRST_RECORD_LABEL },
   { kind: 'help', text: PURCHASES_NOTE },

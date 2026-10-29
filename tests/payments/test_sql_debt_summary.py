@@ -31,7 +31,7 @@ def _customer(client: TestClient, name: str, phone: str) -> int:
 
 
 def _owing_sale(
-    client: TestClient, customer_id: int, variety_id: int, *, grams: str, date: str
+    client: TestClient, customer_id: int, variety_id: int, *, quantity: str, date: str
 ) -> int:
     body = client.post(
         "/sales",
@@ -39,7 +39,7 @@ def _owing_sale(
             "customer_id": customer_id,
             "payment": "owing",
             "date": date,
-            "lines": [{"variety_id": variety_id, "grams": grams}],
+            "lines": [{"variety_id": variety_id, "grams": quantity}],
         },
     )
     assert body.status_code == 201, body.text
@@ -60,13 +60,13 @@ def test_read_matches_get_payments_debtors(client: TestClient, engine: Engine) -
     # Two debtors, dated apart, so the mapping's order is actually exercised: the
     # older one must come first, the same order `debtors()` itself answers in.
     older_debtor_id = _customer(client, "Older debtor", "11 2000-0001")
-    _owing_sale(client, older_debtor_id, variety_id, grams="10", date="2026-09-01")
+    _owing_sale(client, older_debtor_id, variety_id, quantity="10", date="2026-09-01")
 
     newer_debtor_id = _customer(client, "Newer debtor", "11 2000-0002")
-    _owing_sale(client, newer_debtor_id, variety_id, grams="5", date="2026-09-20")
+    _owing_sale(client, newer_debtor_id, variety_id, quantity="5", date="2026-09-20")
 
     settled_id = _customer(client, "Settled", "11 2000-0003")
-    _owing_sale(client, settled_id, variety_id, grams="1", date="2026-09-14")
+    _owing_sale(client, settled_id, variety_id, quantity="1", date="2026-09-14")
     settled_balance = client.get(f"/customers/{settled_id}/account").json()["balance"]
     settle_payment = client.post(
         f"/customers/{settled_id}/payments",
@@ -81,7 +81,7 @@ def test_read_matches_get_payments_debtors(client: TestClient, engine: Engine) -
     # (tests/payments/test_payments_router.py) does — the payment outlives the sale it
     # was recorded against, leaving the customer with nothing owed and money left over.
     credit_id = _customer(client, "In credit", "11 2000-0004")
-    credit_sale_id = _owing_sale(client, credit_id, variety_id, grams="1", date="2026-09-14")
+    credit_sale_id = _owing_sale(client, credit_id, variety_id, quantity="1", date="2026-09-14")
     credit_balance = client.get(f"/customers/{credit_id}/account").json()["balance"]
     overpay = client.post(
         f"/customers/{credit_id}/payments",

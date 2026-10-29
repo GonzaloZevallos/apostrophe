@@ -27,8 +27,8 @@
  * spies on `document.execCommand` itself (installed before any app code runs, via
  * `addInitScript`) and records the hidden textarea's value at the moment of the
  * `'copy'` call — proving the exact string `clipboard.ts`'s fallback handed the
- * browser, which is what the PRD's "the clipboard equals the API's text" asks for
- * here just as directly as reading the clipboard back would.
+ * browser, which is what the PRD's "the clipboard equals the API's text with its paired
+ * `**` removed" asks for here just as directly as reading the clipboard back would.
  */
 
 import { expect, test } from './fixtures.js'
@@ -40,6 +40,14 @@ import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
 const INSECURE_ORIGIN = 'http://apostrophe.test'
+
+// The default header and footer are the seller's untouched ones and Rosa has a price and
+// no other attribute: the server writes `**` around the header's word and Rosa's name, and
+// the copy loses them with every line break kept. Written by hand.
+const EXPECTED_PLAIN_TEXT =
+  '🌿 CATALOG 🌿\n\n' +
+  'Rosa\n• Price per gram: $9.000\n\n' +
+  '📩 Questions and orders by private message.'
 
 interface ExecCommandSpy {
   __copiedViaExecCommand: string[]
@@ -107,12 +115,6 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   await expect(page.getByText('Entry saved')).toBeVisible()
 
   await page.goto(`${INSECURE_ORIGIN}${CATALOG}`)
-  const apiText = await page.evaluate(() =>
-    fetch('/catalog', { credentials: 'include' })
-      .then((response) => response.json() as Promise<{ text: string | null }>)
-      .then((body) => body.text),
-  )
-  expect(apiText).not.toBeNull()
 
   // Over plain http the share sheet is withheld (secure-context gated): only Copiar is offered.
   await expect(page.getByRole('button', { name: 'Copy' })).toBeEnabled()
@@ -124,5 +126,5 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   const copied = await page.evaluate(
     () => (window as unknown as ExecCommandSpy).__copiedViaExecCommand,
   )
-  expect(copied).toEqual([apiText])
+  expect(copied).toEqual([EXPECTED_PLAIN_TEXT])
 })

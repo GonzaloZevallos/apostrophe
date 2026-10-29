@@ -28,7 +28,7 @@ class StockEntryRow(Base):
     entry_date: Mapped[date]
     variety_id: Mapped[int] = mapped_column(ForeignKey("variety.id"))
     origin: Mapped[str] = mapped_column(String(ORIGIN_MAX_LENGTH))
-    # Signed: a negative adjustment takes grams away (app/shared/grams.py).
+    # Signed: a negative adjustment takes grams away (app/shared/quantity.py).
     grams_hundredths: Mapped[int]
     total_cost: Mapped[int | None]
     note: Mapped[str | None] = mapped_column(String(NOTE_MAX_LENGTH))

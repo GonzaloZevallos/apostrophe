@@ -19,7 +19,7 @@ from datetime import date, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal
 from app.spreadsheet_import.domain.rows import EntradaRow
@@ -32,8 +32,8 @@ from app.stock.domain.errors import (
     EntryCostOnNegativeAdjustment,
     EntryCostRequired,
     EntryDateInFuture,
-    EntryGramsInvalid,
     EntryNoteTooLong,
+    EntryQuantityInvalid,
 )
 from app.stock.domain.threshold import Threshold, ThresholdInvalid
 
@@ -57,7 +57,7 @@ ORIGEN_WORDS = {
 
 _ENTRY_ERRORS = (
     EntryDateInFuture,
-    EntryGramsInvalid,
+    EntryQuantityInvalid,
     EntryCostRequired,
     EntryCostInvalid,
     EntryCostOnNegativeAdjustment,
@@ -77,21 +77,24 @@ class SqlStockImport:
 
     def has_records(self) -> bool:
         statement = (
-            select(StockEntryRow.id)
-            .where(StockEntryRow.business_id == self._business_id)
-            .limit(1)
+            select(StockEntryRow.id).where(StockEntryRow.business_id == self._business_id).limit(1)
         )
         return self._session.scalar(statement) is not None
 
-    def check_threshold(self, grams: Grams) -> Refusal | None:
+    def check_threshold(self, quantity: Quantity) -> Refusal | None:
         try:
-            Threshold.of(grams)
+            Threshold.of(quantity)
         except ThresholdInvalid as exc:
             return Refusal(exc.code)
         return None
 
     def check_entry(self, row: EntradaRow, today: date) -> Refusal | None:
-        if row.entry_date is None or row.variety is None or row.grams is None or row.origin is None:
+        if (
+            row.entry_date is None
+            or row.variety is None
+            or row.quantity is None
+            or row.origin is None
+        ):
             return Refusal("import.field_missing")
         origin = ORIGEN_WORDS.get(row.origin)
         if origin is None:
@@ -101,7 +104,7 @@ class SqlStockImport:
                 row.entry_date,
                 _CHECK_VARIETY_ID,
                 origin,
-                row.grams,
+                row.quantity,
                 row.total_cost,
                 row.note,
                 today,
@@ -111,8 +114,10 @@ class SqlStockImport:
             return Refusal(exc.code)
         return None
 
-    def write_threshold(self, variety_id: int, grams: Grams, transaction: Transaction) -> None:
-        self._thresholds.set(variety_id, Threshold.of(grams))
+    def write_threshold(
+        self, variety_id: int, quantity: Quantity, transaction: Transaction
+    ) -> None:
+        self._thresholds.set(variety_id, Threshold.of(quantity))
         transaction.commit()
 
     def write_entry(
@@ -124,14 +129,14 @@ class SqlStockImport:
         transaction: Transaction,
     ) -> None:
         assert row.entry_date is not None, "write_entry takes a checked, finished row"
-        assert row.grams is not None, "write_entry takes a checked, finished row"
+        assert row.quantity is not None, "write_entry takes a checked, finished row"
         assert row.origin is not None, "write_entry takes a checked, finished row"
         origin = ORIGEN_WORDS[row.origin]
         entry = StockEntry.of(
             row.entry_date,
             variety_id,
             origin,
-            row.grams,
+            row.quantity,
             row.total_cost,
             row.note,
             today,

@@ -7,13 +7,13 @@ next to an entry, never used to cost a draw.
 
 from __future__ import annotations
 
-from app.shared.grams import HUNDREDTHS_PER_GRAM, Grams
+from app.shared.quantity import HUNDREDTHS_PER_UNIT, Quantity
 
 
-def cost_per_gram(total_cost: int, grams: Grams) -> int:
+def cost_per_gram(total_cost: int, quantity: Quantity) -> int:
     """`total_cost` over `grams`, rounded half up to the nearest whole peso. `grams`
     must be positive: a priced lot's own entry already guarantees it."""
-    assert grams.is_positive, "cost per gram is computed over positive grams"
-    h = grams.hundredths
-    numerator = 2 * total_cost * HUNDREDTHS_PER_GRAM + h
+    assert quantity.is_positive, "cost per gram is computed over positive grams"
+    h = quantity.hundredths
+    numerator = 2 * total_cost * HUNDREDTHS_PER_UNIT + h
     return numerator // (2 * h)

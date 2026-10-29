@@ -39,7 +39,7 @@ from app.results.domain.ledger import (
     PurchaseRecord,
     SaleRecord,
 )
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 # Results' own copy of stock's `Status` (stock-domain), with the same values: results
 # never imports `app.stock.domain` (ADR-0006), so this port answers its own literal
@@ -51,10 +51,10 @@ StockStatus = Literal["no_entries", "sold_out", "low", "ok"]
 class StockRow:
     variety_id: int
     name: str
-    grams: Grams
+    quantity: Quantity
     status: StockStatus
     sold_out_since: date | None
-    threshold: Grams | None
+    threshold: Quantity | None
     days_left: int | None
 
 

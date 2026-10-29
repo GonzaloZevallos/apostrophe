@@ -37,6 +37,8 @@ import {
   OUT_OF_DATE_TITLE, PINNED_CATALOG_TEXT,
 } from '../copy/pinnedCatalog'
 import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
+import { useTranslation } from 'react-i18next'
+import { refusalText } from '../i18n/refusalKeys'
 
 const PUBLISHED_TOAST: SuccessToast = PINNED_CATALOG_TEXT.catalogPublished
 const GENERIC_REFUSAL_MESSAGE = COPY_GENERIC_REFUSAL_MESSAGE
@@ -61,6 +63,7 @@ function formatDate(iso: string): string {
 }
 
 function StatusLine({ status }: { status: PinStatus }) {
+  const { t } = useTranslation()
   return (
     <div
       className={
@@ -76,7 +79,7 @@ function StatusLine({ status }: { status: PinStatus }) {
         {status.state === 'out_of_date' && status.reason !== null && (
           <span className="catalogo__publicar-detalle">
             {OUT_OF_DATE_JOINER}
-            {PINNED_CATALOG_REASON_LABEL[status.reason]}
+            {refusalText(t, PINNED_CATALOG_REASON_LABEL[status.reason])}
           </span>
         )}
         {status.last_published_on !== null && (
@@ -91,6 +94,7 @@ function StatusLine({ status }: { status: PinStatus }) {
 }
 
 function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
+  const { t } = useTranslation()
   const link = (
     <BotonLink to={INTEGRATIONS_PATH} variant="link">
       {INTEGRATIONS_LINK_WORD}
@@ -99,7 +103,7 @@ function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
   if (blockedBy === 'not_tested') {
     return (
       <span className="campo__ayuda">
-        {PINNED_CATALOG_NOT_READY_REASON}{OUT_OF_DATE_JOINER}{link}
+        {refusalText(t, PINNED_CATALOG_NOT_READY_REASON)}{OUT_OF_DATE_JOINER}{link}
       </span>
     )
   }
@@ -112,6 +116,7 @@ function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
 }
 
 export default function PinPublish() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: keys.pinnedCatalog(),
@@ -141,9 +146,8 @@ export default function PinPublish() {
       setToast(PUBLISHED_TOAST)
     } catch (caught) {
       if (caught instanceof ApiError) {
-        setPublishError(
-          resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE,
-        )
+        const refusal = resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code)
+        setPublishError(refusal === undefined ? GENERIC_REFUSAL_MESSAGE : refusalText(t, refusal))
       } else if (caught instanceof NetworkError) {
         setPublishOffline(true)
       } else {

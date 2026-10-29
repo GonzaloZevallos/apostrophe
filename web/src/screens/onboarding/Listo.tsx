@@ -11,10 +11,12 @@
  */
 
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import type { StepSlug } from '../../api/onboarding'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import { inAppState } from '../../components/inAppState'
+import { useLabel } from '../../i18n/label'
 import { HOME, SALE_NEW } from '../../routes'
 import { useOnboarding } from './onboardingContext'
 import StepIndicator from './StepIndicator'
@@ -30,11 +32,13 @@ function plural(n: number, one: string, many: string): string {
 export default function Listo() {
   const { progress } = useOnboarding()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const resolve = useLabel()
 
   function lineOf(info: StepInfo): { done: boolean; text: string } {
     const state = progress.steps.find((item) => item.step === info.slug)?.state ?? 'pending'
     if (state === 'done') return { done: true, text: doneText(info.slug) }
-    return { done: false, text: ONBOARDING_TEXT.forLaterIn(info.later) }
+    return { done: false, text: ONBOARDING_TEXT.forLaterIn(resolve(info.later)) }
   }
 
   function doneText(slug: StepSlug): string {
@@ -79,7 +83,7 @@ export default function Listo() {
                   {line.done && <Icono nombre="hecho" />}
                 </span>
                 <span className="listo__texto">
-                  <span className="listo__nombre">{info.name}</span>
+                  <span className="listo__nombre">{t(info.nameKey)}</span>
                   <span className="listo__detalle">{line.text}</span>
                 </span>
               </li>

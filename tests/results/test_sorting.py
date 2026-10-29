@@ -62,12 +62,12 @@ def test_oldest_is_none_with_nobody_owing() -> None:
 
 
 def _stock_row(variety_id: int, name: str) -> StockRow:
-    from app.shared.grams import Grams
+    from app.shared.quantity import Quantity
 
     return StockRow(
         variety_id=variety_id,
         name=name,
-        grams=Grams(0),
+        quantity=Quantity(0),
         status="no_entries",
         sold_out_since=None,
         threshold=None,

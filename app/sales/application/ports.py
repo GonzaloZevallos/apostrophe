@@ -13,8 +13,8 @@ from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale, SaleLine
-from app.shared.grams import Grams
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 
 
 class PriceBook(Protocol):
@@ -167,10 +167,10 @@ class BusinessNames(Protocol):
 class LineCost:
     """One sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none
     of the line's grams is costed yet, never a $0 standing in for "not yet known".
-    `pending_grams` is the part of the line with no lot behind it."""
+    `pending_quantity` is the part of the line with no lot behind it."""
 
     costed: int | None
-    pending_grams: Grams
+    pending_quantity: Quantity
 
 
 class LineCosts(Protocol):

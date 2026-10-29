@@ -7,6 +7,7 @@
  * detail. Read-only: an entry is edited and deleted from the list, through its own form.
  */
 
+import { useTranslation } from 'react-i18next'
 import BotonLink from '../../components/BotonLink'
 import InAppLink from '../../components/InAppLink'
 import { type Movement, type StockView, entriesOf } from '../../api/stock'
@@ -31,6 +32,7 @@ export default function VarietyStockSection({
   varietyId: number
   today: string
 }) {
+  const { t } = useTranslation()
   const rows: Movement[] = (
     movements ?? entriesOf(stock, varietyId).map((entry) => ({ ...entry, kind: 'entry' as const }))
   ).slice(0, LAST)
@@ -59,7 +61,7 @@ export default function VarietyStockSection({
             <li key={`entry-${movement.id}`} className="fila-entrada">
               <span className="fila-entrada__texto">
                 <span className="fila-entrada__linea1">
-                  {formatDate(movement.date, today)}{OUT_OF_DATE_JOINER}{ORIGIN_LABEL[movement.origin]}
+                  {formatDate(movement.date, today)}{OUT_OF_DATE_JOINER}{t(ORIGIN_LABEL[movement.origin])}
                 </span>
                 {movement.cost_per_gram !== null && (
                   <span className="fila-entrada__linea2">{formatMoney(movement.cost_per_gram)}{VARIETIES_TEXT.elGramo}</span>

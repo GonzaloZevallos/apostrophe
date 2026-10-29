@@ -20,7 +20,7 @@ import math
 from dataclasses import dataclass
 from fractions import Fraction
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.domain.lot_order import Draw, Lot
 
 
@@ -31,19 +31,19 @@ class LotDraw:
     production code reads `DrawCost`, never this."""
 
     lot_ref: int
-    grams: Grams
+    quantity: Quantity
     cost: Fraction
 
 
 @dataclass(frozen=True)
 class DrawCost:
     """One draw's answer. `costed` is `None` exactly when none of the draw's grams
-    came from a lot — pending is carried as `Grams`, never a $0 cost; a costed part
+    came from a lot — pending is carried as `Quantity`, never a $0 cost; a costed part
     of `0` only ever comes from a lot with no recorded cost. `pending` is the part of
     the draw past every lot's grams."""
 
     costed: int | None
-    pending: Grams
+    pending: Quantity
     lot_draws: tuple[LotDraw, ...]
 
 
@@ -63,31 +63,31 @@ def allocate(lots: list[Lot], draws: list[Draw]) -> list[DrawCost]:
 
     results: list[DrawCost] = []
     for draw in draws:
-        remaining = draw.grams.hundredths
+        remaining = draw.quantity.hundredths
         lot_draws: list[LotDraw] = []
         while remaining > 0 and lot_index < len(lots):
             lot = lots[lot_index]
-            available = lot.grams.hundredths - drawn_from_lot
+            available = lot.quantity.hundredths - drawn_from_lot
             if available <= 0:
                 lot_index += 1
                 drawn_from_lot = 0
                 continue
             take = min(available, remaining)
             cost = (
-                Fraction(lot.total_cost, lot.grams.hundredths) * take
+                Fraction(lot.total_cost, lot.quantity.hundredths) * take
                 if lot.total_cost is not None
                 else Fraction(0)
             )
             cumulative_cost += cost
-            lot_draws.append(LotDraw(lot.order.ref_id, Grams(take), cost))
+            lot_draws.append(LotDraw(lot.order.ref_id, Quantity(take), cost))
             drawn_from_lot += take
             remaining -= take
-            if drawn_from_lot >= lot.grams.hundredths:
+            if drawn_from_lot >= lot.quantity.hundredths:
                 lot_index += 1
                 drawn_from_lot = 0
 
         rounded = _half_up(cumulative_cost)
         costed = rounded - previous_rounded if lot_draws else None
         previous_rounded = rounded
-        results.append(DrawCost(costed, Grams(remaining), tuple(lot_draws)))
+        results.append(DrawCost(costed, Quantity(remaining), tuple(lot_draws)))
     return results

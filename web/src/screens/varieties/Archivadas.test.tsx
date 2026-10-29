@@ -483,11 +483,12 @@ describe('on a computer (two panes)', () => {
     expect(await screen.findByText('All entries')).toBeTruthy()
     // The list takes the left pane back one render after the path changes: wait for it.
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Archived' })).toBeNull())
-    expect(await screen.findByText('Alfa Vieja')).toBeTruthy()
-    expect(await screen.findByText('Zeta Vieja')).toBeTruthy()
+    // The list selects its first variety, so the page of Alfa Vieja is drawn on the right as soon
+    // as that fetch lands: both panes may name it. The restored varieties are listed on the left.
+    const livePane = within(document.querySelector<HTMLElement>('.variedades-paneles__lista')!)
+    expect(await livePane.findByText('Alfa Vieja')).toBeTruthy()
+    expect(await livePane.findByText('Zeta Vieja')).toBeTruthy()
     await waitFor(() => expect(screen.queryByText('You have no archived varieties')).toBeNull())
-    // The old two-pane test's assertion, kept: the restored variety appears in the live list.
-    expect(screen.getAllByText('Alfa Vieja').length).toBeGreaterThan(0)
     await goBackToTheList(router)
   })
 

@@ -23,8 +23,8 @@ from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import UnknownVariety
-from app.shared.grams import Grams
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_thresholds import SqlThresholds
@@ -71,7 +71,7 @@ def _seed_variety(engine: Engine) -> int:
         assert variety.id is not None
         variety.record_price(PriceEntry.of(date(2026, 1, 1), 10_000))
         SqlVarieties(session, BUSINESS).save(variety)
-        SqlThresholds(session, BUSINESS).set(variety.id, Threshold(Grams.of("5")))
+        SqlThresholds(session, BUSINESS).set(variety.id, Threshold(Quantity.of("5")))
         attributes = CatalogAttributes.of(shown=True, emoji=None, indica_share=50, aroma="dulce")
         SqlCatalogAttributes(session, BUSINESS).put(variety.id, attributes)
         session.commit()
@@ -79,7 +79,7 @@ def _seed_variety(engine: Engine) -> int:
 
 
 def _entry(variety_id: int) -> StockEntry:
-    return StockEntry(DAY, variety_id, Origin.HARVEST, Grams.of("5"), None, None, NOW)
+    return StockEntry(DAY, variety_id, Origin.HARVEST, Quantity.of("5"), None, None, NOW)
 
 
 def _count(engine: Engine, table: str) -> int:
@@ -290,7 +290,7 @@ def test_a_delete_committed_first_makes_the_entry_answer_gone_and_orphans_nothin
                 entry_date=DAY,
                 variety_id=variety_id,
                 origin=Origin.HARVEST,
-                grams=Grams.of("5"),
+                quantity=Quantity.of("5"),
                 total_cost=None,
                 note=None,
                 today=DAY,
@@ -348,7 +348,7 @@ def _record_sale(session: Session, price_book: SqlPriceBook, variety_id: int) ->
         customer_id=None,
         shipping_charged=0,
         note=None,
-        lines=[LineInput(variety_id=variety_id, grams=Grams.of("1"), gift=True)],
+        lines=[LineInput(variety_id=variety_id, quantity=Quantity.of("1"), gift=True)],
         method=None,
         left_owing=False,
         recorded_at=NOW,
