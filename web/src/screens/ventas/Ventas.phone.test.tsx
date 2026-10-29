@@ -13,7 +13,10 @@ import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import { COMPUTER_QUERY } from '../../format/breakpoints'
 import { SALES } from '../../routes'
-import Ventas, { EMPTY_LIST } from './Ventas'
+import Ventas from './Ventas'
+import { baselineText } from '../../i18n/testing'
+
+const EMPTY_LIST = baselineText('sales.ts:EMPTY_LIST')
 
 const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
 

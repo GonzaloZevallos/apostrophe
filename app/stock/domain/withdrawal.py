@@ -13,15 +13,15 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 
-from app.shared.grams import HUNDREDTHS_PER_GRAM, Grams
+from app.shared.quantity import HUNDREDTHS_PER_UNIT, Quantity
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
 from app.stock.domain.errors import (
     WithdrawalDateInFuture,
-    WithdrawalGramsNotPositive,
-    WithdrawalGramsTooPrecise,
     WithdrawalNoLines,
     WithdrawalNoteTooLong,
+    WithdrawalQuantityNotPositive,
+    WithdrawalQuantityTooPrecise,
     WithdrawalReasonRequired,
 )
 
@@ -29,24 +29,24 @@ from app.stock.domain.errors import (
 @dataclass(frozen=True)
 class WithdrawalLine:
     variety_id: int
-    grams: Grams
+    quantity: Quantity
 
     def __post_init__(self) -> None:
-        if not self.grams.is_positive:
-            raise WithdrawalGramsNotPositive("a withdrawal line takes grams above zero")
+        if not self.quantity.is_positive:
+            raise WithdrawalQuantityNotPositive("a withdrawal line takes grams above zero")
 
     @classmethod
-    def of(cls, variety_id: int, grams: Decimal | int | str) -> WithdrawalLine:
+    def of(cls, variety_id: int, quantity: Decimal | int | str) -> WithdrawalLine:
         try:
-            amount = Decimal(grams)
+            amount = Decimal(quantity)
         except InvalidOperation as exc:
-            raise WithdrawalGramsNotPositive("a withdrawal line takes grams above zero") from exc
+            raise WithdrawalQuantityNotPositive("a withdrawal line takes grams above zero") from exc
         if not amount.is_finite():
-            raise WithdrawalGramsNotPositive("a withdrawal line takes grams above zero")
-        scaled = amount * HUNDREDTHS_PER_GRAM
+            raise WithdrawalQuantityNotPositive("a withdrawal line takes grams above zero")
+        scaled = amount * HUNDREDTHS_PER_UNIT
         if scaled != scaled.to_integral_value():
-            raise WithdrawalGramsTooPrecise("a withdrawal line allows at most two decimals")
-        return cls(variety_id, Grams(int(scaled)))
+            raise WithdrawalQuantityTooPrecise("a withdrawal line allows at most two decimals")
+        return cls(variety_id, Quantity(int(scaled)))
 
 
 @dataclass
@@ -90,5 +90,5 @@ class Withdrawal:
         )
 
     @property
-    def total_grams(self) -> Grams:
-        return Grams(sum(line.grams.hundredths for line in self.lines))
+    def total_quantity(self) -> Quantity:
+        return Quantity(sum(line.quantity.hundredths for line in self.lines))

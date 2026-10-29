@@ -22,6 +22,8 @@ from pathlib import Path
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine, create_engine
 
+COPY_FAILED = "error: the copy failed; see the restore drill section of deploy/README.md"
+
 
 class MissingSetting(RuntimeError):
     def __init__(self, name: str) -> None:
@@ -74,7 +76,13 @@ def main(argv: list[str]) -> int:
     if len(argv) != 1:
         print("usage: backup_copy.py <destination.db>", file=sys.stderr)
         return 2
-    copy_tables(source_engine(), Path(argv[0]))
+    try:
+        copy_tables(source_engine(), Path(argv[0]))
+    except Exception:
+        # Unbound and not chained on purpose: the library's own message can quote the
+        # database URL, and this runs in a public CI log (CODING_STANDARDS §9).
+        print(COPY_FAILED, file=sys.stderr)
+        return 1
     return 0
 
 

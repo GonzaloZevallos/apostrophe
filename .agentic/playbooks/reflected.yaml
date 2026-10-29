@@ -1,0 +1,422 @@
+started_at: '2026-10-25T20:01:08.546+00:00'
+summaries: 9
+summarised: 90
+tasks:
+  GH-349@review:
+    cost_usd: 0.0454
+  GH-375@review:
+    cost_usd: 0.02
+  GH-364@review:
+    cost_usd: 0.0515
+    decisions: 1
+  GH-378@decision:
+    cost_usd: 0.0102
+    decisions: 1
+  GH-288@decision:
+    cost_usd: 0.0174
+    decisions: 1
+  GH-125@review:
+    cost_usd: 0.0098
+  GH-113@review:
+    cost_usd: 0.0216
+    decisions: 1
+  GH-116@review:
+    cost_usd: 0.0249
+  GH-126@review:
+    cost_usd: 0.0256
+  GH-101@review:
+    cost_usd: 0.1332
+    decisions: 1
+  GH-157@review:
+    cost_usd: 0.0143
+  GH-158@review:
+    cost_usd: 0.0107
+  GH-156@review:
+    cost_usd: 0.0319
+  GH-112@review:
+    cost_usd: 0.0146
+  GH-136@review:
+    cost_usd: 0.0118
+  GH-130@review:
+    cost_usd: 0.0341
+  GH-149@review:
+    cost_usd: 0.0443
+  GH-127@review:
+    cost_usd: 0.0123
+  GH-143@review:
+    cost_usd: 0.0753
+  GH-134@review:
+    cost_usd: 0.0105
+  GH-102@review:
+    cost_usd: 0.0476
+  GH-165@review:
+    cost_usd: 0.0142
+  GH-181@review:
+    cost_usd: 0.0105
+  GH-197@review:
+    cost_usd: 0.0126
+  GH-164@review:
+    cost_usd: 0.023
+  GH-199@review:
+    cost_usd: 0.0191
+  GH-200@review:
+    cost_usd: 0.0828
+  GH-212@review:
+    cost_usd: 0.0385
+  GH-214@review:
+    cost_usd: 0.0102
+  GH-211@review:
+    cost_usd: 0.0645
+  GH-132@review:
+    cost_usd: 0.0224
+  GH-121@review:
+    cost_usd: 0.1327
+  GH-215@review:
+    cost_usd: 0.0219
+    decisions: 1
+  GH-144@review:
+    cost_usd: 0.0753
+  GH-135@review:
+    cost_usd: 0.108
+    applied:
+    - op: add
+      slug: developer
+      category: plan-invariant
+      lesson: Never edit an existing test that is not exempt to fit new behaviour. Restore it, or record the invariant as unsatisfiable with the command and the failing output of the unedited test on your head.
+      item_id: ''
+      tasks:
+      - GH-135
+  GH-166@review:
+    cost_usd: 0.1417
+  GH-237@review:
+    cost_usd: 0.038
+  GH-216@review:
+    cost_usd: 0.0445
+    decisions: 1
+  GH-142@review:
+    cost_usd: 0.0493
+    decisions: 1
+  GH-150@review:
+    cost_usd: 0.0915
+  GH-141@review:
+    cost_usd: 0.1489
+  GH-244@review:
+    cost_usd: 0.0377
+  GH-217@review:
+    cost_usd: 0.0106
+  GH-218@review:
+    cost_usd: 0.0204
+  GH-219@review:
+    cost_usd: 0.1229
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-219
+  GH-229@review:
+    cost_usd: 0.0116
+  GH-228@review:
+    cost_usd: 0.0117
+  GH-254@review:
+    cost_usd: 0.0124
+  GH-224@review:
+    cost_usd: 0.1652
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-224
+    decisions: 1
+  GH-247@review:
+    cost_usd: 0.0371
+  GH-251@review:
+    cost_usd: 0.0857
+  GH-131@review:
+    cost_usd: 0.2032
+  GH-220@review:
+    cost_usd: 0.0589
+  GH-201@review:
+    cost_usd: 0.0755
+  GH-202@review:
+    cost_usd: 0.0242
+  GH-227@review:
+    cost_usd: 0.0107
+  GH-263@review:
+    cost_usd: 0.0892
+    decisions: 1
+  GH-45@review:
+    cost_usd: 0.1752
+    applied:
+    - op: add
+      slug: developer
+      category: standard-seams
+      lesson: Never edit an enforcement checker or its allowlist outside your declared seams to turn a check green. Change your own code so the check passes unchanged, or record the limit under Decisions and leave the checker alone.
+      item_id: ''
+      tasks:
+      - GH-45
+  GH-171@review:
+    cost_usd: 0.0303
+  GH-46@review:
+    cost_usd: 0.1095
+  GH-172@review:
+    cost_usd: 0.0
+  GH-187@review:
+    cost_usd: 0.0136
+  GH-80@review:
+    cost_usd: 0.2453
+  GH-188@review:
+    cost_usd: 0.0371
+  GH-189@review:
+    cost_usd: 0.0349
+  GH-195@review:
+    cost_usd: 0.0139
+  GH-261@review:
+    cost_usd: 0.0534
+  GH-271@review:
+    cost_usd: 0.0641
+    applied:
+    - op: add
+      slug: developer
+      category: standard-other
+      lesson: Open and view every comparison image the task requires, one per screen, before delivering, and record what you saw for each; never deliver with screens unviewed.
+      item_id: ''
+      tasks:
+      - GH-271
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-271
+  GH-272@review:
+    cost_usd: 0.0244
+  GH-192@review:
+    cost_usd: 0.097
+  GH-273@review:
+    cost_usd: 0.1311
+    applied:
+    - op: add
+      slug: developer
+      category: spec-scope
+      lesson: Before delivering, tick off every evidence item the brief lists. Do not ship with items under 'Not done' or 'Not viewed'; do them, or escalate the item that cannot be done.
+      item_id: ''
+      tasks:
+      - GH-273
+  GH-53@review:
+    cost_usd: 0.4895
+    applied:
+    - op: add
+      slug: developer
+      category: process-suite-red
+      lesson: When you change a value other code reads (shared copy, labels, dates), run every suite that reads it, sister unit tests, e2e specs and phone cells, and fix the lookups before delivering.
+      item_id: ''
+      tasks:
+      - GH-53
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-53
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-53
+    decisions: 2
+  GH-274@review:
+    cost_usd: 0.095
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-274
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-274
+    - op: bump
+      slug: developer
+      category: process-suite-red
+      lesson: ''
+      item_id: developer-5
+      tasks:
+      - GH-274
+    - op: add
+      slug: developer
+      category: spec-missing-test
+      lesson: For every guard or refusal you add, write a test at its declared seam that feeds it an input it must reject and asserts the specific refusal text, not a generic prefix.
+      item_id: ''
+      tasks:
+      - GH-274
+  GH-276@review:
+    cost_usd: 0.0832
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-276
+  GH-278@review:
+    cost_usd: 0.1675
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-278
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-278
+  GH-279@review:
+    cost_usd: 0.0715
+    applied:
+    - op: bump
+      slug: developer
+      category: plan-invariant
+      lesson: ''
+      item_id: developer-1
+      tasks:
+      - GH-279
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-279
+    - op: bump
+      slug: developer
+      category: process-suite-red
+      lesson: ''
+      item_id: developer-5
+      tasks:
+      - GH-279
+  GH-291@review:
+    cost_usd: 0.0247
+  GH-293@review:
+    cost_usd: 0.0144
+  GH-281@review:
+    cost_usd: 0.2236
+    applied:
+    - op: add
+      slug: developer
+      category: plan-invariant
+      lesson: In every test you write, find elements by role, accessible name or visible text, never by CSS class. Before delivering, grep your diff for class selectors in unit and e2e tests and replace each one.
+      item_id: ''
+      tasks:
+      - GH-281
+    decisions: 1
+  GH-299@review:
+    cost_usd: 0.0
+  GH-295@review:
+    cost_usd: 0.0468
+  GH-305@review:
+    cost_usd: 0.0398
+  GH-334@review:
+    cost_usd: 0.0151
+  GH-303@review:
+    cost_usd: 0.0382
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-303
+  GH-333@review:
+    cost_usd: 0.0675
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-333
+  GH-335@review:
+    cost_usd: 0.1713
+  GH-345@review:
+    cost_usd: 0.0808
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-missing-test
+      lesson: ''
+      item_id: developer-6
+      tasks:
+      - GH-345
+  GH-338@review:
+    cost_usd: 0.0593
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-missing-test
+      lesson: ''
+      item_id: developer-6
+      tasks:
+      - GH-338
+    decisions: 2
+  GH-348@review:
+    cost_usd: 0.0548
+  GH-339@review:
+    cost_usd: 0.0377
+  GH-363@review:
+    cost_usd: 0.019
+    applied:
+    - op: bump
+      slug: developer
+      category: spec-scope
+      lesson: ''
+      item_id: developer-4
+      tasks:
+      - GH-363
+  GH-362@review:
+    cost_usd: 0.0
+  GH-346@review:
+    cost_usd: 0.1075
+    applied:
+    - op: add
+      slug: developer
+      category: standard-typing-silenced
+      lesson: 'Never add noqa, type: ignore or any silencing directive. Fix the cause, or record the limit under Decisions. Before delivering, grep your diff and the code for noqa and type: ignore, and remove any you find.'
+      item_id: ''
+      tasks:
+      - GH-346
+    decisions: 2
+  GH-340@review:
+    cost_usd: 0.0438
+    decisions: 1
+  GH-356@review:
+    cost_usd: 0.0194
+  GH-347@review:
+    cost_usd: 0.0668
+    decisions: 1
+  GH-307@decision:
+    cost_usd: 0.0177
+    decisions: 1

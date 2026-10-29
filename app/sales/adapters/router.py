@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.sales.adapters.business_name import SqlBusinessNames
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
 from app.sales.adapters.schemas import (
@@ -26,6 +27,7 @@ from app.sales.application.assign_customer import assign_customer as assign_cust
 from app.sales.application.delete_sale import delete_sale as delete_sale_use_case
 from app.sales.application.errors import SaleNotFound
 from app.sales.application.ports import (
+    BusinessNames,
     LineCosts,
     OwingSales,
     PricingSettingsReader,
@@ -40,7 +42,7 @@ from app.sales.domain.sale import (
     UnknownCustomer,
     UnknownVariety,
 )
-from app.shared.grams import Grams, InvalidGrams
+from app.shared.quantity import InvalidQuantity, Quantity
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -99,16 +101,21 @@ def get_pricing_settings(
     return factory(session, business_id)
 
 
+def get_business_names(session: SessionDep, business_id: CurrentBusinessId) -> BusinessNames:
+    return SqlBusinessNames(session, business_id)
+
+
 LineCostsDep = Annotated[LineCosts, Depends(get_line_costs)]
 PricingSettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 OwingSalesDep = Annotated[OwingSales, Depends(get_owing_sales)]
+BusinessNamesDep = Annotated[BusinessNames, Depends(get_business_names)]
 
 
 as_http = TranslateErrors(
     [
         (404, (SaleNotFound, UnknownCustomer, UnknownVariety)),
         (409, (CustomerAlreadyAssigned,)),
-        (422, (SaleRuleBroken, InvalidGrams)),
+        (422, (SaleRuleBroken, InvalidQuantity)),
     ]
 )
 
@@ -116,7 +123,7 @@ as_http = TranslateErrors(
 def _line_input(line: LineIn) -> LineInput:
     return LineInput(
         variety_id=line.variety_id,
-        grams=Grams.of(line.grams),
+        quantity=Quantity.of(line.grams),
         gift=line.gift,
         special_price=line.special_price,
     )
@@ -170,12 +177,15 @@ def list_sales(
 
 @router.get("/{sale_id}")
 def get_sale(
-    sale_id: int, sales: SalesDep, line_costs: LineCostsDep, owing_sales: OwingSalesDep
+    sale_id: int,
+    sales: SalesDep,
+    line_costs: LineCostsDep,
+    owing_sales: OwingSalesDep,
+    business_names: BusinessNamesDep,
 ) -> SaleDetailOut:
     with as_http:
-        view, costs = view_sales.get_sale_detail(sales, line_costs, sale_id)
-        still_owing = _still_owing(view, owing_sales)
-        return SaleDetailOut.of(view, costs, still_owing)
+        detail = view_sales.get_sale_detail(sales, line_costs, owing_sales, business_names, sale_id)
+        return SaleDetailOut.of(detail)
 
 
 @router.put("/{sale_id}/customer")
@@ -218,7 +228,7 @@ def delete_sale(sale_id: int, sales: SalesDep, session: SessionDep) -> DeleteSal
         returned = delete_sale_use_case(sales, session, sale_id)
         return DeleteSaleOut(
             returned=[
-                ReturnedGramsOut(variety_id=r.variety_id, grams=r.grams.as_decimal())
+                ReturnedGramsOut(variety_id=r.variety_id, grams=r.quantity.as_decimal())
                 for r in returned
             ]
         )

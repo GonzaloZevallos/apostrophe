@@ -455,3 +455,19 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - Any computer layout change from the phone layout; changing the timing or dismissal of toasts; changing New sale's tap count or what Save does before the payment choice.
 - Disabling Save in New sale; a scroll-and-highlight on Save.
 - A tap-outside area on the phone's full-screen sheet: a gap, a visible backdrop strip, or the safe-area strip acting as a close target.
+
+## Planned in GH-318
+
+Not built yet. Until the part named ships, the sections above are what the app does.
+
+Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+
+### Settings
+
+Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md and docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md and docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md and docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; delivered by the Settings parts, each for the setting it builds.
+
+- Every setting the seller sets will have a group in Settings, each its own phone-first subscreen: the product word, categories and subcategories with their attributes, units, customer types, payment methods, withdrawal reasons, expense categories, the catalog template, and the currency symbol and money decimals.
+- **Time zone and phone country**: each business will have a time zone, changed in Settings; a change will only move what "today" is from then on, and recorded dates will never be rewritten (ADR-0057). Each business will have a default phone country; phone numbers will stay optional and in international form.
+- **Money decimals** will be raisable in Settings by any business, including one that existed before, through a one-time rescale in one transaction that will leave every value and derived figure equal (ADR-0058). They will go down only when no recorded amount has more decimals.
+- It will replace: "**One screen holding every business-wide setting, in groups, and nothing else.** The groups, in this order (each group's behaviour belongs to its owner):" (the list of groups will grow), "**Prices** (pricing-settings.md), at `/settings/prices`:" (the VIP switch will become customer types) and "**Expense categories**: add, rename and remove, the refused removal included (expenses.md)." (it will become one of the business's own lists).
+- Out of scope: "Per-variety settings in Settings (#47)." will stay out; the attributes of a subcategory will be the business's, not a variety's.

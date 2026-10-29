@@ -26,6 +26,7 @@
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
+import { expectToast } from './helpers/toast.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
@@ -182,8 +183,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   // Backdated well before this run's own month (sales.spec.ts does the same for
@@ -191,8 +191,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // back that far too.
   await setPriceDate(page, '2000-01-01')
   await page.getByLabel(/^List price/).fill('1000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   // A purchase: the "Origen" pill defaults to "Purchase" (`EntradaStock.tsx`).
   await page.goto(STOCK_ENTRY_NEW)
@@ -200,14 +199,13 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await expect(page.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
   await page.getByLabel('Total cost').fill('45000')
-  await page.getByRole('button', { name: 'Save the entry' }).click()
-  await expect(page.getByText('Entry saved')).toBeVisible()
+  await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // A customer, for the sale left owing.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone').fill('+5491155550077')
   await page.getByLabel('Name').fill('Carla Pérez')
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -274,8 +272,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByLabel('Category').selectOption({ label: 'Other' })
   await page.getByLabel('Amount').fill('1500')
   await page.getByLabel('Details').fill('Bolsas de regalo')
-  await page.getByRole('button', { name: 'Save the expense' }).click()
-  await expect(page.getByText('Expense saved')).toBeVisible()
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
   // figure for figure, never recomputed here (plan invariant).

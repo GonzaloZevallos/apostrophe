@@ -1,4 +1,4 @@
-import { COMMON_TEXT } from '../copy/common'
+import { useTranslation } from 'react-i18next'
 /**
  * The "Cargando" state of `Estados`: the design's three skeleton shapes — a short
  * bar, a wider bar and two cards side by side — in the surface color, standing
@@ -18,10 +18,12 @@ export interface LoadingProps {
 }
 
 export function LoadingAnuncio() {
-  return <div className="cargando__anuncio" role="progressbar" aria-label={COMMON_TEXT.loading} aria-busy="true" />
+  const { t } = useTranslation()
+  return <div className="cargando__anuncio" role="progressbar" aria-label={t('common:loading')} aria-busy="true" />
 }
 
 export default function Loading({ compacto = false }: LoadingProps) {
+  const { t } = useTranslation()
   if (compacto) {
     return (
       <span className="cargando cargando--compacto" aria-hidden="true">
@@ -30,7 +32,7 @@ export default function Loading({ compacto = false }: LoadingProps) {
     )
   }
   return (
-    <div className="cargando" role="progressbar" aria-label={COMMON_TEXT.loading} aria-busy="true">
+    <div className="cargando" role="progressbar" aria-label={t('common:loading')} aria-busy="true">
       <span className="cargando__barra cargando__barra--corta" />
       <span className="cargando__barra cargando__barra--ancha" />
       <div className="cargando__tarjetas">

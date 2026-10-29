@@ -5,9 +5,9 @@
  * the field's name.
  */
 
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import Boton from './Boton'
-import { COMMON_TEXT } from '../copy/common'
 
 export default function PasswordField({
   label,
@@ -23,6 +23,7 @@ export default function PasswordField({
   onChange: (value: string) => void
   error?: string | null
 }) {
+  const { t } = useTranslation()
   const [reveal, setReveal] = useState(false)
 
   return (
@@ -45,7 +46,7 @@ export default function PasswordField({
       </label>
       <span className="campo__mostrar">
         <Boton variant="link" onClick={() => setReveal((shown) => !shown)}>
-          {reveal ? COMMON_TEXT.hide : COMMON_TEXT.show}
+          {reveal ? t('common:hide') : t('common:show')}
         </Boton>
       </span>
     </>

@@ -21,8 +21,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Protocol
 
-from app.shared.grams import Grams
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import (
@@ -83,7 +83,7 @@ class SaleCheckInput:
     never sees a raw cell."""
 
     variety_key: str
-    grams: Grams
+    quantity: Quantity
     has_customer: bool
     vip: bool
     gift: bool
@@ -159,13 +159,15 @@ class StockImport(Protocol):
         """Whether this business already has a stock entry."""
         ...
 
-    def check_threshold(self, grams: Grams) -> Refusal | None: ...
+    def check_threshold(self, quantity: Quantity) -> Refusal | None: ...
 
     def check_entry(self, row: EntradaRow, today: date) -> Refusal | None:
         """`row` under stock.md's rules, as if recorded on `today`."""
         ...
 
-    def write_threshold(self, variety_id: int, grams: Grams, transaction: Transaction) -> None: ...
+    def write_threshold(
+        self, variety_id: int, quantity: Quantity, transaction: Transaction
+    ) -> None: ...
 
     def write_entry(
         self,

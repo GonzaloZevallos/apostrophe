@@ -20,6 +20,8 @@ import { GENERIC_REFUSAL_MESSAGE, type Variety } from '../Variedades'
 import { VARIETY_NAME_HELP, VARIETIES_TEXT } from '../../copy/varieties'
 import { SAVE_OVERRIDES } from './varietyForms'
 import { COMMON_TEXT } from '../../copy/common'
+import { useTranslation } from 'react-i18next'
+import { messageText } from '../../i18n/refusalKeys'
 
 export interface VarietyNameFormProps {
   onSaved: (saved: Pick<Variety, 'id' | 'name'>) => void
@@ -31,6 +33,7 @@ export interface VarietyNameFormProps {
 export default function VarietyNameForm({ onSaved, onDirtyChange, sheet = false }: VarietyNameFormProps) {
   const Actions = sheet ? SheetActions : Fragment
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
@@ -53,7 +56,7 @@ export default function VarietyNameForm({ onSaved, onDirtyChange, sheet = false 
     } catch (caught) {
       if (caught instanceof ApiError) {
         const message = resolveOverride(SAVE_OVERRIDES, caught.code)
-        if (message !== undefined) setError(message)
+        if (message !== undefined) setError(messageText(t, message))
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') setError(GENERIC_REFUSAL_MESSAGE)
         else setError(ERROR_GENERICO_MENSAJE)
       } else if (caught instanceof NetworkError) {

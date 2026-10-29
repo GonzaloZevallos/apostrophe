@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from app.sales.domain.pricing import PricingRule
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.adapters.draw_rows import build_draw_rows
 from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import (
@@ -23,20 +23,22 @@ NOW = datetime(2026, 10, 3, 12, 0)
 VARIETY = 7
 
 
-def _lot(grams: str, cost: int) -> Lot:
+def _lot(quantity: str, cost: int) -> Lot:
     order = LotOrder(date(2026, 10, 1), NOW, STOCK_ENTRY_RANK, 1, 0)
-    return Lot(order, VARIETY, Grams.of(grams), cost)
+    return Lot(order, VARIETY, Quantity.of(quantity), cost)
 
 
-def _withdrawal(source: DrawSource, grams: str) -> Draw:
-    return Draw(LotOrder(DAY, NOW, WITHDRAWAL_LINE_RANK, 1, 0), VARIETY, Grams.of(grams), source)
+def _withdrawal(source: DrawSource, quantity: str) -> Draw:
+    return Draw(
+        LotOrder(DAY, NOW, WITHDRAWAL_LINE_RANK, 1, 0), VARIETY, Quantity.of(quantity), source
+    )
 
 
 def _sale_line(rule: PricingRule, line_total: int) -> Draw:
     return Draw(
         LotOrder(DAY, NOW, SALE_LINE_RANK, 5, 0),
         VARIETY,
-        Grams.of("2"),
+        Quantity.of("2"),
         DrawSource.SALE_LINE,
         sale_id=5,
         line_total=line_total,
@@ -60,7 +62,7 @@ def test_a_list_priced_sale_line_is_sold_and_a_gift_is_gifted() -> None:
 
 def test_a_negative_adjustment_is_a_shortfall_with_no_variety_sale_or_total() -> None:
     adjustment = Draw(
-        LotOrder(DAY, NOW, STOCK_ENTRY_RANK, 2, 0), VARIETY, Grams.of("2"), DrawSource.ADJUSTMENT
+        LotOrder(DAY, NOW, STOCK_ENTRY_RANK, 2, 0), VARIETY, Quantity.of("2"), DrawSource.ADJUSTMENT
     )
 
     [row] = build_draw_rows({VARIETY: ([_lot("10", 10_000)], [adjustment])})
@@ -101,4 +103,4 @@ def test_a_withdrawal_past_every_lot_is_pending_never_costed_zero() -> None:
     [row] = build_draw_rows({VARIETY: ([_lot("3", 3_000)], [draw])})
 
     assert row.costed == 3_000
-    assert row.pending == Grams.of("2")
+    assert row.pending == Quantity.of("2")

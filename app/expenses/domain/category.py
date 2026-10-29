@@ -15,10 +15,6 @@ from app.shared.names import NameProblem, collapse_spaces, name_key, name_proble
 
 NAME_MAX_LENGTH = 60
 
-# Created only when a business opens (migration 0003, or `open_default_categories`
-# for a new business); never restored once a business removes one.
-DEFAULT_CATEGORY_NAMES = ("Growing supplies", "Packaging", "Shipping and transport", "Other")
-
 
 class ExpenseRuleBroken(ValueError):
     """A rule of expenses or their categories was broken; the message says which."""
@@ -67,13 +63,9 @@ class CategoryName:
         if problem is NameProblem.EMPTY:
             raise InvalidCategoryName("a category needs a name")
         if problem is NameProblem.UNTRIMMED:
-            raise InvalidCategoryName(
-                "a category name has no leading, trailing or repeated spaces"
-            )
+            raise InvalidCategoryName("a category name has no leading, trailing or repeated spaces")
         if problem is NameProblem.TOO_LONG:
-            raise InvalidCategoryName(
-                f"a category name has at most {NAME_MAX_LENGTH} characters"
-            )
+            raise InvalidCategoryName(f"a category name has at most {NAME_MAX_LENGTH} characters")
 
     @classmethod
     def of(cls, raw: str) -> CategoryName:

@@ -2,6 +2,7 @@
 // sample app, at the same width, one PNG per screen.
 //
 //   node scripts/design/comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict]
+//                                  [--census] [--step-timeout <ms>]
 //
 // `--facts` is what `scripts/design/sample-app.sh` wrote. Screens and how to reach each
 // state come from `scripts/design/screens.json`. A step that fails, a screen not built
@@ -31,6 +32,10 @@
 // changed once it did, read after the real shot on the same page, which is then discarded. It
 // never changes a PNG, a failure or the exit code: a census that could not be read is a fixed
 // English `census_error`.
+//
+// `--step-timeout <ms>` (an integer of at least 1; default 8000) is the wall-clock bound of one
+// step of a capture. It bounds `withinTimeout` and the built page's Playwright default; the design
+// page's default is the larger of 30000 and it. The settle bounds count frames and do not change.
 
 import { createRequire } from 'node:module'
 import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
@@ -73,12 +78,21 @@ const { values } = parseArgs({
     only: { type: 'string' },
     strict: { type: 'boolean', default: false },
     census: { type: 'boolean', default: false },
+    'step-timeout': { type: 'string' },
   },
 })
 if (!values.facts || !values.out) {
-  console.error('usage: comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict]')
+  console.error('usage: comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict] [--census] [--step-timeout <ms>]')
   process.exit(2)
 }
+// The wall-clock bound of one step, set once. Without the flag it is the 8 s every run had.
+const TIMEOUT = values['step-timeout'] === undefined ? 8000 : Number(values['step-timeout'])
+if (!/^\d+$/.test(values['step-timeout'] ?? '1') || !Number.isSafeInteger(TIMEOUT) || TIMEOUT < 1) {
+  console.error('usage: comparisons.mjs --step-timeout takes a whole number of milliseconds, 1 or more')
+  process.exit(2)
+}
+// Playwright's own default for the design page, which is not bounded by `TIMEOUT` alone.
+const PLAYWRIGHT_DEFAULT_MS = 30_000
 const facts = JSON.parse(readFileSync(values.facts, 'utf-8'))
 const { screens } = JSON.parse(readFileSync(join(HERE, 'screens.json'), 'utf-8'))
 assertScreens(screens)
@@ -106,7 +120,6 @@ mkdirSync(out, { recursive: true })
 
 const PHONE = [390, 844]
 const CAPTURE_INSTANT = new Date(`${facts.today}T12:00:00-03:00`)
-const TIMEOUT = 8000
 
 // The user a screen signs in as: its `account`'s, else La Huerta's.
 const userOf = (s) => (s.account ? accounts[s.account] : facts)
@@ -495,6 +508,7 @@ async function captureDesign(browser, s, options, ctx) {
     await addProbe(context)
     await routeDesign(context, ctx)
     const page = await context.newPage()
+    page.setDefaultTimeout(Math.max(PLAYWRIGHT_DEFAULT_MS, TIMEOUT))
     await page.goto(pathToFileURL(join(PROTOTYPE, `${designOf(s)}.dc.html`)).href)
     const first = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: true })
     if (first) return sideOutcome(first, null)

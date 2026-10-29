@@ -12,6 +12,8 @@ from typing import Protocol
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.header_footer import CatalogHeaderFooter
 from app.catalog.domain.variety import ArchivedCatalogVariety, CatalogVariety, StockStatus
+from app.catalog.domain.words import CatalogWords
+from app.shared.language import Language
 from app.shared.pricing_settings import PricingSettings
 
 
@@ -59,4 +61,26 @@ class CatalogHeaderFooterRepository(Protocol):
 class CatalogPricingSettings(Protocol):
     def current(self) -> PricingSettings:
         """The business's pricing switches. Read once per catalog read."""
+        ...
+
+
+class HeaderFooterDefaults(Protocol):
+    def for_language(self, language: Language) -> CatalogHeaderFooter:
+        """The header and footer a business opened in `language` starts with, English for
+        a language the copy has no catalog for."""
+        ...
+
+
+class CatalogWordsSource(Protocol):
+    def words_for(self, language: Language) -> CatalogWords:
+        """The fixed lines of the catalog text in `language`, English for a language the
+        copy has no catalog for."""
+        ...
+
+
+class CatalogLanguage(Protocol):
+    def language_of(self, business_id: int) -> Language:
+        """The language the business's catalog texts are shown in: the operator's forced
+        language when set, else the business's stored one. English for a business that
+        no longer exists."""
         ...

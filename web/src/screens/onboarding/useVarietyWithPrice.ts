@@ -31,6 +31,8 @@ import {
 } from '../varieties/priceFieldRules'
 import { SAVE_OVERRIDES } from '../varieties/varietyForms'
 import { hasAnotherVariety } from './anotherVariety'
+import { useTranslation } from 'react-i18next'
+import { messageText, type Translate } from '../../i18n/refusalKeys'
 
 export interface VarietyWithPriceOptions {
   /** The variety already saved without a price (the progress' `price_target`), if any. */
@@ -58,9 +60,9 @@ function genericLine(caught: unknown): string {
     : ERROR_GENERICO_MENSAJE
 }
 
-function nameLine(caught: unknown): string {
+function nameLine(t: Translate, caught: unknown): string {
   const message = caught instanceof ApiError ? resolveOverride(SAVE_OVERRIDES, caught.code) : undefined
-  return message ?? genericLine(caught)
+  return message === undefined ? genericLine(caught) : messageText(t, message)
 }
 
 export function useVarietyWithPrice({
@@ -71,6 +73,7 @@ export function useVarietyWithPrice({
   onPriced,
 }: VarietyWithPriceOptions): VarietyWithPrice {
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const [saved, setSaved] = useState<OnboardingTarget | null>(seed)
@@ -88,7 +91,7 @@ export function useVarietyWithPrice({
       created = { id: answer.id, name: answer.name }
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
-      else setNameError(nameLine(caught))
+      else setNameError(nameLine(t, caught))
       return null
     }
     invalidateResource(queryClient, 'varieties')
@@ -118,7 +121,7 @@ export function useVarietyWithPrice({
         void refreshProgress(queryClient)
       } else if (caught instanceof ApiError) {
         const mapped = fieldOfCode(caught.code)
-        if (mapped !== undefined) setPriceErrors({ [mapped.field]: mapped.message })
+        if (mapped !== undefined) setPriceErrors({ [mapped.field]: messageText(t, mapped.message) })
         else setPriceErrors({ form: genericLine(caught) })
       } else if (caught instanceof NetworkError) {
         setOffline(true)

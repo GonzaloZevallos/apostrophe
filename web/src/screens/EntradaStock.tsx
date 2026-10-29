@@ -138,7 +138,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
     setDirty(next)
   }, [])
 
-  function leave(toast: 'Entry saved' | 'Entry deleted'): void {
+  function leave(toast: 'common:entrySaved' | 'common:entryDeleted'): void {
     disarm()
     flash.armAfterLeaving(toast)
     back()
@@ -189,8 +189,8 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
         initial={initial}
         preselectedVarietyId={chosenVariety}
         preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : undefined}
-        onSaved={() => leave(COMMON_TEXT.entrySaved)}
-        onDeleted={() => leave(COMMON_TEXT.entryDeleted)}
+        onSaved={() => leave('common:entrySaved')}
+        onDeleted={() => leave('common:entryDeleted')}
         onGone={entryIsGone}
         onDirtyChange={onDirtyChange}
         dialogHost={dialogHost}

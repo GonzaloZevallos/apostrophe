@@ -12,7 +12,7 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cells import read_workbook
 from app.spreadsheet_import.domain.rows import ParsedWorkbook
@@ -83,7 +83,7 @@ def test_float_grams_with_two_decimals_are_read_as_grams(tmp_path: Path) -> None
 
     parsed = read_workbook(_save(workbook, tmp_path))
 
-    assert [e.grams for e in parsed.entradas] == [Grams.of("3.3"), Grams.of("0.1")]
+    assert [e.quantity for e in parsed.entradas] == [Quantity.of("3.3"), Quantity.of("0.1")]
     assert parsed.problems == ()
 
 
@@ -97,7 +97,7 @@ def test_grams_with_more_than_two_decimals_is_a_problem(tmp_path: Path) -> None:
 
     parsed = read_workbook(_save(workbook, tmp_path))
 
-    assert parsed.entradas[0].grams is None
+    assert parsed.entradas[0].quantity is None
     assert len(parsed.problems) == 1
     problem = parsed.problems[0]
     assert problem.column == "Gramos"
@@ -291,7 +291,7 @@ def test_variety_rows_and_thresholds_blank_rows_skipped(tmp_path: Path) -> None:
     parsed = read_workbook(_save(workbook, tmp_path))
 
     assert [(v.raw_name, v.threshold) for v in parsed.varieties] == [
-        ("Jack Herer", Grams.of(50)),
+        ("Jack Herer", Quantity.of(50)),
         ("Blue Dream", None),
     ]
     assert parsed.problems == ()
@@ -309,7 +309,7 @@ def test_price_history_rows_from_row_37(tmp_path: Path) -> None:
     assert entry.effective == date(2026, 1, 1)
     assert entry.list_price == 1000
     assert entry.bulk_price == 800
-    assert entry.bulk_minimum == Grams.of(10)
+    assert entry.bulk_minimum == Quantity.of(10)
     assert parsed.problems == ()
 
 

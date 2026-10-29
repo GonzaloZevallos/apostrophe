@@ -18,7 +18,6 @@ import { consumePaymentReturn } from '../../paymentReturn'
 import { inAppState } from '../../components/inAppState'
 import { useGoneNotice } from '../../components/goneExit'
 import { SheetRouterProvider } from '../../components/useSheetStack'
-import { GONE_NOTICE } from '../../api/refusals'
 import { stubViewport } from '../../test-viewport'
 import { StrictMode } from 'react'
 import { LIMITS, SAMPLES } from '../../copy/limits'
@@ -922,7 +921,7 @@ function ListWithNotice() {
   return (
     <div>
       <span>la lista</span>
-      {goneShown && <span>{GONE_NOTICE}</span>}
+      {goneShown && <span>{'That is gone. The list is up to date.'}</span>}
     </div>
   )
 }
@@ -981,10 +980,10 @@ test('a gone cobro opened from Clientes goes back to it: Clientes is in history 
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
   await act(() => router.navigate(-1))
   await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
-  await waitFor(() => expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument())
 })
 
 test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes and leaves Inicio alone", async () => {
@@ -995,10 +994,10 @@ test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes 
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('REPLACE')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
   await act(() => router.navigate(-1))
   await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
-  await waitFor(() => expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument())
 })
 
 test('a gone cobro on a direct link replaces the sheet with Clientes and shows the notice', async () => {
@@ -1009,7 +1008,7 @@ test('a gone cobro on a direct link replaces the sheet with Clientes and shows t
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('REPLACE')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 test('after a reload of the sheet, the gone exit still goes back once', async () => {
@@ -1023,7 +1022,7 @@ test('after a reload of the sheet, the gone exit still goes back once', async ()
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 test('a resize across 900 px between opening and leaving does not change where the exit goes', async () => {
@@ -1050,7 +1049,7 @@ test.each([
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
-  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
 const RULE = { limits: LIMITS, samples: { name: SAMPLES.name } }

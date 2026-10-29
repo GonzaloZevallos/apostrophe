@@ -15,10 +15,11 @@ import { router as appRouter } from '../../router'
 import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, pathTo } from '../../routes'
 import type { Viewport } from '../../routes'
 import { COMMON_TEXT } from '../../copy/common'
-import { NOBODY_OWES } from '../../copy/customers'
+import { baselineText } from '../../i18n/testing'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 
+const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 const ANA = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
 const BETO = { id: 2, name: 'Beto Gómez', phone: null, vip: false, balance: 0, owing_since: null, standing: 'settled' }

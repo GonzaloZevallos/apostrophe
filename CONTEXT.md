@@ -29,7 +29,7 @@ _Avoid_: product, strain, item, SKU
 _In the app_: Variety
 
 **Price entry**:
-A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. _In the app_: Price (price history).
+A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. Planned in GH-318 (not yet in the code): what changes beside this entry is told in the closing block below. _In the app_: Price (price history).
 _Avoid_: price change, price update, tariff
 _In the app_: Price (price history)
 
@@ -180,7 +180,7 @@ _In the app_: Expense
 _Avoid_: cost, outflow, bill
 
 **Expense category**:
-A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A business opened after the move to English starts with "Growing supplies", "Packaging", "Shipping and transport" and "Other"; earlier businesses keep the Spanish defaults they received. A category cannot be removed while it has expenses.
+A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A new business starts with four defaults in its stored language at opening (in English "Growing supplies", "Packaging", "Shipping and transport" and "Other"), which a language change never renames; earlier businesses keep the defaults they received, Spanish ones included. A category cannot be removed while it has expenses.
 _Avoid_: type, tag, label, account, cost center
 _In the app_: Category
 
@@ -202,7 +202,7 @@ _Avoid_: menu, price list, flyer
 _In the app_: Catalog
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram channel chat by its own bot, edited in place whenever the catalog text changes and never posted again in that chat. When nothing qualifies, it shows the header, "Nothing to offer for now." and the footer.
+The catalog message pinned in the business's Telegram channel chat by its own bot, edited in place whenever the catalog text changes and never posted again in that chat. When nothing qualifies, it shows the header, the empty line ("Nothing to offer for now." in English) and the footer; its fixed lines follow the business's shown language.
 _Avoid_: post, broadcast
 _In the app_: Pinned message
 
@@ -260,7 +260,7 @@ One line of free text describing a variety's aroma and flavour for the catalog, 
 _Avoid_: description, notes, flavor profile
 
 **Catalog header and footer**:
-A business's own text opening and closing the catalog, multi-line and up to 500 characters each; a blank one is left out. A business opened after the move to English starts with "🌿 **CATALOG** 🌿" and "📩 Questions and orders by private message."; earlier businesses keep what they stored. They are edited only in Settings.
+A business's own text opening and closing the catalog, multi-line and up to 500 characters each; a blank one is left out. A new business starts with the defaults in its stored language at opening (in English "🌿 **CATALOG** 🌿" and "📩 Questions and orders by private message."); from then on they are its own data, edited only in Settings, and a language change never rewrites them. Earlier businesses keep what they stored.
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:
@@ -406,7 +406,7 @@ Finding the seller's own chat number among the private chats that wrote to the b
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. _In the app_: VIP price.
+An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. Planned in GH-318 (not yet in the code): what changes beside this entry is told in the closing block below. _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
@@ -434,11 +434,11 @@ The longer how-or-why behind a shortened line, one tap away on an "i" at the end
 _Avoid_: tooltip, popover, help modal, info sheet, details
 
 **Icon and text rule**:
-The one written rule for how every screen labels its entries, actions and notices. It decides how things are labelled, never what they do. Its full text lives in DESIGN_STANDARDS.md. In the app: no word of its own.
+The one written rule for how every screen labels its entries, actions and notices. It decides how things are labelled, never what they do. Its full text lives in `docs/product/icon-and-text-rule.md`. In the app: no word of its own.
 _Avoid_: style guide, UI guidelines, icon policy
 
 **Attention icon**:
-The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed. Its full rule lives in DESIGN_STANDARDS.md. In the app: no word of its own.
+The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed. Its full rule lives in `docs/product/icon-and-text-rule.md`. In the app: no word of its own.
 _Avoid_: warning icon, alert icon, badge, error icon
 
 **Gate**:
@@ -446,11 +446,11 @@ The checks every change must pass before it merges: pytest, vitest and e2e. A re
 _Avoid_: pipeline, build, test run
 
 **Tappable notice**:
-A notice the seller taps to open what it points to, such as Home's "Go on to the setup". Its sentence carries the meaning and is its accessible name. Its full rule lives in DESIGN_STANDARDS.md.
+A notice the seller taps to open what it points to, such as Home's "Go on to the setup". Its sentence carries the meaning and is its accessible name. Its full rule lives in `docs/product/icon-and-text-rule.md`.
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-The side-by-side capture of a screen's design file and the built app, attached to a PR as review evidence and judged by eye against Drawing as guide. It is never a step of the gate. Its full rule lives in DESIGN_STANDARDS.md.
+The side-by-side capture of a screen's design file and the built app, attached to a PR as review evidence and judged by eye against Drawing as guide. It is never a step of the gate. Its full rule lives in `docs/product/design-capture.md`.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
 
 **Product language**:
@@ -504,3 +504,59 @@ _Avoid_: locale, display language, preferred language, business locale
 **Sheet**:
 Below 900 px, how a form is drawn: full screen, a modal dialog with "Close" at the top and its main action pinned at the bottom, drawn by one shared component over the screen it was opened from (or over its parent on a direct address). Its only exits are "Close" and the phone's back gesture, which are the same action; it has no outside, so nothing around it (not even the safe-area strip by the status bar) closes it. On a computer the same form keeps its own frame. In the app: no word of its own.
 _Avoid_: modal, overlay, drawer, bottom sheet, popup, capa
+
+**Assume nothing**:
+The owner's fourth criterion: the app never hard-codes one business's way of working (product type, units, currency, payment methods, pricing rules, channels, and so on), and each business runs it its own way through settings with neutral defaults. There are no ready-made business-type presets. Its test is "would this still be right for a business that sells something else, in other units, other ways?" If not, it is a finding, a default that fits one business included; it applies to new work, while existing assumptions are swept in #330 and made customizable in #318. In the app: no word of its own; the rule lives in DESIGN_STANDARDS.md.
+_Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
+
+**Sale bill**:
+The facts about one recorded sale that a seller may share with that sale's customer: business name, date, shipping charged, total, lines, payment state and the customer's current balance. They are worked out live from settlement when the sale's detail is read, and never stored; the balance is the customer's whole current account. A bill is facts only, with no text; in the app it has no word of its own yet (part 2 of GH-322 chooses it).
+_Avoid_: invoice, receipt, statement, ticket
+
+## Planned in GH-318 (not yet in the code)
+
+These terms are not entries of the present glossary. Code, tests and screens keep the present terms until the part named on each line ships; only that part moves its term into the glossary proper and amends the entry it replaces. Each line gives the term, the ADR that decides it, and its owning part by capability.
+
+**Product**:
+What a business sells, in code and in the API, whatever the business calls it on screen; it replaces Variety in code, and the columns that reference it stay `variety_id` until #75. Decided in docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; owned by the Product rename on the wire.
+_Avoid_: item, SKU, article
+
+**Unit**:
+How a business measures a product: a label and 0 to 2 decimals that only validate input and decide display. Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; owned by the units part.
+_Avoid_: measure, UoM
+
+**Quantity, in hundredths of a unit**:
+A stored quantity of any unit, always a whole number of hundredths. Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; owned by the units part.
+_Avoid_: amount, grams
+
+**Business time zone**:
+The zone that decides when a business's day starts and ends; every existing business is given Argentina's. Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; owned by the time-zone part.
+_Avoid_: locale, region
+
+**Money scale**:
+Whether a business stores its money in whole currency units (0) or in hundredths (2); existing businesses stay at 0 and new ones start at 2. Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; owned by the money part.
+_Avoid_: precision, cents mode
+
+**Money format**:
+The currency symbol and the decimals a business shows its money with. Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; owned by the money part.
+_Avoid_: currency settings
+
+**Customer type**:
+A seller-defined kind of customer, at most one per customer, that can have its own price. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the customer types part.
+_Avoid_: tier, segment, group
+
+**Customer-type price**:
+The price a customer type pays for a product, an effective-dated row. It replaces the VIP price for new writes; the price entry keeps its VIP price as it is, and the stored VIP prices and VIP marks stay in place, frozen with the values they hold. Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; owned by the customer-type prices part.
+_Avoid_: tier price, discount
+
+**Payment method**:
+A seller-defined way a customer pays. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the payment methods part.
+_Avoid_: payment type, channel
+
+**Applied promotion**:
+A promotion as a sale stood when it was saved, recorded as typed rows and never recomputed. Decided in docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; owned by the promotions-at-sale-time part, which also settles how it differs from a promotion.
+_Avoid_: discount line, coupon
+
+**Product word**:
+What a business calls its products on screen. Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; owned by the product word part.
+_Avoid_: label, noun setting

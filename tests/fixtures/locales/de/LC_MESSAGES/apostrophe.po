@@ -28,3 +28,36 @@ msgid "fixture.items"
 msgid_plural "fixture.items_plural"
 msgstr[0] "%(n)s Ding"
 msgstr[1] "%(n)s Dinge"
+
+msgid "catalog.nothing_to_offer"
+msgstr "de: Nothing to offer for now."
+
+msgid "catalog.indica_line"
+msgstr "de: • {indica}% indica / {sativa}% sativa"
+
+msgid "catalog.aroma_line"
+msgstr "de: • Aroma/flavor: {aroma}"
+
+msgid "catalog.price_per_gram_line"
+msgstr "de: • Price per gram: {price}"
+
+msgid "catalog.bulk_line"
+msgstr "de: • From {grams}: {price} each"
+
+msgid "catalog.default_header"
+msgstr "de: 🌿 **CATALOG** 🌿"
+
+msgid "catalog.default_footer"
+msgstr "de: 📩 Questions and orders by private message."
+
+msgid "expenses.default_category.growing_supplies"
+msgstr "de: Growing supplies"
+
+msgid "expenses.default_category.packaging"
+msgstr "de: Packaging"
+
+msgid "expenses.default_category.shipping_and_transport"
+msgstr "de: Shipping and transport"
+
+msgid "expenses.default_category.other"
+msgstr "de: Other"

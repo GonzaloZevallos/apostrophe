@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { describe, expect, test } from 'vitest'
 import {
   chipDate,
@@ -13,6 +14,7 @@ import {
   todayRange,
   weekRange,
 } from './dates'
+import { testT } from '../i18n/testing'
 
 describe('formatDate', () => {
   test('drops the year when it matches today\'s', () => {
@@ -30,19 +32,25 @@ describe('formatDate', () => {
 
 describe('chipDate', () => {
   test('reads "Hoy dd/mm" for today', () => {
-    expect(chipDate('2026-10-15', '2026-10-15')).toBe('Today 15/10')
+    expect(chipDate('2026-10-15', '2026-10-15', testT)).toBe('Today 15/10')
   })
 
   test('reads "dd/mm" for another day, without "Today" and without the year', () => {
-    expect(chipDate('2026-10-02', '2026-10-15')).toBe('02/10')
+    expect(chipDate('2026-10-02', '2026-10-15', testT)).toBe('02/10')
   })
 
   test('a day with the same month and day in a different year is not today', () => {
-    expect(chipDate('2025-10-15', '2026-10-15')).toBe('15/10')
+    expect(chipDate('2025-10-15', '2026-10-15', testT)).toBe('15/10')
+  })
+
+  test('words today with the `t` it is given, and leaves another day to the digits', () => {
+    const marker = ((key: string) => `<${key}>`) as unknown as TFunction
+    expect(chipDate('2026-10-15', '2026-10-15', marker)).toBe('<common:todayWith>')
+    expect(chipDate('2026-10-02', '2026-10-15', marker)).toBe('02/10')
   })
 
   test('rejects a string that is not an API date', () => {
-    expect(() => chipDate('15/10/2026', '2026-10-15')).toThrow()
+    expect(() => chipDate('15/10/2026', '2026-10-15', testT)).toThrow()
   })
 })
 

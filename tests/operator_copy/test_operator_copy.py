@@ -26,7 +26,7 @@ from app.settings import DEFAULT_LOCALES_DIR
 from app.shared.copy import operator_translator
 from app.shared.language import ENGLISH, Language
 from tests.conftest import NOW, MovableClock
-from tests.operator_copy.locales import MARK
+from tests.fixture_locales import MARK
 from tests.operator_copy.runs import (
     GROUPS,
     Capture,
@@ -45,7 +45,11 @@ PLANTED = "Sin traducir"
 
 def baseline_keys() -> set[str]:
     entries: dict[str, dict[str, object]] = json.loads(BASELINE.read_text(encoding="utf-8"))
-    return {key for key, entry in entries.items() if not entry.get("pending")}
+    return {
+        key
+        for key, entry in entries.items()
+        if key.startswith("operator.") and not entry.get("pending")
+    }
 
 
 def letters_left(text: str, data: set[str]) -> str:

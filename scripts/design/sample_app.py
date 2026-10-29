@@ -108,7 +108,7 @@ class Api(Protocol):
 @dataclass(frozen=True)
 class Line:
     variety: int
-    grams: str
+    quantity: str
     gift: bool = False
 
 
@@ -176,7 +176,7 @@ def seed(api: Api, today: date) -> Sample:
     jack = variety("Sir Jack", 11_000)
     mango = variety("Mango Bomb", 15_000)
 
-    def entry(when: str, variety_id: int, origin: str, grams: str, cost: int | None) -> int:
+    def entry(when: str, variety_id: int, origin: str, quantity: str, cost: int | None) -> int:
         made: int = api.call(
             "POST",
             "/stock/entries",
@@ -184,7 +184,7 @@ def seed(api: Api, today: date) -> Sample:
                 "date": when,
                 "variety_id": variety_id,
                 "origin": origin,
-                "grams": grams,
+                "grams": quantity,
                 "total_cost": cost,
                 "note": None,
             },
@@ -230,7 +230,7 @@ def seed(api: Api, today: date) -> Sample:
                 "lines": [
                     {
                         "variety_id": line.variety,
-                        "grams": line.grams,
+                        "grams": line.quantity,
                         "gift": line.gift,
                         "special_price": None,
                     }
@@ -267,7 +267,7 @@ def seed(api: Api, today: date) -> Sample:
                 "date": when,
                 "reason": reason,
                 "note": note,
-                "lines": [{"variety_id": v, "grams": grams} for v, grams in lines],
+                "lines": [{"variety_id": v, "grams": quantity} for v, quantity in lines],
             },
         )["id"]
         return made

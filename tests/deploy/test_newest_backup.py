@@ -1,313 +1,352 @@
-"""`scripts/newest_backup.py`'s own seams: `newest_artifact` over a parsed artifact
-listing, and `main`'s CLI wrapper, with stdin injected the same shape
-`tests/deploy/test_drill.py` never needs (the CLI has no file argument here, only
-stdin). No test here calls `gh`, the network or a subprocess -- the listing is a plain
-`dict` built in Python, never a real API response.
+"""`scripts/newest_backup.py`'s own seams: `newest` and `expired` over the text
+`git ls-remote --heads` prints, and `main`'s CLI wrapper with stdin injected. Listings
+are literal strings with literal names; no test calls git, the network or a subprocess.
 """
 
 from __future__ import annotations
 
 import contextlib
 import io
-import json
 from datetime import UTC, datetime
 
 from scripts.newest_backup import (
     _BAD_LISTING,
-    _NO_VALID_ARTIFACT,
-    InvalidArtifactListing,
-    NewestArtifact,
+    _BAD_NOW,
+    _NO_VALID_COPY,
+    _USAGE,
+    BackupCopy,
+    expired,
     main,
-    newest_artifact,
+    newest,
 )
 
-VALID_A = {
-    "id": 101,
-    "name": "backup-20261001T040000Z-555.db.age",
-    "expired": False,
-    "created_at": "2026-10-01T04:05:00Z",
-    "workflow_run": {"id": 555},
-}
-VALID_B = {
-    "id": 102,
-    "name": "backup-20261002T040000Z-556.db.age",
-    "expired": False,
-    "created_at": "2026-10-02T04:05:00Z",
-    "workflow_run": {"id": 556},
-}
-# Same `created_at` as VALID_B, tie broken by the greater `id`.
-TIE_LOWER_ID = {
-    "id": 100,
-    "name": "backup-20261002T040000Z-556.db.age",
-    "expired": False,
-    "created_at": "2026-10-02T04:05:00Z",
-    "workflow_run": {"id": 556},
-}
-TIE_HIGHER_ID = {
-    "id": 999,
-    "name": "backup-20261002T040000Z-999.db.age",
-    "expired": False,
-    "created_at": "2026-10-02T04:05:00Z",
-    "workflow_run": {"id": 999},
-}
-EXPIRED = {
-    "id": 103,
-    "name": "backup-20261003T040000Z-557.db.age",
-    "expired": True,
-    "created_at": "2026-10-03T04:05:00Z",
-    "workflow_run": {"id": 557},
-}
-FOREIGN_NAME = {
-    "id": 104,
-    "name": "some-other-artifact.zip",
-    "expired": False,
-    "created_at": "2026-10-03T04:05:00Z",
-    "workflow_run": {"id": 558},
-}
-MISSING_WORKFLOW_RUN = {
-    "id": 105,
-    "name": "backup-20261003T040000Z-559.db.age",
-    "expired": False,
-    "created_at": "2026-10-03T04:05:00Z",
-}
-NON_INT_WORKFLOW_RUN_ID = {
-    "id": 106,
-    "name": "backup-20261003T040000Z-560.db.age",
-    "expired": False,
-    "created_at": "2026-10-03T04:05:00Z",
-    "workflow_run": {"id": "560"},
-}
-BOOL_ID = {
-    "id": True,
-    "name": "backup-20261003T040000Z-561.db.age",
-    "expired": False,
-    "created_at": "2026-10-03T04:05:00Z",
-    "workflow_run": {"id": 561},
-}
-MISSING_CREATED_AT = {
-    "id": 107,
-    "name": "backup-20261003T040000Z-562.db.age",
-    "expired": False,
-    "workflow_run": {"id": 562},
-}
-UNPARSEABLE_CREATED_AT = {
-    "id": 108,
-    "name": "backup-20261003T040000Z-563.db.age",
-    "expired": False,
-    "created_at": "not-a-date",
-    "workflow_run": {"id": 563},
-}
-NAIVE_CREATED_AT = {
-    "id": 109,
-    "name": "backup-20261003T040000Z-564.db.age",
-    "expired": False,
-    "created_at": "2026-10-03T04:05:00",
-    "workflow_run": {"id": 564},
-}
+SHA = "0123456789abcdef0123456789abcdef01234567"
+SHA256 = SHA + "0123456789abcdef01234567"
+
+OLD = "backup-20260101T040000Z-10.db.age"
+MID = "backup-20260915T040000Z-20.db.age"
+NEW = "backup-20261001T040000Z-30.db.age"
 
 
-def test_picks_the_newer_of_two_valid_artifacts() -> None:
-    found = newest_artifact({"artifacts": [VALID_A, VALID_B]})
-
-    assert found == NewestArtifact(
-        name="backup-20261002T040000Z-556.db.age",
-        run_id=556,
-        created_at=datetime(2026, 10, 2, 4, 5, tzinfo=UTC),
-    )
+def _listing(*refs: str) -> str:
+    return "".join(f"{SHA}\t{ref}\n" for ref in refs)
 
 
-def test_picks_the_newer_artifact_even_when_it_is_listed_first() -> None:
-    # The listing's own order is not a seam (the plan's invariant): the newer entry
-    # here comes *before* the older one, the opposite order of the test above.
-    found = newest_artifact({"artifacts": [VALID_B, VALID_A]})
-
-    assert found == NewestArtifact(
-        name="backup-20261002T040000Z-556.db.age",
-        run_id=556,
-        created_at=datetime(2026, 10, 2, 4, 5, tzinfo=UTC),
-    )
+def _heads(*names: str) -> str:
+    return _listing(*(f"refs/heads/{name}" for name in names))
 
 
-def test_a_tie_on_created_at_is_broken_by_the_greater_id() -> None:
-    found = newest_artifact({"artifacts": [TIE_LOWER_ID, TIE_HIGHER_ID]})
-
-    assert found is not None
-    assert found.run_id == 999
-    assert found.name == "backup-20261002T040000Z-999.db.age"
-
-
-def test_a_tie_on_created_at_is_broken_by_the_greater_id_regardless_of_order() -> None:
-    # Same tie as above, with the higher-id entry listed first.
-    found = newest_artifact({"artifacts": [TIE_HIGHER_ID, TIE_LOWER_ID]})
-
-    assert found is not None
-    assert found.run_id == 999
-    assert found.name == "backup-20261002T040000Z-999.db.age"
-
-
-def test_an_expired_artifact_is_skipped() -> None:
-    found = newest_artifact({"artifacts": [EXPIRED]})
-
-    assert found is None
-
-
-def test_a_foreign_name_is_skipped() -> None:
-    found = newest_artifact({"artifacts": [FOREIGN_NAME]})
-
-    assert found is None
-
-
-def test_a_missing_workflow_run_is_skipped() -> None:
-    found = newest_artifact({"artifacts": [MISSING_WORKFLOW_RUN]})
-
-    assert found is None
-
-
-def test_a_non_int_workflow_run_id_is_skipped() -> None:
-    found = newest_artifact({"artifacts": [NON_INT_WORKFLOW_RUN_ID]})
-
-    assert found is None
-
-
-def test_a_bool_id_is_skipped() -> None:
-    found = newest_artifact({"artifacts": [BOOL_ID]})
-
-    assert found is None
-
-
-def test_a_missing_created_at_is_skipped() -> None:
-    found = newest_artifact({"artifacts": [MISSING_CREATED_AT]})
-
-    assert found is None
-
-
-def test_an_unparseable_created_at_is_skipped() -> None:
-    found = newest_artifact({"artifacts": [UNPARSEABLE_CREATED_AT]})
-
-    assert found is None
-
-
-def test_a_naive_created_at_is_skipped() -> None:
-    found = newest_artifact({"artifacts": [NAIVE_CREATED_AT]})
-
-    assert found is None
-
-
-def test_an_empty_listing_returns_none() -> None:
-    found = newest_artifact({"artifacts": []})
-
-    assert found is None
-
-
-def test_mixed_good_and_bad_entries_still_picks_the_valid_newest() -> None:
-    found = newest_artifact(
-        {
-            "artifacts": [
-                VALID_A,
-                VALID_B,
-                EXPIRED,
-                FOREIGN_NAME,
-                MISSING_WORKFLOW_RUN,
-                NON_INT_WORKFLOW_RUN_ID,
-                BOOL_ID,
-                MISSING_CREATED_AT,
-                UNPARSEABLE_CREATED_AT,
-                NAIVE_CREATED_AT,
-            ]
-        }
-    )
-
-    assert found is not None
-    assert found.run_id == 556
-
-
-def test_artifacts_missing_raises_invalid_listing() -> None:
-    try:
-        newest_artifact({})
-    except InvalidArtifactListing:
-        pass
-    else:
-        raise AssertionError("expected InvalidArtifactListing")
-
-
-def test_artifacts_not_a_list_raises_invalid_listing() -> None:
-    try:
-        newest_artifact({"artifacts": "not-a-list"})
-    except InvalidArtifactListing:
-        pass
-    else:
-        raise AssertionError("expected InvalidArtifactListing")
-
-
-def _run(document: object) -> tuple[int, str, str]:
-    stdin = io.StringIO(json.dumps(document) if not isinstance(document, str) else document)
+def _run(argv: list[str], text: str) -> tuple[int, str, str]:
     stdout = io.StringIO()
     stderr = io.StringIO()
-
     with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-        exit_code = main([], stdin)
+        exit_code = main(argv, io.StringIO(text))
     return exit_code, stdout.getvalue(), stderr.getvalue()
 
 
-def test_cli_prints_three_lines_and_exits_zero_on_a_valid_listing() -> None:
-    exit_code, out, err = _run({"artifacts": [VALID_A, VALID_B]})
-
-    assert exit_code == 0
-    assert "name: backup-20261002T040000Z-556.db.age" in out
-    assert "run_id: 556" in out
-    assert "created_at: 2026-10-02T04:05:00+00:00" in out
-    assert "Traceback" not in err
+def _expired_cli(now: str, text: str) -> tuple[int, str, str]:
+    return _run(["expired", "--now", now], text)
 
 
-def test_cli_exits_one_when_no_valid_artifact_is_found() -> None:
-    exit_code, out, err = _run({"artifacts": [EXPIRED]})
-
-    assert exit_code == 1
-    assert err.strip() == _NO_VALID_ARTIFACT
-    assert "Traceback" not in err
+def _name_of(found: BackupCopy | None) -> str | None:
+    return None if found is None else found.name
 
 
-def test_cli_exits_two_on_two_concatenated_json_documents() -> None:
-    raw = json.dumps({"artifacts": []}) + json.dumps({"artifacts": []})
-    exit_code, out, err = _run(raw)
+# --- newest ---------------------------------------------------------------------
 
-    assert exit_code == 2
+
+def test_picks_the_latest_timestamp() -> None:
+    found = newest(_heads(OLD, NEW, MID))
+
+    assert found == BackupCopy(
+        name=NEW,
+        run_id="30",
+        run_order=(2, "30"),
+        created_at=datetime(2026, 10, 1, 4, 0, 0, tzinfo=UTC),
+    )
+
+
+def test_listing_order_does_not_matter() -> None:
+    names = [OLD, MID, NEW]
+
+    assert newest(_heads(*names)) == newest(_heads(*reversed(names)))
+    assert _name_of(newest(_heads(NEW, OLD, MID))) == NEW
+
+
+def test_main_is_ignored_among_old_copies() -> None:
+    text = _listing("refs/heads/main", f"refs/heads/{OLD}", f"refs/heads/{MID}")
+
+    assert _name_of(newest(text)) == MID
+
+
+def test_a_foreign_branch_and_other_refs_are_ignored() -> None:
+    text = _listing(
+        "refs/heads/feature/x",
+        "refs/heads/backup-20270101T040000Z-1.db.age.bak",
+        "refs/heads/xbackup-20270101T040000Z-1.db.age",
+        "refs/tags/backup-20270101T040000Z-1.db.age",
+        "HEAD",
+        f"refs/heads/{OLD}",
+    )
+
+    assert _name_of(newest(text)) == OLD
+
+
+def test_a_timestamp_tie_is_broken_by_the_greater_run_id() -> None:
+    low = "backup-20261001T040000Z-99.db.age"
+    high = "backup-20261001T040000Z-100.db.age"
+
+    assert _name_of(newest(_heads(low, high))) == high
+    assert _name_of(newest(_heads(high, low))) == high
+
+
+def test_a_tie_on_equal_run_numbers_is_decided_by_name() -> None:
+    zeros = "backup-20261001T040000Z-007.db.age"
+    plain = "backup-20261001T040000Z-7.db.age"
+
+    # Same number, so the name decides: "...-7..." sorts after "...-007...".
+    assert _name_of(newest(_heads(zeros, plain))) == plain
+    assert _name_of(newest(_heads(plain, zeros))) == plain
+
+
+def test_a_run_id_with_leading_zeros_prints_its_digits_as_written() -> None:
+    zeros = "backup-20261001T040000Z-007.db.age"
+    smaller = "backup-20261001T040000Z-6.db.age"
+
+    code, out, _ = _run([], _heads(smaller, zeros))
+
+    assert code == 0
+    assert "run_id: 007\n" in out
+
+
+def test_a_huge_run_id_beats_a_short_one_without_int() -> None:
+    huge = "backup-20261001T040000Z-" + "9" * 5000 + ".db.age"
+    short = "backup-20261001T040000Z-12345678901.db.age"
+
+    assert _name_of(newest(_heads(short, huge))) == huge
+    code, out, err = _run([], _heads(short, huge))
+    assert code == 0
+    assert err == ""
+    assert out.startswith(f"name: {huge}\n")
+
+
+def test_impossible_dates_and_non_ascii_digits_are_ignored() -> None:
+    month13 = "backup-20261301T000000Z-1.db.age"
+    second60 = "backup-20261001T000060Z-1.db.age"
+    feb30 = "backup-20260230T000000Z-1.db.age"
+    arabic = "backup-٢٠٢٦١٠٠١T000000Z-1.db.age"
+    text = _heads(month13, second60, feb30, arabic, OLD)
+
+    assert _name_of(newest(text)) == OLD
+
+
+def test_duplicate_names_collapse() -> None:
+    assert _name_of(newest(_heads(OLD, OLD))) == OLD
+    assert expired(_heads(OLD, OLD, NEW), datetime(2026, 12, 1, tzinfo=UTC)) == [OLD]
+
+
+def test_a_sha256_listing_is_accepted() -> None:
+    assert _name_of(newest(f"{SHA256}\trefs/heads/{OLD}\n")) == OLD
+
+
+def test_the_final_newline_is_optional() -> None:
+    assert _name_of(newest(f"{SHA}\trefs/heads/{OLD}")) == OLD
+
+
+def test_an_empty_listing_has_no_newest() -> None:
+    assert newest("") is None
+    assert newest("\n") is None
+    assert newest(_listing("refs/heads/main")) is None
+
+
+# --- main, plain mode -------------------------------------------------------------
+
+
+def test_cli_prints_the_three_lines() -> None:
+    code, out, err = _run([], _heads(OLD, NEW, MID))
+
+    assert code == 0
+    assert out == f"name: {NEW}\nrun_id: 30\ncreated_at: 2026-10-01T04:00:00+00:00\n"
+    assert err == ""
+
+
+def test_cli_empty_listing_exits_one() -> None:
+    for text in ("", "\n", _listing("refs/heads/main")):
+        code, out, err = _run([], text)
+
+        assert code == 1
+        assert out == ""
+        assert err.strip() == _NO_VALID_COPY
+
+
+def test_cli_malformed_lines_exit_two_with_a_fixed_message() -> None:
+    bad_texts = [
+        f"not-a-listing {OLD}\n",
+        f"{SHA} refs/heads/{OLD}\n",  # space, not a tab
+        f"{SHA}\trefs/heads/{OLD}\n\n{SHA}\trefs/heads/{MID}\n",  # blank line inside
+        f"{SHA}\trefs/heads/{OLD}\r\n",  # CRLF
+        f"{'g' * 40}\trefs/heads/{OLD}\n",  # non-hex sha
+        f"{SHA[:39]}\trefs/heads/{OLD}\n",  # wrong length
+        f"{SHA.upper()}\trefs/heads/{OLD}\n",  # upper-case hex
+        f"{SHA}\trefs/heads/{OLD}\textra\n",  # extra field
+        f"{SHA}\trefs/heads/{OLD}\n\n",  # two final newlines
+        f"{SHA}\t\n",  # no ref
+        f"{SHA}\trefs/heads/{OLD} \n",  # trailing space
+    ]
+    for text in bad_texts:
+        code, out, err = _run([], text)
+
+        assert code == 2, text
+        assert out == ""
+        assert err.strip() == _BAD_LISTING
+        assert OLD not in err
+
+
+def test_a_malformed_line_among_valid_ones_still_exits_two() -> None:
+    code, out, err = _run([], _heads(OLD, NEW) + "garbage\n")
+
+    assert code == 2
+    assert out == ""
     assert err.strip() == _BAD_LISTING
-    assert "Traceback" not in err
-
-
-def test_cli_exits_two_on_a_top_level_list() -> None:
-    exit_code, out, err = _run([VALID_A])
-
-    assert exit_code == 2
-    assert err.strip() == _BAD_LISTING
-    assert "Traceback" not in err
-
-
-def test_cli_exits_two_when_artifacts_is_missing() -> None:
-    exit_code, out, err = _run({"total_count": 0})
-
-    assert exit_code == 2
-    assert err.strip() == _BAD_LISTING
-    assert "Traceback" not in err
 
 
 class _UndecodableStdin:
-    """Mimics stdin reading bytes `gh` cannot have produced as valid text -- the
-    stdlib's own `io.TextIOWrapper` raises `UnicodeDecodeError` from `.read()` in
-    exactly this shape when the underlying stream is not the declared encoding."""
+    """Raises `UnicodeDecodeError` from `.read()`, as `sys.stdin` does on bytes that
+    are not valid UTF-8."""
 
     def read(self) -> str:
         raise UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid start byte")
 
 
-def test_cli_exits_two_on_undecodable_stdin_with_no_traceback() -> None:
-    stdout = io.StringIO()
-    stderr = io.StringIO()
+def test_cli_undecodable_stdin_exits_two_in_both_modes() -> None:
+    for argv in ([], ["expired", "--now", "20261101T000000Z"]):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = main(argv, _UndecodableStdin())
 
-    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-        exit_code = main([], _UndecodableStdin())
+        assert code == 2
+        assert stdout.getvalue() == ""
+        assert stderr.getvalue().strip() == _BAD_LISTING
 
-    assert exit_code == 2
-    assert stderr.getvalue().strip() == _BAD_LISTING
-    assert "Traceback" not in stderr.getvalue()
+
+def test_cli_bad_argv_exits_two() -> None:
+    now = "20261101T000000Z"
+    for argv in (
+        ["x"],
+        ["expired"],
+        ["expired", "--now"],
+        ["expired", "--then", now],
+        ["expire", "--now", now],
+        ["expired", "--now", now, "extra"],
+        ["--now", now],
+    ):
+        code, out, err = _run(argv, _heads(OLD))
+
+        assert code == 2, argv
+        assert out == ""
+        assert err.strip() == _USAGE
+
+
+# --- expired ----------------------------------------------------------------------
+
+
+def test_exactly_thirty_days_is_kept_and_one_second_more_is_listed() -> None:
+    edge = "backup-20261001T000000Z-1.db.age"
+    text = _heads(edge, NEW)  # NEW is 20261001T040000Z, the newest
+    kept = datetime(2026, 10, 31, 0, 0, 0, tzinfo=UTC)
+    listed = datetime(2026, 10, 31, 0, 0, 1, tzinfo=UTC)
+
+    assert expired(text, kept) == []
+    assert expired(text, listed) == [edge]
+    assert _expired_cli("20261031T000000Z", text) == (0, "", "")
+    assert _expired_cli("20261031T000001Z", text) == (0, f"{edge}\n", "")
+
+
+def test_expired_is_listed_oldest_first_whatever_the_listing_order() -> None:
+    now = datetime(2026, 12, 1, tzinfo=UTC)
+
+    assert expired(_heads(MID, NEW, OLD), now) == [OLD, MID]
+    assert expired(_heads(OLD, MID, NEW), now) == [OLD, MID]
+
+
+def test_the_newest_is_never_listed_even_when_older_than_thirty_days() -> None:
+    text = _heads(OLD, MID, NEW)
+    now = datetime(2030, 1, 1, tzinfo=UTC)
+
+    assert expired(text, now) == [OLD, MID]
+    assert NEW not in expired(text, now)
+    assert expired(_heads(OLD), now) == []
+    assert _expired_cli("20300101T000000Z", _heads(OLD)) == (0, "", "")
+
+
+def test_the_newest_by_run_id_is_the_one_kept_on_a_timestamp_tie() -> None:
+    low = "backup-20260101T040000Z-99.db.age"
+    high = "backup-20260101T040000Z-100.db.age"
+
+    assert expired(_heads(high, low), datetime(2026, 12, 1, tzinfo=UTC)) == [low]
+
+
+def test_expired_ignores_main_and_foreign_names() -> None:
+    text = _listing("refs/heads/main", "refs/heads/other", f"refs/heads/{OLD}", f"refs/heads/{NEW}")
+
+    assert _expired_cli("20261201T000000Z", text) == (0, f"{OLD}\n", "")
+
+
+def test_expired_with_nothing_old_exits_zero_with_no_output() -> None:
+    assert _expired_cli("20261002T000000Z", _heads(OLD, MID, NEW)) == (0, f"{OLD}\n", "")
+    assert _expired_cli("20260102T000000Z", _heads(OLD, MID, NEW)) == (0, "", "")
+
+
+def test_expired_with_no_valid_copy_exits_one_not_zero() -> None:
+    for text in ("", _listing("refs/heads/main")):
+        code, out, err = _expired_cli("20261101T000000Z", text)
+
+        assert code == 1
+        assert out == ""
+        assert err.strip() == _NO_VALID_COPY
+
+
+def test_expired_malformed_listing_exits_two() -> None:
+    code, out, err = _expired_cli("20261101T000000Z", "garbage\n")
+
+    assert (code, out, err.strip()) == (2, "", _BAD_LISTING)
+
+
+def test_a_bad_now_exits_two() -> None:
+    for now in (
+        "",
+        "2026-11-01",
+        "20261101",
+        "20261101T000000",
+        "20261101t000000Z",
+        "20261301T000000Z",
+        "20261101T000060Z",
+        "20260230T000000Z",
+        "٢٠٢٦١١٠١T000000Z",
+        "20261101T000000Z\n",
+    ):
+        code, out, err = _expired_cli(now, _heads(OLD, NEW))
+
+        assert code == 2, now
+        assert out == ""
+        assert err.strip() == _BAD_NOW
+
+
+def test_now_at_year_one_lists_nothing() -> None:
+    assert _expired_cli("00010101T000000Z", _heads(OLD, NEW)) == (0, "", "")
+
+
+def test_now_at_year_9999_lists_only_the_old_copy_and_does_not_overflow() -> None:
+    ancient = "backup-00010101T000000Z-1.db.age"
+    code, out, err = _expired_cli("99991231T235959Z", _heads(ancient, NEW))
+
+    assert (code, out, err) == (0, f"{ancient}\n", "")
+
+
+def test_a_far_future_stray_makes_the_real_newest_expired() -> None:
+    # The known risk the PR states: the script reads no clock, so it cannot tell a stray
+    # far-future branch from a real copy. Documented here so a change is deliberate.
+    stray = "backup-99990101T000000Z-1.db.age"
+
+    assert expired(_heads(OLD, NEW, stray), datetime(2026, 12, 1, tzinfo=UTC)) == [OLD, NEW]

@@ -38,9 +38,9 @@ from datetime import date
 from decimal import Decimal
 from typing import Literal
 
-from app.shared.grams import Grams
 from app.shared.names import collapse_spaces
 from app.shared.pricing_settings import PricingSettings
+from app.shared.quantity import Quantity
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
     CategoryRow,
@@ -108,7 +108,7 @@ class SaleCheckInput:
     interpreted, ready for sales' port."""
 
     variety_key: str
-    grams: Grams
+    quantity: Quantity
     has_customer: bool
     vip: bool
     gift: bool
@@ -259,7 +259,7 @@ def sale_inputs(
     results: list[SaleCheckInput | CellProblem] = []
     for row in finished_ventas:
         assert row.sale_date is not None
-        assert row.grams is not None
+        assert row.quantity is not None
 
         variety_result = variety_names.get(row.variety or "")
         if variety_result is None or isinstance(variety_result, Refusal):
@@ -309,7 +309,7 @@ def sale_inputs(
         results.append(
             SaleCheckInput(
                 variety_key=variety_result.key,
-                grams=row.grams,
+                quantity=row.quantity,
                 has_customer=has_customer,
                 vip=vip,
                 gift=gift,

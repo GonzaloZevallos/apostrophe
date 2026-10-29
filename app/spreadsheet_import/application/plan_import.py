@@ -202,7 +202,7 @@ def _customer_check_result(
 def _to_port_sale_input(sale_input: domain_plan.SaleCheckInput) -> ports.SaleCheckInput:
     return ports.SaleCheckInput(
         variety_key=sale_input.variety_key,
-        grams=sale_input.grams,
+        quantity=sale_input.quantity,
         has_customer=sale_input.has_customer,
         vip=sale_input.vip,
         gift=sale_input.gift,

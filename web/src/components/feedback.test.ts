@@ -1,6 +1,6 @@
 /**
- * `readFeedback` at the module seam: a closed union of toast strings and the
- * fixed gone notice, never an arbitrary string trusted off `location.state`
+ * `readFeedback` at the module seam: a closed union of `common:` toast keys and the
+ * fixed gone notice, never an arbitrary value trusted off `location.state`
  * (open review finding: a `Notice` that renders any string it is handed).
  */
 
@@ -8,43 +8,62 @@ import { expect, test } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import {
   clearSaleJustSaved,
+  gone,
   newSaleFor,
   readFeedback,
   readNewSaleState,
   SALE_SAVED,
   saleJustSaved,
+  TOAST_MESSAGES,
+  toast,
 } from './feedback'
 
-test('accepts a toast from the closed set', () => {
-  expect(readFeedback({ toast: 'Customer saved' })).toEqual({
-    kind: 'toast',
-    message: 'Customer saved',
-  })
+const TOAST_KEYS = [
+  'common:customerSaved',
+  'common:saleDeleted',
+  'common:saleDeletedGramsBack',
+  'common:entrySaved',
+  'common:entryDeleted',
+] as const
+
+test.each(TOAST_KEYS)('round-trips the toast key %s through toast() and readFeedback', (key) => {
+  expect(readFeedback(toast(key))).toEqual({ kind: 'toast', message: key })
 })
 
-test('accepts "Sale deleted · the grams go back to stock", added to the closed set for Borrar venta and Deshacer', () => {
-  expect(readFeedback({ toast: 'Sale deleted · the grams go back to stock' })).toEqual({
-    kind: 'toast',
-    message: 'Sale deleted · the grams go back to stock',
-  })
+test('the closed set is exactly the five success keys', () => {
+  expect([...TOAST_MESSAGES]).toEqual([...TOAST_KEYS])
 })
 
-test('accepts the fixed gone notice', () => {
-  expect(readFeedback({ notice: GONE_NOTICE })).toEqual({ kind: 'notice', message: GONE_NOTICE })
+test.each([
+  ['an English toast word', { toast: 'Customer saved' }],
+  ['an unknown key', { toast: 'common:notAKey' }],
+  ['a key from another namespace', { toast: 'refusals:goneNotice' }],
+  ['a number', { toast: 7 }],
+  ['null', { toast: null }],
+  ['a malformed object', { toast: { key: 'common:customerSaved' } }],
+  ['the saved key as a toast', { toast: SALE_SAVED }],
+  ['a notice that is not the gone text', { notice: 'cualquier cosa' }],
+  ['a notice that is a key', { notice: 'common:customerSaved' }],
+])('readFeedback yields null for %s, without throwing', (_name, state) => {
+  expect(() => readFeedback(state)).not.toThrow()
+  expect(readFeedback(state)).toBeNull()
 })
 
-test('rejects a toast string outside the closed set — never renders an arbitrary message', () => {
-  expect(readFeedback({ toast: 'Cliente eliminado' })).toBeNull()
+// A stale English toast renders nothing (intended); the gone notice is accepted only as its key.
+test('accepts the fixed gone notice, carried as its key string', () => {
+  expect(gone()).toEqual({ notice: 'refusals:goneNotice' })
+  expect(readFeedback(gone())).toEqual({ kind: 'notice', refusal: GONE_NOTICE })
 })
 
-test('rejects a notice that is not the fixed gone text', () => {
-  expect(readFeedback({ notice: 'cualquier cosa' })).toBeNull()
+test('reads the gone notice back after a structured clone of history state', () => {
+  expect(readFeedback(structuredClone(gone()))).toEqual({ kind: 'notice', refusal: GONE_NOTICE })
 })
 
 test('rejects a state with neither key, and a non-object state', () => {
   expect(readFeedback({})).toBeNull()
   expect(readFeedback(null)).toBeNull()
-  expect(readFeedback('Customer saved')).toBeNull()
+  expect(readFeedback(7)).toBeNull()
+  expect(readFeedback('common:customerSaved')).toBeNull()
 })
 
 test('saleJustSaved writes a marker readFeedback turns into the "saved" kind', () => {

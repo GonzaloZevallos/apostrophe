@@ -1,5 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import { EMPTY_STATE_WORDINGS, EMPTY_STATES } from '../copy/emptyStates'
+import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
+import enEmptyStates from '../copy/locales/en/emptyStates.json'
+
+/** The English wordings the keys resolve to in the committed `en` bundle, in key order. */
+const WORDINGS: readonly string[] = Object.values(EMPTY_STATE_KEYS).map((key) => {
+  const name = key.slice('emptyStates:'.length) as keyof typeof enEmptyStates
+  return enEmptyStates[name]
+})
+const NOBODY_OWES = enEmptyStates.nobodyOwes
 
 const sources = import.meta.glob(['/src/screens/**/*.tsx', '/src/screens/**/*.ts'], {
   query: '?raw',
@@ -29,31 +37,31 @@ export function literalCopies(
 
 describe('the empty-state wordings', () => {
   test('are all listed, non-empty and distinct', () => {
-    expect(EMPTY_STATE_WORDINGS).toEqual(expect.arrayContaining(Object.values(EMPTY_STATES)))
-    expect(new Set(EMPTY_STATE_WORDINGS).size).toBe(EMPTY_STATE_WORDINGS.length)
-    for (const wording of EMPTY_STATE_WORDINGS) expect(wording).not.toBe('')
+    expect(WORDINGS).toHaveLength(11)
+    expect(new Set(WORDINGS).size).toBe(WORDINGS.length)
+    for (const wording of WORDINGS) expect(wording).not.toBe('')
   })
 
   test('no screen holds one as a literal', () => {
     expect(Object.keys(sources).length).toBeGreaterThan(20)
-    expect(literalCopies(EMPTY_STATE_WORDINGS, sources)).toEqual([])
+    expect(literalCopies(WORDINGS, sources)).toEqual([])
   })
 
   test('the guard rejects a screen that copies a wording, in code but not in a comment', () => {
     const files = {
       '/src/screens/A.tsx': 'const x = "Nobody owes you"',
       '/src/screens/B.tsx': '/* "Nobody owes you" */\n// No stock entries yet\nconst y = 1',
-      '/src/screens/emptyStates.ts': EMPTY_STATES.homeNobodyOwes,
+      '/src/screens/emptyStates.ts': NOBODY_OWES,
     }
-    expect(literalCopies(EMPTY_STATE_WORDINGS, files)).toEqual([
-      { path: '/src/screens/A.tsx', wording: EMPTY_STATES.homeNobodyOwes },
+    expect(literalCopies(WORDINGS, files)).toEqual([
+      { path: '/src/screens/A.tsx', wording: NOBODY_OWES },
     ])
   })
 
   test('a wording added to the list is enforced', () => {
     const files = { '/src/screens/A.tsx': '<span>Nada por acá</span>' }
-    expect(literalCopies(EMPTY_STATE_WORDINGS, files)).toEqual([])
-    expect(literalCopies([...EMPTY_STATE_WORDINGS, 'Nada por acá'], files)).toEqual([
+    expect(literalCopies(WORDINGS, files)).toEqual([])
+    expect(literalCopies([...WORDINGS, 'Nada por acá'], files)).toEqual([
       { path: '/src/screens/A.tsx', wording: 'Nada por acá' },
     ])
   })

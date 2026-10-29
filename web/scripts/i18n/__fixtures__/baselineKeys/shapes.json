@@ -1,0 +1,7 @@
+{
+  "sample.ts:GROUP.greet": { "key": "shapes:greeting", "params": ["name"] },
+  "sample.ts:GROUP.hello": { "key": "shapes:hello" },
+  "sample.ts:GROUP.nested.bye": { "key": "shapes:nested.bye" },
+  "sample.ts:TITLE": { "key": "shapes:title" },
+  "sample.ts:salesCount": { "key": "shapes:sales", "params": ["count"] }
+}

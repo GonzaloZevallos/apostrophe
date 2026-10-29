@@ -34,6 +34,7 @@
 import { SALES } from '../../routes'
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import type { Customer } from '../../api/customers'
@@ -107,8 +108,8 @@ function deleteTitle(sale: SaleDetail): string {
   return SALES_TEXT.deleteSaleConfirm(money, day, grams)
 }
 
-const DELETE_TOAST = COMMON_TEXT.saleDeleted
-const UNDO_TOAST = COMMON_TEXT.saleDeletedGramsBack
+const DELETE_TOAST = 'common:saleDeleted'
+const UNDO_TOAST = 'common:saleDeletedGramsBack'
 
 /** One sheet stack per screen (ADR-0027): Asignar cliente is level 1, Nuevo cliente level 2. */
 export default function VentaDetalle() {
@@ -123,6 +124,7 @@ function VentaDetalleScreen() {
   const { id } = useParams<{ id: string }>()
   const saleId = id ?? ''
   const location = useLocation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -285,7 +287,7 @@ function VentaDetalleScreen() {
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
-            <span className="venta-guardada__texto">{SALE_SAVED}</span>
+            <span className="venta-guardada__texto">{t(SALE_SAVED)}</span>
             <Boton variant="undo" disabled={deleting} onClick={() => void removeSale('deshacer')}>
               {SALES_TEXT.undo}
             </Boton>

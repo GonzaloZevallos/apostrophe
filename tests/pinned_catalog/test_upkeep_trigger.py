@@ -50,10 +50,10 @@ def _register_priced_variety(client: TestClient, name: str) -> dict[str, Any]:
     return variety
 
 
-def _add_stock_entry(client: TestClient, variety_id: int, grams: str = "50") -> dict[str, Any]:
+def _add_stock_entry(client: TestClient, variety_id: int, quantity: str = "50") -> dict[str, Any]:
     entry: dict[str, Any] = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": grams},
+        json={"variety_id": variety_id, "origin": "opening_stock", "grams": quantity},
     ).json()
     return entry
 
@@ -429,10 +429,10 @@ def test_nothing_is_attempted_after_a_channel_change_until_publicar(
     }
 
 
-def _withdraw(client: TestClient, variety_id: int, grams: str, **extra: Any) -> dict[str, Any]:
+def _withdraw(client: TestClient, variety_id: int, quantity: str, **extra: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "reason": "promotion",
-        "lines": [{"variety_id": variety_id, "grams": grams}],
+        "lines": [{"variety_id": variety_id, "grams": quantity}],
     }
     response = client.post("/stock/withdrawals", json=body | extra)
     assert response.status_code == 201, response.text

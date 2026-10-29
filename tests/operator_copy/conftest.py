@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from tests.operator_copy.locales import build_operator_locales
+from tests.fixture_locales import build_fixture_locales
 
 
 @pytest.fixture
 def operator_locales(tmp_path: Path) -> Path:
-    return build_operator_locales(tmp_path)
+    return build_fixture_locales(tmp_path)

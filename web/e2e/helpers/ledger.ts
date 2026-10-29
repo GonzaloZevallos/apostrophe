@@ -11,6 +11,7 @@ import { CUSTOMER, CUSTOMER_NEW, VARIETIES, pathTo } from '../../src/routes.js'
 import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
 import { expectPath } from './url.js'
+import { expectToast } from './toast.js'
 import { fillSaleLine } from './sale.js'
 import { uniqueTag } from './unique.js'
 
@@ -19,13 +20,11 @@ export async function seedLedger(page: Page, customerName: string, sales: number
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Name').fill(variety)
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
   await page.getByRole('link', { name: new RegExp(variety) }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
-  await page.getByRole('button', { name: 'Save the price' }).click()
-  await expect(page.getByText('Price saved')).toBeVisible()
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill(customerName)

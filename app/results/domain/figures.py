@@ -9,24 +9,24 @@ from dataclasses import dataclass
 from datetime import date
 
 from app.shared.calendar import Month
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 
 @dataclass(frozen=True)
 class MarginFigure:
     """A margin in pesos, worked out over costed grams only. `percent` is `None` when
-    the sales it is taken over are $0; `pending_grams` is the sold-or-gifted grams
+    the sales it is taken over are $0; `pending_quantity` is the sold-or-gifted grams
     behind it that are not costed yet."""
 
     amount: int
     percent: int | None
-    pending_grams: Grams
+    pending_quantity: Quantity
 
 
 @dataclass(frozen=True)
 class CostFigure:
     costed: int
-    pending_grams: Grams
+    pending_quantity: Quantity
 
 
 @dataclass(frozen=True)
@@ -35,7 +35,7 @@ class AmountWithPending:
     period."""
 
     amount: int
-    pending_grams: Grams
+    pending_quantity: Quantity
 
 
 @dataclass(frozen=True)
@@ -46,15 +46,15 @@ class RowCost:
     `period_figures` is the only place `all_pending` is decided."""
 
     amount: int
-    pending_grams: Grams
+    pending_quantity: Quantity
     all_pending: bool
 
     def __post_init__(self) -> None:
         if self.amount < 0:
             raise ValueError("a cost line's amount cannot be negative")
-        if self.pending_grams.hundredths < 0:
+        if self.pending_quantity.hundredths < 0:
             raise ValueError("a cost line's pending grams cannot be negative")
-        if self.all_pending and not self.pending_grams.is_positive:
+        if self.all_pending and not self.pending_quantity.is_positive:
             raise ValueError("a fully pending cost line has pending grams")
 
 
@@ -64,8 +64,8 @@ class VarietyRow:
     name: str
     sales_without_shipping: int
     share_percent: int | None
-    grams_sold: Grams
-    grams_gifted: Grams
+    quantity_sold: Quantity
+    quantity_gifted: Quantity
     cost: CostFigure
     margin: MarginFigure
 
@@ -77,8 +77,8 @@ class MonthFigures:
     next: Month | None
     sales: int
     sales_without_shipping: int
-    grams_sold: Grams
-    grams_gifted: Grams
+    quantity_sold: Quantity
+    quantity_gifted: Quantity
     average_margin: MarginFigure
     shortfall: RowCost | None
     promotion: RowCost | None
@@ -91,7 +91,7 @@ class WeekFigures:
     first_day: date
     last_day: date
     sales: int
-    grams: Grams
+    quantity: Quantity
     expenses: int
     cost_of_goods: RowCost
     shortfall: RowCost | None
@@ -108,7 +108,7 @@ class MonthRowFigures:
     first_day: date
     last_day: date
     sales: int
-    grams: Grams
+    quantity: Quantity
     expenses: int
     cost_of_goods: RowCost
     shortfall: RowCost | None
@@ -160,8 +160,8 @@ class PeriodTotals:
 
     sales: int
     sales_count: int
-    grams_sold: Grams
-    grams_gifted: Grams
+    quantity_sold: Quantity
+    quantity_gifted: Quantity
     cost_of_goods: CostFigure
     cost_of_goods_row: RowCost
     shortfall: RowCost | None

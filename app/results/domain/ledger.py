@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Literal, assert_never
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 
 DrawKind = Literal["sold", "gifted", "shortfall", "promotion", "own_use"]
 
@@ -26,9 +26,9 @@ class DrawRow:
     variety_name: str | None
     sale_id: int | None
     line_total: int | None
-    grams: Grams
+    quantity: Quantity
     costed: int | None
-    pending: Grams
+    pending: Quantity
 
     def __post_init__(self) -> None:
         match self.kind:

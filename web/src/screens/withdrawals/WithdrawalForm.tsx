@@ -43,10 +43,12 @@ import Boton from '../../components/Boton'
 import { GRAMS_INVALID, STOCK_TEXT } from '../../copy/stock'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import { useTranslation } from 'react-i18next'
+import { refusalText, type Refusal } from '../../i18n/refusalKeys'
 
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
-const REFUSAL_MESSAGES: Partial<Record<RefusalCode, string>> = WITHDRAWAL_REFUSAL_MESSAGES
+const REFUSAL_MESSAGES: Partial<Record<RefusalCode, Refusal>> = WITHDRAWAL_REFUSAL_MESSAGES
 
 export type WithdrawalTarget = 'new' | Withdrawal
 
@@ -170,6 +172,7 @@ export default function WithdrawalForm({
 }: WithdrawalFormProps) {
   const me = useOutletContext<Me>()
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
     queryFn: fetchVarieties,
@@ -352,7 +355,7 @@ export default function WithdrawalForm({
         if (caught.code === 'stock.withdrawal_variety_not_found') {
           // The withdrawal itself still has somewhere to go: only a line's variety is gone.
           invalidateResource(queryClient, 'varieties')
-          setFormError(message ?? GENERIC_REFUSAL)
+          setFormError(message === undefined ? GENERIC_REFUSAL : refusalText(t, message))
         } else if (caught.code === 'variety.archived') {
           // Before the generic gone branch: the withdrawal is fine, a line's variety is not.
           await settleArchived(sent)
@@ -360,7 +363,7 @@ export default function WithdrawalForm({
           invalidateResource(queryClient, 'stock')
           onGone()
         } else if (message !== undefined) {
-          setFormError(message)
+          setFormError(refusalText(t, message))
         } else {
           setFormError(
             caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal'
@@ -459,7 +462,7 @@ export default function WithdrawalForm({
             </select>
             {marked(line.key) && (
               <span className="campo__error" role="alert" id={`${messageId}-${line.key}`}>
-                {GONE_DETAIL}
+                {refusalText(t, GONE_DETAIL)}
               </span>
             )}
             <input

@@ -1,0 +1,15 @@
+{
+  "title": "Xx title",
+  "greeting": "Xx {{name}}",
+  "price": "Xx {{amount}}",
+  "range": "Xx {{fromDate}} {{toDate}}",
+  "inbox_one": "{{count}} xx",
+  "inbox_other": "{{count}} xxs",
+  "sales_other": "{{count}} xxs",
+  "nested": {
+    "bye": "Xx bye",
+    "deep": {
+      "leaf": "Xx deep"
+    }
+  }
+}

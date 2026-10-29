@@ -213,15 +213,27 @@ def test_choosing_the_stored_language_sends_nothing(
 
 
 def test_a_change_that_leaves_the_text_identical_edits_and_posts_nothing(
-    client: TestClient, telegram: FakeTelegram
+    engine: Engine, clock: MovableClock, telegram: FakeTelegram, settings: Settings
 ) -> None:
-    _published(client)
-    telegram.calls.clear()
+    # The text follows the shown language now, so only a shown language the change does
+    # not move leaves it identical: the operator's forced one.
+    forced = create_app(
+        replace(settings, forced_language=TEST_LOCALE),
+        engine=engine,
+        clock=clock,
+        hasher=TEST_HASHER,
+        telegram=telegram,
+        upkeep_ticker=False,
+    )
+    with TestClient(forced) as client:
+        signed_in(client, open_business(client, engine, clock, "Forzado", "f@example.com"))
+        _published(client)
+        telegram.calls.clear()
 
-    assert _change(client, "de").status_code == 200
+        assert _change(client, "de").status_code == 200
 
-    assert _edits(telegram) == []
-    assert _posts(telegram) == []
+        assert _edits(telegram) == []
+        assert _posts(telegram) == []
 
 
 def _stale(client: TestClient, telegram: FakeTelegram) -> None:

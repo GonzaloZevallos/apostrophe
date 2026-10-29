@@ -209,7 +209,7 @@ test('"Out of date" carries the hidden attention icon beside its reason; "Up to 
   const box = title.closest('.catalogo__publicar-estado') as HTMLElement
 
   expect(box.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(box).toHaveTextContent(`Out of date · ${PINNED_CATALOG_REASON_LABEL.message_gone}`)
+  expect(box).toHaveTextContent('Out of date · The pinned message is gone: publish it again')
   expectIconAndTextRule(document.body)
 })
 

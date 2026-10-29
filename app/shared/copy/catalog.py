@@ -13,6 +13,23 @@ class UnknownLanguage(Exception):
         super().__init__(f"No compiled catalog for language {language.tag}")
 
 
+class MissingCatalogKey(Exception):
+    """A catalog key that gettext answers with the key itself. Names the key and nothing
+    else, so no message id ever reaches a catalog line or a default."""
+
+    def __init__(self, key: str) -> None:
+        super().__init__(f"No catalog text for key {key}")
+        self.key = key
+
+
+def required_text(translations: Translations, key: str) -> str:
+    """`key`'s text, or `MissingCatalogKey` when gettext answers the key itself."""
+    text = str(translations.gettext(key))
+    if text == key:
+        raise MissingCatalogKey(key)
+    return text
+
+
 class CopyCatalog:
     """Compiled gettext catalogs under `<locales_dir>/<tag>/LC_MESSAGES/apostrophe.mo`.
 
@@ -38,6 +55,14 @@ class CopyCatalog:
         if language != ENGLISH and ENGLISH in self.languages():
             translations.add_fallback(self._load(ENGLISH))
         return translations
+
+    def translations_or_english(self, language: Language) -> Translations:
+        """`translations`, except that a language with no compiled catalog gets English's:
+        the one place that decides such a language renders English (the gettext fallback
+        of docs/language.md, applied to every key at once)."""
+        if language not in self.languages():
+            return self.translations(ENGLISH)
+        return self.translations(language)
 
     def _load(self, language: Language) -> Translations:
         path = mo_path(self._locales_dir, language.tag)

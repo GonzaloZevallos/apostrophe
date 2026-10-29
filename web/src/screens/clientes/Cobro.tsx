@@ -21,6 +21,7 @@
  */
 
 import { type FormEvent, type RefObject, useEffect, useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
@@ -106,6 +107,7 @@ export default function Cobro({
   onDirtyChange,
   onSendingChange,
 }: CobroProps) {
+  const { t } = useTranslation()
   // Only the phone standard asks for `autocomplete`; the computer form's DOM stays as it was.
   const phoneAutoComplete = useViewport() === 'phone' ? 'off' : undefined
   const balance = customer.balance
@@ -240,7 +242,7 @@ export default function Cobro({
           <div className="fecha-fila">
             <span className="fecha-fila__rotulo">{COMMON_TEXT.date}</span>
             <span id={dateTextId} className="fecha-fila__valor">
-              {date === '' ? '' : chipDate(date, today)}
+              {date === '' ? '' : chipDate(date, today, t)}
             </span>
             <input
               className="fecha-fila__input"

@@ -107,3 +107,42 @@ offset from either) and checked by an app on another clock expires between the t
     when someone reads the `NOT_ISSUERS` rows;
   - the closed-world test reflects only those two modules and the port; a new module of
     credentials elsewhere is added to its reflection list.
+
+## Amendment (GH-384): money, quantity, configuration and the business day are planned to change
+
+Planned in GH-318, not yet in the code. Four sentences of this ADR are narrowed by the epic's ADRs. Each
+quoted sentence below describes what runs until the part named after it ships.
+
+> - **Money is whole pesos** (`int`): prices in this business never carry cents.
+
+Narrowed by docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md, in the money part: money is still an `int` column, now a count of the business's
+smallest unit at a per-business scale of 0 or 2. Existing businesses stay at scale 0, which is whole
+pesos; new ones start at scale 2.
+
+> - **Grams are whole hundredths** (`app/shared/grams.py`): exact sums, no float drift, and
+>   enough precision for a kitchen scale.
+
+Narrowed by docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md, in the units part: every stored quantity of every unit is a whole number of
+hundredths, and a unit's decimals only validate input and decide display. The gram becomes one unit
+among the seller's own; its stored values are unchanged. `app/shared/grams.py` stays where it is until
+that part decides what becomes of it.
+
+GH-385: the type now lives in `app/shared/quantity.py` as `Quantity` (its refusal code is unchanged).
+
+> - **Shape**: one hexagon per capability under `app/<capability>/`:
+
+Narrowed by docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md, in the parts that build the configuration: a business's configuration (units,
+categories with attributes and the product word, customer types, payment methods, money format) is
+split into hexagons by reason to change, each its own root under `app/` and added to `HEXAGON_ROOTS` in
+the diff that creates it. They are hexagons by the same rule; what changes is that a root may hold
+configuration rather than a capability the seller uses. Their frozen shared values live in `app/shared`
+and each reader reads them through its own Protocol.
+
+> - **"Today" is the business day in Argentina time** (`app/clock.py`); the clock is
+>   injected so tests move it.
+
+Narrowed by docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md, in the time-zone part: "today" is the business day in the business's own time zone.
+Today `get_today` and `business_day` are in `app/clock.py`; after the time-zone part, `get_today` is
+per business behind `app/accounts/adapters/deps.py` and `business_day(instant, zone)` is in
+`app/shared/calendar.py`. Argentina is the zone every existing business is given, so its days do not
+change, and the clock stays injected.

@@ -44,7 +44,7 @@ def costs_for_sale(
     costs: list[LineCost] = []
     for position, line in enumerate(sale.lines):
         result = by_variety_position[(line.variety_id, position)]
-        costs.append(LineCost(costed=result.costed, pending_grams=result.pending))
+        costs.append(LineCost(costed=result.costed, pending_quantity=result.pending))
     return costs
 
 

@@ -1,18 +1,16 @@
 # Icon and text rule
 
-*Temporary copy. The authoritative text is `DESIGN_STANDARDS.md`. This file is removed when agentic-system#295 lands.*
-
-How every screen labels its entries, actions and notices: which controls are icon-only, which are text only and which are icon + text; how long an always-visible line may be; and what may move behind More info. It decides how things are labelled, never what they do. No action, route, entry order, confirmation, toast wording or tap budget is changed by it, and no rule about what a screen reveals (accounts.md) is weakened by it. The design-system README states the same rule, the same way. Where each screen sits is navigation.md; each screen's own copy stays in its own capability file.
+How every screen labels its entries, actions and notices: which controls are icon-only, which are text only and which are icon + text; how long an always-visible line may be; and what may move behind More info. It decides how things are labelled, never what they do. No action, route, entry order, confirmation, toast wording or tap budget is changed by it, and no rule about what a screen reveals (docs/product/accounts.md) is weakened by it. The design-system README states the same rule, the same way. Where each screen sits is docs/product/navigation.md; each screen's own copy stays in its own capability file.
 
 ## Jobs
 
 **When** I'm on my phone between orders or mid-chat with a customer and I need to find an entry, an action or what a notice is telling me, **I want** to recognise it at a glance by its icon and a short label, and read any help or notice as one short line, **so I can** get to it without reading blocks of text and get back to the customer.
 
-This refines the navigation job (navigation.md) and the "feels like a phone app" job (accounts.md); it is not a new job and adds no capability. Its protagonist is the seller, in busy, one-handed phone use; setup screens (Settings, Integrations, the catalog) follow the same rule and are not designed apart. The computer is the same job on a bigger screen. Before it, the app had 13 icons and screens read as walls of words: finding an entry or an action took reading instead of a glance.
+This refines the navigation job (docs/product/navigation.md) and the "feels like a phone app" job (docs/product/accounts.md); it is not a new job and adds no capability. Its protagonist is the seller, in busy, one-handed phone use; setup screens (Settings, Integrations, the catalog) follow the same rule and are not designed apart. The computer is the same job on a bigger screen. Before it, the app had 13 icons and screens read as walls of words: finding an entry or an action took reading instead of a glance.
 
 **When** a change adds or edits a link and the gate checks it, **I want** the guard to let through only the links this rule allows to carry a chevron, and to flag every other link that carries an icon, **so I can** trust a green gate and never let an action reach the seller looking like a link.
 
-- Its protagonist is the maintainer, or the reviewer acting for them, as in gate.md's and design-capture.md's maintainer jobs. The seller is affected only indirectly.
+- Its protagonist is the maintainer, or the reviewer acting for them, as in docs/product/gate.md's and docs/product/design-capture.md's maintainer jobs. The seller is affected only indirectly.
 - It is served by the closing guard (`findActionLinks`, ADR-0037's "action links" amendment). That guard lets a link carry only a record row's trailing chevron. It never judges whether a link "does" or "opens".
 - No rule of this file changes because of it.
 - Before it (GH-227, follow-up of GH-165), the guard exempted a chevron anywhere in a link. A link that was not a record row, holding a word and a chevron (e.g. "Siguiente ›"), passed the gate, and only a reviewer reading the diff caught it.
@@ -47,8 +45,8 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - The target is at least 44 px.
   - Being on the list allows icon-only; it never requires it. A screen's main action always carries its text (Share on the catalog screen keeps its word).
   - **Close is one form everywhere**: every form and sheet closes with the same icon-only control, accessible name "Close". No form shows the word while another shows the icon.
-  - Back is not on the list: it is navigation and stays "‹ <parent>" (navigation.md).
-    - The parent is the fixed one navigation.md names for that screen (its "‹ <parent>" and its back-with-no-history table), whatever screen it was reached from. Back still follows history.
+  - Back is not on the list: it is navigation and stays "‹ <parent>" (docs/product/navigation.md).
+    - The parent is the fixed one docs/product/navigation.md names for that screen (its "‹ <parent>" and its back-with-no-history table), whatever screen it was reached from. Back still follows history.
     - A screen shows exactly one back, the one its chrome gives it (the shell's); a screen never draws a second one of its own.
     - Back is never "‹" alone and never a generic word such as "Back": its visible text and its accessible name both name the parent.
   - More info's "i" is the one icon-only control outside this list, defined by its own term below.
@@ -133,7 +131,7 @@ No telemetry; from tests and the design check.
 
 - **Found at a glance (criterion 1)**: a front test over every screen in `scripts/design/screens.json`: every entry row, action row and action outside the closed lists has an icon and its text; every icon-only control has its exact current accessible name and a 44 px target; the icon next to a word is hidden from assistive technology; no menu repeats an icon; every form and sheet closes with the same icon-only "Close". 0 exceptions.
 - **Icon and word not doubled**: no visible label carries a literal "+" beside an `agregar` icon, and every such control keeps its accessible name. 0 exceptions.
-- **One back per screen**: every card and detail in `scripts/design/screens.json` shows exactly one back control, reading "‹ <parent>" with the fixed parent navigation.md names, its accessible name naming that parent; none reads "‹" alone or "Back". 0 exceptions.
+- **One back per screen**: every card and detail in `scripts/design/screens.json` shows exactly one back control, reading "‹ <parent>" with the fixed parent docs/product/navigation.md names, its accessible name naming that parent; none reads "‹" alone or "Back". 0 exceptions.
 - **Actions are not links**: no action is drawn in the link style; checked by eye in the design check.
 - **One rule (criterion 2)**: this file and the README state the same lists and limits, the tappable notice included; `componentes.ts` and `Icono.tsx` name the same set; every `NombreIcono` name added by this rule is used by a screen. 0 unused new names, 0 mismatches.
 - **Short by default (criterion 3)**:
@@ -160,7 +158,7 @@ No telemetry; from tests and the design check.
 - Drawing a tappable notice as a list row, or giving it a row's spacing or divider.
 - Moving a consequence, a refusal's fix or a state behind More info.
 - Remembering whether More info was opened.
-- A back label that depends on how a screen was reached (navigation.md).
+- A back label that depends on how a screen was reached (docs/product/navigation.md).
 - A dashboard or any business metric.
 - Closing the closing guard's other known gaps: an icon drawn by a helper component, a link re-exported under another name, an action link with no icon.
 - Judging a link's intent ("does" versus "opens") in the guard.

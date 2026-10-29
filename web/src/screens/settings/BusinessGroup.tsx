@@ -33,6 +33,8 @@ import {
 } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
+import { useTranslation } from 'react-i18next'
+import { refusalText, type Refusal } from '../../i18n/refusalKeys'
 
 interface Business {
   name: string
@@ -54,7 +56,7 @@ const LEAVE = {
   discardLabel: COMMON_TEXT.yesDiscard,
 }
 
-const LANGUAGE_OVERRIDES: Partial<Record<RefusalCode, string>> = {
+const LANGUAGE_OVERRIDES: Partial<Record<RefusalCode, Refusal>> = {
   'business.language_not_selectable': LANGUAGE_NOT_SELECTABLE_MESSAGE,
 }
 
@@ -174,6 +176,7 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
  * off the selectable list is one extra selected segment, first, that cannot be tapped.
  */
 function LanguageControl({ language, selectable }: { language: StoredLanguage; selectable: readonly LanguageTag[] }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -202,7 +205,7 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
         setOffline(true)
       } else if (caught instanceof ApiError) {
         const refusal = resolveOverride(LANGUAGE_OVERRIDES, caught.code)
-        setMessage(refusal ?? ERROR_GENERICO_MENSAJE)
+        setMessage(refusal === undefined ? ERROR_GENERICO_MENSAJE : refusalText(t, refusal))
         if (refusal !== undefined) {
           invalidateResource(queryClient, 'business')
         }

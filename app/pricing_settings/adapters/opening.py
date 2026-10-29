@@ -8,13 +8,14 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from app.pricing_settings.adapters.tables import PricingSettingsRow
+from app.shared.language import BusinessLanguage
 
 
 class PricingSettingsOpening:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def opened(self, business_id: int) -> None:
+    def opened(self, business_id: int, language: BusinessLanguage) -> None:
         self._session.add(
             PricingSettingsRow(
                 business_id=business_id, is_bulk_pricing=False, is_vip_customers=False

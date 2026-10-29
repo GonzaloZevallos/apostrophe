@@ -1,12 +1,15 @@
 /**
  * Every text a copy file holds (ADR-0049), by its key `file.EXPORT.path`: a string, the
  * string of an object's field, or what a function returns when each of its holes is filled
- * with `probe`. The registries (`LANGUAGE`, `LIMITED_COPY`, `LONG_REFUSALS`) are not texts.
+ * with `probe`. The registries (`REGISTRIES` below) are not texts.
  * Read by the tests that judge the copy (`architecture/copyLanguage.test.ts`,
  * `design/screens.test.ts`), never by the app.
  */
 
 type CopyFile = Record<string, unknown>
+
+/** The exports of a copy file that are registries, not texts. */
+const REGISTRIES: ReadonlySet<string> = new Set(['LANGUAGE', 'LIMITED_COPY', 'LONG_REFUSALS', 'NAMESPACE', 'MOVED_TO_KEYS', 'BASELINE_ARGS'])
 
 export function textsOf(file: string, mod: CopyFile, probe: string): Map<string, string> {
   const found = new Map<string, string>()
@@ -20,7 +23,7 @@ export function textsOf(file: string, mod: CopyFile, probe: string): Map<string,
     }
   }
   for (const [name, value] of Object.entries(mod)) {
-    if (name === 'LANGUAGE' || name === 'LIMITED_COPY' || name === 'LONG_REFUSALS') continue
+    if (REGISTRIES.has(name)) continue
     walk(`${file}.${name}`, value)
   }
   return found

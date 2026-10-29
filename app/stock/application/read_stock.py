@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.stock.application.history import business_history, history
 from app.stock.application.ports import (
     Draws,
@@ -33,7 +33,7 @@ class VarietyStock:
 
 @dataclass(frozen=True)
 class StockView:
-    total: Grams
+    total: Quantity
     varieties: list[VarietyStock]
     entries: list[StockEntry]
 
@@ -60,7 +60,7 @@ def read_stock(
     # hand (docs/adr/0032). The rows are the listed varieties, or the archived ones when
     # asked; rows and total stop sharing a filter.
     levels = {variety_id: level_of(variety_id) for variety_id in grouped}
-    total = sum(level.grams.hundredths for level in levels.values())
+    total = sum(level.quantity.hundredths for level in levels.values())
     varieties = [
         VarietyStock(
             variety_id,
@@ -75,7 +75,7 @@ def read_stock(
         key=lambda entry: (entry.entry_date, entry.recorded_at, entry.id),
         reverse=True,
     )
-    return StockView(Grams(total), varieties, sorted_entries)
+    return StockView(Quantity(total), varieties, sorted_entries)
 
 
 def read_variety_stock(

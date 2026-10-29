@@ -259,7 +259,7 @@ describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment,
 
   test('opened from the card: the card is behind, and it shows no message of the entry before', async () => {
     const router = renderApp(
-      [{ pathname: CARD, state: { ...inAppState({ pathname: CUSTOMERS }), toast: 'Customer saved' } }],
+      [{ pathname: CARD, state: { ...inAppState({ pathname: CUSTOMERS }), toast: 'common:customerSaved' } }],
       viewport,
     )
     await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))

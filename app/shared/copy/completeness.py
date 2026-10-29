@@ -1,3 +1,4 @@
+import re
 from functools import cache
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from app.shared.copy.messages import po_path
 from app.shared.language import ENGLISH, Language
 
 _FileStamp = tuple[int, int] | None
+_HOLE = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
 
 def _stamp(path: Path) -> _FileStamp:
@@ -21,8 +23,9 @@ def _stamp(path: Path) -> _FileStamp:
 def missing_keys(locales_dir: Path, language: Language) -> tuple[str, ...]:
     """The English ids `language` lacks, in `en.po` order.
 
-    A key is missing when it is absent, flagged fuzzy (whatever its text) or has an empty
-    plural form. A language with no `.po` lacks every key."""
+    A key is missing when it is absent, flagged fuzzy (whatever its text), has an empty
+    plural form or names other `{placeholders}` than its English entry. A language with no
+    `.po` lacks every key."""
     english = po_path(locales_dir, ENGLISH.tag)
     own = po_path(locales_dir, language.tag)
     return _missing(locales_dir.resolve(), language.tag, _stamp(english), _stamp(own))
@@ -36,7 +39,7 @@ def _missing(
     english_ids = _ids(po_path(locales_dir, ENGLISH.tag)) if english_stamp else ()
     if own_stamp is None:
         return english_ids
-    done = _complete_ids(po_path(locales_dir, tag))
+    done = _complete_ids(po_path(locales_dir, tag), _holes_by_id(po_path(locales_dir, ENGLISH.tag)))
     return tuple(key for key in english_ids if key not in done)
 
 
@@ -53,9 +56,22 @@ def _ids(po: Path) -> tuple[str, ...]:
     return tuple(_text(message) for message in _messages(po))
 
 
-def _complete_ids(po: Path) -> frozenset[str]:
+def _holes(string: str | tuple[str, ...] | list[str] | None) -> frozenset[str]:
+    forms = [string] if isinstance(string, str) else list(string or ())
+    return frozenset(name for form in forms for name in _HOLE.findall(form))
+
+
+def _holes_by_id(po: Path) -> dict[str, frozenset[str]]:
+    return {_text(message): _holes(message.string) for message in _messages(po)}
+
+
+def _complete_ids(po: Path, english_holes: dict[str, frozenset[str]]) -> frozenset[str]:
     return frozenset(
-        _text(message) for message in _messages(po) if not message.fuzzy and _filled(message.string)
+        _text(message)
+        for message in _messages(po)
+        if not message.fuzzy
+        and _filled(message.string)
+        and _holes(message.string) == english_holes.get(_text(message), frozenset())
     )
 
 

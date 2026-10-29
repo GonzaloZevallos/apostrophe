@@ -3,6 +3,8 @@
  * `LIMITED_COPY` so `copy/copyLimits.test.ts` measures the very bindings the dialogs show.
  */
 
+import { baselineArgs } from './baselineArgs.ts'
+import type * as Self from './onboarding.ts'
 import type { LimitedCopy } from './limits'
 import { STOCK_TEXT } from './stock.ts'
 
@@ -18,6 +20,17 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 ]
 
 export const LONG_REFUSALS: readonly string[] = []
+
+/** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
+export const BASELINE_ARGS = baselineArgs<typeof Self>()({
+  'ONBOARDING_TEXT.stepsCount': [['2', '5']],
+  'ONBOARDING_TEXT.missing': [['Rosa']],
+  'ONBOARDING_TEXT.stepOf': [['2', '5']],
+  'ONBOARDING_TEXT.varietyNamed': [['Rosa']],
+  'ONBOARDING_TEXT.forLaterIn': [['Settings']],
+  'ONBOARDING_TEXT.doneWith': [['Rosa']],
+  'ONBOARDING_TEXT.ifYouSkipIt': [['Settings']],
+})
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const ONBOARDING_TEXT = {

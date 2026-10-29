@@ -14,7 +14,7 @@ class EntryNotFound(LookupError):
         super().__init__(f"no stock entry {entry_id}")
 
 
-class EntryGramsInvalid(ValueError):
+class EntryQuantityInvalid(ValueError):
     code: ClassVar[str] = "stock.grams_invalid"
 
 
@@ -50,11 +50,11 @@ class WithdrawalNoLines(ValueError):
     code: ClassVar[str] = "stock.withdrawal_no_lines"
 
 
-class WithdrawalGramsNotPositive(ValueError):
+class WithdrawalQuantityNotPositive(ValueError):
     code: ClassVar[str] = "stock.withdrawal_grams_not_positive"
 
 
-class WithdrawalGramsTooPrecise(ValueError):
+class WithdrawalQuantityTooPrecise(ValueError):
     code: ClassVar[str] = "stock.withdrawal_grams_too_precise"
 
 

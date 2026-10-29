@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from 'vitest'
 
-const sources = import.meta.glob<string>(['/src/copy/*.ts', '!/src/copy/*.test.ts'], {
+const sources = import.meta.glob<string>(['/src/copy/*.ts', '!/src/copy/baselineArgs.ts', '!/src/copy/*.test.ts'], {
   eager: true,
   query: '?raw',
   import: 'default',

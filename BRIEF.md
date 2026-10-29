@@ -11,6 +11,13 @@ two debtors; an order of two varieties is two rows; and profit drops the week fl
 bought. This product replaces the spreadsheet with an app each seller uses, one installation
 keeping every business apart.
 
+The owner's four product and design criteria. Each one's full text lives where it is listed.
+
+1. Drawing as guide: `DESIGN_STANDARDS.md`, "Drawing as guide".
+2. Phone first: `DESIGN_STANDARDS.md`, "Phone first".
+3. The primary user, with the priority line: `BRIEF.md`, "Problem and who has it".
+4. Assume nothing: `DESIGN_STANDARDS.md`, "Assume nothing", with its test also in `BRIEF.md`.
+
 The person it is built for is the owner of a small business, working from the phone with
 little time. The computer is supported but secondary: it keeps every capability and gets no
 dedicated polish, and the designs that already exist for it stay as they are (ADR-0044's
@@ -18,6 +25,12 @@ price-form modal included).
 
 Priority: the flow working on the phone ships before polish, and the computer never wins a
 trade against the phone (DESIGN_STANDARDS.md).
+
+Assume nothing about the business (criterion 4). Don't hard-code one business's product type,
+units, currency, payment methods, pricing rules or channels: each business runs the app its
+own way through settings with neutral defaults, and there are no business-type presets.
+Would this still be right for a business that sells something else, in other units, other ways? If not, it is a finding.
+`DESIGN_STANDARDS.md`, "Assume nothing", says how a finding is handled.
 
 ## Jobs
 
@@ -34,6 +47,10 @@ trade against the phone (DESIGN_STANDARDS.md).
   chat to update itself, after seeing a test copy, so customers never see a stale price.
 
 ## Constraints
+
+The constraints below describe where the first businesses start and are not edited here: new
+work is tested against criterion 4, #330 sweeps the existing assumptions and #318 makes the
+model customizable.
 
 - Several businesses share one installation and never mix: no user, link or error reveals
   another business's data or that it exists. Security and privacy hold across the product.

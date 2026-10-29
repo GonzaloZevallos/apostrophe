@@ -158,3 +158,16 @@ pytest guard amendment's point 3.
    in the page) means revisiting the anchor.
 
 Evidence: `docs/evidence/GH-211-gate-clock.md` (GH-211's close-out document).
+
+## Amendment (GH-384): the day boundary is the business's own
+
+Planned in GH-318, not yet in the code. One sentence of this ADR is narrowed by docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md, in the time-zone
+part; until that part ships the sentence describes what runs.
+
+> start one minute before Argentina midnight (03:00 UTC), with time running,
+
+Narrowed: Argentina midnight is the day boundary of Argentina, the zone every existing business is
+given, and no longer the boundary of every business. A shifted run that must cross a business's midnight
+starts one minute before that business's own midnight. The injected clock, the wall-clock guards and
+the rule that tests never read the real clock are unchanged, and after the time-zone part no code asks
+for today through `BUSINESS_TIMEZONE`, a literal zone name or `datetime.now`.

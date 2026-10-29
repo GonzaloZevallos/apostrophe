@@ -122,3 +122,76 @@ section 3 was Cloudflare R2 (gone — folded into *Why R2 was dropped* above),
 section 4 was the `age` identity (now section 3), and section 9 was the go-live
 checklist (now section 8). The text above is not reworded to match, to keep this
 amendment append-only; read those numbers with this shift in mind.
+
+## Amendment (2026-10-27): the daily copy goes to a private repository
+
+**Supersedes**: the first amendment's destination bullet (the copy as this workflow's own
+run artifact), its retention bullet (30-day artifact retention), its listing bullet (the
+newest copy chosen from the artifact listing), and its consequence about the shared
+artifact storage quota. Its other bullets stand.
+
+This repository is public, and anyone can download a public repository's run artifacts,
+so an artifact is not a private place for the encrypted copy, however well it is encrypted.
+
+### Decision
+
+- The destination is the private repository `GonzaloZevallos/apostrophe-backups`, reached
+  only as the literal `git@github.com:GonzaloZevallos/apostrophe-backups.git` over SSH.
+  Each copy is its own branch, named exactly like its file,
+  `backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age`, holding that one file; `main` is the
+  repository's first commit (its README) and is never a copy.
+- The workflow authenticates with a deploy key with write access to that repository only.
+  The private half is the secret `BACKUP_DEPLOY_KEY` of a `backup` environment limited to
+  `master`, read by the one step that writes it to a mode 600 file and removed by a final
+  `if: always()` step. The Turso secrets live in the same environment; none at repository
+  level. The restore and the drill use the owner's own SSH access, never the deploy key.
+- Guards: the job runs only in `GonzaloZevallos/apostrophe`; `permissions: contents: read`;
+  `actions/checkout` with `persist-credentials: false`; no workflow-level or job-level
+  `env:`; each secret only in its own step's `env:`; never a force push; no credential in
+  a URL or argv; no tracing, no verbose flag, nothing that prints; a copy over 90 MB is
+  refused before any push. `tests/deploy/test_backup_workflow.py` checks each one.
+- The host key is pinned: `deploy/github_known_hosts` holds GitHub's ed25519 host key, and
+  the push and prune steps pass `StrictHostKeyChecking=yes` and that file as
+  `UserKnownHostsFile` (an absolute path). A test pins its SHA256 fingerprint to the one on
+  GitHub's SSH key fingerprints page.
+- Copies are pruned after 30 days by the same daily run: `git ls-remote --heads` piped into
+  `scripts/newest_backup.py expired --now <UTC now>`, then one `git push --atomic --delete`.
+  The newest copy and `main` are never listed, so a stalled backup never prunes the
+  repository down to nothing.
+- `scripts/newest_backup.py` reads the `ls-remote` listing to choose the newest copy and the
+  expired ones; no doc or script chooses a copy by `gh run list` or by commit time.
+
+### Why not
+
+- A fine-grained personal access token: it expires, and it is tied to a person, so a
+  backup would stop the day it lapses or its owner leaves. A deploy key has no expiry and
+  belongs to one repository.
+- Cloudflare R2, or any object store with a lifecycle rule: it needs a payment card, against
+  the 2026-10-04 rule that publishing this product costs nothing.
+- Commits on one branch: a branch's history cannot expire individual copies, so storage would
+  only grow. One branch per copy can be deleted on its own.
+
+### Consequences
+
+- About 30 full copies are stored at once, one per day.
+- Deleting a branch frees space only when GitHub's own garbage collection runs, not at once.
+- GitHub refuses a file over 100 MB; the 90 MB guard fails the run before the push. A copy
+  that large needs a new amendment moving the destination.
+- Residual weakness: whoever can change `master`, the `backup` environment, or holds the
+  deploy key can delete copies. Deletion-blocking rulesets are unavailable for private
+  repositories on GitHub Free. Nothing replaces Object Lock.
+- A prune failure turns the run red, so the failed-run email reaches the owner. `--atomic`
+  means that if one name cannot be deleted, nothing is deleted that run; that is safer than
+  a half-done prune, and the next run lists afresh. A stale ref can only come from someone
+  deleting by hand, which the red-run email surfaces.
+- `concurrency: {group: backup, cancel-in-progress: false}` never overlaps two runs, but a
+  superseded pending run is dropped, not failed, so it sends no email. That is unlikely with
+  one daily cron.
+- The offline tests prove the git command sequence over `file://`, not the SSH options or
+  the host key. The first live run, after the owner's hand steps (`deploy/README.md`
+  section 4) and the orchestrator's re-enabling of `backup.yml`, is the one unproven step,
+  and the failed-run email is its trip-wire.
+- `ci.yml`'s `e2e-test-results` artifact is out of scope: it holds synthetic fixtures and no
+  backup data.
+- `scripts/drill.py` is unchanged: its `copy_age_warning` still measures how recent the
+  restored data is, not how old the copy is.

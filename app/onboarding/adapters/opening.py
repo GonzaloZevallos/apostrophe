@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.clock import Clock
 from app.onboarding.adapters.tables import OnboardingRow
+from app.shared.language import BusinessLanguage
 
 
 class OnboardingOpening:
@@ -19,5 +20,5 @@ class OnboardingOpening:
         self._session = session
         self._clock = clock
 
-    def opened(self, business_id: int) -> None:
+    def opened(self, business_id: int, language: BusinessLanguage) -> None:
         self._session.add(OnboardingRow(business_id=business_id, created_at=self._clock()))

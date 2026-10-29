@@ -8,7 +8,7 @@
 
 import { readFileSync } from 'node:fs'
 import { expect, test, type Browser, type Page } from '@playwright/test'
-import { MOBILE_FACTS_FILE, MOBILE_STATE_FILE } from './env.js'
+import { MOBILE_FACTS_FILE, MOBILE_STATE_FILE, mobileLanguage } from './env.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { collect, GEOMETRY_COLLECTOR, type CellId } from './mobile/collect.js'
 import { COLOUR_COLLECTOR } from './mobile/collectColour.js'
@@ -339,10 +339,16 @@ test('opening a live invitation under the write guard shows its form, not "Sin c
 // The colour, loading and shift checkers must reject what breaks the standard, not only accept what keeps it.
 test.describe('the colour, loading and shift checkers', () => {
   const COLLECTOR = { loaded: COLOUR_COLLECTOR, loading: LOADING_COLLECTOR, released: SHIFT_COLLECTOR }
-  async function onPage(browser: Browser, html: string, phase: 'loaded' | 'loading' | 'released'): Promise<Violation[]> {
+  async function onPage(
+    browser: Browser,
+    html: string,
+    phase: 'loaded' | 'loading' | 'released',
+    lang: string = mobileLanguage(),
+  ): Promise<Violation[]> {
     const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
     const page = await context.newPage()
     await page.setContent(`<meta name="viewport" content="width=device-width, initial-scale=1">${html}`)
+    await page.evaluate((lang) => document.documentElement.setAttribute('lang', lang), lang)
     const found = await collect(page, phase, PROBE_CELL, [COLLECTOR[phase]])
     await context.close()
     return found
@@ -397,6 +403,13 @@ test.describe('the colour, loading and shift checkers', () => {
       'loading',
     )
     expect(clean).toEqual([])
+  })
+
+  test('a loading page whose lang is not the run’s fails with the language reason, not as a violation', async ({ browser }) => {
+    const wrong = mobileLanguage() === 'en' ? 'en-XA' : 'en'
+    await expect(onPage(browser, '<main aria-busy="true"><p>Cargando</p></main>', 'loading', wrong)).rejects.toThrow(
+      `page lang ${wrong}, run locale ${mobileLanguage()}`,
+    )
   })
 
   test('chrome that moves is reported at any distance, content only beyond the tolerance', async ({ browser }) => {

@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, del } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
@@ -44,6 +45,7 @@ interface Props {
 }
 
 export default function PriceRows({ varietyId, history, currentPriceId, limit, readOnly = false }: Props) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   // Until the switches are known (or if they cannot be read) nothing about a rule shows.
   const settings = useQuery(pricingSettingsQueryOptions()).data
@@ -113,7 +115,7 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
       {deleting !== null && (
         <ConfirmDialog
           title={VARIETIES_TEXT.borrasElPrecioDesde(formatDateShort(deleting.effective_from))}
-          detail={deleteNotice(history, deleting.id)}
+          detail={deleteNotice(history, deleting.id, t)}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {

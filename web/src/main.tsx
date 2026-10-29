@@ -8,6 +8,7 @@ import './styles/app.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import { bootLanguage, startLanguage } from './i18n/language'
 import { startKeepFocusVisible } from './shell/keepFocusVisible'
 import { applyStoredTheme } from './theme'
 import { startThemeSync } from './theme/theme'
@@ -19,6 +20,11 @@ if (root === null) throw new Error('index.html has no #root')
 applyStoredTheme()
 startThemeSync()
 startKeepFocusVisible()
+
+// ADR-0050: the server writes `<html lang>`; any language other than English is one chunk,
+// awaited before the first render so Entrar never flashes in English. A failed or slow chunk
+// ends in English (`startLanguage` never rejects), so the page always renders.
+if (bootLanguage !== 'en') await startLanguage()
 
 createRoot(root).render(
   <StrictMode>

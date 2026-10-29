@@ -21,6 +21,7 @@ import { chooseTheme } from '../../theme'
 import CobroRoute from '../clientes/CobroRoute'
 import Inicio from '../Inicio'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
+import { baselineText } from '../../i18n/testing'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
@@ -345,7 +346,7 @@ test('"Nobody owes you" shows with nothing to tap when nobody owes', async () =>
   panelNow = { ...PANEL, debts: debts([], 0, 0) }
   renderInicio()
 
-  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
+  expect(await screen.findByText(baselineText('inicio.ts:NOBODY_OWES'))).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /Collect from/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
@@ -450,7 +451,7 @@ test('Record payment opened from Inicio: with nobody left owing the block reads 
   renderInicio()
   await payFromInicio('11000')
 
-  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
+  expect(await screen.findByText(baselineText('inicio.ts:NOBODY_OWES'))).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /Collect from/ })).not.toBeInTheDocument()
 })
 

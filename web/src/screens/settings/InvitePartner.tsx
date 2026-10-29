@@ -76,7 +76,8 @@ export default function InvitePartner({
   async function onShare(): Promise<void> {
     if (invite === null || !canShare()) return
     // `share.ts` is the only module that names the share sheet; a cancel and a failure
-    // both stay silent here, the link is already readable right on the screen.
+    // both stay silent here, the link is already readable right on the screen. A share that
+    // never finishes (the iOS sheet that spins) holds nothing: no busy state, no timer.
     await shareText(invite.url)
   }
 

@@ -147,7 +147,7 @@ export default function Variedades() {
             </BotonLink>
           </span>
         </div>
-        {feedback !== null ? <Notice kind={feedback.kind} message={feedback.message} /> : goneExited && <GoneNotice />}
+        {feedback !== null ? <Notice {...feedback} /> : goneExited && <GoneNotice />}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !ready && <Loading />}
         {failure === null && ready && rows.length === 0 && (

@@ -44,7 +44,7 @@ outranks every other; section 10 says the frontend's; section 11 names the datab
 
 ## 6. Strict typing, without silencing
 
-- `mypy --strict` over `app` and `tests`, and `ruff`, pass with nothing silenced: no
+- `mypy --strict` over `app`, `tests` and `scripts`, and `ruff`, pass with nothing silenced: no
   `type: ignore`, no `noqa`, no per-module `ignore_errors`.
 - The front (`web/`): `tsc` in strict mode and `oxlint` pass the same way: no
   `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck` or lint-disable comments, no `any`.

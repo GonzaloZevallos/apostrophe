@@ -35,6 +35,8 @@ import {
 } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
 import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
+import { useTranslation } from 'react-i18next'
+import { refusalText } from '../../i18n/refusalKeys'
 
 const TITLE = INTEGRATIONS_LINK_WORD
 const TEST_SENT_TOAST: SuccessToast = SETTINGS_TEXT.testSent
@@ -106,6 +108,7 @@ export function IntegrationsForm({
   const [previousPinLeft, setPreviousPinLeft] = useState(false)
 
   const [toast, setToast] = useState<SuccessToast | null>(null)
+  const { t } = useTranslation()
   const [testError, setTestError] = useState<string | null>(null)
   const [testOffline, setTestOffline] = useState(false)
   const [testing, setTesting] = useState(false)
@@ -132,9 +135,8 @@ export function IntegrationsForm({
 
   function showRefusal(caught: unknown): void {
     if (caught instanceof ApiError) {
-      setTestError(
-        resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE,
-      )
+      const refusal = resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code)
+      setTestError(refusal === undefined ? GENERIC_REFUSAL_MESSAGE : refusalText(t, refusal))
     } else if (caught instanceof NetworkError) {
       setTestOffline(true)
     } else {

@@ -68,6 +68,32 @@ test('any other rejection resolves failed', async () => {
   expect(await shareText('hola')).toBe('failed')
 })
 
+test('a refused second share (InvalidStateError) resolves failed', async () => {
+  stubSecureContext(true)
+  stubShare(vi.fn().mockRejectedValue(new DOMException('a share is in progress', 'InvalidStateError')))
+
+  expect(await shareText('hola')).toBe('failed')
+})
+
+test('a share that never settles leaves shareText pending, with no timer behind it', async () => {
+  vi.useFakeTimers()
+  try {
+    stubSecureContext(true)
+    stubShare(() => new Promise(() => {}))
+    let settled = false
+    void shareText('hola').then(() => {
+      settled = true
+    })
+
+    await vi.advanceTimersByTimeAsync(10 * 60 * 1000)
+
+    expect(settled).toBe(false)
+    expect(vi.getTimerCount()).toBe(0)
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
 test('a rejection that is not a DOMException resolves failed', async () => {
   stubSecureContext(true)
   stubShare(vi.fn().mockRejectedValue(new Error('boom')))

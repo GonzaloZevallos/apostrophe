@@ -14,7 +14,7 @@
  */
 
 import { SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
-import { expect, test, type WorkerServer } from './fixtures.js'
+import { expect, test, withToastRecorder, type WorkerServer } from './fixtures.js'
 import type { Browser, BrowserContext, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
@@ -118,11 +118,11 @@ test.describe('phone sales sweep', () => {
   let session: Awaited<ReturnType<BrowserContext['storageState']>>
 
   test.beforeAll(async ({ browser, workerServer }) => {
-    const context = await browser.newContext({
+    const context = await withToastRecorder(browser.newContext({
       ...PHONE_CONTEXT,
       baseURL: workerServer.url,
       viewport: { width: 375, height: 812 },
-    })
+    }))
     const page = await context.newPage()
     await signUpWithAVariety(page)
     await page.goto(SALE_NEW)
@@ -136,12 +136,12 @@ test.describe('phone sales sweep', () => {
 
   for (const phoneCase of CASES) {
     test(`Nueva venta, Ventas and a sale detail fit and are thumb-sized at ${phoneCase.name}`, async ({ browser, workerServer }) => {
-      const context = await browser.newContext({
+      const context = await withToastRecorder(browser.newContext({
         ...PHONE_CONTEXT,
         baseURL: workerServer.url,
         viewport: { width: phoneCase.width, height: phoneCase.height },
         storageState: session,
-      })
+      }))
       try {
         await sweep(await context.newPage(), phoneCase)
       } finally {
@@ -156,13 +156,13 @@ test.describe('phone sales sweep', () => {
       server: WorkerServer,
       options: { phone: boolean },
     ): Promise<{ context: BrowserContext; page: Page }> {
-      const context = await browser.newContext({
+      const context = await withToastRecorder(browser.newContext({
         baseURL: server.url,
         // `test.use` is the default of every context, so the desktop one says so itself.
         ...(options.phone ? PHONE_CONTEXT : { isMobile: false, hasTouch: false }),
         viewport: { width: 375, height: 812 },
         storageState: session,
-      })
+      }))
       const page = await context.newPage()
       await page.goto(SALES)
       await expect(page.locator('.fila-venta').first()).toBeVisible()

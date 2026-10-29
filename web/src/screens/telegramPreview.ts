@@ -3,8 +3,9 @@
  * from the API's own `text`. Pairs `**` left to right — the same rule #10's bot must
  * use when it turns markers into bold (round-2 answers, Q1) — and a final unpaired
  * `**` shows literally rather than opening a bold span that never closes. No
- * component splits on `**` itself (plan, invariants): this is the one function that
- * does, and `Catalogo.tsx` only maps its segments to spans.
+ * other module splits, strips or matches `**` (plan, invariants): this is the one
+ * function that does. `Catalogo.tsx` maps its segments to spans, and `plainCopy`
+ * (`catalogCopy.ts`) joins their text for Copiar and Compartir.
  */
 
 export interface PreviewSegment {

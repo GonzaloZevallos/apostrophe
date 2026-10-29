@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from app.shared.grams import Grams
+from app.shared.quantity import Quantity
 from app.shared.transaction import Transaction
 from app.stock.application.errors import VarietyNotFound
 from app.stock.application.ports import (
@@ -30,15 +30,15 @@ def set_threshold(
     catalog: VarietyCatalog,
     transaction: Transaction,
     variety_id: int,
-    grams: Grams | None,
+    quantity: Quantity | None,
     today: date,
 ) -> VarietyStock:
     if not catalog.exists(variety_id):
         raise VarietyNotFound()
     require_usable(catalog, variety_id, keeps=False)
-    if grams is None:
+    if quantity is None:
         thresholds.clear(variety_id)
     else:
-        thresholds.set(variety_id, Threshold.of(grams))
+        thresholds.set(variety_id, Threshold.of(quantity))
     transaction.commit()
     return read_variety_stock(entries, draws, withdrawals, thresholds, variety_id, today)
