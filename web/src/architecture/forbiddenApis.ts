@@ -13,6 +13,11 @@
  * Plan (invariants): only `components/useLeaveGuard.ts` names `useBlocker`, so every form
  * or sheet asks its leave question through the one guard.
  *
+ * ADR-0063: only `shell/ScrollSync.tsx`, `shell/scrollPlaces.ts`, `shell/scrollFollow.ts` and
+ * `components/useReturnToPlace.ts` move the document's scroll or set `history.scrollRestoration`,
+ * so the scroll on a change of screen is decided in one place. In-page scrolling of an element
+ * (`element.scrollIntoView`) is not the document's and stays allowed.
+ *
  * Walks a list of source files handed to it, rather than the filesystem itself, so a
  * test can feed it a fixture that must fail, not only the files that already pass.
  */
@@ -32,6 +37,14 @@ interface Rule {
   pattern: RegExp
   allow?: (path: string) => boolean
 }
+
+/** The files ADR-0063 lets move the document's scroll. */
+const SCROLL_OWNERS: readonly string[] = [
+  'src/shell/ScrollSync.tsx',
+  'src/shell/scrollPlaces.ts',
+  'src/shell/scrollFollow.ts',
+  'src/components/useReturnToPlace.ts',
+]
 
 const RULES: Rule[] = [
   { name: 'fetch', pattern: /\bfetch\s*\(/, allow: (path) => path.endsWith('api/client.ts') },
@@ -55,6 +68,20 @@ const RULES: Rule[] = [
     name: 'useBlocker',
     pattern: /\buseBlocker\b/,
     allow: (path) => path === 'src/components/useLeaveGuard.ts',
+  },
+  {
+    name: 'documentScroll',
+    pattern: new RegExp(
+      [
+        // window.scrollTo(…), globalThis?.scrollBy(…), document['scroll'](…)
+        String.raw`\b(?:window|globalThis|document)\s*(?:\??\.\s*|\[\s*['"])(?:scrollTo|scrollBy|scroll)['"]?\s*\]?\s*\(`,
+        // document.documentElement.scrollTop = …, body.scrollLeft += …, document.scrollingElement.scrollTop = …
+        String.raw`\b(?:documentElement|body|scrollingElement)\s*\??\.\s*scroll(?:Top|Left)\s*(?:[-+*/]?=(?!=))`,
+        // history.scrollRestoration, read or written
+        String.raw`\bhistory\s*\??\.\s*scrollRestoration\b`,
+      ].join('|'),
+    ),
+    allow: (path) => SCROLL_OWNERS.includes(path),
   },
   {
     name: 'execCommand',
