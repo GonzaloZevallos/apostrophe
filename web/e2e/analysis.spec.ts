@@ -421,6 +421,12 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
       expect(gap).toBeGreaterThanOrEqual(0)
     }
 
+    // The month selector keeps its height when the page is taller than its content.
+    await page.setViewportSize({ width, height: 4000 })
+    const nav = await page.locator('.gastos__mes').evaluate((node) => node.getBoundingClientRect().height)
+    expect(nav).toBeLessThanOrEqual(48)
+    await page.setViewportSize({ width, height: 844 })
+
     // The current week is set apart by its border, not by its fill alone.
     const edges = await page.locator('.analisis__semanas > .analisis__tarjeta').evaluateAll((cards) =>
       cards.map((card) => getComputedStyle(card).borderInlineStartWidth),
