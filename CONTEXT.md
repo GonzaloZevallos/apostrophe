@@ -197,12 +197,12 @@ _Avoid_: cash flow, balance, profit
 ## Telegram
 
 **Catalog**:
-El texto que ofrece cada Variety sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre el texto de apertura y el de cierre del Business. Conserva sus marcadores **bold** y su propio formato de dinero ($11.000). _In the app_: Catalog.
+El texto que ofrece cada Variety sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre las dos partes del Catalog header and footer del Business. Conserva sus marcadores **bold** y su propio formato de dinero ($11.000). _In the app_: Catalog.
 _Avoid_: menu, price list, flyer
 _In the app_: Catalog
 
 **Pinned catalog**:
-El mensaje del Catalog fijado en el chat del canal de Telegram del Business por su propio bot, editado en el lugar cada vez que cambia el texto del Catalog y nunca enviado de nuevo en ese chat. Cuando nada califica, muestra el texto de apertura, la línea vacía ("Nothing to offer for now." en inglés) y el texto de cierre; sus líneas fijas siguen el Shown language del Business.
+El mensaje del Catalog fijado en el chat del canal de Telegram del Business por su propio bot, editado en el lugar cada vez que cambia el texto del Catalog y nunca enviado de nuevo en ese chat. Cuando nada califica, muestra la línea vacía ("Nothing to offer for now." en inglés) entre las dos partes del Catalog header and footer; sus líneas fijas siguen el Shown language del Business.
 _Avoid_: post, broadcast
 _In the app_: Pinned message
 
@@ -320,7 +320,7 @@ Enviar y fijar el Catalog en el chat del canal del Business, o editar ahí el Pi
 _Avoid_: broadcast, push, sync
 
 **Bot settings**:
-El único token de bot de Telegram de un Business, guardado cifrado y que nunca se vuelve a mostrar una vez guardado, más el chat de su canal y el chat propio del User. Cambiar cualquiera de ellos exige un nuevo Test send antes de publicar. _In the app_: Integrations, en Settings.
+El único token de bot de Telegram de un Business, guardado cifrado y que nunca se vuelve a mostrar una vez que se guarda, más el chat de su canal y el chat propio del User. Cambiar cualquiera de ellos exige un nuevo Test send antes de publicar. _In the app_: Integrations, en Settings.
 _Avoid_: integration, connection, config
 
 **Out of date**:
@@ -394,7 +394,7 @@ Cuatro pasos en Home para un Business que existía antes de que saliera el Onboa
 _Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
 
 **Onboarding**:
-La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo, en lugar de la First-run checklist. Tiene dos pasos obligatorios (una Variety con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories), y cada uno guarda lo que guardan Settings o la página de la Variety. Retoma donde quedó, termina para siempre cuando se llega a su pantalla de cierre "Done" o un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
+La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo, en lugar de la First-run checklist. Tiene dos pasos obligatorios (una Variety con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories), y cada uno guarda lo que guardan Settings o la página de la Variety. Retoma donde quedó, termina para siempre una vez que se llega a su pantalla de cierre "Done" o un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
 _Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
