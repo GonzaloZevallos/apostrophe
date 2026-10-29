@@ -89,9 +89,10 @@ export default defineConfig({
   // every other spec shares. It needs no real DNS entry: the spec itself proxies
   // every request for that host to its own worker's real server.
   projects: [
-    // Listed first on purpose: Playwright queues projects in this order, and the eight phone cells are
-    // the longest tests by far (about 4 min each alone, 6 under load), so queued last they left two
-    // workers idle while the last round of cells ran, and the whole run crossed the gate's 1500 s with every test green. The order is pinned by
+    // Listed first on purpose: Playwright queues projects in this order, and the eight phone
+    // cells are the longest tests by far (about 4 min each alone, 6 under load), so queued last
+    // they left two workers idle while the last round of cells ran, and the whole run crossed
+    // the gate's 1500 s with every test green. The order is pinned by
     // src/architecture/e2eShape.test.ts.
     // GH-80: the phone check. The setup project seeds the second server once (the walk only
     // reads, so every cell shares that business); `npm run e2e` runs this project with its
