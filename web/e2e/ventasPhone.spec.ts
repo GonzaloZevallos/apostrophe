@@ -78,7 +78,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
       shipping_charged: 0,
       note: null,
       payment: 'cash',
-      lines: [{ variety_id: jazmin.id, grams: '10', gift: false, special_price: null }],
+      lines: [{ variety_id: jazmin.id, quantity: '10', gift: false, special_price: null }],
     },
   })
   expect(saved.ok()).toBe(true)
