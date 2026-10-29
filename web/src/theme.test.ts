@@ -10,7 +10,6 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import {
   chooseTheme,
   currentChoice,
-  currentTheme,
   followSystem,
   resolveTheme,
   startAutomatic,
@@ -318,14 +317,4 @@ test('starting again after a run that stored Dark and followed the system reads 
   expect(second.subscribers()).toBe(1)
   expect(isDarkNow()).toBe(false)
   expect(currentChoice()).toBe('automatic')
-})
-
-test('currentTheme tells what the page shows now', () => {
-  expect(currentTheme()).toBe('claro')
-
-  chooseTheme('oscuro')
-  expect(currentTheme()).toBe('oscuro')
-
-  html.setAttribute('data-tema', 'otro')
-  expect(currentTheme()).toBe('claro')
 })

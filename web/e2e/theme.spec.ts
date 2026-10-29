@@ -1,14 +1,11 @@
 /**
- * Pins the device's theme choice (ADR-0026) on top of the rule below: Oscuro chosen in
- * Configuración → Apariencia is remembered on the device, survives a reload and a logout,
- * and shows on every screen before login; Claro removes it; a tampered value reads as light.
- * No test here reaches dark by emulating a dark system.
+ * Pins the device's theme choice (ADR-0026, amended by the owner's decision of 2026-10-29)
+ * end to end. With nothing stored the theme is Automatic: it follows the phone, at load and
+ * live. Light (`tema=claro`) and Dark (`tema=oscuro`) are stored on the device, survive a
+ * reload and a logout, win over the phone and show on every screen before login. Any other
+ * stored value reads as Automatic. The status bar (`theme-color`) follows the attribute.
  *
- * Pins the theme rule end to end (plan, subtask `light-by-default`, seam 2; PRD
- * metrics for criteria 1 and 2): the app opens light whatever the operating
- * system says, and dark only when `<html>` carries `data-tema="oscuro"` — the
- * system's own color scheme never picks it, tested here with the opposite one
- * set each time so the attribute, not the emulated system, decides.
+ * The phone is emulated with `emulateMedia`; the page's own `data-tema` is what is asserted.
  *
  * `watchConsole` (CODING_STANDARDS §9, in the browser too) is attached before
  * every `goto` and the sink asserted empty at the end, as every e2e spec does.
@@ -23,8 +20,9 @@ import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
 
-const PAPEL = 'rgb(252, 251, 248)'
-const PAPEL_OSCURO = 'rgb(16, 19, 26)'
+const PAPEL = 'rgb(246, 247, 245)'
+const PAPEL_OSCURO = 'rgb(14, 20, 17)'
+const PAPEL_HEX = '#f6f7f5'
 
 async function themeColor(page: Page): Promise<string | null> {
   return page.evaluate(
@@ -42,65 +40,111 @@ async function htmlBackground(page: Page): Promise<string> {
   return page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor)
 }
 
-test('a dark system alone never gives the dark theme', async ({ page }) => {
-  const messages: string[] = []
-  watchConsole(page, messages)
-
-  await page.emulateMedia({ colorScheme: 'dark' })
-  await page.goto(LOGIN)
-
-  expect(await htmlBackground(page)).toBe(PAPEL)
-  expect(messages).toEqual([])
-})
-
-test('the status bar follows data-tema alone: light by default, dark with the attribute, light again without', async ({
+test('a dark phone with nothing stored opens dark, and the status bar takes the dark paper', async ({
   page,
 }) => {
   const messages: string[] = []
   watchConsole(page, messages)
 
-  // The system is dark and no attribute is set: the meta must stay the light paper.
   await page.emulateMedia({ colorScheme: 'dark' })
   await page.goto(LOGIN)
   await page.waitForLoadState('load')
-  const light = await computedPapel(page)
-  expect(light).not.toBe('')
-  expect(await themeColor(page)).toBe(light)
 
-  await page.evaluate(() => {
-    document.documentElement.dataset.tema = 'oscuro'
-  })
-  await expect.poll(() => themeColor(page)).not.toBe(light)
-  const dark = await computedPapel(page)
-  expect(dark).not.toBe(light)
-  expect(await themeColor(page)).toBe(dark)
-
-  await page.evaluate(() => {
-    document.documentElement.removeAttribute('data-tema')
-  })
-  await expect.poll(() => themeColor(page)).toBe(light)
+  expect(await themeAttribute(page)).toBe('oscuro')
+  expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
+  const dark = (await computedPapel(page)).toLowerCase()
+  expect(dark).not.toBe(PAPEL_HEX)
+  await expect.poll(async () => (await themeColor(page))?.toLowerCase()).toBe(dark)
+  expect(await page.evaluate(() => localStorage.getItem('tema'))).toBeNull()
   expect(messages).toEqual([])
 })
 
-test('data-tema="oscuro" turns the theme dark on a light system too', async ({ page }) => {
+test('on Automatic, a flip of the phone changes the theme live and the status bar follows it', async ({
+  page,
+}) => {
+  const messages: string[] = []
+  watchConsole(page, messages)
+
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.goto(LOGIN)
+  await page.waitForLoadState('load')
+  expect(await themeAttribute(page)).toBe('oscuro')
+
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect.poll(() => themeAttribute(page)).toBeNull()
+  await expect.poll(async () => (await themeColor(page))?.toLowerCase()).toBe(PAPEL_HEX)
+
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await expect.poll(() => themeAttribute(page)).toBe('oscuro')
+  expect(messages).toEqual([])
+})
+
+test('a light phone with nothing stored opens light', async ({ page }) => {
   const messages: string[] = []
   watchConsole(page, messages)
 
   await page.emulateMedia({ colorScheme: 'light' })
-  // `document.documentElement` is still null at the moment Playwright's
-  // init script runs (proven against this build: the literal one-liner
-  // throws `Cannot read properties of null`), so this waits for the parser
-  // to create it before setting the attribute.
+  await page.goto(LOGIN)
+
+  expect(await themeAttribute(page)).toBeNull()
+  expect(await htmlBackground(page)).toBe(PAPEL)
+  expect(messages).toEqual([])
+})
+
+test('tema=oscuro opens dark on a light phone', async ({ page }) => {
+  const messages: string[] = []
+  watchConsole(page, messages)
+
+  await page.emulateMedia({ colorScheme: 'light' })
   await page.addInitScript(() => {
-    const apply = () => {
-      document.documentElement.dataset.tema = 'oscuro'
-    }
-    if (document.documentElement) apply()
-    else document.addEventListener('DOMContentLoaded', apply, { once: true })
+    localStorage.setItem('tema', 'oscuro')
   })
   await page.goto(LOGIN)
 
+  expect(await themeAttribute(page)).toBe('oscuro')
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
+  expect(messages).toEqual([])
+})
+
+test('tema=claro on a dark phone stays light after a reload, and a flip does not move it', async ({
+  page,
+}) => {
+  const messages: string[] = []
+  watchConsole(page, messages)
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.addInitScript(() => {
+    localStorage.setItem('tema', 'claro')
+  })
+
+  await page.goto(LOGIN)
+  expect(await themeAttribute(page)).toBeNull()
+  expect(await htmlBackground(page)).toBe(PAPEL)
+
+  await page.reload()
+  expect(await themeAttribute(page)).toBeNull()
+  expect(await htmlBackground(page)).toBe(PAPEL)
+
+  await page.emulateMedia({ colorScheme: 'light' })
+  await page.emulateMedia({ colorScheme: 'dark' })
+  expect(await themeAttribute(page)).toBeNull()
+  expect(await page.evaluate(() => localStorage.getItem('tema'))).toBe('claro')
+  expect(messages).toEqual([])
+})
+
+test('a stored value that is neither claro nor oscuro reads as Automatic and is left alone', async ({
+  page,
+}) => {
+  const messages: string[] = []
+  watchConsole(page, messages)
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.addInitScript(() => {
+    localStorage.setItem('tema', 'otro')
+  })
+
+  await page.goto(LOGIN)
+
+  expect(await themeAttribute(page)).toBe('oscuro')
+  expect(await page.evaluate(() => localStorage.getItem('tema'))).toBe('otro')
   expect(messages).toEqual([])
 })
 
@@ -149,7 +193,7 @@ async function themeAttribute(page: Page): Promise<string | null> {
   return page.evaluate(() => document.documentElement.getAttribute('data-tema'))
 }
 
-test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, and Claro removes it', async ({
+test('choosing Dark in Apariencia applies it, survives a reload and a logout, Light stays light on a dark phone, and Automatic follows the phone again', async ({
   page,
 }) => {
   const messages: string[] = []
@@ -158,7 +202,7 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
 
   const email = await signUp(page)
   await page.goto(SETTINGS_APPEARANCE)
-  await expect(page.getByRole('radio', { name: 'Light' })).toHaveAttribute('aria-checked', 'true')
+  await expect(page.getByRole('radio', { name: 'Automatic' })).toHaveAttribute('aria-checked', 'true')
 
   await page.getByRole('radio', { name: 'Dark' }).click()
   expect(await themeAttribute(page)).toBe('oscuro')
@@ -176,7 +220,7 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
   await expectOnlyTheThemeStored(page)
 
-  // Signed in again, Claro removes the attribute and the key.
+  // Signed in again, Light wins over a dark phone, and survives a reload.
   await page.getByLabel('Email address').fill(email)
   await page.getByLabel('Password').fill(PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
@@ -184,11 +228,22 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
   expect(await themeAttribute(page)).toBe('oscuro')
   await page.goto(SETTINGS_APPEARANCE)
   await page.getByRole('radio', { name: 'Light' }).click()
+  await page.emulateMedia({ colorScheme: 'dark' })
   expect(await themeAttribute(page)).toBeNull()
-  expect(await page.evaluate(() => localStorage.getItem('tema'))).toBeNull()
+  expect(await page.evaluate(() => localStorage.getItem('tema'))).toBe('claro')
   expect(await htmlBackground(page)).toBe(PAPEL)
   await page.reload()
   expect(await themeAttribute(page)).toBeNull()
+  await expect(page.getByRole('radio', { name: 'Light' })).toHaveAttribute('aria-checked', 'true')
+  await expectOnlyTheThemeStored(page)
+
+  // Automatic forgets the choice and follows the dark phone at once.
+  await page.getByRole('radio', { name: 'Automatic' }).click()
+  expect(await page.evaluate(() => localStorage.getItem('tema'))).toBeNull()
+  await expect.poll(() => themeAttribute(page)).toBe('oscuro')
+  await page.reload()
+  expect(await themeAttribute(page)).toBe('oscuro')
+  await expect(page.getByRole('radio', { name: 'Automatic' })).toHaveAttribute('aria-checked', 'true')
   await expectOnlyTheThemeStored(page)
 
   expect(messages).toEqual([])
@@ -228,27 +283,11 @@ test('with Oscuro stored, Entrar, the invitation screen and the reset screen are
   expect(messages).toEqual([])
 })
 
-test('a tampered stored value reads as light and is left alone', async ({ page }) => {
-  const messages: string[] = []
-  watchConsole(page, messages)
-  await page.emulateMedia({ colorScheme: 'dark' })
-  await page.addInitScript(() => {
-    localStorage.setItem('tema', 'claro')
-  })
-
-  await page.goto(LOGIN)
-
-  expect(await themeAttribute(page)).toBeNull()
-  expect(await htmlBackground(page)).toBe(PAPEL)
-  expect(await page.evaluate(() => localStorage.getItem('tema'))).toBe('claro')
-  expect(messages).toEqual([])
-})
-
-test('the storage helper rejects a stored claro, a second key, session storage and an IndexedDB database', async ({ page }) => {
+test('the storage helper rejects an unknown tema value, a second key, session storage and an IndexedDB database', async ({ page }) => {
   await page.goto(LOGIN)
   await expectOnlyTheThemeStored(page)
 
-  await page.evaluate(() => localStorage.setItem('tema', 'claro'))
+  await page.evaluate(() => localStorage.setItem('tema', 'otro'))
   await expect(expectOnlyTheThemeStored(page)).rejects.toThrow()
   await page.evaluate(() => localStorage.removeItem('tema'))
 
@@ -282,5 +321,7 @@ test('the storage helper rejects a stored claro, a second key, session storage a
   )
 
   await page.evaluate(() => localStorage.setItem('tema', 'oscuro'))
+  await expectOnlyTheThemeStored(page)
+  await page.evaluate(() => localStorage.setItem('tema', 'claro'))
   await expectOnlyTheThemeStored(page)
 })
