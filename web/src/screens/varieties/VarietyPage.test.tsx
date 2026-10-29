@@ -54,7 +54,7 @@ function entry(id: number, varietyId: number, date: string, grams: number) {
   return {
     id,
     date,
-    variety_id: varietyId,
+    product_id: varietyId,
     origin: 'purchase',
     quantity: grams,
     total_cost: 280000,
@@ -63,10 +63,10 @@ function entry(id: number, varietyId: number, date: string, grams: number) {
   }
 }
 
-const STOCK_ROW = { variety_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
+const STOCK_ROW = { product_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
 
 function stockOf(row: Record<string, unknown>, entries = ENTRIES) {
-  return { total: 18, varieties: [row, { ...STOCK_ROW, variety_id: 2 }], entries }
+  return { total: 18, products: [row, { ...STOCK_ROW, product_id: 2 }], entries }
 }
 const ENTRIES = [
   entry(14, 1, '2026-09-30', 10),
@@ -104,10 +104,10 @@ function defaults(): Answers {
     'GET /catalog': () => json(200, CATALOG),
     'GET /catalog/archived': () => json(200, [archivedRow(true)]),
     'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: true }),
-    'GET /stock/varieties/1/movements': () =>
+    'GET /stock/products/1/movements': () =>
       json(
         200,
-        ENTRIES.filter((row) => row.variety_id === 1).map((row) => ({ ...row, kind: 'entry' })),
+        ENTRIES.filter((row) => row.product_id === 1).map((row) => ({ ...row, kind: 'entry' })),
       ),
   }
 }
@@ -400,7 +400,7 @@ describe('the actions and the sections', () => {
 
   test('a withdrawal in Stock and entries says its reason and a minus sign, mixed with entries, and opens its detail', async () => {
     renderPage(pathTo(VARIETY, { id: 1 }), {
-      'GET /stock/varieties/1/movements': () =>
+      'GET /stock/products/1/movements': () =>
         json(200, [
           { ...ENTRIES[0], kind: 'entry' },
           { kind: 'withdrawal', id: 5, date: '2026-09-25', reason: 'promotion', quantity: 5.5 },
@@ -686,7 +686,7 @@ describe('turning the warning off', () => {
     let stock = stockOf(STOCK_ROW)
     const { fetchMock } = renderPage(VARIETY_ONE, {
       'GET /stock': () => json(200, stock),
-      'PUT /stock/varieties/1/threshold': () => {
+      'PUT /stock/products/1/threshold': () => {
         throw new Error('replaced below')
       },
     })
@@ -694,7 +694,7 @@ describe('turning the warning off', () => {
       'fetch',
       vi.fn((url: string, init?: RequestInit) => {
         const key = `${init?.method ?? 'GET'} ${url}`
-        if (key === 'PUT /stock/varieties/1/threshold') {
+        if (key === 'PUT /stock/products/1/threshold') {
           return new Promise<Response>((resolve) => {
             release = resolve
           })
@@ -720,7 +720,7 @@ describe('turning the warning off', () => {
   test('a refusal leaves the switch on and says so inline', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, {
-      'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }),
+      'PUT /stock/products/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }),
     })
 
     const toggle = await screen.findByRole('switch')
@@ -783,7 +783,7 @@ describe('Low stock warning: the form', () => {
     let stock = stockOf(OFF)
     const { fetchMock } = renderPage(VARIETY_ONE, {
       'GET /stock': () => json(200, stock),
-      'PUT /stock/varieties/1/threshold': () => {
+      'PUT /stock/products/1/threshold': () => {
         stock = stockOf({ ...STOCK_ROW, threshold: 15.5 })
         return json(200, { ...STOCK_ROW, threshold: 15.5 })
       },
@@ -794,7 +794,7 @@ describe('Low stock warning: the form', () => {
 
     expect(await screen.findByText('Warning saved')).toBeInTheDocument()
     expect(screen.queryByLabelText('Warn when below')).not.toBeInTheDocument()
-    expect(putOf(fetchMock)).toEqual({ url: '/stock/varieties/1/threshold', body: { quantity: 15.5 } })
+    expect(putOf(fetchMock)).toEqual({ url: '/stock/products/1/threshold', body: { quantity: 15.5 } })
     await waitFor(() => expect(reads(fetchMock, 'GET /stock')).toBe(2))
     await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
     expect(await screen.findByRole('switch')).toBeChecked()
@@ -802,7 +802,7 @@ describe('Low stock warning: the form', () => {
 
   test('a refused amount shows under the field and keeps what was typed', async () => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }) })
+    renderPage(VARIETY_ONE, { 'PUT /stock/products/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }) })
     await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
     const field = await screen.findByLabelText('Warn when below')
     await user.clear(field)
@@ -830,7 +830,7 @@ describe('Low stock warning: the form', () => {
 
   test('a variety that is gone while saving shows "That is gone."', async () => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(404, { code: 'variety.not_found' }) })
+    renderPage(VARIETY_ONE, { 'PUT /stock/products/1/threshold': () => json(404, { code: 'variety.not_found' }) })
     await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
     await user.type(await screen.findByLabelText('Warn when below'), '1')
     await user.click(screen.getByRole('button', { name: 'Save the warning' }))

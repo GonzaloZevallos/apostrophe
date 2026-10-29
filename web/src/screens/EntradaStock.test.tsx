@@ -114,9 +114,9 @@ function renderGone(entries: HistoryEntry[], index = entries.length - 1) {
 const VARIETIES = [{ id: 3, name: 'Sir Jack', current_price: null }]
 const STOCK_VIEW = {
   total: 18.5,
-  varieties: [
+  products: [
     {
-      variety_id: 3,
+      product_id: 3,
       quantity: 18.5,
       status: 'ok',
       sold_out_since: null,
@@ -162,7 +162,7 @@ test('records an entry and lands back on the list with the saved toast', async (
         jsonResponse(201, {
           id: 10,
           date: '2026-10-03',
-          variety_id: 3,
+          product_id: 3,
           origin: 'harvest',
           quantity: 30,
           total_cost: null,
@@ -195,7 +195,7 @@ test('an adjustment can carry negative grams, sent through to the API as typed',
         jsonResponse(201, {
           id: 11,
           date: '2026-10-03',
-          variety_id: 3,
+          product_id: 3,
           origin: 'adjustment',
           quantity: -4.5,
           total_cost: null,
@@ -228,7 +228,7 @@ test('re-saving an existing negative adjustment keeps its negative grams through
           jsonResponse(200, {
             id: 12,
             date: '2026-09-15',
-            variety_id: 3,
+            product_id: 3,
             origin: 'adjustment',
             quantity: -4.5,
             total_cost: null,
@@ -242,7 +242,7 @@ test('re-saving an existing negative adjustment keeps its negative grams through
         jsonResponse(200, {
           id: 12,
           date: '2026-09-15',
-          variety_id: 3,
+          product_id: 3,
           origin: 'adjustment',
           quantity: -4.5,
           total_cost: null,
@@ -294,7 +294,7 @@ test('editing an entry confirms before saving', async () => {
           jsonResponse(200, {
             id: 10,
             date: '2026-09-20',
-            variety_id: 3,
+            product_id: 3,
             origin: 'harvest',
             quantity: 25,
             total_cost: null,
@@ -307,7 +307,7 @@ test('editing an entry confirms before saving', async () => {
         jsonResponse(200, {
           id: 10,
           date: '2026-09-20',
-          variety_id: 3,
+          product_id: 3,
           origin: 'harvest',
           quantity: 28,
           total_cost: null,
@@ -346,7 +346,7 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
           jsonResponse(200, {
             id: 10,
             date: '2026-09-20',
-            variety_id: 3,
+            product_id: 3,
             origin: 'harvest',
             quantity: 25,
             total_cost: null,
@@ -401,7 +401,7 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
           jsonResponse(200, {
             id: 10,
             date: '2026-09-20',
-            variety_id: 3,
+            product_id: 3,
             origin: 'harvest',
             quantity: 25,
             total_cost: null,
@@ -422,7 +422,7 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
   expect(getEntryCalls).toBe(1)
 })
 
-function stockOf(entries: { id: number; variety_id: number }[]) {
+function stockOf(entries: { id: number; product_id: number }[]) {
   return {
     ...STOCK_VIEW,
     entries: entries.map((row) => ({
@@ -464,7 +464,7 @@ test('an entry started from a variety has it chosen and "Initial stock" preselec
 })
 
 test('an entry started from a variety that already has entries keeps Compra', async () => {
-  fakeFor(stockOf([{ id: 1, variety_id: 3 }]))
+  fakeFor(stockOf([{ id: 1, product_id: 3 }]))
   renderForm(`${STOCK_ENTRY_NEW}?variety=3`)
 
   const select = await screen.findByRole('combobox', { name: /^Variety/ })
@@ -474,7 +474,7 @@ test('an entry started from a variety that already has entries keeps Compra', as
 })
 
 test("another variety's entries do not stop 'Initial stock' from being preselected", async () => {
-  fakeFor(stockOf([{ id: 1, variety_id: 9 }]))
+  fakeFor(stockOf([{ id: 1, product_id: 9 }]))
   renderForm(`${STOCK_ENTRY_NEW}?variety=3`)
 
   const select = await screen.findByRole('combobox', { name: /^Variety/ })
@@ -513,7 +513,7 @@ test('Cerrar with no history goes to "All entries" for an edit', async () => {
       jsonResponse(200, {
         id: 10,
         date: '2026-09-20',
-        variety_id: 3,
+        product_id: 3,
         origin: 'harvest',
         quantity: 25,
         total_cost: null,
@@ -532,7 +532,7 @@ test('a save goes back by history too, and says "Entry saved" there', async () =
       jsonResponse(201, {
         id: 11,
         date: '2026-10-03',
-        variety_id: 3,
+        product_id: 3,
         origin: 'opening_stock',
         quantity: 30,
         total_cost: null,
@@ -564,7 +564,7 @@ test('a save marks the catalog stale, since stock changes what it says', async (
       jsonResponse(201, {
         id: 11,
         date: '2026-10-03',
-        variety_id: 3,
+        product_id: 3,
         origin: 'harvest',
         quantity: 30,
         total_cost: null,
@@ -604,7 +604,7 @@ test('Cerrar with something typed asks before discarding, and leaving is refused
 const ENTRY_10 = {
   id: 10,
   date: '2026-09-20',
-  variety_id: 3,
+  product_id: 3,
   origin: 'harvest',
   quantity: 25,
   total_cost: null,
@@ -732,7 +732,7 @@ test('editing an entry of an archived variety shows it as the chosen one, and of
       jsonResponse(200, {
         id: 10,
         date: '2026-09-20',
-        variety_id: 8,
+        product_id: 8,
         origin: 'harvest',
         quantity: 25,
         total_cost: null,

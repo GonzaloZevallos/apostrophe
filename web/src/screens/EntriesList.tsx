@@ -1,7 +1,7 @@
 /**
  * `EntriesList` (`stock.md`, "Todas las entradas"; `TodasLasEntradas.dc.html`): every stock
  * entry, newest first, and no withdrawal; or with a `varietyId` that variety's movements as
- * `GET /stock/varieties/{id}/movements` answers them: its entries and the withdrawals that
+ * `GET /stock/products/{id}/movements` answers them: its entries and the withdrawals that
  * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card; the shell draws its one back ("‹ Variedades",
  * or "‹ <variety>" for one variety's list, declared through `useBackParent`). Each row
  * links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
@@ -166,7 +166,7 @@ export default function EntriesList({ varietyId }: Props) {
           title={STOCK_TEXT.antesDeBorrar}
           detail={STOCK_TEXT.borrasLaEntradaDel(
             formatDate(confirming.date, me.today),
-            nameOf(confirming.variety_id),
+            nameOf(confirming.product_id),
             formatGrams(confirming.quantity),
           )}
           confirmText={COMMON_TEXT.yesDelete}
@@ -224,7 +224,7 @@ export function EntryRows({
               <span className="fila-entrada__linea1">
                 {formatDate(entry.date, today)}
                 {OUT_OF_DATE_JOINER}
-                {nameOf(entry.variety_id)}
+                {nameOf(entry.product_id)}
               </span>
               <span className="fila-entrada__linea2">
                 {t(ORIGIN_LABEL[entry.origin])}

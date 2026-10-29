@@ -24,7 +24,7 @@ const NEW_PATH = pathTo(VARIETY_PRICE_NEW, { id: 1 })
 
 const STOCK = {
   total: 135,
-  varieties: [{ variety_id: 1, quantity: 135, status: 'ok', sold_out_since: null, threshold: null, days_left: 270 }],
+  products: [{ product_id: 1, quantity: 135, status: 'ok', sold_out_since: null, threshold: null, days_left: 270 }],
   entries: [],
 }
 const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
@@ -41,7 +41,7 @@ function defaults(): Answers {
     'GET /api/products/1/prices': () => jsonResponse(200, HISTORY),
     'GET /pricing-settings': () => jsonResponse(200, SETTINGS_ON),
     'GET /stock': () => jsonResponse(200, STOCK),
-    'GET /stock/varieties/1/movements': () => jsonResponse(200, []),
+    'GET /stock/products/1/movements': () => jsonResponse(200, []),
     'GET /catalog': () => jsonResponse(200, CATALOG),
     'GET /first-run': () => jsonResponse(200, FIRST_RUN_NONE),
   }

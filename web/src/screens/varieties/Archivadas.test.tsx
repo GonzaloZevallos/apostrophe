@@ -52,13 +52,13 @@ function fakeApi(hidden: readonly number[] = [], overrides: Answers = {}): Answe
     'GET /stock': () =>
       json(200, {
         total: 0,
-        varieties: [...live].map((id) => ({ variety_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
+        products: [...live].map((id) => ({ product_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
         entries: [],
       }),
     'GET /stock?archived=true': () =>
       json(200, {
         total: 10,
-        varieties: archivedIds().map((id) => ({ variety_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
+        products: archivedIds().map((id) => ({ product_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
         entries: [],
       }),
     'GET /catalog': () => json(200, CATALOG),
@@ -72,7 +72,7 @@ function fakeApi(hidden: readonly number[] = [], overrides: Answers = {}): Answe
     answers[`GET /api/products/${id}`] = () =>
       json(200, { ...rowOf(id), removal: live.has(id) ? 'archive' : null })
     answers[`GET /api/products/${id}/prices`] = () => json(200, [])
-    answers[`GET /stock/varieties/${id}/movements`] = () => json(200, [])
+    answers[`GET /stock/products/${id}/movements`] = () => json(200, [])
     answers[`POST /api/products/${id}/restore`] = () => {
       live.add(id)
       return json(200, { id, name: NAMES[id], archived: false, removal: 'archive' })

@@ -33,7 +33,7 @@ export const VARIETIES = [
   { id: 2, name: 'Gelato', current_price: null },
 ]
 
-export const STOCK = { total: 0, varieties: [], entries: [] }
+export const STOCK = { total: 0, products: [], entries: [] }
 
 /** Answers the reads every screen here makes; `rest` answers the rest (writes, the withdrawal). */
 export function withReads(

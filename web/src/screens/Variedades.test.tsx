@@ -42,13 +42,13 @@ const VARIETIES = [
   { id: 1, name: '24K Gold', current_price: price(12000) },
 ]
 
-function stockRow(variety_id: number, patch: Record<string, unknown>) {
-  return { variety_id, quantity: 0, status: 'ok', sold_out_since: null, threshold: null, days_left: null, ...patch }
+function stockRow(product_id: number, patch: Record<string, unknown>) {
+  return { product_id, quantity: 0, status: 'ok', sold_out_since: null, threshold: null, days_left: null, ...patch }
 }
 
 const STOCK = {
   total: 153,
-  varieties: [
+  products: [
     stockRow(1, { quantity: 135, status: 'ok', days_left: 270 }),
     stockRow(2, { quantity: 18, status: 'low', threshold: 20, days_left: 24 }),
     stockRow(3, { quantity: 0, status: 'no_entries' }),
@@ -62,7 +62,7 @@ function catalogOf(hidden: number[]) {
     text: 'texto',
     header: '',
     footer: '',
-    varieties: VARIETIES.map((variety) => ({
+    products: VARIETIES.map((variety) => ({
       id: variety.id,
       name: variety.name,
       emoji: null,
@@ -176,7 +176,7 @@ describe('the list', () => {
     renderApp(VARIETIES_PATH, {
       answers: {
         'GET /api/products': () => json(200, VARIETIES.slice(0, 2)),
-        'GET /stock': () => json(200, { ...STOCK, varieties: [stockRow(4, {}), stockRow(2, {})] }),
+        'GET /stock': () => json(200, { ...STOCK, products: [stockRow(4, {}), stockRow(2, {})] }),
       },
     })
 
@@ -187,7 +187,7 @@ describe('the list', () => {
     renderApp(VARIETIES_PATH, {
       answers: {
         'GET /api/products': () => json(200, []),
-        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
 
@@ -309,7 +309,7 @@ describe('on a computer: two panes', () => {
       computer: true,
       answers: {
         'GET /api/products': () => json(200, []),
-        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
 
@@ -366,7 +366,7 @@ describe('removing the selected variety on a computer', () => {
       'GET /stock': () =>
         json(200, {
           total: 0,
-          varieties: remaining().map((variety) => stockRow(variety.id, { status: 'no_entries' })),
+          products: remaining().map((variety) => stockRow(variety.id, { status: 'no_entries' })),
           entries: [],
         }),
       'GET /api/products?archived=true': () =>
@@ -459,7 +459,7 @@ describe('the icon and text rule', () => {
     renderApp(VARIETIES_PATH, {
       answers: {
         'GET /api/products': () => json(200, []),
-        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
     await screen.findByText('No varieties yet')
@@ -477,7 +477,7 @@ describe('the icon and text rule', () => {
     renderApp(VARIETIES_PATH, {
       answers: {
         'GET /api/products': () => json(200, []),
-        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
     const title = await screen.findByText(EMPTY_TITLE)

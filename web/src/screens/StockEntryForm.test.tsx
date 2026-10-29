@@ -24,7 +24,7 @@ const VARIETIES = [
   { id: 3, name: 'Sir Jack', current_price: null },
   { id: 4, name: 'Gelato', current_price: null },
 ]
-const STOCK_VIEW = { total: 0, varieties: [], entries: [] }
+const STOCK_VIEW = { total: 0, products: [], entries: [] }
 
 function renderForm(onSaved: () => void) {
   render(
@@ -56,7 +56,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
         jsonResponse(201, {
           id: 10,
           date: '2026-10-03',
-          variety_id: 3,
+          product_id: 3,
           origin: 'opening_stock',
           quantity: 30,
           total_cost: null,
@@ -89,7 +89,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   const post = fetchMock.mock.calls.find(([url]) => String(url) === '/stock/entries')
   // The date is the `today` prop, with no field for it; no note, and no cost when none is typed.
   expect(JSON.parse(String(post?.[1]?.body))).toEqual({
-    variety_id: 3,
+    product_id: 3,
     origin: 'opening_stock',
     quantity: '30',
     date: '2026-10-03',

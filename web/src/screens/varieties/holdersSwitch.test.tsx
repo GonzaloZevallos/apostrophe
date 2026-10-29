@@ -39,13 +39,13 @@ test('the chip date follows a switch in the same node', async () => {
   expect(missesFor(['common:todayWith'])).toEqual([])
 })
 
-const NO_STOCK: StockView = { total: 0, varieties: [], entries: [] }
+const NO_STOCK: StockView = { total: 0, products: [], entries: [] }
 const MOVEMENTS: Movement[] = [
   {
     kind: 'entry',
     id: 7,
     date: '2026-10-02',
-    variety_id: 1,
+    product_id: 1,
     origin: 'purchase',
     quantity: 50,
     total_cost: null,

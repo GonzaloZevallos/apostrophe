@@ -28,7 +28,7 @@ const VARIETIES = [
 const ENTRY = {
   id: 12,
   date: '2026-10-02',
-  variety_id: 3,
+  product_id: 3,
   origin: 'purchase',
   quantity: 30,
   total_cost: 150000,
@@ -37,9 +37,9 @@ const ENTRY = {
 }
 const STOCK = {
   total: 30,
-  varieties: [
+  products: [
     {
-      variety_id: 3,
+      product_id: 3,
       quantity: 30,
       status: 'ok',
       sold_out_since: null,
@@ -47,7 +47,7 @@ const STOCK = {
       days_left: 40,
     },
     {
-      variety_id: 4,
+      product_id: 4,
       quantity: 0,
       status: 'no_entries',
       sold_out_since: null,

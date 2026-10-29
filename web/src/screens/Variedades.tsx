@@ -109,7 +109,7 @@ export default function Variedades() {
   const hidden = new Set((catalogQuery.data?.varieties ?? []).filter((row) => !row.shown).map((row) => row.id))
   const rows = ready
     ? varietiesByName(varietiesQuery.data).flatMap((variety) => {
-        const row = stockQuery.data.varieties.find((candidate) => candidate.variety_id === variety.id)
+        const row = stockQuery.data.products.find((candidate) => candidate.product_id === variety.id)
         return row === undefined ? [] : [{ variety, row }]
       })
     : []

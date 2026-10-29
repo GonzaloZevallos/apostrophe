@@ -29,8 +29,8 @@ function variety(id: number, name: string, removal: 'delete' | 'archive' | null 
 }
 
 function stockOf(grams: number) {
-  const row = { variety_id: 2, quantity: grams, status: 'ok', sold_out_since: null, threshold: null, days_left: null }
-  return { total: grams, varieties: [row], entries: [] }
+  const row = { product_id: 2, quantity: grams, status: 'ok', sold_out_since: null, threshold: null, days_left: null }
+  return { total: grams, products: [row], entries: [] }
 }
 
 const CATALOG = { text: '', header: '', footer: '', varieties: [] }

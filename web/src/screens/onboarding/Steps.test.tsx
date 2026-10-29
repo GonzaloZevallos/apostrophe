@@ -135,7 +135,7 @@ afterEach(() => {
 
 const STOCK_FORM_READS = {
   'GET /api/products': () => json([{ id: 7, name: 'Mango Bomb', current_price: null }]),
-  'GET /stock': () => json({ total: 0, varieties: [], entries: [] }),
+  'GET /stock': () => json({ total: 0, products: [], entries: [] }),
 }
 
 test('step 1 with a price target shows the price form only and ends with one variety: no name field, no POST /api/products', async () => {
@@ -244,7 +244,7 @@ test('step 2 saves the opening stock of the stock target through the owner, then
 
   expect(await screen.findByRole('button', { name: 'Add another variety' })).toBeInTheDocument()
   expect(bodies).toEqual([
-    { date: '2026-10-03', variety_id: 7, origin: 'opening_stock', quantity: '500' },
+    { date: '2026-10-03', product_id: 7, origin: 'opening_stock', quantity: '500' },
   ])
   // Saving the stock is not an Onboarding write: nothing was sent to it yet.
   expect(calls.filter((call) => call.startsWith('POST /onboarding-progress'))).toEqual([])

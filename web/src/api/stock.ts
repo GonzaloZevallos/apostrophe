@@ -13,7 +13,7 @@
 import { del, get, post, put } from './client'
 
 /**
- * `PUT /stock/varieties/{variety_id}/threshold`'s body is `{quantity: number | null}`
+ * `PUT /stock/products/{product_id}/threshold`'s body is `{quantity: number | null}`
  * (plan, API contract) — the one quantity value in this hexagon that travels as a plain
  * number rather than `Grams.of`'s decimal string, since a threshold is never summed
  * or allocated, only compared. `null` turns the threshold off.
@@ -25,7 +25,7 @@ export type Status = 'no_entries' | 'sold_out' | 'low' | 'ok'
 export interface StockEntry {
   id: number
   date: string
-  variety_id: number
+  product_id: number
   origin: Origin
   quantity: number
   total_cost: number | null
@@ -34,7 +34,7 @@ export interface StockEntry {
 }
 
 export interface VarietyStock {
-  variety_id: number
+  product_id: number
   quantity: number
   status: Status
   sold_out_since: string | null
@@ -44,13 +44,13 @@ export interface VarietyStock {
 
 export interface StockView {
   total: number
-  varieties: VarietyStock[]
+  products: VarietyStock[]
   entries: StockEntry[]
 }
 
 export interface StockEntryInput {
   date?: string
-  variety_id: number
+  product_id: number
   origin: Origin
   quantity: string
   total_cost?: number
@@ -60,8 +60,8 @@ export interface StockEntryInput {
 export type WithdrawalReason = 'promotion' | 'own_use'
 
 export interface WithdrawalLine {
-  variety_id: number
-  variety_name: string
+  product_id: number
+  product_name: string
   quantity: number
 }
 
@@ -76,7 +76,7 @@ export interface Withdrawal {
 }
 
 export interface WithdrawalLineInput {
-  variety_id: number
+  product_id: number
   quantity: string
 }
 
@@ -106,7 +106,7 @@ export type Movement = EntryMovement | WithdrawalMovement
 /** The entries of one variety, in the order the server sent them (newest first): the one
  * place the front filters `entries` by variety. */
 export function entriesOf(stock: StockView, varietyId: number): StockEntry[] {
-  return stock.entries.filter((entry) => entry.variety_id === varietyId)
+  return stock.entries.filter((entry) => entry.product_id === varietyId)
 }
 
 export function readStock(): Promise<StockView> {
@@ -136,11 +136,11 @@ export function deleteEntry(id: string): Promise<void> {
 }
 
 export function setThreshold(varietyId: number, quantity: number | null): Promise<VarietyStock> {
-  return put<VarietyStock>(`/stock/varieties/${varietyId}/threshold`, { quantity })
+  return put<VarietyStock>(`/stock/products/${varietyId}/threshold`, { quantity })
 }
 
 export function readMovements(varietyId: string): Promise<Movement[]> {
-  return get<Movement[]>(`/stock/varieties/${varietyId}/movements`)
+  return get<Movement[]>(`/stock/products/${varietyId}/movements`)
 }
 
 export function getWithdrawal(id: string): Promise<Withdrawal> {

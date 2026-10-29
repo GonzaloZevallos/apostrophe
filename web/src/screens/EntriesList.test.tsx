@@ -51,7 +51,7 @@ function entry(id: number, date: string, varietyId: number, grams: number, total
   return {
     id,
     date,
-    variety_id: varietyId,
+    product_id: varietyId,
     origin: total === null ? 'harvest' : 'purchase',
     quantity: grams,
     total_cost: total,
@@ -62,7 +62,7 @@ function entry(id: number, date: string, varietyId: number, grams: number, total
 
 const STOCK = {
   total: 70,
-  varieties: [],
+  products: [],
   entries: [
     entry(12, '2026-10-05', 3, 30, 150000),
     entry(11, '2026-08-26', 4, 10, null),
@@ -95,9 +95,9 @@ function fakeApi(overrides: Record<string, () => Response> = {}) {
       if (override !== undefined) return Promise.resolve(override())
       if (key === 'GET /stock') return Promise.resolve(jsonResponse(200, STOCK))
       if (key === 'GET /api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
-      const movements = /^GET \/stock\/varieties\/(\d+)\/movements$/.exec(key)
+      const movements = /^GET \/stock\/products\/(\d+)\/movements$/.exec(key)
       if (movements !== null) {
-        const own = STOCK.entries.filter((row) => String(row.variety_id) === movements[1])
+        const own = STOCK.entries.filter((row) => String(row.product_id) === movements[1])
         return Promise.resolve(jsonResponse(200, own.map((row) => ({ ...row, kind: 'entry' }))))
       }
       const one = /^GET \/api\/products\/(\d+)$/.exec(key)
@@ -202,7 +202,7 @@ test("an archived variety's list is read-only: entry rows have no edit, no delet
 test("an archived variety's withdrawal rows still open the withdrawal's detail", async () => {
   fakeApi({
     'GET /api/products/3': () => jsonResponse(200, ARCHIVED_VARIETY),
-    'GET /stock/varieties/3/movements': () =>
+    'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
         { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...STOCK.entries[0], kind: 'entry' },
@@ -218,7 +218,7 @@ test("an archived variety's withdrawal rows still open the withdrawal's detail",
 
 test("a variety's list holds its withdrawals, told by reason word and minus sign, each opening its detail", async () => {
   fakeApi({
-    'GET /stock/varieties/3/movements': () =>
+    'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
         { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...STOCK.entries[0], kind: 'entry' },
@@ -242,8 +242,8 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
 test('"All entries" shows the entry and no withdrawal, and never asks for movements', async () => {
   const recorded = entry(12, '2026-10-05', 3, 30, 150000)
   fakeApi({
-    'GET /stock': () => jsonResponse(200, { total: 30, varieties: [], entries: [recorded] }),
-    'GET /stock/varieties/3/movements': () =>
+    'GET /stock': () => jsonResponse(200, { total: 30, products: [], entries: [recorded] }),
+    'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
         { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...recorded, kind: 'entry' },
@@ -317,7 +317,7 @@ test('with no entries the empty state shows, with no rows', async () => {
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, varieties: [], entries: [] }))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, products: [], entries: [] }))
       return Promise.resolve(jsonResponse(200, VARIETIES))
     }),
   )
@@ -367,7 +367,7 @@ test('the empty state keeps the title and the line within their limits', async (
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, varieties: [], entries: [] }))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, products: [], entries: [] }))
       return Promise.resolve(jsonResponse(200, VARIETIES))
     }),
   )

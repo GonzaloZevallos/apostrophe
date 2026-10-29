@@ -353,7 +353,7 @@ def jack_line_to_cookies(
     if not own_use_of(method, path, body, ids):
         return None
     lines = [
-        {**line, "variety_id": ids["Golden Cookies"]}
+        {**line, "product_id": ids["Golden Cookies"]}
         if line["product_id"] == ids["Sir Jack"]
         else line
         for line in body["lines"]
@@ -373,7 +373,7 @@ def jack_gram_to_promotion(
         "date": body["date"],
         "reason": "promotion",
         "note": None,
-        "lines": [{"variety_id": ids["Sir Jack"], "quantity": "1"}],
+        "lines": [{"product_id": ids["Sir Jack"], "quantity": "1"}],
     }
     return Rewrite({**body, "lines": lines}, [("POST", "/stock/withdrawals", promotion)])
 

@@ -123,8 +123,8 @@ test('saves with every line, a trimmed note, then shows "Withdrawal saved" where
         reason: 'promotion',
         date: '2026-10-06',
         lines: [
-          { variety_id: 1, quantity: '5.5' },
-          { variety_id: 1, quantity: '1' },
+          { product_id: 1, quantity: '5.5' },
+          { product_id: 1, quantity: '1' },
         ],
         note: 'Para la fiesta',
       },

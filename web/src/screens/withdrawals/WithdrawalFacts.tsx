@@ -32,7 +32,7 @@ export default function WithdrawalFacts({ withdrawal, today }: { withdrawal: Wit
         {withdrawal.lines.map((line, index) => (
           // A variety may repeat in several lines with no merging: the position is the identity.
           <li key={index} className="retiro__linea">
-            <span>{line.variety_name}</span>
+            <span>{line.product_name}</span>
             <span>{formatGrams(line.quantity)}</span>
           </li>
         ))}

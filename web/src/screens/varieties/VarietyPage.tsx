@@ -172,7 +172,7 @@ function VarietyPageView({
 
   const variety = varietyQuery.data
   const stock = stockQuery.data
-  const row = stock.varieties.find((candidate) => candidate.variety_id === varietyId)
+  const row = stock.products.find((candidate) => candidate.product_id === varietyId)
   const form = readForm(location.state)
 
   function leaveForm(): void {

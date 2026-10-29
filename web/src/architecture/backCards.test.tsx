@@ -87,7 +87,7 @@ const CATALOG = {
 
 const STOCK = {
   total: 18,
-  varieties: [{ variety_id: 1, quantity: 18, status: 'ok', sold_out_since: null, threshold: null, days_left: null }],
+  products: [{ product_id: 1, quantity: 18, status: 'ok', sold_out_since: null, threshold: null, days_left: null }],
   entries: [],
 }
 
@@ -110,7 +110,7 @@ function fakeApi(): void {
         'GET /customers/1/account': ACCOUNT,
         'GET /stock': STOCK,
         'GET /stock?archived=true': STOCK,
-        'GET /stock/varieties/1/movements': [],
+        'GET /stock/products/1/movements': [],
         'GET /stock/withdrawals/1': WITHDRAWAL,
         'GET /api/products': [VARIETY_ROW],
         'GET /api/products?archived=true': [ARCHIVED],
