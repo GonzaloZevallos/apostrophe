@@ -33,3 +33,7 @@ El dibujo es una guía, no un contrato (DESIGN_STANDARDS.md, "Drawing as guide")
 | Ingreso | 25-ingreso.png | #510 |
 
 Las capturas están a 2× (780 px de ancho para un teléfono de 390 px).
+
+## Modo oscuro
+
+Cada pantalla tiene su versión oscura en `oscuro/`, con el mismo nombre de archivo. El tema sigue al teléfono por defecto y se puede fijar a mano en Configuración › Tema (#493).
