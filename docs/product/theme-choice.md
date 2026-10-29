@@ -32,7 +32,7 @@ Cómo se ve la app en claro y en oscuro, y quién decide cuál se muestra en cad
 ## Paleta Yerba
 
 - Los valores de la dueña, en claro y en oscuro, viven en `docs/product/design-system/tokens.css`, `tokens.ts` y `web/src/styles/tokens.css`, que coinciden entre sí. Claro: `--papel` #f6f7f5, `--superficie` #ffffff, `--tinta` #15201a, `--acento` #1e6b47. Oscuro: `--papel` #0e1411, `--superficie` #18211c, `--tinta` #e7eee9, `--acento` #5cc594.
-- Incluyen los tokens nuevos `--positivo`, `--negativo`, `--acento-oscuro`, `--acento-calido` (sobre él, solo texto en tinta) y cinco series de gráfico (`--serie1` a `--serie5`); en oscuro, las series son variantes más brillantes de los mismos tonos, registradas con su hex en el README de diseño.
+- Incluyen los tokens nuevos `--positivo`, `--negativo`, `--acento-oscuro`, `--acento-calido` (sobre él, solo texto en tinta) y cinco series de gráfico (`--serie1` a `--serie5`). En claro, las series son las de la dueña: #1e6b47, #e3a23b, #4c7fd0, #b8457a y #b9c2bc. En oscuro son variantes más brillantes de los mismos tonos, elegidas en GH-493 parte 1 y registradas en el README de diseño: #5cc594, #f0b95a, #7fa8e8, #e07aa8 y #7f8c85.
 - `--tenue`, `--deuda-fondo`, `--deuda2`, `--deuda-linea`, `--critico` y `--critico-texto` son derivados (tintes o sombras de los tonos de la dueña) y su fila lo dice.
 - El botón principal es #1e6b47 con texto blanco en claro y #5cc594 con texto #0e1411 en oscuro: en oscuro el texto del botón nunca es blanco.
 - Fuera de los dos archivos de tokens no hay hex literal en `web/src`. `theme-color` de `web/index.html` y `theme_color`/`background_color` del manifest son #f6f7f5; el manifest queda claro y su `id` no cambia.
@@ -43,6 +43,7 @@ Cómo se ve la app en claro y en oscuro, y quién decide cuál se muestra en cad
 - Todo par de texto y todo ícono con significado llega a 4.5:1 en ambos temas, sobre los fondos donde realmente aparece (barra inferior, "New sale" flotante, sheets y toasts incluidos). Los bordes decorativos (`--linea`, `--deuda-linea`) están exentos.
 - La tabla de contraste del README de diseño (ADR-0029) tiene una fila por token y tema. Si un par falla, se mueve solo ese token, entero, al valor más cercano que pase, y el movimiento queda escrito junto a los ratios como desvío del pedido de la dueña.
 - Desvío vigente, el único: `--deuda` en claro pasó de #a85a06 a #a35706, porque sobre `--acento-suave` medía 4,35.
+- "Undo" en la barra usa opacidad 0,8 en lugar del 0,75 del dibujo: con 0,75 el texto blanco sobre el `--boton` Yerba quedaba en 4,42:1, y con 0,8 llega a 4,79:1.
 - Las series de gráfico son marcas, no texto: apuntan a 3:1 sobre `--superficie` y van siempre rotuladas directamente. En claro, `--serie2` y `--serie5` quedan bajo 3:1 porque son los valores de la dueña; el rótulo directo es lo que cuenta la serie.
 
 ## Nunca solo por color
@@ -68,5 +69,5 @@ Cómo se ve la app en claro y en oscuro, y quién decide cuál se muestra en cad
 - Criterio 1 (sigue al teléfono): `web/e2e/theme.spec.ts` (oscuro emulado sin nada guardado abre oscuro con `theme-color` igual al `--papel` oscuro; un cambio con `emulateMedia` a claro quita el atributo y vuelve el meta a #f6f7f5) y `web/src/theme.test.ts` (un cambio con la app oculta se corrige al volver visible y en `pageshow`).
 - Criterio 2 (la elección guardada se mantiene): `theme.spec.ts` (`tema=claro` en teléfono oscuro sigue claro tras recargar; `tema=oscuro` abre oscuro; elegir en Settings persiste tras recargar) y `theme.test.ts` (`claro`, `oscuro` y valores desconocidos se leen como Light, Dark y Automatic).
 - Criterio 3 (legible sin color): `tests/test_design_contrast.py` en verde con todas las filas en ambos temas; el censo de color en verde, stock crítico y acento cálido incluidos; cantidad de lugares abiertos en el issue de seguimiento, que debe quedar en cero.
-- Criterio 4 (toda pantalla, todo ancho): e2e `mobile` en verde a 320, 375, 430 y 246 px; las entradas de offenders solo bajan; conteos de `scripts/design/compare.sh` adjuntos al PR.
+- Criterio 4 (toda pantalla, todo ancho): e2e `mobile` en verde a 320, 375, 430 y 246 px; las entradas de offenders solo bajan; conteos de `scripts/design/compare.sh` adjuntos al PR. Las comparaciones en oscuro de `compare.sh` solo cuentan como evidencia cuando el script guarda `tema=oscuro` o emula un sistema oscuro, porque `data-tema` solo ya no alcanza.
 - Criterio 5 (nada más se mueve): todas las suites fuera de los tests de tema pasan sin editar, salvo el literal del fondo claro en `tests/test_design_tokens.py`, que pasa a `#f6f7f5`.
