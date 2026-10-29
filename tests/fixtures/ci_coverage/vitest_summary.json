@@ -1,0 +1,11 @@
+{
+  "total": {
+    "lines": {"total": 200, "covered": 150, "skipped": 0, "pct": 75},
+    "statements": {"total": 220, "covered": 160, "skipped": 0, "pct": 72.72},
+    "functions": {"total": 40, "covered": 30, "skipped": 0, "pct": 75},
+    "branches": {"total": 60, "covered": 40, "skipped": 0, "pct": 66.66}
+  },
+  "web/src/screens/Home.tsx": {
+    "lines": {"total": 200, "covered": 150, "skipped": 0, "pct": 75}
+  }
+}
