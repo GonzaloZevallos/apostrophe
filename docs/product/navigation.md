@@ -192,7 +192,7 @@ Below 900 px only. Every rule here is scoped under that breakpoint. Computer lay
 
 - **Fixed bar**: the bar is fixed to the bottom of the screen on tab roots and on cards and details, respecting the device insets.
 - **Floating "+ New sale"**: it floats together with its "what is missing" line just above the bar, on tab roots only. Forms and sheets show neither the bar nor the button.
-- **Bottom space**: content never ends under the bar or the button, and the last row is fully visible above them. One bottom-space value (`--alto-cromo-inferior`) drives three things: the content padding, the button position and the toast position. No rule hard-codes those heights.
+- **Bottom space**: content never ends under the bar or the button, and the last row is fully visible above them. One bottom-space value (`--bottom-chrome-height`) drives three things: the content padding, the button position and the toast position. No rule hard-codes those heights. A customer's card pins its "New sale to <name>" above the bar from the same value.
 - **Keyboard**:
   - Whenever a text keyboard is open, on any tab root or card with a text field (Customers search, Sales search or filters, and the rest), the bar and the button are hidden and can't be tapped. They are never pushed up above the keyboard.
   - Padding does not change, so nothing shifts. Closing the keyboard brings both back with the typed text and scroll position unchanged.
@@ -217,7 +217,7 @@ Below 900 px only. Every rule here is scoped under that breakpoint. Computer lay
   - Anywhere, tapping outside never discards work, never opens a dialog, and no form gains a new confirmation.
 - **What is behind a sheet**:
   - Opened from inside the app, the screen behind is the one the form was opened from. An in-page sheet (a variety's inline edits, editing an expense) has its own screen behind it.
-  - Opened by a direct address, a routed form shows its sheet over the parent from the back-with-no-history table. That parent is inert and hidden from assistive technology, with no chrome, no heading and no ids.
+  - Opened by a direct address, a routed form shows its sheet over the parent from the back-with-no-history table. That parent is inert and hidden from assistive technology, with no chrome, no heading and no ids, and it shows nothing while its data is loading or missing.
   - Routes, kinds and parents do not change.
 - **Forms drawn as sheets**:
   - Record payment;
@@ -228,11 +228,11 @@ Below 900 px only. Every rule here is scoped under that breakpoint. Computer lay
   - the stock withdrawal form, new and editing;
   - New variety;
   - a variety's rename, low-stock warning form and catalog attributes form.
-- **Known exception**: Change password, the expense categories editor and New sale's new-customer overlay keep the old overlay on the phone, with no pinned action. The `Sheet` ADR names them. This is an exception to criterion 19's pinned action, not a failure of it.
-- **Record payment's focus**: on opening, focus goes to its first field, not to its title. Closing still returns focus to the "Collect" or "Record payment" that was tapped (payments.md).
+- **Known exception**: Change password, the expense categories editor and New sale's new-customer overlay keep the old overlay on the phone, with no pinned action. The `Sheet` ADR (ADR-0053) names them. This is an exception to criterion 19's pinned action, not a failure of it.
+- **Record payment's focus**: on the phone, opening it puts focus on its first field, not its title; its computer modal still focuses the title. Closing still returns focus to the "Collect" or "Record payment" that was tapped (payments.md).
 - **New sale's payment choice**:
   - The Cash / Transfer / Owing choice stays visible above the sale's footer.
-  - Save is never disabled. It does not look ready until a choice is made.
+  - Save is never disabled. It does not look ready until a choice is made: it is drawn as a secondary button until then and as the primary button after.
   - A tap on Save before the choice does what it did before: the line names what is missing. The tap count to a saved sale does not change.
 - **Fit**: no page is wider than the viewport at 320 and 246 px with extreme data. Long names truncate with an ellipsis, a figure never splits, and "$" never stays alone on a line. The expenses month ordering rule applies to Expenses only.
 - **Tap targets and text**: every tap target is at least 44×44 and no text is under 12 px. This includes:
@@ -341,7 +341,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   - a server error shows a generic retry;
   - a record that is gone follows the "That is gone." rule.
 - **Phone layout (GH-319)**:
-  - Every phone sheet is rendered by the one shared `Sheet`. No form defines its own backdrop, Close placement, pinned-action layout or scroll lock.
+  - Every phone sheet is rendered by the one shared `Sheet` (ADR-0053). No form defines its own backdrop, Close placement, pinned-action layout or scroll lock.
   - Wherever a sheet has an outside, its tap-outside and its Close read the same `touched` value: the `dirty` the host already passes to `useLeaveGuard`. On the phone's full-screen sheet nothing outside it closes it.
   - "Keyboard open" is decided only in `useVisualViewport` (ADR-0028 as amended).
   - The phone rules never edit ADR-0044's `PriceFrame` dialog branch or `CobroFrame`'s computer branch.
