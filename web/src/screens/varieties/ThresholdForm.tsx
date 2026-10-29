@@ -1,6 +1,6 @@
 /**
  * `ThresholdForm`: sets a variety's low-stock warning (`PUT /stock/varieties/{id}/threshold`
- * with `{grams}`), opened over its page. Like `RenameForm` it knows nothing of the router:
+ * with `{quantity}`), opened over its page. Like `RenameForm` it knows nothing of the router:
  * its host supplies the exits and learns whether something was typed. A refusal shows under
  * the field and keeps what was typed. What counts as a valid threshold (above zero) is the
  * backend's rule; here only text that is no amount of grams at all is turned back.
