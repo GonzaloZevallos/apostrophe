@@ -254,4 +254,4 @@ recorder keeps `lastText` per element (`web/e2e/toastRecorder.ts`), so `expectTo
 - `analysis.spec.ts:64, 230` and `archivadas.spec.ts:65` "Sale saved" is `.venta-guardada`, not in `SuccessToast`.
 - `passwords.spec.ts:128` the dead-link message is page text.
 
-**Not run here.** Local e2e is suspended (PR #434): no local e2e run is claimed. The e2e proof for these steps is the pull request's CI `e2e` job.
+**Not run here.** Local e2e is suspended (PR #434): no local e2e run is claimed. The e2e proof for these steps is the pull request's CI `e2e` job. It is not shown yet: no pull request exists for this head, so the criterion "CI `e2e` is green" is met only when the PR's `e2e` job passes.
