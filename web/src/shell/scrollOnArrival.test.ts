@@ -5,10 +5,10 @@
  */
 
 import { expect, test } from 'vitest'
-import { SCREENS, screenOf, type ScreenId } from '../routes'
+import { HOME, LOGIN, SCREENS, screenOf, type ScreenId } from '../routes'
 import { scrollOnArrival, type Arrival, type NavigationType } from './scrollOnArrival'
 
-function at(screen: ScreenId | undefined, pathname = `/${screen ?? 'outside'}`): Arrival {
+function at(screen: ScreenId | undefined, pathname = `screen:${screen ?? 'outside'}`): Arrival {
   return { screen, pathname }
 }
 
@@ -67,14 +67,14 @@ test('Back and Forward restore, on every screen pair and both viewports', () => 
       }
     }
   }
-  expect(scrollOnArrival(at(undefined, '/login'), at('home', '/'), 'POP', 'phone')).toBe('restore')
+  expect(scrollOnArrival(at(undefined, LOGIN), at('home', HOME), 'POP', 'phone')).toBe('restore')
 })
 
 test('the same path keeps the page: a query, a fragment, a re-tap, a sheet stack', () => {
   for (const entry of SCREENS) {
     for (const type of PUSH_LIKE) {
       for (const viewport of ['phone', 'computer'] as const) {
-        expect(scrollOnArrival(at(entry.id, '/x'), at(entry.id, '/x'), type, viewport)).toBe('keep')
+        expect(scrollOnArrival(at(entry.id, 'same'), at(entry.id, 'same'), type, viewport)).toBe('keep')
       }
     }
   }

@@ -4,8 +4,10 @@
  */
 
 import { afterEach, expect, test, vi } from 'vitest'
+import { SALE, SALES, pathTo } from '../routes'
 import { nextPlaces, offsetFor, resetPlaces, watchScroll } from './scrollPlaces'
 
+const SALE_THREE = pathTo(SALE, { id: 3 })
 const EMPTY = new Map<string, number>()
 
 type Action = 'POP' | 'PUSH' | 'REPLACE'
@@ -70,23 +72,23 @@ afterEach(() => {
 })
 
 test('watchScroll reads scrollY at the moment of the change, for the entry being left', () => {
-  const { router, go } = fakeRouter({ key: 'default', pathname: '/sales' })
+  const { router, go } = fakeRouter({ key: 'default', pathname: SALES })
   watchScroll(router as never)
   vi.spyOn(window, 'scrollY', 'get').mockReturnValue(640)
-  go('k1', '/sales/3', 'PUSH')
+  go('k1', SALE_THREE, 'PUSH')
   vi.spyOn(window, 'scrollY', 'get').mockReturnValue(0)
-  go('k2', '/sales', 'POP')
+  go('k2', SALES, 'POP')
   expect(offsetFor('default')).toBe(640)
   expect(offsetFor('k1')).toBe(0)
   expect(offsetFor('never-seen')).toBe(0)
 })
 
 test('watchScroll ignores a state whose location did not change, and carries a same-path REPLACE', () => {
-  const { router, go } = fakeRouter({ key: 'default', pathname: '/sales' })
+  const { router, go } = fakeRouter({ key: 'default', pathname: SALES })
   watchScroll(router as never)
   vi.spyOn(window, 'scrollY', 'get').mockReturnValue(300)
-  go('default', '/sales', 'PUSH')
+  go('default', SALES, 'PUSH')
   expect(offsetFor('default')).toBe(0)
-  go('k1', '/sales', 'REPLACE')
+  go('k1', SALES, 'REPLACE')
   expect(offsetFor('k1')).toBe(300)
 })
