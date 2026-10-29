@@ -311,7 +311,7 @@ def _seed_bigger_history(client: TestClient) -> None:
         json={
             "reason": "own_use",
             "date": (TODAY - timedelta(days=7)).isoformat(),
-            "lines": [{"variety_id": variety_ids[0], "quantity": "1"}],
+            "lines": [{"product_id": variety_ids[0], "quantity": "1"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text

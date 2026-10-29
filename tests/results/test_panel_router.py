@@ -358,7 +358,8 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
     assert statuses[low_id] == "low"
     for row in panel["stock"]:
         reference = dict(stock_by_id[row["variety_id"]])
-        own = dict(row)
+        # The panel row still says variety_id (its own slice renames it); stock's says product_id.
+        own = {("product_id" if key == "variety_id" else key): value for key, value in row.items()}
         del own["name"]
         assert own == reference
 
@@ -800,7 +801,7 @@ def _seed_small_panel_history(client: TestClient) -> None:
         json={
             "reason": "promotion",
             "date": day,
-            "lines": [{"variety_id": variety_id, "quantity": "1"}],
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -864,7 +865,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
         json={
             "reason": "own_use",
             "date": TODAY.isoformat(),
-            "lines": [{"variety_id": variety_ids[0], "quantity": "1"}],
+            "lines": [{"product_id": variety_ids[0], "quantity": "1"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text

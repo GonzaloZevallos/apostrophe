@@ -432,7 +432,7 @@ def test_nothing_is_attempted_after_a_channel_change_until_publicar(
 def _withdraw(client: TestClient, variety_id: int, quantity: str, **extra: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "reason": "promotion",
-        "lines": [{"variety_id": variety_id, "quantity": quantity}],
+        "lines": [{"product_id": variety_id, "quantity": quantity}],
     }
     response = client.post("/stock/withdrawals", json=body | extra)
     assert response.status_code == 201, response.text
