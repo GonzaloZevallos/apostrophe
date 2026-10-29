@@ -198,10 +198,10 @@ Part 3 migrates the 12 specs `analysis`, `withdrawals`, `settings`, `catalog`, `
 and 1 is a repeat. The guard prints, from `npm --prefix web test -- e2eToastRule`:
 
 ```
-e2eToastRule: 106 sites observed in the page, 12 kept on page text, 4 pending
+e2eToastRule: 109 sites observed in the page, 12 kept on page text, 4 pending
 ```
 
-That is with parts 2 and 3 merged. Alone, part 3 printed `71 sites observed in the page, 8 kept on page text, 39 pending`
+That is with parts 2 and 3 merged and master at GH-466 (its `analysis.spec.ts` adds 3 `expectToast` calls to the 106 of the two parts). Alone, part 3 printed `71 sites observed in the page, 8 kept on page text, 39 pending`
 (the 35 part 2 sites plus the 4 below). The 4 sites left are in `cobroHoja.spec.ts` (`:42`, `:47`, `:125`, `:138`), which neither
 part names; `PENDING_CEILING` is 4, equal to `PENDING.length`. The part 2 `Customer saved` sites are on `KEPT`
 (`ONE_MATCH`), 10 + 2 category rows = 12. `cobroHoja.spec.ts` is left for a later migration, so `PENDING` is not empty yet.
