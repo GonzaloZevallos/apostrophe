@@ -34,7 +34,8 @@ export interface SettingsGroupFrame {
 export interface SettingsGroupProps {
   title: string
   dirty: boolean
-  leave: LeaveWording
+  /** Absent for a frame that is never dirty and so never asks. */
+  leave?: LeaveWording
   children: ReactNode | ((frame: SettingsGroupFrame) => ReactNode)
 }
 
@@ -53,7 +54,7 @@ export default function SettingsGroup({ title, dirty, leave, children }: Setting
           {typeof children === 'function' ? children({ disarm }) : children}
         </div>
       </div>
-      {blocker.state === 'blocked' && <LeaveConfirm blocker={blocker} {...leave} />}
+      {blocker.state === 'blocked' && leave !== undefined && <LeaveConfirm blocker={blocker} {...leave} />}
     </main>
   )
 }

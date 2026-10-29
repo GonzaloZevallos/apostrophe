@@ -134,4 +134,56 @@ describe('findForbiddenUsages', () => {
 
     expect(violations).toEqual([])
   })
+
+  describe('the document\'s scroll (ADR-0065)', () => {
+    const banned: Array<[string, string]> = [
+      ['window.scrollTo', "window.scrollTo({ top: 0, left: 0, behavior: 'instant' })"],
+      ['window.scrollBy', 'window.scrollBy(0, 40)'],
+      ['window.scroll', 'window.scroll(0, 0)'],
+      ['globalThis.scrollTo', 'globalThis.scrollTo(0, 0)'],
+      ['optional-chained window?.scrollTo', 'window?.scrollTo(0, 0)'],
+      ['bracket window["scrollTo"]', "window['scrollTo'](0, 0)"],
+      ['document.scrollTo', 'document.scrollTo(0, 0)'],
+      ['documentElement.scrollTop =', 'document.documentElement.scrollTop = 0'],
+      ['body.scrollTop +=', 'document.body.scrollTop += 10'],
+      ['scrollingElement.scrollLeft =', 'document.scrollingElement.scrollLeft = 0'],
+      ['history.scrollRestoration read', "const mode = window.history.scrollRestoration"],
+      ['history.scrollRestoration write', "history.scrollRestoration = 'manual'"],
+    ]
+
+    test.each(banned)('flags %s outside the scroll owners', (_name, content) => {
+      expect(findForbiddenUsages([{ path: 'src/screens/Inicio.tsx', content }])).toEqual([
+        { path: 'src/screens/Inicio.tsx', rule: 'documentScroll' },
+      ])
+    })
+
+    test.each(banned)('allows %s inside each scroll owner', (_name, content) => {
+      const owners = [
+        'src/shell/ScrollSync.tsx',
+        'src/shell/scrollPlaces.ts',
+        'src/shell/scrollFollow.ts',
+        'src/components/useReturnToPlace.ts',
+      ]
+      expect(findForbiddenUsages(owners.map((path) => ({ path, content })))).toEqual([])
+    })
+
+    test('a file merely named like an owner elsewhere is not exempt', () => {
+      expect(
+        findForbiddenUsages([{ path: 'src/screens/ScrollSync.tsx', content: 'window.scrollTo(0, 0)' }]),
+      ).toEqual([{ path: 'src/screens/ScrollSync.tsx', rule: 'documentScroll' }])
+    })
+
+    test('in-page scrolling of an element, reads of the offset and comparisons stay allowed', () => {
+      const content = [
+        'row.scrollIntoView({ block: "nearest" })',
+        'list.scrollTo({ top: 0 })',
+        'panel.scrollTop = 0',
+        'const here = window.scrollY',
+        'const tall = document.documentElement.scrollHeight',
+        'if (document.body.scrollTop === 0) return',
+        "window.addEventListener('scroll', onScroll)",
+      ].join('\n')
+      expect(findForbiddenUsages([{ path: 'src/screens/Inicio.tsx', content }])).toEqual([])
+    })
+  })
 })

@@ -51,7 +51,7 @@ def _from_first_root(css: str) -> str:
 
 def test_each_raw_file_keeps_the_light_papel_value() -> None:
     for path in (WEB_TOKENS, DOCS_TOKENS):
-        assert "--papel: #fcfbf8;" in path.read_text()
+        assert "--papel: #f6f7f5;" in path.read_text()
 
 
 def test_both_files_agree_from_the_first_root_rule_to_the_end() -> None:
