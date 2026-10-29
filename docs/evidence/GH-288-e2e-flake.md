@@ -144,11 +144,15 @@ task): the throttled red/green on "Entry saved" and the five smoke runs of `npm 
 were not made. The e2e evidence for the migrated steps comes from the pull request's GitHub CI, where
 e2e runs sharded; a red there is a finding to fix. Nothing in this section measures a rate.
 
-**Landing note.** This branch was checked on its own base. If `master` is merged in before landing
-(it is well ahead, including the change that carries toasts as `common:` keys), re-run
-`npm --prefix web test -- e2eToastRule Clientes` first: `SUCCESS_TOASTS` must still equal
-`SuccessToast` (the guard's `Equal` check fails the type-check otherwise), and the Clientes test must
-still see one saved toast.
+**After merging `master`.** `master` carries three of the toasts as `common:` keys
+(`common:customerSaved`, `common:entrySaved`, `common:entryDeleted`) in `SuccessToast`, and
+history state carries the key, not the English. The guard follows: those three entries of
+`SUCCESS_TOASTS` are `{ key }` entries, matched by the English `t` resolves them to (what a spec
+sees), and the `Equal` check reads a `{ key }` entry as its key. `master` also moved the sites in
+`catalog.spec.ts` and `catalogInsecureOrigin.spec.ts`, so those nine `PENDING` lines were renumbered
+(same sites, no new ones). The Clientes test looks for the resolved "Customer saved" text; it still
+fails without the fix (`expected [ …(2) ] to have a length of 1 but got 2`, checked again after the
+merge by reverting the fix for one run). The counts are unchanged: 27 observed, 6 kept, 86 pending.
 
 **Diff scope** (`git diff --stat fbc4fdc0..HEAD -- . ':!docs/evidence/GH-288-e2e-flake.md'`, from the base this branch
 started on, without this doc, which keeps growing): 21 files changed, 1202 insertions, 84 deletions. Under `web/src` only `screens/clientes/Clientes.tsx` and its

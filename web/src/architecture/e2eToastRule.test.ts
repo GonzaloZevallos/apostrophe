@@ -24,7 +24,6 @@ import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import type { SuccessToast } from '../components/AvisoExito'
 import { CATALOG_TEXT } from '../copy/catalog'
-import { COMMON_TEXT } from '../copy/common'
 import { CUSTOMERS_TEXT } from '../copy/customers'
 import { EXPENSES_TEXT } from '../copy/expenses'
 import { PAYMENTS_TEXT } from '../copy/payments'
@@ -33,6 +32,7 @@ import { SALES_TEXT } from '../copy/sales'
 import { CATALOG_SAVED, PASSWORD_CHANGED_SUCCESS, PRICES_SAVED, RENAME_SUCCESS, SETTINGS_TEXT } from '../copy/settings'
 import { STOCK_TEXT } from '../copy/stock'
 import { PRICE_SAVED, THRESHOLD_SAVED, VARIETIES_TEXT } from '../copy/varieties'
+import { testT } from '../i18n/testing'
 
 // Vitest runs with `web/` as its root (`npm --prefix web test`).
 const WEB_ROOT = process.cwd()
@@ -45,12 +45,13 @@ export const STILL_OWING_PREFIX = 'Payment saved · still owing '
 
 /**
  * The closed set of success toasts (`SuccessToast`, `components/AvisoExito.tsx`), each copy
- * constant once. `savedStillOwing` is one prefix entry: the balance after the prefix is free.
+ * constant once. The three `common:` members are keys, matched by the English they resolve to;
+ * `savedStillOwing` is one prefix entry: the balance after the prefix is free.
  */
 export const SUCCESS_TOASTS = [
-  COMMON_TEXT.customerSaved,
-  COMMON_TEXT.entrySaved,
-  COMMON_TEXT.entryDeleted,
+  { key: 'common:customerSaved' },
+  { key: 'common:entrySaved' },
+  { key: 'common:entryDeleted' },
   VARIETIES_TEXT.variedadGuardada,
   VARIETIES_TEXT.variedadEliminada,
   VARIETIES_TEXT.variedadArchivada,
@@ -78,14 +79,22 @@ export const SUCCESS_TOASTS = [
   STOCK_TEXT.retiroEliminado,
 ] as const
 
-type TextOf<E> = E extends { prefix: infer P extends string } ? `${P}${string}` : E
+type TextOf<E> = E extends { prefix: infer P extends string }
+  ? `${P}${string}`
+  : E extends { key: infer K extends string }
+    ? K
+    : E
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
 
 /** `true` only while the list and the `SuccessToast` union hold the same members, both ways. */
 const listMatchesUnion: Equal<TextOf<(typeof SUCCESS_TOASTS)[number]>, SuccessToast> = true
 
 const EXACT_TOASTS: ReadonlySet<string> = new Set(
-  SUCCESS_TOASTS.flatMap((entry) => (typeof entry === 'string' ? [entry] : [])),
+  SUCCESS_TOASTS.flatMap((entry) => {
+    if (typeof entry === 'string') return [entry]
+    // A `common:` key rides in history state; a spec sees the English the page resolves it to.
+    return 'key' in entry ? [testT(entry.key)] : []
+  }),
 )
 
 function isToastText(text: string): boolean {
@@ -467,15 +476,15 @@ export const PENDING: readonly string[] = [
   'archivadas.spec.ts:61',
   'archivadas.spec.ts:71',
   'archivadas.spec.ts:106',
-  'catalog.spec.ts:44',
-  'catalog.spec.ts:49',
-  'catalog.spec.ts:56',
+  'catalog.spec.ts:65',
   'catalog.spec.ts:70',
-  'catalog.spec.ts:81',
-  'catalog.spec.ts:100',
-  'catalogInsecureOrigin.spec.ts:100',
-  'catalogInsecureOrigin.spec.ts:107',
-  'catalogInsecureOrigin.spec.ts:122',
+  'catalog.spec.ts:77',
+  'catalog.spec.ts:91',
+  'catalog.spec.ts:102',
+  'catalog.spec.ts:127',
+  'catalogInsecureOrigin.spec.ts:108',
+  'catalogInsecureOrigin.spec.ts:115',
+  'catalogInsecureOrigin.spec.ts:124',
   'clientesCobrar.spec.ts:39',
   'clientesCobrar.spec.ts:83',
   'clientesCobrar.spec.ts:88',
@@ -572,7 +581,10 @@ describe('SUCCESS_TOASTS', () => {
   })
 
   it('holds each text once', () => {
-    const texts = SUCCESS_TOASTS.map((entry) => (typeof entry === 'string' ? entry : entry.prefix))
+    const texts = SUCCESS_TOASTS.map((entry) => {
+      if (typeof entry === 'string') return entry
+      return 'key' in entry ? entry.key : entry.prefix
+    })
     expect(new Set(texts).size).toBe(texts.length)
   })
 
