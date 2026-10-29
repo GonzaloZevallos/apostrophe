@@ -3294,12 +3294,6 @@ body {
    variety, week and month (`AnalisisTarjeta`). Everything is under `.analisis` and the phone
    query; the computer keeps its tables. Colours, spacing and type come from tokens only. */
 @media (max-width: 899.98px) {
-  /* The month selector sits third in Expenses' header; it is the first control in Analysis,
-     which gets no `order`. */
-  .gastos__cabecera > .gastos__mes {
-    order: 3;
-  }
-
   /* `.gastos__mes` takes `flex-basis: 100%` to fill Expenses' wrapping header row. Here its
      parent is a column (`.cuerpo`), where that basis is a height: once the page is taller
      than its content the selector stretched with it and the arrows slid down the page. In
