@@ -6,16 +6,19 @@ The rule that says what a screen is lives in `screen_keys` below, and nowhere el
   `ventas`, `settings`...);
 * a file directly under `web/src/screens` is a screen when it is a `.tsx` file that is not a
   `*.test.tsx`; its key is the stem (`Catalogo.tsx` -> `Catalogo`);
-* a `.ts` or `.json` file there (`analisisCost.ts`, `telegramPreview.cases.json`) is a helper
-  or a fixture: it keeps no key, and a change to it is the vitest suite's concern;
+* a `.ts` or `.json` file there (`inicioNotices.ts`, `telegramPreview.cases.json`) is a helper or
+  a fixture: it keeps no key, so the map says nothing about it, and the selector must treat a
+  change to it as a path no rule maps and select every e2e spec;
 * a `*.test.ts(x)` file is a test, not a screen.
 
-A value lists the specs, as repo-relative `web/e2e/*.spec.ts` paths in sorted order, whose
-subject is that screen, plus the three sweeps (`flow`, `insets`, `navigation`), which walk
-every routed screen. `mobile.spec.ts` is left out on purpose: the selector pairs it with
-`mobile.setup.ts` for any screen or component change. A spec that only seeds data by driving
-another screen (most visit `VARIETIES` first to create a variety) is not listed for it. `[]`
-means no spec covers the screen.
+A value lists the specs, as repo-relative `web/e2e/*.spec.ts` paths in sorted order, that
+assert something about the screen: its route is the subject, a heading, toast or control of it
+is asserted, or it is a destination the spec checks (not only a page it passes through).
+`flow`, `insets` and `navigation` walk every routed screen and are on every key. `mobile.spec.ts`
+is left out on purpose: the selector pairs it with `mobile.setup.ts` for any screen or component
+change. A spec that only visits a screen to seed data (most visit `VARIETIES` first to create a
+variety) is not listed for it. A component folder or helper screen is listed with the specs of
+the screen that renders it. `[]` means no spec covers the screen.
 
 `ci-changes` reuses `screen_keys` and `violations` from this module.
 """

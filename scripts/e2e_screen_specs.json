@@ -3,44 +3,60 @@
     "web/e2e/analysis.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
-    "web/e2e/navigation.spec.ts"
+    "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "AnalisisTablas": [
     "web/e2e/analysis.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
-    "web/e2e/navigation.spec.ts"
+    "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "AnalisisTarjeta": [
     "web/e2e/analysis.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
-    "web/e2e/navigation.spec.ts"
+    "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "AnalisisTarjetas": [
     "web/e2e/analysis.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
-    "web/e2e/navigation.spec.ts"
+    "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "CambiarContrasena": [
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
-    "web/e2e/passwords.spec.ts"
+    "web/e2e/passwords.spec.ts",
+    "web/e2e/pressed.spec.ts",
+    "web/e2e/settings.spec.ts"
   ],
   "Catalogo": [
     "web/e2e/catalog.spec.ts",
     "web/e2e/catalogInsecureOrigin.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
-    "web/e2e/navigation.spec.ts"
+    "web/e2e/navigation.spec.ts",
+    "web/e2e/pinnedCatalog.spec.ts",
+    "web/e2e/settings.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/varietiesAutoSelect.spec.ts"
   ],
   "EntradaStock": [
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
-    "web/e2e/stockEntrySheet.spec.ts"
+    "web/e2e/stockEntrySheet.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/toastRecorder.spec.ts"
   ],
   "Entrar": [
     "web/e2e/consoleCollector.spec.ts",
@@ -49,6 +65,8 @@
     "web/e2e/install.spec.ts",
     "web/e2e/navigation.spec.ts",
     "web/e2e/passwords.spec.ts",
+    "web/e2e/pressed.spec.ts",
+    "web/e2e/settings.spec.ts",
     "web/e2e/theme.spec.ts"
   ],
   "EntriesList": [
@@ -62,17 +80,25 @@
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
     "web/e2e/tapBudget.spec.ts"
   ],
   "Inicio": [
     "web/e2e/barFit.spec.ts",
+    "web/e2e/cobroHoja.spec.ts",
+    "web/e2e/cobroModal.spec.ts",
     "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/inicioCobrar.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
     "web/e2e/panel.spec.ts",
-    "web/e2e/phoneChrome.spec.ts"
+    "web/e2e/passwords.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/pressed.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/toastRecorder.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "Invitacion": [
     "web/e2e/firstRun.spec.ts",
@@ -88,7 +114,10 @@
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
-    "web/e2e/tapBudget.spec.ts"
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/pressed.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "PinPublish": [
     "web/e2e/flow.spec.ts",
@@ -108,7 +137,9 @@
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
     "web/e2e/onboarding.spec.ts",
-    "web/e2e/stockEntrySheet.spec.ts"
+    "web/e2e/stockEntrySheet.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/toastRecorder.spec.ts"
   ],
   "Variedades": [
     "web/e2e/archivadas.spec.ts",
@@ -116,15 +147,23 @@
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/pressed.spec.ts",
     "web/e2e/priceModal.spec.ts",
+    "web/e2e/stockEntrySheet.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/toastRecorder.spec.ts",
     "web/e2e/varietiesAutoSelect.spec.ts",
-    "web/e2e/varietySheet.spec.ts"
+    "web/e2e/varietySheet.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "analisis": [
     "web/e2e/analysis.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
-    "web/e2e/navigation.spec.ts"
+    "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "clientes": [
     "web/e2e/clientesCobrar.spec.ts",
@@ -137,32 +176,47 @@
     "web/e2e/insets.spec.ts",
     "web/e2e/leaveWithBack.spec.ts",
     "web/e2e/navigation.spec.ts",
-    "web/e2e/payments.spec.ts"
+    "web/e2e/panel.spec.ts",
+    "web/e2e/payments.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/pressed.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/toastRecorder.spec.ts"
   ],
   "expenses": [
     "web/e2e/expenseSheet.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
     "web/e2e/tapBudget.spec.ts"
   ],
   "inicio": [
     "web/e2e/barFit.spec.ts",
+    "web/e2e/cobroHoja.spec.ts",
+    "web/e2e/cobroModal.spec.ts",
     "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/inicioCobrar.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
     "web/e2e/panel.spec.ts",
-    "web/e2e/phoneChrome.spec.ts"
+    "web/e2e/passwords.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/pressed.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/toastRecorder.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "onboarding": [
+    "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
     "web/e2e/onboarding.spec.ts"
   ],
   "settings": [
+    "web/e2e/catalog.spec.ts",
     "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
@@ -170,8 +224,10 @@
     "web/e2e/onboarding.spec.ts",
     "web/e2e/passwords.spec.ts",
     "web/e2e/pinnedCatalog.spec.ts",
+    "web/e2e/pressed.spec.ts",
     "web/e2e/settings.spec.ts",
-    "web/e2e/theme.spec.ts"
+    "web/e2e/theme.spec.ts",
+    "web/e2e/toastRecorder.spec.ts"
   ],
   "varieties": [
     "web/e2e/archivadas.spec.ts",
@@ -179,18 +235,27 @@
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
+    "web/e2e/pressed.spec.ts",
     "web/e2e/priceModal.spec.ts",
+    "web/e2e/stockEntrySheet.spec.ts",
+    "web/e2e/tapBudget.spec.ts",
+    "web/e2e/toastRecorder.spec.ts",
     "web/e2e/varietiesAutoSelect.spec.ts",
-    "web/e2e/varietySheet.spec.ts"
+    "web/e2e/varietySheet.spec.ts",
+    "web/e2e/withdrawals.spec.ts"
   ],
   "ventas": [
+    "web/e2e/clientesCobrar.spec.ts",
     "web/e2e/customers.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/leaveWithBack.spec.ts",
     "web/e2e/navigation.spec.ts",
     "web/e2e/nuevaVentaTelefono.spec.ts",
+    "web/e2e/onboarding.spec.ts",
     "web/e2e/payments.spec.ts",
+    "web/e2e/phoneChrome.spec.ts",
     "web/e2e/pressed.spec.ts",
     "web/e2e/sales.spec.ts",
     "web/e2e/tapBudget.spec.ts",
