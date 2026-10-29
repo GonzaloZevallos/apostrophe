@@ -13,7 +13,7 @@ donde toda otra pantalla lo copia tal cual.
 | Archivo | Qué es |
 | --- | --- |
 | `tokens.ts` | Paleta clara y oscura, escala tipográfica, espacios, radios, medidas. |
-| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema resuelto es el de luz (paleta Yerba); `data-tema="oscuro"` lo pasa a oscuro. El atributo lleva el tema ya resuelto: `web/src/theme.ts` lo pone según la elección guardada o, en Automático, según el teléfono. Las cuatro zonas seguras (`--inset-arriba`, `--inset-abajo`, `--inset-izquierda`, `--inset-derecha`) salen de `env(safe-area-inset-*)`, valen 0 donde no hay muesca y no tienen valor en `tokens.ts`. |
+| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema resuelto es el de luz (paleta Yerba); `data-tema="oscuro"` lo pasa a oscuro. El atributo lleva el tema ya resuelto: `web/src/theme.ts` lo pone según la elección guardada o, en Automático, según el teléfono (en vivo y al volver a la app). Un Oscuro viejo sigue abriendo oscuro; un Claro viejo, que no guardaba nada, ahora sigue al teléfono. Otra pestaña toma el cambio al cargar. Un cuadro claro en un teléfono oscuro sin elección guardada es un costo aceptado. Las cuatro zonas seguras (`--inset-arriba`, `--inset-abajo`, `--inset-izquierda`, `--inset-derecha`) salen de `env(safe-area-inset-*)`, valen 0 donde no hay muesca y no tienen valor en `tokens.ts`. |
 | `formato.ts` | Plata, gramos, fechas, semana y teléfonos. Las reglas del enunciado. |
 | `dominio.ts` | Tipos del dominio: negocio, variedades, precios, clientes, ventas, stock, gastos. |
 | `precios.ts` | Motor de precios, totales, validación de venta e imputación de cobros. |
