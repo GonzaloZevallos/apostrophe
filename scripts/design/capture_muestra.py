@@ -247,7 +247,7 @@ def _movements(api: _ClientApi) -> list[str]:
     names = {v["id"]: v["name"] for v in api.get("/api/products")}
     rows = []
     for row in api.get("/stock")["products"]:
-        listed = api.get(f"/stock/products/{row['variety_id']}/movements")
+        listed = api.get(f"/stock/products/{row['product_id']}/movements")
         for move in listed[:3]:
             if move["kind"] == "withdrawal":
                 kind, amount = (

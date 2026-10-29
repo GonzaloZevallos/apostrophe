@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { FirstRunAnswer } from '../api/firstRun'
+import type { VarietyStock } from '../api/stock'
 import { router as appRouter } from '../router'
 import { renderWithViewport } from '../test-viewport'
 import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
@@ -164,6 +165,26 @@ describe('the list', () => {
     await waitFor(() => expect(within(row as HTMLElement).getByText('Hidden')).toBeInTheDocument())
     expect(row).toHaveTextContent('ok')
     expect(screen.getAllByText('Hidden')).toHaveLength(1)
+  })
+
+  test("a product's row shows the figure of the stock row whose product_id is its id", async () => {
+    const target = VARIETIES[1]!
+    const row = {
+      product_id: target.id,
+      quantity: 42,
+      status: 'ok',
+      sold_out_since: null,
+      threshold: null,
+      days_left: null,
+    } satisfies VarietyStock
+    renderApp(VARIETIES_PATH, {
+      answers: { 'GET /stock': () => json(200, { total: 42, products: [row], entries: [] }) },
+    })
+
+    const link = (await screen.findByText(target.name)).closest('a')
+    expect(link).not.toBeNull()
+    await waitFor(() => expect(link).toHaveTextContent('42 g'))
+    expect(screen.queryByText('Sir Jack')).toBeNull()
   })
 
   test('the summary line counts what is not ok by word, in stock-status order', async () => {

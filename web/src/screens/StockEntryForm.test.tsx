@@ -204,3 +204,33 @@ test('the owner refuses the entry inline and the form does not report it saved',
   expect(await screen.findByText('The date cannot be in the future')).toBeInTheDocument()
   expect(onSaved).not.toHaveBeenCalled()
 })
+
+test("an edit preselects the product whose id is the entry's product_id", async () => {
+  const entry = {
+    id: 10,
+    date: '2026-10-03',
+    product_id: VARIETIES[1]!.id,
+    origin: 'purchase',
+    quantity: 30,
+    total_cost: null,
+    cost_per_gram: null,
+    note: null,
+  } satisfies StockEntry
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, { ...STOCK_VIEW, entries: [entry] }))
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <StockEntryForm mode="editar" initial={entry} today="2026-10-03" onSaved={vi.fn()} />
+    </QueryClientProvider>,
+  )
+
+  const field = await screen.findByRole('combobox')
+  await waitFor(() => expect(field).toHaveDisplayValue(VARIETIES[1]!.name))
+})
