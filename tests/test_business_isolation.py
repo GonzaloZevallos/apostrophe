@@ -617,9 +617,9 @@ def test_another_business_reads_none_of_the_archived_stock_rows(
 ) -> None:
     variety = business_a.post("/api/products", json={"name": "Archived here"}).json()
     archive_by_hand(engine, variety["id"])
-    assert [
-        r["product_id"] for r in business_a.get("/stock?archived=true").json()["products"]
-    ] == [variety["id"]]
+    assert [r["product_id"] for r in business_a.get("/stock?archived=true").json()["products"]] == [
+        variety["id"]
+    ]
 
     assert business_b.get("/stock?archived=true").json()["products"] == []
 
