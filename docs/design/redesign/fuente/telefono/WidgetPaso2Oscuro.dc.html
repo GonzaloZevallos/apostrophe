@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Armar widget · paso 2 · oscuro</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5CC594}a:hover{color:#8FDDB6}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #18211C; font-family: 'Geist', system-ui, sans-serif; color: #E7EEE9; display: flex; flex-direction: column; position: relative; overflow: hidden">
+  <header style="padding: 14px 16px 8px; display: flex; justify-content: space-between; align-items: center">
+    <button aria-label="Cerrar sin guardar" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #222D27; color: #E7EEE9; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span style="font-size: 14px; font-weight: 600">Armá tu gráfico</span>
+    <span style="font-size: 13px; color: #9AAAA1; width: 36px; text-align: right">2/5</span>
+  </header>
+  <div aria-hidden="true" style="padding: 0 16px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
+    <span style="height: 4px; border-radius: 2px; background: #5CC594"></span><span style="height: 4px; border-radius: 2px; background: #5CC594"></span><span style="height: 4px; border-radius: 2px; background: #3A4740"></span><span style="height: 4px; border-radius: 2px; background: #3A4740"></span><span style="height: 4px; border-radius: 2px; background: #3A4740"></span>
+  </div>
+
+  <section aria-label="Vista previa" style="margin: 14px 16px 0; background: #0E1411; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 4px; border: 1px solid #2A362F">
+    <div style="display: flex; justify-content: space-between; align-items: baseline">
+      <span style="font-size: 14px; font-weight: 600">Ganancia por categoría</span>
+      <span style="font-size: 10px; font-weight: 600; color: #9AAAA1; letter-spacing: .06em">VISTA PREVIA</span>
+    </div>
+    <span style="font-size: 12px; color: #9AAAA1">Este mes</span>
+    <svg width="334" height="120" viewBox="0 0 334 120" role="img" aria-label="Vista previa: ganancia del mes por categoría">
+      <g font-family="Geist" font-size="11" fill="#E7EEE9"><text x="0" y="18">Almacén</text><text x="0" y="48">Dulces</text><text x="0" y="78">Infusiones</text><text x="0" y="108">Otros</text></g>
+      <rect x="76" y="8" width="200" height="14" rx="4" fill="#5CC594"/><rect x="76" y="38" width="140" height="14" rx="4" fill="#5CC594"/><rect x="76" y="68" width="92" height="14" rx="4" fill="#5CC594"/><rect x="76" y="98" width="28" height="14" rx="4" fill="#5CC594"/>
+      <g font-family="Geist" font-size="11" fill="#9AAAA1"><text x="282" y="19">$182 k</text><text x="222" y="49">$128 k</text><text x="174" y="79">$84 k</text><text x="110" y="109">$25 k</text></g>
+    </svg>
+  </section>
+
+  <section aria-labelledby="p2" style="padding: 18px 16px 0; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <h1 id="p2" style="margin: 0; font-size: 20px; font-weight: 600">¿Abierto por?</h1>
+      <span style="font-size: 13px; color: #9AAAA1">Elegí cómo repartir la ganancia. Podés sumar una segunda.</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <button style="height: 60px; border-radius: 14px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 14px 'Geist', sans-serif; display: flex; align-items: center; gap: 10px; padding: 0 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Tiempo</button>
+      <button aria-pressed="true" style="height: 60px; border-radius: 14px; border: 2px solid #5CC594; background: #1F3A2C; color: #E7EEE9; font: 600 14px 'Geist', sans-serif; display: flex; align-items: center; gap: 10px; padding: 0 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Categoría</button>
+      <button style="height: 60px; border-radius: 14px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 14px 'Geist', sans-serif; display: flex; align-items: center; gap: 10px; padding: 0 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>Producto</button>
+      <button style="height: 60px; border-radius: 14px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 14px 'Geist', sans-serif; display: flex; align-items: center; gap: 10px; padding: 0 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/></svg>Cliente</button>
+      <button style="height: 60px; border-radius: 14px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 14px 'Geist', sans-serif; display: flex; align-items: center; gap: 10px; padding: 0 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M15 11h6M18 8v6"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/></svg>Tipo de cliente</button>
+      <button style="height: 60px; border-radius: 14px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 14px 'Geist', sans-serif; display: flex; align-items: center; gap: 10px; padding: 0 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Medio de pago</button>
+    </div>
+    <button style="align-self: flex-start; height: 34px; padding: 0 12px; border-radius: 17px; border: 1px dashed #3A4740; background: #18211C; color: #5CC594; font: 500 13px 'Geist', sans-serif">+ Segunda dimensión</button>
+  </section>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 16px 24px; border-top: 1px solid #2A362F; background: #18211C; display: flex; gap: 8px">
+    <button style="height: 52px; padding: 0 18px; border-radius: 16px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 600 15px 'Geist', sans-serif">Atrás</button>
+    <button style="flex-grow: 1; height: 52px; border-radius: 16px; border: none; background: #5CC594; color: #0E1411; font: 600 15px 'Geist', sans-serif">Siguiente: filtros</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

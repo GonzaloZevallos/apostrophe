@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Anotar un pago · oscuro</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5CC594}a:hover{color:#8FDDB6}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E1411; font-family: 'Geist', system-ui, sans-serif; color: #E7EEE9; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div aria-hidden="true" style="padding: 16px; opacity: .45"><span style="font-size: 22px; font-weight: 600">·</span></div>
+<div style="position: absolute; inset: 0; background: rgba(21,32,26,.4)"></div>
+<section aria-label="Anotar un pago" style="position: absolute; left: 0; right: 0; bottom: 0; top: 170px; background: #18211C; border-radius: 22px 22px 0 0; display: flex; flex-direction: column">
+<span aria-hidden="true" style="align-self: center; margin-top: 8px; width: 40px; height: 5px; border-radius: 3px; background: #3A4740"></span>
+<div style="padding: 10px 16px 0; display: flex; justify-content: space-between; align-items: center"><h1 style="margin: 0; font-size: 20px; font-weight: 600">Anotar un pago</h1><button aria-label="Cerrar" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #1F2924; color: #E7EEE9; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div style="padding: 14px 16px 0; display: flex; flex-direction: column; gap: 14px"><div style="display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 20px; background: #3B1E1B; color: #F2A79E; font-weight: 600; display: flex; align-items: center; justify-content: center">MR</span><div style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 600">Martín Ríos</span><span style="font-size: 13px; color: #9AAAA1">Te debe $21.500</span></div></div>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #9AAAA1">Cuánto paga
+<span style="display: flex; align-items: baseline; gap: 4px; border-bottom: 2px solid #5CC594; padding-bottom: 6px"><span style="font-size: 28px; color: #9AAAA1">$</span><input value="10.000" style="background: transparent; border: none; outline: none; font: 600 44px 'Geist', sans-serif; color: #E7EEE9; width: 240px; letter-spacing: -0.02em"></span></label>
+<div style="display: flex; gap: 8px"><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 13px 'Geist', sans-serif">Todo · $21.500</button><button aria-pressed="true" style="height: 38px; padding: 0 14px; border-radius: 19px; border: 2px solid #5CC594; background: #1F3A2C; color: #E7EEE9; font: 600 13px 'Geist', sans-serif">$10.000</button><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 13px 'Geist', sans-serif">$5.000</button></div>
+<span style="font-size: 13px; color: #9AAAA1">Después de este pago le queda <b style="color: #E7EEE9">$11.500</b>. Se cancela primero la deuda más vieja.</span>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; color: #9AAAA1; font-weight: 500">Cómo paga</span><div style="display: flex; gap: 8px"><button aria-pressed="true" style="height: 38px; padding: 0 14px; border-radius: 19px; border: 2px solid #5CC594; background: #1F3A2C; color: #E7EEE9; font: 600 13px 'Geist', sans-serif">Efectivo</button><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 13px 'Geist', sans-serif">Transferencia</button><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #2A362F; background: #18211C; color: #E7EEE9; font: 500 13px 'Geist', sans-serif">Mercado Pago</button></div></div></div>
+<div style="margin-top: auto; padding: 12px 16px 24px; border-top: 1px solid #2A362F; display: flex; flex-direction: column; gap: 8px"><button style="height: 54px; border-radius: 16px; border: none; background: #5CC594; color: #0E1411; font: 600 16px 'Geist', sans-serif; ">Anotar pago · $10.000</button></div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
