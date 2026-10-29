@@ -7,7 +7,13 @@
 
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
+import Insignia from './Insignia'
 import ReglaInsignia from './ReglaInsignia'
+
+test('an Insignia in the debt tone carries its word as content, and the tone class beside it', () => {
+  render(<Insignia tono="deuda">owes you</Insignia>)
+  expect(screen.getByText('owes you').className).toBe('insignia insignia--deuda')
+})
 
 test('list reads "list", neutral', () => {
   render(<ReglaInsignia rule="list" />)

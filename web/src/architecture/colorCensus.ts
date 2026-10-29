@@ -37,7 +37,8 @@ function parseRules(css: string): Rule[] {
     let from = 0
     let open = text.indexOf('{', from)
     while (open !== -1) {
-      const prelude = text.slice(from, open).replace(/^[\s;}]+/, '')
+      // What follows the last `;` is the prelude: a statement at-rule (`@import …;`) before it is no part of it.
+      const prelude = text.slice(from, open).replace(/^[\s\S]*[;}]/, '').trim()
       let depth = 1
       let close = open + 1
       while (close < text.length && depth > 0) {

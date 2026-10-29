@@ -39,6 +39,11 @@ test('a token inside a comment is not counted', () => {
   expect(stateColorRules('/* .x { color: var(--deuda) } */ .y { color: blue; /* var(--negativo) */ }')).toEqual([])
 })
 
+test('a statement at-rule right before a rule does not hide the rule', () => {
+  const css = '@import "x.css";\n.a { color: var(--deuda) }\n@layer base;\n.b { color: var(--critico) }'
+  expect(stateColorRules(css)).toEqual(['.a', '.b'])
+})
+
 test('a class named like a state color is not a use of the token', () => {
   expect(stateColorRules('.boton--critico { color: blue }')).toEqual([])
 })
