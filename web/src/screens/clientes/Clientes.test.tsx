@@ -14,12 +14,15 @@
 
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
+import { toast } from '../../components/feedback'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { stubViewport } from '../../test-viewport'
 import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
+import type { InitialEntry } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
 import ClienteFicha from './ClienteFicha'
+import { SAVED_TOAST } from './ClienteForm'
 import CobroRoute from './CobroRoute'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
@@ -36,6 +39,7 @@ import { baselineText } from '../../i18n/testing'
 
 const EMPTY_CUSTOMERS = baselineText('customers.ts:EMPTY_CUSTOMERS')
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
+const SAVED_TOAST_TEXT = baselineText('common.ts:COMMON_TEXT.customerSaved')
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -526,7 +530,7 @@ function fetchTwoCustomers(input: RequestInfo | URL): Promise<Response> {
 /** The real layout route, as the router mounts it: on a computer it draws the list beside the card
  * (navigation.md's two panes) and the list stays mounted while the card changes, so a second
  * customer can be picked from it. */
-function renderTwoPanes(entries: string[]) {
+function renderTwoPanes(entries: InitialEntry[]) {
   const router = createMemoryRouter(
     [
       { path: BEFORE, element: <p>Pantalla anterior</p> },
@@ -665,6 +669,20 @@ test('on a computer, a customer\'s card has the list beside it, once', async () 
   expect(await screen.findByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
   expect(await screen.findByText('Record payment')).toBeInTheDocument()
   expect(screen.getAllByRole('region', { name: 'Everyone · A–Z' })).toHaveLength(1)
+})
+
+// GH-288: the card shows the toast `ClienteForm` hands over in history state. The list mounts
+// beside it at that same entry, and read the same state: two "Customer saved" at once, so a
+// locator for the text matched twice as soon as the card had loaded.
+test('on a computer, the toast a new customer lands with shows once, in the card, never also in the list', async () => {
+  stubViewport('computer')
+  vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
+  renderTwoPanes([{ pathname: ANA, state: toast(SAVED_TOAST) }])
+
+  await screen.findByText('Record payment')
+  await screen.findByRole('region', { name: 'Everyone · A–Z' })
+
+  expect(screen.getAllByText(SAVED_TOAST_TEXT)).toHaveLength(1)
 })
 
 test('on a phone, a customer\'s card is alone, with no list behind it', async () => {

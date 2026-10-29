@@ -14,7 +14,7 @@
  * the same at every width.
  */
 
-import { expect, test } from './fixtures.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
 import type { Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import {
@@ -173,7 +173,7 @@ test.describe.serial('bar and rail fit', () => {
   const consoleMessages: string[] = []
 
   test.beforeAll(async ({ browser, workerServer }) => {
-    page = await (await browser.newContext({ ...PHONE_CONTEXT, baseURL: workerServer.url, viewport: PHONE })).newPage()
+    page = await (await withToastRecorder(browser.newContext({ ...PHONE_CONTEXT, baseURL: workerServer.url, viewport: PHONE }))).newPage()
     watchConsole(page, consoleMessages)
     await signUpNewBusiness(page)
   })
@@ -241,12 +241,12 @@ test.describe.serial('bar and rail fit', () => {
 
 test('the pointer check rejects a page whose pointer is not coarse', async ({ browser, workerServer }) => {
   // `test.use` is the default of every context, so the desktop one says so itself.
-  const context = await browser.newContext({
+  const context = await withToastRecorder(browser.newContext({
     baseURL: workerServer.url,
     isMobile: false,
     hasTouch: false,
     viewport: PHONE,
-  })
+  }))
   const desktop = await context.newPage()
   await desktop.goto('about:blank')
   await expect(expectCoarsePointer(desktop, 'a desktop')).rejects.toThrow(/coarse pointer/)

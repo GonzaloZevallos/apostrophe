@@ -20,7 +20,7 @@
 
 import { HOME, LOGIN, SETTINGS_ACCOUNT } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
 import { resetLink, supportsPasswordReset } from './backend.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -52,7 +52,7 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A second device, signed in as the same user.
-  const otherContext = await browser.newContext({ baseURL: workerServer.url })
+  const otherContext = await withToastRecorder(browser.newContext({ baseURL: workerServer.url }))
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await otherPage.goto(LOGIN)
