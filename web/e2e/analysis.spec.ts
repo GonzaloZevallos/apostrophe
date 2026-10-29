@@ -267,10 +267,10 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use
 
   // The same rows on the phone, as cards.
   await page.setViewportSize({ width: 390, height: 844 })
-  const phoneWeeks = page.locator('.analisis__semana')
+  const phoneWeeks = page.locator('.analisis__semanas > .analisis__tarjeta')
   await expect(phoneWeeks.filter({ hasText: 'Cost of goods sold $ 10.000 and 5 g without cost' })).toHaveCount(1)
   await expect(phoneWeeks.last()).toContainText('Stock shortfall 1 g without cost')
-  await expect(page.locator('.analisis__mes-fila').filter({ hasText: 'Promotion 2 g without cost' })).toHaveCount(1)
+  await expect(page.locator('.analisis__meses > .analisis__tarjeta').filter({ hasText: 'Promotion 2 g without cost' })).toHaveCount(1)
 
   // Screenshots for the PR: header, the rows and the since-the-first-record block, per
   // viewport and theme.
@@ -301,3 +301,171 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use
 
   expect(consoleMessages).toEqual([])
 })
+
+test('Análisis cards fit at 320 px and at 246 px with a 60-character name and nine-digit figures', async ({
+  page,
+}) => {
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+  await signUpNewBusiness(page, {
+    businessName: `Flores del Ancho ${uniqueTag()}`,
+    email: `duena-ancho-${uniqueTag()}@example.com`,
+  })
+
+  const longName = `Variedad ${'Larguísimo'.repeat(6)}`.slice(0, 60)
+  expect(longName).toHaveLength(60)
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill(longName)
+  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: /Variedad Larguísimo/ }).click()
+  await page.getByRole('link', { name: 'New price' }).click()
+  await page.getByLabel(/^List price/).fill('900000')
+  await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
+
+  // The first record is two weeks old, so there is more than the current week. 10 g are costed; the 500 g sold leave 490 g without a cost: a partly pending figure.
+  await page.goto(STOCK_ENTRY_NEW)
+  const today = await page.getByLabel('Date').inputValue()
+  await recordEntry(page, { date: daysFrom(today, -14), grams: '10', variety: longName, origin: 'Purchase', cost: '10000' })
+  await page.goto(SALE_NEW)
+  await fillSaleLine(page, 1, { variety: longName, grams: '500' })
+  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('button', { name: 'Save sale' }).click()
+  await expect(page.getByText('Sale saved')).toBeVisible()
+
+  // An expense with a 60-character category name and a nine-digit amount.
+  const longCategory = `Categoría ${'Larguísimo'.repeat(6)}`.slice(0, 60)
+  expect(longCategory).toHaveLength(60)
+  await openGastos(page)
+  await page.getByRole('link', { name: 'Add expense' }).click()
+  await page.getByRole('button', { name: 'Create a new category' }).click()
+  await page.getByLabel('New category name').fill(longCategory)
+  await page.getByRole('button', { name: 'Create category' }).click()
+  await page.getByLabel('Amount').fill('123456789')
+  await page.getByLabel('Details').fill('Gasto grande')
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
+
+  for (const width of [320, 246]) {
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto(ANALYSIS)
+    await expect(page.getByText('You sold in the month')).toBeVisible()
+
+    // The page does not scroll sideways, and nothing in the cards' column is wider than it.
+    const page_ = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+    }))
+    const beyond = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.analisis *'))
+        .filter((node) => node.getBoundingClientRect().right > document.documentElement.clientWidth + 0.5)
+        .map((node) => `${node.tagName}.${node.className}:${node.textContent?.slice(0, 30)}`)
+        .slice(0, 12),
+    )
+    expect(page_.scroll, `page scroll width at ${width} px; wider than the page: ${beyond.join(' | ')}`).toBeLessThanOrEqual(page_.client)
+    const wide = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.analisis__principal, .analisis__principal *'))
+        .filter((node) => node.getBoundingClientRect().right > document.documentElement.clientWidth + 0.5)
+        .map((node) => `${node.tagName}.${node.className}:${node.textContent?.slice(0, 30)}`)
+        .slice(0, 12),
+    )
+    expect(wide, `elements of the cards wider than the page at ${width} px`).toEqual([])
+
+    const name = page.locator('.analisis__variedades .analisis__tarjeta-titulo').first()
+    const truncated = await name.evaluate((node) => ({
+      cut: node.scrollWidth > node.clientWidth,
+      overflow: getComputedStyle(node).textOverflow,
+    }))
+    expect(truncated).toEqual({ cut: true, overflow: 'ellipsis' })
+
+    // The hero's and the aside's figures are whole, with their "$", and the category name
+    // ends in an ellipsis while its subtotal stays whole.
+    const hero = page.locator('.analisis .cifra-xl')
+    await expect(hero).toContainText('$')
+    expect(await hero.evaluate((node) => {
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      return range.getClientRects().length
+    })).toBe(1)
+    const category = page.locator('.analisis__gastos .gastos__categoria-nombre', { hasText: longCategory.slice(0, 20) }).first()
+    expect(await category.evaluate((node) => ({
+      cut: node.scrollWidth > node.clientWidth,
+      overflow: getComputedStyle(node).textOverflow,
+    }))).toEqual({ cut: true, overflow: 'ellipsis' })
+    const subtotal = page.locator('.analisis__gastos .gastos__categoria-subtotal', { hasText: '123.456.789' }).first()
+    await expect(subtotal).toBeVisible()
+    expect(await subtotal.evaluate((node) => {
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      return range.getClientRects().length
+    })).toBe(1)
+
+    // Every pending line sits below the figure it belongs to, whole.
+    const pendings = page.locator('.analisis__tarjeta-pendiente')
+    expect(await pendings.count()).toBeGreaterThan(0)
+    for (let i = 0; i < (await pendings.count()); i += 1) {
+      const gap = await pendings.nth(i).evaluate((node) => {
+        const figure = node.parentElement?.querySelector('.analisis__tarjeta-cifra')
+        if (!figure) return Number.POSITIVE_INFINITY
+        return node.getBoundingClientRect().top - figure.getBoundingClientRect().bottom
+      })
+      expect(gap).toBeGreaterThanOrEqual(0)
+    }
+
+    // The month selector keeps its height when the page is taller than its content.
+    await page.setViewportSize({ width, height: 4000 })
+    const nav = await page.locator('.gastos__mes').evaluate((node) => node.getBoundingClientRect().height)
+    expect(nav).toBeLessThanOrEqual(48)
+    await page.setViewportSize({ width, height: 844 })
+
+    // The current week is set apart by its border, not by its fill alone.
+    const edges = await page.locator('.analisis__semanas > .analisis__tarjeta').evaluateAll((cards) =>
+      cards.map((card) => getComputedStyle(card).borderInlineStartWidth),
+    )
+    expect(edges.at(-1)).not.toBe(edges[0])
+  }
+
+  // Growing only the height moves nothing: the month arrows keep their tops, the floating
+  // "Nueva venta" button keeps its distance from the viewport's bottom edge, and the document does
+  // not outgrow the viewport it was grown to. The measure rejects the two rules that once made
+  // them slide.
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto(ANALYSIS)
+  await expect(page.getByText('You sold in the month')).toBeVisible()
+  expect(await tallerMoves(page), 'untouched page').toEqual([])
+  await page.addStyleTag({ content: '.analisis .gastos__mes { flex: 0 0 100% }' })
+  expect((await tallerMoves(page)).join(' '), 'month selector stretched again').toContain('gastos__mes-boton')
+  await page.goto(ANALYSIS)
+  await expect(page.getByText('You sold in the month')).toBeVisible()
+  await page.addStyleTag({ content: '.analisis.pantalla { min-height: 100dvh; flex: 0 1 auto }' })
+  expect((await tallerMoves(page)).join(' '), 'screen minimum height back').toContain('documento-mas-alto-que-la-ventana')
+  expect(consoleMessages).toEqual([])
+})
+
+/**
+ * The places of the month arrows and the "Nueva venta" button at 812 px and at the document's own height; the ones that
+ * moved. The arrows sit in the flow, so their place is their top on the page. The button floats above the bar
+ * (`position: fixed`, GH-373), so its place is its distance from the viewport's bottom edge: its top moves with the
+ * viewport by design. A screen taller than its content shows as the document outgrowing the viewport it was grown to.
+ */
+async function tallerMoves(page: Page): Promise<string[]> {
+  const places = () =>
+    page.evaluate(() =>
+      Array.from(document.querySelectorAll('.gastos__mes-boton, .boton-nueva-venta')).map((node) => {
+        const box = node.getBoundingClientRect()
+        const floats = getComputedStyle(node.closest('.nueva-venta-flotante') ?? node).position === 'fixed'
+        return `${node.className}@${Math.round(floats ? window.innerHeight - box.bottom : box.top + window.scrollY)}`
+      }),
+    )
+  const size = page.viewportSize()
+  if (size === null) throw new Error('no viewport')
+  await page.setViewportSize({ width: size.width, height: 812 })
+  const before = await places()
+  const height = await page.evaluate(() => document.documentElement.scrollHeight)
+  const grown = Math.max(height, 812)
+  await page.setViewportSize({ width: size.width, height: grown })
+  const after = await places()
+  const outgrown = await page.evaluate((viewport) => document.documentElement.scrollHeight > viewport, grown)
+  await page.setViewportSize(size)
+  const moved = before.filter((place, index) => place !== after[index])
+  return outgrown ? [...moved, 'documento-mas-alto-que-la-ventana'] : moved
+}

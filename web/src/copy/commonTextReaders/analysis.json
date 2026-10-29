@@ -1,3 +1,6 @@
 [
-  "web/src/screens/Analisis.tsx"
+  "web/src/screens/Analisis.tsx",
+  "web/src/screens/AnalisisTablas.tsx",
+  "web/src/screens/analisisCards.test.ts",
+  "web/src/screens/analisisCards.ts"
 ]
