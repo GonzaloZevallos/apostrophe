@@ -5061,7 +5061,9 @@ body {
   color: var(--boton-texto);
   box-shadow: none;
   font-weight: 600;
-  opacity: 0.75;
+  /* 0.8, not the design's 0.75: white on the Yerba --boton blends to 4.42:1 at 0.75 and
+   * 4.79:1 at 0.8 (the Undo contrast e2e needs 4.5:1). */
+  opacity: 0.8;
   min-height: var(--alto-tocable);
   padding: 0 var(--espacio-xs);
 }
