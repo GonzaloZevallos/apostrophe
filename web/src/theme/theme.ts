@@ -1,21 +1,13 @@
 /**
- * The one owner of `data-tema` on `<html>` and of the `theme-color` meta (plan,
- * subtask `shell-document`). The meta is always the computed `--papel` of the theme
- * in force, never a copied color, so the two cannot drift apart. The rule itself —
- * no attribute is light, `oscuro` is dark, the system's setting picks nothing — is
- * accounts.md's Theme rule; nothing here reads `prefers-color-scheme`.
+ * The one owner of the `theme-color` meta (plan, subtask `shell-document`). The meta is
+ * always the computed `--papel` of the theme in force, never a copied color, so the two
+ * cannot drift apart. It follows every change of `data-tema`, a live flip of the phone on
+ * Automatic included. Who writes the attribute is `theme.ts` alone: no attribute is light,
+ * `oscuro` is dark, and on Automatic the system picks. Nothing here reads
+ * `prefers-color-scheme`.
  */
 
-export type Theme = 'claro' | 'oscuro'
-
 const ATTRIBUTE = 'data-tema'
-
-/** `oscuro` sets the attribute; `claro` removes it, since no attribute already means light. */
-export function setTheme(theme: Theme): void {
-  const root = document.documentElement
-  if (theme === 'oscuro') root.setAttribute(ATTRIBUTE, 'oscuro')
-  else root.removeAttribute(ATTRIBUTE)
-}
 
 function computedPapel(): string {
   return getComputedStyle(document.documentElement).getPropertyValue('--papel')

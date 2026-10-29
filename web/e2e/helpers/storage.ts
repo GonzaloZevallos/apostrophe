@@ -1,9 +1,9 @@
 /**
  * The browser-storage check every e2e run ends with (ADR-0026; CODING_STANDARDS §9, in the
  * browser too): the device keeps exactly one thing, the theme choice. `localStorage` keys
- * are a subset of `{tema}` and `tema`, when present, is `oscuro`; `sessionStorage` is empty
- * and so is IndexedDB. Anything else — a token, a name, an amount, a second key, a stored
- * `claro` — fails.
+ * are a subset of `{tema}` and `tema`, when present, is `claro` or `oscuro` (nothing stored is
+ * Automatic); `sessionStorage` is empty and so is IndexedDB. Anything else — a token, a name,
+ * an amount, a second key, any other `tema` value — fails.
  */
 
 import { expect } from '../fixtures.js'
@@ -19,7 +19,7 @@ export async function expectOnlyTheThemeStored(page: Page): Promise<void> {
   }))
 
   expect(Object.keys(storage.local).filter((key) => key !== 'tema')).toEqual([])
-  if ('tema' in storage.local) expect(storage.local.tema).toBe('oscuro')
+  if ('tema' in storage.local) expect(['claro', 'oscuro']).toContain(storage.local.tema)
   expect(storage.session).toBe(0)
   expect(storage.databases).toBe(0)
 }

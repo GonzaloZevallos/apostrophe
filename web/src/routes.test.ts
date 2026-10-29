@@ -795,10 +795,13 @@ function findPathLiterals(files: Source[]): string[] {
   );
 }
 
-/** Files that call `matchMedia`, other than `useViewport.ts`, the one allowed to. */
+/** The two modules allowed to call `matchMedia`: the viewport query and the system theme. */
+const MATCH_MEDIA_MODULES = ["src/shell/useViewport.ts", "src/theme/systemTheme.ts"];
+
+/** Files that call `matchMedia`, other than the two modules allowed to. */
 function findMatchMediaCalls(files: Source[]): string[] {
   return files
-    .filter(({ path }) => path !== "src/shell/useViewport.ts")
+    .filter(({ path }) => !MATCH_MEDIA_MODULES.includes(path))
     .filter(({ path }) => !/\.test\.tsx?$/.test(path))
     .filter(({ content }) =>
       withoutComments(content).some((line) => /\bmatchMedia\s*\(/.test(line)),
@@ -931,7 +934,26 @@ describe("source scan for path literals", () => {
     ).toEqual(["src/screens/X.tsx"]);
   });
 
-  test("the real front sources and e2e specs write no route literal and call matchMedia only in useViewport.ts", () => {
+  test("lets systemTheme.ts call matchMedia and flags the system theme query anywhere else", () => {
+    expect(
+      findMatchMediaCalls([
+        {
+          path: "src/theme/systemTheme.ts",
+          content: "window.matchMedia('(prefers-color-scheme: dark)')",
+        },
+        {
+          path: "src/theme.ts",
+          content: "window.matchMedia('(prefers-color-scheme: dark)').matches",
+        },
+        {
+          path: "src/screens/settings/AppearanceGroup.tsx",
+          content: 'const dark = matchMedia("(prefers-color-scheme: dark)")',
+        },
+      ]),
+    ).toEqual(["src/theme.ts", "src/screens/settings/AppearanceGroup.tsx"]);
+  });
+
+  test("the real front sources and e2e specs write no route literal and call matchMedia only in useViewport.ts and systemTheme.ts", () => {
     const modules = import.meta.glob<string>(["/src/**/*.{ts,tsx}", "/e2e/**/*.ts"], {
       query: "?raw",
       import: "default",

@@ -85,7 +85,7 @@ test('tapping Oscuro applies and remembers it, with no save button and no toast'
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
-test('tapping Claro removes the attribute and the stored key', async () => {
+test('tapping Claro removes the attribute and stores claro', async () => {
   localStorage.setItem('tema', 'oscuro')
   html.setAttribute('data-tema', 'oscuro')
   const user = userEvent.setup()
@@ -95,7 +95,7 @@ test('tapping Claro removes the attribute and the stored key', async () => {
   await user.click(screen.getByRole('radio', { name: 'Light' }))
 
   expect(html.hasAttribute('data-tema')).toBe(false)
-  expect(localStorage.getItem('tema')).toBeNull()
+  expect(localStorage.getItem('tema')).toBe('claro')
   expect(screen.getByRole('radio', { name: 'Light' })).toHaveAttribute('aria-checked', 'true')
 })
 
