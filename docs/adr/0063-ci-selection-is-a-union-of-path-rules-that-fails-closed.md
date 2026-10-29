@@ -27,9 +27,11 @@ selective CI runs. Its decision functions are pure; only `main` runs git, throug
    `Path(__file__)` walked up with `.parent` / `.parents[N]`, or a module constant of the same file,
    extended by `/`, `joinpath`, `glob` or `rglob`. A string in a list, a tuple, a dict, `parametrize` or a
    call argument claims nothing, nor does a chain that starts at a fixture parameter or a loop variable. A
-   name imported from another module (`REPO_ROOT`) claims nothing either: the discovery and guard tests
-   that import it walk the whole tree, and one claim from them would put every `web/` change in the always
-   shard. A prefix that does not exist is dropped. A `web`/`docs` chain from an origin the scan cannot place
+   name imported from another module claims nothing either, except the repository root where it is defined
+   (`REPO_ROOT` and `WEB` from `scripts.affected`, `REPO_ROOT` from `tests.architecture.hexagon`): the
+   screen-map guard reads `REPO_ROOT / "web" / ...`, so a change under `web/src` or `web/e2e` must run it. A
+   walk of the whole tree (`REPO_ROOT.rglob("*.py")`) names no prefix and claims nothing. A prefix that does
+   not exist is dropped. A `web`/`docs` chain from an origin the scan cannot place
    is listed by `unanchored_reads`, and a test keeps that list empty.
 5. **Packing.** The area shards are packed greedily, longest first, by the AST count of tests
    (`parametrize` multiplied), into `min(3, areas)` bins with ties broken by name. No shard is empty.
@@ -46,7 +48,9 @@ selective CI runs. Its decision functions are pure; only `main` runs git, throug
 
 - `accounts` and `shared` are imported by nearly every area, so many app changes still select most area
   shards; the area table will show how much a selective run gains.
-- A pytest that reads a path through an imported root is invisible to the reader map. A new such reader
-  that matters should anchor its own path with `Path(__file__)`.
+- Guard tests that read `web/src` (`tests/test_affected.py`, `tests/test_e2e_screen_specs.py`) make any
+  `web/src` or `web/e2e` change select the always shard; no area shard is added by them. A pytest that
+  reads a path through a root imported from any other module is invisible to the reader map. A new such
+  reader that matters should anchor its own path with `Path(__file__)`.
 - The selector inputs (`scripts/ci_areas.py`, `scripts/ci_changes.py`, `scripts/e2e_screen_specs.json`,
   `scripts/affected.py`) are in `affected_fallback`, so a change to how CI selects runs everything.

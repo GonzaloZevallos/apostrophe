@@ -53,8 +53,9 @@ def test_a_failed_gating_suite_fails_and_is_named() -> None:
 
 
 def test_a_cancelled_gating_suite_fails() -> None:
-    ok, _ = verdict(needs(vitest="cancelled"))
+    ok, lines = verdict(needs(vitest="cancelled"))
     assert not ok
+    assert "vitest: cancelled" in " ".join(lines)
 
 
 def test_a_skipped_suite_with_a_false_flag_passes() -> None:

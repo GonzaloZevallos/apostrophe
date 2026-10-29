@@ -476,6 +476,21 @@ def readers_of(
             "    (top / 'docs' / 'y.md').read_text()\n",
             "docs/y.md",
         ),
+        (
+            "from scripts.affected import REPO_ROOT\n"
+            "def test_a() -> None:\n    (REPO_ROOT / 'web' / 'src' / 'x.txt').read_text()\n",
+            "web/src/x.txt",
+        ),
+        (
+            "from scripts.affected import WEB\n"
+            "def test_a() -> None:\n    (WEB / 'src' / 'x.txt').read_text()\n",
+            "web/src/x.txt",
+        ),
+        (
+            "from tests.architecture.hexagon import REPO_ROOT as TOP\n"
+            "def test_a() -> None:\n    (TOP / 'docs' / 'y.md').read_text()\n",
+            "docs/y.md",
+        ),
     ],
 )
 def test_an_anchored_read_claims_its_prefix_for_the_shard_of_its_test(
@@ -496,8 +511,10 @@ def test_an_anchored_read_claims_its_prefix_for_the_shard_of_its_test(
         "def test_a(repo: Path) -> None:\n    (repo / 'docs' / 'y.md').read_text()\n",
         "def test_a() -> None:\n    for f in ROOT.rglob('*.py'):\n        (f / 'web').exists()\n",
         "def test_a() -> None:\n    (ROOT / 'tests' / 'web').exists()\n",
-        "from scripts.affected import REPO_ROOT\n"
+        "from elsewhere import REPO_ROOT\n"
         "def test_a() -> None:\n    (REPO_ROOT / 'web' / 'src').exists()\n",
+        "from scripts.affected import REPO_ROOT\n"
+        "def test_a() -> None:\n    list(REPO_ROOT.rglob('*.py'))\n",
         "def test_a() -> None:\n    (ROOT / 'web' / 'gone').read_text()\n",
     ],
 )
@@ -561,11 +578,20 @@ def test_the_real_reader_map_names_paths_that_exist() -> None:
     assert readers["web/src/screens/telegramPreview.cases.json"] == {"pinned_catalog"}
 
 
-def test_the_real_tree_selects_no_pytest_for_a_screen_or_the_app_shell() -> None:
+def test_the_real_tree_selects_only_the_always_shard_for_a_screen_or_the_app_shell() -> None:
+    # The screen-map guard (tests/test_e2e_screen_specs.py) reads web/src/screens through the
+    # imported REPO_ROOT, so a screen change runs it; no area shard is added.
     for path in ("web/src/screens/Analisis.tsx", "web/src/App.tsx"):
         result = select([path], REPO_ROOT)
-        assert not result.pytest and result.pytest_matrix == []
+        assert shards(result) == ["always"]
         assert result.vitest and result.e2e
+
+
+def test_the_screen_map_guard_is_a_reader_of_the_screens_and_the_specs() -> None:
+    readers = pytest_readers(REPO_ROOT)
+
+    assert "always" in readers["web/src/screens"]
+    assert "always" in readers["web/e2e"]
 
 
 def test_the_real_tree_selects_the_reader_of_a_screen_data_file() -> None:

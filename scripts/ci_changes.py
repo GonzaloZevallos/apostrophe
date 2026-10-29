@@ -334,16 +334,28 @@ def _join(base: _Anchored, operands: Sequence[ast.expr]) -> _Value:
     return _Anchored(parts)
 
 
+# The repository root, and the paths below it, as the modules that define them export them. Only
+# these imports are placed: a name imported from anywhere else stays unplaced.
+_ROOT_EXPORTS: Final[dict[tuple[str, str], tuple[str, ...]]] = {
+    ("scripts.affected", "REPO_ROOT"): (),
+    ("scripts.affected", "WEB"): ("web",),
+    ("tests.architecture.hexagon", "REPO_ROOT"): (),
+}
+
+
 def _module_env(tree: ast.Module, here: tuple[str, ...]) -> dict[str, _Value]:
-    """The module-level names that stand for an anchored path, resolved in source order. A name
-    imported from another module claims nothing and is not reported: the scan places a path only
-    from the file's own text (the guard tests and the discovery tests import `REPO_ROOT` and walk
-    the whole tree; a claim from there would put every `web/` change in the always shard)."""
+    """The module-level names that stand for an anchored path, resolved in source order. The
+    repository root imported from the module that defines it (`_ROOT_EXPORTS`) is anchored, so a
+    guard test that reads `REPO_ROOT / "web" / ...` claims what it reads; a walk of the whole
+    tree (`REPO_ROOT.rglob("*.py")`) claims nothing. A name imported from any other module claims
+    nothing and is not reported."""
     env: dict[str, _Value] = {}
     for statement in tree.body:
         if isinstance(statement, ast.ImportFrom):
             for alias in statement.names:
-                env[alias.asname or alias.name] = _LOCAL
+                exported = _ROOT_EXPORTS.get((statement.module or "", alias.name))
+                name = alias.asname or alias.name
+                env[name] = _LOCAL if exported is None else _Anchored(exported)
         elif isinstance(statement, ast.Assign):
             value = _value_of(statement.value, env, here)
             for target in statement.targets:
