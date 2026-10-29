@@ -4,6 +4,9 @@ On a pull request, compares `docs/api/openapi.json` with the one at the base ref
 pinned `oasdiff` binary. A break fails the job unless the pull request body has a line
 `Breaking-API: <reason>`. `verdict` is pure; `read_base_spec` and `main` call git and oasdiff
 as subprocesses. The pull request body is read, never logged.
+
+Other events (a push to master) have no base ref: `main` logs a skip and exits 0. That skip and a
+base ref without the spec are the only runs that compare nothing and succeed.
 """
 
 from __future__ import annotations
