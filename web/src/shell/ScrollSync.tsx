@@ -13,29 +13,26 @@
  */
 
 import { useLayoutEffect, useRef } from 'react'
-import { useLocation, useMatches, useNavigationType } from 'react-router'
+import { matchRoutes, useLocation, useNavigationType } from 'react-router'
 import { peekPaymentReturn } from '../paymentReturn'
-import { isScreenId, type ScreenId } from '../routes'
+import { isScreenId, SCREENS, type ScreenId } from '../routes'
 import { browserFollowDeps, startFollow } from './scrollFollow'
 import { offsetFor } from './scrollPlaces'
 import { scrollOnArrival, type Arrival } from './scrollOnArrival'
 import { useViewport } from './useViewport'
 
-/** The screen of the deepest matched route that declares one (`handle.screen`). */
-function useScreen(): ScreenId | undefined {
-  let screen: ScreenId | undefined
-  for (const { handle } of useMatches()) {
-    if (typeof handle === 'object' && handle !== null && 'screen' in handle && isScreenId(handle.screen)) {
-      screen = handle.screen
-    }
-  }
-  return screen
+const SCREEN_ROUTES = SCREENS.map((entry) => ({ path: entry.path, id: entry.id }))
+
+/** The registry screen at `pathname`, ranked as the router ranks (`/customers/new` before `/customers/:id`). */
+function screenAt(pathname: string): ScreenId | undefined {
+  const found = matchRoutes(SCREEN_ROUTES, pathname)?.at(-1)?.route.id
+  return found !== undefined && isScreenId(found) ? found : undefined
 }
 
 export default function ScrollSync() {
   const { key, pathname } = useLocation()
   const navigationType = useNavigationType()
-  const screen = useScreen()
+  const screen = screenAt(pathname)
   const previous = useRef<Arrival | null>(null)
   // The viewport as of this render, read by the effect without being one of its triggers: a
   // resize across 900 px is not a change of screen.
