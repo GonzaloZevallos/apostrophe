@@ -62,7 +62,7 @@ function catalogOf(hidden: number[]) {
     text: 'texto',
     header: '',
     footer: '',
-    products: VARIETIES.map((variety) => ({
+    varieties: VARIETIES.map((variety) => ({
       id: variety.id,
       name: variety.name,
       emoji: null,
