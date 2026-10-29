@@ -34,7 +34,7 @@ export function keepMoneyTogether(text: string): string {
   return text.replace(/\$ (?=\d)/g, '$\u00a0')
 }
 
-/** `3.5` → `"3,5 g"`. Takes the `GramsOut` float the API answers, or the decimal
+/** `3.5` → `"3,5 g"`. Takes the `QuantityOut` float the API answers, or the decimal
  * string a form field holds before it is sent. */
 export function formatGrams(grams: number | string): string {
   return `${formatQuantity(Math.round(Number(grams) * 100))} g`

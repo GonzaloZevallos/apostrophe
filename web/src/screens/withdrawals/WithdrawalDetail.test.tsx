@@ -135,7 +135,7 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
     {
       reason: 'promotion',
       date: '2026-10-02',
-      lines: [{ variety_id: 1, grams: '6' }],
+      lines: [{ variety_id: 1, quantity: '6' }],
       note: 'Para la fiesta',
     },
   ])

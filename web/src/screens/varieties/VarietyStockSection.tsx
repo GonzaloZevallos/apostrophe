@@ -53,7 +53,7 @@ export default function VarietyStockSection({
                   </span>
                 </span>
                 <span className="fila-entrada__cifras">
-                  <span className="fila-entrada__costo">{`−${formatGrams(movement.grams)}`}</span>
+                  <span className="fila-entrada__costo">{`−${formatGrams(movement.quantity)}`}</span>
                 </span>
               </InAppLink>
             </li>
@@ -68,7 +68,7 @@ export default function VarietyStockSection({
                 )}
               </span>
               <span className="fila-entrada__cifras">
-                <span className="fila-entrada__costo">{formatGrams(movement.grams)}</span>
+                <span className="fila-entrada__costo">{formatGrams(movement.quantity)}</span>
                 {movement.total_cost !== null && (
                   <span className="fila-entrada__linea2">{formatMoney(movement.total_cost)}</span>
                 )}

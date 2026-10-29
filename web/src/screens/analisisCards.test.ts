@@ -22,7 +22,7 @@ import { monthCard, varietyCard, weekCard } from './analisisCards'
 
 const cost = (amount: number, pending = 0, all = false): RowCost => ({
   amount,
-  pending_grams: pending,
+  pending_quantity: pending,
   all_pending: all,
 })
 
@@ -31,23 +31,23 @@ const variety: VarietyRow = {
   name: 'Flor A',
   sales_without_shipping: 90000,
   share_percent: 40,
-  grams_sold: 30,
-  grams_gifted: 2,
-  cost: { costed: 20000, pending_grams: 0 },
-  margin: { amount: 70000, percent: 77, pending_grams: 0 },
+  quantity_sold: 30,
+  quantity_gifted: 2,
+  cost: { costed: 20000, pending_quantity: 0 },
+  margin: { amount: 70000, percent: 77, pending_quantity: 0 },
 }
 
 const week: AnalysisWeek = {
   first_day: '2026-09-28',
   last_day: '2026-10-04',
   sales: 120000,
-  grams: 40,
+  quantity: 40,
   expenses: 5000,
   cost_of_goods: cost(30000),
   shortfall: null,
   promotion: null,
   own_use: null,
-  profit: { amount: 85000, pending_grams: 0 },
+  profit: { amount: 85000, pending_quantity: 0 },
   cash: 70000,
   best: false,
 }
@@ -70,7 +70,7 @@ describe('varietyCard', () => {
     const card = varietyCard({
       ...variety,
       share_percent: null,
-      margin: { amount: 70000, percent: null, pending_grams: 0 },
+      margin: { amount: 70000, percent: null, pending_quantity: 0 },
     })
     expect(card.rows).toHaveLength(4)
     expect(card.rows[0]?.after).toBe(COMMON_TEXT.soldSuffix)
@@ -85,8 +85,8 @@ describe('varietyCard', () => {
   test('cost and margin carry their own pending text apart from the figure', () => {
     const card = varietyCard({
       ...variety,
-      cost: { costed: 20000, pending_grams: 2.5 },
-      margin: { amount: 70000, percent: 77, pending_grams: 2.5 },
+      cost: { costed: 20000, pending_quantity: 2.5 },
+      margin: { amount: 70000, percent: 77, pending_quantity: 2.5 },
     })
     const pending = ANALYSIS_TEXT.pendingSuffix(formatGrams(2.5))
     expect(card.rows[3]).toMatchObject({ figure: formatMoney(20000), pending })
@@ -144,7 +144,7 @@ describe('weekCard', () => {
 
   test('a partly pending cost and profit keep the figure and the pending line apart', () => {
     const card = weekCard(
-      { ...week, cost_of_goods: cost(30000, 2.5), profit: { amount: 85000, pending_grams: 2.5 } },
+      { ...week, cost_of_goods: cost(30000, 2.5), profit: { amount: 85000, pending_quantity: 2.5 } },
       false,
     )
     const pending = ANALYSIS_TEXT.pendingSuffix(formatGrams(2.5))

@@ -29,7 +29,7 @@ SaleDate = date
 
 class LineIn(BaseModel):
     variety_id: int
-    grams: Decimal
+    quantity: Decimal
     gift: bool = False
     special_price: int | None = None
 
@@ -63,7 +63,7 @@ class SaleCustomerOut(BaseModel):
 class SaleLineOut(BaseModel):
     variety_id: int
     variety_name: str
-    grams: QuantityOut
+    quantity: QuantityOut
     pricing_rule: PricingRule
     price_per_gram: int
     line_total: int
@@ -74,7 +74,7 @@ class SaleLineOut(BaseModel):
         return cls(
             variety_id=line.variety_id,
             variety_name=view_line.variety_name,
-            grams=line.quantity.as_decimal(),
+            quantity=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
             price_per_gram=line.price_per_gram,
             line_total=line.line_total,
@@ -117,15 +117,15 @@ def _payment_out(sale: Sale) -> PaymentOut:
 
 class LineCostOut(BaseModel):
     """A sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none of
-    the line's grams is costed yet; `pending_grams` is the part with no lot behind it,
+    the line's grams is costed yet; `pending_quantity` is the part with no lot behind it,
     never folded into `costed` as a $0 cost."""
 
     costed: int | None
-    pending_grams: QuantityOut
+    pending_quantity: QuantityOut
 
     @classmethod
     def of(cls, cost: LineCost) -> "LineCostOut":
-        return cls(costed=cost.costed, pending_grams=cost.pending_quantity.as_decimal())
+        return cls(costed=cost.costed, pending_quantity=cost.pending_quantity.as_decimal())
 
 
 class SaleLineDetailOut(BaseModel):
@@ -133,7 +133,7 @@ class SaleLineDetailOut(BaseModel):
 
     variety_id: int
     variety_name: str
-    grams: QuantityOut
+    quantity: QuantityOut
     pricing_rule: PricingRule
     price_per_gram: int
     line_total: int
@@ -145,7 +145,7 @@ class SaleLineDetailOut(BaseModel):
         return cls(
             variety_id=line.variety_id,
             variety_name=view_line.variety_name,
-            grams=line.quantity.as_decimal(),
+            quantity=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
             price_per_gram=line.price_per_gram,
             line_total=line.line_total,
@@ -225,7 +225,7 @@ class SaleDetailOut(BaseModel):
     payment: PaymentOut
     total: int
     lines: list[SaleLineDetailOut]
-    total_grams: QuantityOut
+    total_quantity: QuantityOut
     still_owing: bool
     bill: SaleBillOut | None
 
@@ -247,20 +247,20 @@ class SaleDetailOut(BaseModel):
                 SaleLineDetailOut.of(line, cost)
                 for line, cost in zip(view.lines, costs, strict=True)
             ],
-            total_grams=sale.total_quantity.as_decimal(),
+            total_quantity=sale.total_quantity.as_decimal(),
             still_owing=detail.still_owing,
             bill=None if detail.bill is None else SaleBillOut.of(detail.bill),
         )
 
 
 # Keeps its wire name until the Product rename on the wire (ADR-0061).
-class ReturnedGramsOut(BaseModel):
+class ReturnedQuantityOut(BaseModel):
     variety_id: int
-    grams: QuantityOut
+    quantity: QuantityOut
 
 
 class DeleteSaleOut(BaseModel):
     """`DELETE /sales/{id}`'s own response: the grams returned per variety, summed from
     the sale's own lines and sorted by `variety_id`."""
 
-    returned: list[ReturnedGramsOut]
+    returned: list[ReturnedQuantityOut]

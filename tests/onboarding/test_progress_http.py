@@ -38,7 +38,7 @@ def _price(client: TestClient, variety_id: int, effective_from: str = "2026-10-0
 def _stock(client: TestClient, variety_id: int) -> None:
     entry = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"},
     )
     assert entry.status_code == 201, entry.text
 

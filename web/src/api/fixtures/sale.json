@@ -10,7 +10,7 @@
     {
       "variety_id": 2,
       "variety_name": "Flor A",
-      "grams": 3.5,
+      "quantity": 3.5,
       "pricing_rule": "list",
       "price_per_gram": 3000,
       "line_total": 10500

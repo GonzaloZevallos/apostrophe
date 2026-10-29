@@ -36,7 +36,7 @@ def _entry(
     body: dict[str, Any] = {
         "variety_id": variety_id,
         "origin": "opening_stock",
-        "grams": quantity,
+        "quantity": quantity,
         "date": on,
     }
     if total_cost is not None:
@@ -48,7 +48,7 @@ def _entry(
 def _adjust(client: TestClient, variety_id: int, *, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "grams": quantity, "date": on},
+        json={"variety_id": variety_id, "origin": "adjustment", "quantity": quantity, "date": on},
     )
     assert response.status_code == 201, response.text
 
@@ -59,7 +59,7 @@ def _sale(client: TestClient, variety_id: int, *, quantity: str, on: str) -> Non
         json={
             "date": on,
             "payment": "cash",
-            "lines": [{"variety_id": variety_id, "grams": quantity}],
+            "lines": [{"variety_id": variety_id, "quantity": quantity}],
         },
     )
     assert response.status_code == 201, response.text
@@ -71,7 +71,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
         json={
             "reason": reason,
             "date": on,
-            "lines": [{"variety_id": variety_id, "grams": quantity}],
+            "lines": [{"variety_id": variety_id, "quantity": quantity}],
         },
     )
     assert response.status_code == 201, response.text
@@ -107,7 +107,7 @@ def _same_line(panel_line: dict[str, Any] | None, analysis_line: dict[str, Any] 
         return panel_line is None and analysis_line is None
     return bool(
         panel_line["amount"] == analysis_line["amount"]
-        and panel_line["pending"] == (analysis_line["pending_grams"] > 0)
+        and panel_line["pending"] == (analysis_line["pending_quantity"] > 0)
     )
 
 
@@ -152,43 +152,45 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     month_row = analysis["months"][-1]
     for panel_period, row in ((week, week_row), (month, month_row)):
         assert row["profit"]["amount"] == panel_period["profit"]
-        assert (row["profit"]["pending_grams"] > 0) == panel_period["profit_pending"]
+        assert (row["profit"]["pending_quantity"] > 0) == panel_period["profit_pending"]
         assert row["sales"] == panel_period["sales"]
         assert row["expenses"] == panel_period["expenses"]
         assert row["cash"] == panel_period["cash"]
         for line in ("promotion", "own_use"):
             assert _same_line(panel_period[line], row[line]), line
-    assert week_row["promotion"]["pending_grams"] == 2.0
-    assert month_row["own_use"]["pending_grams"] == 0.0
+    assert week_row["promotion"]["pending_quantity"] == 2.0
+    assert month_row["own_use"]["pending_quantity"] == 0.0
 
     # The chosen month's header carries the same two lines as the month row, and the
     # month's cost of goods is its varieties' costed cost (A's 5 g sale only).
     header = analysis["month"]
     assert header["promotion"] == month_row["promotion"]
     assert header["own_use"] == month_row["own_use"]
-    assert header["shortfall"] == {"amount": 0, "pending_grams": 1.0, "all_pending": True}
+    assert header["shortfall"] == {"amount": 0, "pending_quantity": 1.0, "all_pending": True}
     assert sum(v["cost"]["costed"] for v in header["varieties"]) == month["cost_of_goods"] == 500
     # The panel's month shortfall is the header's, amount and pending flag.
     assert _same_line(month["shortfall"], header["shortfall"])
     assert month["pending_cost"] is True
-    assert month["pending_cost"] == any(v["cost"]["pending_grams"] > 0 for v in header["varieties"])
+    assert month["pending_cost"] == any(
+        v["cost"]["pending_quantity"] > 0 for v in header["varieties"]
+    )
     # B's row holds the sale's 1 g only: its 2 g promotion is not a sale (ADR-0031), so
     # it must not add to the variety's pending cost (that would read 3.0).
     b_row = next(v for v in header["varieties"] if v["name"] == "B")
-    assert b_row["cost"] == {"costed": 0, "pending_grams": 1.0}
+    assert b_row["cost"] == {"costed": 0, "pending_quantity": 1.0}
 
     # Since the first record: every promotion ($100 + $400, B's 2 g pending) and own use.
     since = analysis["since_first_record"]
     # The shortfall is the adjustments' own: A's lot is 100 g for $10.000 = $100/g, so the
     # -2 g on 30/09 costs $200; B's -1 g has no lot, so it is pending. Withdrawals never
     # count.
-    assert since["shortfall"] == {"amount": 200, "pending_grams": 1.0, "all_pending": False}
-    assert since["promotion"] == {"amount": 500, "pending_grams": 2.0, "all_pending": False}
-    assert since["own_use"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
+    assert since["shortfall"] == {"amount": 200, "pending_quantity": 1.0, "all_pending": False}
+    assert since["promotion"] == {"amount": 500, "pending_quantity": 2.0, "all_pending": False}
+    assert since["own_use"] == {"amount": 300, "pending_quantity": 0.0, "all_pending": False}
 
     # A month with only one reason shows no line for the other (September: no own use).
     september = next(m for m in analysis["months"] if m["month"] == "2026-09")
-    assert september["promotion"] == {"amount": 500, "pending_grams": 0.0, "all_pending": False}
+    assert september["promotion"] == {"amount": 500, "pending_quantity": 0.0, "all_pending": False}
     assert september["own_use"] is None
 
 
@@ -212,12 +214,12 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
     # The later entry settles the withdrawn grams at its $100/g.
     assert analysis["weeks"][-1]["promotion"] == {
         "amount": 200,
-        "pending_grams": 0.0,
+        "pending_quantity": 0.0,
         "all_pending": False,
     }
     assert analysis["months"][-1]["promotion"] == {
         "amount": 200,
-        "pending_grams": 0.0,
+        "pending_quantity": 0.0,
         "all_pending": False,
     }
     for period, row in (
@@ -240,21 +242,21 @@ def test_a_business_whose_only_record_is_a_withdrawal_has_a_history(client: Test
     assert analysis["weeks"][-1]["sales"] == 0
     assert analysis["weeks"][-1]["own_use"] == {
         "amount": 0,
-        "pending_grams": 3.0,
+        "pending_quantity": 3.0,
         "all_pending": True,
     }
     assert analysis["weeks"][-1]["promotion"] is None
     assert analysis["months"][-1]["own_use"] == {
         "amount": 0,
-        "pending_grams": 3.0,
+        "pending_quantity": 3.0,
         "all_pending": True,
     }
     assert analysis["since_first_record"]["own_use"] == {
         "amount": 0,
-        "pending_grams": 3.0,
+        "pending_quantity": 3.0,
         "all_pending": True,
     }
-    assert analysis["since_first_record"]["profit"]["pending_grams"] == 3.0
+    assert analysis["since_first_record"]["profit"]["pending_quantity"] == 3.0
     assert panel["month"]["own_use"] == {"amount": 0, "pending": True}
     assert panel["month"]["profit_pending"] is True
 
@@ -279,8 +281,8 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
         "sales",
         "sales_count",
         "average_sale",
-        "grams_sold",
-        "grams_gifted",
+        "quantity_sold",
+        "quantity_gifted",
         "cost_of_goods",
         "pending_cost",
         "shortfall",
@@ -293,7 +295,14 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
             assert after_panel[name][key] == before_panel[name][key], (name, key)
         assert after_panel[name]["promotion"] is not None or name == "today"
     assert after_panel["month"]["profit"] < before_panel["month"]["profit"]
-    for key in ("sales", "grams_sold", "grams_gifted", "average_margin", "shortfall", "varieties"):
+    for key in (
+        "sales",
+        "quantity_sold",
+        "quantity_gifted",
+        "average_margin",
+        "shortfall",
+        "varieties",
+    ):
         assert after_analysis["month"][key] == before_analysis["month"][key], key
     assert after_analysis["weekdays"] == before_analysis["weekdays"]
     for row_before, row_after in zip(
@@ -301,7 +310,7 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
         after_analysis["weeks"] + after_analysis["months"],
         strict=True,
     ):
-        for key in ("sales", "grams", "expenses", "cash"):
+        for key in ("sales", "quantity", "expenses", "cash"):
             assert row_after[key] == row_before[key], key
     assert (
         after_analysis["since_first_record"]["cash"]

@@ -31,7 +31,7 @@ def _variety_id(client: TestClient, name: str, list_price: int = 10_000) -> int:
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "grams": "5"}
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text
@@ -50,20 +50,20 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
     # A variety split across two lots: 8 g costed ($5 000 + $6 000 = $11 000), 2 g
     # of a 10 g line pending.
     split_variety = _variety_id(client, "Variedad dividida")
-    _entry(client, split_variety, grams="5", total_cost=5_000)
-    _entry(client, split_variety, grams="3", total_cost=6_000)
+    _entry(client, split_variety, quantity="5", total_cost=5_000)
+    _entry(client, split_variety, quantity="3", total_cost=6_000)
 
     # A fully costed variety, gifted on the same sale.
     gift_variety = _variety_id(client, "Variedad regalada")
-    _entry(client, gift_variety, grams="5", total_cost=2_000)
+    _entry(client, gift_variety, quantity="5", total_cost=2_000)
 
     # An unrelated variety, drawn down by a negative adjustment: a shortfall, never
     # a sale line, and never mixed into either line above.
     shortfall_variety = _variety_id(client, "Variedad con faltante")
-    _entry(client, shortfall_variety, grams="4", total_cost=4_000)
+    _entry(client, shortfall_variety, quantity="4", total_cost=4_000)
     adjustment = client.post(
         "/stock/entries",
-        json={"variety_id": shortfall_variety, "origin": "adjustment", "grams": "-1"},
+        json={"variety_id": shortfall_variety, "origin": "adjustment", "quantity": "-1"},
     )
     assert adjustment.status_code == 201, adjustment.text
 
@@ -72,8 +72,8 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
         json={
             "payment": "cash",
             "lines": [
-                {"variety_id": split_variety, "grams": "10"},
-                {"variety_id": gift_variety, "grams": "2", "gift": True},
+                {"variety_id": split_variety, "quantity": "10"},
+                {"variety_id": gift_variety, "quantity": "2", "gift": True},
             ],
         },
     ).json()
@@ -93,13 +93,13 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
     split_line = line_by_variety[split_variety]
     assert split_row.kind == "sold"
     assert split_row.costed == split_line["cost"]["costed"] == 11_000
-    assert float(split_row.pending.as_decimal()) == split_line["cost"]["pending_grams"] == 2.0
+    assert float(split_row.pending.as_decimal()) == split_line["cost"]["pending_quantity"] == 2.0
 
     gift_row = sale_rows_by_variety[gift_variety]
     gift_line = line_by_variety[gift_variety]
     assert gift_row.kind == "gifted"
     assert gift_row.costed == gift_line["cost"]["costed"] == 800
-    assert float(gift_row.pending.as_decimal()) == gift_line["cost"]["pending_grams"] == 0.0
+    assert float(gift_row.pending.as_decimal()) == gift_line["cost"]["pending_quantity"] == 0.0
 
     shortfall_rows = [row for row in rows if row.kind == "shortfall"]
     assert len(shortfall_rows) == 1

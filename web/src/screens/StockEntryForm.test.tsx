@@ -58,7 +58,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
           date: '2026-10-03',
           variety_id: 3,
           origin: 'opening_stock',
-          grams: 30,
+          quantity: 30,
           total_cost: null,
           cost_per_gram: null,
           note: null,
@@ -91,7 +91,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   expect(JSON.parse(String(post?.[1]?.body))).toEqual({
     variety_id: 3,
     origin: 'opening_stock',
-    grams: '30',
+    quantity: '30',
     date: '2026-10-03',
   })
 })

@@ -429,17 +429,17 @@ classDiagram
 classDiagram
   class AmountWithPendingOut {
     amount : int
-    pending_grams
+    pending_quantity
   }
   class AnalysisMonthOut {
     average_margin
-    grams_gifted
-    grams_sold
     month : str
     next : str #124; None
     own_use : RowCostOut #124; None
     previous : str #124; None
     promotion : RowCostOut #124; None
+    quantity_gifted
+    quantity_sold
     sales : int
     sales_without_shipping : int
     shortfall : RowCostOut #124; None
@@ -463,7 +463,7 @@ classDiagram
   }
   class CostOut {
     costed : int
-    pending_grams
+    pending_quantity
   }
   class DebtorOut {
     balance : int
@@ -491,7 +491,7 @@ classDiagram
   }
   class MarginOut {
     amount : int
-    pending_grams
+    pending_quantity
     percent : int #124; None
   }
   class MonthRowOut {
@@ -499,12 +499,12 @@ classDiagram
     cost_of_goods
     expenses : int
     first_day : date
-    grams
     last_day : date
     month : str
     own_use : RowCostOut #124; None
     profit
     promotion : RowCostOut #124; None
+    quantity
     sales : int
     shortfall : RowCostOut #124; None
   }
@@ -524,14 +524,14 @@ classDiagram
     cost_of_goods : int
     end : date
     expenses : int
-    grams_gifted
-    grams_sold
     own_use : CostLineOut #124; None
     pending_cost : bool
     profit : int
     profit_pending : bool
     promotion : CostLineOut #124; None
     purchases : int
+    quantity_gifted
+    quantity_sold
     sales : int
     sales_count : int
     shortfall : CostLineOut #124; None
@@ -546,7 +546,7 @@ classDiagram
   class RowCostOut {
     all_pending : bool
     amount : int
-    pending_grams
+    pending_quantity
   }
   class SinceFirstRecordOut {
     cash : int
@@ -559,10 +559,10 @@ classDiagram
   }
   class VarietyRowOut {
     cost
-    grams_gifted
-    grams_sold
     margin
     name : str
+    quantity_gifted
+    quantity_sold
     sales_without_shipping : int
     share_percent : int #124; None
     variety_id : int
@@ -573,11 +573,11 @@ classDiagram
     cost_of_goods
     expenses : int
     first_day : date
-    grams
     last_day : date
     own_use : RowCostOut #124; None
     profit
     promotion : RowCostOut #124; None
+    quantity
     sales : int
     shortfall : RowCostOut #124; None
   }

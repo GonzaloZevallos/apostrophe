@@ -30,7 +30,7 @@ const ENTRY = {
   date: '2026-10-02',
   variety_id: 3,
   origin: 'purchase',
-  grams: 30,
+  quantity: 30,
   total_cost: 150000,
   cost_per_gram: 5000,
   note: null,
@@ -40,7 +40,7 @@ const STOCK = {
   varieties: [
     {
       variety_id: 3,
-      grams: 30,
+      quantity: 30,
       status: 'ok',
       sold_out_since: null,
       threshold: null,
@@ -48,7 +48,7 @@ const STOCK = {
     },
     {
       variety_id: 4,
-      grams: 0,
+      quantity: 0,
       status: 'no_entries',
       sold_out_since: null,
       threshold: null,

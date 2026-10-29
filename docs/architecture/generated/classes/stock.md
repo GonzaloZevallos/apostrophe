@@ -381,9 +381,9 @@ classDiagram
 classDiagram
   class EntryIn {
     date : EntryDate #124; None
-    grams
     note : str #124; None
     origin : Origin
+    quantity
     total_cost : int #124; None
     variety_id : int
   }
@@ -393,10 +393,10 @@ classDiagram
   class EntryOut {
     cost_per_gram : int #124; None
     date : date
-    grams
     id : int
     note : str #124; None
     origin : Origin
+    quantity
     total_cost : int #124; None
     variety_id : int
     of(entry: StockEntry) 'EntryOut'
@@ -499,11 +499,11 @@ classDiagram
     withdrawn_on : Mapped~date~
   }
   class ThresholdIn {
-    grams : Decimal #124; None
+    quantity : Decimal #124; None
   }
   class VarietyStockOut {
     days_left : int #124; None
-    grams
+    quantity
     sold_out_since : date #124; None
     status : Literal
     threshold : QuantityOut #124; None
@@ -517,19 +517,19 @@ classDiagram
     reason : str #124; None
   }
   class WithdrawalLineIn {
-    grams
+    quantity
     variety_id : int
   }
   class WithdrawalLineOut {
-    grams
+    quantity
     variety_id : int
     variety_name : str
   }
   class WithdrawalMovementOut {
     date : date
-    grams
     id : int
     kind : Literal~'withdrawal'~
+    quantity
     reason : WithdrawalReason
   }
   class WithdrawalOut {
@@ -538,7 +538,7 @@ classDiagram
     lines : list~WithdrawalLineOut~
     note : str #124; None
     reason : WithdrawalReason
-    total_grams
+    total_quantity
     of(view: WithdrawalView) 'WithdrawalOut'
   }
   EntryMovementOut --|> EntryOut

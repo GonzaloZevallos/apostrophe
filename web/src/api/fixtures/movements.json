@@ -5,7 +5,7 @@
     "date": "2026-10-02",
     "variety_id": 1,
     "origin": "purchase",
-    "grams": 20.0,
+    "quantity": 20.0,
     "total_cost": 170000,
     "cost_per_gram": 8500,
     "note": "Compra del sábado"
@@ -15,6 +15,6 @@
     "id": 1,
     "date": "2026-10-01",
     "reason": "promotion",
-    "grams": 5.5
+    "quantity": 5.5
   }
 ]

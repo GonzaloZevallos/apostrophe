@@ -32,7 +32,7 @@ def _add_variety_with_long_aroma(client: TestClient, index: int) -> None:
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     client.put(
         f"/catalog/varieties/{variety['id']}",
@@ -355,7 +355,7 @@ def test_the_test_copy_and_the_published_copy_both_match_get_catalog_s_text(
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     catalog_text = client.get("/catalog").json()["text"]
     assert catalog_text is not None

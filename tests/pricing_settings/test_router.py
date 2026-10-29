@@ -24,7 +24,7 @@ def _publish_a_catalog_with_a_bulk_price(client: TestClient) -> None:
     variety = client.post("/varieties", json={"name": "V1"}).json()
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     priced = client.post(
         f"/varieties/{variety['id']}/prices",

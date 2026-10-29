@@ -29,7 +29,7 @@ def _entry(client: TestClient, variety_id: int, quantity: str) -> None:
     _post(
         client,
         "/stock/entries",
-        {"variety_id": variety_id, "origin": "opening_stock", "grams": quantity},
+        {"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity},
     )
 
 
@@ -37,12 +37,12 @@ def _sale_and_withdrawal(client: TestClient, variety_id: int) -> None:
     _post(
         client,
         "/sales",
-        {"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]},
+        {"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
     )
     _post(
         client,
         "/stock/withdrawals",
-        {"reason": "own_use", "lines": [{"variety_id": variety_id, "grams": "1"}]},
+        {"reason": "own_use", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
     )
 
 

@@ -173,7 +173,7 @@ test('editing a line on a variety archived since keeps its id and name, also whi
       body: {
         reason: 'promotion',
         date: '2026-10-02',
-        lines: [{ variety_id: 1, grams: '5.5' }],
+        lines: [{ variety_id: 1, quantity: '5.5' }],
         note: 'Para la fiesta',
       },
     },
@@ -206,8 +206,8 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   await userEvent.click(screen.getByRole('button', { name: SUBMIT_NEW }))
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   expect(state.writes.map((write) => write.body)).toEqual([
-    { reason: 'promotion', date: '2026-10-06', lines: [{ variety_id: 1, grams: '2' }] },
-    { reason: 'promotion', date: '2026-10-06', lines: [{ variety_id: 2, grams: '2' }] },
+    { reason: 'promotion', date: '2026-10-06', lines: [{ variety_id: 1, quantity: '2' }] },
+    { reason: 'promotion', date: '2026-10-06', lines: [{ variety_id: 2, quantity: '2' }] },
   ])
 })
 

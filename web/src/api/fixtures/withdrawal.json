@@ -3,8 +3,8 @@
   "reason": "promotion",
   "date": "2026-10-02",
   "note": "Para la fiesta",
-  "total_grams": 5.5,
+  "total_quantity": 5.5,
   "lines": [
-    { "variety_id": 1, "variety_name": "Zkittlez", "grams": 5.5 }
+    { "variety_id": 1, "variety_name": "Zkittlez", "quantity": 5.5 }
   ]
 }

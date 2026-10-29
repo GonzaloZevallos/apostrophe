@@ -444,6 +444,8 @@ export function scanE2e(): { site: string; kind: Site['kind'] }[] {
 // ---------------------------------------------------------------------------------------------
 
 const NO_TIMER = 'no product timer: page visibility is the stronger check'
+const ONE_MATCH =
+  'no product timer: the page check proves exactly one "Customer saved" in the page (the strict-mode count), which the recorder cannot'
 const CATEGORY_TOAST = '.aviso-toast: the recorder does not watch the category toasts'
 
 /**
@@ -451,11 +453,15 @@ const CATEGORY_TOAST = '.aviso-toast: the recorder does not watch the category t
  * line. A reason is always given.
  */
 export const KEPT: readonly string[] = [
+  `clientesCobrar.spec.ts:40 — ${ONE_MATCH}`,
+  `customers.spec.ts:64 — ${ONE_MATCH}`,
+  `customers.spec.ts:84 — ${ONE_MATCH}`,
   `flow.spec.ts:50 — ${NO_TIMER}`,
   `flow.spec.ts:176 — ${CATEGORY_TOAST}`,
   `flow.spec.ts:180 — ${CATEGORY_TOAST}`,
   `flow.spec.ts:188 — ${NO_TIMER}`,
   `panel.spec.ts:210 — ${NO_TIMER}`,
+  `payments.spec.ts:76 — ${ONE_MATCH}`,
   `settings.spec.ts:95 — ${CATEGORY_TOAST}`,
   `settings.spec.ts:108 — ${CATEGORY_TOAST}`,
   `toastRecorder.spec.ts:163 — ${NO_TIMER}`,
@@ -466,49 +472,14 @@ export const KEPT: readonly string[] = [
  * line. The list only shrinks: a migration removes its sites, and nothing is added.
  */
 export const PENDING: readonly string[] = [
-  'clientesCobrar.spec.ts:39',
-  'clientesCobrar.spec.ts:83',
-  'clientesCobrar.spec.ts:88',
-  'clientesCobrar.spec.ts:123',
   'cobroHoja.spec.ts:42',
   'cobroHoja.spec.ts:47',
   'cobroHoja.spec.ts:125',
   'cobroHoja.spec.ts:138',
-  'cobroModal.spec.ts:26',
-  'cobroModal.spec.ts:31',
-  'customers.spec.ts:53',
-  'customers.spec.ts:58',
-  'customers.spec.ts:65',
-  'customers.spec.ts:85',
-  'customers.spec.ts:127',
-  'inicioCobrar.spec.ts:42',
-  'inicioCobrar.spec.ts:47',
-  'inicioCobrar.spec.ts:79',
-  'inicioCobrar.spec.ts:89',
-  'leaveWithBack.spec.ts:35',
-  'leaveWithBack.spec.ts:40',
-  'nuevaVentaTelefono.spec.ts:44',
-  'nuevaVentaTelefono.spec.ts:50',
-  'payments.spec.ts:64',
-  'payments.spec.ts:69',
-  'payments.spec.ts:77',
-  'payments.spec.ts:105',
-  'payments.spec.ts:136',
-  'payments.spec.ts:147',
-  'payments.spec.ts:202',
-  'payments.spec.ts:224',
-  'pressed.spec.ts:286',
-  'pressed.spec.ts:291',
-  'ventasLinea.spec.ts:26',
-  'ventasLinea.spec.ts:31',
-  'ventasPhone.spec.ts:57',
-  'ventasPhone.spec.ts:63',
-  'ventasTelefono.spec.ts:67',
-  'ventasTelefono.spec.ts:73',
 ]
 
 /** The most `PENDING` may hold; lowered with each migration, never raised. */
-export const PENDING_CEILING = 39
+export const PENDING_CEILING = 4
 
 // ---------------------------------------------------------------------------------------------
 // The tests

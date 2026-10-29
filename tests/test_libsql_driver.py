@@ -136,7 +136,7 @@ def _seed_customer_owing(client: TestClient) -> int:
         json={
             "customer_id": customer_id,
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "grams": "10"}],
+            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
         },
     )
     assert sale.status_code == 201, sale.text

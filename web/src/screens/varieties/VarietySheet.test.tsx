@@ -27,10 +27,10 @@ const VARIETIES = [
   { id: 1, name: '24K Gold', archived: false, current_price: null },
   { id: 2, name: 'Sir Jack', archived: false, current_price: null },
 ]
-const STOCK_ROW = { variety_id: 1, grams: 30, status: 'ok', sold_out_since: null, threshold: 20, days_left: 40 }
+const STOCK_ROW = { variety_id: 1, quantity: 30, status: 'ok', sold_out_since: null, threshold: 20, days_left: 40 }
 const STOCK = {
   total: 30,
-  varieties: [STOCK_ROW, { ...STOCK_ROW, variety_id: 2, grams: 0, status: 'no_entries', threshold: null, days_left: null }],
+  varieties: [STOCK_ROW, { ...STOCK_ROW, variety_id: 2, quantity: 0, status: 'no_entries', threshold: null, days_left: null }],
   entries: [],
 }
 const CATALOG = {

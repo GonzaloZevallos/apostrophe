@@ -4,20 +4,20 @@
  * Works in integer hundredths, through `hundredthsOfApiGrams`/`fromHundredths`
  * (`sales/pricing.ts`), the same two conversions every other grams sum in the
  * front uses, gifts included (a gift line still has grams, just no price). Tested
- * equal to the API's own `total_grams` (`SaleDetail`), so the two authors of a
+ * equal to the API's own `total_quantity` (`SaleDetail`), so the two authors of a
  * sale's grams — this function and the backend's — are caught drifting apart.
  */
 
 import { fromHundredths, hundredthsOfApiGrams } from './pricing'
 
 export interface LineForGrams {
-  grams: number
+  quantity: number
 }
 
 export function saleGrams(lines: readonly LineForGrams[]): number {
   let hundredths = 0
   for (const line of lines) {
-    hundredths += hundredthsOfApiGrams(line.grams)
+    hundredths += hundredthsOfApiGrams(line.quantity)
   }
   return fromHundredths(hundredths)
 }

@@ -51,10 +51,10 @@ def test_a_month_before_the_first_record_is_refused(client: TestClient) -> None:
     variety_id = _variety_with_price(client, "Flor", 1_000)
     client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": "50"},
+        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"},
     )
     client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]}
+        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
     )
 
     response = client.get("/analysis", params={"month": "2026-09"})
@@ -103,7 +103,7 @@ def test_a_purchase_is_its_own_line_never_inside_expenses(client: TestClient) ->
         json={
             "variety_id": variety_id,
             "origin": "purchase",
-            "grams": "50",
+            "quantity": "50",
             "total_cost": 20_000,
         },
     )
@@ -124,15 +124,15 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
         json={
             "variety_id": variety_id,
             "origin": "opening_stock",
-            "grams": "10",
+            "quantity": "10",
             "total_cost": 1_000,
             "date": "2026-09-01",
         },
     )
     sale = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]}
+        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]}
     ).json()
-    assert sale["lines"][0]["grams"] == 10.0
+    assert sale["lines"][0]["quantity"] == 10.0
 
     # An unrelated variety, sold in a different month: its own lot and sale never
     # change, so August's figures must read byte-identical before and after.
@@ -142,7 +142,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
         json={
             "variety_id": other_variety_id,
             "origin": "opening_stock",
-            "grams": "5",
+            "quantity": "5",
             "total_cost": 500,
             "date": "2026-08-01",
         },
@@ -152,7 +152,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
         json={
             "date": "2026-08-05",
             "payment": "cash",
-            "lines": [{"variety_id": other_variety_id, "grams": "5"}],
+            "lines": [{"variety_id": other_variety_id, "quantity": "5"}],
         },
     )
 
@@ -168,7 +168,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
         json={
             "variety_id": variety_id,
             "origin": "opening_stock",
-            "grams": "5",
+            "quantity": "5",
             "total_cost": 100,
             "date": "2026-08-01",
         },
@@ -190,9 +190,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
     # chosen month, so it reads the same off either response). Unaffected: an
     # earlier week, the one containing Otra's own sale (2026-08-05), which draws no
     # cost from Flor's new lot.
-    current_week_before = next(
-        w for w in before_october["weeks"] if w["last_day"] >= sale["date"]
-    )
+    current_week_before = next(w for w in before_october["weeks"] if w["last_day"] >= sale["date"])
     current_week_after = next(w for w in after_october["weeks"] if w["last_day"] >= sale["date"])
     assert current_week_after["profit"]["amount"] > current_week_before["profit"]["amount"]
 
@@ -222,12 +220,12 @@ def test_a_negative_adjustment_lowers_profit_on_its_date_and_moves_no_variety_ma
         json={
             "variety_id": variety_id,
             "origin": "opening_stock",
-            "grams": "20",
+            "quantity": "20",
             "total_cost": 2_000,
         },
     )
     sale = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "5"}]}
+        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "5"}]}
     ).json()
 
     before = client.get("/analysis").json()
@@ -235,7 +233,7 @@ def test_a_negative_adjustment_lowers_profit_on_its_date_and_moves_no_variety_ma
 
     adjustment = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "grams": "-3"},
+        json={"variety_id": variety_id, "origin": "adjustment", "quantity": "-3"},
     )
     assert adjustment.status_code == 201, adjustment.text
 
@@ -243,7 +241,7 @@ def test_a_negative_adjustment_lowers_profit_on_its_date_and_moves_no_variety_ma
     variety_after = after["month"]["varieties"][0]
 
     assert variety_after["margin"] == variety_before["margin"]
-    assert variety_after["grams_sold"] == variety_before["grams_sold"]
+    assert variety_after["quantity_sold"] == variety_before["quantity_sold"]
     assert after["month"]["shortfall"] is not None
     assert after["month"]["shortfall"]["amount"] > 0
     # The week containing today's sale and the adjustment: profit falls by the
@@ -282,7 +280,7 @@ def _seed_bigger_history(client: TestClient) -> None:
             json={
                 "variety_id": variety_id,
                 "origin": "opening_stock",
-                "grams": "5000",
+                "quantity": "5000",
                 "total_cost": 100_000 + i * 1_000,
                 "date": (TODAY - timedelta(days=360)).isoformat(),
             },
@@ -296,7 +294,7 @@ def _seed_bigger_history(client: TestClient) -> None:
             json={
                 "date": day,
                 "payment": "cash",
-                "lines": [{"variety_id": variety_id, "grams": "1"}],
+                "lines": [{"variety_id": variety_id, "quantity": "1"}],
             },
         )
         client.post(
@@ -313,7 +311,7 @@ def _seed_bigger_history(client: TestClient) -> None:
         json={
             "reason": "own_use",
             "date": (TODAY - timedelta(days=7)).isoformat(),
-            "lines": [{"variety_id": variety_ids[0], "grams": "1"}],
+            "lines": [{"variety_id": variety_ids[0], "quantity": "1"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -325,14 +323,14 @@ def test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded(
     variety_id = _variety_with_price(client, "Chica", 1_000)
     client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": "10"},
+        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "10"},
     )
     client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]}
+        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
     )
     client.post(
         "/stock/withdrawals",
-        json={"reason": "promotion", "lines": [{"variety_id": variety_id, "grams": "1"}]},
+        json={"reason": "promotion", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
     )
 
     _seed_bigger_history(other_client)
@@ -349,7 +347,7 @@ def test_the_clock_crossing_sunday_midnight_argentina_time_changes_the_current_w
     variety_id = _variety_with_price(client, "Flor", 1_000)
     client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "grams": "10"},
+        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "10"},
     )
 
     clock.set(datetime(2026, 10, 5, 2, 30, tzinfo=UTC))  # Sunday 23:30 in Argentina
@@ -369,7 +367,7 @@ def test_a_seeded_history_s_figures_match_a_direct_computation(client: TestClien
         json={
             "variety_id": variety_id,
             "origin": "opening_stock",
-            "grams": "20",
+            "quantity": "20",
             "total_cost": 2_000,
             "date": "2026-01-01",
         },
@@ -380,7 +378,7 @@ def test_a_seeded_history_s_figures_match_a_direct_computation(client: TestClien
             json={
                 "date": sale_date,
                 "payment": "cash",
-                "lines": [{"variety_id": variety_id, "grams": "5"}],
+                "lines": [{"variety_id": variety_id, "quantity": "5"}],
             },
         )
         assert sale.status_code == 201, sale.text

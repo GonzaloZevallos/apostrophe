@@ -1,7 +1,7 @@
 /**
  * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"; `VentaDetalle.dc.html`):
  * the title with the sale's date, the total, a summary line of grams (the API's
- * `total_grams`, never summed here) · the customer or "Sin cliente" · how it was
+ * `total_quantity`, never summed here) · the customer or "Sin cliente" · how it was
  * paid (`paymentSummary`, dropping `payment: 'none'`'s part), each line with its
  * price per gram, `ReglaInsignia` and line total, shipping, a final Total row and
  * the note — all from the API's own answer (docs/adr/0011; plan, invariants:
@@ -95,7 +95,7 @@ function paymentSummary(payment: Sale['payment']): string {
  * own answer, joined by " · " with `payment: 'none'`'s empty part dropped. */
 function summaryLine(sale: SaleDetail): string {
   const parts = [
-    formatGrams(sale.total_grams),
+    formatGrams(sale.total_quantity),
     sale.customer === null ? SALES_TEXT.noCustomer : sale.customer.name,
     paymentSummary(sale.payment),
   ]
@@ -105,7 +105,7 @@ function summaryLine(sale: SaleDetail): string {
 function deleteTitle(sale: SaleDetail): string {
   const money = formatMoney(sale.total)
   const day = formatDateShort(sale.date)
-  const grams = formatGrams(sale.total_grams)
+  const grams = formatGrams(sale.total_quantity)
   return SALES_TEXT.deleteSaleConfirm(money, day, grams)
 }
 
@@ -325,7 +325,7 @@ function VentaDetalleScreen() {
               <div key={`${line.variety_id}-${index}`} className="venta-detalle__linea">
                 <div className="venta-detalle__linea-superior">
                   <span className="venta-detalle__variedad">{line.variety_name}</span>
-                  <span className="venta-detalle__gramos">{formatGrams(line.grams)}</span>
+                  <span className="venta-detalle__gramos">{formatGrams(line.quantity)}</span>
                 </div>
                 <div className="venta-detalle__linea-inferior">
                   <span className="venta-detalle__precio">

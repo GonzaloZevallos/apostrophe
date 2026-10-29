@@ -161,7 +161,7 @@ test('a customer with no phone shows no phone element in Pick a customer nor the
 test('a successful save opens the sale the API answered with, replacing history', async () => {
   const user = userEvent.setup()
   // The API's own detail shape (`sale-detail.json`), not a hand-written stand-in:
-  // `VentaDetalle` renders `GET /sales/42`'s own answer, `total_grams` included.
+  // `VentaDetalle` renders `GET /sales/42`'s own answer, `total_quantity` included.
   const savedSale = { ...SALE_DETAIL, id: 42 }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
@@ -181,6 +181,33 @@ test('a successful save opens the sale the API answered with, replacing history'
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
   expect(await screen.findByText('Sale saved')).toBeInTheDocument()
+})
+
+test('saving posts each line\'s amount as `quantity`, never `grams`', async () => {
+  const user = userEvent.setup()
+  const savedSale = { ...SALE_DETAIL, id: 42 }
+  const fetchMock = await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'POST /sales': () => jsonResponse(201, savedSale),
+    'GET /sales/42': () => jsonResponse(200, savedSale),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2,5')
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
+  const post = fetchMock.mock.calls.find(
+    ([path, init]) => path === '/sales' && (init as RequestInit | undefined)?.method === 'POST',
+  )
+  expect(post).toBeDefined()
+  const init = (post ?? [])[1] as RequestInit | undefined
+  const body = JSON.parse(String(init?.body)) as { lines: Record<string, unknown>[] }
+  expect(body.lines).toHaveLength(1)
+  expect(body.lines[0]).toMatchObject({ variety_id: 1, quantity: '2.5' })
+  expect(body.lines[0]).not.toHaveProperty('grams')
 })
 
 test('the form closes with "Close" and shows no back control named "Volver"', async () => {

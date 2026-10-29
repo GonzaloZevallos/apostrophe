@@ -43,16 +43,16 @@ const VARIETIES = [
 ]
 
 function stockRow(variety_id: number, patch: Record<string, unknown>) {
-  return { variety_id, grams: 0, status: 'ok', sold_out_since: null, threshold: null, days_left: null, ...patch }
+  return { variety_id, quantity: 0, status: 'ok', sold_out_since: null, threshold: null, days_left: null, ...patch }
 }
 
 const STOCK = {
   total: 153,
   varieties: [
-    stockRow(1, { grams: 135, status: 'ok', days_left: 270 }),
-    stockRow(2, { grams: 18, status: 'low', threshold: 20, days_left: 24 }),
-    stockRow(3, { grams: 0, status: 'no_entries' }),
-    stockRow(4, { grams: 0, status: 'sold_out', sold_out_since: '2026-10-01' }),
+    stockRow(1, { quantity: 135, status: 'ok', days_left: 270 }),
+    stockRow(2, { quantity: 18, status: 'low', threshold: 20, days_left: 24 }),
+    stockRow(3, { quantity: 0, status: 'no_entries' }),
+    stockRow(4, { quantity: 0, status: 'sold_out', sold_out_since: '2026-10-01' }),
   ],
   entries: [],
 }
