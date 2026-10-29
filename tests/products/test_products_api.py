@@ -346,7 +346,8 @@ def test_an_earlier_entry_keeps_its_stored_rules_when_a_later_one_is_recorded_wi
     later = _price(client, variety_id, **{**GOLD_WITH_VIP, "effective_from": "2026-06-01"})
 
     assert (later["bulk_price"], later["vip_price"]) == (None, None)
-    history = {e["effective_from"]: e for e in client.get(f"/api/products/{variety_id}/prices").json()}
+    prices = client.get(f"/api/products/{variety_id}/prices").json()
+    history = {e["effective_from"]: e for e in prices}
     assert (history["2026-01-01"]["bulk_price"], history["2026-01-01"]["vip_price"]) == (
         10_000,
         9_000,

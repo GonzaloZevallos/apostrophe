@@ -240,7 +240,8 @@ def test_the_archived_variety_touches_no_read_of_the_live_business(
         r["variety_id"]
         for r in client.get("/stock", params={"archived": "true"}).json()["varieties"]
     ]
-    assert gone in [v["id"] for v in client.get("/api/products", params={"archived": "true"}).json()]
+    archived = client.get("/api/products", params={"archived": "true"}).json()
+    assert gone in [v["id"] for v in archived]
     assert gone in {e["variety_id"] for e in client.get("/stock").json()["entries"]}
 
 

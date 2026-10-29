@@ -202,4 +202,5 @@ def test_a_deleted_variety_is_gone_from_every_reader_of_another_business_untouch
 
     assert client.delete(f"/api/products/{mine}").status_code == 204
 
-    assert other_client.get("/api/products", params={"archived": "true"}).json()[0]["name"] == "Mine"
+    archived = other_client.get("/api/products", params={"archived": "true"}).json()
+    assert archived[0]["name"] == "Mine"
