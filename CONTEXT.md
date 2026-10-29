@@ -482,7 +482,7 @@ El idioma de la página antes de iniciar sesión, calculado a partir del `Accept
 _Avoid_: browser language, default language
 
 **Copy module**:
-El único lugar con claves que guarda cada texto que muestra el front, nombres accesibles incluidos. Ninguna pantalla guarda un texto propio, así que un cambio de redacción o un idioma agregado es un cambio solo ahí.
+El único lugar con claves que guarda cada texto que muestra la interfaz, nombres accesibles incluidos. Ninguna pantalla guarda un texto propio, así que un cambio de redacción o un idioma agregado es un cambio solo ahí.
 _Avoid_: messages file, strings, translations, dictionary
 
 **Mobile check**:
@@ -510,7 +510,7 @@ El cuarto criterio del dueño: la app nunca fija en el código la forma de traba
 _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 
 **Sale bill**:
-Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan, y el Balance es la cuenta completa del Customer en el momento de compartir. En pantalla se comparte como texto plano con Share o Copy en el detalle de la Sale; en la app: Sale bill (el nombre accesible de su bloque seleccionable), la acción dice Share / Copy.
+Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan, y el Balance es la cuenta completa del Customer en el momento de compartir. En pantalla se comparte como texto plano con Share o Copy en el detalle de la Sale; En la app: Sale bill (el nombre accesible de su bloque seleccionable), la acción dice Share / Copy.
 _Avoid_: invoice, receipt, statement, ticket
 
 **Documentation language**:
@@ -522,7 +522,7 @@ _Avoid_: Product language, locale, idioma de la app, traducción
 Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte nombrada en cada línea; solo esa parte pasa su término al glosario propiamente dicho y corrige la definición que reemplaza. Cada línea da el término, el ADR que lo decide y la parte a cargo, nombrada por capacidad.
 
 **Product**:
-Lo que vende un Business, en el código y en la API, cualquiera sea el nombre que el Business le dé en pantalla; reemplaza a la Variety en el código, y las columnas que la referencian siguen siendo `variety_id` hasta #75. Decidido en docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; a cargo del Product rename on the wire. Los nombres en Python del hexágono de Products (sus módulos, clases, puertos, parámetros de casos de uso y atributos de dominio) y `app/catalog/domain/product.py` dicen Product desde GH-386. Los campos propios de otros hexágonos, el wire, las tablas, las columnas y las pantallas siguen con Variety hasta sus partes (ADR-0061).
+Lo que vende un Business, en el código y en la API, cualquiera sea el nombre que el Business le dé en pantalla; reemplaza a la Variety en el código, y las columnas que la referencian siguen siendo `variety_id` hasta #75. Decidido en docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; a cargo del Product rename on the wire. Los nombres en Python del hexágono de Products (sus módulos, clases, puertos, parámetros de casos de uso y atributos de dominio) y `app/catalog/domain/product.py` dicen Product desde GH-386. Los campos propios de otros hexágonos, la API, las tablas, las columnas y las pantallas siguen con Variety hasta sus partes (ADR-0061).
 _Avoid_: item, SKU, article
 
 **Unit**:
