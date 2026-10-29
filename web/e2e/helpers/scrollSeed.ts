@@ -54,7 +54,7 @@ async function owingSale(page: Page, customerId: number, varietyId: number): Pro
     data: {
       customer_id: customerId,
       payment: 'owing',
-      lines: [{ variety_id: varietyId, grams: '1', gift: false, special_price: null }],
+      lines: [{ variety_id: varietyId, quantity: '1', gift: false, special_price: null }],
     },
   })
   expect(sold.ok()).toBe(true)
