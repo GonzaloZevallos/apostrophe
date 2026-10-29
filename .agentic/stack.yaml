@@ -99,6 +99,9 @@ affected_fallback:
   - tests/fixtures/*
   - tests/fakes/*
   - scripts/affected.py
+  - scripts/ci_areas.py
+  - scripts/ci_changes.py
+  - scripts/e2e_screen_specs.json
   - scripts/__init__.py
 # The product's design (agentic-system ADR-0040): the static prototype the design roles walk,
 # the screen a walk starts from, and the two commands they may run instead of a browser.

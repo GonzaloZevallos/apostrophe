@@ -17,6 +17,7 @@ import pytest
 import yaml
 
 from scripts.affected import REPO_ROOT, WRAPPER_INPUTS, is_e2e_sound
+from scripts.ci_changes import SELECTOR_INPUTS
 
 STACK = cast(
     "dict[str, Any]",
@@ -100,6 +101,16 @@ def test_every_fallback_entry_is_a_non_blank_string() -> None:
 def test_every_file_the_wrapper_depends_on_is_a_fallback(path: str) -> None:
     assert (REPO_ROOT / path).is_file()
     assert _matched(path, FALLBACK)
+
+
+@pytest.mark.parametrize("path", SELECTOR_INPUTS)
+def test_every_file_the_ci_selector_reads_is_a_fallback(path: str) -> None:
+    assert (REPO_ROOT / path).is_file()
+    assert _matched(path, FALLBACK)
+
+
+def test_a_selector_input_outside_the_fallback_globs_is_refused() -> None:
+    assert not _matched("scripts/ci_unlisted.py", FALLBACK)
 
 
 def test_no_e2e_sound_path_is_a_fallback() -> None:
