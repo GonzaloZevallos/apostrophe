@@ -127,9 +127,16 @@ export interface WatchDeps {
   isPinned: () => boolean
 }
 
+/**
+ * The width the computer layout starts at, read from the one shared query. Only `useViewport.ts`
+ * may call `matchMedia`, and the tests that mock it export no more than the hook, so the width
+ * is compared with `innerWidth` (the same width a `min-width` media query tests).
+ */
+const COMPUTER_MIN_PX = Number(/\d+/.exec(COMPUTER_QUERY)?.[0])
+
 export function browserWatchDeps(): WatchDeps {
   return {
-    viewport: () => (typeof window.matchMedia === 'function' && window.matchMedia(COMPUTER_QUERY).matches ? 'computer' : 'phone'),
+    viewport: () => (window.innerWidth >= COMPUTER_MIN_PX ? 'computer' : 'phone'),
     scrollY: () => window.scrollY,
     isPinned: () => document.documentElement.matches('html:has(.sheet), html.html--formulario-fijo'),
   }
