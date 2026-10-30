@@ -109,3 +109,7 @@ This section is a pointer and holds none of the standard's requirements.
 ## Typeface
 
 Geist is the typeface of every screen, at weights 400, 500, 600 and 700, bundled with the app through `@fontsource/geist` (imported only in `web/src/main.tsx`): the app fetches no font from outside the installation. `--fuente` is `'Geist', system-ui, -apple-system, sans-serif` and is the same in `docs/product/design-system/tokens.css`, `tokens.ts` and `web/src/styles/tokens.css`. The drawings in `pantallas/` still name Plus Jakarta Sans; a design capture answers that request from the self-hosted Geist files, so both sides are drawn in Geist (ADR-0042).
+
+### Tabular figures
+
+A figure the eye scans down a column, along a row or in a total draws its digits tabular: one rule in `web/src/styles/app.css` sets `font-variant-numeric: tabular-nums` on the figure classes (`cifra-xl`, `cifra-l`, `cifra-m`, `cifra-s`, `cifra-n`), and never on `html`, `body` or `:root`. Covered: money, quantities in grams, percentages shown as figures and Days left. Not covered: dates and times, phone numbers, a count inside a sentence ("3 customers", "and 3 g without cost") and free text. The Mobile check enforces it in the rendered page with the `tabular-figures` rule: a visible element whose whole text is a figure and whose computed `font-variant-numeric` lacks `tabular-nums` fails. That rule has no offenders file; a violation is fixed by putting the figure in its class, never listed.

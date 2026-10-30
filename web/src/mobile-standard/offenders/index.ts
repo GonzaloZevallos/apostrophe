@@ -18,6 +18,7 @@ import {
   isTheme,
   RULE_KINDS,
   SIZES,
+  UNLISTED_RULES,
   THEMES,
   type Rule,
   type Size,
@@ -49,7 +50,7 @@ import touchTarget from './touch-target.json' with { type: 'json' }
 import unreachable from './unreachable.json' with { type: 'json' }
 import userSelect from './user-select.json' with { type: 'json' }
 
-export const FILES: Record<Rule, unknown> = {
+export const FILES: Record<Exclude<Rule, 'tabular-figures'>, unknown> = {
   unreachable,
   'h-scroll': hScroll,
   'chrome-at-load': chromeAtLoad,
@@ -121,6 +122,9 @@ function parseEntry(raw: unknown, file: Rule, where: string): Offender[] {
   }
   const rule = entry['rule']
   if (typeof rule !== 'string' || !isRule(rule)) throw new Error(`${where}: unknown rule`)
+  if (UNLISTED_RULES.includes(rule)) {
+    throw new Error(`${where}: ${rule} has no offenders file; fix the figure, never list it`)
+  }
   if (rule !== file) throw new Error(`${where}: rule ${rule} sits in the file of ${file}`)
   const target = entry['target']
   if (typeof target !== 'string') throw new Error(`${where}: target is not a string`)
@@ -153,7 +157,7 @@ function parseEntry(raw: unknown, file: Rule, where: string): Offender[] {
 }
 
 /** Every entry of every rule's file, expanded into one offender per cell. */
-export function parseOffenders(files: Record<Rule, unknown> = FILES): Offender[] {
+export function parseOffenders(files: Partial<Record<Rule, unknown>> = FILES): Offender[] {
   const out: Offender[] = []
   const seen = new Set<string>()
   for (const [name, content] of Object.entries(files)) {

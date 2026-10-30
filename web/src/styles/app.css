@@ -28,6 +28,17 @@ body {
   overscroll-behavior: none;
 }
 
+/* Tabular figures: the one rule that sets `font-variant-numeric: tabular-nums`, on the
+ * figure classes only (money, grams, percentages and Days left sit in a `cifra*` class).
+ * Never on `html`, `body` or `:root`: text and sentences keep Geist's proportional digits. */
+.cifra-xl,
+.cifra-l,
+.cifra-m,
+.cifra-s,
+.cifra-n {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Visible to a screen reader only — the design's own technique for a label a
  * placeholder already shows visibly (`Clientes.dc.html`'s "Buscar cliente"). */
 .visualmente-oculto {

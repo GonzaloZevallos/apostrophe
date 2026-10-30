@@ -61,6 +61,10 @@ un solo verde usado con cuentagotas.
 
 La tipografía es Geist, en pesos 400, 500, 600 y 700, empaquetada con la app (`@fontsource/geist`, importada sólo en `web/src/main.tsx`): la app no pide ninguna tipografía fuera de la instalación. `--fuente` es `'Geist', system-ui, -apple-system, sans-serif` y es igual en `tokens.css`, `tokens.ts` y `web/src/styles/tokens.css`. La copia de `tokens.css` de esta carpeta conserva su `@import` de Google, ahora para Geist; es documentación y la app nunca la carga. Los dibujos de `pantallas/` siguen pidiendo Plus Jakarta Sans: las capturas de diseño responden ese pedido con los archivos de Geist alojados (`scripts/design/fonts.mjs`, ADR-0042), así que el dibujo y la app se ven en la misma tipografía.
 
+### Cifras tabulares
+
+Una cifra que el ojo recorre en columna, en una fila o en un total lleva dígitos tabulares: una sola regla de `web/src/styles/app.css` pone `font-variant-numeric: tabular-nums` en las clases de cifra (`cifra-xl`, `cifra-l`, `cifra-m`, `cifra-s`, `cifra-n`) y nunca en `html`, `body` ni `:root`. Cubre dinero, cantidades en gramos, porcentajes mostrados como cifra y días restantes. No cubre fechas ni horas, teléfonos, un conteo dentro de una frase ("3 clientes", "y 3 g sin costo") ni texto libre. El chequeo móvil lo verifica en la página renderizada con la regla `tabular-figures`: un elemento visible cuyo texto entero es una cifra y cuyo `font-variant-numeric` calculado no incluye `tabular-nums` falla. Esa regla no tiene archivo de infractores: se arregla poniendo la cifra en su clase, nunca se anota.
+
 ## Accesibilidad — no se negocia
 
 1. Ningún estado se cuenta sólo por color: una señal, flecha o palabra en cada

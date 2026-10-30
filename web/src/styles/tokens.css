@@ -128,8 +128,6 @@ body {
   background: var(--papel);
   color: var(--tinta);
   font-family: var(--fuente);
-  /* Las cifras se alinean en columna en las listas. */
-  font-variant-numeric: tabular-nums;
 }
 
 /* Clases de texto — mismos valores que `texto` en tokens.ts */
