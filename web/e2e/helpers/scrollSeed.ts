@@ -99,3 +99,18 @@ export async function seedLongExpenses(page: Page): Promise<void> {
     )
   }
 }
+
+/** One paid sale of Rosa with no customer, so its page offers "Assign customer" (a sheet with a history entry). Returns its id. */
+export async function seedAnonymousSale(page: Page): Promise<number> {
+  const rosa = await rosaId(page)
+  const sale = await okJson<{ id: number }>(
+    await page.request.post('/sales', {
+      data: {
+        customer_id: null,
+        payment: 'cash',
+        lines: [{ variety_id: rosa, quantity: '1', gift: false, special_price: null }],
+      },
+    }),
+  )
+  return sale.id
+}

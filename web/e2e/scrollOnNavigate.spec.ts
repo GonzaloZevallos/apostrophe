@@ -14,9 +14,9 @@
  */
 
 import type { Locator, Page } from '@playwright/test'
-import { CUSTOMER, CUSTOMERS, EXPENSES, SALE, SALE_NEW, SALES, SETTINGS } from '../src/routes.js'
+import { CUSTOMER, CUSTOMERS, EXPENSE_CATEGORIES, EXPENSES, pathTo, SALE, SALE_NEW, SALES, SETTINGS } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
-import { expectLongPage, seedLongExpenses, seedLongLists } from './helpers/scrollSeed.js'
+import { expectLongPage, seedAnonymousSale, seedLongExpenses, seedLongLists } from './helpers/scrollSeed.js'
 import { expectPath } from './helpers/url.js'
 
 const VIEWPORTS = [
@@ -197,46 +197,52 @@ for (const viewport of VIEWPORTS) {
       await expect(opener).toBeInViewport()
     })
 
-    test('a link out of a scrolled list opens its screen at the top, or keeps the list in the computer panes', async ({
-      page,
-    }) => {
-      await seedLongLists(page)
-
-      await page.goto(CUSTOMERS)
-      await expect(page.getByRole('link', { name: /Zeta 40/ }).first()).toBeVisible()
-      const offset = await scrollDown(page)
-      await tap(page.getByRole('link', { name: /Zeta 25/ }).first())
-      await expectPath(page, CUSTOMER)
-      if (computer) await expectScrolledTo(page, offset)
-      else await expectAtTop(page)
-    })
-
-    test('an in-page sheet opened from a scrolled list leaves the list where it is, on Close and on Back', async ({
-      page,
-    }) => {
+    test('a plain link at the foot of a scrolled list opens its screen at the top', async ({ page }) => {
       await seedLongLists(page)
       await seedLongExpenses(page)
 
       await page.goto(EXPENSES)
-      const row = page.getByRole('button', { name: /Gasto 25/ })
-      await expect(row).toBeVisible()
+      await expect(page.getByRole('button', { name: /Gasto 25/ })).toBeVisible()
+      await scrollDown(page)
+      await tap(page.getByRole('link', { name: 'Categories' }))
+      await expectPath(page, EXPENSE_CATEGORIES)
+      await expectAtTop(page)
+    })
+
+    test("a sheet of the sale's own page (a history entry) leaves the page where it is, on Close and on Back", async ({
+      page,
+    }) => {
+      await seedLongLists(page)
+      const saleId = await seedAnonymousSale(page)
+
+      await page.goto(pathTo(SALE, { id: saleId }))
+      const assign = page.getByRole('button', { name: 'Assign customer' })
+      await expect(assign).toBeVisible()
+      // A sale's page is short: give the document a height of its own so there is something to scroll.
+      await page.evaluate(() => {
+        document.documentElement.style.minHeight = '3000px'
+      })
       const offset = await scrollDown(page)
-      const rowTop = await viewportTop(row)
-      await tap(row)
-      const dialog = page.getByRole('dialog')
-      await expect(dialog).toBeVisible()
-      await expectScrolledTo(page, offset)
-      await expectViewportTop(row, rowTop)
+      const assignTop = await viewportTop(assign)
+      const sheet = page.getByText('Pick a customer')
 
-      await dialog.getByRole('button', { name: 'Close' }).click()
-      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await tap(assign)
+      await expect(sheet).toBeVisible()
+      await expectScrolledTo(page, offset)
+      await expectViewportTop(assign, assignTop)
+
+      await page.getByRole('button', { name: 'Close' }).click()
+      await expect(sheet).toHaveCount(0)
+      await expectPath(page, SALE)
       await expectScrolledTo(page, offset)
 
-      await tap(row)
-      await expect(page.getByRole('dialog')).toBeVisible()
+      await tap(assign)
+      await expect(sheet).toBeVisible()
       await page.goBack()
-      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await expect(sheet).toHaveCount(0)
+      await expectPath(page, SALE)
       await expectScrolledTo(page, offset)
+      await expectViewportTop(assign, assignTop)
     })
 
     test('Nueva venta from a scrolled list starts at the top of its own scroller and leaves the list alone', async ({
