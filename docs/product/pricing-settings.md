@@ -1,6 +1,6 @@
 # Pricing settings
 
-Qué Pricing rules usa un **Business**: dos interruptores independientes, **Bulk price** (la regla bulk) y **VIP customers** (la regla VIP). Los ve y los cambia solo el Business al que pertenecen (ADR-0004), en **Settings** → Prices (navigation.md).
+Qué **Pricing rule**s usa un **Business**: dos interruptores independientes, **Bulk price** (la regla bulk) y **VIP customers** (la regla VIP). Los ve y los cambia solo el Business al que pertenecen (ADR-0004), en **Settings** → Prices (navigation.md).
 
 Lo que hace cada regla lo define la capacidad a cargo, y cada una sigue los interruptores:
 - cómo se pone precio a una **Sale line**: sales.md;
@@ -23,7 +23,7 @@ Sin esto, quienes venden dejan en blanco los campos de Bulk y VIP que no usan, y
 Criterios de éxito:
 
 1. **Solo se ven mis reglas.**
-   - Con una regla desactivada, nada de ella aparece en el formulario de precio, la página de la **Variety**, la marca VIP del formulario de Customer, New sale ni el texto del Catalog.
+   - Con una regla desactivada, nada de ella aparece en el formulario de precio, la página de la **Variety**, la marca VIP del formulario de **Customer**, New sale ni el texto del Catalog.
    - Una **Sale** recibe precio como si la regla no existiera.
    - Con las dos desactivadas, una Sale recibe precio solo por **List price**. **Gift** y Special price siguen funcionando.
 2. **Mi VIP price, nunca peor que el normal.** A un VIP customer se le cobra el menor de los precios de las reglas que se aplican a la línea:
@@ -122,7 +122,7 @@ Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la orac
 
 Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; lo entrega la parte customer-type prices.
 
-- Los Customer types van a reemplazar la marca VIP única. Cada tipo va a tener su propio precio por Product, guardado como filas con fecha de vigencia; las columnas de la marca `vip` y de `vip_price` van a quedar congeladas en su lugar. El List price, el Bulk price y los Customer-type prices van a seguir pudiendo activarse o desactivarse por Business, como hoy los Pricing settings. Un Business nuevo va a arrancar sin ningún Customer type.
+- Los **Customer type**s van a reemplazar la marca VIP única. Cada tipo va a tener su propio precio por **Product**, guardado como filas con fecha de vigencia; las columnas de la marca `vip` y de `vip_price` van a quedar congeladas en su lugar. El List price, el Bulk price y los **Customer-type price**s van a seguir pudiendo activarse o desactivarse por Business, como hoy los **Pricing settings**. Un Business nuevo va a arrancar sin ningún Customer type.
 - Los Businesses existentes van a conservar VIP como Customer type, así cada VIP customer va a pagar exactamente lo que pagaba antes.
 - Va a reemplazar: "**Dos por Business**, independientes entre sí: Bulk price y VIP customers." (el interruptor VIP va a pasar a ser el interruptor de Customer types) y "Cada Price entry con un Bulk price recibe VIP price = Bulk price, así cada VIP customer paga exactamente lo que pagaba antes."
 - Fuera de alcance: "Otras reglas VIP, como un porcentaje sobre el List price." va a quedar afuera. "Precios promocionales por fecha." lo va a revertir la parte promotions (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`).

@@ -21,13 +21,13 @@ Este afina el job de arriba para el celular y la computadora (en la computadora,
 
 Su protagonista es quien mantiene la app, o quien revisa en su nombre, al estilo del job del mantenedor de accounts.md; quien vende se ve afectado solo de forma indirecta. Lo sirven acá la única fuente de "Check the grams entered" y "Price saved", y el test del marco que pide la métrica del marco de navigation.md. No cambia ningún comportamiento de la app.
 
-**Cuando** configuro cómo pone precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio (un Bulk price si vendo por cantidad, y un VIP price que fijo por variedad si tengo VIP customers), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un Special price a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa. (Lo sirven acá el VIP price de la Price entry y los campos de precio que siguen los interruptores; se define en pricing-settings.md.)
+**Cuando** configuro cómo pone precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las **Pricing rule**s que tiene mi negocio (un **Bulk price** si vendo por cantidad, y un **VIP price** que fijo por variedad si tengo **VIP customers**), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa. (Lo sirven acá el VIP price de la Price entry y los campos de precio que siguen los interruptores; se define en pricing-settings.md.)
 
 **Cuando** manejo mi negocio desde el celular, **quiero** mantener mis precios al día desde el celular, **para** dejar de llevarlos en la planilla y tener datos reales cuando lleguen las ventas.
 
 **Cuando** compro, cosecho o cuento flor, **quiero** registrarlo desde el celular en pocos toques, **para** saber qué tengo de cada variedad, ver que una se está acabando antes de que un cliente la pida y saber cuánto me costaron los gramos que vendo o regalo. (Lo sirven acá el estado de la lista, la página de la Variety, su aviso de Stock bajo y "+ Stock entry"; se define en `stock.md`.)
 
-**Cuando** saco gramos de mi propio stock sin venderlos (para compartirlos en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlos desde el celular en pocos toques (fecha, variedades y gramos, el motivo), **para** mantener el stock correcto y ver en Profit cuánto me costó promocionar el negocio y mi propio consumo, sin registrar una venta que nadie hizo ni un Adjustment que se lea como flor perdida. (Lo sirven acá "Take from stock" en la lista y en la página de una Variety, y los Stock withdrawals de su "Stock y entradas"; se define en `stock.md`.)
+**Cuando** saco gramos de mi propio stock sin venderlos (para compartirlos en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlos desde el celular en pocos toques (fecha, variedades y gramos, el motivo), **para** mantener el stock correcto y ver en **Profit** cuánto me costó promocionar el negocio y mi propio consumo, sin registrar una venta que nadie hizo ni un **Adjustment** que se lea como flor perdida. (Lo sirven acá "Take from stock" en la lista y en la página de una Variety, y los Stock withdrawals de su "Stock y entradas"; se define en `stock.md`.)
 
 **Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, con todo lo de una variedad en un solo lugar, **para** volver con el cliente en vez de buscar entre menús, y no preguntarme nunca cuál de varias pantallas tiene lo que necesito. (El job de navegación, navigation.md.)
 
@@ -51,7 +51,7 @@ convivir con ella en las listas, renombrarla a algo como "NO USAR" o dejarla ago
 
 **Cuando** abro una variedad que archivé, desde Archived, para ver qué era o para traerla
 de vuelta, **quiero** que su página se lea de un vistazo como archivada y de solo lectura, con todo lo que
-tenía (resumen, marca de oculta, precios, stock y movimientos, aviso de Stock bajo, Catalog
+tenía (resumen, marca de **Hidden variety**, precios, stock y movimientos, aviso de Stock bajo, Catalog
 attributes) todavía a la vista y Restore como su única acción segura, **para** decidir si
 la traigo de vuelta e irme sabiendo que no cambié nada por accidente. Y cuando elimino una
 variedad que nunca se movió, la eliminación se ve como lo que es: permanente.
@@ -94,10 +94,10 @@ Criterios de éxito:
    Variety no tiene historial, y Archive en el resto de los casos. Nunca ofrece una eliminación que va a ser
    rechazada.
 10. **Los libros no se mueven**: después de archivar, cada Sale pasada y sus **Sale line**, cada cifra de Stock,
-    **Cost of goods sold**, **Stock shortfall**, **Profit**, **Cash**, cifra de Analysis y **Balance** de
-    Customer se lee exactamente igual que antes, al peso y al centésimo de gramo.
+    **Cost of goods sold**, **Stock shortfall**, Profit, **Cash**, cifra de Analysis y **Balance** de
+    **Customer** se lee exactamente igual que antes, al peso y al centésimo de gramo.
 11. **Vuelve entera**: restaurar trae la Variety de vuelta con sus precios, Stock,
-    Stock entries, Low-stock threshold, Catalog attributes y marca de **Hidden variety** intactos, y de vuelta en
+    Stock entries, Low-stock threshold, Catalog attributes y marca de Hidden variety intactos, y de vuelta en
     cada lista y selector en que califica.
 12. **Decide el dominio**: la eliminación de una Variety con historial la rechaza el propio
     dominio, no solo la oculta la UI.
@@ -134,7 +134,7 @@ Criterios de éxito:
 - **Variety**: un nombre, sin espacios al principio ni al final, con los espacios internos colapsados, de hasta 60 caracteres. Renombrarla conserva sus precios. Las Varieties se listan por nombre.
 - **Price entry**: una fecha de vigencia y un List price por gramo en pesos enteros. Opcionalmente, también tiene:
   - un Bulk price por gramo con su Bulk minimum en gramos (hasta dos decimales). Los dos van juntos o ninguno, y el Bulk price es menor que el List price;
-  - un **VIP price** por gramo, en pesos enteros, menor que el List price. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price.
+  - un VIP price por gramo, en pesos enteros, menor que el List price. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price.
 
   Todo monto es mayor que cero.
 - **Un VIP price igual o mayor que el List price** se rechaza con su propio mensaje fijo y su propio código de rechazo (ADR-0008), que nunca repite el monto (ADR-0005).
@@ -151,8 +151,8 @@ Criterios de éxito:
 
 ### Eliminar y archivar una Variety
 
-- **Historial**: la Variety history es cualquier Sale line de la Variety (los **Gift** y los **Special price**
-  incluidos) o cualquier Stock entry de ella (de cualquier origen: **Purchase**, **Harvest**, **Opening stock** o un **Adjustment** de
+- **Historial**: la Variety history es cualquier Sale line de la Variety (los **Gift** y los Special price
+  incluidos) o cualquier Stock entry de ella (de cualquier origen: **Purchase**, **Harvest**, **Opening stock** o un Adjustment de
   cualquiera de los dos signos), o cualquier línea de Stock withdrawal de ella (**Promotion** u **Own use**). Se calcula
   en el momento y nunca se guarda.
 - **Qué no es historial**: las Price entries, el Low-stock threshold y los Catalog attributes. Una
@@ -348,7 +348,7 @@ Criterios de éxito:
   - **"Restore"** es su única acción: una acción primaria de ícono + texto, en el lugar de las tres
     acciones de la página activa, justo debajo de la línea de resumen y sus marcas, así en el celular
     se alcanza sin desplazarse más allá de ninguna sección. No hay nada al lado. Su ícono
-    es un nombre de `NombreIcono`; si ninguno encaja, diseño dibuja uno bajo la regla de íconos.
+    es un nombre de `NombreIcono`; si ninguno encaja, diseño dibuja uno bajo la Icon and text rule.
   - **Sus secciones, todas de solo lectura**:
     - **Stock and entries**: los últimos 3 movimientos, con "See all";
     - **Prices**: las últimas 3 Price entries, con "See all", siguiendo la misma regla de
@@ -636,7 +636,7 @@ El epic permite que un Business describa lo que vende con sus propias palabras. 
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md y docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; lo entrega la parte product word, con el Product rename on the wire para la ruta de la API.
 
 - Quien vende va a elegir la palabra para lo que vende, en singular y en plural. El valor por defecto va a ser "Product" / "Products". Se va a mostrar tal como se tipeó y nunca se va a traducir, porque es un dato propio de quien vende.
-- El código, los tests y los docs van a decir Product, y la ruta de la API va a pasar a ser `/api/products`. Las columnas que referencian el id de una Variety van a seguir siendo `variety_id` hasta #75 (ADR-0061). Las rutas del front bajo `/varieties/*` no se van a mover.
+- El código, los tests y los docs van a decir **Product**, y la ruta de la API va a pasar a ser `/api/products`. Las columnas que referencian el id de una Variety van a seguir siendo `variety_id` hasta #75 (ADR-0061). Las rutas del front bajo `/varieties/*` no se van a mover.
 - Va a reemplazar: "**Variety**: un nombre, sin espacios al principio ni al final, con los espacios internos colapsados, de hasta 60 caracteres. Renombrarla conserva sus precios. Las Varieties se listan por nombre." y el título de la capacidad, "Las Varieties que vende un **Business** y el historial de precios de cada una".
 
 ### Categorías, subcategorías y atributos
@@ -653,7 +653,7 @@ Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split
 
 Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte units.
 
-- Cada Product va a tener una Unit con un nombre, una etiqueta corta y de 0 a 2 decimales, que se usa para su Stock, su precio, la cantidad vendida, el Bulk minimum y el Low-stock threshold. Un Business va a poder mezclar Units. La Unit se va a bloquear una vez que el Product tenga historial.
+- Cada Product va a tener una **Unit** con un nombre, una etiqueta corta y de 0 a 2 decimales, que se usa para su Stock, su precio, la cantidad vendida, el Bulk minimum y el Low-stock threshold. Un Business va a poder mezclar Units. La Unit se va a bloquear una vez que el Product tenga historial.
 - Una cantidad se va a guardar como un número entero de centésimos, cualquiera sea la Unit; los decimales de la Unit solo van a validar lo ingresado y decidir cómo se muestra (ADR-0056). Las cantidades de Units distintas nunca se van a sumar: una cifra que totaliza cantidades va a mostrar un monto por Unit.
 - Va a reemplazar: "un List price por gramo en pesos enteros", "un Bulk price por gramo con su Bulk minimum en gramos (hasta dos decimales)" y "**Low-stock threshold**: gramos opcionales, mayores que cero, de hasta dos decimales".
 
@@ -668,8 +668,8 @@ Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-an
 
 Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; lo entrega la parte customer-type prices.
 
-- Los Customer types van a reemplazar la marca VIP única: cada tipo va a tener su propio precio por Product, guardado como filas con fecha de vigencia. Las columnas de la marca `vip` y de `vip_price` van a quedar congeladas en su lugar.
-- Va a reemplazar: "un **VIP price** por gramo, en pesos enteros, menor que el List price. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price." y el rechazo "**Un VIP price igual o mayor que el List price**".
+- Los **Customer type**s van a reemplazar la marca VIP única: cada tipo va a tener su propio precio por Product, guardado como filas con fecha de vigencia. Las columnas de la marca `vip` y de `vip_price` van a quedar congeladas en su lugar.
+- Va a reemplazar: "un VIP price por gramo, en pesos enteros, menor que el List price. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price." y el rechazo "**Un VIP price igual o mayor que el List price**".
 - Fuera de alcance: la línea "Otras reglas VIP (un porcentaje sobre el List price); precios promocionales por fecha." se va a dividir. "precios promocionales por fecha" lo va a revertir la parte promotions (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; ver `sales.md`); "Otras reglas VIP (un porcentaje sobre el List price)" va a quedar afuera.
 
 ### El día del negocio
