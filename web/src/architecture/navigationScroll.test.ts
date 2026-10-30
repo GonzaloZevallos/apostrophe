@@ -84,5 +84,12 @@ test('no non-test source of web/src scrolls the page but ScrollSync', () => {
 
   expect(files.length).toBeGreaterThan(50)
   expect(files.some(({ path }) => path === OWNER)).toBe(true)
+  // A known non-owner source is in the scanned set with its real content, so the scan cannot
+  // pass by reading nothing.
+  const routes = files.find(({ path }) => path === 'src/routes.ts')
+  expect(routes?.content).toContain('SCREENS')
+  expect(findScrollers([{ path: 'src/routes.ts', content: `${routes?.content ?? ''}\nwindow.scrollTo(0, 0)` }])).toEqual([
+    'src/routes.ts: scrollTo',
+  ])
   expect(findScrollers(files)).toEqual([])
 })

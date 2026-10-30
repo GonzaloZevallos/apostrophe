@@ -22,8 +22,36 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useLocation, useNavigationType } from 'react-router'
 import { LOADING_MARKER } from '../components/Loading'
 import { decideScroll, type PlaceInHistory } from './scrollPlan'
-import { CEILING_MS, MAX_REMEMBERED, SETTLE_FRAMES, windowScroller, type Scroller } from './scroller'
+import { CEILING_MS, MAX_REMEMBERED, SETTLE_FRAMES, type Scroller } from './scroller'
 import { useViewport } from './useViewport'
+
+/** The window as a scroller: the only place the page is actually scrolled. */
+const INPUT_EVENTS = ['touchstart', 'wheel', 'keydown'] as const
+
+const windowScroller: Scroller = {
+  y: () => window.scrollY,
+  maxY: () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight),
+  height: () => document.documentElement.scrollHeight,
+  setY: (top) => window.scrollTo({ top, left: 0, behavior: 'instant' }),
+  onScroll: (listener) => {
+    window.addEventListener('scroll', listener, { passive: true })
+    return () => window.removeEventListener('scroll', listener)
+  },
+  onInput: (listener) => {
+    for (const type of INPUT_EVENTS) window.addEventListener(type, listener, { passive: true })
+    return () => {
+      for (const type of INPUT_EVENTS) window.removeEventListener(type, listener)
+    }
+  },
+  frame: (callback) => {
+    const id = window.requestAnimationFrame(callback)
+    return () => window.cancelAnimationFrame(id)
+  },
+  after: (ms, callback) => {
+    const id = window.setTimeout(callback, ms)
+    return () => window.clearTimeout(id)
+  },
+}
 
 function remember(offsets: Map<string, number>, entry: string, offset: number): void {
   offsets.delete(entry)
@@ -50,7 +78,7 @@ function waitThenScroll(scroller: Scroller, target: number, onEnd: (how: WaitEnd
   const loading = () => document.querySelector(LOADING_MARKER) !== null
 
   const offInput = scroller.onInput(() => end('input'))
-  const cancelCeiling = scroller.after(CEILING_MS, () => end(loading() ? 'ceiling' : 'applied'))
+  const cancelCeiling = scroller.after(CEILING_MS, () => end('ceiling'))
 
   function stop(): void {
     if (stopped) return
@@ -63,7 +91,7 @@ function waitThenScroll(scroller: Scroller, target: number, onEnd: (how: WaitEnd
   function end(how: WaitEnd): void {
     if (stopped) return
     stop()
-    if (how === 'applied') scroller.scrollTo(Math.min(target, scroller.maxY()))
+    if (how === 'applied') scroller.setY(Math.min(target, scroller.maxY()))
     onEnd(how)
   }
   function step(): void {
@@ -94,6 +122,12 @@ export default function ScrollSync({ scroller = windowScroller }: { scroller?: S
   const action = useNavigationType()
   const viewport = useViewport()
   const sync = useRef<Sync | null>(null)
+  // The viewport is read when the entry changes; a resize alone must not re-run that effect, or
+  // it would cancel a wait that is pending.
+  const viewportNow = useRef(viewport)
+  useLayoutEffect(() => {
+    viewportNow.current = viewport
+  }, [viewport])
 
   useEffect(() => {
     history.scrollRestoration = 'manual'
@@ -121,7 +155,7 @@ export default function ScrollSync({ scroller = windowScroller }: { scroller?: S
     }
     if (current.entry === entry) return stopWaiting
 
-    const decision = decideScroll(current.place, place, action, viewport)
+    const decision = decideScroll(current.place, place, action, viewportNow.current)
     const previous = current.offsets.get(current.entry)
     // The target's offset is read before the entry switches.
     const stored = current.offsets.get(entry)
@@ -133,14 +167,14 @@ export default function ScrollSync({ scroller = windowScroller }: { scroller?: S
       return stopWaiting
     }
     if (decision === 'top') {
-      scroller.scrollTo(0)
+      scroller.setY(0)
       remember(current.offsets, entry, 0)
       return stopWaiting
     }
     const target = decision === 'restore' ? (stored ?? 0) : (previous ?? scroller.y())
     remember(current.offsets, entry, target)
     if (target <= 0) {
-      scroller.scrollTo(0)
+      scroller.setY(0)
       return stopWaiting
     }
     current.pending = true
@@ -150,7 +184,7 @@ export default function ScrollSync({ scroller = windowScroller }: { scroller?: S
       if (how === 'input') remember(current.offsets, entry, scroller.y())
     })
     return stopWaiting
-  }, [location, action, scroller, viewport])
+  }, [location, action, scroller])
 
   return null
 }

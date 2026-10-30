@@ -4,7 +4,7 @@
  * routes: what is under test is what the owner does to the scroll on each kind of move.
  */
 
-import { act, render } from '@testing-library/react'
+import { act, cleanup, render } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -30,7 +30,7 @@ function fakeScroller(initialHeight = 2000) {
     y: () => state.y,
     maxY,
     height: () => state.height,
-    scrollTo: (top) => {
+    setY: (top) => {
       scrolls.push(top)
       state.y = Math.min(Math.max(0, top), maxY())
       scrollListeners.forEach((listener) => listener())
@@ -93,6 +93,9 @@ function fakeScroller(initialHeight = 2000) {
     },
     get y() {
       return state.y
+    },
+    get listeners() {
+      return scrollListeners.size + inputListeners.size
     },
     get pendingFrames() {
       return frames.length
@@ -374,6 +377,66 @@ test('the ceiling gives up a wait whose page is still loading, without scrolling
   })
 
   expect(fake.y).toBe(0)
+  expect(fake.pendingFrames).toBe(0)
+})
+
+test('the ceiling never applies the offset when the page never held still, even with no Loading on it', async () => {
+  const fake = fakeScroller()
+  const router = mount(fake)
+  fake.userScroll(300)
+  await go(router, '/b')
+  await go(router, -1)
+
+  for (let index = 0; index < 40; index += 1) {
+    fake.setHeight(2000 + index)
+    await frames(fake, 1)
+  }
+  await act(async () => {
+    fake.elapse(CEILING_MS)
+  })
+
+  expect(fake.scrolls).toEqual([0])
+  expect(fake.y).toBe(0)
+  expect(fake.pendingFrames).toBe(0)
+})
+
+test('a change of viewport during the wait does not lose the restore', async () => {
+  let matches = false
+  const listeners = new Set<() => void>()
+  vi.stubGlobal('matchMedia', () => ({
+    get matches() {
+      return matches
+    },
+    addEventListener: (_type: string, listener: () => void) => listeners.add(listener),
+    removeEventListener: (_type: string, listener: () => void) => listeners.delete(listener),
+  }))
+  const fake = fakeScroller()
+  const router = mount(fake)
+  fake.userScroll(300)
+  await go(router, '/b')
+  await go(router, -1)
+
+  matches = true
+  await act(async () => {
+    listeners.forEach((listener) => listener())
+  })
+  await frames(fake, SETTLE_FRAMES + 1)
+
+  expect(fake.y).toBe(300)
+})
+
+test('unmounting during a wait removes every listener and scrolls nothing', async () => {
+  const fake = fakeScroller()
+  const router = mount(fake)
+  fake.userScroll(300)
+  await go(router, '/b')
+  await go(router, -1)
+
+  cleanup()
+  await frames(fake, 5)
+
+  expect(fake.scrolls).toEqual([0])
+  expect(fake.listeners).toBe(0)
   expect(fake.pendingFrames).toBe(0)
 })
 
