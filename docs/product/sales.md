@@ -140,7 +140,7 @@ Criterios de éxito, Sale bill:
 - **Nota**:
   - Opcional. Se recorta y admite hasta 200 caracteres; vacía después de recortar significa que no hay.
   - No es única y nunca se busca, se loguea ni se repite en errores.
-- **List price**:
+- **Lista**:
   - Filtra por rango de fechas. Los dos extremos son opcionales e inclusivos; un extremo que falta no tiene límite.
   - Un rango invertido da vacío.
   - Orden: la fecha más nueva primero, después la registrada más recientemente primero.
