@@ -175,14 +175,14 @@ describe('parseRouteRegistry', () => {
       parseRouteRegistry({
         registry: [
           { path: HOME, kind: 'root' },
-          { path: '/shop/{id}', kind: 'card', parent: '/shop', computer_parent: HOME },
+          { path: '/shop/{id}', kind: 'card', parent: '/shop', computer_parent: HOME, archived_parent: '/shop/old' },
           { path: '/shop/new', kind: 'form', parent: '/shop' },
         ],
       }),
     ).toEqual([
-      { path: HOME, kind: 'root', parent: null },
-      { path: '/shop/{id}', kind: 'card', parent: '/shop' },
-      { path: '/shop/new', kind: 'form', parent: '/shop' },
+      { path: HOME, kind: 'root', parent: null, computerParent: null, archivedParent: null },
+      { path: '/shop/{id}', kind: 'card', parent: '/shop', computerParent: HOME, archivedParent: '/shop/old' },
+      { path: '/shop/new', kind: 'form', parent: '/shop', computerParent: null, archivedParent: null },
     ])
   })
 
@@ -193,6 +193,8 @@ describe('parseRouteRegistry', () => {
     ['an invalid kind', { registry: [{ path: '/x', kind: 'sheet' }] }, /kind/],
     ['a parent that is not text', { registry: [{ path: '/x', kind: 'form', parent: 3 }] }, /parent/],
     ['a form without a parent', { registry: [{ path: '/x', kind: 'form' }] }, /parent/],
+    ['a computer parent that is not text', { registry: [{ path: '/x', kind: 'root', computer_parent: 1 }] }, /computer_parent is not text/],
+    ['an archived parent that is not text', { registry: [{ path: '/x', kind: 'card', parent: '/y', archived_parent: {} }] }, /archived_parent is not text/],
   ])('refuses %s', (_name, raw, message) => {
     expect(() => parseRouteRegistry(raw)).toThrow(message)
   })
@@ -201,5 +203,6 @@ describe('parseRouteRegistry', () => {
     expect(ROUTE_REGISTRY.length).toBeGreaterThan(30)
     for (const route of ROUTE_REGISTRY) expect(route.path.startsWith(HOME)).toBe(true)
     expect(ROUTE_REGISTRY.map((route) => route.path)).toContain(`${HOME}withdrawals${HOME}{id}${HOME}edit`)
+    expect(ROUTE_REGISTRY.map((route) => route.path)).toContain(`${HOME}login`)
   })
 })

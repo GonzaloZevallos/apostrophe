@@ -209,9 +209,23 @@ export interface RouteRegistryEntry {
   path: string
   kind: 'root' | 'card' | 'form'
   parent: string | null
+  /** The parent on a computer, when it is not the phone's. */
+  computerParent: string | null
+  /** The parent of an archived record, when it is not `parent` (a card only). */
+  archivedParent: string | null
 }
 
-/** `registry[]` (path, kind, parent), validated. It is a different list from `screens[]`. */
+function optionalText(row: Record<string, unknown>, key: string, path: string): string | null {
+  const value = row[key]
+  if (value === undefined) return null
+  if (typeof value !== 'string') throw new Error(`${path}: ${key} is not text`)
+  return value
+}
+
+/**
+ * `registry[]` (path, kind, parents), validated. It is a different list from `screens[]`, and
+ * this is the one place in `web/src` that reads it: everything else takes `ROUTE_REGISTRY`.
+ */
 export function parseRouteRegistry(raw: unknown): readonly RouteRegistryEntry[] {
   const list = asRecord(raw, 'registry')['registry']
   if (!Array.isArray(list)) throw new Error('registry has no registry list')
@@ -225,10 +239,15 @@ export function parseRouteRegistry(raw: unknown): readonly RouteRegistryEntry[] 
     if (kind !== 'root' && kind !== 'card' && kind !== 'form') {
       throw new Error(`${path}: kind is not root, card or form`)
     }
-    const parent = row['parent']
-    if (parent !== undefined && typeof parent !== 'string') throw new Error(`${path}: parent is not text`)
-    if (kind !== 'root' && parent === undefined) throw new Error(`${path}: a ${kind} needs a parent`)
-    return { path, kind, parent: parent ?? null }
+    const parent = optionalText(row, 'parent', path)
+    if (kind !== 'root' && parent === null) throw new Error(`${path}: a ${kind} needs a parent`)
+    return {
+      path,
+      kind,
+      parent,
+      computerParent: optionalText(row, 'computer_parent', path),
+      archivedParent: optionalText(row, 'archived_parent', path),
+    }
   })
 }
 

@@ -10,24 +10,10 @@ import { expect, test } from 'vitest'
 import { ROUTE_REGISTRY } from './mobile-standard/registry.ts'
 import { flattenRoutes, NOT_SCREENS, patternsMatch, redirectExcuses, unregistered } from './mobile-standard/routeCoverage.ts'
 import { router } from './router'
-import { CATCH_ALL, OUTSIDE } from './routes.ts'
 
 const registryPaths = ROUTE_REGISTRY.map((entry) => entry.path)
-/**
- * FINDING: `registry[]` does not list the three public pages (`/login`, `/invitation/:token`,
- * `/reset/:token`); `routes.ts` declares them as `OUTSIDE` Shell on purpose, and
- * `routes.test.ts` pins `registry[]` to `SCREENS` one for one (so adding them there fails it).
- * They are excused here from `OUTSIDE` itself, not from a hand-kept list: it can only follow the
- * router's own declaration. Remove this once `registry[]` names them.
- */
-const PUBLIC_PAGES: Readonly<Record<string, string>> = Object.fromEntries(
-  OUTSIDE.filter((entry) => entry.path !== CATCH_ALL).map((entry) => [
-    entry.path,
-    'public page outside Shell: declared in routes.ts OUTSIDE, absent from registry[]',
-  ]),
-)
 // No front code redirects any more (src/routes.ts), so the redirect table is empty.
-const excused = [NOT_SCREENS, redirectExcuses([]), PUBLIC_PAGES]
+const excused = [NOT_SCREENS, redirectExcuses([])]
 const patterns = flattenRoutes(router.routes)
 
 test('every route the router renders is a registry[] path or excused', () => {

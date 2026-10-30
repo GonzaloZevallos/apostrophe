@@ -8,6 +8,7 @@ import {
   assertSelectedNeeds,
   sectionOccurrences,
 } from '../../../scripts/design/screens.mjs'
+import { ROUTE_REGISTRY } from '../mobile-standard/registry'
 import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
 import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
@@ -783,7 +784,7 @@ describe('the archived variety rows of the real screens.json', () => {
   ]
 
   // The Archivadas list's own path, read from the registry's list row.
-  const listPath = screens.registry.find((r) => r.kind === 'card' && r.path.endsWith('archived'))!.path
+  const listPath = ROUTE_REGISTRY.find((r) => r.kind === 'card' && r.path.endsWith('archived'))!.path
 
   it('has each key exactly once', () => {
     for (const key of keys) {
@@ -822,8 +823,8 @@ describe('the archived variety rows of the real screens.json', () => {
   })
 
   it('keeps archived_parent as the registry row it was', () => {
-    const row = screens.registry.find((r) => r.path === '/varieties/{id}')
-    expect(row?.archived_parent).toBe(listPath)
+    const row = ROUTE_REGISTRY.find((r) => r.path === '/varieties/{id}')
+    expect(row?.archivedParent).toBe(listPath)
   })
 })
 
