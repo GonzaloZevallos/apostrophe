@@ -55,3 +55,22 @@ type-checked locally failed on GitHub's runner.
   `ci:`, one problem per ungated holder, so an unlisted e2e shard is refused.
 - **e2e gates unconditionally** (no `if:`, no `needs:`) until GH-448 part 2 decides how a selectively skipped
   e2e is read (ADR-0064, rule 7).
+
+## Amendment (GH-476): gating is the `needs` closure of `ci:`, and `CI_FORMS` ties a check to its CI form
+
+- **Gated jobs.** `ci: [ci-ok]` names one job. The gated jobs are its transitive `needs` closure, and
+  `ci-ok` must `need` every other job and carry `if: always()` (ADR-0067). `PARKED` and its tests are gone:
+  e2e gates again, so `npm --prefix web run e2e` is a check of the full tier and of CI.
+- **`CI_FORMS`.** A check that CI runs in another form (pytest in area shards, vitest with coverage and a
+  selection, e2e in `--shard=i/N`) has an entry `check -> exact run: line` in `tests/test_stack_ci.py`. A
+  check is either an exact step of one gated job or has a `CI_FORMS` entry that some gated job runs, never
+  both; a `CI_FORMS` key that is not a check, or a value no gated job runs, is refused.
+- **What proves a `CI_FORMS` check.** The check is proven when every shard the `changes` job selected
+  either succeeded or was skipped on a `"false"` flag, which is what `ci_verdict.py` reads. `tests` and
+  `tests-fast` both map to the pytest shard command: the `always` shard holds every top-level
+  `tests/test_*.py` plus `architecture` and `migrations`, which covers every path `tests-fast` names.
+- **Supersedes the GH-533 amendment above where they differ.** "Local web-e2e stays off" no longer holds:
+  `web-e2e: npm --prefix web run e2e` is restored in `checks` and `affected_checks` of `.agentic/stack.yaml`
+  (full tier; not in `delivery_checks`). `e2e` is no longer `CI_ONLY` (it is a check
+  with a `CI_FORMS` entry), `ci:` is `[ci-ok]`, and e2e is skipped, never unconditional: `ci-ok` reads the
+  `changes` flag (ADR-0064, rule 7; ADR-0067). The every-holder rule for `CI_ONLY` commands stays.

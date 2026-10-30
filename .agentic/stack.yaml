@@ -20,9 +20,9 @@ checks:
   web-lint: npm --prefix web run lint
   web-tests: npm --prefix web test
   web-build: npm --prefix web run build
-  # web-e2e is off locally (owner, 2026-10-26); GitHub's `e2e` job gates every merge, see
-  # docs/product/gate.md. Restore with the line below when the owner says so.
-  # web-e2e: npm --prefix web run e2e
+  # web-e2e is back (GH-476, after #428): it is a check of the full tier and of CI's `e2e` job,
+  # and it gates the merge through `ci-ok`. It is not in `delivery_checks`.
+  web-e2e: npm --prefix web run e2e
 # `parallel_checks`: the gate runs the checks above at once (agentic-system ADR-0044),
 # so a gate takes the slowest check instead of the sum (passing-gate median 16.1 min, 2026-10-12
 # to 26). Shared-state inventory, 2026-10-26, 16 cores, each check run alone: every cache has one
@@ -57,7 +57,8 @@ parallel_checks: true
 # the subtasks are integrated, not at the Developer's delivery. `web-tests` stays in: on a
 # web diff its affected form took 83.9-90.4 s (loads 41.00 -> 38.37 and 53.46 -> 47.99), and
 # an app-only diff selects nothing, so it reruns in full (180.3 s alone, load 40.89 -> 41.12).
-# `web-e2e` is not here (suspended, PR #434). The shared-state inventory above still holds:
+# `web-e2e` is not here: it runs in the full tier and in CI (GH-476). `web-build` leaves the
+# fast tier too (GH-476); it still runs in CI's `web` job and in the full tier. The shared-state inventory above still holds:
 # `tests-fast` carries `-p no:cacheprovider`, so `.pytest_cache` keeps one writer (`tests`).
 # Read at a task's base, like every key here.
 delivery_checks:
@@ -67,14 +68,13 @@ delivery_checks:
   - web-types
   - web-lint
   - web-tests
-  - web-build
 # Affected-only forms (agentic-system ADR-0046, ours ADR-0039): the Developer's and the
 # reviewer's gates run these with `{base}` replaced by the task base sha, and rerun the
 # check in full when one fails. The merge gate and CI always run the full commands above.
 # Each form exits non-zero when it selects nothing. `tests` (pytest) has none, on purpose.
 affected_checks:
   web-tests: uv run --no-project python scripts/affected.py vitest {base}
-  # web-e2e: uv run --no-project python scripts/affected.py e2e {base}
+  web-e2e: uv run --no-project python scripts/affected.py e2e {base}
 # Paths whose change can affect anything, so a gate runs everything. Here `*` crosses `/`.
 affected_fallback:
   - .github/workflows/*
@@ -100,6 +100,7 @@ affected_fallback:
   - scripts/affected.py
   - scripts/ci_areas.py
   - scripts/ci_changes.py
+  - scripts/ci_vitest.py
   - scripts/e2e_screen_specs.json
   - scripts/__init__.py
 # The product's design (agentic-system ADR-0040): the static prototype the design roles walk,
@@ -128,11 +129,13 @@ forbidden:
     reason: >-
       this silences TypeScript or the linter. CODING_STANDARDS.md section 6: fix the
       code instead; nothing is silenced in this product, front included.
-# `ci`: the check-run names of ci.yml that gate a merge (agentic-system ADR-0045, GH-216
+# `ci`: the check-run name of ci.yml that gates a merge (agentic-system ADR-0045, GH-216
 # amendment): with it, `agentic merge` decides from GitHub's CI on the reviewed head instead of
-# rerunning every check locally. `test` and `web` of `.github/workflows/ci.yml` gate the merge and
-# together run every check above in full (pytest, ruff, mypy; web typecheck, lint, test, build);
-# `docs` gates too and runs no declared check: the generator's stale check, the Mermaid render,
-# the offline link check and the OpenAPI breaking-change check (ADR-0066). The `e2e` job runs on
-# every pull request and gates too (docs/product/gate.md, "Cuándo se integra un pull request").
-ci: [test, web, docs, e2e]
+# rerunning every check locally. Only `ci-ok` is named: it `needs` every other job (changes,
+# checks, web, docs, pytest, vitest, e2e, coverage) and reads the `changes` flags, so a suite
+# skipped as unaffected counts as passed and a suite that failed or was skipped without a "false"
+# flag does not. Every check below runs in a job `ci-ok` needs, in full or in shards
+# (tests/test_stack_ci.py, CI_FORMS; ADR-0054, ADR-0067). `docs` runs no declared check: the
+# generator's stale check, the Mermaid render, the offline link check and the OpenAPI
+# breaking-change check (ADR-0066). e2e gates again (#428 fixed the flake).
+ci: [ci-ok]

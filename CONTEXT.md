@@ -442,7 +442,7 @@ El único ícono, el mismo en todas partes, puesto junto a la oración de un avi
 _Avoid_: warning icon, alert icon, badge, error icon
 
 **Gate**:
-Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e, corridos como jobs del CI de GitHub; `agentic merge` rechaza un head salvo que cada job listado en `ci:` esté en verde, e2e incluido. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día; un flake es un defecto del Gate con su propio issue, nunca ruido. En la app: no tiene palabra propia.
+Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e, corridos como jobs del CI de GitHub; `agentic merge` rechaza un head salvo que cada job listado en `ci:` esté en verde, e2e incluido. En un pull request cada suite corre solo cuando el cambio la afecta, y una suite omitida por no afectada cuenta como pasada; todo push a master las corre todas. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día; un flake es un defecto del Gate con su propio issue, nunca ruido. En la app: no tiene palabra propia.
 _Avoid_: pipeline, build, test run
 
 **Tappable notice**:

@@ -44,7 +44,8 @@ Baseline = Mapping[str, float]
 
 @dataclass(frozen=True)
 class Selection:
-    """What the `changes` job selected: the three suite flags and the areas.
+    """What the `changes` job selected: the three suite flags, whether vitest ran in full and
+    how many files it was given when it did not, and the areas.
 
     `areas` is every pytest area; `selected` is the areas whose tests sat in a shard.
     """
@@ -52,12 +53,14 @@ class Selection:
     pytest: bool
     vitest: bool
     e2e: bool
+    vitest_all: bool
+    vitest_files: int
     areas: frozenset[str]
     selected: frozenset[str]
 
     @property
     def is_full(self) -> bool:
-        return self.pytest and self.vitest and self.areas <= self.selected
+        return self.pytest and self.vitest and self.vitest_all and self.areas <= self.selected
 
 
 def _flag(value: object) -> bool:
@@ -65,16 +68,23 @@ def _flag(value: object) -> bool:
 
 
 def parse_selection(data: JsonObject) -> Selection:
-    """Reads the selection document (flags as `"true"`/`"false"` strings or booleans)."""
+    """Reads the selection document (flags as `"true"`/`"false"` strings or booleans). A missing
+    `vitest_all` or `vitest_files` reads as a partial vitest run: the report fails closed."""
     areas = data.get("areas")
     selected = data.get("selected")
     return Selection(
         pytest=_flag(data.get("pytest")),
         vitest=_flag(data.get("vitest")),
         e2e=_flag(data.get("e2e")),
+        vitest_all=_flag(data.get("vitest_all")),
+        vitest_files=_count(data.get("vitest_files")),
         areas=frozenset(_strings(areas)),
         selected=frozenset(_strings(selected)),
     )
+
+
+def _count(value: object) -> int:
+    return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else 0
 
 
 def _strings(value: object) -> list[str]:
@@ -160,13 +170,14 @@ def report(
     """Markdown with the totals per suite and the lines covered per `app/<area>`.
 
     Deltas against `baseline` appear only on a full run; a partial run says so and has no
-    delta column.
+    delta column. A vitest run that was not in full reads `partial (N files)`, never a percentage.
     """
     deltas = baseline if selection.is_full else None
     pytest_total, area_percentages = (
         pytest_percentages(pytest_json) if pytest_json is not None else (None, {})
     )
     vitest_total = vitest_percentage(vitest_summary) if vitest_summary is not None else None
+    partial = f"partial ({selection.vitest_files} files)" if not selection.vitest_all else None
 
     lines = [MARKER, "## Coverage", ""]
     if not selection.is_full:
@@ -190,8 +201,8 @@ def report(
     lines.append(
         _row(
             VITEST_SCOPE,
-            _suite_cell(selection.vitest, vitest_summary is not None, vitest_total),
-            vitest_total if selection.vitest else None,
+            _suite_cell(selection.vitest, vitest_summary is not None, vitest_total, partial),
+            vitest_total if selection.vitest and selection.vitest_all else None,
             deltas,
         )
     )
@@ -207,12 +218,14 @@ def report(
     return "\n".join(lines) + "\n"
 
 
-def _suite_cell(ran: bool, has_report: bool, percentage: float | None) -> str:
+def _suite_cell(
+    ran: bool, has_report: bool, percentage: float | None, partial: str | None = None
+) -> str:
     if not ran:
         return NOT_RUN
     if not has_report:
         return "no report"
-    return _cell(percentage)
+    return _cell(percentage) if partial is None else partial
 
 
 def baseline_markdown(pytest_json: JsonObject | None, vitest_summary: JsonObject | None) -> str:

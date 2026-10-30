@@ -8,9 +8,10 @@ and prints. Lines carry job names and results, nothing else.
 - `changes` must be `success`, or the verdict fails before it reads any flag.
 - A gating suite (`SUITES`) passes on `success`; on `skipped` only when its `changes` flag
   is "false". A "true" or missing flag, `failure` and `cancelled` fail.
-- `ALWAYS_JOBS` must be `success`.
-- `WARN_JOBS` pass on `success`; any other result is a warning, except `cancelled`, which
-  fails.
+- `ALWAYS_JOBS` (checks, web, docs) must be `success`.
+- pytest, vitest and e2e are treated alike: none is parked or warning-only.
+- `WARN_JOBS` (coverage) pass on `success`; any other result is a warning, except `cancelled`,
+  which fails.
 - A job in no map fails by name.
 """
 
@@ -24,7 +25,7 @@ from typing import cast
 
 # job id -> the `changes` output flag that says whether the suite had to run.
 SUITES: dict[str, str] = {"pytest": "pytest", "vitest": "vitest", "e2e": "e2e"}
-ALWAYS_JOBS = ("checks", "web")
+ALWAYS_JOBS = ("checks", "web", "docs")
 WARN_JOBS = ("coverage",)
 CHANGES = "changes"
 
@@ -68,7 +69,7 @@ def _always(name: str, result: str) -> tuple[bool, str]:
 
 def _warning(name: str, result: str) -> tuple[bool, str]:
     if result == "success":
-        return True, f"{name}: {result}"
+        return True, f"{name}: success"
     if result == "cancelled":
         return False, f"{name}: cancelled"
     return True, f"{name}: {result} (warning)"

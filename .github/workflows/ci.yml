@@ -5,8 +5,43 @@ on:
     branches: [master]
   pull_request:
 
+permissions:
+  contents: read
+
+# A newer push to a pull request cancels the older run; a push to master never does (ADR-0067).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  test:
+  # Which suites this change affects (ADR-0064). The event reaches the script through env:.
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      pytest: ${{ steps.select.outputs.pytest }}
+      vitest: ${{ steps.select.outputs.vitest }}
+      e2e: ${{ steps.select.outputs.e2e }}
+      vitest_changed: ${{ steps.select.outputs.vitest_changed }}
+      vitest_all: ${{ steps.select.outputs.vitest_all }}
+      pytest_matrix: ${{ steps.select.outputs.pytest_matrix }}
+      vitest_files: ${{ steps.select.outputs.vitest_files }}
+      e2e_specs: ${{ steps.select.outputs.e2e_specs }}
+      e2e_shards: ${{ steps.select.outputs.e2e_shards }}
+      e2e_matrix: ${{ steps.select.outputs.e2e_matrix }}
+      e2e_args: ${{ steps.select.outputs.e2e_args }}
+      selection: ${{ steps.select.outputs.selection }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - id: select
+        env:
+          EVENT: ${{ github.event_name }}
+        run: uv run --no-project python -m scripts.ci_changes "$EVENT" >> "$GITHUB_OUTPUT"
+  checks:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -15,8 +50,6 @@ jobs:
           version: "0.12.13"
       - run: uv venv --python 3.13
       - run: uv sync --locked --extra dev
-      - run: uv run --no-project pytest -n 8
-      - run: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py
       - run: uv run --no-project ruff check .
       - run: uv run --no-project mypy app tests scripts
   web:
@@ -32,8 +65,66 @@ jobs:
       - run: npx --prefix web playwright install --with-deps chromium
       - run: npm --prefix web run typecheck
       - run: npm --prefix web run lint
-      - run: npm --prefix web test
       - run: npm --prefix web run build
+  pytest:
+    needs: changes
+    if: needs.changes.outputs.pytest == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.changes.outputs.pytest_matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - run: uv venv --python 3.13
+      - run: uv sync --locked --extra dev
+      - run: uv run --no-project pytest -n auto --cov --cov-report= -- $PATHS
+        env:
+          COVERAGE_FILE: .coverage.${{ matrix.shard }}
+          PATHS: ${{ matrix.paths }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-pytest-${{ matrix.shard }}
+          path: .coverage.${{ matrix.shard }}
+          include-hidden-files: true
+          retention-days: 14
+  vitest:
+    needs: changes
+    if: needs.changes.outputs.vitest == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - run: uv venv --python 3.13
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm --prefix web ci --no-fund --no-audit
+      - run: npx --prefix web playwright install --with-deps chromium
+      - run: npx --prefix web vitest list --root web --changed=HEAD^1 --filesOnly > "$RUNNER_TEMP/vitest-listed.txt"
+      - id: vitest-args
+        env:
+          VITEST_ALL: ${{ needs.changes.outputs.vitest_all }}
+          VITEST_CHANGED: ${{ needs.changes.outputs.vitest_changed }}
+          VITEST_FILES: ${{ needs.changes.outputs.vitest_files }}
+        run: uv run --no-project python -m scripts.ci_vitest "$RUNNER_TEMP/vitest-listed.txt" >> "$GITHUB_OUTPUT"
+      - run: npm --prefix web test -- --coverage $VITEST_ARGS
+        env:
+          VITEST_ARGS: ${{ steps.vitest-args.outputs.args }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-vitest
+          path: web/coverage/coverage-summary.json
+          include-hidden-files: true
+          retention-days: 14
   docs:
     runs-on: ubuntu-24.04
     steps:
@@ -60,7 +151,13 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
   e2e:
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.changes.outputs.e2e_matrix) }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -76,10 +173,76 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm --prefix web ci --no-fund --no-audit
       - run: npx --prefix web playwright install --with-deps chromium
-      - run: npm --prefix web run e2e
+      - run: npm --prefix web run e2e -- --shard="$SHARD" $E2E_ARGS
+        env:
+          SHARD: ${{ matrix.shard }}/${{ needs.changes.outputs.e2e_shards }}
+          E2E_ARGS: ${{ needs.changes.outputs.e2e_args }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: e2e-test-results
+          name: e2e-test-results-${{ matrix.shard }}
           path: web/test-results/
           retention-days: 14
+  # Reported, never gated: a failure here is a warning in ci-ok (ADR-0067).
+  coverage:
+    needs: [changes, pytest, vitest]
+    if: always()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - run: uv venv --python 3.13
+      - run: uv sync --locked --extra dev
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: coverage-*
+          path: coverage-data
+      - run: printf '%s' "$SELECTION" > selection.json
+        env:
+          SELECTION: ${{ needs.changes.outputs.selection }}
+      - id: combine
+        if: needs.changes.outputs.pytest == 'true'
+        continue-on-error: true
+        run: uv run --no-project coverage combine coverage-data/coverage-pytest-*/ && uv run --no-project coverage json -o coverage-data/coverage.json
+      - run: uv run --no-project python scripts/ci_coverage.py report --selection selection.json --pytest-json coverage-data/coverage.json --vitest-summary coverage-data/coverage-vitest/coverage-summary.json --baseline docs/ci/coverage-baseline.md > coverage-report.md
+      - run: cat coverage-report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage-report.md
+            coverage-data/coverage.json
+          include-hidden-files: true
+          retention-days: 14
+      - if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          MARKER: "<!-- ci-coverage -->"
+        run: |-
+          id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq '.[] | select(.body | contains(env.MARKER)) | .id' | head -n 1); if [ -n "$id" ]; then gh api --method PATCH "repos/$REPO/issues/comments/$id" --field body=@coverage-report.md; else gh api --method POST "repos/$REPO/issues/$PR/comments" --field body=@coverage-report.md; fi
+      - if: needs.changes.outputs.pytest == 'true' && steps.combine.outcome != 'success'
+        env:
+          MATRIX: ${{ needs.changes.outputs.pytest_matrix }}
+        run: |-
+          echo "Coverage failed: no pytest data from $(printf '%s' "$MATRIX" | jq '.include | length') shards (a shard failed before uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" && exit 1
+  ci-ok:
+    needs: [changes, checks, web, docs, pytest, vitest, e2e, coverage]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: printf '%s' "$NEEDS" | uv run --no-project python scripts/ci_verdict.py
