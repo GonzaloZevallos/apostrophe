@@ -80,7 +80,7 @@ Condición forzada: `npx vitest run --sequence.shuffle --sequence.seed=163994 sr
 | (a) rojo en `4c6596b6`, sin arreglo | `8b66b62b71dc241576ead159e9997196665fa406` | 2 failed, 51 passed (2 de 2 corridas) |
 | (b) verde en `4c6596b6` con el arreglo aplicado | `bf21424a5bcdfc70648d9dca04c0fc9b737cd69e` | 53 passed (53) |
 | (c0) base de la tarea sin arreglo: también rojo (master se movió, pero estos dos tests siguen fallando) | `7f4b86b8ab334b84bae14a69cb0a91744707d970` | 2 failed, 52 passed (54) |
-| (c) base de la tarea con el arreglo, mismo seed | árbol del commit de esta entrega (ver `git rev-parse HEAD^{tree}`) | 54 passed (54) |
+| (c) base de la tarea con el arreglo, mismo seed | `6d2f5ed74ae547b0bf29808f5bbb0781a9120a2d` (árbol del commit de esta entrega: el mismo `web/` que se probó, más los archivos de evidencia; la corrida fue sobre el árbol de trabajo antes de confirmar) | 54 passed (54) |
 
 El seed `780320` (el otro rojo del log) con el arreglo en la base: 54 passed (54). Después-tasa por conteo: no se corrió un conjunto grande tras el arreglo; la prueba que vale es el par forzado de arriba. No se ejecutó la suite completa en `shuffle` después del arreglo.
 
