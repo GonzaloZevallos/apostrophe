@@ -73,7 +73,8 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
         f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     ).json()
-    # `variety_id` names the parameter of the routes not yet renamed, `product_id` the renamed ones.
+    # `product_id` fills the `{product_id}` path parameter of the sweep's routes; `variety_id`
+    # is the key the tests below read back.
     return {"variety_id": variety["id"], "product_id": variety["id"], "entry_id": entry["id"]}
 
 
