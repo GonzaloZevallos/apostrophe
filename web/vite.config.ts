@@ -5,13 +5,14 @@ import { defineConfig, searchForWorkspaceRoot } from 'vite'
 // In development, every API path proxies to the backend (`uvicorn`, localhost:8000);
 // everything else is the front's own router, served by Vite itself. The list is the
 // backend's own route segments (`app/*/adapters/router.py`), not derived at this
-// config's load time: a new capability's router adds its segment here too.
+// config's load time: a new capability's router adds its segment here too. `api` is
+// the products router's `/api/products`; `/varieties` is a front path, so Vite serves it.
 const API_SEGMENTS = [
   'auth',
   'business',
   'invitations',
   'customers',
-  'varieties',
+  'api',
   'expenses',
   'expense-categories',
   'health',
