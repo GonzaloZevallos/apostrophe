@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -23,14 +24,16 @@ from scripts.ci_changes import is_safe_path
 
 WEB_PREFIX: Final = "web/"
 WEB_DIR: Final = "/web/"
+_PROJECT_LABEL: Final = re.compile(r"^\[[^\]]*\]\s+")
 
 
 def _web_relative(raw: str) -> str | None:
     """A path below `web/`, `""` for a blank line or an absolute path outside `web/` (dropped), and
     `None` for a path this cannot place (a `..` segment), which makes the run a full one. The
     changes job emits web-relative paths (`src/a.test.ts`), the listing may be absolute, and a
-    repo-relative `web/...` is accepted as well."""
-    path = raw.strip()
+    repo-relative `web/...` is accepted as well. Vitest prefixes each listed file with its project
+    (`[unit] src/a.test.ts`); the label goes."""
+    path = _PROJECT_LABEL.sub("", raw.strip())
     if ".." in path.split("/"):
         return None
     if path.startswith("/"):

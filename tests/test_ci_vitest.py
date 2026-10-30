@@ -33,6 +33,12 @@ def test_an_absolute_listed_path_under_web_but_outside_src_is_normalised() -> No
     assert vitest_args(False, True, [], listed) == ["scripts/i18n/x.test.ts", "src/a.test.ts"]
 
 
+def test_the_project_label_vitest_prints_before_each_listed_file_is_dropped() -> None:
+    listed = ["[unit] src/a.test.ts", "[census] src/design/census.test.ts", "[unit] src/a.test.ts"]
+
+    assert vitest_args(False, True, [], listed) == ["src/a.test.ts", "src/design/census.test.ts"]
+
+
 def test_a_path_that_cannot_be_placed_makes_it_a_full_run() -> None:
     assert vitest_args(False, True, ["src/a.test.ts"], ["../app/x.test.ts"]) == []
     assert vitest_args(False, True, ["src/../../x.test.ts"], []) == []
