@@ -71,6 +71,8 @@ const RULES: Rule[] = [
       [
         // window.scrollTo(...), globalThis?.scrollBy(...), document['scroll'](...)
         String.raw`\b(?:window|globalThis|document)\s*(?:\??\.\s*|\[\s*['"])(?:scrollTo|scrollBy|scroll)['"]?\s*\]?\s*\(`,
+        // document.documentElement.scrollTo(...), document.scrollingElement?.scrollBy(...), body.scroll(...)
+        String.raw`\b(?:documentElement|body|scrollingElement)\s*(?:\??\.\s*|\[\s*['"])(?:scrollTo|scrollBy|scroll)['"]?\s*\]?\s*\(`,
         // document.documentElement.scrollTop = ..., body.scrollLeft += ...
         String.raw`\b(?:documentElement|body|scrollingElement)\s*\??\.\s*scroll(?:Top|Left)\s*(?:[-+*/]?=(?!=))`,
         // history.scrollRestoration, read or written

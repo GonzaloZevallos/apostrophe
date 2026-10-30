@@ -16,12 +16,18 @@ import { useLayoutEffect, useRef } from 'react'
 import { useLocation } from 'react-router'
 import { peekPaymentReturn } from '../paymentReturn'
 import { browserFollowDeps, startFollow } from './scrollFollow'
-import { decisionFor, offsetFor, screenAt } from './scrollPlaces'
+import { decisionFor, noteViewport, offsetFor, screenAt } from './scrollPlaces'
+import { useViewport } from './useViewport'
 
 export default function ScrollSync() {
   const { key, pathname } = useLocation()
   const left = useRef<string | null>(null)
   const follow = useRef<(() => void) | null>(null)
+  const viewport = useViewport()
+
+  useLayoutEffect(() => {
+    noteViewport(viewport)
+  }, [viewport])
 
   useLayoutEffect(() => {
     follow.current?.()

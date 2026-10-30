@@ -7,7 +7,7 @@
 import { createMemoryRouter, type RouteObject } from 'react-router'
 import { afterEach, beforeEach, expect, test } from 'vitest'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE, SALES, pathTo, type Viewport } from '../routes'
-import { decisionFor, offsetFor, resetPlaces, watchScroll, type WatchDeps } from './scrollPlaces'
+import { browserWatchDeps, decisionFor, noteViewport, offsetFor, resetPlaces, watchScroll, type WatchDeps } from './scrollPlaces'
 
 const ROUTES: RouteObject[] = [{ path: '*', element: null }]
 
@@ -126,4 +126,11 @@ test('stopping the watch stops the decisions', async () => {
   stop()
   await router.navigate(CUSTOMERS)
   expect(decisionFor(currentKey(router))).toBeUndefined()
+})
+
+test("the browser deps read the layout ScrollSync last drew", () => {
+  noteViewport('computer')
+  expect(browserWatchDeps().viewport()).toBe('computer')
+  noteViewport('phone')
+  expect(browserWatchDeps().viewport()).toBe('phone')
 })

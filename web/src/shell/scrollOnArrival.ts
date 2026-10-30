@@ -87,7 +87,8 @@ function layoutOf(screen: ScreenId | undefined): TwoPaneLayout | undefined {
   return screen !== undefined && screen in TWO_PANE_LAYOUT ? TWO_PANE_LAYOUT[screen as keyof typeof TWO_PANE_LAYOUT] : undefined
 }
 
-function isOverForm(screen: ScreenId): boolean {
+/** Whether the phone draws `screen` as a form over the page it was opened from (`FORM_DRAWING`). */
+export function isOverForm(screen: ScreenId): boolean {
   return screen in FORM_DRAWING && FORM_DRAWING[screen as FormScreenId] === 'over'
 }
 

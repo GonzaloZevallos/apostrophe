@@ -15,8 +15,7 @@
 import { matchRoutes, type Location, type DataRouter } from 'react-router'
 import { sheetDepth } from '../components/useSheetStack'
 import { isScreenId, SCREENS, screenOf, type ScreenId, type Viewport } from '../routes'
-import { FORM_DRAWING, scrollOnArrival, type Arrival, type NavigationType, type ScrollDecision } from './scrollOnArrival'
-import { COMPUTER_QUERY } from '../format/breakpoints'
+import { isOverForm, scrollOnArrival, type Arrival, type NavigationType, type ScrollDecision } from './scrollOnArrival'
 
 export type Places = ReadonlyMap<string, number>
 
@@ -127,16 +126,16 @@ export interface WatchDeps {
   isPinned: () => boolean
 }
 
-/**
- * The width the computer layout starts at, read from the one shared query. Only `useViewport.ts`
- * may call `matchMedia`, and the tests that mock it export no more than the hook, so the width
- * is compared with `innerWidth` (the same width a `min-width` media query tests).
- */
-const COMPUTER_MIN_PX = Number(/\d+/.exec(COMPUTER_QUERY)?.[0])
+let renderedViewport: Viewport = 'phone'
+
+/** `ScrollSync` tells which layout is drawn; `useViewport.ts` stays the one reader of the media query. */
+export function noteViewport(viewport: Viewport): void {
+  renderedViewport = viewport
+}
 
 export function browserWatchDeps(): WatchDeps {
   return {
-    viewport: () => (window.innerWidth >= COMPUTER_MIN_PX ? 'computer' : 'phone'),
+    viewport: () => renderedViewport,
     scrollY: () => window.scrollY,
     isPinned: () => document.documentElement.matches('html:has(.sheet), html.html--formulario-fijo'),
   }
@@ -166,7 +165,7 @@ function drawnOver(prev: Arrival, next: Arrival, viewport: Viewport): boolean {
   if (prev.pathname === next.pathname) return next.sheetDepth > 0
   if (next.screen === undefined) return false
   if (viewport === 'computer') return screenOf(next.screen).modalOnComputer === true
-  return next.screen in FORM_DRAWING && FORM_DRAWING[next.screen as keyof typeof FORM_DRAWING] === 'over'
+  return isOverForm(next.screen)
 }
 
 /**
