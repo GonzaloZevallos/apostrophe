@@ -259,7 +259,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
 - **El total y la cantidad del período**:
   - el total es la suma de los totales de las ventas mostradas, pagadas o no, envío incluido;
   - la cantidad es de ventas, no de líneas;
-  - el total nunca se presenta como **Profit** ni como caja.
+  - el total nunca se presenta como **Profit** ni como **Cash**.
 - **Cada venta** muestra:
   - su fecha;
   - su cliente, o "No customer" en gris;
@@ -420,7 +420,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Editar una venta: se borra y se registra de nuevo.
 - Pasar una venta de un cliente a otro o sacarle el cliente.
 - Borradores o guardado automático de una venta.
-- Profit y caja en Sales: la capacidad de resultados.
+- Profit y Cash en Sales: la capacidad de resultados.
 - Actualizaciones en vivo entre socias mientras hay un formulario o una lista abiertos.
 - Importar ventas desde la planilla.
 - Un cambio de diseño de línea en el teléfono decidido por medición; desplazamiento horizontal o etiquetas acortadas en las pestañas de período de Sales.
