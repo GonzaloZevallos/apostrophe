@@ -14,6 +14,7 @@
 
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
+import { setPaymentReturn } from '../../paymentReturn'
 import { toast } from '../../components/feedback'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -705,15 +706,16 @@ test('on a phone, a customer\'s card is alone, with no list behind it', async ()
   expect(screen.queryByRole('region', { name: 'Everyone · A–Z' })).not.toBeInTheDocument()
 })
 
-// Back from Record payment the list is at its place (PM option a): the hand-off the link left
-// is applied once the data has rendered, then taken.
-test('after Close the list focuses that customer\'s "Collect" (the scroll is ScrollSync\'s)', async () => {
+// After a save the list focuses its control (PM option a): the hand-off the save left is
+// applied once the data has rendered, then taken.
+test('after a save the list focuses that customer\'s "Collect" (the scroll is ScrollSync\'s)', async () => {
   vi.mocked(fetch).mockImplementation(fetchApp)
   vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
   const router = renderApp()
 
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
   await screen.findByRole('button', { name: 'Save' })
+  setPaymentReturn(customerFixture.id)
   await act(() => router.navigate(-1))
 
   const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
@@ -734,6 +736,7 @@ test('when the customer owes nothing any more the list focuses the "Owed to you"
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
   await screen.findByRole('button', { name: 'Save' })
   paid = true
+  setPaymentReturn(customerFixture.id)
   await act(() => router.navigate(-1))
 
   const nobody = await screen.findByText(NOBODY_OWES)
