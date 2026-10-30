@@ -237,7 +237,7 @@ export function EntryRows({
                 <span className="fila-entrada__costo fila-entrada__costo--sin">{STOCK_TEXT.sinCosto}</span>
               ) : (
                 <>
-                  <span className="fila-entrada__costo cifra-n">{formatMoney(entry.total_cost)}</span>
+                  <span className="fila-entrada__costo cifra-s">{formatMoney(entry.total_cost)}</span>
                   {entry.cost_per_gram !== null && (
                     <span className="fila-entrada__linea2 cifra-n">
                       {formatMoney(entry.cost_per_gram)}

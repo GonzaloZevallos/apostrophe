@@ -208,7 +208,7 @@ export function VarietyRows({
           </span>
           <span className="variedad-fila__pie">
             <span className="variedad-fila__detalle cifra-n">{figuresOf(row, today)}</span>
-            <span className="variedad-fila__precio">
+            <span className={variety.current_price === null ? 'variedad-fila__precio' : 'variedad-fila__precio cifra-s'}>
               {variety.current_price === null
                 ? NO_PRICE_TODAY
                 : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}

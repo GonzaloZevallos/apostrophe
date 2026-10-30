@@ -99,7 +99,7 @@ function StockRow({ variety, today }: { variety: PanelVarietyOut; today: string 
       <span className="fila-stock__encabezado">
         <span className="fila-stock__nombre">{variety.name}</span>
         <span className="fila-stock__cifras">
-          <span className="fila-stock__gramos">
+          <span className="fila-stock__gramos cifra-s">
             {variety.status === 'no_entries' ? '—' : formatGrams(variety.quantity)}
           </span>
           {sideNote !== null && <span className="fila-stock__insignia">{sideNote}</span>}

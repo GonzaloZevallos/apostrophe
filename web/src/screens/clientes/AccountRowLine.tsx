@@ -27,7 +27,7 @@ export default function AccountRowLine({ row, children }: { row: AccountRow; chi
         <span className="cuenta-cliente__sub">{view.sub}</span>
       </div>
       <div className="cuenta-cliente__cifras">
-        <span className="cuenta-cliente__monto cifra-n">{view.own}</span>
+        <span className="cuenta-cliente__monto cifra-s">{view.own}</span>
         <span className={`cuenta-cliente__saldo cifra-n ${BALANCE_TONE_CLASS[view.balanceTone]}`.trim()}>{view.balance}</span>
       </div>
       {children}

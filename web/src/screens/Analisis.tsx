@@ -128,7 +128,7 @@ function ExpenseBreakdownView({
       {breakdown.categories.map((category) => (
         <div key={category.category_id} className="gastos__categoria-cabecera">
           <span className="gastos__categoria-nombre">{category.name}</span>
-          <span className="gastos__categoria-subtotal cifra-n">{formatMoney(category.total)}</span>
+          <span className="gastos__categoria-subtotal cifra-s">{formatMoney(category.total)}</span>
         </div>
       ))}
       <div className="gastos__categoria-cabecera">
@@ -136,7 +136,7 @@ function ExpenseBreakdownView({
           {COMMON_TEXT.flowerPurchases}
           <span className="pie"> {PURCHASES_NOTE}</span>
         </span>
-        <span className="gastos__categoria-subtotal cifra-n">{formatMoney(breakdown.purchases)}</span>
+        <span className="gastos__categoria-subtotal cifra-s">{formatMoney(breakdown.purchases)}</span>
       </div>
     </div>
   )

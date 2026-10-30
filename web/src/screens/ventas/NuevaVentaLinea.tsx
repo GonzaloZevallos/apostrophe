@@ -124,7 +124,7 @@ export default function NuevaVentaLinea({
                 <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
               )}
               <ReglaInsignia rule={preview.rule} />
-              <span className="nueva-venta__linea-total cifra-n">{formatMoney(preview.lineTotal)}</span>
+              <span className="nueva-venta__linea-total cifra-s">{formatMoney(preview.lineTotal)}</span>
             </div>
           )
         )}
@@ -232,7 +232,7 @@ export default function NuevaVentaLinea({
             <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
           )}
           <ReglaInsignia rule={preview.rule} />
-          <span className="nueva-venta__linea-total cifra-n">{formatMoney(preview.lineTotal)}</span>
+          <span className="nueva-venta__linea-total cifra-s">{formatMoney(preview.lineTotal)}</span>
         </div>
       )}
       {canRemove && (

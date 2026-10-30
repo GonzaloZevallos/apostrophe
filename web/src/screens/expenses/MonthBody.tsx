@@ -49,7 +49,7 @@ export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
                 <div key={category.id} className="gastos__categoria">
                   <div className="gastos__categoria-cabecera">
                     <span className="gastos__categoria-nombre">{category.name}</span>
-                    <span className="gastos__categoria-subtotal cifra-n">{formatMoney(category.subtotal)}</span>
+                    <span className="gastos__categoria-subtotal cifra-s">{formatMoney(category.subtotal)}</span>
                   </div>
                   <span className="gastos__barra" aria-hidden="true">
                     <span
@@ -79,7 +79,7 @@ export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
                 <span className="fila-gasto__categoria">{categoryName}</span>
                 <span className="fila-gasto__texto">{expense.detail}</span>
               </span>
-              <span className="fila-gasto__monto cifra-n">{formatMoney(expense.amount)}</span>
+              <span className="fila-gasto__monto cifra-s">{formatMoney(expense.amount)}</span>
             </button>
           ))}
         </div>
