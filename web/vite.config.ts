@@ -11,7 +11,7 @@ const API_SEGMENTS = [
   'business',
   'invitations',
   'customers',
-  'varieties',
+  'api',
   'expenses',
   'expense-categories',
   'health',
