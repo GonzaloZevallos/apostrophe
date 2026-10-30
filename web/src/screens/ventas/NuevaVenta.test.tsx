@@ -214,13 +214,12 @@ test('saving posts each line\'s amount as `quantity`, never `grams`', async () =
 
 test('the posted line\'s product_id is the id of the product picked from the products list', async () => {
   const user = userEvent.setup()
-  const products = [
-    { id: 7, name: 'Menta', archived: false, current_price: ROSA.current_price },
-    { id: 9, name: 'Salvia', archived: false, current_price: ROSA.current_price },
-  ] satisfies Variety[]
+  const price = { ...ROSA.current_price, vip_price: null } satisfies NonNullable<Variety['current_price']>
+  const menta = { id: 7, name: 'Menta', archived: false, current_price: price } satisfies Variety
+  const salvia = { id: 9, name: 'Salvia', archived: false, current_price: price } satisfies Variety
   const savedLine = {
-    product_id: 9,
-    product_name: 'Salvia',
+    product_id: salvia.id,
+    product_name: salvia.name,
     quantity: 1,
     pricing_rule: 'list',
     price_per_gram: 1000,
@@ -229,12 +228,12 @@ test('the posted line\'s product_id is the id of the product picked from the pro
   const savedSale = { ...SALE_DETAIL, id: 42, lines: [{ ...SALE_DETAIL.lines[0], ...savedLine }] }
   const fetchMock = await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /api/products?on=2026-10-02': () => jsonResponse(200, products),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [menta, salvia]),
     'POST /sales': () => jsonResponse(201, savedSale),
     'GET /sales/42': () => jsonResponse(200, savedSale),
   })
 
-  await user.selectOptions(screen.getByLabelText('Line 1 variety'), String(products[1].id))
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), String(salvia.id))
   await user.type(screen.getByLabelText('Line 1 grams'), '1')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
@@ -246,10 +245,9 @@ test('the posted line\'s product_id is the id of the product picked from the pro
   const body = JSON.parse(String(((post ?? [])[1] as RequestInit | undefined)?.body)) as {
     lines: { product_id: number }[]
   }
-  expect(body.lines[0].product_id).toBe(products[1].id)
-  expect(products.map((product) => product.id)).toContain(savedLine.product_id)
+  expect(body.lines).toEqual([expect.objectContaining({ product_id: salvia.id })])
+  expect(savedLine.product_id).toBe(salvia.id)
 })
-
 test('the form closes with "Close" and shows no back control named "Volver"', async () => {
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
