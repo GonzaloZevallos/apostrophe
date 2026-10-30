@@ -102,7 +102,7 @@ Success criteria, scroll on a change of screen (GH-480). They are checked at 320
 
 21. **A new screen starts at the top.** Every forward move to another screen (a tab in the bar or the sidebar, an entry in More, "+ New sale", a link, a list row into its card or detail, a redirect) shows that screen from its top, whatever the offset of the screen left behind.
 22. **Back returns you to your place.** The phone's or the browser's back, "‹ <parent>" when it goes through history, and "Close" of a form or sheet opened from inside the app all return to the previous screen at the offset it had when it was left. This includes New sale opened from "+ New sale" and Record payment opened from "Collect" or "Record payment". With no history, the fallback parent opens at its top.
-23. **A sheet or overlay leaves the page alone.** Opening and closing any sheet, routed or in-page, any confirmation or overlay, and any toast leaves the screen under it at the same offset.
+23. **A sheet or overlay leaves the page alone.** Opening and closing any sheet, routed or in-page, any confirmation or overlay, and any toast leaves the screen under it at the same offset. The offset is judged on the real screen once the sheet or modal closes, by Close, back or a save. An inert picture of the screen drawn behind a computer modal (Home's `InicioFondo` behind Record payment) is not held to that offset while the modal is open.
 
 ## Behaviour
 
@@ -278,6 +278,8 @@ On the phone and on a computer alike. A screen is its route's path. A change of 
   - a confirmation;
   - the old overlays (Change password, the expense categories editor, New sale's new-customer overlay);
   - a toast.
+
+  What counts is the real screen once the sheet or modal closes, by Close, back or a save. On a computer, a routed modal may draw an inert picture of the screen behind it, such as Home's `InicioFondo` behind Record payment. That picture is not held to the screen's offset while the modal is open, and it is not redrawn to match: everything the seller reads and does is in the modal (Drawing as guide), and the computer gets no dedicated polish (Phone first).
 - **Two panes are one screen.** On a computer, picking a row in Customers' or Varieties' two panes, or Varieties' automatic selection of its first variety, never moves the list the seller is looking at.
 - **A screen's own scroll stays its own.** A deliberate scroll a screen already makes (Home's own, Record payment's return after a save) is not changed by this section.
 - **Kept in memory only.** Offsets are remembered only while the app is open in that tab. They are never written to browser storage (ADR-0026) and are never stored together with any business data. A reload forgets them, and a screen reached by back after a reload starts at its top.
@@ -461,7 +463,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   - from a list scrolled well below its first screen, a tab, a link and a row into its detail each land the new screen at offset 0;
   - back (the browser's or the phone's) and "‹" from a detail opened on a scrolled Sales list return to Sales at the offset it was left at;
   - New sale opened with "+ New sale" from a scrolled Customers list and closed untouched returns to Customers at its offset;
-  - Record payment opened with "Collect" from a scrolled list returns to that list at its offset, once closed with "Close" and once with back, with no save. A following opening and closing lands the same way;
+  - Record payment opened with "Collect" from a scrolled list returns to that list at its offset, once closed with "Close" and once with back, with no save. A following opening and closing lands the same way. On a computer, the offset is read on the real screen after the modal closes; the offset of an inert background picture while the modal is open (Home's `InicioFondo`) is not asserted;
   - a direct link to a form, closed, opens its fallback parent at offset 0;
   - opening and closing a sheet leaves the offset under it unchanged;
   - on a computer, picking a row in Customers' two panes leaves the list's offset unchanged.
@@ -501,6 +503,7 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - Disabling Save in New sale; a scroll-and-highlight on Save.
 - A tap-outside area on the phone's full-screen sheet: a gap, a visible backdrop strip, or the safe-area strip acting as a close target.
 - Remembering scroll offsets across a reload or in browser storage; restoring the scroll inside a list nested within a screen (a pane, a picker) beyond the two-pane rule; scrolling to the top when the seller taps the tab they are already on.
+- Matching the offset of an inert background picture drawn behind a computer modal (Home's `InicioFondo` behind Record payment) while the modal is open, or redrawing that background to do so.
 
 ## Planned in GH-318
 
