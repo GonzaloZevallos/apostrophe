@@ -26,8 +26,6 @@ EMAIL = "fecha@example.com"
 WRONG = {"email": EMAIL, "password": "wrong password"}
 RIGHT = {"email": EMAIL, "password": PASSWORD}
 
-Verdict = Callable[[TestClient, MovableClock, Callable[[], str]], object]
-
 
 class _FrozenDatetime:
     """Stands in for the `datetime` name `app.clock.system_clock` looks up on every call."""
@@ -59,9 +57,10 @@ def _world() -> Iterator[tuple[TestClient, MovableClock, Callable[[], str]]]:
         engine.dispose()
 
 
-def _verdict_at_both_dates(
-    verdict: Verdict, monkeypatch: pytest.MonkeyPatch
-) -> tuple[object, object]:
+def _verdict_at_both_dates[V](
+    verdict: Callable[[TestClient, MovableClock, Callable[[], str]], V],
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[V, V]:
     with _world() as (web, clock, issue):
         at_now = verdict(web, clock, issue)
     # The name `datetime` inside `app.clock`, resolved at call time by `system_clock`:
