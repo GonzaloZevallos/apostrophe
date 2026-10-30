@@ -1,6 +1,6 @@
 /**
  * `ClienteFicha`: a customer's card — phone, VIP, the balance and
- * "Registrar cobro" (`payments.md`, "On screen"). Every figure here —
+ * "Registrar cobro" (`payments.md`, "En pantalla"). Every figure here —
  * `balance`, `owing_since`, `standing`, the account's rows and their own
  * `running_balance`/`standing` — is the payments domain's own answer
  * (`settle()`), never computed here (plan, invariants): this screen only reads

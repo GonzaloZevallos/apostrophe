@@ -6,7 +6,7 @@
  *
  * The "Owed to you" section and each row's amber/blue mark come from
  * `GET /payments/debtors` and the customer's own `balance`/`owing_since`/
- * `standing` (payments.md, "On screen") — `fetchStub` below dispatches on the
+ * `standing` (payments.md, "En pantalla") — `fetchStub` below dispatches on the
  * request's own path and query, never on call order, since the header's two
  * extra queries (the unfiltered count, the debtors total) now fire alongside the
  * search list's own.
@@ -255,7 +255,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
 
 test("Te deben shows the API's order and total as answered, never a client sort or sum", async () => {
   // Later owing-since first, and a total that is not the sum of the rows: nothing here may
-  // resort or add (payments.md, "Who owes and the totals").
+  // resort or add (payments.md, "Quién debe y los totales").
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () => jsonResponse(200, []),

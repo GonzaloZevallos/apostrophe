@@ -1,6 +1,6 @@
 /**
- * Which of a customer's account rows carries "Delete payment" (`payments.md`, "On
- * screen": it exists on every later payment, once). A later payment can appear as
+ * Which of a customer's account rows carries "Delete payment" (`payments.md`, "En
+ * pantalla": it exists on every later payment, once). A later payment can appear as
  * several `payment` rows (one per sale it settled), a `credit` row (what was left
  * over), or both; a sale row is never a later payment.
  */
@@ -37,7 +37,7 @@ export interface LedgerRowView {
 
 /**
  * Everything one account row says, so the screen picks no copy or colour itself
- * (`payments.md`, "On screen: the customer's card"). Reads only `kind`, `how_paid`,
+ * (`payments.md`, "En pantalla: la ficha del cliente"). Reads only `kind`, `how_paid`,
  * `method`, the sale's date and `standing`, never the sign of an amount.
  */
 export function ledgerRowView(row: AccountRow): LedgerRowView {

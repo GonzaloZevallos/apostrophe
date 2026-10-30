@@ -1,169 +1,169 @@
-# Customers
+# Clientes
 
-The people a business sells to, each identified within that business by their own record, and seen only by that business (ADR-0004). The name is how a user recognises a customer; the phone number is optional contact data.
+Las personas a quienes un **Business** le vende, cada una identificada dentro de ese Business por su propio registro, y vistas solo por ese Business (ADR-0004). El nombre es la forma en que un **User** reconoce a un **Customer**; el **Phone number** es un dato de contacto opcional.
 
-Sales and payments build on this capability: every sale and every debt belongs to one customer here. A VIP customer pays a variety's VIP price when it has one and it is lower than what any other rule gives. This applies only in a business with Customers VIP switched on (pricing-settings.md, sales.md).
+Las **Sales** y los **Payments** se apoyan en esta capacidad: toda Sale y toda deuda pertenece a un Customer de acá. Un **VIP customer** paga el **VIP price** de una **Variety** cuando lo tiene y es menor que lo que da cualquier otra regla. Esto vale solo en un Business con la opción VIP customers activada (pricing-settings.md, sales.md).
 
-A customer's balance, owing since and account are defined in `payments.md` and shown on their card and in the Customers' "Owed to you" section.
+El **Balance**, el **Owing since** y la cuenta de un Customer se definen en `payments.md` y se muestran en su ficha y en la sección "Owed to you" de Customers.
 
 ## Jobs
 
-**When** I hand over an order or take a payment, **I want** to find the customer by part of their name or number, or register them on the spot if they're new, **so that** every sale and every debt lands on one real person and I always know who owes me.
+**Cuando** entrego un pedido o recibo un pago, **quiero** encontrar al cliente por parte de su nombre o de su número, o registrarlo en el momento si es nuevo, **para que** cada venta y cada deuda caiga en una persona real y yo sepa siempre quién me debe.
 
-**When** I register a customer (from Customers, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app.
+**Cuando** registro a un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su Phone number, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para poder** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app.
 
-VIP and fixing a customer's details serve the same jobs. In a business with VIP customers, a customer marked VIP once is charged their VIP price on every sale where it is the lowest, so the seller never has to remember who is a friend.
+VIP y corregir los datos de un cliente sirven a los mismos jobs. En un negocio con VIP customers, a un cliente marcado como VIP una sola vez se le cobra su VIP price en cada venta en la que es el más bajo, así que el vendedor nunca tiene que acordarse de quién es amigo.
 
-**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has (a bulk price if I sell by quantity, and a VIP price I set per variety if I have VIP customers), **so I can** charge every customer exactly what I mean to without typing a special price by hand, without seeing fields that don't apply to me, and without anyone's price changing by surprise. (Served here by the VIP mark following Customers VIP; defined in pricing-settings.md.)
+**Cuando** configuro cómo fija sus precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las **Pricing rules** que tiene mi negocio (un **Bulk price** si vendo por cantidad, y un VIP price que fijo por variedad si tengo VIP customers), **para poder** cobrarle a cada cliente exactamente lo que quiero sin escribir un **Special price** a mano, sin ver campos que no me aplican y sin que el precio de nadie cambie de sorpresa. (Lo sirve acá la marca VIP que sigue a VIP customers; definido en pricing-settings.md.)
 
-**When** I run my business from my phone, **I want to** keep my customers up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive.
+**Cuando** manejo mi negocio desde el celular, **quiero** mantener al día mis clientes desde el celular, **para poder** dejar de tenerlos en la planilla y tener datos reales cuando lleguen las ventas.
 
-**When** a customer pays me part or all of what they owe, in cash or by transfer, on the day or weeks later, **I want** to record it from my phone in a few taps and see their balance and "owing since" drop right away, **so I** always know who owes me what and since when, and nothing they paid or still owe gets lost or lands on the wrong person. (Served here by the Customers' "Owed to you" section and its "Collect", and by the card's balance, account and Record payment; defined in `payments.md`.)
+**Cuando** un cliente me paga parte o todo lo que debe, en efectivo o por transferencia, el mismo día o semanas después, **quiero** registrarlo desde el celular en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Lo sirve acá la sección "Owed to you" de Customers y su "Collect", y el Balance, la cuenta y Record payment de la ficha; definido en `payments.md`.)
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Customers opening on who owes, with "Collect" on every debtor row.)
+**Cuando** manejo mi negocio desde el celular entre pedidos o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté armada según lo que hago de verdad y con qué frecuencia, **para poder** volver con el cliente en lugar de buscar entre menús. (El job de **Navigation**, navigation.md: lo sirve acá Customers, que se abre en quién debe, con "Collect" en cada fila de deudor.)
 
-**When** a customer pays me part or all of what they owe, or between orders I want to know who still owes me and since when, **I want** Customers to open on who owes me (the total, and each debtor oldest debt first with their balance and since when) and to collect from any of them in one tap, **so I can** keep every balance right and chase the oldest debts first, without opening cards one by one, doing arithmetic or filling in fields I never use.
+**Cuando** un cliente me paga parte o todo lo que debe, o entre pedidos quiero saber quién todavía me debe y desde cuándo, **quiero** que Customers se abra en quién me debe (el total, y cada deudor con la deuda más vieja primero, con su Balance y desde cuándo) y cobrarle a cualquiera en un toque, **para poder** mantener cada Balance al día y perseguir primero las deudas más viejas, sin abrir fichas una por una, hacer cuentas ni completar campos que nunca uso.
 
-This refines the payments job and the navigation job above for Customers (GH-46); it is not a new job. Its protagonist is the seller, on the phone; the computer, with two panes, is the same job on a bigger screen. It has two moments: collecting (the main one: a customer hands over money, mid-chat or at handover) and checking (between orders or at the end of the day). Before it, who owes lived on a separate Owed to you screen, collecting a debt took four taps from Customers, and the customer form asked for a channel (Telegram or WhatsApp) that nothing in the product used.
+Esto afina el job de pagos y el job de Navigation de arriba para Customers (GH-46); no es un job nuevo. Su protagonista es el vendedor, en el celular; la computadora, con dos paneles, es el mismo job en una pantalla más grande. Tiene dos momentos: cobrar (el principal: un cliente entrega plata, en medio del chat o al entregar) y revisar (entre pedidos o al final del día). Antes, quién debía vivía en una pantalla Owed to you aparte, cobrar una deuda llevaba cuatro toques desde Customers, y el formulario del cliente pedía un canal (Telegram o WhatsApp) que nada del producto usaba.
 
-Success criteria:
+Criterios de éxito:
 
-1. From the phone, a seller finds an existing customer by part of the name or part of the number, or registers a new one with or without a number, fast enough that a sale with a new customer still takes under a minute.
-2. One phone number is at most one customer in a business, however it is typed. Registering it again, or changing a customer's number to one already in use, is refused. The refusal says the number already belongs to a customer and never repeats the number or the name. Two customers without a number never collide.
-3. A business's customers are visible only to that business. By id from another business they answer 404. Lists and searches from another business show none of them. The same number can be a customer in two businesses without either business knowing.
-4. Everything here is done from the phone, with no API call by hand.
-5. **A customer without a number is a normal customer, not a degraded one.**
-   - They can be registered, edited, found by name, chosen for a sale, left owing, paid and listed in the Customers' "Owed to you" section like anyone else.
-   - The card and the list show no empty label, no dash and no "No phone" where a number would go.
-6. **Nothing regresses for customers who have a number.**
-   - Normalisation, the malformed-number refusal, uniqueness (on registering and on editing), search by number and refusals that never echo the number or the name all stay as they are.
-   - A number can be removed from a customer, and their sales, payments and balance stay with them.
-7. **No channel.** A customer has no channel (Telegram or WhatsApp): not in the API, the forms, the card, the list, the export or the database. Removing it changes nothing else about any customer.
-8. **VIP follows the switch and is never lost.**
-   - While Customers VIP is off, no VIP mark or field shows on any customer screen.
-   - Switched back on, every stored VIP mark is back as it was, including for customers edited while it was off.
-9. **Collect fast.** Record payment opens with the customer chosen in at most 2 taps from any tab root ("Collect" on a Customers row or an Home row). A payment is recorded in under a minute, and "All" settles the whole balance in one tap. On a computer it takes no more taps than on the phone.
-10. **Who owes, at a glance.** Customers opens on "Owed to you": the total owed, the count line ("1 sale owing" or "N sales owing") and every debtor oldest owing-since first, each with balance and "since dd/mm". Everyone A–Z sits below. Every figure comes from the API and equals Home's "Owed to you" block and a direct computation. No scrolling through the A–Z list and no sums.
-11. **The card closes the loop.** From a customer's card the seller sees their balance and account, "Record payment" (when they owe) and "New sale to <name>", with that customer already chosen.
+1. Desde el celular, un vendedor encuentra a un Customer existente por parte del nombre o parte del número, o registra uno nuevo con o sin número, con la rapidez suficiente para que una Sale con un Customer nuevo siga llevando menos de un minuto.
+2. Un Phone number es como máximo de un Customer en un Business, sin importar cómo se escriba. Registrarlo de nuevo, o cambiar el número de un Customer por uno que ya está en uso, se rechaza. El rechazo dice que el número ya pertenece a un Customer y nunca repite el número ni el nombre. Dos Customers sin número nunca chocan.
+3. Los Customers de un Business son visibles solo para ese Business. Por id desde otro Business responden 404. Las listas y búsquedas desde otro Business no muestran ninguno. El mismo número puede ser un Customer en dos Businesses sin que ninguno de los dos lo sepa.
+4. Todo lo de acá se hace desde el celular, sin ninguna llamada a la API a mano.
+5. **Un Customer sin número es un Customer normal, no uno degradado.**
+   - Se lo puede registrar, editar, encontrar por nombre, elegir para una Sale, dejar debiendo, saldar y listar en la sección "Owed to you" de Customers como a cualquier otro.
+   - La ficha y la lista no muestran ninguna etiqueta vacía, ningún guion ni ningún "No phone" donde iría un número.
+6. **Nada retrocede para los Customers que tienen número.**
+   - La normalización, el rechazo del número mal formado, la unicidad (al registrar y al editar), la búsqueda por número y los rechazos que nunca repiten el número ni el nombre siguen todos como están.
+   - Se puede quitar el número de un Customer, y sus Sales, Payments y Balance se quedan con él.
+7. **Sin canal.** Un Customer no tiene canal (Telegram o WhatsApp): ni en la API, ni en los formularios, ni en la ficha, ni en la lista, ni en el **Business export**, ni en la base de datos. Quitarlo no cambia nada más de ningún Customer.
+8. **VIP sigue al interruptor y nunca se pierde.**
+   - Mientras VIP customers está apagado, ninguna marca ni campo VIP se muestra en ninguna pantalla de Customer.
+   - Al encenderlo de nuevo, toda marca VIP guardada vuelve como estaba, incluso para los Customers editados mientras estuvo apagado.
+9. **Cobrar rápido.** Record payment se abre con el Customer elegido en 2 toques como máximo desde cualquier **Tab root** ("Collect" en una fila de Customers o en una fila de Home). Un Payment se registra en menos de un minuto, y "All" salda todo el Balance en un toque. En una computadora no lleva más toques que en el celular.
+10. **Quién debe, de un vistazo.** Customers se abre en "Owed to you": el **Total owed**, la línea de cantidad ("1 sale owing" o "N sales owing") y cada deudor con el Owing since más viejo primero, cada uno con Balance y "since dd/mm". Todos de la A a la Z quedan abajo. Toda cifra sale de la API y es igual al bloque "Owed to you" de Home y a un cálculo directo. Sin scrollear la lista de la A a la Z y sin sumas.
+11. **La ficha cierra el circuito.** Desde la ficha de un Customer el vendedor ve su Balance y su cuenta, "Record payment" (cuando debe) y "New sale to <name>", con ese Customer ya elegido.
 
-## Behaviour
+## Comportamiento
 
-- **Customer**: a name, an optional phone number and VIP. A customer is identified by their own record (their id), never by their number. Their balance and owing since are worked out from their sales and payments (`payments.md`) and never stored on the customer.
-- **Name**: required. Trimmed, with inner spaces collapsed, up to 60 characters. Not unique.
-- **No channel**: the former channel (Telegram or WhatsApp) is removed from the domain, the API, the forms, the card, the list, the export and the database.
-  - A request that still sends one succeeds: the channel is ignored, never stored, and no answer carries it. The seller sees no difference, because no form offers the field.
-  - **The stored values are dropped for good.** The migration that drops the column keeps no copy anywhere; the product cannot bring them back, and the drop cannot be undone from inside it.
-  - **Assumption**: no seller will need the old channel values back; anyone who does can still find the customer by name or number.
-- **VIP**: yes or no, `false` by default. It can be edited.
-  - A change applies to sales recorded from then on; sales already recorded keep their stored prices (ADR-0003).
-  - In the Sales list, a sale's VIP badge shows the customer's current status, not how that sale was priced (sales.md).
-  - It counts only while Customers VIP is on (pricing-settings.md). How a VIP's line is priced is sales.md's.
-  - **While Customers VIP is off**:
-    - the mark stays stored;
-    - saving a customer never changes it, whatever the request sends;
-    - a customer created then is not VIP.
-- **Phone number**: optional, unique within the business among customers who have one, stored in one international form.
-  - **None**: a missing value, `null`, or one blank after trimming means the customer has no number. It is stored as no number, never as an empty string.
-  - **With `+` and a country code other than 54**: a foreign number. It is stored as `+` and its digits, and must be 8 to 15 digits long.
-  - **With `+54`, or a bare `54`**: if it is followed by 10 digits, or by `9` and 10 digits, it is an Argentine number with its country code. It is stored as `+549` and the 10 digits.
-  - **Anything else without `+`**: a local Argentine number. A leading `0` and the `15` are dropped, and exactly 10 digits, area code included, must remain. It is stored as `+549` and those 10 digits.
-  - **Landlines** are not refused: every Argentine number is treated as a mobile.
-  - **Refused**: a non-blank value that fits none of these rules, such as too short, too long, or without an area code. The refusal reads like "that doesn't look like a phone number with its area code" and never repeats what was typed.
-  - `11 2345-6789`, `011 15 2345-6789`, `+54 9 11 2345 6789`, `5491123456789` and `541123456789` all become `+5491123456789`.
-- **Uniqueness**: a number already used by another customer of the same business is refused, both on register and on edit. The refusal never repeats the number or the name. Any number of customers may have no number. Numbers in other businesses never collide and are never revealed.
-- **Edit**: name, phone number and VIP (VIP only while Customers VIP is on).
-  - The phone number goes through the same normalisation, uniqueness check and refusal as when registering.
-  - It can be cleared, leaving the customer with no number.
-  - Sales, payments and balance belong to the customer, not to the number, so they stay attached when it changes or is removed.
-- **List and search**: one query.
-  - The name matches the query anywhere, ignoring case and accents.
-  - The number matches the digits of the query, with a leading 0 dropped, anywhere in the stored number's digits. A customer without a number never matches by number, and a query with no digits matches no number.
-  - A customer matches if either the name or the number matches; a customer without a number is found by name.
-  - An empty query returns every customer.
-  - Results are sorted by name.
-  - There is no paging, no minimum query length, no VIP filter and no filter for customers without a number.
-- **Storage**: the phone column is nullable; uniqueness within a business applies only to stored numbers. Customers who existed before the number became optional kept their numbers. The channel column is dropped by a migration in the single Alembic chain; every other column and every customer's name, number, VIP, sales, payments and balance stay exactly as they were.
-- **Business export** (accounts.md, ADR-0015): it follows the schema, so new exports and the removal's table and column registry carry no channel. Exports written before the change keep what they held; nothing imports an export back. Exported counts still equal deleted counts.
-- **Isolation (ADR-0004)**:
-  - The business comes from the session.
-  - Another business's customer answers 404 for both reading and editing.
-  - Lists and searches show none of another business's customers.
-  - The customer routes are in `tests/test_business_isolation.py`.
+- **Customer**: un nombre, un Phone number opcional y VIP. Un Customer se identifica por su propio registro (su id), nunca por su número. Su Balance y su Owing since se calculan a partir de sus Sales y Payments (`payments.md`) y nunca se guardan en el Customer.
+- **Nombre**: obligatorio. Recortado, con los espacios internos colapsados, hasta 60 caracteres. No es único.
+- **Sin canal**: el antiguo canal (Telegram o WhatsApp) se quitó del dominio, la API, los formularios, la ficha, la lista, el Business export y la base de datos.
+  - Un pedido que todavía manda uno se completa bien: el canal se ignora, nunca se guarda, y ninguna respuesta lo lleva. El vendedor no ve diferencia, porque ningún formulario ofrece el campo.
+  - **Los valores guardados se descartan para siempre.** La migración que elimina la columna no conserva copia en ningún lado; el producto no puede recuperarlos, y la eliminación no se puede deshacer desde adentro.
+  - **Supuesto**: ningún vendedor va a necesitar los valores viejos del canal; quien los necesite igual puede encontrar al Customer por nombre o por número.
+- **VIP**: sí o no, `false` por defecto. Se puede editar.
+  - Un cambio se aplica a las Sales registradas desde ese momento; las Sales ya registradas conservan sus precios guardados (ADR-0003).
+  - En la lista de Sales, la insignia VIP de una Sale muestra el estado actual del Customer, no cómo se fijó el precio de esa Sale (sales.md).
+  - Cuenta solo mientras VIP customers está activado (pricing-settings.md). Cómo se fija el precio de la **Sale line** de un VIP lo define sales.md.
+  - **Mientras VIP customers está apagado**:
+    - la marca sigue guardada;
+    - guardar un Customer nunca la cambia, sin importar lo que mande el pedido;
+    - un Customer creado entonces no es VIP.
+- **Phone number**: opcional, único dentro del Business entre los Customers que tienen uno, guardado en una sola forma internacional.
+  - **Ninguno**: un valor faltante, `null`, o uno en blanco tras recortar significa que el Customer no tiene número. Se guarda como sin número, nunca como string vacío.
+  - **Con `+` y un código de país distinto de 54**: un número extranjero. Se guarda como `+` y sus dígitos, y debe tener de 8 a 15 dígitos.
+  - **Con `+54`, o un `54` a secas**: si lo siguen 10 dígitos, o un `9` y 10 dígitos, es un número argentino con su código de país. Se guarda como `+549` y los 10 dígitos.
+  - **Cualquier otra cosa sin `+`**: un número argentino local. Se descartan un `0` inicial y el `15`, y deben quedar exactamente 10 dígitos, código de área incluido. Se guarda como `+549` y esos 10 dígitos.
+  - **Los teléfonos fijos** no se rechazan: todo número argentino se trata como celular.
+  - **Rechazado**: un valor no en blanco que no encaja en ninguna de estas reglas, como demasiado corto, demasiado largo o sin código de área. El rechazo dice algo como "that doesn't look like a phone number with its area code" y nunca repite lo que se escribió.
+  - `11 2345-6789`, `011 15 2345-6789`, `+54 9 11 2345 6789`, `5491123456789` y `541123456789` pasan todos a ser `+5491123456789`.
+- **Unicidad**: un número ya usado por otro Customer del mismo Business se rechaza, tanto al registrar como al editar. El rechazo nunca repite el número ni el nombre. Cualquier cantidad de Customers puede no tener número. Los números de otros Businesses nunca chocan y nunca se revelan.
+- **Edición**: nombre, Phone number y VIP (VIP solo mientras VIP customers está activado).
+  - El Phone number pasa por la misma normalización, el mismo chequeo de unicidad y el mismo rechazo que al registrar.
+  - Se puede borrar, y el Customer queda sin número.
+  - Las Sales, los Payments y el Balance pertenecen al Customer, no al número, así que siguen asociados cuando este cambia o se quita.
+- **Lista y búsqueda**: una sola consulta.
+  - El nombre coincide con la consulta en cualquier parte, sin importar mayúsculas ni acentos.
+  - El número coincide con los dígitos de la consulta, sin un 0 inicial, en cualquier parte de los dígitos del número guardado. Un Customer sin número nunca coincide por número, y una consulta sin dígitos no coincide con ningún número.
+  - Un Customer coincide si coincide el nombre o el número; un Customer sin número se encuentra por nombre.
+  - Una consulta vacía devuelve todos los Customers.
+  - Los resultados se ordenan por nombre.
+  - No hay paginación, ni largo mínimo de consulta, ni filtro VIP, ni filtro para los Customers sin número.
+- **Almacenamiento**: la columna del teléfono admite nulos; la unicidad dentro de un Business se aplica solo a los números guardados. Los Customers que existían antes de que el número fuera opcional conservaron sus números. La columna del canal se elimina con una migración en la cadena única de Alembic; todas las demás columnas y el nombre, el número, el VIP, las Sales, los Payments y el Balance de cada Customer quedan exactamente como estaban.
+- **Business export** (accounts.md, ADR-0015): sigue el esquema, así que los Business exports nuevos y el registro de tablas y columnas de la **Business removal** no llevan canal. Los Business exports escritos antes del cambio conservan lo que tenían; nada importa un Business export de vuelta. Las cantidades exportadas siguen siendo iguales a las eliminadas.
+- **Aislamiento (ADR-0004)**:
+  - El Business sale de la **Session**.
+  - El Customer de otro Business responde 404 tanto al leer como al editar.
+  - Las listas y búsquedas no muestran ninguno de los Customers de otro Business.
+  - Las rutas de Customer están en `tests/test_business_isolation.py`.
 
-### On screen (Customers)
+### En pantalla: Customers
 
-- **Customers** is a tab root (navigation.md). On a computer it is two panes: the list on the left, the selected customer's card on the right. Customers selects nothing on its own.
-- **The screen opens with two sections**, with no tappable debt figure in its header:
-  1. **"Owed to you"**, on top: the total owed, the count line ("1 sale owing" or "N sales owing"), and every customer whose balance is above $0, oldest owing-since first, ties by name, each row with "Collect" (`payments.md`). With nobody owing it reads a fixed "Nobody owes you", with nothing to tap, above the full A–Z list.
-  2. **Everyone, A–Z**, below, sorted by name.
-- Every figure of Owed to you comes from the API and equals Home's "Owed to you" block; the browser computes nothing.
-- **Every row of a customer who owes**, in either section and in search results, shows the amount in amber with "owes you since dd/mm" under it, never as a chip, and a "Collect" button (accessible name "Collect from <name>") that opens Record payment with that customer already chosen, as an entry in the app's history; back or "Close" leaves it in one move. Tapping the rest of the row opens the customer's card.
-- **A customer in credit** never appears in Owed to you and counts in no figure. In everyone A–Z they show "Credit $ X" in the neutral/blue treatment, never green or amber.
-- **A customer with a $0 balance** shows nothing about money.
-- **A customer without a number** shows nothing in the number's place: no dash, no empty label, no "No phone".
-- **The VIP mark** shows on the list and the card only while Customers VIP is on. While it is off, nothing shows in its place.
-- **Search** by part of the name or of the phone number: while a query is typed, both sections collapse into one flat list sorted by name, matched as above; a customer who owes keeps their balance, "owes you since dd/mm" and "Collect". Clearing the query brings the two sections back.
-- **A customer's card** (`ClienteFicha`), a card with "‹ Customers":
-  - phone (only when there is one; with none, the line is left out entirely) and VIP (only while Customers VIP is on);
-  - "Owes you $ X since dd/mm" or "Credit $ X" (neither for a $0 balance), the account, "Record payment" only when the balance is above $0, and "Delete payment" on later payments (`payments.md`);
-  - **"New sale to <name>"**, which opens New sale with that customer already chosen (sales.md). The card shows no "+ New sale".
-  - Adding a number later is the card's ordinary edit; there is no prompt to fill it in.
-- **Record payment** (`Payment`) follows payments.md unchanged and its design, `Cobro.dc.html`, opened with the customer chosen from a debtor row or from the card.
-- **Add and edit**: the one "New customer" form of `NuevaVentaCliente`, the same from Customers and from "Pick a customer" in New sale.
-  - Its fields are "Name" (the only one marked required), the phone (optional, and it can be cleared when editing) and VIP. VIP shows only while Customers VIP is on. There is no channel field.
-  - The same form registers a customer from inside a sale, through the "Pick a customer" sheet, and that customer is used for the sale.
-  - It is a form: "Close", and a confirmation when leaving with unsaved changes.
-- **On success**, the toast "Customer saved". It never carries a name or a number.
-- **Refusals** show inline on the field, with the domain's fixed string, and keep what was typed. They never repeat the number or the name.
-- **Design**: Customers, `ClienteFicha`, `Payment` and `NuevaVentaCliente` match `docs/product/design-system/pantallas/` on phone and computer, in both themes. A difference in wording from the docs is listed in the PR. No state is told by colour alone.
-- **Feedback**: no network shows "No connection", a server error the generic retry, and a customer that is gone follows accounts.md's "That is gone." rule.
+- **Customers** es una Tab root (navigation.md). En una computadora son dos paneles: la lista a la izquierda, la ficha del Customer seleccionado a la derecha. Customers no selecciona nada por su cuenta.
+- **La pantalla se abre con dos secciones**, sin ninguna cifra de deuda tocable en su cabecera:
+  1. **"Owed to you"**, arriba: el Total owed, la línea de cantidad ("1 sale owing" o "N sales owing"), y todo Customer cuyo Balance es mayor que $0, con el Owing since más viejo primero, los empates por nombre, cada fila con "Collect" (`payments.md`). Si nadie debe, dice un "Nobody owes you" fijo, sin nada para tocar, arriba de la lista completa de la A a la Z.
+  2. **Everyone, A–Z**, abajo, ordenados por nombre.
+- Toda cifra de Owed to you sale de la API y es igual al bloque "Owed to you" de Home; el navegador no calcula nada.
+- **Toda fila de quien debe**, en cualquiera de las secciones y en los resultados de búsqueda, muestra el monto en ámbar con "owes you since dd/mm" debajo, nunca como chip, y un botón "Collect" (nombre accesible "Collect from <name>") que abre Record payment con ese Customer ya elegido, como un paso más en el historial de la app; volver o "Close" lo deja en un solo movimiento. Tocar el resto de la fila abre la ficha del Customer.
+- **Quien tiene Credit** nunca aparece en Owed to you y no cuenta en ninguna cifra. En todos de la A a la Z muestra "Credit $ X" con el tratamiento neutro/azul, nunca verde ni ámbar.
+- **Quien tiene un Balance de $0** no muestra nada sobre dinero.
+- **Quien no tiene número** no muestra nada en el lugar del número: ni guion, ni etiqueta vacía, ni "No phone".
+- **La marca VIP** se muestra en la lista y en la ficha solo mientras VIP customers está activado. Mientras está apagado, no se muestra nada en su lugar.
+- **Búsqueda** por parte del nombre o del Phone number: mientras se escribe una consulta, las dos secciones se colapsan en una sola lista plana ordenada por nombre, con las coincidencias como arriba; un Customer que debe conserva su Balance, "owes you since dd/mm" y "Collect". Borrar la consulta trae de vuelta las dos secciones.
+- **La ficha de un Customer** (`ClienteFicha`), una tarjeta con "‹ Customers":
+  - teléfono (solo cuando hay uno; sin ninguno, la línea se omite por completo) y VIP (solo mientras VIP customers está activado);
+  - "Owes you $ X since dd/mm" o "Credit $ X" (ninguno para un Balance de $0), la cuenta, "Record payment" solo cuando el Balance es mayor que $0, y "Delete payment" en los Payments posteriores (`payments.md`);
+  - **"New sale to <name>"**, que abre New sale con ese Customer ya elegido (sales.md). La ficha no muestra "+ New sale".
+  - Agregar un número más adelante es la edición ordinaria de la ficha; no hay ningún aviso para completarlo.
+- **Record payment** (`Payment`) sigue payments.md sin cambios y su diseño, `Cobro.dc.html`, abierto con el Customer elegido desde una fila de deudor o desde la ficha.
+- **Alta y edición**: el único formulario "New customer" de `NuevaVentaCliente`, el mismo desde Customers y desde "Pick a customer" en New sale.
+  - Sus campos son "Name" (el único marcado como obligatorio), el teléfono (opcional, y se puede borrar al editar) y VIP. VIP se muestra solo mientras VIP customers está activado. No hay campo de canal.
+  - El mismo formulario registra a un Customer desde dentro de una Sale, a través de la **Sheet** "Pick a customer", y ese Customer se usa para la Sale.
+  - Es un formulario: "Close", y una confirmación al salir con cambios sin guardar.
+- **Si sale bien**, el toast "Customer saved". Nunca lleva un nombre ni un número.
+- **Los rechazos** se muestran en línea sobre el campo, con el string fijo del dominio, y conservan lo que se escribió. Nunca repiten el número ni el nombre.
+- **Diseño**: Customers, `ClienteFicha`, `Payment` y `NuevaVentaCliente` coinciden con `docs/product/design-system/pantallas/` en celular y computadora, en los dos temas. Una diferencia de texto respecto de los docs se lista en el PR. Ningún estado se dice solo con color.
+- **Respuesta de la app**: sin red muestra "No connection", un error del servidor el reintento genérico, y un Customer que ya no existe sigue la regla "That is gone." de accounts.md.
 
-## Metrics
+## Métricas
 
-- **Duplicate numbers**: customers sharing one stored number within a business, 0. A database constraint enforces it and a test covers it. (Criterion 2)
-- **No collision without a number**: two or more customers with no number coexist in a business, tested. (Criteria 2, 5)
-- **Normalisation matrix**: every equivalent form resolves to one number, every invalid non-blank form is refused, and a blank value is stored as no number. 100% passing. (Criteria 2, 6)
-- **No echo**: no refusal body or toast contains the submitted number, any of its digit runs, or a customer's name. After a full front run, the console and browser storage hold no name, number or amount. (Criteria 2, 6)
-- **Isolation coverage**: every customer route sits in the isolation sweep and the gated-route test, and answers 404 or empty from another business. (Criterion 3)
-- **Find-or-register time**:
-  - registering a new customer from the phone is run through the front (`web/e2e/customers.spec.ts`) and the tap budget holds (`web/e2e/tapBudget.spec.ts`); its duration is not measured by any test;
-  - a search answers in under 300 ms with a few dozen customers;
-  - a sale with a new customer, registered from "Pick a customer" with or without a number, is recorded by the same front run (`web/e2e/customers.spec.ts`); its duration is not measured by any test.
+- **Números duplicados**: Customers que comparten un número guardado dentro de un Business, 0. Una restricción de la base de datos lo impone y un test lo cubre. (Criterio 2)
+- **Sin choque sin número**: dos o más Customers sin número coexisten en un Business, probado. (Criterios 2, 5)
+- **Matriz de normalización**: toda forma equivalente se resuelve en un solo número, toda forma inválida no en blanco se rechaza, y un valor en blanco se guarda como sin número. 100% aprobada. (Criterios 2, 6)
+- **Sin eco**: ningún cuerpo de rechazo ni toast contiene el número enviado, ninguna de sus secuencias de dígitos ni el nombre de un Customer. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ningún nombre, número ni monto. (Criterios 2, 6)
+- **Cobertura de aislamiento**: toda ruta de Customer está en el barrido de aislamiento y en el test de rutas con acceso restringido, y responde 404 o vacío desde otro Business. (Criterio 3)
+- **Tiempo de alta o búsqueda**:
+  - registrar un Customer nuevo desde el celular se corre a través del front (`web/e2e/customers.spec.ts`) y el presupuesto de toques se cumple (`web/e2e/tapBudget.spec.ts`); su duración no la mide ningún test;
+  - una búsqueda responde en menos de 300 ms con unas pocas docenas de Customers;
+  - una Sale con un Customer nuevo, registrado desde "Pick a customer" con o sin número, se registra en la misma corrida del front (`web/e2e/customers.spec.ts`); su duración no la mide ningún test.
 
-  (Criterion 1)
-- **No-number lifecycle**: through the API and the end-to-end front run, a customer without a number is registered, edited, found by name, chosen for a sale left owing, paid and shown in the Customers' "Owed to you" section. 100% passing. (Criterion 5)
-- **No placeholder**: front tests show no phone line, no dash, no empty label and no "No phone" on the card and the list for a customer without a number. (Criterion 5)
-- **Number removed**: clearing a customer's number keeps their sales, payments and balance unchanged, tested. (Criterion 6)
-- **Migration**: every customer's number is unchanged after the migration that made it optional, tested. (Criterion 6)
-- **No channel (criterion 7)**:
-  - after the migration that drops it, no customer answer, form, card, list or export carries a channel;
-  - every customer's name, number, VIP, sales, payments and balance are unchanged before and after it: 0 differences, tested on the single Alembic chain;
-  - a request that still sends a channel succeeds and stores nothing;
-  - channel fields on screen and in the API go from 1 to 0 (the business measure of "one field less");
-  - the business-removal suite passes after the migration: exported count equals deleted count for every kind, every stored field accounts.md lists is present, and no channel is in the file.
-- **VIP follows the switch (criterion 8)**:
-  - front tests show no VIP mark on the list or the card, and no VIP field in the form, while Customers VIP is off;
-  - an edit or a request sending VIP while it is off leaves the stored mark unchanged, and a customer created then is not VIP;
-  - switching it back on shows every stored mark as before.
-- **Collect fast (criterion 9)**: the end-to-end front run, phone and computer viewports, taps "Collect from <name>" from a Customers row and from an Home row; Record payment opens with the customer chosen in at most 2 taps from every tab root, never more on the computer; "All" fills the whole balance in one tap; a payment is recorded from a phone viewport, and one back move returns to the screen it came from. No test measures duration.
-- **Who owes, at a glance (criterion 10)**:
-  - front tests show Owed to you above everyone A–Z, the count line in both forms, debtors oldest first with ties by name, and "Nobody owes you" above a full A–Z list when nobody owes;
-  - the total, the count and each debtor's balance and date equal Home's block and a direct computation over sales and payments: 0 differences;
-  - customers in credit are in no section and no figure, and show "Credit" only in A–Z.
-- **Customers' layout**: front tests show "Collect" with its accessible name on every debtor row (both sections and search results), the search collapsing into one list sorted by name and the sections returning when it is cleared.
-- **The card (criterion 11)**: front tests and the end-to-end run show "Record payment" only with a balance above $0, and "New sale to <name>" opening New sale with that customer chosen; the card shows no "+ New sale".
-- **No regression**: the existing customers, payments and navigation suites pass with no assertion loosened.
-- **No curl**: the end-to-end front run adds, finds and edits a customer, adds one without a number, opens Record payment from "Collect" with the customer chosen, and opens "New sale to <name>" with that customer chosen. (Criterion 4)
-- **Design**: `scripts/design/compare.sh` runs before and after for Customers, `ClienteFicha`, `Payment` and `NuevaVentaCliente`, phone and computer, light and dark where the registry has both, attached to the PR and judged by eye, with every difference from the design listed.
-- Balance, account and Owed to you figure metrics live in `payments.md`.
+  (Criterio 1)
+- **Ciclo de vida sin número**: a través de la API y de la corrida end-to-end del front, un Customer sin número se registra, se edita, se encuentra por nombre, se elige para una Sale que queda debiendo, se salda y se muestra en la sección "Owed to you" de Customers. 100% aprobada. (Criterio 5)
+- **Sin relleno**: los tests del front no muestran línea de teléfono, ni guion, ni etiqueta vacía, ni "No phone" en la ficha y la lista de un Customer sin número. (Criterio 5)
+- **Número quitado**: borrar el número de un Customer deja sin cambios sus Sales, Payments y Balance, probado. (Criterio 6)
+- **Migración**: el número de cada Customer queda sin cambios después de la migración que lo hizo opcional, probado. (Criterio 6)
+- **Sin canal (criterio 7)**:
+  - después de la migración que lo elimina, ninguna respuesta, formulario, ficha, lista ni Business export de un Customer lleva un canal;
+  - el nombre, el número, el VIP, las Sales, los Payments y el Balance de cada Customer quedan sin cambios antes y después: 0 diferencias, probado en la cadena única de Alembic;
+  - un pedido que todavía manda un canal se completa bien y no guarda nada;
+  - los campos de canal en pantalla y en la API pasan de 1 a 0 (la medida de negocio de "un campo menos");
+  - la suite de Business removal pasa después de la migración: la cantidad exportada es igual a la eliminada para cada tipo, está presente todo campo guardado que lista accounts.md, y no hay ningún canal en el archivo.
+- **VIP sigue al interruptor (criterio 8)**:
+  - los tests del front no muestran ninguna marca VIP en la lista ni en la ficha, ni ningún campo VIP en el formulario, mientras VIP customers está apagado;
+  - una edición o un pedido que manda VIP mientras está apagado deja sin cambios la marca guardada, y un Customer creado entonces no es VIP;
+  - volver a encenderlo muestra toda marca guardada como antes.
+- **Cobrar rápido (criterio 9)**: la corrida end-to-end del front, en viewports de celular y de computadora, toca "Collect from <name>" desde una fila de Customers y desde una fila de Home; Record payment se abre con el Customer elegido en 2 toques como máximo desde cada Tab root, nunca más en la computadora; "All" completa todo el Balance en un toque; se registra un Payment desde un viewport de celular, y un movimiento de volver regresa a la pantalla de la que vino. Ningún test mide la duración.
+- **Quién debe, de un vistazo (criterio 10)**:
+  - los tests del front muestran Owed to you arriba de todos de la A a la Z, la línea de cantidad en sus dos formas, los deudores con el más viejo primero y los empates por nombre, y "Nobody owes you" arriba de una lista completa de la A a la Z cuando nadie debe;
+  - el total, la cantidad y el Balance y la fecha de cada deudor son iguales al bloque de Home y a un cálculo directo sobre las Sales y los Payments: 0 diferencias;
+  - los Customers con Credit no están en ninguna sección ni en ninguna cifra, y muestran "Credit" solo en la lista de la A a la Z.
+- **El layout de Customers**: los tests del front muestran "Collect" con su nombre accesible en cada fila de deudor (las dos secciones y los resultados de búsqueda), la búsqueda colapsando todo en una sola lista ordenada por nombre y las secciones volviendo cuando se borra.
+- **La ficha (criterio 11)**: los tests del front y la corrida end-to-end muestran "Record payment" solo con un Balance mayor que $0, y "New sale to <name>" abriendo New sale con ese Customer elegido; la ficha no muestra "+ New sale".
+- **Sin regresiones**: las suites existentes de customers, payments y navigation pasan sin aflojar ninguna aserción.
+- **Sin curl**: la corrida end-to-end del front agrega, encuentra y edita un Customer, agrega uno sin número, abre Record payment desde "Collect" con el Customer elegido, y abre "New sale to <name>" con ese Customer elegido. (Criterio 4)
+- **Diseño**: `scripts/design/compare.sh` se corre antes y después para Customers, `ClienteFicha`, `Payment` y `NuevaVentaCliente`, celular y computadora, claro y oscuro donde el registro tiene los dos, adjunto al PR y juzgado a ojo, con cada diferencia respecto del diseño listada.
+- El Balance, la cuenta y las métricas de cifras de Owed to you viven en `payments.md`.
 
-## Out of scope
+## Fuera de alcance
 
-- Deleting a customer: they will have sales and payments.
-- Merging duplicates; importing from the spreadsheet (import.md).
-- A new unique key for customers.
-- A VIP filter; a filter, list, badge, sort or prompt for customers without a number.
-- A customer channel, or any replacement for it; keeping a copy of the old channel values anywhere.
-- A separate Owed to you screen; a tappable debt figure in Customers' header; any filter or sort of Customers beyond what is defined here.
-- Importing an old business export back.
-- Other VIP rules (a percent off list); turning Customers VIP on or off (pricing-settings.md).
+- Eliminar un Customer: va a tener Sales y Payments.
+- Unificar duplicados; importar desde la planilla (import.md).
+- Una nueva clave única para los Customers.
+- Un filtro VIP; un filtro, lista, insignia, orden o aviso para los Customers sin número.
+- Un canal de Customer, o cualquier reemplazo para él; guardar una copia de los valores viejos del canal en cualquier lado.
+- Una pantalla Owed to you aparte; una cifra de deuda tocable en la cabecera de Customers; cualquier filtro u orden de Customers más allá de lo definido acá.
+- Importar de vuelta un Business export viejo.
+- Otras reglas VIP (un porcentaje de descuento sobre el **List price**); activar o desactivar VIP customers (pricing-settings.md).
