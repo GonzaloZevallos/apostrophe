@@ -5,7 +5,7 @@
  */
 
 import { expect, test } from 'vitest'
-import { SCREENS, type ScreenId, type Viewport } from '../routes'
+import { HOME, LOGIN, SALES, SCREENS, type ScreenId, type Viewport } from '../routes'
 import { FORM_DRAWING, TWO_PANE_LAYOUT, scrollOnArrival, type Arrival, type NavigationType } from './scrollOnArrival'
 
 function at(screen: ScreenId | undefined, pathname = `screen:${screen ?? 'outside'}`, sheetDepth = 0): Arrival {
@@ -71,7 +71,7 @@ test('the table names every registry screen, and nothing else', () => {
 test('every screen reached by PUSH from a tab root does what the table says, on both viewports', () => {
   for (const entry of SCREENS) {
     for (const viewport of VIEWPORTS) {
-      const decision = scrollOnArrival(at('sales', '/sales'), at(entry.id, `/to/${entry.id}`), 'PUSH', viewport)
+      const decision = scrollOnArrival(at('sales', SALES), at(entry.id, `to:${entry.id}`), 'PUSH', viewport)
       expect(decision, `${entry.id} on the ${viewport}`).toBe(FROM_A_TAB_ROOT[entry.id][viewport])
     }
   }
@@ -112,21 +112,21 @@ test('a POP to a different path restores, on every screen pair and both viewport
       }
     }
   }
-  expect(scrollOnArrival(at(undefined, '/login'), at('home', '/'), 'POP', 'phone')).toBe('restore')
+  expect(scrollOnArrival(at(undefined, LOGIN), at('home', HOME), 'POP', 'phone')).toBe('restore')
 })
 
 test('a POP to the same path at equal sheet depth restores (go(-2) from a re-tapped tab)', () => {
   for (const viewport of VIEWPORTS) {
-    expect(scrollOnArrival(at('sales', '/sales', 0), at('sales', '/sales', 0), 'POP', viewport)).toBe('restore')
-    expect(scrollOnArrival(at('sales', '/sales', 1), at('sales', '/sales', 1), 'POP', viewport)).toBe('restore')
+    expect(scrollOnArrival(at('sales', SALES, 0), at('sales', SALES, 0), 'POP', viewport)).toBe('restore')
+    expect(scrollOnArrival(at('sales', SALES, 1), at('sales', SALES, 1), 'POP', viewport)).toBe('restore')
   }
 })
 
 test('a POP to the same path that opens or closes an in-page sheet keeps the page', () => {
   for (const viewport of VIEWPORTS) {
-    expect(scrollOnArrival(at('sales', '/sales', 1), at('sales', '/sales', 0), 'POP', viewport)).toBe('keep')
-    expect(scrollOnArrival(at('sales', '/sales', 0), at('sales', '/sales', 1), 'POP', viewport)).toBe('keep')
-    expect(scrollOnArrival(at('sales', '/sales', 2), at('sales', '/sales', 0), 'POP', viewport)).toBe('keep')
+    expect(scrollOnArrival(at('sales', SALES, 1), at('sales', SALES, 0), 'POP', viewport)).toBe('keep')
+    expect(scrollOnArrival(at('sales', SALES, 0), at('sales', SALES, 1), 'POP', viewport)).toBe('keep')
+    expect(scrollOnArrival(at('sales', SALES, 2), at('sales', SALES, 0), 'POP', viewport)).toBe('keep')
   }
 })
 
