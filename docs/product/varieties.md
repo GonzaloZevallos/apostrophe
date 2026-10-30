@@ -114,7 +114,7 @@ Criterios de éxito:
     - en la computadora, un modal sobre la página de la Variety, nunca una página propia;
     - un "$" antes de cada monto en pesos (**List price**, Bulk price y VIP price; nunca el Bulk minimum);
     - la fecha de vigencia se muestra por defecto como un chip "Today".
-17. **Un precio desde hoy en la menor cantidad de toques**: registrar un precio vigente desde hoy nunca exige abrir un selector de fecha. Elegir otra fecha sigue siendo posible.
+17. **Un precio desde hoy en la menor cantidad de toques**: registrar una Price entry que rige desde hoy nunca exige abrir un selector de fecha. Elegir otra fecha sigue siendo posible.
 18. **Un mensaje, una fuente**: cada mensaje que se muestra en más de una pantalla ("Check the grams entered" en los formularios de precio, de Stock entry y de Stock withdrawal) tiene una sola fuente, y también la tiene el toast "Price saved". Lo que lee quien vende no cambia en ningún lado.
 19. **Se lee como archivada, nada oculto**: la página de una Archived variety dice "Archived" en
     palabras, y "Hidden" cuando la Variety está oculta. Muestra su resumen, precios, Stock y
@@ -419,7 +419,7 @@ Criterios de éxito:
   - tocarlo abre la elección de fecha; cómo se ve esa elección es de diseño, siempre que se llegue desde el chip;
   - un día elegido que no es hoy dice "dd/mm", sin "Today";
   - volver a hoy se hace desde el mismo chip, donde se encuentra "Today"; no hay un control aparte, y nunca lleva más que el chip y su elección;
-  - registrar un precio vigente desde hoy nunca exige abrir un selector de fecha;
+  - registrar una Price entry que rige desde hoy nunca exige abrir un selector de fecha;
   - las reglas de fecha no cambian: se permite cualquier fecha, una Price entry por Variety por fecha, y una fecha rechazada se rechaza como antes;
   - la fecha elegida se conserva cuando el guardado se rechaza por cualquier campo.
 - **En el celular**: una Sheet a pantalla completa dibujada por el único `Sheet` compartido (ADR-0062, el Phone layout de navigation.md), con "Close" arriba y "Save the price" fijo abajo del formulario, por encima del teclado; los rechazos van arriba de él. No tiene afuera: "Close" y el gesto de volver del celular son sus salidas. Abierta por un link directo, se muestra sobre la página de esa Variety, que queda inerte detrás. Cambiar el tamaño cruzando 900 px o rotar el celular conserva lo tipeado.
@@ -463,7 +463,7 @@ Criterios de éxito:
 
 ## Métricas
 
-- **Precio vigente (criterio 1)**: tests sobre el historial responden la última Price entry en un día o
+- **Current price (criterio 1)**: tests sobre el historial responden la última Price entry en un día o
   antes, y ninguna antes de la primera. 100% en verde.
 - **Pasado intacto (criterio 2)**: eliminar una Price entry vuelve a hacer vigente la anterior,
   cubierto por tests a través de la API y del front.
@@ -679,7 +679,7 @@ Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-i
 - Cada Business va a tener una zona horaria, y "hoy" se va a calcular por Business. Las fechas registradas nunca se van a reescribir.
 - Va a reemplazar: "Hoy es el día del negocio en hora de Argentina."
 
-### Negocios existentes
+### Existing businesses
 
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entregan las partes que construyen cada configuración, cada una sembrando en los Businesses existentes su propio valor por defecto.
 

@@ -62,7 +62,7 @@ Criterios de éxito:
 ### En pantalla: Settings → Prices
 
 - **Lugar**: un grupo de Settings (navigation.md), después de Users y antes de Integrations.
-- **Ruta**: `/settings/prices`, fijada en `scripts/design/screens.json`. No hay otro punto de entrada: no se llega desde la página de una Variety ni desde el formulario de precio.
+- **Ruta**: `/settings/prices`, fijada en `scripts/design/screens.json`. No hay otro acceso: no se llega desde la página de una Variety ni desde el formulario de precio.
 - **Un formulario**:
   - "Close", y una confirmación al salir con cambios sin guardar; un grupo sin tocar se cierra de inmediato;
   - dos interruptores, "Bulk price" y "VIP customers", cada uno marcado como activado o desactivado por palabra o forma y `aria-checked`, nunca solo por color;
@@ -94,7 +94,7 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - **Inmutabilidad del precio guardado (criterio 3)**: después de cualquier cambio de interruptor, el precio, la regla y el total de las líneas existentes no cambian.
 - **Las pantallas siguen los interruptores (criterio 1)**: tests del front muestran, con cada interruptor desactivado, ningún rastro de él en el formulario de precio, la página de la Variety, el formulario, la ficha y la lista de Customers, el badge de Sales, New sale ni el Catalog. Los badges registrados en el detalle de una Sale se mantienen.
 - **Grupo Prices (criterio 6)**:
-  - tests del front cubren "Close", la confirmación de cambios sin guardar, un cierre sin tocar, "Save the prices", "Prices saved", las dos líneas fijas, su lugar y su ruta, y la ausencia de cualquier otro punto de entrada;
+  - tests del front cubren "Close", la confirmación de cambios sin guardar, un cierre sin tocar, "Save the prices", "Prices saved", las dos líneas fijas, su lugar y su ruta, y la ausencia de cualquier otro acceso;
   - Prices se abre en 2 toques como máximo desde cualquier **Tab root**;
   - la corrida de punta a punta de Settings cambia cada regla desde un viewport de celular.
 - **Upkeep**: un guardado que cambia cualquiera de los dos interruptores dispara el Upkeep; un guardado que no cambia ninguno no envía nada.
