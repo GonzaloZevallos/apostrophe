@@ -195,6 +195,18 @@ En claro `--serie2` y `--serie5` quedan bajo 3:1 sobre `--superficie` porque son
 de la dueña; no se movieron porque nunca se leen por el color solo: la etiqueta directa
 dice cuál es cuál.
 
+### El logo
+
+La marca es un apóstrofo blanco sobre un cuadrado redondeado verde (`#1e6b47`), igual en
+claro y en oscuro. Tiene una sola fuente: `web/public/icons/mark.svg`. Ningún archivo de
+`web/src` copia su dibujo; la app la dibuja con un `<img>` de ese archivo. El favicon es ese
+SVG (con `icon-192.png` de respaldo) y los PNG (`icon-192`, `icon-512`, `icon-maskable-512` y
+`apple-touch-icon`) los genera `scripts/design/icons.mjs` desde él, sin conexión y sin editarlo
+(`npm --prefix web run icons`). El renderizador anota en `web/public/icons/icons.json` el
+SHA-256 del SVG y el tamaño de cada ícono; `web/src/design/icons.test.ts` falla si el SVG
+cambia y los PNG no se generaron de nuevo. El maskable y el de Apple son a sangre y opacos,
+con el apóstrofo dentro del 80 % central.
+
 ## En el celular
 
 Qué significa "se siente como una app" por debajo de los 900 px del punto de corte de la
