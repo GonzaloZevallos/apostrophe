@@ -566,3 +566,15 @@ Cómo llama un Business a sus Products en pantalla. Decidido en docs/adr/0055-co
 _Avoid_: label, noun setting
 
 ## Language
+
+**Yerba mark**:
+La marca del producto Apostrophe: un cuadrado redondeado #1E6B47 con el apóstrofo en blanco, igual en claro y oscuro, cuya única fuente es `web/public/icons/mark.svg`. De ella derivan el ícono de la app, el favicon y la marca del encabezado del teléfono. Es del producto, nunca de un Business, y nunca aparece en el Catalog, el Sale bill ni en Telegram. En la app: no tiene palabra propia; su nombre accesible es "apostrophe".
+_Avoid_: logo, icon, badge, Business logo
+
+**Wordmark**:
+El nombre "apostrophe" en minúscula, en Geist 600, con el ’ en `--acento`, que acompaña a la Yerba mark en Sign in, la aceptación de Invitation, la bienvenida del Onboarding y la barra lateral de la computadora. Es fijo para toda la instalación: ninguna configuración, Product word ni idioma lo renombra. En la app: apostrophe.
+_Avoid_: logo, title, brand name, Business name
+
+**Tabular figures**:
+Cifras de ancho fijo que se alinean dígito por dígito, aplicadas a dinero, cantidades, porcentajes mostrados como cifra y Days left mediante las clases de cifra y la del componente de dinero. Nunca se aplican a fechas, horas, Phone numbers, conteos dentro de una oración ni texto libre. Un número va en Tabular figures si el ojo lo recorre en una columna, una fila de cifras o un total. En la app: no tiene palabra propia.
+_Avoid_: monospace, number font, alignment
