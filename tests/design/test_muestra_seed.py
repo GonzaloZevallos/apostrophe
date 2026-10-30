@@ -227,14 +227,14 @@ def test_the_archived_variety_touches_no_read_of_the_live_business(
     sample = seeded_at_capture_date(client, clock)
     gone = sample.archived
 
-    assert gone not in [r["variety_id"] for r in client.get("/panel").json()["stock"]]
+    assert gone not in [r["product_id"] for r in client.get("/panel").json()["stock"]]
     assert gone not in [r["product_id"] for r in client.get("/stock").json()["products"]]
     assert gone not in [v["id"] for v in client.get("/api/products").json()]
     catalog = client.get("/catalog").json()
     assert gone not in [v["product_id"] for v in catalog["products"]]
     assert ARCHIVED_NAME not in (catalog["text"] or "")
     analysis = client.get("/analysis").json()
-    assert gone not in [v["variety_id"] for v in analysis["month"]["varieties"]]
+    assert gone not in [v["product_id"] for v in analysis["month"]["products"]]
 
     assert gone in [
         r["product_id"]
@@ -266,7 +266,7 @@ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
         assert row["expenses"] == panel["expenses"]
         assert row["cash"] == panel["cash"]
 
-    varieties = analysis["month"]["varieties"]
+    varieties = analysis["month"]["products"]
     assert sum(v["cost"]["costed"] for v in varieties) == periods["month"]["cost_of_goods"]
     assert analysis["month"]["sales"] == periods["month"]["sales"]
 

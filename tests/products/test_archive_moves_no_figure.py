@@ -168,7 +168,7 @@ def test_no_figure_of_the_books_moves_when_a_variety_is_archived_and_restored(
     row_before = _variety_row(_ok(client.get("/stock")), seed.archived_id)
     # the seed really holds the hard cases: pending grams and a negative stock
     assert before["panel_periods"]["month"]["pending_cost"] is True
-    assert before["analysis"]["2026-09"]["month"]["varieties"]
+    assert before["analysis"]["2026-09"]["month"]["products"]
     assert before["account"]
     # today and week hold the sale of the clock's day: a filter on archived varieties there
     # would move them
@@ -218,7 +218,7 @@ def test_a_restored_variety_comes_back_whole(
 
     before = whole()
     _archive(client, a)
-    assert a not in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
+    assert a not in [row["product_id"] for row in _ok(client.get("/panel"))["stock"]]
     assert a not in [v["id"] for v in _ok(client.get("/api/products"))]
     assert a not in [v["product_id"] for v in _ok(client.get("/stock"))["products"]]
     assert all(v["product_id"] != a for v in _ok(client.get("/catalog"))["products"])
@@ -227,7 +227,7 @@ def test_a_restored_variety_comes_back_whole(
     assert whole() == before
     assert a in [v["id"] for v in _ok(client.get("/api/products"))]
     assert a in [v["product_id"] for v in _ok(client.get("/stock"))["products"]]
-    assert a in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
+    assert a in [row["product_id"] for row in _ok(client.get("/panel"))["stock"]]
 
 
 def _edits(telegram: FakeTelegram) -> list[tuple[str, ...]]:

@@ -358,7 +358,7 @@ def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agre
         detail = client.get(f"/sales/{sale['id']}").json()
         cost = detail["lines"][0]["cost"]["costed"]
         [analysed] = client.get("/analysis", params={"month": "2026-10"}).json()["month"][
-            "varieties"
+            "products"
         ]
         assert analysed["cost"]["costed"] == cost  # `GET /analysis` reads the same cost
         assert isinstance(cost, int)
