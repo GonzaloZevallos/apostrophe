@@ -53,7 +53,7 @@ export default function VarietyStockSection({
                   </span>
                 </span>
                 <span className="fila-entrada__cifras">
-                  <span className="fila-entrada__costo">{`−${formatGrams(movement.quantity)}`}</span>
+                  <span className="fila-entrada__costo cifra-s">{`−${formatGrams(movement.quantity)}`}</span>
                 </span>
               </InAppLink>
             </li>
@@ -64,13 +64,13 @@ export default function VarietyStockSection({
                   {formatDate(movement.date, today)}{OUT_OF_DATE_JOINER}{t(ORIGIN_LABEL[movement.origin])}
                 </span>
                 {movement.cost_per_gram !== null && (
-                  <span className="fila-entrada__linea2">{formatMoney(movement.cost_per_gram)}{VARIETIES_TEXT.elGramo}</span>
+                  <span className="fila-entrada__linea2 cifra-n">{formatMoney(movement.cost_per_gram)}{VARIETIES_TEXT.elGramo}</span>
                 )}
               </span>
               <span className="fila-entrada__cifras">
-                <span className="fila-entrada__costo">{formatGrams(movement.quantity)}</span>
+                <span className="fila-entrada__costo cifra-s">{formatGrams(movement.quantity)}</span>
                 {movement.total_cost !== null && (
-                  <span className="fila-entrada__linea2">{formatMoney(movement.total_cost)}</span>
+                  <span className="fila-entrada__linea2 cifra-n">{formatMoney(movement.total_cost)}</span>
                 )}
               </span>
             </li>

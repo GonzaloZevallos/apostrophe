@@ -130,7 +130,7 @@ export default function Ventas() {
           {!isError && !isPending && (
             <div className="ventas__resumen">
               <span className="ventas__rango">{`${rangeLabel(range, me.today)} · ${salesCount(sales.length)}`}</span>
-              <span className="ventas__total">{formatMoney(total)}</span>
+              <span className="ventas__total cifra-s">{formatMoney(total)}</span>
             </div>
           )}
         </div>
@@ -205,9 +205,9 @@ export default function Ventas() {
                           (`VentasCompu.dc.html`), so this line is names only. */}
                       <span className="fila-venta__detalle fila-venta__detalle--nombre">{names}</span>
                     </span>
-                    <span className="fila-venta__gramos">{gramos}</span>
+                    <span className="fila-venta__gramos cifra-n">{gramos}</span>
                     <span className="fila-venta__monto">
-                      <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda' : 'fila-venta__cifra'}>
+                      <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda cifra-s' : 'fila-venta__cifra cifra-s'}>
                         {formatMoney(sale.total)}
                       </span>
                       {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">{SALES_TEXT.owesYou}</span>}

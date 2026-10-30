@@ -48,11 +48,11 @@ function FilaContenido({ name, phone, vip, balance, owingSince, standing }: Requ
       </span>
       {standing === 'owes' && owingSince !== null && (
         <span className="lista-clientes__balance">
-          <span className="monto-deuda">{formatMoney(balance)}</span>
+          <span className="monto-deuda cifra-n">{formatMoney(balance)}</span>
           <span className="monto-deuda">{CUSTOMERS_TEXT.owesYouSince}{formatDateShort(owingSince)}</span>
         </span>
       )}
-      {standing === 'credit' && <span className="monto-credito">{CUSTOMERS_TEXT.credit}{formatMoneyMagnitude(balance)}</span>}
+      {standing === 'credit' && <span className="monto-credito cifra-n">{CUSTOMERS_TEXT.credit}{formatMoneyMagnitude(balance)}</span>}
     </>
   )
 }

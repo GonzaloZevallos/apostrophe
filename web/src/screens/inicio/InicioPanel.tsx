@@ -99,7 +99,7 @@ function StockRow({ variety, today }: { variety: PanelVarietyOut; today: string 
       <span className="fila-stock__encabezado">
         <span className="fila-stock__nombre">{variety.name}</span>
         <span className="fila-stock__cifras">
-          <span className="fila-stock__gramos">
+          <span className="fila-stock__gramos cifra-s">
             {variety.status === 'no_entries' ? '—' : formatGrams(variety.quantity)}
           </span>
           {sideNote !== null && <span className="fila-stock__insignia">{sideNote}</span>}
@@ -146,7 +146,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
           <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
             <span className="bloque-deben__nombre">{row.name}</span>
             <span className="pie">
-              <span className="monto-deuda">{formatMoney(row.balance)}</span>
+              <span className="monto-deuda cifra-n">{formatMoney(row.balance)}</span>
               {INICIO_TEXT.sinceDate(formatDateShort(row.owing_since))}
             </span>
           </InAppLink>

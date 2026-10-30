@@ -21,10 +21,10 @@ type Attributes = Pick<CatalogVariety, 'shown' | 'emoji' | 'indica_share' | 'aro
 export default function VarietyCatalogSection({ row, readOnly = false }: { row: Attributes; readOnly?: boolean }) {
   const openForm = useOpenForm()
   if (readOnly) {
-    const stored: [string, string | null][] = [
-      [VARIETIES_TEXT.emoji, row.emoji],
-      [VARIETIES_TEXT.indica, row.indica_share === null ? null : `${row.indica_share} %`],
-      [VARIETIES_TEXT.aromaSabor, row.aroma],
+    const stored: [string, string | null, boolean][] = [
+      [VARIETIES_TEXT.emoji, row.emoji, false],
+      [VARIETIES_TEXT.indica, row.indica_share === null ? null : `${row.indica_share} %`, true],
+      [VARIETIES_TEXT.aromaSabor, row.aroma, false],
     ]
     return (
       <section id={CATALOG_SECTION_ID} className="seccion-variedad">
@@ -36,11 +36,11 @@ export default function VarietyCatalogSection({ row, readOnly = false }: { row: 
             <dt>{VARIETIES_TEXT.mostrarEnElCatalogo}</dt>
             <dd>{row.shown ? VARIETIES_TEXT.seMuestra : VARIETIES_TEXT.noSeMuestra}</dd>
           </div>
-          {stored.map(([label, value]) =>
+          {stored.map(([label, value, isFigure]) =>
             value === null ? null : (
               <div key={label} className="seccion-variedad__dato">
                 <dt>{label}</dt>
-                <dd>{value}</dd>
+                <dd className={isFigure ? 'cifra-n' : undefined}>{value}</dd>
               </div>
             ),
           )}
@@ -65,7 +65,7 @@ export default function VarietyCatalogSection({ row, readOnly = false }: { row: 
         </div>
         <div className="seccion-variedad__dato">
           <dt>{VARIETIES_TEXT.indica}</dt>
-          <dd>{row.indica_share === null ? NONE : `${row.indica_share} %`}</dd>
+          <dd className={row.indica_share === null ? undefined : 'cifra-n'}>{row.indica_share === null ? NONE : `${row.indica_share} %`}</dd>
         </div>
         <div className="seccion-variedad__dato">
           <dt>{VARIETIES_TEXT.aromaSabor}</dt>

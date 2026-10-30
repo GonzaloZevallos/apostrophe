@@ -33,7 +33,7 @@ export default function AmountRow({
         {label}
       </span>{' '}
       <span className="analisis__monto-valor">
-        {value.amount !== null && <span className="analisis__monto-cifra">{value.amount}</span>}
+        {value.amount !== null && <span className="analisis__monto-cifra cifra-n">{value.amount}</span>}
         {value.marker !== '' && <span className="analisis__monto-marca">{value.marker}</span>}
       </span>
     </div>
