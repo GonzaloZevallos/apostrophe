@@ -6,7 +6,7 @@
  * importing `router.tsx` pulls in React.
  */
 
-import { HOME, ONBOARDING, ONBOARDING_DONE, WITHDRAWAL_EDIT } from '../routes.ts'
+import { HOME } from '../routes.ts'
 
 /** The shape of a route object this guard reads (react-router's `RouteObject` fits it). */
 export interface RouteNode {
@@ -30,18 +30,6 @@ export function redirectExcuses(table: readonly { from: string }[]): Record<stri
   )
 }
 
-/**
- * Real screen routes the registry does not name yet. They have no design file, so adding
- * them to `scripts/design/screens.json` needs a plan or product decision; until then they
- * are known gaps, not exemptions. The list can only shrink: an entry the registry now
- * covers must be removed (the real test fails on it).
- */
-export const UNREGISTERED_ROUTES: Readonly<Record<string, string>> = {
-  [ONBOARDING]: 'the onboarding entry: it only redirects to the current step, no registry entry',
-  [ONBOARDING_DONE]: 'the onboarding end: reached once per business, no registry entry',
-  [WITHDRAWAL_EDIT]: 'edit form of a withdrawal: no design file or registry entry',
-}
-
 /** Every full pattern the router can render a screen for: leaves and index routes. */
 export function flattenRoutes(routes: readonly RouteNode[], parent = ''): string[] {
   return routes.flatMap((route) => {
@@ -59,7 +47,10 @@ function segments(pattern: string): string[] {
   return pattern.split(HOME).filter((segment) => segment !== '')
 }
 
-/** Same number of segments, each equal or a parameter (`:x` or `{x}`) on either side. */
+/**
+ * Same number of segments, and each pair strict: a literal matches only an equal literal,
+ * a parameter (`:x` or `{x}`) matches only a parameter, whatever its name.
+ */
 export function patternsMatch(a: string, b: string): boolean {
   const left = segments(a)
   const right = segments(b)
@@ -67,7 +58,7 @@ export function patternsMatch(a: string, b: string): boolean {
     left.length === right.length &&
     left.every((segment, i) => {
       const other = right[i] ?? ''
-      return segment === other || isParam(segment) || isParam(other)
+      return isParam(segment) || isParam(other) ? isParam(segment) && isParam(other) : segment === other
     })
   )
 }

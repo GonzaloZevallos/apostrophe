@@ -204,7 +204,36 @@ export function skippedScreens(
   })
 }
 
+/** One front route of the registry's `registry[]` list: the one place the route patterns live. */
+export interface RouteRegistryEntry {
+  path: string
+  kind: 'root' | 'card' | 'form'
+  parent: string | null
+}
+
+/** `registry[]` (path, kind, parent), validated. It is a different list from `screens[]`. */
+export function parseRouteRegistry(raw: unknown): readonly RouteRegistryEntry[] {
+  const list = asRecord(raw, 'registry')['registry']
+  if (!Array.isArray(list)) throw new Error('registry has no registry list')
+  return list.map((item: unknown, index): RouteRegistryEntry => {
+    const row = asRecord(item, `registry #${index}`)
+    const path = row['path']
+    if (typeof path !== 'string' || !path.startsWith('/')) {
+      throw new Error(`registry #${index}: path is not a route starting with a slash`)
+    }
+    const kind = row['kind']
+    if (kind !== 'root' && kind !== 'card' && kind !== 'form') {
+      throw new Error(`${path}: kind is not root, card or form`)
+    }
+    const parent = row['parent']
+    if (parent !== undefined && typeof parent !== 'string') throw new Error(`${path}: parent is not text`)
+    if (kind !== 'root' && parent === undefined) throw new Error(`${path}: a ${kind} needs a parent`)
+    return { path, kind, parent: parent ?? null }
+  })
+}
+
 export const REGISTRY: readonly RegistryScreen[] = parseRegistry(registryJson, STATE_NAMES)
+export const ROUTE_REGISTRY: readonly RouteRegistryEntry[] = parseRouteRegistry(registryJson)
 export const WALKABLE: readonly RegistryScreen[] = walkableScreens(REGISTRY)
 
 /** Every name a `Violation.screen` may carry. */
