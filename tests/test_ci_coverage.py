@@ -30,8 +30,23 @@ def _baseline() -> dict[str, float]:
     return parse_baseline((FIXTURES / "baseline.md").read_text(encoding="utf-8"))
 
 
-def _selection(*, selected: frozenset[str], pytest: bool = True, vitest: bool = True) -> Selection:
-    return Selection(pytest=pytest, vitest=vitest, e2e=False, areas=AREAS, selected=selected)
+def _selection(
+    *,
+    selected: frozenset[str],
+    pytest: bool = True,
+    vitest: bool = True,
+    vitest_all: bool = True,
+    vitest_files: int = 0,
+) -> Selection:
+    return Selection(
+        pytest=pytest,
+        vitest=vitest,
+        e2e=False,
+        vitest_all=vitest_all,
+        vitest_files=vitest_files,
+        areas=AREAS,
+        selected=selected,
+    )
 
 
 def _rows(markdown: str) -> dict[str, list[str]]:
@@ -78,6 +93,8 @@ def test_an_incidental_area_and_one_with_no_lines_both_read_not_run() -> None:
         pytest=True,
         vitest=True,
         e2e=False,
+        vitest_all=True,
+        vitest_files=0,
         areas=AREAS | {"billing"},
         selected=frozenset({"accounts"}),
     )
@@ -147,6 +164,36 @@ def test_a_full_run_with_a_baseline_shows_deltas() -> None:
     assert rows["app/ledger"] == ["25.0%", "-5.0"]
 
 
+def test_a_partial_vitest_run_reads_partial_with_its_file_count_and_no_delta() -> None:
+    markdown = report(
+        _json("pytest_coverage.json"),
+        _json("vitest_summary.json"),
+        _selection(selected=AREAS, vitest_all=False, vitest_files=7),
+        _baseline(),
+    )
+
+    rows = _rows(markdown)
+    assert rows["vitest"] == ["partial (7 files)"]
+    assert "Partial run" in markdown
+    assert "Delta" not in markdown
+
+
+def test_a_partial_vitest_run_is_not_full_even_when_every_area_ran() -> None:
+    assert _selection(selected=AREAS).is_full
+    assert not _selection(selected=AREAS, vitest_all=False, vitest_files=2).is_full
+
+
+def test_a_partial_vitest_run_without_a_report_still_says_no_report() -> None:
+    markdown = report(
+        _json("pytest_coverage.json"),
+        None,
+        _selection(selected=AREAS, vitest_all=False, vitest_files=2),
+        None,
+    )
+
+    assert _rows(markdown)["vitest"] == ["no report"]
+
+
 def test_a_full_run_without_a_baseline_has_no_delta_column() -> None:
     markdown = report(
         _json("pytest_coverage.json"),
@@ -194,6 +241,8 @@ def test_parse_selection_reads_string_flags_and_area_lists() -> None:
             "pytest": "true",
             "vitest": "false",
             "e2e": "false",
+            "vitest_all": "true",
+            "vitest_files": 3,
             "areas": ["accounts", "catalog"],
             "selected": ["accounts"],
         }
@@ -203,6 +252,8 @@ def test_parse_selection_reads_string_flags_and_area_lists() -> None:
         pytest=True,
         vitest=False,
         e2e=False,
+        vitest_all=True,
+        vitest_files=3,
         areas=frozenset({"accounts", "catalog"}),
         selected=frozenset({"accounts"}),
     )
@@ -246,6 +297,8 @@ def test_report_command_prints_the_markdown_for_a_selection_file(
                 "pytest": "true",
                 "vitest": "true",
                 "e2e": "false",
+                "vitest_all": "true",
+                "vitest_files": 0,
                 "areas": sorted(AREAS),
                 "selected": sorted(AREAS),
             }
@@ -271,6 +324,62 @@ def test_report_command_prints_the_markdown_for_a_selection_file(
     assert status == 0
     assert out.startswith(MARKER)
     assert "+5.0" in out
+
+
+def test_a_selection_without_the_vitest_keys_reads_as_not_full() -> None:
+    selection = parse_selection(
+        {
+            "pytest": "true",
+            "vitest": "true",
+            "e2e": "false",
+            "areas": sorted(AREAS),
+            "selected": sorted(AREAS),
+        }
+    )
+
+    assert not selection.vitest_all
+    assert selection.vitest_files == 0
+    assert not selection.is_full
+
+
+def test_report_command_with_a_baseline_path_that_does_not_exist_has_no_deltas(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    selection = tmp_path / "selection.json"
+    selection.write_text(
+        json.dumps(
+            {
+                "pytest": "true",
+                "vitest": "true",
+                "e2e": "false",
+                "vitest_all": "true",
+                "vitest_files": 0,
+                "areas": sorted(AREAS),
+                "selected": sorted(AREAS),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    status = main(
+        [
+            "report",
+            "--selection",
+            str(selection),
+            "--pytest-json",
+            str(FIXTURES / "pytest_coverage.json"),
+            "--vitest-summary",
+            str(FIXTURES / "vitest_summary.json"),
+            "--baseline",
+            str(tmp_path / "docs" / "ci" / "coverage-baseline.md"),
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert status == 0
+    assert out.startswith(MARKER)
+    assert "Delta" not in out
+    assert _rows(out)["pytest"] == ["60.0%"]
 
 
 def test_report_command_without_a_selection_file_refuses(
