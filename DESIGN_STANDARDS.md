@@ -95,3 +95,7 @@ This section is a pointer and holds none of the standard's requirements.
 - The mobile standard is `CODING_STANDARDS.md` §10 "Phone", the one authoritative text. The design README's "En el celular" restates it; where the two differ, §10 wins.
 - §10's requirements and checks are written rules, not differences from a drawing, so the test in "Drawing as guide" never exempts them.
 - The Mobile check itself is in `docs/product/mobile-check.md` and `docs/product/gate.md`.
+
+## Typeface
+
+Geist is the typeface of every screen, at weights 400, 500, 600 and 700, bundled with the app through `@fontsource/geist` (imported only in `web/src/main.tsx`): the app fetches no font from outside the installation. `--fuente` is `'Geist', system-ui, -apple-system, sans-serif` and is the same in `docs/product/design-system/tokens.css`, `tokens.ts` and `web/src/styles/tokens.css`. The drawings in `pantallas/` still name Plus Jakarta Sans; a design capture answers that request from the self-hosted Geist files, so both sides are drawn in Geist (ADR-0042).

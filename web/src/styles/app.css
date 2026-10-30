@@ -5717,6 +5717,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The amount of the "owes you" line is one unbreakable box: "$" never ends a line alone. */
+.cobro__importe {
+  white-space: nowrap;
+}
+
 /* Registrar cobro's form (`Cobro.dc.html`): the amount drawn large, "Todo" a pill, the method
  * a two-part pill (the chosen one bolder as well as lighter-backed), the preview a card. */
 .cobro__monto {
@@ -6145,6 +6150,12 @@ body {
   .bar-inferior__item {
     flex: 1 1 44px;
     min-width: min-content;
+  }
+
+  /* Geist is wider than the face this bar was sized for: a hair of tightening on the labels
+   * keeps the three short items at 44 px beside "Customers" and "Varieties". */
+  .bar-inferior__item > span {
+    letter-spacing: -0.02em;
   }
 }
 

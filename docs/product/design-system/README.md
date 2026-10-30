@@ -57,6 +57,10 @@ un solo verde usado con cuentagotas.
 - Rótulos en minúscula, escritos como frases ("Vendiste esta semana").
 - El idioma de la app es el inglés (`docs/product/product-language.md`): "Save", "Owes you", "Choose". Las pantallas de `pantallas/` están dibujadas en castellano y son la referencia de estructura, no de palabras.
 
+## Tipografía: Geist
+
+La tipografía es Geist, en pesos 400, 500, 600 y 700, empaquetada con la app (`@fontsource/geist`, importada sólo en `web/src/main.tsx`): la app no pide ninguna tipografía fuera de la instalación. `--fuente` es `'Geist', system-ui, -apple-system, sans-serif` y es igual en `tokens.css`, `tokens.ts` y `web/src/styles/tokens.css`. La copia de `tokens.css` de esta carpeta conserva su `@import` de Google, ahora para Geist; es documentación y la app nunca la carga. Los dibujos de `pantallas/` siguen pidiendo Plus Jakarta Sans: las capturas de diseño responden ese pedido con los archivos de Geist alojados (`scripts/design/fonts.mjs`, ADR-0042), así que el dibujo y la app se ven en la misma tipografía.
+
 ## Accesibilidad — no se negocia
 
 1. Ningún estado se cuenta sólo por color: una señal, flecha o palabra en cada
