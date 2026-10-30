@@ -46,8 +46,9 @@ def vitest_args(
     listed: Sequence[str],
 ) -> list[str]:
     """The test files to hand vitest: nothing (a full run) for a full selection, an empty union
-    or any unsafe path; otherwise the sorted, deduplicated union of `files` (the
-    changes job's web-relative `src/...`, or repo-relative `web/...`) and `listed` (vitest's own listing), as web-relative paths.
+    or any unsafe path; otherwise the sorted, deduplicated union of `files`
+    (the changes job's web-relative `src/...`, or repo-relative `web/...`) and `listed` (vitest's
+    own listing), as web-relative paths.
 
     `vitest_changed` says a source changed, which is what makes `listed` mean anything; the union
     takes the listing as it comes, so a stale one can only widen the run."""
