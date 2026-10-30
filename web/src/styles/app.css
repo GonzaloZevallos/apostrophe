@@ -28,7 +28,7 @@ body {
   overscroll-behavior: none;
 }
 
-/* Tabular figures: the one rule that sets `font-variant-numeric: tabular-nums`, on the
+/* Tabular figures: the one rule that makes digits tabular, on the
  * figure classes only (money, grams, percentages and Days left sit in a `cifra*` class).
  * Never on `html`, `body` or `:root`: text and sentences keep Geist's proportional digits. */
 .cifra-xl,
