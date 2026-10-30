@@ -10,7 +10,7 @@
 // never thrown: one broken screen must not hide the others. The facts carry `today`.
 //
 // A design capture never touches the network (ADR-0042): its Google Fonts requests are
-// served from @fontsource/plus-jakarta-sans, every other non-file request is aborted. Both
+// served from @fontsource/geist, every other non-file request is aborted. Both
 // captures run on a paused fake clock (the facts' `today` at noon, Argentina) and are taken
 // only once the page is at rest (ADR-0042, `settle.mjs`): the applied-check passes and, for three
 // frames, nothing is requested, mutated or animating and the layout (control state included) is
@@ -69,7 +69,7 @@ const REPO = resolve(HERE, '..', '..')
 const PROTOTYPE = join(REPO, 'docs', 'product', 'design-system', 'pantallas')
 const require = createRequire(join(REPO, 'web', 'package.json'))
 const { chromium } = require('playwright')
-const FONT_ROOT = join(REPO, 'web', 'node_modules', '@fontsource', 'plus-jakarta-sans')
+const FONT_ROOT = join(REPO, 'web', 'node_modules', '@fontsource', 'geist')
 
 const { values } = parseArgs({
   options: {

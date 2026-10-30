@@ -149,7 +149,7 @@ export const paletas: Record<Tema, Paleta> = { claro, oscuro };
 /* ------------------------------------------------------------------ */
 
 export const fuente =
-  "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif";
+  "'Geist', system-ui, -apple-system, sans-serif";
 
 /** Una sola familia, dos pesos. La jerarquía la hace el tamaño, no el peso. */
 export interface EstiloTexto {

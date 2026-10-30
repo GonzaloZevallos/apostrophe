@@ -1,21 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { fontCss, fontRoute, GSTATIC_PREFIX } from '../../../scripts/design/fonts.mjs'
+import { fontCss, fontRoute, GSTATIC_PREFIX, REQUESTED_FAMILY } from '../../../scripts/design/fonts.mjs'
 
 const CSS2 =
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap'
 
-// The shape of @fontsource/plus-jakarta-sans/<w>.css: several unicode-range blocks, each
-// with `font-display: swap` and relative `./files/` URLs, woff2 first and woff after.
+// The shape of @fontsource/geist/<w>.css: several unicode-range blocks, each with
+// `font-display: swap` and relative `./files/` URLs, woff2 first and woff after. The family
+// is Geist: the drawings ask for Plus Jakarta Sans and must get Geist under that name.
 const fontsourceCss = (weight: number): string =>
   ['latin-ext', 'latin']
     .map(
-      (subset) => `/* plus-jakarta-sans-${subset}-${weight}-normal */
+      (subset) => `/* geist-${subset}-${weight}-normal */
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Geist';
   font-style: normal;
   font-display: swap;
   font-weight: ${weight};
-  src: url(./files/plus-jakarta-sans-${subset}-${weight}-normal.woff2) format('woff2'), url(./files/plus-jakarta-sans-${subset}-${weight}-normal.woff) format('woff');
+  src: url(./files/geist-${subset}-${weight}-normal.woff2) format('woff2'), url(./files/geist-${subset}-${weight}-normal.woff) format('woff');
   unicode-range: U+0100-02BA,U+02BD-02C5;
 }
 `,
@@ -28,13 +29,13 @@ describe('fontRoute', () => {
   })
 
   it('serves a gstatic file by its name', () => {
-    expect(fontRoute(`${GSTATIC_PREFIX}plus-jakarta-sans-latin-400-normal.woff2`)).toEqual({
+    expect(fontRoute(`${GSTATIC_PREFIX}geist-latin-400-normal.woff2`)).toEqual({
       kind: 'file',
-      name: 'plus-jakarta-sans-latin-400-normal.woff2',
+      name: 'geist-latin-400-normal.woff2',
     })
-    expect(fontRoute(`${GSTATIC_PREFIX}plus-jakarta-sans-latin-400-normal.woff`)).toEqual({
+    expect(fontRoute(`${GSTATIC_PREFIX}geist-latin-400-normal.woff`)).toEqual({
       kind: 'file',
-      name: 'plus-jakarta-sans-latin-400-normal.woff',
+      name: 'geist-latin-400-normal.woff',
     })
   })
 
@@ -42,10 +43,10 @@ describe('fontRoute', () => {
     ['another host', 'https://example.com/css2?family=Plus+Jakarta+Sans:wght@400'],
     ['another family', 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700'],
     ['a file URL', 'file:///repo/docs/product/design-system/tokens.css'],
-    ['a name with a slash', `${GSTATIC_PREFIX}sub/plus-jakarta-sans-latin-400-normal.woff2`],
+    ['a name with a slash', `${GSTATIC_PREFIX}sub/geist-latin-400-normal.woff2`],
     ['a name with ..', `${GSTATIC_PREFIX}..%2Fpackage.json.woff2`],
     ['a name that climbs', `${GSTATIC_PREFIX}../files/x.woff2`],
-    ['another extension', `${GSTATIC_PREFIX}plus-jakarta-sans-latin-400-normal.ttf`],
+    ['another extension', `${GSTATIC_PREFIX}geist-latin-400-normal.ttf`],
     ['a gstatic host with another prefix', 'https://fonts.gstatic.com/other/x.woff2'],
     ['no URL at all', 'not a url'],
   ])('leaves %s unserved', (_label, url) => {
@@ -70,6 +71,15 @@ describe('fontCss', () => {
       expect(url.startsWith(GSTATIC_PREFIX)).toBe(true)
     }
     expect(css).not.toContain('./files/')
+  })
+
+  it('declares every face under the drawings family, filled with the Geist files', () => {
+    const css = fontCss([400, 600], read)
+    expect(REQUESTED_FAMILY).toBe('Plus Jakarta Sans')
+    expect(css.match(/font-family: 'Plus Jakarta Sans';/g)).toHaveLength(4)
+    expect(css).not.toContain("'Geist'")
+    expect(css).toContain(`url(${GSTATIC_PREFIX}geist-latin-400-normal.woff2)`)
+    expect(css).not.toContain('plus-jakarta-sans-')
   })
 
   it('keeps one block per unicode-range of every weight asked', () => {

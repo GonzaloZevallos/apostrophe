@@ -18,7 +18,7 @@
     "i18n:missing": "I18N_MISSING_REPORT=1 vitest run scripts/i18n/missingKeys.test.ts"
   },
   "dependencies": {
-    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "@fontsource/geist": "^5.3.0",
     "@tanstack/react-query": "^5.104.1",
     "i18next": "^26.5.10",
     "react": "^19.2.8",

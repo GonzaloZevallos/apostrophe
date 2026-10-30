@@ -1,12 +1,17 @@
 // Fonts of a design capture (ADR-0042). The design files load Plus Jakarta Sans from Google
 // Fonts with `display=swap`; a capture must not depend on the network, so the request is
-// answered from the app's own self-hosted package (@fontsource/plus-jakarta-sans), with
-// `font-display: block`. Pure: no file is read here, `comparisons.mjs` injects the reader.
+// answered from the app's own self-hosted package (@fontsource/geist), with
+// `font-display: block`. The drawings still name Plus Jakarta Sans in their own CSS, so each
+// face is declared under that name but filled with the Geist files: the drawing side is drawn
+// in Geist, like the app. Pure: no file is read here, `comparisons.mjs` injects the reader.
 
 // Where the stylesheet says its files live; a request for one is served from `files/`.
 export const GSTATIC_PREFIX = 'https://fonts.gstatic.com/s/plusjakartasans/v1/'
 
+// The family the drawings ask for and declare, and the one the Geist package declares.
+export const REQUESTED_FAMILY = 'Plus Jakarta Sans'
 const FAMILY = /^Plus Jakarta Sans:wght@(\d+(?:;\d+)*)$/
+const LOCAL_FAMILY = /font-family:\s*'Geist'/g
 const FILE_NAME = /^[a-z0-9-]+\.woff2?$/
 
 // What to do with a request URL: a stylesheet for the weights it asks, a font file by its
@@ -40,6 +45,7 @@ export function fontCss(weights, read) {
     .map((weight) => {
       const css = read(weight)
         .replace(/font-display:\s*swap/g, 'font-display: block')
+        .replace(LOCAL_FAMILY, `font-family: '${REQUESTED_FAMILY}'`)
         .replace(/url\(\.\/files\/([^)]+)\)/g, `url(${GSTATIC_PREFIX}$1)`)
       for (const [, target] of css.matchAll(/url\(([^)]+)\)/g)) {
         if (!target.startsWith(GSTATIC_PREFIX)) {
