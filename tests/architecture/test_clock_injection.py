@@ -18,6 +18,13 @@ it with `ast` (never a text search), per call site and not per file:
    of `tests/business_removal/adapters/test_sql_schema_rows.py`, and `build_app` of
    `tests/business_removal/adapters/seed.py`; a new one is added deliberately.
 
+The same rule holds for the `main` of the three command lines (`app/accounts/adapters/cli.py`,
+`app/business_removal/adapters/cli.py`, `app/spreadsheet_import/adapters/cli.py`), whose
+production default is `system_clock`: a call under `tests/` names its `clock=` too. A call
+is resolved by what its import binds (aliases and module aliases included), never by the bare
+name `main`, so the `main` of a script is not matched. The import command's `run` takes its
+`clock` with no default, so a call that leaves it out already fails `mypy`.
+
 Where the system date may be read at all is `tests/architecture/test_no_real_clock.py`'s
 rule (ADR-0043), which scans `tests/` and `app/` and is stricter than a read list kept
 here; this module does not repeat it.
@@ -32,6 +39,13 @@ from tests.architecture.hexagon import REPO_ROOT
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 MODULE_LEVEL = "<module>"
+CLI_MODULES = frozenset(
+    {
+        "app.accounts.adapters.cli",
+        "app.business_removal.adapters.cli",
+        "app.spreadsheet_import.adapters.cli",
+    }
+)
 
 ACCEPTED_WRAPPERS = frozenset(
     {
@@ -52,21 +66,50 @@ def _relative(module: Path) -> str:
         return module.as_posix()
 
 
+def _dotted(expression: ast.expr) -> str | None:
+    """`a.b.c` for a chain of names and attributes, `None` for anything else."""
+    if isinstance(expression, ast.Name):
+        return expression.id
+    if isinstance(expression, ast.Attribute):
+        head = _dotted(expression.value)
+        return None if head is None else f"{head}.{expression.attr}"
+    return None
+
+
 class _Walker(ast.NodeVisitor):
-    """Walks one module keeping the stack of enclosing functions, and the names that
-    `create_app` is bound to by its imports."""
+    """Walks one module keeping the stack of enclosing functions, the names that
+    `create_app` is bound to by its imports, and what its imports bind to the CLI `main`s:
+    the function itself and the modules that hold it."""
 
     def __init__(self, tree: ast.Module) -> None:
         self.functions: list[ast.FunctionDef | ast.AsyncFunctionDef] = []
         self.create_apps: set[str] = {"create_app"}
+        self.cli_mains: set[str] = set()
+        self.cli_modules: set[str] = set()
         self.create_app_calls: list[tuple[ast.Call, str, ast.arguments | None]] = []
+        self.cli_main_calls: list[tuple[ast.Call, str, ast.arguments | None]] = []
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom):
                 for alias in node.names:
                     bound = alias.asname or alias.name
                     if alias.name == "create_app":
                         self.create_apps.add(bound)
+                    if node.module in CLI_MODULES and alias.name == "main":
+                        self.cli_mains.add(bound)
+                    if f"{node.module}.{alias.name}" in CLI_MODULES:
+                        self.cli_modules.add(bound)
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name in CLI_MODULES:
+                        self.cli_modules.add(alias.asname or alias.name)
         self.visit(tree)
+
+    def _is_cli_main(self, func: ast.expr) -> bool:
+        if isinstance(func, ast.Name):
+            return func.id in self.cli_mains
+        if isinstance(func, ast.Attribute) and func.attr == "main":
+            return _dotted(func.value) in self.cli_modules
+        return False
 
     @property
     def enclosing(self) -> str:
@@ -87,6 +130,9 @@ class _Walker(ast.NodeVisitor):
         ):
             arguments = self.functions[-1].args if self.functions else None
             self.create_app_calls.append((node, self.enclosing, arguments))
+        if self._is_cli_main(func):
+            arguments = self.functions[-1].args if self.functions else None
+            self.cli_main_calls.append((node, self.enclosing, arguments))
         self.generic_visit(node)
 
 
@@ -113,14 +159,15 @@ def _parameter_names(arguments: ast.arguments) -> set[str]:
     return {arg.arg for arg in [*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs]}
 
 
-def create_app_clock_violations(
-    module: Path, accepted_wrappers: frozenset[tuple[str, str]] = ACCEPTED_WRAPPERS
+def _clock_violations(
+    module: Path,
+    calls: list[tuple[ast.Call, str, ast.arguments | None]],
+    callee: str,
+    accepted_wrappers: frozenset[tuple[str, str]],
 ) -> list[str]:
-    """Every `create_app(...)` call in `module` that does not name its clock, as
-    `module:line: reason`."""
     where = _relative(module)
     found: list[str] = []
-    for call, function, arguments in _walk(module).create_app_calls:
+    for call, function, arguments in calls:
         prefix = f"{where}:{call.lineno}:"
         if any(keyword.arg is None for keyword in call.keywords):
             found.append(f"{prefix} `**` unpacking hides whether `clock` is passed")
@@ -138,10 +185,27 @@ def create_app_clock_violations(
             # A test's own `clock` parameter is the fixture: pytest always supplies it.
             is_test = function.startswith("test_")
             if not is_test and (where, function) not in accepted_wrappers:
-                found.append(f"{prefix} `{function}` wraps `create_app` and is not accepted")
+                found.append(f"{prefix} `{function}` wraps `{callee}` and is not accepted")
             elif _parameter_has_default(arguments, clock.id):
                 found.append(f"{prefix} wrapper `{function}` gives `{clock.id}` a default")
     return found
+
+
+def create_app_clock_violations(
+    module: Path, accepted_wrappers: frozenset[tuple[str, str]] = ACCEPTED_WRAPPERS
+) -> list[str]:
+    """Every `create_app(...)` call in `module` that does not name its clock, as
+    `module:line: reason`."""
+    calls = _walk(module).create_app_calls
+    return _clock_violations(module, calls, "create_app", accepted_wrappers)
+
+
+def cli_main_clock_violations(
+    module: Path, accepted_wrappers: frozenset[tuple[str, str]] = ACCEPTED_WRAPPERS
+) -> list[str]:
+    """Every call in `module` to the `main` of one of the CLI modules that does not name
+    its clock, as `module:line: reason`."""
+    return _clock_violations(module, _walk(module).cli_main_calls, "main", accepted_wrappers)
 
 
 def _python_files(root: str) -> list[Path]:
@@ -190,6 +254,33 @@ def test_every_create_app_call_under_tests_names_its_clock() -> None:
         violation
         for module in _python_files("tests")
         for violation in create_app_clock_violations(module)
+    ]
+
+    assert violations == []
+
+
+def test_the_cli_main_clock_guard_flags_every_unclocked_shape() -> None:
+    violations = cli_main_clock_violations(FIXTURES / "unclocked_cli_main.py")
+
+    assert [violation.split(": ", 1)[1] for violation in violations] == [
+        "no `clock` keyword",
+        "`clock=None`",
+        "no `clock` keyword",
+        "no `clock` keyword",
+        "`**` unpacking hides whether `clock` is passed",
+        "no `clock` keyword",
+    ]
+
+
+def test_the_cli_main_clock_guard_accepts_a_call_naming_its_clock() -> None:
+    assert cli_main_clock_violations(FIXTURES / "clocked_cli_main.py") == []
+
+
+def test_every_cli_main_call_under_tests_names_its_clock() -> None:
+    violations = [
+        violation
+        for module in _python_files("tests")
+        for violation in cli_main_clock_violations(module)
     ]
 
     assert violations == []
