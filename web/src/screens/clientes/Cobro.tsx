@@ -20,7 +20,7 @@
  * through `refusals.ts`'s contract-backed `RefusalCode`.
  */
 
-import { type FormEvent, type RefObject, useEffect, useId, useState } from 'react'
+import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError } from '../../api/client'
@@ -127,7 +127,9 @@ export default function Cobro({
 
   // Touched means any of the three fields differs from what the form opened with.
   const dirty = amount !== balance || date !== today || method !== null
-  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
+  // A layout effect, so the host's leave guard counts the form dirty in the same task that
+  // shows the choice: a passive effect leaves a window in which a Back leaves unasked.
+  useLayoutEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
 
   const previewAmount = amount !== null && Number.isSafeInteger(amount) && amount > 0 ? amount : null
 
