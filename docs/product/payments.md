@@ -1,213 +1,213 @@
-# Payments
+# Pagos
 
-Money a customer hands over, and what each customer owes because of it: their balance, owing since and the account of their sales and payments. Seen only by its business (ADR-0004). Reads sales and their on-the-spot payments from sales (ADR-0007) and customers from customers. Cash (#7) counts payments on their own dates. Which sale a payment settles is worked out live and never stored, like cost of goods (ADR-0009, ADR-0010), while sale prices stay frozen (ADR-0003). Who owes is shown as the Owed to you section at the top of Customers and as Home's "Owed to you" block; there is no separate Owed to you screen.
+El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007) y los Customers de customers. **Cash** (#7) cuenta los Payments en sus propias fechas. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
 
 ## Jobs
 
-**When** a customer pays me part or all of what they owe, in cash or by transfer, on the day or weeks later, **I want** to record it from my phone in a few taps and see their balance and "owing since" drop right away, **so I** always know who owes me what and since when, and nothing they paid or still owe gets lost or lands on the wrong person.
+**Cuando** un cliente me paga parte o todo lo que debe, en efectivo o por transferencia, el mismo día o semanas después, **quiero** registrarlo desde el celular en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada.
 
-This is the same "run my business from my phone" job as every other capability. It replaces the spreadsheet's single paid/pending column. Settling a debt overwrote that column, so there was no payment date and no partial payment.
+Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otra capacidad. Reemplaza la única columna pagado/pendiente de la planilla. Saldar una deuda pisaba esa columna, así que no quedaba fecha de pago ni pago parcial.
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "Collect" on every debtor row of Customers and Home, which opens Record payment with the customer chosen in at most 2 taps.)
+**Cuando** manejo mi negocio desde el celular entre pedidos o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté armada según lo que hago de verdad y con qué frecuencia, **para poder** volver con el cliente en lugar de buscar entre menús. (El job de **Navigation**, navigation.md: acá lo sirve "Collect" en cada fila de deudor de Customers y de Home, que abre Record payment con el cliente elegido en 2 toques como máximo.)
 
-**When** a customer pays me while I'm chatting with them on my phone, **I want** to open Record payment from their card or debtor row, record the payment and be back on that customer straight away, **so I** see their balance drop without losing my place. (GH-46 follow-up: on the phone Record payment is a sheet over the screen it was opened from, never a page of its own, and that screen keeps its scroll position.)
+**Cuando** un cliente me paga mientras charlo con él en el celular, **quiero** abrir Record payment desde su ficha o desde su fila de deudor, registrar el pago y volver enseguida a ese cliente, **para** ver que su Balance baja sin perder mi lugar. (Seguimiento de GH-46: en el celular Record payment es una **Sheet** sobre la pantalla desde la que se abrió, nunca una página propia, y esa pantalla conserva su posición de scroll.)
 
-**When** I'm in the middle of serving a customer with my phone in hand, **I want** the app to behave like a phone app (a form that fills the screen with its main action under my thumb, and nothing I need hidden behind the keyboard), **so I can** record a payment without fighting the screen or losing what I typed. (The phone layout job, navigation.md, GH-319: served here by Record payment drawn by the one shared `Sheet`.)
+**Cuando** estoy atendiendo a un cliente con el celular en la mano, **quiero** que la app se comporte como una app de celular (un formulario que llena la pantalla con su acción principal bajo el pulgar, y nada de lo que necesito escondido detrás del teclado), **para poder** registrar un pago sin pelearme con la pantalla ni perder lo que escribí. (El job del Phone layout, navigation.md, GH-319: acá lo sirve Record payment dibujado con el único `Sheet` compartido.)
 
-Success criteria:
+Criterios de éxito:
 
-1. **Fast from the phone**: a payment is recorded in under a minute, with the date already set to today. Record payment, with the customer chosen, opens in at most 2 taps from any tab root ("Collect" on Customers or Home). Paying everything owed takes one tap ("All").
-2. **Partial payments just work, oldest debt first**: the seller never picks a sale. Every later payment settles the customer's oldest unpaid sale first, then the next. Before saving, the seller sees which sales it settles and what is still owed. After saving, they see what is still owed.
-3. **The balance is always right**:
-   - The balance equals what was bought and not paid, minus payments, to the peso.
-   - Owing since is the date of the oldest sale not fully paid.
-   - Both are right straight after any sale or payment is recorded or deleted, and never depend on the order things were typed in.
-4. **Who owes, at a glance**: every customer who owes, oldest debt first, each with their balance and owing since, at the top of Customers. Also the total owed and the count of sales still owing, without working it out from sales. In Sales, a sale still owing is marked as such.
-5. **A traceable account**:
-   - Each customer's account shows their sales and payments in date order, with the running balance.
-   - Each sale says how it was paid or that it was left owing.
-   - Each payment says its date, its method and which sale it went to.
-   - A mistaken payment can be deleted, and the account and balance follow at once.
-6. **Payment dates are kept**: a payment keeps its own date and method, so Cash (#7) counts money on the day it came in, never on the sale's date.
-7. **Businesses never mix, nothing leaks**: a payment belongs to one customer of its own business (ADR-0004). Another business's customer or payment is gone (404). No amount or name goes to an error, a log, the console or browser storage (ADR-0005).
-8. **No curl, and the browser computes nothing**: everything is done from the phone. Every balance, owing since and settlement shown comes from the API.
-9. **Never lose your place**: on the phone, Record payment opens as a sheet over the screen it was opened from (the customer's card, Customers or Home) and closes with "Close". Saving or closing lands the seller back on that screen, at the scroll position it had, with the balance already lower after a save. On the computer it is a modal. The product docs, the drawing and the built app agree on this.
+1. **Rápido desde el celular**: un Payment se registra en menos de un minuto, con la fecha ya puesta en hoy. Record payment, con el Customer elegido, se abre en 2 toques como máximo desde cualquier **Tab root** ("Collect" en Customers o en Home). Pagar todo lo que se debe lleva un toque ("All").
+2. **Los Payments parciales andan solos, primero la deuda más vieja**: el vendedor nunca elige una Sale. Cada Payment posterior salda primero la Sale impaga más vieja del Customer, después la siguiente. Antes de guardar, el vendedor ve qué Sales salda y cuánto queda debiendo. Después de guardar, ve cuánto queda debiendo.
+3. **El Balance siempre es correcto**:
+   - El Balance es igual a lo que se compró y no se pagó, menos los Payments, al peso.
+   - El Owing since es la fecha de la Sale más vieja que no está pagada por completo.
+   - Los dos son correctos inmediatamente después de registrar o eliminar cualquier Sale o Payment, y nunca dependen del orden en que se cargaron las cosas.
+4. **Quién debe, de un vistazo**: todo Customer que debe, con la deuda más vieja primero, cada uno con su Balance y su Owing since, arriba de Customers. También el **Total owed** y la cantidad de **Sales still owing**, sin calcularlos a partir de las Sales. En Sales, una Sale que todavía se debe aparece marcada como tal.
+5. **Una cuenta que se puede seguir**:
+   - La cuenta de cada Customer muestra sus Sales y Payments en orden de fecha, con el Balance corrido.
+   - Cada Sale dice cómo se pagó o que quedó debiendo.
+   - Cada Payment dice su fecha, su método y a qué Sale fue.
+   - Un Payment equivocado se puede eliminar, y la cuenta y el Balance lo siguen al instante.
+6. **Las fechas de los Payments se conservan**: un Payment conserva su propia fecha y su método, así que Cash (#7) cuenta el dinero el día en que entró, nunca en la fecha de la Sale.
+7. **Los Businesses nunca se mezclan, nada se filtra**: un Payment pertenece a un Customer de su propio Business (ADR-0004). El Customer o el Payment de otro Business no existe (404). Ningún monto ni nombre va a un error, un log, la consola ni el almacenamiento del navegador (ADR-0005).
+8. **Sin curl, y el navegador no calcula nada**: todo se hace desde el celular. Todo Balance, Owing since y **Settlement** que se muestra sale de la API.
+9. **Nunca perder el lugar**: en el celular, Record payment se abre como una Sheet sobre la pantalla desde la que se abrió (la ficha del Customer, Customers o Home) y se cierra con "Close". Guardar o cerrar deja al vendedor de vuelta en esa pantalla, en la posición de scroll que tenía, con el Balance ya más bajo después de guardar. En la computadora es un modal. Los docs de producto, el dibujo y la app construida coinciden en esto.
 
-## Behaviour
+## Comportamiento
 
 ### Payment
 
-- **Fields**: a customer of the same business, a date, an amount in whole pesos above $0, and a method (cash or transfer). There is no note.
-- **Date**: defaults to today, the business day in Argentina time. Earlier days are allowed; a future date is refused.
-- **Customer**: required. Another business's customer is gone (404).
-- **Above the balance**: a payment above the customer's current balance is refused, so recording never creates a credit.
-  - The current balance counts all the customer's sales, whatever the payment's date.
-  - A customer whose balance is $0 or a credit cannot be given a payment.
-- **No edit**: a payment cannot be edited. A mistaken one is deleted and recorded again.
-- **Delete**: a hard delete, confirmed first. Only a later payment can be deleted this way.
+- **Campos**: un Customer del mismo Business, una fecha, un monto en pesos enteros mayor que $0 y un método (efectivo o transferencia). No hay **Note**.
+- **Fecha**: por defecto es hoy, el día del Business en hora argentina. Se permiten días anteriores; una fecha futura se rechaza.
+- **Customer**: obligatorio. El Customer de otro Business no existe (404).
+- **Por encima del Balance**: un Payment mayor que el Balance actual del Customer se rechaza, así que registrar nunca crea un **Credit**.
+  - El Balance actual cuenta todas las Sales del Customer, sea cual sea la fecha del Payment.
+  - A un Customer cuyo Balance es $0 o un Credit no se le puede cargar un Payment.
+- **Sin edición**: un Payment no se puede editar. Uno equivocado se elimina y se vuelve a registrar.
+- **Eliminación**: una eliminación definitiva, con confirmación previa. Solo se puede eliminar así un Payment posterior.
 
 ### Settlement
 
-- **On-the-spot payment**: the payment recorded with a sale paid in full (sales.md, ADR-0007).
-  - It settles that sale and only that sale, in full. It never takes part in the oldest-first walk.
-  - It is deleted with its sale and cannot be deleted on its own.
-- **Later payment**: recorded through Record payment. Later payments settle what the customer's sales left owing, oldest debt first.
-  - Sales are taken by date, then by recording order.
-  - Later payments are applied by date, then by recording order.
-  - A payment that reaches past one sale goes on to the next.
-  - **A payment's own date never limits what it settles.** A payment dated before the customer's oldest owed sale still settles that sale. Its date says when the money came in (criterion 6), not which debt it may pay.
-- **Nothing about a settlement is stored.** Which sale a payment covers, the balance and owing since are worked out live from the customer's sales and payments as they stand now.
-  - A sale or payment recorded late takes its place by its own date.
-  - Deleting either one makes everything after it work out again.
-- **Deleting a sale**: the later payments that had settled it apply to the customer's next oldest debt, or become a credit.
-- **Deleting a payment**: whatever it settled is owed again.
-- **What never moves**: a sale's stored prices, rules and line totals (ADR-0003, ADR-0007), and a payment's date, amount and method. Only which sale a payment is shown against can change.
+- **On-the-spot payment**: el Payment registrado junto con una Sale pagada por completo (sales.md, ADR-0007).
+  - Salda esa Sale y solo esa Sale, por completo. Nunca participa del recorrido de la deuda más vieja primero.
+  - Se elimina junto con su Sale y no se puede eliminar por separado.
+- **Payment posterior**: se registra con Record payment. Los Payments posteriores saldan lo que las Sales del Customer dejaron debiendo, primero la deuda más vieja.
+  - Las Sales se toman por fecha, después por orden de registro.
+  - Los Payments posteriores se aplican por fecha, después por orden de registro.
+  - Un Payment que alcanza más de una Sale sigue con la siguiente.
+  - **La fecha propia de un Payment nunca limita lo que salda.** Un Payment con fecha anterior a la Sale debida más vieja del Customer igual salda esa Sale. Su fecha dice cuándo entró el dinero (criterio 6), no qué deuda puede pagar.
+- **Nada de un Settlement se guarda.** Qué Sale cubre un Payment, el Balance y el Owing since se calculan en el momento a partir de las Sales y los Payments del Customer tal como están ahora.
+  - Una Sale o un Payment registrado tarde ocupa su lugar según su propia fecha.
+  - Eliminar cualquiera de los dos hace que todo lo posterior se vuelva a calcular.
+- **Eliminar una Sale**: los Payments posteriores que la habían saldado se aplican a la siguiente deuda más vieja del Customer, o pasan a ser un Credit.
+- **Eliminar un Payment**: lo que saldaba vuelve a deberse.
+- **Lo que nunca se mueve**: los precios, las reglas y los totales de línea guardados de una Sale (ADR-0003, ADR-0007), y la fecha, el monto y el método de un Payment. Solo puede cambiar contra qué Sale se muestra un Payment.
 
 ### Credit
 
-- Only deleting a sale that later payments had settled can leave money over. It stays visible and is never floored to $0:
-  - the balance goes below zero and shows as "Credit $ X";
-  - the credit applies automatically to the customer's next sales left owing;
-  - it counts in no debt figure;
-  - a credit that should not exist is fixed by deleting the mistaken payment;
-  - the app records no refunds.
+- Solo eliminar una Sale que unos Payments posteriores habían saldado puede dejar dinero de más. Sigue visible y nunca se lleva a $0:
+  - el Balance pasa a ser menor que cero y se muestra como "Credit $ X";
+  - el Credit se aplica automáticamente a las próximas Sales del Customer que queden debiendo;
+  - no cuenta en ninguna cifra de deuda;
+  - un Credit que no debería existir se corrige eliminando el Payment equivocado;
+  - la app no registra reintegros.
 
-### Who owes and the totals
+### Quién debe y los totales
 
-- **Sales still owing**: every sale of the business not fully paid once settlement is applied, partially paid ones included, each counted once. A sale covered by a credit is paid.
-- **Total owed**: the sum of the balances above $0. Credits never subtract from it.
+- **Sales still owing**: toda Sale del Business que no está pagada por completo una vez aplicado el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Una Sale cubierta por un Credit está pagada.
+- **Total owed**: la suma de los Balances mayores que $0. Los Credits nunca la restan.
 
-### On screen: the Customers' "Owed to you" section
+### En pantalla: la sección "Owed to you" de Customers
 
-- **Where**: the top section of Customers (customers.md), above everyone A–Z. It replaces the former Owed to you screen, which no longer exists; its old path redirects to Customers (navigation.md). Home's Owed to you heading opens Customers on this section (results.md).
-- **Its head**: the total owed and the count of sales still owing.
-  - The count reads "1 sale owing" for one sale still owing, and "N sales owing" for two or more (e.g. "4 sales owing"). This is the same singular and plural rule Home's "Owed to you" block uses for the same count (results.md).
-- **Its rows**: only customers whose balance is above $0, by owing since (oldest first), ties by name.
-  - Each row shows the balance in amber and "since dd/mm", never as a chip.
-  - Each row carries **"Collect"** (accessible name "Collect from <name>"), which opens Record payment with that customer already chosen. Tapping the rest of the row opens the customer's card. On the phone, "Collect" and "Owed to you" are tap targets of at least 44×44 (navigation.md, Phone layout).
-- **Nobody owes**: the section reads a fixed "Nobody owes you", with nothing to tap.
-- **Customers' header** carries no tappable debt figure: the section itself is on screen.
-- **Search**: while a query is typed, Customers collapses into one flat list by name (customers.md); a customer who owes keeps their balance, "owes you since dd/mm" and "Collect" there.
-- **Customers in credit** never appear in the section and count in no figure. In everyone A–Z they show "Credit $ X" in the neutral/blue treatment, never green or amber.
+- **Dónde**: la sección de arriba de Customers (customers.md), sobre todos de la A a la Z. Reemplaza a la antigua pantalla Owed to you, que ya no existe; su ruta vieja redirige a Customers (navigation.md). El título Owed to you de Home abre Customers en esta sección (results.md).
+- **Su cabecera**: el Total owed y la cantidad de Sales still owing.
+  - La cantidad dice "1 sale owing" cuando es una sola Sale que todavía se debe, y "N sales owing" cuando son dos o más (por ejemplo "4 sales owing"). Es la misma regla de singular y plural que usa el bloque "Owed to you" de Home para la misma cantidad (results.md).
+- **Sus filas**: solo los Customers cuyo Balance es mayor que $0, por Owing since (el más viejo primero), los empates por nombre.
+  - Cada fila muestra el Balance en ámbar y "since dd/mm", nunca como chip.
+  - Cada fila lleva **"Collect"** (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido. Tocar el resto de la fila abre la ficha del Customer. En el celular, "Collect" y "Owed to you" son blancos táctiles de al menos 44×44 (navigation.md, Phone layout).
+- **Nadie debe**: la sección dice un "Nobody owes you" fijo, sin nada para tocar.
+- **La cabecera de Customers** no lleva ninguna cifra de deuda tocable: la sección misma está en pantalla.
+- **Búsqueda**: mientras se escribe una consulta, Customers se colapsa en una sola lista plana por nombre (customers.md); un Customer que debe conserva ahí su Balance, "owes you since dd/mm" y "Collect".
+- **Los Customers con Credit** nunca aparecen en la sección y no cuentan en ninguna cifra. En todos de la A a la Z muestran "Credit $ X" con el tratamiento neutro/azul, nunca verde ni ámbar.
 
-### On screen: the customer's card (`ClienteFicha`)
+### En pantalla: la ficha del cliente (`ClienteFicha`)
 
-- It shows "Owes you $ X since dd/mm" as a small label over a large figure. For a credit it shows "Credit $ X", the same way, with no "since". With a balance of $0 it shows neither.
-- "Record payment" shows only when the balance is above $0. Otherwise it is hidden.
-- **The account** opens with the label "Account · running balance" and lists sales and payments in date order, with the running balance.
-  - Each row shows its date, a title with a sub-line under it, and on the right its amount over "balance $ X". An amount never wraps between "$" and its figure.
-  - **A sale**: the title "Sale". Its sub-line is one of:
-    - "Paid in cash" or "Paid by transfer" for a sale paid on the spot, which has no payment row of its own;
-    - "Left owing" for a sale left owing;
-    - "Nothing to pay" for a sale whose total is $0, settled with no method and nothing owed (sales.md).
+- Muestra "Owes you $ X since dd/mm" como una etiqueta chica sobre una cifra grande. Para un Credit muestra "Credit $ X", de la misma manera, sin "since". Con un Balance de $0 no muestra ninguno de los dos.
+- "Record payment" se muestra solo cuando el Balance es mayor que $0. Si no, está oculto.
+- **La cuenta** abre con la etiqueta "Account · running balance" y lista las Sales y los Payments en orden de fecha, con el Balance corrido.
+  - Cada fila muestra su fecha, un título con una sublínea debajo, y a la derecha su monto sobre "balance $ X". Un monto nunca se parte entre "$" y su cifra.
+  - **Una Sale**: el título "Sale". Su sublínea es una de estas:
+    - "Paid in cash" o "Paid by transfer" para una Sale pagada en el momento, que no tiene fila de Payment propia;
+    - "Left owing" para una Sale que quedó debiendo;
+    - "Nothing to pay" para una Sale cuyo total es $0, saldada sin método y sin nada debido (sales.md).
 
-    The row names no variety and no grams: the sale's detail holds those (sales.md).
-  - **A later payment**: one row per sale it reaches, each titled "Payment · <method>" with the sub-line "On account of the sale of dd/mm" and the amount applied to that sale.
-  - **Any part of a payment beyond every debt**: titled "Payment · <method>" with the sub-line "Credit".
-  - What is owed reads in amber. A running "Credit $ X" reads in the neutral/blue treatment, never amber or green.
-- **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "Credit $ X".
-  - It is the running figure only, not a credit, and counts in no figure.
-  - The card's own balance reads "Credit" only when the balance today is below zero.
-- **"Delete payment"** exists only on later payments.
-  - It is confirmed with "Delete the $ 15.000 payment (transfer) from 20/09?", "No, keep it / Yes, delete it". The confirmation names the payment, never the sales it covered.
-  - Then the toast "Payment deleted", with no data, and the account and balance refresh from the API.
-  - A payment that is gone follows accounts.md's "That is gone." rule.
+    La fila no nombra ninguna **Variety** ni gramos: el detalle de la Sale los tiene (sales.md).
+  - **Un Payment posterior**: una fila por cada Sale que alcanza, cada una titulada "Payment · <method>" con la sublínea "On account of the sale of dd/mm" y el monto aplicado a esa Sale.
+  - **Cualquier parte de un Payment más allá de todas las deudas**: titulada "Payment · <method>" con la sublínea "Credit".
+  - Lo que se debe se lee en ámbar. Un "Credit $ X" corrido se lee con el tratamiento neutro/azul, nunca ámbar ni verde.
+- **Balance corrido por debajo de cero**: entre un Payment y una Sale de fecha posterior que ese Payment salda, el Balance corrido pasa a ser menor que cero y esa fila dice "Credit $ X".
+  - Es solo la cifra corrida, no un Credit, y no cuenta en ninguna cifra.
+  - El Balance propio de la ficha dice "Credit" solo cuando el Balance de hoy es menor que cero.
+- **"Delete payment"** existe solo en los Payments posteriores.
+  - Se confirma con "Delete the $ 15.000 payment (transfer) from 20/09?", "No, keep it / Yes, delete it". La confirmación nombra el Payment, nunca las Sales que cubría.
+  - Después, el toast "Payment deleted", sin datos, y la cuenta y el Balance se refrescan desde la API.
+  - Un Payment que ya no existe sigue la regla "That is gone." de accounts.md.
 
-### On screen: Record payment (`Payment`)
+### En pantalla: Record payment (`Payment`)
 
-- **Opened from**: "Collect" on a debtor row of Customers (either section, or search results) or of Home's "Owed to you" block, and "Record payment" on the customer's card. Each opens it with that customer already chosen.
-- **A sheet on the phone, a modal on the computer** (navigation.md):
-  - On the phone it is a full-screen sheet drawn by the one shared `Sheet` (ADR-0062), over the screen it was opened from (the customer's card, Customers or Home), never a page of its own. That screen stays underneath. It has no handle and no peek of the screen behind.
-  - On the phone the sheet has no outside: "Close" at the top and the phone's back gesture, which are the same action, are its only exits. A tap on the safe-area strip by the status bar does nothing.
-  - On the phone the main action is pinned at the bottom of the form, above the keyboard, with the inline refusals above it. The sheet's height follows the visible viewport.
-  - On the computer it is a modal over the same screen, exactly as before: tapping its backdrop closes it only when nothing was typed.
-  - No bar and no "+ New sale". "Close", with a confirmation when leaving with something typed.
-  - Saving or "Close" lands the seller back on the screen it was opened from.
-  - Resizing across 900 px or rotating the phone keeps what was typed.
-- **Focus on opening**: on the phone, focus goes to the sheet's first field; the computer modal focuses its title.
-- **Back where you were**: on closing, by "Close" or by saving, the screen underneath is at the scroll position it had when "Collect" or "Record payment" was tapped, on the phone and on the computer.
-  - The refresh after saving updates rows in place and never resets the scroll.
-  - Focus returns to the "Collect" (or "Record payment") that was tapped.
-  - When the payment settles the whole balance and the customer's row leaves "Owed to you", the list stays at the same offset and the rows close up; nothing jumps to the top. Focus goes to the "Owed to you" heading, or to "Nobody owes you" when the section is now empty.
-  - This holds for this flow only; scroll restoration elsewhere in the app is not part of payments.
-- **The sheet**:
-  - "All: $ X" fills the amount with the whole balance in one tap;
-  - the date comes filled with today;
-  - Cash · Transfer, required.
-- **Before saving**, the API's preview shows which sales the payment settles ("Taken from the oldest debt") and "They still owe $ X" when something remains.
-- **After saving**:
-  - "Payment saved · still owing $ X" when something remains;
-  - "Payment saved" when nothing does.
+- **Se abre desde**: "Collect" en una fila de deudor de Customers (cualquiera de las dos secciones, o los resultados de búsqueda) o del bloque "Owed to you" de Home, y "Record payment" en la ficha del Customer. Cada uno lo abre con ese Customer ya elegido.
+- **Una Sheet en el celular, un modal en la computadora** (navigation.md):
+  - En el celular es una Sheet de pantalla completa dibujada con el único `Sheet` compartido (ADR-0062), sobre la pantalla desde la que se abrió (la ficha del Customer, Customers o Home), nunca una página propia. Esa pantalla queda debajo. No tiene manija ni deja asomar la pantalla de atrás.
+  - En el celular la Sheet no tiene afuera: "Close" arriba y el gesto de volver del celular, que son la misma acción, son sus únicas salidas. Un toque en la franja de área segura junto a la barra de estado no hace nada.
+  - En el celular la acción principal queda fija abajo del formulario, encima del teclado, con los rechazos en línea arriba de ella. El alto de la Sheet sigue al viewport visible.
+  - En la computadora es un modal sobre la misma pantalla, exactamente como antes: tocar su fondo lo cierra solo cuando no se escribió nada.
+  - Sin barra y sin "+ New sale". "Close", con una confirmación al salir con algo escrito.
+  - Guardar o "Close" deja al vendedor de vuelta en la pantalla desde la que se abrió.
+  - Cambiar el tamaño cruzando 900 px o rotar el celular conserva lo escrito.
+- **Foco al abrir**: en el celular el foco va al primer campo de la Sheet; el modal de la computadora enfoca su título.
+- **Volver donde estabas**: al cerrar, con "Close" o al guardar, la pantalla de abajo queda en la posición de scroll que tenía cuando se tocó "Collect" o "Record payment", en el celular y en la computadora.
+  - El refresco posterior al guardado actualiza las filas en su lugar y nunca reinicia el scroll.
+  - El foco vuelve al "Collect" (o "Record payment") que se tocó.
+  - Cuando el Payment salda todo el Balance y la fila del Customer sale de "Owed to you", la lista queda en el mismo desplazamiento y las filas se cierran; nada salta arriba de todo. El foco va al título "Owed to you", o a "Nobody owes you" cuando la sección quedó vacía.
+  - Esto vale solo para este flujo; la restauración del scroll en el resto de la app no es parte de los pagos.
+- **La Sheet**:
+  - "All: $ X" completa el monto con todo el Balance en un toque;
+  - la fecha viene completa con hoy;
+  - Cash · Transfer, obligatorio.
+- **Antes de guardar**, la vista previa de la API muestra qué Sales salda el Payment ("Taken from the oldest debt") y "They still owe $ X" cuando queda algo.
+- **Después de guardar**:
+  - "Payment saved · still owing $ X" cuando queda algo;
+  - "Payment saved" cuando no queda nada.
 
-  This is the second deliberate exception to accounts.md's no-data toast rule. The screen it was opened from refreshes from the API, so the lower balance is already there when the sheet closes. On the phone the toast sits above the bar of that screen (navigation.md, Phone layout).
-- **Refusals** show inline, above the main action, and keep everything typed:
-  - above the balance;
-  - future date;
-  - amount at or below $0;
-  - missing method.
+  Esta es la segunda excepción deliberada a la regla de toast sin datos de accounts.md. La pantalla desde la que se abrió se refresca desde la API, así que el Balance más bajo ya está ahí cuando la Sheet se cierra. En el celular el toast queda arriba de la barra de esa pantalla (navigation.md, Phone layout).
+- **Los rechazos** se muestran en línea, arriba de la acción principal, y conservan todo lo escrito:
+  - por encima del Balance;
+  - fecha futura;
+  - monto menor o igual que $0;
+  - falta el método.
 
-### Constraints
+### Restricciones
 
-- `payment` is ADR-0007's table and carries `business_id`. The business comes from the session.
-- Payment routes join the isolation sweep, the gated-route test and the ownership migration test.
-- Refusal codes go in `contract.json` (ADR-0008):
-  - above the balance;
-  - future date;
-  - amount at or below $0;
-  - missing method;
-  - deleting an on-the-spot payment;
-  - customer gone;
-  - payment gone.
-- No amount or name in refusals, logs, the console or browser storage (ADR-0005).
-- Every balance, owing since, settlement split, total and count on screen is read from the API.
-- The screens registry carries no key for "modal on the computer"; no registry check tells a sheet from a page. The design capture and the e2e run are the evidence.
-- `CobroFrame`'s computer branch is not edited by the phone layout; only its phone branch is drawn by `Sheet`.
+- `payment` es la tabla de ADR-0007 y lleva `business_id`. El Business sale de la **Session**.
+- Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
+- Los códigos de rechazo van en `contract.json` (ADR-0008):
+  - por encima del Balance;
+  - fecha futura;
+  - monto menor o igual que $0;
+  - falta el método;
+  - eliminar un On-the-spot payment;
+  - Customer inexistente;
+  - Payment inexistente.
+- Ningún monto ni nombre en los rechazos, los logs, la consola ni el almacenamiento del navegador (ADR-0005).
+- Todo Balance, Owing since, reparto del Settlement, total y cantidad en pantalla se lee de la API.
+- El registro de pantallas no tiene clave para "modal en la computadora"; ningún chequeo del registro distingue una Sheet de una página. La **Design capture** y la corrida e2e son la evidencia.
+- La rama de computadora de `CobroFrame` no la edita el layout de celular; solo su rama de celular la dibuja `Sheet`.
 
-## Metrics
+## Métricas
 
-- **Record time (criterion 1)**: a payment is recorded through the front from a phone viewport in under 60 s. From Customers and from Home, Record payment opens with the customer chosen in at most 2 taps. "All" fills the whole balance in one tap.
-- **Settlement matrix (criteria 2, 3)**: 100% passing. It covers:
-  - oldest first;
-  - a partial payment;
-  - a payment spanning several sales;
-  - a payment dated before the sale it settles;
-  - an on-the-spot payment staying with its sale;
-  - independence from recording order;
-  - working out again after a late record or a delete of a sale or a payment.
-- **Balance identity (criterion 3)**: balance = bought and unpaid − payments, to the peso, after every create and delete of sales and payments.
-- **Credit**: after a settled sale is deleted, the credit is shown as "Credit", kept out of the Owed to you section, the total owed and the count, and applied to the next sale left owing.
-- **Who-owes totals (criterion 4)**: the total owed, the count of sales still owing, the Customers' "Owed to you" section, Home's block and the Sales mark equal a direct computation over sales and payments. 0 differences. The count line reads "1 sale owing" for one sale and "N sales owing" for two or more, both covered by the front tests.
-- **Account (criterion 5)**: the rows and running balance match the settlement for every case of the matrix. Front tests show the "Account · running balance" label, each row's title and sub-line ("Sale" over "Paid in cash", "Paid by transfer", "Left owing" or, for a $0 sale, "Nothing to pay"; "Payment · <method>" over "On account of the sale of dd/mm" or "Credit"), the amount over "balance $ X" with no wrap inside an amount, and no variety or grams on a sale row.
-- **Dates kept (criterion 6)**: after any recompute, every payment's date, amount and method are unchanged.
-- **Preview = stored (criteria 2, 8)**: Record payment's preview matches the settlement after saving. 0 differences.
-- **Isolation (criterion 7)**: every payment route is in the sweep and answers 404 or empty from another business.
-- **No echo (criterion 7)**: no refusal or log line contains an amount or a name. After a full front run, the console and browser storage hold none of them.
-- **No curl (criterion 8)**: an end-to-end run through the front alone:
-  - records a payment from "Collect" on Customers and from "Collect" on Home;
-  - settles everything with "All";
-  - records a partial payment;
-  - deletes a payment;
-  - reads the Customers' "Owed to you" section and its count line.
-- **Sheet on the phone (criterion 9)**: an end-to-end run at a phone viewport opens Record payment from "Collect" on Customers, "Collect" on Home and the card's "Record payment". It checks four things:
-  - it is a sheet with the screen underneath still mounted, not a navigation;
-  - "Close" returns to that same screen;
-  - a save returns there with the balance read lower;
-  - at a computer viewport, the same entry points open a modal.
-- **Focus and typed text (GH-319)**: a front test shows focus on the first field when the phone sheet opens; a viewport-flip test (phone to computer and back) keeps the typed amount; Record payment's unsaved-changes tests pass unedited; no Mobile check offender entry names Record payment's walked sheet states.
-- **Place kept (criterion 9)**: an end-to-end run scrolls Customers and Home so the tapped debtor row is below the first screenful, then opens Record payment and closes it, once by "Close" and once by a partial save. Each time the scroll offset is unchanged and focus is on the tapped "Collect". After a save that settles the whole balance, the offset is unchanged and focus is on the "Owed to you" heading (or "Nobody owes you").
-- **Design agreement (criterion 9)**: the design capture of Record payment on the phone shows the drawing and the built app both as a sheet. The evidence note leaves no open difference; the drawing's handle and peek are a known difference, dropped on purpose (ADR-0062).
+- **Tiempo de registro (criterio 1)**: un Payment se registra a través del front desde un viewport de celular en menos de 60 s. Desde Customers y desde Home, Record payment se abre con el Customer elegido en 2 toques como máximo. "All" completa todo el Balance en un toque.
+- **Matriz de Settlement (criterios 2, 3)**: 100% aprobada. Cubre:
+  - la deuda más vieja primero;
+  - un Payment parcial;
+  - un Payment que abarca varias Sales;
+  - un Payment con fecha anterior a la Sale que salda;
+  - un On-the-spot payment que se queda con su Sale;
+  - independencia del orden de registro;
+  - recalcular después de un registro tardío o de la eliminación de una Sale o de un Payment.
+- **Identidad del Balance (criterio 3)**: Balance = comprado e impago − Payments, al peso, después de cada alta y eliminación de Sales y Payments.
+- **Credit**: después de eliminar una Sale saldada, el Credit se muestra como "Credit", queda fuera de la sección Owed to you, del Total owed y de la cantidad, y se aplica a la próxima Sale que quede debiendo.
+- **Totales de quién debe (criterio 4)**: el Total owed, la cantidad de Sales still owing, la sección "Owed to you" de Customers, el bloque de Home y la marca de Sales son iguales a un cálculo directo sobre las Sales y los Payments. 0 diferencias. La línea de cantidad dice "1 sale owing" para una Sale y "N sales owing" para dos o más, las dos cubiertas por los tests del front.
+- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid in cash", "Paid by transfer", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <method>" sobre "On account of the sale of dd/mm" o "Credit"), el monto sobre "balance $ X" sin corte dentro de un monto, y ninguna Variety ni gramos en la fila de una Sale.
+- **Fechas conservadas (criterio 6)**: después de cualquier recálculo, la fecha, el monto y el método de cada Payment quedan sin cambios.
+- **Vista previa = guardado (criterios 2, 8)**: la vista previa de Record payment coincide con el Settlement después de guardar. 0 diferencias.
+- **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business.
+- **Sin eco (criterio 7)**: ningún rechazo ni línea de log contiene un monto ni un nombre. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
+- **Sin curl (criterio 8)**: una corrida end-to-end solo a través del front:
+  - registra un Payment desde "Collect" en Customers y desde "Collect" en Home;
+  - salda todo con "All";
+  - registra un Payment parcial;
+  - elimina un Payment;
+  - lee la sección "Owed to you" de Customers y su línea de cantidad.
+- **Sheet en el celular (criterio 9)**: una corrida end-to-end en un viewport de celular abre Record payment desde "Collect" en Customers, "Collect" en Home y el "Record payment" de la ficha. Verifica cuatro cosas:
+  - es una Sheet con la pantalla de abajo todavía montada, no un cambio de pantalla;
+  - "Close" vuelve a esa misma pantalla;
+  - un guardado vuelve ahí con el Balance leído más bajo;
+  - en un viewport de computadora, los mismos accesos abren un modal.
+- **Foco y texto escrito (GH-319)**: un test del front muestra el foco en el primer campo cuando se abre la Sheet del celular; un test de cambio de viewport (de celular a computadora y de vuelta) conserva el monto escrito; los tests de cambios sin guardar de Record payment pasan sin editarse; la lista de infractores del **Mobile check** no nombra ningún estado de Sheet recorrido de Record payment.
+- **Lugar conservado (criterio 9)**: una corrida end-to-end desplaza Customers y Home de modo que la fila de deudor tocada quede debajo de la primera pantalla, después abre Record payment y lo cierra, una vez con "Close" y una vez con un guardado parcial. Cada vez el desplazamiento queda sin cambios y el foco está en el "Collect" tocado. Después de un guardado que salda todo el Balance, el desplazamiento queda sin cambios y el foco está en el título "Owed to you" (o "Nobody owes you").
+- **Acuerdo con el diseño (criterio 9)**: la Design capture de Record payment en el celular muestra que el dibujo y la app construida son los dos una Sheet. La nota de evidencia no deja ninguna diferencia abierta; la manija y el asomo del dibujo son una diferencia conocida, descartada a propósito (ADR-0062).
 
-## Out of scope
+## Fuera de alcance
 
-- Refunds.
-- A note on a payment.
-- Assigning a payment to a sale by hand.
-- Deleting an on-the-spot payment on its own; editing a payment.
-- A separate Owed to you screen.
-- Record payment as a page of its own on the phone (the full-screen sheet stays over the screen it was opened from).
-- A tap-outside close on the phone's full-screen sheet.
-- A screens-registry key or check telling a sheet from a page.
-- Scroll restoration anywhere other than closing Record payment.
-- Cash and profit: the results capability (#7).
-- Live updates between partners.
-- A sale's varieties or grams in the customer's account: the sale's detail shows them.
+- Reintegros.
+- Una Note en un Payment.
+- Asignar un Payment a una Sale a mano.
+- Eliminar un On-the-spot payment por separado; editar un Payment.
+- Una pantalla Owed to you aparte.
+- Record payment como página propia en el celular (la Sheet de pantalla completa queda sobre la pantalla desde la que se abrió).
+- Cerrar tocando afuera en la Sheet de pantalla completa del celular.
+- Una clave o un chequeo del registro de pantallas que distinga una Sheet de una página.
+- Restaurar el scroll en cualquier lugar que no sea el cierre de Record payment.
+- Cash y **Profit**: la capacidad results (#7).
+- Actualizaciones en vivo entre socios.
+- Las Varieties o los gramos de una Sale en la cuenta del Customer: el detalle de la Sale los muestra.

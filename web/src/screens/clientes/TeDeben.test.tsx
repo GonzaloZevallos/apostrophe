@@ -2,7 +2,7 @@
  * `TeDeben`, the section on top of Clientes, at the screen seam (CODING_STANDARDS §10): Testing Library, `fetch`
  * faked. The list is the API's own order (plan, "Front": "the API's order"),
  * never resorted here; the total and count head the view and come from
- * `GET /payments/debtors` alone (payments.md, "Who owes and the totals").
+ * `GET /payments/debtors` alone (payments.md, "Quién debe y los totales").
  */
 
 import { CUSTOMER, CUSTOMERS } from '../../routes'
