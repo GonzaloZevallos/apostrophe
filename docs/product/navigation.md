@@ -1,6 +1,6 @@
 # Navigation
 
-The app's one structure for a business: the tabs on the phone, the sidebar on a computer, More, Settings, the one rule that gives every screen its chrome and its way back, which place is marked, the routes and their redirects, the phone layout (fixed bar, floating "+ New sale", forms as sheets), where a screen is scrolled when the seller moves between screens, and the first run (the Onboarding for a brand-new business, the first-run checklist for a business that existed before it, the after-import notice for an imported one). It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
+The app's one structure for a business: the tabs on the phone, the sidebar on a computer, More, Settings, the one rule that gives every screen its chrome and its way back, which place is marked, the routes and their redirects, the phone layout (fixed bar, floating "+ New sale", forms as sheets), and the first run (the Onboarding for a brand-new business, the first-run checklist for a business that existed before it, the after-import notice for an imported one). It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
 
 ## Jobs
 
@@ -26,7 +26,7 @@ Settings is rare and deliberate; the daily jobs never need it. It refines the na
 
 **When** I move between screens between orders or mid-chat with a customer (Varieties and a variety's page, its prices and entries, a stock entry, a customer's card, Record payment), **I want** every screen to give me the same way out and back, and my old links to still open the right screen, **so I can** get back to the customer without hunting, losing my place or tapping back twice.
 
-This refines the navigation job and criterion 5; it is not a new job. Its protagonist is the seller, on the phone or a computer. Before it, the stock entry form said "Back" where every other form said "Close", a record that was gone left its parent twice in history so back took two taps, and Varieties and old paths behaved differently from the rest of the app on reload and redirect. The seller tapped back again or used the bar. Not losing my place also means where a screen is scrolled (GH-480). Before it, a screen opened from far down a list kept the old scroll offset and opened in its middle, and going back did not return to where the seller was, except for Record payment and closing a phone sheet. The seller scrolled up to find the top, or down again to find their place.
+This refines the navigation job and criterion 5; it is not a new job. Its protagonist is the seller, on the phone or a computer. Before it, the stock entry form said "Back" where every other form said "Close", a record that was gone left its parent twice in history so back took two taps, and Varieties and old paths behaved differently from the rest of the app on reload and redirect. The seller tapped back again or used the bar.
 
 **When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Profit what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by "Take from stock" in More, on Varieties and on a variety's page, at most 2 taps from any tab root; defined in stock.md.)
 
@@ -95,12 +95,6 @@ Success criteria, the phone layout (GH-319). They are checked at 320, 360 and 39
     - Closing a sheet opened from a scrolled list returns to the same scroll position.
     - Tapping outside a sheet never discards work and never adds a confirmation. Where a visible area lies outside it, a tap there closes it only when nothing was changed. A full-screen phone sheet has no outside: the safe-area strip by the status bar never counts as one.
     - Computer layouts come out with unchanged captures, ADR-0044's price modal included.
-
-Success criteria, scroll on a change of screen (GH-480). They are checked at 320, 375 and 430 px and on a computer.
-
-21. **A new screen starts at the top.** Every move inside the app to a screen with a different path opens it scrolled to the top: a bar or sidebar tab, a More entry, a link, a list row into its card or detail, a "‹" with no history, and a redirect.
-22. **Back returns to the place.** Going back, and the browser's forward, returns the screen to the scroll offset it had when the seller left it, on every screen.
-23. **A sheet, overlay or dialog leaves the page alone.** Opening and closing one, routed or in-page, phone or computer, never moves the screen under it.
 
 ## Behaviour
 
@@ -191,39 +185,6 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 
 - **A gone exit is the same move as "Close".** When saving, deleting or undoing in the stock entry form, the customer form or Record payment hits a record that no longer exists, the screen goes back one step in history when it was opened from inside the app, or to its parent when it was opened by a direct link. The list refreshes and "That is gone. The list is up to date." shows, as accounts.md defines it. No history entry is ever duplicated.
 - **"Collect from <name>"** on a debtor row (Customers or Home) opens Record payment with that customer chosen, as an entry in the app's history; back or "Close" closes it in one move, back to the screen it came from.
-
-### Scroll on a change of screen (GH-480)
-
-On the phone and on a computer alike, at every width. It says where a screen is scrolled when the seller moves between screens. It never changes routes, kinds, parents, chrome or what back goes to.
-
-- **A new screen starts at the top.** Every move inside the app that adds or replaces a history entry with a screen of a different path opens that screen scrolled to the top. This covers:
-  - a tab in the bar or the sidebar;
-  - a More entry or a Settings group's list entry;
-  - a link or a tappable notice;
-  - a list row into its card or detail;
-  - a "‹ <parent>" with no history;
-  - the screen a save moves forward to;
-  - an old path's redirect and an unknown address landing on Home.
-- **What is not a new screen**: these leave the scroll as it stands.
-  - A change of only the query or fragment on the same screen (a search, a filter, the month arrows).
-  - Tapping the active tab on its own root.
-  - On a computer, picking a row in Customers' or Varieties' two panes, and Varieties' automatic selection of its first variety: the list stays where it is.
-- **Back returns to the place.** Going back returns the earlier screen to the scroll offset it had when the seller left it, on every screen. Going back covers:
-  - the phone's back gesture and the browser's back;
-  - a "‹ <parent>" that follows history;
-  - "Close" on a form that returns by history;
-  - a gone exit;
-  - a save that closes a form.
-- **The browser's forward** does the same as back: the screen returns to its earlier offset.
-- **When the offset is restored**: once the screen's content has loaded. When the content is now shorter, the screen goes as far down as it reaches. A screen left at the top comes back at the top.
-- **Sheets, overlays and dialogs leave the page alone.** Opening one and closing it, untouched or after a save or a discard, never moves the screen behind it, which keeps its offset. This holds for:
-  - phone sheets, routed ones included (`/customers/new`, `/customers/{id}/edit`, `/varieties/entries/{id}`, `/withdrawals/new`, …);
-  - the three forms that keep the old overlay;
-  - the computer's dialogs, ADR-0044's price modal and `CobroFrame`'s computer modal included.
-
-  It extends criterion 20's sheet rule; a routed sheet opened by a direct address still shows over its parent as "What is behind a sheet" says.
-- **Record payment's return** to its place (payments.md) is this rule's case for that flow and stays as it is. Home's own scrolling stays as it is once Home has opened at the top.
-- **A reload, or opening the app afresh**, behaves as the browser does; this rule adds nothing to it.
 
 ### Phone layout (GH-319)
 
@@ -385,10 +346,6 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   - "Keyboard open" is decided only in `useVisualViewport` (ADR-0028 as amended).
   - The phone rules never edit ADR-0044's `PriceFrame` dialog branch or `CobroFrame`'s computer branch.
   - Each step leaves the Mobile check green, deletes every offender entry it turns green, keeps registry keys and adds no entry outside gate.md's trade or new-row rules.
-- **Scroll on a change of screen (GH-480)**:
-  - One mechanism at the app's routing decides where a screen is scrolled on a change of screen; no screen resets or restores its own. Record payment's return (payments.md) and Home's own scrolling are the only screen-level scroll handling, and they stay.
-  - Offsets are kept only for the open tab's history, hold nothing but positions and history keys, and never personal data.
-  - It edits neither ADR-0044's `PriceFrame` dialog branch nor `CobroFrame`'s computer branch, and changes no computer layout.
 
 ## Metrics
 
@@ -463,13 +420,6 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
   - A `Sheet` unit test on the phone: a tap on the top safe-area strip leaves the sheet open, touched or untouched.
   - The existing unsaved-changes tests pass unedited.
 - **Computer untouched (criterion 20)**: the computer captures of touched screens are unchanged. `PriceFrame`'s dialog branch and `CobroFrame`'s computer branch have 0 changed lines.
-- **Scroll on a change of screen (criteria 21–23, GH-480)**: end-to-end in a real browser at 320, 375 and 430 px and at a computer viewport, measuring the real scroll offset, with a list scrolled far down first:
-  - a bar or sidebar tab, a link and a list row into its card or detail each open the new screen at offset 0;
-  - back, both the browser's and the app's "‹" by history, returns the list to the offset it had, and forward returns the next screen to its own;
-  - opening and closing a sheet on the phone (an in-page one and a routed one) and a dialog on a computer leave the offset of the screen behind unchanged;
-  - on a computer, picking a row in a two-pane list leaves the list's offset unchanged, and re-tapping the active tab on its root leaves the offset unchanged;
-  - Record payment's return tests and the sheet-close offset test pass unedited;
-  - each new assertion is shown failing once on a deliberately regressed input in the PR, and that input is not committed.
 - **Offender lists (GH-319)**: 0 entries added outside gate.md's trade or new-row rules. Each new assertion is shown failing once on a deliberately regressed input in the PR, and that input is not committed.
 
 ## Out of scope
@@ -504,7 +454,6 @@ This covers Settings and its groups, the catalog screen and a variety's page, wh
 - Any computer layout change from the phone layout; changing the timing or dismissal of toasts; changing New sale's tap count or what Save does before the payment choice.
 - Disabling Save in New sale; a scroll-and-highlight on Save.
 - A tap-outside area on the phone's full-screen sheet: a gap, a visible backdrop strip, or the safe-area strip acting as a close target.
-- Scrolling to the top on re-tapping the active tab; keeping a scroll offset across a reload or a new session; changing a screen's own in-page scrolling (Home's included); any computer layout change for GH-480.
 
 ## Planned in GH-318
 
