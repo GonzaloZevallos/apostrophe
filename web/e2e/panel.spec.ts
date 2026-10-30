@@ -259,7 +259,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
           shipping_charged: 0,
           note: null,
           payment: 'cash',
-          lines: [{ variety_id: rosaId, quantity: '1', gift: false, special_price: null }],
+          lines: [{ product_id: rosaId, quantity: '1', gift: false, special_price: null }],
         },
       })
       expect(extraResponse.ok()).toBe(true)

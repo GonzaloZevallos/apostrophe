@@ -118,6 +118,22 @@ def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:
     ]
 
 
+def test_a_sale_line_still_sending_variety_id_is_refused_for_the_missing_product_id(
+    client: TestClient,
+) -> None:
+    variety_id = _variety(client)
+
+    response = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
+    )
+
+    assert response.status_code == 422, response.text
+    [error] = response.json()["detail"]
+    assert error["type"] == "missing"
+    assert error["loc"] == ["body", "lines", 0, "product_id"]
+
+
 def test_record_sale_left_owing_without_a_customer_is_refused(client: TestClient) -> None:
     variety_id = _variety(client)
 
