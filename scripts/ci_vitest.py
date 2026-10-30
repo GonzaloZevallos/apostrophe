@@ -22,23 +22,21 @@ from typing import Final
 from scripts.ci_changes import is_safe_path
 
 WEB_PREFIX: Final = "web/"
-_WEB_SRC: Final = "/web/src/"
+WEB_DIR: Final = "/web/"
 
 
-def _web_relative(raw: str, *, repo_relative: bool) -> str | None:
-    """A path below `web/`, or `None` for a blank line or a path outside it. `repo_relative` paths
-    must start with `web/`; a listed path may also be absolute or already web-relative."""
+def _web_relative(raw: str) -> str | None:
+    """A path below `web/`, `""` for a blank line or an absolute path outside `web/` (dropped), and
+    `None` for a path this cannot place (a `..` segment), which makes the run a full one. The
+    changes job emits web-relative paths (`src/a.test.ts`), the listing may be absolute, and a
+    repo-relative `web/...` is accepted as well."""
     path = raw.strip()
-    if not path or ".." in path.split("/"):
-        return None
-    if path.startswith(WEB_PREFIX):
-        return path.removeprefix(WEB_PREFIX) or None
-    if repo_relative:
+    if ".." in path.split("/"):
         return None
     if path.startswith("/"):
-        _, found, below = path.partition(_WEB_SRC)
-        return f"src/{below}" if found and below else None
-    return path
+        _, found, below = path.rpartition(WEB_DIR)
+        return below if found else ""
+    return path.removeprefix(WEB_PREFIX)
 
 
 def vitest_args(
@@ -48,16 +46,17 @@ def vitest_args(
     listed: Sequence[str],
 ) -> list[str]:
     """The test files to hand vitest: nothing (a full run) for a full selection, an empty union
-    or any unsafe path; otherwise the sorted, deduplicated union of `files` (repo-relative
-    `web/...`) and `listed` (vitest's own listing), as web-relative paths.
+    or any unsafe path; otherwise the sorted, deduplicated union of `files` (the
+    changes job's web-relative `src/...`, or repo-relative `web/...`) and `listed` (vitest's own listing), as web-relative paths.
 
     `vitest_changed` says a source changed, which is what makes `listed` mean anything; the union
     takes the listing as it comes, so a stale one can only widen the run."""
     if vitest_all:
         return []
-    found = {_web_relative(path, repo_relative=True) for path in files}
-    found |= {_web_relative(path, repo_relative=False) for path in listed}
-    paths = sorted(path for path in found if path is not None)
+    found = {_web_relative(path) for path in [*files, *listed]}
+    if None in found:
+        return []
+    paths = sorted(path for path in found if path)
     if not paths or not all(is_safe_path(path) for path in paths):
         return []
     return paths

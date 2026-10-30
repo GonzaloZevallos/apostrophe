@@ -21,6 +21,23 @@ def test_files_alone_become_web_relative_arguments() -> None:
     assert args == ["src/a.test.ts", "src/b.test.ts"]
 
 
+def test_the_web_relative_files_the_changes_job_emits_reach_the_args() -> None:
+    args = vitest_args(False, True, ["src/guard.test.ts", "src/a.test.tsx"], ["src/b.test.ts"])
+
+    assert args == ["src/a.test.tsx", "src/b.test.ts", "src/guard.test.ts"]
+
+
+def test_an_absolute_listed_path_under_web_but_outside_src_is_normalised() -> None:
+    listed = ["/w/web/scripts/i18n/x.test.ts", "/home/runner/work/web/web/web/src/a.test.ts"]
+
+    assert vitest_args(False, True, [], listed) == ["scripts/i18n/x.test.ts", "src/a.test.ts"]
+
+
+def test_a_path_that_cannot_be_placed_makes_it_a_full_run() -> None:
+    assert vitest_args(False, True, ["src/a.test.ts"], ["../app/x.test.ts"]) == []
+    assert vitest_args(False, True, ["src/../../x.test.ts"], []) == []
+
+
 def test_listed_files_absolute_or_relative_are_made_web_relative() -> None:
     listed = ["/home/runner/work/x/x/web/src/a.test.ts", "src/b.test.ts", "web/src/c.test.ts"]
 
@@ -43,14 +60,16 @@ def test_the_union_is_sorted_and_deduplicated() -> None:
 
 
 def test_blank_lines_and_paths_outside_web_are_dropped() -> None:
-    args = vitest_args(False, True, ["app/x.py", "docs/a.md", ""], ["", "  ", "src/a.test.ts"])
+    args = vitest_args(
+        False, True, ["/w/app/x.py", ""], ["", "  ", "/w/docs/a.md", "src/a.test.ts"]
+    )
 
     assert args == ["src/a.test.ts"]
 
 
 def test_an_empty_union_is_a_full_run() -> None:
     assert vitest_args(False, True, [], []) == []
-    assert vitest_args(False, True, ["app/x.py"], ["", "\n"]) == []
+    assert vitest_args(False, True, ["/w/app/x.py"], ["", "\n"]) == []
 
 
 @pytest.mark.parametrize("name", ["-x.test.ts", "a b.test.ts", "*.test.ts"])
