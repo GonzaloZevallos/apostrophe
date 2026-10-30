@@ -77,6 +77,16 @@ The app's colors are the owner's Yerba palette, in a light and a dark theme. The
 - Every text pair is at least 4.5:1 in both themes; decorative borders are exempt.
 - **Color never alone:** no state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly. The color census (`web/src/architecture/colorCensus.ts`) lists every rule that uses a debt, state, gain, loss or series token.
 
+## Logo
+
+The Yerba mark is a white apostrophe on a green (`#1e6b47`) rounded square. It is the same in both themes and in every Business, Language and screen.
+
+- **One source.** `web/public/icons/mark.svg` is the only source of the mark. Nothing under `web/src` copies its markup or path data: the app draws it with an `<img>` of that file.
+- **Everything derives from it.** The favicon is that SVG, with `icon-192.png` as the fallback. The PNG icons (`icon-192.png`, `icon-512.png`, the maskable `icon-maskable-512.png` and `apple-touch-icon.png`) are rendered from it by `scripts/design/icons.mjs` (`npm --prefix web run icons`), offline, without editing the SVG. The renderer writes `web/public/icons/icons.json` with the SVG's SHA-256 and each icon's size, never a PNG hash.
+- **Maskable and apple-touch** are full-bleed and opaque, with the apostrophe inside the 80 % safe zone. The 192 and 512 icons are the rounded square on transparency.
+- **The check** is `web/src/design/icons.test.ts`: it decodes the PNGs, and fails when the SVG changes without the PNGs being rendered again.
+- **The installed app does not change:** the manifest's `id`, `name` and `short_name` are never edited by a rebrand.
+
 ## Theme
 
 The owner's decision of 2026-10-29 wins over ADR-0026 (the ADR is not edited here).
