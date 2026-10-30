@@ -1,0 +1,4 @@
+start tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load cap=2 logged=0 time=2026-10-30T07:30:57Z
+iter tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load n=1 load_start=29.45 load_end=19.27 seed=- result=green failing=-
+iter tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load n=2 load_start=19.27 load_end=22.49 seed=- result=green failing=-
+summary tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load n=2 red=0 cap=2 time=2026-10-30T07:43:30Z
