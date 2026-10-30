@@ -1,10 +1,12 @@
 # GH-506 — flake de `web-tests` (GH-465, head `4c6596b6`)
 
-**Resultado: interrumpido en 2 (0 de 2 en rojo).** No se reprodujo, no se nombró causa y no se escribió ningún arreglo.
-El diff de esta tarea son solo estos archivos de evidencia; `git diff <base> -- web/src` queda vacío.
+**Resultado: arreglado, con el par forzado, un defecto de orden de tests hallado por la pata `shuffle`. El flake exacto de GH-465 NO se reprodujo ni se demostró que sea este defecto.**
 
-Este resultado NO es "no reproducido": el tope completo de 12 corridas `full-load` no se alcanzó. La línea `summary ... cap=2` del log
-es la del sondeo de 2 iteraciones, no la del bucle completo (invariante: "no reproducido" exige el resumen al tope completo).
+- `full-load`: tope completo alcanzado, `summary ... n=12 red=0 cap=12`: 0 rojos en 12 (con las cuatro compañías en carga real, ver sección 2). Esto describe esa carga ambiente, no es una prueba.
+- `shuffle`: tope completo alcanzado, `summary ... n=3 red=2 cap=3`: 2 rojos en 3, seeds `163994` y `780320`, ambos en `Clientes.test.tsx` y `NuevaVenta.test.tsx`.
+- Esos rojos son una dependencia del orden de los tests dentro del archivo: con el orden por defecto de vitest (el del gate) no ocurren. Es un defecto real y determinista, pero el registro del gate no conserva qué test falló, así que no puedo decir que sea la causa del rojo de GH-465. Queda como hipótesis.
+- Pata `solo` (30): no se corrió, porque el registro no nombra ningún test.
+- No hay cambios en `web/src` fuera de tests: `git diff <base> -- web/src ':!*.test.*' ':!web/src/test-setup.ts'` vacío.
 
 ## 1. Qué falló (registro del gate local `merge` de GH-465)
 
@@ -44,42 +46,46 @@ se asume el mismo árbol `8b66b62b`.
 Hipótesis sin probar (no hay evidencia que la sostenga): el único archivo de test que la rama sumó a vitest es `mermaidParse.test.ts`;
 los tests de master que cambiaron son los de `withdrawals`, `Shell` y `behindPane`. Ninguno se nombra como causa.
 
-## 2. Sondeo y corridas
+## 2. Corridas
 
-Script: `docs/evidence/GH-506/stress.sh` (reanudable; una línea `iter` por iteración; `summary` solo al terminar el bucle).
-Log: `docs/evidence/GH-506/stress.log`.
+Script: `docs/evidence/GH-506/stress.sh` (reanudable). Log: `docs/evidence/GH-506/stress.log`. Las salidas de los rojos: `docs/evidence/GH-506/stress-red-shuffle-8b66b62b-1.txt` y `-3.txt`.
 
-Entorno: copia desechable fuera de la worktree de la tarea (`$TMPDIR/wt-4c6596b6`), hecha con
-`git archive 4c6596b6 | tar -x` + `git init` + `git add -A` + `git write-tree`, que da el árbol `8b66b62b71dc241576ead159e9997196665fa406`,
-igual al de `4c6596b6`; `npm --prefix web ci` propio. `git worktree add` y `git checkout` están denegados por el sistema, por eso no es un
-`git worktree add --detach`. No se commitea nada de ella.
+Entorno: copia desechable fuera de la worktree (`git worktree` y `git checkout` están denegados por el sistema): `git archive 4c6596b6 | tar -x` + `git init` + `git add -A` + `git write-tree` da el árbol `8b66b62b71dc241576ead159e9997196665fa406`, igual al de `4c6596b6`; `npm --prefix web ci` propio.
+
+- El sondeo de 2 iteraciones en segundo plano sobrevivió a los turnos. Las 2 primeras iteraciones `full-load` (sin `counts=`) tuvieron la carga defectuosa del primer intento (pytest y mypy fallaban al spawn sin `.venv`); se conservan en el log y cuentan para el tope de 12, pero **las 10 siguientes (n=3 a n=12) son las que tuvieron la carga completa**.
+- Carga completa: la copia lleva un symlink `.venv` a la de la worktree de la tarea (el script lo excluye del hash del árbol). Las líneas `companion` del log lo muestran, por ejemplo en n=3: `uv run --no-project pytest -n 8` started=2 finished=1 fastfail=0; `mypy` started=259 finished=258; `typecheck` started=8; `build` started=7. El script ya no repite en bucle un compañero que falla al instante: lo corta y lo registra como `fastfail`.
+- Carga ambiente de la máquina: loadavg 12 a 31 en 16 CPU, con otras tareas.
+- Tasa antes: `full-load` 0 de 12; `shuffle` 2 de 3.
 
 ```
-start tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load cap=2 logged=0 time=2026-10-30T07:30:57Z
-iter tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load n=1 load_start=29.45 load_end=19.27 seed=- result=green failing=-
-iter tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load n=2 load_start=19.27 load_end=22.49 seed=- result=green failing=-
-summary tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load n=2 red=0 cap=2 time=2026-10-30T07:43:30Z
+summary tree=8b66b62b71dc241576ead159e9997196665fa406 mode=full-load n=12 red=0 cap=12 time=2026-10-30T09:09:14Z
+summary tree=8b66b62b71dc241576ead159e9997196665fa406 mode=shuffle n=3 red=2 cap=3 time=2026-10-30T09:21:46Z
 ```
 
-- **Sondeo (2 iteraciones `full-load`, en segundo plano): el proceso sobrevivió a los turnos** (cada iteración tardó unos 6 minutos); no hizo falta
-  trocear en tandas.
-- Antes-tasa observada: 0 rojos en 2 (`full-load`, árbol `8b66b62b`). Con n=2 no hay confianza útil: no sirve para aceptar ni descartar nada.
-- Limitación de la carga acompañante: en la copia desechable no hay `.venv`, así que `uv run --no-project pytest -n 8` y `... mypy ...`
-  fallaron al instante (`Failed to spawn: pytest`) y solo hicieron carga `npm --prefix web run typecheck` y `... build`, además de la carga
-  ambiente de la máquina (loadavg 19 a 29 en 16 CPU, con otras tareas). El script no se corrigió después de la sonda.
-
-**No se corrieron** (el tope de turnos de la tarea se agotó antes): `solo` 0 de 30 (sin test nombrado), `full-load` 2 de 12, `shuffle` 0 de 3,
-patas forzadas (a), (b), (c) ninguna. Ninguna cifra de este archivo es una prueba de que el flake no existe.
+Conteos de vitest (líneas `Test Files` / `Tests` de las corridas completas sobre `4c6596b6`, árbol `8b66b62b`): `Test Files 240 passed | 1 skipped (241)`, `Tests 3653 passed | 4 skipped (3657)`; en las corridas `shuffle` rojas: `2 failed | 238 passed` y `3651 passed` más los 2 en rojo, la misma suma 3657.
 
 ## 3. Causa, arreglo y pruebas forzadas
 
-- Causa: **no nombrada.** Sin condición forzada no hay par rojo/verde (invariante 4); no se escribió ningún arreglo.
-- Cuenta de vitest antes y después: sin cambios, porque no se tocó ningún archivo de test. No se grabaron los conteos de archivos y tests.
-- Hermanos (mismo patrón, para el issue de seguimiento): ninguno listado, porque no hay patrón. Precedentes a seguir cuando haya causa:
-  GH-501 (`adbdd24e`, esperar el cambio de ruta y no el texto que también pinta el panel de atrás) y GH-440 (`14749282`, el límite de paso del censo).
+Causa (del defecto hallado por `shuffle`, no demostrada para el flake de GH-465): estado que un test deja para el siguiente dentro del mismo archivo.
 
-## 4. Qué haría falta para cerrarlo
+1. `src/screens/clientes/Clientes.test.tsx`, test `with no hand-off the list moves nothing and focuses nothing`: el hand-off de "Collect" (`paymentReturn.ts`, un módulo, no el router) lo deja otro test del archivo sin consumir y la lista del siguiente enfoca `Collect from Ana Pérez`. `ClienteFicha.test.tsx` e `Inicio.test.tsx` ya llaman a `consumePaymentReturn()` en su limpieza; este archivo no.
+2. `src/screens/ventas/NuevaVenta.test.tsx`, test `with no history behind it, "Close" replaces the form with Ventas instead of pushing it`: usa el `router` singleton, y el historial de jsdom es compartido por todos los tests del archivo; la aserción `navigate(-1)` -> `not.toBe(SALE_NEW)` dependía de lo que dejaron los tests anteriores.
 
-1. Reanudar `stress.sh` en una copia desechable con `.venv` accesible (para que pytest y mypy sí carguen) hasta los topes: `full-load` 12, `shuffle` 3.
-2. Si una corrida da rojo, el log guarda `stress-red-<mode>-<tree>-<n>.txt` con las últimas 200 líneas y los nombres de los tests que fallaron.
-3. Con un test nombrado: pata `solo` (30), condición forzada (`taskset -c 0`, `fetch` retenido o reloj movible) y las tres patas con hash de árbol.
+Arreglo (solo tests; ni reintento ni plazo más largo): `consumePaymentReturn()` en el `afterEach` de `Clientes.test.tsx`; y en `NuevaVenta.test.tsx` la aserción pasa a comparar `window.history.length` antes y después de "Close" (un replace lo deja igual, un push suma uno), que no depende de lo que hubiera detrás.
+
+Condición forzada: `npx vitest run --sequence.shuffle --sequence.seed=163994 src/screens/clientes/Clientes.test.tsx src/screens/ventas/NuevaVenta.test.tsx` (determinista: dos corridas seguidas dan lo mismo).
+
+| Pata | Árbol | Resultado |
+|---|---|---|
+| (a) rojo en `4c6596b6`, sin arreglo | `8b66b62b71dc241576ead159e9997196665fa406` | 2 failed, 51 passed (2 de 2 corridas) |
+| (b) verde en `4c6596b6` con el arreglo aplicado | `bf21424a5bcdfc70648d9dca04c0fc9b737cd69e` | 53 passed (53) |
+| (c0) base de la tarea sin arreglo: también rojo (master se movió, pero estos dos tests siguen fallando) | `7f4b86b8ab334b84bae14a69cb0a91744707d970` | 2 failed, 52 passed (54) |
+| (c) base de la tarea con el arreglo, mismo seed | árbol del commit de esta entrega (ver `git rev-parse HEAD^{tree}`) | 54 passed (54) |
+
+El seed `780320` (el otro rojo del log) con el arreglo en la base: 54 passed (54). Después-tasa por conteo: no se corrió un conjunto grande tras el arreglo; la prueba que vale es el par forzado de arriba. No se ejecutó la suite completa en `shuffle` después del arreglo.
+
+Conteos antes y después del arreglo, iguales: los dos archivos pasan de 54 tests a 54; el diff no añade ni quita ningún `test(`/`it(` (0 líneas); `vitest list` en la base y en la cabeza da `252` archivos y `2641` tests en ambos casos (medido con el árbol de trabajo antes de editar y después de editar: igual).
+
+## 4. Hermanos (mismo patrón, para un issue de seguimiento)
+
+No se corrió `shuffle` tras el arreglo sobre toda la suite, así que no hay lista medida. Candidatos por patrón: tests que usan el `router` singleton de `../../router` sin reiniciar el historial (`grep -l "from '../../router'" web/src/**/*.test.tsx`), y archivos que hacen clic en un enlace "Collect" sin consumir `paymentReturn`. Precedentes: GH-501 (`adbdd24e`) y GH-440 (`14749282`).

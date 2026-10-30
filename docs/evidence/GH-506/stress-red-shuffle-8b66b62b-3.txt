@@ -1,0 +1,28 @@
+
+ RUN  v5.0.3 /home/zeta/.cache/agentic/scratch/2996b5300205/GH-506/r-238cca10/wt-4c6596b6/web
+      Running tests with seed "780320"
+
+e2eToastRule: 27 sites observed in the page, 6 kept on page text, 86 pending
+ ❯ |unit| src/screens/ventas/NuevaVenta.test.tsx (20 tests | 1 failed) 7663ms
+   × with no history behind it, "Close" replaces the form with Ventas instead of pushing it 167ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/screens/ventas/NuevaVenta.test.tsx > with no history behind it, "Close" replaces the form with Ventas instead of pushing it
+AssertionError: expected '/sales/new' not to be '/sales/new' // Object.is equality
+ ❯ src/screens/ventas/NuevaVenta.test.tsx:215:46
+    213|
+    214|   await act(() => router.navigate(-1))
+    215|   expect(router.state.location.pathname).not.toBe(SALE_NEW)
+       |                                              ^
+    216| })
+    217|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 239 passed | 1 skipped (241)
+      Tests  1 failed | 3652 passed | 4 skipped (3657)
+   Start at  06:16:53
+   Duration  291.92s (environment 42%, tests 38%, setup 9%, import 7%, transform 5%, worker 1%)
+
