@@ -1,7 +1,8 @@
-/** The theme module owns `data-tema` and the one `theme-color` meta (plan, subtask `shell-document`). */
+/** This module owns the one `theme-color` meta; `../theme` writes the attribute it follows. */
 
 import { afterEach, beforeEach, expect, test } from 'vitest'
-import { setTheme, startThemeSync, syncStatusBar } from './theme'
+import { chooseTheme, startAutomatic } from '../theme'
+import { startThemeSync, syncStatusBar } from './theme'
 
 const LIGHT = 'paper-light'
 const DARK = 'paper-dark'
@@ -24,24 +25,22 @@ async function settle(): Promise<void> {
 
 let stop: () => void = () => undefined
 
+function reset(): void {
+  chooseTheme('claro')
+  localStorage.clear()
+  document.documentElement.removeAttribute('data-tema')
+}
+
 beforeEach(() => {
   document.head.innerHTML = '<meta name="theme-color" content="initial">'
-  document.documentElement.removeAttribute('data-tema')
+  reset()
 })
 
 afterEach(() => {
   stop()
   stop = () => undefined
   document.head.innerHTML = ''
-  document.documentElement.removeAttribute('data-tema')
-})
-
-test('setTheme("oscuro") sets the attribute and setTheme("claro") removes it, never writing claro', () => {
-  setTheme('oscuro')
-  expect(document.documentElement.getAttribute('data-tema')).toBe('oscuro')
-
-  setTheme('claro')
-  expect(document.documentElement.hasAttribute('data-tema')).toBe(false)
+  reset()
 })
 
 test('syncStatusBar writes what the reader returns into the meta', () => {
@@ -75,9 +74,33 @@ test('the meta follows the attribute set, removed and set again, whoever changes
   await settle()
   expect(meta().content).toBe(LIGHT)
 
-  setTheme('oscuro')
+  chooseTheme('oscuro')
   await settle()
   expect(meta().content).toBe(DARK)
+})
+
+test('the meta follows a live flip of the phone while the theme is on Automatic', async () => {
+  let phoneIsDark = false
+  let flip: () => void = () => undefined
+  startAutomatic({
+    isDark: () => phoneIsDark,
+    onChange(cb) {
+      flip = cb
+      return () => undefined
+    },
+  })
+  stop = startThemeSync(readFromAttribute)
+  expect(meta().content).toBe(LIGHT)
+
+  phoneIsDark = true
+  flip()
+  await settle()
+  expect(meta().content).toBe(DARK)
+
+  phoneIsDark = false
+  flip()
+  await settle()
+  expect(meta().content).toBe(LIGHT)
 })
 
 test('startThemeSync syncs once more when the window has loaded', () => {

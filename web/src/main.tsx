@@ -10,14 +10,18 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import { bootLanguage, startLanguage } from './i18n/language'
 import { startKeepFocusVisible } from './shell/keepFocusVisible'
-import { applyStoredTheme } from './theme'
+import { startAutomatic } from './theme'
+import { systemTheme } from './theme/systemTheme'
 import { startThemeSync } from './theme/theme'
 
 const root = document.getElementById('root')
 if (root === null) throw new Error('index.html has no #root')
 
-// ADR-0026: the device's theme before the first render, Entrar included.
-applyStoredTheme()
+// ADR-0026, as the owner's decision of 2026-10-29 amends it: the device's theme before the
+// first render, Entrar included, and all of it before anything is awaited. With nothing
+// stored the theme follows the phone. There is no inline script and no `color-scheme` meta,
+// so a dark phone with nothing stored may show one light frame: that is the accepted cost.
+startAutomatic(systemTheme)
 startThemeSync()
 startKeepFocusVisible()
 

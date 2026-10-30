@@ -22,6 +22,7 @@ reference. This part adds the front module graph (dependency-cruiser) and the st
 3. **Staleness is not detected.** No declared check reads the generated tree (tests use in-memory input
    only), so a generated file can fall behind the code and nothing fails. The repository owner
    regenerates by hand with `python -m scripts.docs.generate` and commits the result.
+   *Superseded by ADR-0066: the CI `docs` job's stale check now detects it.*
 4. **Front graph shape: one Mermaid cruise per folder.** The measured cost (below) keeps the whole run
    under 120 s, so each `web/src` folder is cruised on its own with `--output-type mermaid`, plus one
    overview cruise with `--collapse "^src/[^/]+"`. The fallback (render the graphs in Python from one

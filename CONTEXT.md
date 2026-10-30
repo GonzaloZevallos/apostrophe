@@ -402,8 +402,8 @@ La configuración paso a paso por la que se guía a un Business recién creado u
 _Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
-La elección de Light o Dark de un dispositivo. Se hace solo en Settings → Appearance, se aplica de inmediato y se conserva solo en ese dispositivo. No está atada a un User ni a un Business, sobrevive al cierre de sesión y no guarda nada más. Sin ninguna guardada, la app abre en modo claro sin importar la configuración del sistema.
-_Avoid_: preference, dark mode setting, skin, user setting
+La elección de Automatic, Light o Dark de un dispositivo. Se hace solo en Settings → Appearance, se aplica de inmediato y se conserva solo en ese dispositivo. No está atada a un User ni a un Business, sobrevive al cierre de sesión y no guarda nada más. Sin ninguna guardada, la app sigue al teléfono en vivo; una elección guardada es solo de ese dispositivo y gana sobre el teléfono. _In the app_: Theme (Automatic · Light · Dark).
+_Avoid_: preference, dark mode setting, skin, user setting, system theme
 
 **Own chat lookup**:
 Buscar el número del chat propio del vendedor entre los chats privados que le escribieron al bot del Business, con el token que usaría Test it. Completa el campo del chat propio solo cuando escribió exactamente una persona en privado, muestra solo el número y no guarda nada; los Bot settings se siguen guardando solo con un Test send exitoso. _In the app_: Find my chat.
@@ -446,7 +446,7 @@ El único ícono, el mismo en todas partes, puesto junto a la oración de un avi
 _Avoid_: warning icon, alert icon, badge, error icon
 
 **Gate**:
-Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día. En la app: no tiene palabra propia.
+Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e, corridos como jobs del CI de GitHub; `agentic merge` rechaza un head salvo que cada job listado en `ci:` esté en verde, e2e incluido. En un pull request cada suite corre solo cuando el cambio la afecta, y una suite omitida por no afectada cuenta como pasada; todo push a master las corre todas. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día; un flake es un defecto del Gate con su propio issue, nunca ruido. En la app: no tiene palabra propia.
 _Avoid_: pipeline, build, test run
 
 **Tappable notice**:
@@ -564,3 +564,5 @@ _Avoid_: discount line, coupon
 **Product word**:
 Cómo llama un Business a sus Products en pantalla. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte product word.
 _Avoid_: label, noun setting
+
+## Language

@@ -20,8 +20,8 @@ export function viewportOf(size: Size): { width: number; height: number } {
 
 /**
  * A phone context at `size`, with the front's clock fixed to the server's instant and the
- * theme chosen only by an init script setting `tema=oscuro` (never an emulated system
- * theme). `storageState` is the seeded session, or an empty one for a signed-out screen.
+ * system theme pinned light, the dark cell chosen only by an init script setting
+ * `tema=oscuro` (a stored Dark wins over the system, so the cell never emulates a dark one). `storageState` is the seeded session, or an empty one for a signed-out screen.
  */
 export async function newCell(
   browser: Browser,
@@ -36,6 +36,8 @@ export async function newCell(
     hasTouch: true,
     deviceScaleFactor: 2,
     storageState,
+    // Nothing stored is Automatic, which follows the system: the light cell pins it light.
+    colorScheme: 'light',
   }))
   await context.clock.setFixedTime(PINNED_INSTANT)
   await context.addInitScript(installToolkit)

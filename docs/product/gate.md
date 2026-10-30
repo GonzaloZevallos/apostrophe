@@ -1,164 +1,193 @@
 # Gate
 
-The checks every change must pass before it merges: pytest, vitest and e2e (ADR-0039, ADR-0040, ADR-0041). The maintainer and the agentic development system rely on them. This file holds what the gate itself must guarantee, including how the mobile standard's offender lists may change. It changes no product behaviour: no capability's rule, screen, route, refusal or message is defined here. Sellers and the operator see nothing of it. The operator gains only indirectly, from a gate they can trust.
+Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e (ADR-0039, ADR-0040, ADR-0041), corridos como jobs del CI de GitHub y exigidos por `agentic merge` a través de `ci:` en `.agentic/stack.yaml`. El mantenedor y el sistema de desarrollo agéntico se apoyan en ellos. Este archivo guarda lo que el propio Gate tiene que garantizar, incluido cómo pueden cambiar las listas de infractores del estándar móvil y cuándo un pull request puede integrarse. No cambia ningún comportamiento del producto: acá no se define ninguna regla, pantalla, ruta, rechazo ni mensaje de ninguna capacidad. Los vendedores y el Operator no ven nada de esto. El Operator gana solo de forma indirecta, con un Gate en el que puede confiar.
 
 ## Jobs
 
-### Same result whenever it runs
+### Mismo resultado cuando sea que corra
 
-**When** the gate goes red, **I want** (as the maintainer or the agent running it) that to mean something in the product broke, never that the calendar moved past an expiry or a day boundary, **so I can** fix real regressions inside the brief I'm working on instead of patching tests by hand in files nobody asked me to touch.
+**Cuando** el Gate se pone en rojo, **quiero** (como mantenedor o como el agente que lo corre) que eso signifique que algo del producto se rompió, nunca que el calendario pasó un vencimiento o un límite de día, **para poder** arreglar regresiones reales dentro del brief en el que estoy trabajando en lugar de parchar tests a mano en archivos que nadie me pidió tocar.
 
-Before this, a test that depended on the real date (an invitation past its 7 days, a day boundary in Argentina) failed one day for no product reason. It was patched case by case outside any brief (GH-142, commit e73ecf4).
+Antes de esto, un test que dependía de la fecha real (una Invitation pasados sus 7 días, un límite de día en Argentina) fallaba algún día sin motivo de producto. Se parchaba caso por caso fuera de cualquier brief (GH-142, commit e73ecf4).
 
-Success criteria:
+Criterios de éxito:
 
-1. **Same result whenever it runs.** Every check of the gate (pytest, vitest, e2e) gives the same verdict on any date and at any time of day. That includes more than 7 days after today and across a midnight in Argentina. A test that passes today cannot fail next week because the date changed.
-2. **Time-based rules are tested at their edges on purpose.** These rules are tested by setting the time the test needs, never by the wall clock:
-   - invitation expiry (7 days);
-   - reset links (24 hours);
-   - the login brakes (15 minutes);
-   - the Argentina business day;
-   - "a future date is refused".
-3. **No product behaviour changes because of how tests keep time.** Every capability file reads and behaves the same.
-4. **The gate stays fast and self-contained.** No waiting, no sleeping until something expires, and no checks on how long something took (ADR-0038, ADR-0041).
-5. **No known test depends on the real clock.**
+1. **Mismo resultado cuando sea que corra.** Cada control del Gate (pytest, vitest, e2e) da el mismo veredicto en cualquier fecha y a cualquier hora del día. Eso incluye más de 7 días después de hoy y a través de una medianoche en Argentina. Un test que pasa hoy no puede fallar la semana que viene porque cambió la fecha.
+2. **Las reglas que dependen del tiempo se prueban a propósito en sus bordes.** Estas reglas se prueban fijando la hora que el test necesita, nunca con el reloj de pared:
+   - el vencimiento de una Invitation (7 días);
+   - los Reset links (24 horas);
+   - los Login brakes (15 minutos);
+   - el día hábil de Argentina;
+   - "se rechaza una fecha futura".
+3. **Ningún comportamiento del producto cambia por cómo los tests llevan el tiempo.** Cada archivo de capacidad se lee y se comporta igual.
+4. **El Gate sigue siendo rápido y autocontenido.** Nada de esperas, nada de dormir hasta que algo venza y ningún control de cuánto tardó algo (ADR-0038, ADR-0041).
+5. **Ningún test conocido depende del reloj real.**
 
-### A reachable screen trades its unreachable entry
+### Una pantalla alcanzable canjea su entrada de inalcanzable
 
-**When** a change makes a screen that was listed as unreachable reachable by the mobile walk, **I want** (as the Developer making that change, or the reviewer approving it) a written rule for trading that screen's `unreachable` entry for its real offender cells in the same change, **so that** the gate does not read real, newly visible cells as a regression and nobody writes a one-off exception.
+**Cuando** un cambio hace alcanzable para el recorrido móvil una pantalla que figuraba como inalcanzable, **quiero** (como el Developer que hace ese cambio, o el revisor que lo aprueba) una regla escrita para canjear la entrada `unreachable` de esa pantalla por sus celdas infractoras reales en el mismo cambio, **para que** el Gate no lea como regresión celdas reales recién visibles y nadie escriba una excepción puntual.
 
-Before this (GH-293), invariant 9 of the GH-271 plan forbade any growth of the offender lists and did not foresee this case. Each such trade needed an exception recorded with evidence, task by task. CobroDesdeInicio was the case on record: one `unreachable` entry traded for seven 246x437 cells.
+Antes de esto (GH-293), el invariante 9 del plan de GH-271 prohibía todo crecimiento de las listas de infractores y no preveía este caso. Cada canje necesitaba una excepción registrada con evidencia, tarea por tarea. CobroDesdeInicio fue el caso registrado: una entrada `unreachable` canjeada por siete celdas de 246x437.
 
-Success criteria:
+Criterios de éxito:
 
-1. When a screen becomes reachable, its `unreachable` entry is removed and its real cells are added to the offender lists in the same change.
-2. The new cells are recorded and tracked like any other offender. They are never hidden, and never read as a regression.
-3. The exception covers only that screen. The only growth allowed by the trade is the cells of the screen whose `unreachable` entry is removed in that same change.
-4. A reviewer can check the trade from the offender files and the change alone, without reading the Developer's evidence notes.
+1. Cuando una pantalla se vuelve alcanzable, su entrada `unreachable` se quita y sus celdas reales se agregan a las listas de infractores en el mismo cambio.
+2. Las celdas nuevas se registran y se siguen como cualquier otro infractor. Nunca se ocultan y nunca se leen como regresión.
+3. La excepción cubre solo esa pantalla. El único crecimiento que permite el canje son las celdas de la pantalla cuya entrada `unreachable` se quita en ese mismo cambio.
+4. Un revisor puede verificar el canje solo con los archivos de infractores y el cambio, sin leer las notas de evidencia del Developer.
 
-### A new registry row brings its cells
+### Una fila nueva del registro trae sus celdas
 
-**When** a change adds a row to the screens registry that the mobile walk always walks, **I want** (as the Developer making that change, or the reviewer approving it) a written rule that lets that row bring all its real offender cells in the same change, **so that** a rule written for a change says what truly holds, the change can be approved, and later changes can be reviewed without arguing the same contradiction again.
+**Cuando** un cambio agrega al registro de pantallas una fila que el recorrido móvil siempre recorre, **quiero** (como el Developer que hace ese cambio, o el revisor que lo aprueba) una regla escrita que deje que esa fila traiga todas sus celdas infractoras reales en el mismo cambio, **para que** una regla escrita para un cambio diga lo que de verdad se cumple, el cambio se pueda aprobar y los cambios posteriores se puedan revisar sin volver a discutir la misma contradicción.
 
-Before this (GH-305, a follow-up of GH-274), the only allowed growth was the trade. GH-274 added the phone rows `InicioChecklist` (Home with the first-run checklist) and `InicioImportado` (Home with the after-import notice). They were never listed as unreachable, so their real cells (56 entries) could not be a trade, and the plan's invariant could not hold as written. The finding stayed open on GH-274's approved head.
+Antes de esto (GH-305, continuación de GH-274), el único crecimiento permitido era el canje. GH-274 agregó las filas de teléfono `InicioChecklist` (Home con la First-run checklist) e `InicioImportado` (Home con el aviso posterior al Spreadsheet import). Nunca figuraron como inalcanzables, así que sus celdas reales (56 entradas) no podían ser un canje, y el invariante del plan no podía cumplirse tal como estaba escrito. El hallazgo quedó abierto en el head aprobado de GH-274.
 
-Success criteria:
+Criterios de éxito:
 
-1. A row new to the screens registry brings all its real offender cells in the change that adds it. If the walk cannot reach it yet, it brings its `unreachable` coverage instead.
-2. Those cells are tracked like any other offender. They are never hidden, and never read as a regression.
-3. The growth covers only the new row's screen, at the sizes and themes that row covers, in the change that adds it. Any other growth still breaks invariant 9.
-4. A reviewer can check it from the registry diff and the offender-file diff alone, by screen name.
-5. No one-off exception is recorded for a new row. `InicioChecklist` and `InicioImportado` are accepted by this rule, with none.
+1. Una fila nueva en el registro de pantallas trae todas sus celdas infractoras reales en el cambio que la agrega. Si el recorrido todavía no la alcanza, trae en su lugar su cobertura `unreachable`.
+2. Esas celdas se siguen como cualquier otro infractor. Nunca se ocultan y nunca se leen como regresión.
+3. El crecimiento cubre solo la pantalla de la fila nueva, en los tamaños y temas que esa fila cubre, en el cambio que la agrega. Cualquier otro crecimiento sigue rompiendo el invariante 9.
+4. Un revisor puede verificarlo solo con el diff del registro y el diff de los archivos de infractores, por nombre de pantalla.
+5. No se registra ninguna excepción puntual para una fila nueva. `InicioChecklist` e `InicioImportado` quedan aceptadas por esta regla, sin ninguna.
 
-### A fix renumbers an untouched offender
+### Un arreglo renumera un infractor no tocado
 
-**When** a change fixes some failing nodes on a screen and an untouched failing node with the same masked text changes its target ordinal as a result, **I want** (as the Developer making that change, or the reviewer approving it) a written rule that lets the same change replace the old key with the new one, **so that** fixing offenders is never blocked or escalated because a node nobody touched was renamed by the count.
+**Cuando** un cambio arregla algunos nodos que fallan en una pantalla y, como resultado, un nodo que falla, no tocado y con el mismo texto enmascarado, cambia su ordinal de target, **quiero** (como el Developer que hace ese cambio, o el revisor que lo aprueba) una regla escrita que deje que el mismo cambio reemplace la clave vieja por la nueva, **para que** arreglar infractores nunca quede bloqueado ni escalado porque el conteo renombró un nodo que nadie tocó.
 
-Before this (GH-297 part 1), a target's ordinal (for example `span:$ #.#.#[2]`) counted only the failing nodes on the screen with the same masked text, in page order. Fixing some of them on Analysis could renumber an untouched by-variety amount, and the old and new keys read as a removed entry plus an added one, which the rules did not cover.
+Antes de esto (GH-297 parte 1), el ordinal de un target (por ejemplo `span:$ #.#.#[2]`) contaba solo los nodos que fallan en la pantalla con el mismo texto enmascarado, en orden de página. Arreglar algunos en Analysis podía renumerar un monto por Variety no tocado, y la clave vieja y la nueva se leían como una entrada quitada más una agregada, algo que las reglas no cubrían.
 
-Success criteria:
+Criterios de éxito:
 
-1. A renumbered target is replaced in the same change that caused it. It is not growth and needs no exception.
-2. The replacement is allowed only when the renumbering comes from a fix in that change, and only for the same cell under a new ordinal.
-3. The lists still never grow in failing cells. For that screen, rule and masked text, there are never more entries after the change than before.
-4. A reviewer can check it from the offender-file diff, and the node's being untouched from the code diff, without the Developer's evidence notes.
+1. Un target renumerado se reemplaza en el mismo cambio que lo causó. No es crecimiento y no necesita excepción.
+2. El reemplazo se permite solo cuando la renumeración viene de un arreglo en ese cambio, y solo para la misma celda bajo un ordinal nuevo.
+3. Las listas siguen sin crecer nunca en celdas que fallan. Para esa pantalla, regla y texto enmascarado, nunca hay más entradas después del cambio que antes.
+4. Un revisor puede verificarlo con el diff de los archivos de infractores, y que el nodo no se tocó con el diff de código, sin las notas de evidencia del Developer.
 
-## Behaviour
+### Nada en rojo llega a master
 
-### Time in tests
+**Cuando** un pull request está listo para integrarse, **quiero** (como dueño; el agente que pide el merge actúa por mí) que `agentic merge` rechace cualquier head que tenga un job del CI de GitHub en rojo, e2e incluido, **para que** lo que llega a master mantenga el Gate en verde y nunca me encuentre un e2e roto después del hecho.
 
-- **Controlled time.** Every test whose result depends on the date or time runs on a time the test controls. This covers:
-  - invitation expiry;
-  - reset links;
-  - the login brakes;
-  - the Argentina business day and "today": the current price, a future date refused, and the day change that triggers upkeep.
-- **The invitation clock.** Its separation from the app's injected clock (ADR-0001) leaves no test able to expire on the real clock. The mechanism is the Tech Lead's.
-- **Allowed use of the real clock.** A test of the app's own clock (for example, that "today" is the Argentina business day) may read the real clock only if its verdict is the same on any date and at any hour.
-- **Production code** that legitimately reads the real clock (the app's "today", the upkeep ticker) is not governed by this file.
-- **Edited tests keep their meaning.** A test may change how it sets its time. No assertion about product behaviour is dropped, loosened or changed in meaning.
+Antes de esto (GH-533), el job `e2e` de `.github/workflows/ci.yml` corría en cada pull request pero no frenaba nada: `ci:` en `.agentic/stack.yaml` listaba solo `test`, `web` y `docs`, y el `web-e2e` local está apagado en esta máquina (dueño, 2026-10-26). Lo único que lo reemplazaba era mirar el job a mano antes de integrar, y nada lo exigía. El 2026-10-29 eso falló dos veces: #523 se integró con `web/e2e/scrollOnNavigate.spec.ts` fallando (revertido en #532) y #525 con `web/e2e/leaveWithBack.spec.ts:20` fallando.
 
-### Staying fixed
+Criterios de éxito:
 
-- A new test whose result depends on the real date or time is flagged when it is added, before it can go green.
-- The mechanism is fast and checks no elapsed time.
+1. `agentic merge` rechaza un head cuyo job e2e falló, y nombra el job.
+2. La corrida de CI de master posterior al merge tiene todos los jobs en verde, e2e incluido. Se encontró la causa de cada rojo, y no se salteó, reintentó ni aflojó nada.
+3. Un pull request que agrega o cambia un spec e2e vio pasar ese spec en GitHub antes de pedir el merge.
+4. Cada test, doc y ADR que nombra los jobs que frenan el merge coincide con `ci:`, y ninguno sigue diciendo que e2e no frena nada.
 
-### Exceptions
+## Comportamiento
 
-- A test that cannot be made independent of the real date or time is escalated to the PM.
-- It is never deleted, and never kept as a known exception without a decision.
+### El tiempo en los tests
 
-### Verification
+- **Tiempo controlado.** Cada test cuyo resultado depende de la fecha o la hora corre sobre un tiempo que controla el test. Esto cubre:
+  - el vencimiento de una Invitation;
+  - los Reset links;
+  - los Login brakes;
+  - el día hábil de Argentina y "hoy": el Current price, una fecha futura rechazada y el cambio de día que dispara el Upkeep.
+- **El reloj de las Invitations.** Su separación del reloj inyectado de la app (ADR-0001) no deja ningún test capaz de vencer con el reloj real. El mecanismo es del Tech Lead.
+- **Uso permitido del reloj real.** Un test del propio reloj de la app (por ejemplo, que "hoy" es el día hábil de Argentina) puede leer el reloj real solo si su veredicto es el mismo en cualquier fecha y a cualquier hora.
+- **El código de producción** que lee legítimamente el reloj real (el "hoy" de la app, el ticker del Upkeep) no se rige por este archivo.
+- **Los tests editados conservan su sentido.** Un test puede cambiar cómo fija su tiempo. No se quita, afloja ni cambia de sentido ninguna aserción sobre el comportamiento del producto.
 
-- A one-time check that the gate's suites pass at a date more than 7 days ahead and across an Argentina midnight.
-- It is recorded in the evidence of the task that changes how tests keep time.
-- It is not repeated on every gate run.
+### Mantenerlo arreglado
 
-### Mobile standard offender lists
+- Un test nuevo cuyo resultado depende de la fecha o la hora reales se marca cuando se agrega, antes de que pueda quedar en verde.
+- El mecanismo es rápido y no controla tiempo transcurrido.
 
-The mobile standard keeps offender lists under `web/src/mobile-standard/offenders/`:
+### Excepciones
 
-- `unreachable.json` lists screens the mobile walk cannot reach yet.
-- The other lists, such as `touch-target.json` and `touch-action.json`, list the real cells that fall short of a rule.
+- Un test que no se puede independizar de la fecha o la hora reales se escala al PM.
+- Nunca se elimina, y nunca se conserva como excepción conocida sin una decisión.
 
-This file is the one place the rule is written. The other live texts name the two allowed kinds of growth (the trade and a new registry row) in one sentence and point here: CODING_STANDARDS.md §10, its twin in `docs/product/design-system/README.md`, item 39 of `docs/product/accounts.md`, and the header of `web/src/mobile-standard/offenders/index.ts`. A renumbered target, below, is not growth, so those texts do not need to name it.
+### Verificación
 
-- **No growth (invariant 9).** The offender lists never grow, except by the trade or by a new registry row, both below. It was first written as invariant 9 of the GH-271 plan.
+- Un control único de que las suites del Gate pasan en una fecha más de 7 días adelante y a través de una medianoche de Argentina.
+- Se registra en la evidencia de la tarea que cambia cómo los tests llevan el tiempo.
+- No se repite en cada corrida del Gate.
 
-#### The trade
+### Cuándo se integra un pull request
 
-- **Per cell.** An offender cell (screen, size, theme) may be added only when the same change removes that screen's `unreachable` coverage at that size and theme. The real cells go in whichever offender lists they belong in.
-  - Every added cell names the same screen as the removed entry's `screen`. Only those cells count toward the trade.
-  - Partial reach: an entry that only narrows its `sizes` or `themes` trades only the cells it lost. For example, `VentaAsignarCliente` is listed as unreachable at 246x437 only.
-  - A `*Texto130` screen is its own screen name and trades on its own.
-  - One change may carry several trades.
-- **Matched by screen, not by issue.** Whether a trade is valid depends only on the screen name. A traded cell must name an issue from `AREA_ISSUES`, and it may name either:
-  - the removed `unreachable` entry's issue, or
-  - the issue the same screen's existing offender entries carry.
-  - A screen with no existing entries uses the removed entry's issue. If its existing entries span two issues, the reviewer accepts either.
-  - CobroDesdeInicio's cells carry #46, while its removed entry carried #45. Both are valid.
-- **No offending cells.** A screen that becomes reachable with no offending cells just loses its `unreachable` coverage. Nothing is added.
+- **Todos los jobs de `ci:` en verde.** Un pull request se integra solo con todos los jobs de CI listados en `ci:` de `.agentic/stack.yaml` en verde en su head, e2e incluido (regla del dueño). `agentic merge` lo hace cumplir. Desde GH-476, `ci:` lista solo `ci-ok`, que depende de todos los demás jobs (`changes`, `checks`, `web`, `docs`, `pytest`, `vitest`, `e2e`, `coverage`) y lee las banderas de `changes`: una suite omitida por no afectada cuenta como pasada solo si su bandera es `"false"`, y e2e sigue gateando (ADR-0067).
+- **Cualquier estado que no sea éxito frena.** Para cada job de `ci:`, `agentic merge` rechaza un head cuyo job falló, se canceló, se salteó, sigue pendiente o falta, y nombra el job. e2e sigue la misma regla que los demás jobs, sin una regla propia. La prueba de ese rechazo vive fuera de este repo, en el sistema agentic (hallazgo `outside`); si alguno de los jobs existentes no se comportara así, eso se registra como una falla del comportamiento existente.
+- **Un spec e2e nuevo o cambiado se ve pasar en GitHub sin pasos extra.** Desde GH-476 el job `e2e` corre en shards solo los specs que el cambio afecta (la suite completa en cada push a master, y en un pull request cuando el cambio es de infraestructura o no coincide con ninguna regla); `ci-ok` lee la bandera `e2e` de `changes` (ADR-0064, reglas 7 y 8; ADR-0067). Así, un pull request que agrega o cambia un spec e2e cumple "ver pasar ese spec en GitHub antes de pedir el merge" con solo cumplir la regla anterior. No es un paso manual aparte.
+- **El `web-e2e` vuelve a ser un check declarado (GH-476).** `.agentic/stack.yaml` lo restaura en `checks` y en `affected_checks`, de modo que lo corre el tier completo; no está en `delivery_checks`, así que la entrega de cada subtask no lo corre. El freno del merge sigue siendo el job e2e de GitHub, leído por `ci-ok` (la decisión del dueño del 2026-10-26 de apagarlo en esta máquina queda reemplazada para el tier completo).
+- **Nunca verde a la fuerza.** Un rojo se arregla encontrando su causa, en el spec o en el código que atrapó. Nunca se saltea, se pone en cuarentena, se reintenta hasta que pase ni se afloja una aserción. Un spec sigue la definición escrita vigente, nunca al revés.
 
-#### A new registry row
+### Un e2e en rojo que resulta ser un flake
 
-- **Per cell.** An offender cell (screen, size, theme) may be added when the same change adds that screen's row to the screens registry at that size and theme. The row was not in the registry before the change. The real cells go in whichever offender lists they belong in.
-  - Every added cell names the new row's screen. Only those cells count.
-  - A `*Texto130` screen is its own screen name and counts on its own.
-  - One change may add several rows.
-- **Unreachable new row.** If the walk cannot reach the new row yet, the same change lists it in `unreachable.json` at the sizes and themes it cannot reach. Its real cells come later, through the trade.
-- **Issue.** Each added cell names an issue from `AREA_ISSUES`.
-- **Same change only.** Cells for a row that already existed before the change are never this kind of growth, even when that row was added only recently.
-- **On record.** `InicioChecklist` (Home with the first-run checklist) and `InicioImportado`, the phone rows added by GH-274, brought their real cells in `touch-action.json` in that change. Each entry carries its reason. They are this rule's first case and need no exception.
+- Volver a correr un job e2e en rojo se permite solo para averiguar si es un flake. Un re-run en verde nunca se registra como prueba de que el spec está bien.
+- Un flake es un defecto del Gate, no ruido con el que convivir. Recibe su propio issue que nombra el spec y la falla, como #428.
+- Si el spec que falla de forma intermitente es uno que el pull request agrega o cambia, el head no se integra hasta que se arregle el flake.
+- Si el pull request no toca ese spec, puede integrarse con el re-run en verde, pero solo después de abrir el issue del flake. El freno de `ci:` se cumple porque todos los jobs están en verde en el head.
+- Si el job `e2e` se cancela o llega a su `timeout-minutes` (30), se vuelve a correr una sola vez, solo para distinguir un flake de una regresión. Un flake recibe su propio issue. El workflow no tiene ningún bucle de re-run.
 
-#### A renumbered target
+### Listas de infractores del estándar móvil
 
-A target's ordinal (`[n]`) counts only the failing nodes on the screen with the same masked text, in page order. When a change fixes some of them, an untouched one can change key with no change to itself. That is the same cell under a new name, not growth.
+El estándar móvil guarda listas de infractores en `web/src/mobile-standard/offenders/`:
 
-- **Replaced in the same change.** The change removes the old key and adds the new one when all of these hold:
-  1. **Same entry otherwise.** The added and removed entries have the same `screen`, `rule`, sizes, themes and issue. Their `target` differs only in its trailing ordinal: a different number, or the ordinal added or dropped.
-  2. **A fix caused it.** The same change also removes at least one entry on that screen with the same rule and the same masked text, a node it fixed.
-  3. **No net growth.** For that screen, rule and masked text, there are no more entries after the change than before.
-  4. **The node is untouched.** The renumbered node's own markup is not in the change's code diff.
-- **Otherwise it is growth.** A key change that fails any of these is an added entry like any other. It is fixed in the same change or escalated, never listed.
-- **On record.** GH-297 part 1 (Analysis) is the first case: by-variety amounts left untouched could renumber when the summary strip, cost rows and "since the first record" block stopped failing. Those swaps keep #48 and are listed in the change's moved targets as `old key → new key`.
+- `unreachable.json` lista las pantallas que el recorrido móvil todavía no alcanza.
+- Las otras listas, como `touch-target.json` y `touch-action.json`, listan las celdas reales que no cumplen una regla.
 
-#### Common to all three
+Este archivo es el único lugar donde está escrita la regla. Los demás textos vigentes nombran en una oración los dos crecimientos permitidos (el canje y una fila nueva del registro) y remiten acá: CODING_STANDARDS.md §10, su gemelo en `docs/product/design-system/README.md`, el ítem 39 de `docs/product/accounts.md` y el encabezado de `web/src/mobile-standard/offenders/index.ts`. Un target renumerado, más abajo, no es crecimiento, así que esos textos no necesitan nombrarlo.
 
-- **Not allowed.** Any other growth breaks invariant 9:
-  - cells for a screen whose `unreachable` entry stays;
-  - cells for a row already in the registry before the change, except a renumbered target as above;
-  - cells naming a different screen from the one whose entry was removed or whose row was added;
-  - cells at a size or theme that the removed entry or the new row does not cover.
-- **No cap.** A reachable screen or a new row brings all its real cells, however many.
-- **Tracked like any other offender.** Added cells and renumbered targets are tracked like any other offender from then on. They are never hidden, never marked exempt, and never read as a regression.
-- **Readable from the files.** Growth and renumbering can be checked by screen name from the before and after offender files, plus the screens registry diff for a new row and the code diff for an untouched renumbered node. The Developer's evidence notes are not needed.
-- **Enforcement is by review only.** `diffOffenders` already makes listing and walking land together. A reachable screen's or a new row's real cells are `unlisted` until they are listed, and a reachable screen's `unreachable` cells turn `fixedButListed`. A renumbered target shows as its new key `unlisted` and its old key `fixedButListed` until the swap is made. Checking that the added cells name the removed or added screen, or are a valid renumbering, would need the base revision, which means git inside vitest, against ADR-0038 and ADR-0041. So the reviewer matches screen names and keys across the diffs. Listing an unrelated new failure to get green is caught only in review, as before.
-- **No one-off exceptions.** No per-task exception is recorded for a screen becoming reachable, a row being added or a target renumbered. The rules accept `CobroDesdeInicio` (collecting from Home; its removed `unreachable` entry at 246x437, #45, traded for seven 246x437 cells on #46) and `InicioChecklist` and `InicioImportado` (GH-274) with none. The exception recorded on GH-271 is retired.
+- **Sin crecimiento (invariante 9).** Las listas de infractores nunca crecen, salvo por el canje o por una fila nueva del registro, los dos más abajo. Se escribió primero como el invariante 9 del plan de GH-271.
 
-#### Worked examples
+#### El canje
 
-Each shows the offender files, and where it matters the screens registry, before and after one change, and the verdict.
+- **Por celda.** Una celda infractora (pantalla, tamaño, tema) puede agregarse solo cuando el mismo cambio quita la cobertura `unreachable` de esa pantalla en ese tamaño y tema. Las celdas reales van en las listas de infractores que les correspondan.
+  - Cada celda agregada nombra la misma pantalla que el `screen` de la entrada quitada. Solo esas celdas cuentan para el canje.
+  - Alcance parcial: una entrada que solo achica sus `sizes` o sus `themes` canjea solo las celdas que perdió. Por ejemplo, `VentaAsignarCliente` figura como inalcanzable solo en 246x437.
+  - Una pantalla `*Texto130` es un nombre de pantalla propio y canjea por su cuenta.
+  - Un cambio puede traer varios canjes.
+- **Se empareja por pantalla, no por issue.** Que un canje sea válido depende solo del nombre de pantalla. Una celda canjeada tiene que nombrar un issue de `AREA_ISSUES`, y puede nombrar cualquiera de estos:
+  - el issue de la entrada `unreachable` quitada, o
+  - el issue que llevan las entradas de infractores existentes de la misma pantalla.
+  - Una pantalla sin entradas existentes usa el issue de la entrada quitada. Si sus entradas existentes abarcan dos issues, el revisor acepta cualquiera.
+  - Las celdas de CobroDesdeInicio llevan #46, mientras que su entrada quitada llevaba #45. Las dos son válidas.
+- **Sin celdas infractoras.** Una pantalla que se vuelve alcanzable sin celdas infractoras solo pierde su cobertura `unreachable`. No se agrega nada.
 
-**1. Valid trade: passes.** `Cuenta` becomes reachable and has one failing cell.
+#### Una fila nueva del registro
+
+- **Por celda.** Una celda infractora (pantalla, tamaño, tema) puede agregarse cuando el mismo cambio agrega la fila de esa pantalla al registro de pantallas en ese tamaño y tema. La fila no estaba en el registro antes del cambio. Las celdas reales van en las listas de infractores que les correspondan.
+  - Cada celda agregada nombra la pantalla de la fila nueva. Solo esas celdas cuentan.
+  - Una pantalla `*Texto130` es un nombre de pantalla propio y cuenta por su cuenta.
+  - Un cambio puede agregar varias filas.
+- **Fila nueva inalcanzable.** Si el recorrido todavía no alcanza la fila nueva, el mismo cambio la lista en `unreachable.json` en los tamaños y temas que no alcanza. Sus celdas reales llegan después, por el canje.
+- **Issue.** Cada celda agregada nombra un issue de `AREA_ISSUES`.
+- **Solo en el mismo cambio.** Las celdas de una fila que ya existía antes del cambio nunca son este tipo de crecimiento, aunque esa fila se haya agregado hace poco.
+- **Registrado.** `InicioChecklist` (Home con la First-run checklist) e `InicioImportado`, las filas de teléfono que agregó GH-274, trajeron sus celdas reales en `touch-action.json` en ese cambio. Cada entrada lleva su motivo. Son el primer caso de esta regla y no necesitan excepción.
+
+#### Un target renumerado
+
+El ordinal de un target (`[n]`) cuenta solo los nodos que fallan en la pantalla con el mismo texto enmascarado, en orden de página. Cuando un cambio arregla algunos, uno no tocado puede cambiar de clave sin que nada cambie en él. Es la misma celda con otro nombre, no crecimiento.
+
+- **Se reemplaza en el mismo cambio.** El cambio quita la clave vieja y agrega la nueva cuando se cumple todo esto:
+  1. **Misma entrada en lo demás.** Las entradas agregada y quitada tienen el mismo `screen`, `rule`, tamaños, temas e issue. Su `target` difiere solo en el ordinal final: un número distinto, o el ordinal agregado o quitado.
+  2. **Lo causó un arreglo.** El mismo cambio también quita al menos una entrada de esa pantalla con la misma regla y el mismo texto enmascarado, un nodo que arregló.
+  3. **Sin crecimiento neto.** Para esa pantalla, regla y texto enmascarado, no hay más entradas después del cambio que antes.
+  4. **El nodo no se tocó.** El markup propio del nodo renumerado no está en el diff de código del cambio.
+- **Si no, es crecimiento.** Un cambio de clave que no cumple alguna de estas condiciones es una entrada agregada como cualquier otra. Se arregla en el mismo cambio o se escala, nunca se lista.
+- **Registrado.** GH-297 parte 1 (Analysis) es el primer caso: montos por Variety no tocados podían renumerarse cuando la franja de resumen, las filas de costo y el bloque "since the first record" dejaron de fallar. Esos canjes de clave conservan #48 y se listan en los targets movidos del cambio como `clave vieja → clave nueva`.
+
+#### Común a los tres
+
+- **No permitido.** Cualquier otro crecimiento rompe el invariante 9:
+  - celdas de una pantalla cuya entrada `unreachable` se queda;
+  - celdas de una fila que ya estaba en el registro antes del cambio, salvo un target renumerado como arriba;
+  - celdas que nombran una pantalla distinta de aquella cuya entrada se quitó o cuya fila se agregó;
+  - celdas en un tamaño o tema que la entrada quitada o la fila nueva no cubre.
+- **Sin tope.** Una pantalla alcanzable o una fila nueva trae todas sus celdas reales, sean cuantas sean.
+- **Se siguen como cualquier otro infractor.** Las celdas agregadas y los targets renumerados se siguen desde entonces como cualquier otro infractor. Nunca se ocultan, nunca se marcan exentos y nunca se leen como regresión.
+- **Legible desde los archivos.** El crecimiento y la renumeración se pueden verificar por nombre de pantalla con los archivos de infractores de antes y de después, más el diff del registro de pantallas para una fila nueva y el diff de código para un nodo renumerado no tocado. No hacen falta las notas de evidencia del Developer.
+- **Se hace cumplir solo en revisión.** `diffOffenders` ya hace que listar y recorrer lleguen juntos. Las celdas reales de una pantalla alcanzable o de una fila nueva quedan `unlisted` hasta que se listan, y las celdas `unreachable` de una pantalla alcanzable pasan a `fixedButListed`. Un target renumerado aparece con su clave nueva `unlisted` y la vieja `fixedButListed` hasta que se hace el canje. Verificar que las celdas agregadas nombran la pantalla quitada o agregada, o que son una renumeración válida, necesitaría la revisión base, o sea git dentro de vitest, en contra de ADR-0038 y ADR-0041. Por eso el revisor empareja nombres de pantalla y claves entre los diffs. Listar una falla nueva no relacionada para quedar en verde se atrapa solo en revisión, como antes.
+- **Sin excepciones puntuales.** No se registra ninguna excepción por tarea para una pantalla que se vuelve alcanzable, una fila agregada o un target renumerado. Las reglas aceptan `CobroDesdeInicio` (cobrar desde Home; su entrada `unreachable` quitada en 246x437, #45, canjeada por siete celdas de 246x437 en #46) e `InicioChecklist` e `InicioImportado` (GH-274) sin ninguna. La excepción registrada en GH-271 queda retirada.
+
+#### Ejemplos resueltos
+
+Cada uno muestra los archivos de infractores y, donde importa, el registro de pantallas, antes y después de un cambio, y el veredicto.
+
+**1. Canje válido: pasa.** `Cuenta` se vuelve alcanzable y tiene una celda que falla.
 
 ```diff
  unreachable.json
@@ -167,9 +196,9 @@ Each shows the offender files, and where it matters the screens registry, before
 +  { "screen": "Cuenta", "rule": "touch-target", "target": "button:Save", "issue": 45 }
 ```
 
-The added cell names the screen of the removed entry, and names an issue.
+La celda agregada nombra la pantalla de la entrada quitada y nombra un issue.
 
-**2. Entry kept, cells added: fails.** `Cuenta` gains a cell, but its `unreachable` entry stays.
+**2. Entrada conservada, celdas agregadas: falla.** `Cuenta` suma una celda, pero su entrada `unreachable` se queda.
 
 ```diff
  unreachable.json
@@ -178,9 +207,9 @@ The added cell names the screen of the removed entry, and names an issue.
 +  { "screen": "Cuenta", "rule": "touch-target", "target": "button:Save", "issue": 45 }
 ```
 
-Nothing was traded for the new cell, so the list grew.
+No se canjeó nada por la celda nueva, así que la lista creció.
 
-**3. Cells naming another screen: fail.** `Cuenta` loses its entry, but the added cell names `Perfil`.
+**3. Celdas que nombran otra pantalla: fallan.** `Cuenta` pierde su entrada, pero la celda agregada nombra `Perfil`.
 
 ```diff
  unreachable.json
@@ -189,18 +218,18 @@ Nothing was traded for the new cell, so the list grew.
 +  { "screen": "Perfil", "rule": "touch-target", "target": "button:Save", "issue": 45 }
 ```
 
-The cell does not name the removed entry's screen, so it is not part of the trade.
+La celda no nombra la pantalla de la entrada quitada, así que no es parte del canje.
 
-**4. Reachable with no cells: passes.** `Cuenta` becomes reachable and nothing fails.
+**4. Alcanzable sin celdas: pasa.** `Cuenta` se vuelve alcanzable y no falla nada.
 
 ```diff
  unreachable.json
 -  { "screen": "Cuenta", "rule": "unreachable", "target": "", "issue": 45 }
 ```
 
-Only the entry leaves. Nothing is added.
+Solo se va la entrada. No se agrega nada.
 
-**5. New row with its cells: passes.** The change adds the phone row `InicioChecklist`, and it has failing cells.
+**5. Fila nueva con sus celdas: pasa.** El cambio agrega la fila de teléfono `InicioChecklist`, y tiene celdas que fallan.
 
 ```diff
  screens registry
@@ -209,18 +238,18 @@ Only the entry leaves. Nothing is added.
 +  { "screen": "InicioChecklist", "rule": "touch-action", "target": "…", "issue": 46 }
 ```
 
-The added cells name only the row added in the same change, and name an issue.
+Las celdas agregadas nombran solo la fila agregada en el mismo cambio, y nombran un issue.
 
-**6. Cells for an existing row: fail.** No row is added, and a cell for `InicioHoy`, already in the registry, is added.
+**6. Celdas de una fila existente: fallan.** No se agrega ninguna fila, y se agrega una celda de `InicioHoy`, que ya estaba en el registro.
 
 ```diff
  touch-action.json
 +  { "screen": "InicioHoy", "rule": "touch-action", "target": "…", "issue": 46 }
 ```
 
-The row was there before the change, so the new cell is a regression to fix, not a growth to list.
+La fila estaba antes del cambio, así que la celda nueva es una regresión a arreglar, no un crecimiento a listar.
 
-**7. New row, cells naming another screen: fail.** The change adds `InicioImportado`, but a cell for `Perfil` is also added.
+**7. Fila nueva, celdas que nombran otra pantalla: fallan.** El cambio agrega `InicioImportado`, pero también se agrega una celda de `Perfil`.
 
 ```diff
  screens registry
@@ -230,9 +259,9 @@ The row was there before the change, so the new cell is a regression to fix, not
 +  { "screen": "Perfil", "rule": "touch-action", "target": "…", "issue": 46 }
 ```
 
-The `InicioImportado` cell is valid. The `Perfil` cell breaks invariant 9.
+La celda de `InicioImportado` es válida. La de `Perfil` rompe el invariante 9.
 
-**8. Renumbered after a fix: passes.** The change fixes the first `Analisis` amount with masked text `$ #.#.#`. The untouched second one moves from `[2]` to `[1]`.
+**8. Renumerado después de un arreglo: pasa.** El cambio arregla el primer monto de `Analisis` con texto enmascarado `$ #.#.#`. El segundo, no tocado, pasa de `[2]` a `[1]`.
 
 ```diff
  figure-split.json
@@ -241,9 +270,9 @@ The `InicioImportado` cell is valid. The `Perfil` cell breaks invariant 9.
 +  { "screen": "Analisis", "rule": "figure-split", "target": "span:$ #.#.#[1]", "issue": 48 }
 ```
 
-One node was fixed and the other kept its cell under a new ordinal. The entries for that masked text went from two to one, and the renumbered node's markup is not in the code diff.
+Se arregló un nodo y el otro conservó su celda bajo un ordinal nuevo. Las entradas de ese texto enmascarado pasaron de dos a una, y el markup del nodo renumerado no está en el diff de código.
 
-**9. Renumbered with nothing fixed: fails.** No `Analisis` entry with masked text `$ #.#.#` is fixed, yet a key moves.
+**9. Renumerado sin nada arreglado: falla.** No se arregla ninguna entrada de `Analisis` con texto enmascarado `$ #.#.#`, y aun así una clave se mueve.
 
 ```diff
  figure-split.json
@@ -251,45 +280,53 @@ One node was fixed and the other kept its cell under a new ordinal. The entries 
 +  { "screen": "Analisis", "rule": "figure-split", "target": "span:$ #.#.#[3]", "issue": 48 }
 ```
 
-Nothing with that masked text was fixed, so the shift means a new failing node appeared before it. That is a regression to fix, not a renumbering.
+No se arregló nada con ese texto enmascarado, así que el corrimiento significa que apareció un nodo nuevo que falla antes que él. Es una regresión a arreglar, no una renumeración.
 
-## Metrics
+## Métricas
 
-There is no telemetry. These are read from the task's evidence and from review.
+No hay telemetría. Se leen de la evidencia de la tarea y de la revisión.
 
-- **Shifted-date pass (time job, criterion 1):** a run more than 7 days ahead and across an Argentina midnight passes.
-- **Real-clock tests accounted for (time job, criteria 2 and 5):** every test that depended on the real clock is listed with how it is now covered. None is left uncovered and none is deleted.
-- **No behaviour change (time job, criterion 3):** the gate passes, and every edited test keeps its product assertions. Checked in review.
-- **Gate stays fast (time job, criterion 4):** no new waiting and no elapsed-time assertions. Checked in review against ADR-0038 and ADR-0041.
-- **Staying fixed:** the flagging mechanism is shown catching a deliberately added real-clock-dependent test.
-- **Trade recognised (trade job, criteria 1 and 3):** four cases are shown, each with the expected verdict:
-  - a valid trade passes;
-  - an entry kept plus cells added fails;
-  - cells naming another screen fail;
-  - a screen made reachable with no cells passes.
-- **Nothing hidden (trade job, criterion 2):** after a trade, every cell of the newly reachable screen is in the offender lists, each naming an issue.
-- **Self-evident trade (trade job, criterion 4):** the reviewer confirms the trade from the offender-file diff alone.
-- **New row recognised (new-row job, criteria 1 and 3):** three cases are shown, each with the expected verdict:
-  - a new row with its cells passes;
-  - cells for an existing row fail;
-  - cells naming another screen alongside a new row fail.
-- **Nothing hidden (new-row job, criterion 2):** every real cell of `InicioChecklist` and `InicioImportado` is in the offender lists, each naming an issue and carrying its reason.
-- **Self-evident new row (new-row job, criterion 4):** the reviewer confirms the growth from the registry diff and the offender-file diff alone. Compared with GH-274's base, the lists grow by exactly the entries for `InicioChecklist` and `InicioImportado`, and remove none.
-- **Renumbering recognised (renumber job, criteria 1 to 3):** two cases are shown, each with the expected verdict:
-  - a renumbering after a fix passes;
-  - a renumbering with nothing fixed fails.
-- **Self-evident renumbering (renumber job, criterion 4):** for each swapped key, the reviewer confirms from the offender-file diff that a same-text entry was removed and the count did not grow, and from the code diff that the node was untouched.
-- **No one-off exceptions (all offender jobs):** no per-task exception for a screen becoming reachable, a row being added or a target renumbered remains, CobroDesdeInicio's and GH-274's included.
-- **Twins aligned:** CODING_STANDARDS.md §10, the design-system README, item 39 of accounts.md and the header of `offenders/index.ts` each name both allowed kinds of growth in one sentence and point here.
+- **Pasa con la fecha corrida (job del tiempo, criterio 1):** una corrida más de 7 días adelante y a través de una medianoche de Argentina pasa.
+- **Tests con reloj real contabilizados (job del tiempo, criterios 2 y 5):** cada test que dependía del reloj real está listado con cómo se cubre ahora. Ninguno queda sin cubrir y ninguno se elimina.
+- **Sin cambio de comportamiento (job del tiempo, criterio 3):** el Gate pasa, y cada test editado conserva sus aserciones de producto. Se verifica en revisión.
+- **El Gate sigue rápido (job del tiempo, criterio 4):** ninguna espera nueva y ninguna aserción de tiempo transcurrido. Se verifica en revisión contra ADR-0038 y ADR-0041.
+- **Mantenerlo arreglado:** se muestra que el mecanismo de marcado atrapa un test agregado a propósito que depende del reloj real.
+- **Canje reconocido (job del canje, criterios 1 y 3):** se muestran cuatro casos, cada uno con el veredicto esperado:
+  - un canje válido pasa;
+  - una entrada conservada más celdas agregadas falla;
+  - celdas que nombran otra pantalla fallan;
+  - una pantalla vuelta alcanzable sin celdas pasa.
+- **Nada oculto (job del canje, criterio 2):** después de un canje, cada celda de la pantalla recién alcanzable está en las listas de infractores, cada una nombrando un issue.
+- **Canje evidente (job del canje, criterio 4):** el revisor confirma el canje solo con el diff de los archivos de infractores.
+- **Fila nueva reconocida (job de la fila nueva, criterios 1 y 3):** se muestran tres casos, cada uno con el veredicto esperado:
+  - una fila nueva con sus celdas pasa;
+  - celdas de una fila existente fallan;
+  - celdas que nombran otra pantalla junto a una fila nueva fallan.
+- **Nada oculto (job de la fila nueva, criterio 2):** cada celda real de `InicioChecklist` e `InicioImportado` está en las listas de infractores, cada una nombrando un issue y con su motivo.
+- **Fila nueva evidente (job de la fila nueva, criterio 4):** el revisor confirma el crecimiento con el diff del registro y el diff de los archivos de infractores solamente. Comparadas con la base de GH-274, las listas crecen exactamente en las entradas de `InicioChecklist` e `InicioImportado`, y no quitan ninguna.
+- **Renumeración reconocida (job de la renumeración, criterios 1 a 3):** se muestran dos casos, cada uno con el veredicto esperado:
+  - una renumeración después de un arreglo pasa;
+  - una renumeración sin nada arreglado falla.
+- **Renumeración evidente (job de la renumeración, criterio 4):** para cada clave canjeada, el revisor confirma con el diff de los archivos de infractores que se quitó una entrada del mismo texto y que el conteo no creció, y con el diff de código que el nodo no se tocó.
+- **Sin excepciones puntuales (todos los jobs de infractores):** no queda ninguna excepción por tarea para una pantalla vuelta alcanzable, una fila agregada o un target renumerado, incluidas las de CobroDesdeInicio y GH-274.
+- **Gemelos alineados:** CODING_STANDARDS.md §10, el README del design system, el ítem 39 de accounts.md y el encabezado de `offenders/index.ts` nombran cada uno los dos crecimientos permitidos en una oración y remiten acá.
+- **e2e en rojo rechazado (job "Nada en rojo llega a master", criterio 1):** la evidencia muestra a `agentic merge` rechazando un head cuyo job `e2e` no está en verde y nombrando `e2e`. `tests/test_stack_ci.py` verifica que `ci-ok` depende de `e2e`, que `e2e` solo se omite con su bandera de `changes` y que su comando es un paso de un job que `ci:` gatea (GH-476).
+- **Todo estado que no sea éxito rechazado (mismo job, cuándo se integra):** la evidencia o los tests cubren fallado, cancelado, salteado, pendiente y faltante para un job de `ci:`. Cualquier falla encontrada en `test`, `web` o `docs` queda registrada.
+- **Master en verde (mismo job, criterio 2):** la primera corrida de CI de master después del merge tiene todos los jobs en verde, e2e incluido. La evidencia nombra la causa de cada rojo arreglado, y la revisión confirma que no se agregó ningún `skip`, `fixme`, reintento ni aserción aflojada.
+- **Spec visto pasar (mismo job, criterio 3):** la corrida e2e propia del pull request en GitHub está en verde antes de pedir el merge, con su link en la evidencia.
+- **Textos alineados (mismo job, criterio 4):** buscar los textos que dicen que e2e no frena nada y la lista de jobs que frenan el merge no encuentra ningún texto que no coincida con `ci:`, ni ningún ADR que lo contradiga sin un hallazgo `outside`.
 
-## Out of scope
+## Fuera de alcance
 
-- Any product rule, screen, route, refusal or copy.
-- Production code that legitimately reads the real clock.
-- Repeating the shifted-date runs on every gate run.
-- Timing assertions of any kind (ADR-0038).
-- A cap on how many cells a reachable screen or a new row may bring.
-- Changing the touch-target or touch-action standard itself, or fixing the cells that become visible.
-- Changing how a target's ordinal is computed: the renumbering rule accepts the ordinal as it is.
-- Letting offender lists grow in any case other than the trade or a new registry row.
-- Translating `docs/product/design-system/README.md`.
+- Cualquier regla de producto, pantalla, ruta, rechazo o texto.
+- El código de producción que lee legítimamente el reloj real.
+- Repetir las corridas con la fecha corrida en cada corrida del Gate.
+- Aserciones de tiempo de cualquier tipo (ADR-0038).
+- Un tope a cuántas celdas puede traer una pantalla alcanzable o una fila nueva.
+- Cambiar el propio estándar de touch-target o touch-action, o arreglar las celdas que se vuelven visibles.
+- Cambiar cómo se calcula el ordinal de un target: la regla de renumeración acepta el ordinal tal como es.
+- Dejar crecer las listas de infractores en cualquier caso que no sea el canje o una fila nueva del registro.
+- Traducir `docs/product/design-system/README.md`.
+- Meter `web-e2e` en `delivery_checks` o dar al e2e un respaldo local distinto del job e2e de GitHub.
+- Saltear, poner en cuarentena, reintentar hasta que pase o aflojar una aserción para poner el Gate en verde.
+- Una regla de merge propia de e2e distinta de la de los demás jobs de `ci:`.

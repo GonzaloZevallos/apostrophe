@@ -102,4 +102,5 @@ src_stock-->src_api
 src_stock-->src_copy
 src_stock-->src_format
 src_stock-->src_i18n
+src_theme-->src_theme_ts
 ```

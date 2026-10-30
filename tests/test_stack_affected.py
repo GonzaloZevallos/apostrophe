@@ -2,8 +2,9 @@
 agentic-system ADR-0064): structure only. The gate that reads them is another system's;
 what this product owes is that every form can be substituted and exits non-zero on an
 empty selection (never `--passWithNoTests`), that the fallback globs never swallow what
-the e2e wrapper judges sound, and that `delivery_checks` names only declared checks,
-leaves `web-e2e` out and still runs each sweep file the fast tier must not lose."""
+the e2e wrapper judges sound, and that `delivery_checks` names only declared checks, leaves
+`web-e2e` out (it is a check of the full tier and of CI only, GH-476) and still runs each sweep
+file the fast tier must not lose."""
 
 from __future__ import annotations
 
@@ -17,6 +18,7 @@ import pytest
 import yaml
 
 from scripts.affected import REPO_ROOT, WRAPPER_INPUTS, is_e2e_sound
+from scripts.ci_changes import SELECTOR_INPUTS
 
 STACK = cast(
     "dict[str, Any]",
@@ -100,6 +102,16 @@ def test_every_fallback_entry_is_a_non_blank_string() -> None:
 def test_every_file_the_wrapper_depends_on_is_a_fallback(path: str) -> None:
     assert (REPO_ROOT / path).is_file()
     assert _matched(path, FALLBACK)
+
+
+@pytest.mark.parametrize("path", SELECTOR_INPUTS)
+def test_every_file_the_ci_selector_reads_is_a_fallback(path: str) -> None:
+    assert (REPO_ROOT / path).is_file()
+    assert _matched(path, FALLBACK)
+
+
+def test_a_selector_input_outside_the_fallback_globs_is_refused() -> None:
+    assert not _matched("scripts/ci_unlisted.py", FALLBACK)
 
 
 def test_no_e2e_sound_path_is_a_fallback() -> None:
@@ -232,10 +244,10 @@ def test_delivery_checks_are_not_empty_and_have_no_duplicates() -> None:
     assert len(DELIVERY) == len(set(DELIVERY))
 
 
-def test_delivery_checks_never_name_web_e2e() -> None:
+def test_web_e2e_is_a_full_tier_check_only() -> None:
+    assert "web-e2e" in CHECKS
+    assert "web-e2e" in AFFECTED
     assert "web-e2e" not in DELIVERY
-    assert "web-e2e" not in CHECKS
-    assert "web-e2e" not in AFFECTED
 
 
 def writes_pytest_cache(commands: dict[str, str]) -> list[str]:

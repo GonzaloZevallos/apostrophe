@@ -20,6 +20,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-xdist",
+    "pytest-cov",
     "httpx2",
     "ruff",
     "mypy",
@@ -36,6 +37,11 @@ addopts = "-q"
 # No build system: uv treats the project as virtual and never installs it, so `app` is
 # imported from the checkout root. That keeps every worktree testing its own code.
 pythonpath = ["."]
+
+# Coverage is opt-in (`pytest --cov`); the CI coverage report reads these paths as `app/...`.
+[tool.coverage.run]
+relative_files = true
+source = ["app"]
 
 [tool.uv]
 required-version = ">=0.12.13,<0.13"
