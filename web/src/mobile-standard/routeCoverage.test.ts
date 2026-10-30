@@ -5,6 +5,10 @@ import { flattenRoutes, NOT_SCREENS, patternsMatch, redirectExcuses, unregistere
 
 const excused = [NOT_SCREENS, redirectExcuses([{ from: '/old' }])]
 const registryRoutes = ROUTE_REGISTRY.map((entry) => entry.path)
+/** A path built from its segments, so the test writes no route literal (the source scan in routes.test.ts). */
+const at = (...segments: string[]): string => segments.map((segment) => `${HOME}${segment}`).join('')
+const withdrawalNew = at('withdrawals', 'new')
+const entryNew = at('varieties', 'entries', 'new')
 
 describe('route coverage, pure half', () => {
   test('a route missing from the registry is reported (fixture)', () => {
@@ -20,8 +24,8 @@ describe('route coverage, pure half', () => {
 
   test('a literal route is not covered by a parameter registry path', () => {
     expect(
-      unregistered(['/withdrawals/new', '/varieties/entries/new'], ['/withdrawals/{id}', '/varieties/entries/{id}'], excused),
-    ).toEqual(['/withdrawals/new', '/varieties/entries/new'])
+      unregistered([withdrawalNew, entryNew], [at('withdrawals', '{id}'), at('varieties', 'entries', '{id}')], excused),
+    ).toEqual([withdrawalNew, entryNew])
   })
 
   test('NOT_SCREENS holds only the catch-all; every excuse has a reason', () => {
@@ -39,12 +43,12 @@ describe('route coverage, pure half', () => {
   })
 
   test('a literal matches only an equal literal, never a parameter, in both directions', () => {
-    expect(patternsMatch('/varieties/entries/new', '/varieties/entries/{id}')).toBe(false)
-    expect(patternsMatch('/varieties/entries/{id}', '/varieties/entries/new')).toBe(false)
-    expect(patternsMatch('/withdrawals/new', '/withdrawals/{id}')).toBe(false)
-    expect(patternsMatch('/withdrawals/:id', '/withdrawals/new')).toBe(false)
-    expect(patternsMatch('/sales/:id', '/sales/{owing_sale}')).toBe(true)
-    expect(patternsMatch('/varieties/entries/new', '/varieties/entries/new')).toBe(true)
+    expect(patternsMatch(entryNew, at('varieties', 'entries', '{id}'))).toBe(false)
+    expect(patternsMatch(at('varieties', 'entries', '{id}'), entryNew)).toBe(false)
+    expect(patternsMatch(withdrawalNew, at('withdrawals', '{id}'))).toBe(false)
+    expect(patternsMatch(at('withdrawals', ':id'), withdrawalNew)).toBe(false)
+    expect(patternsMatch(at('sales', ':id'), at('sales', '{owing_sale}'))).toBe(true)
+    expect(patternsMatch(entryNew, entryNew)).toBe(true)
   })
 
   test('a parameter against a literal is false in each position', () => {

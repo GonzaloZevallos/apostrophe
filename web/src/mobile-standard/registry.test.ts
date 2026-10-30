@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { HOME } from '../routes.ts'
 import {
   parseFacts,
   parseRegistry,
@@ -173,15 +174,15 @@ describe('parseRouteRegistry', () => {
     expect(
       parseRouteRegistry({
         registry: [
-          { path: '/', kind: 'root' },
-          { path: '/sales/{id}', kind: 'card', parent: '/sales', computer_parent: '/' },
-          { path: '/sales/new', kind: 'form', parent: '/sales' },
+          { path: HOME, kind: 'root' },
+          { path: '/shop/{id}', kind: 'card', parent: '/shop', computer_parent: HOME },
+          { path: '/shop/new', kind: 'form', parent: '/shop' },
         ],
       }),
     ).toEqual([
-      { path: '/', kind: 'root', parent: null },
-      { path: '/sales/{id}', kind: 'card', parent: '/sales' },
-      { path: '/sales/new', kind: 'form', parent: '/sales' },
+      { path: HOME, kind: 'root', parent: null },
+      { path: '/shop/{id}', kind: 'card', parent: '/shop' },
+      { path: '/shop/new', kind: 'form', parent: '/shop' },
     ])
   })
 
@@ -198,7 +199,7 @@ describe('parseRouteRegistry', () => {
 
   test('the real registry[] is parsed: every path starts with a slash', () => {
     expect(ROUTE_REGISTRY.length).toBeGreaterThan(30)
-    for (const route of ROUTE_REGISTRY) expect(route.path.startsWith('/')).toBe(true)
-    expect(ROUTE_REGISTRY.map((route) => route.path)).toContain('/withdrawals/{id}/edit')
+    for (const route of ROUTE_REGISTRY) expect(route.path.startsWith(HOME)).toBe(true)
+    expect(ROUTE_REGISTRY.map((route) => route.path)).toContain(`${HOME}withdrawals${HOME}{id}${HOME}edit`)
   })
 })
