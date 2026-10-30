@@ -56,17 +56,27 @@ body {
   font-family: var(--fuente);
 }
 
-.marca {
+.brand-mark--lockup {
   display: flex;
-  align-items: baseline;
-  gap: 2px;
+  align-items: center;
+  gap: var(--espacio-sm);
   font-size: 34px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.04em;
+  line-height: 1.2;
 }
 
-.marca__apostrofe {
+.brand-mark__word {
+  min-width: 0;
+}
+
+.brand-mark__apostrophe {
   color: var(--acento);
+}
+
+.brand-mark--mark {
+  display: block;
+  flex: none;
 }
 
 .subtitulo {

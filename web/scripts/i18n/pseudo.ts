@@ -47,13 +47,20 @@ export function pseudoText(text: string): string {
 
 type Tree = { readonly [key: string]: string | Tree }
 
+/**
+ * The brand's own texts, as dotted paths in a file. They are never translated nor pseudo-
+ * localised: the name is the same in every language, the Test locale included (`BrandMark`).
+ */
+export const VERBATIM_KEYS: readonly string[] = ['brand.wordmark', 'brand.mark.label']
+
 /** The same tree with every string value pseudo-localised: keys, suffixes and nesting stay. */
-export function generatePseudo(english: Tree): Tree {
+export function generatePseudo(english: Tree, path = ''): Tree {
   return Object.fromEntries(
-    Object.entries(english).map(([key, value]) => [
-      key,
-      typeof value === 'string' ? pseudoText(value) : generatePseudo(value),
-    ]),
+    Object.entries(english).map(([key, value]) => {
+      const here = path === '' ? key : `${path}.${key}`
+      if (typeof value !== 'string') return [key, generatePseudo(value, here)]
+      return [key, VERBATIM_KEYS.includes(here) ? value : pseudoText(value)]
+    }),
   )
 }
 

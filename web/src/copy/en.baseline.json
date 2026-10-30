@@ -66,7 +66,6 @@
   {"source":"auth.ts:AUTH_TEXT.wrongEmailOrPassword","args":null,"text":"Wrong email or password"},
   {"source":"auth.ts:AUTH_TEXT.youWereInvitedTo","args":null,"text":"You were invited to"},
   {"source":"auth.ts:BRAKE_MESSAGE","args":null,"text":"5 failed attempts · try again in 15 minutes"},
-  {"source":"auth.ts:BRAND_NAME","args":null,"text":"apostrophe"},
   {"source":"auth.ts:DEAD_LINK_MESSAGE","args":null,"text":"This link no longer works. Ask whoever sent it for a new one."},
   {"source":"auth.ts:INVITE_ONLY_LINE","args":null,"text":"To use apostrophe, a business has to invite you."},
   {"source":"auth.ts:LANGUAGE","args":null,"text":"en"},
