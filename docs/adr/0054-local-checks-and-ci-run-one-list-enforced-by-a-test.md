@@ -42,3 +42,17 @@ type-checked locally failed on GitHub's runner.
   when the owner turns local e2e back on and #428 has fixed the flake; the entry then leaves `PARKED`.
 - **Superseded.** The bullet "A CI-only check gates every merge" no longer holds for e2e: `ci: [test, web]`
   gates the merge, and `test` and `web` together run every check of `.agentic/stack.yaml`.
+
+## Amendment (GH-476): gating is the `needs` closure of `ci:`, and `CI_FORMS` ties a check to its CI form
+
+- **Gated jobs.** `ci: [ci-ok]` names one job. The gated jobs are its transitive `needs` closure, and
+  `ci-ok` must `need` every other job and carry `if: always()` (ADR-0067). `PARKED` and its tests are gone:
+  e2e gates again, so `npm --prefix web run e2e` is a check of the full tier and of CI.
+- **`CI_FORMS`.** A check that CI runs in another form (pytest in area shards, vitest with coverage and a
+  selection, e2e in `--shard=i/N`) has an entry `check -> exact run: line` in `tests/test_stack_ci.py`. A
+  check is either an exact step of one gated job or has a `CI_FORMS` entry that some gated job runs, never
+  both; a `CI_FORMS` key that is not a check, or a value no gated job runs, is refused.
+- **What proves a `CI_FORMS` check.** The check is proven when every shard the `changes` job selected
+  either succeeded or was skipped on a `"false"` flag, which is what `ci_verdict.py` reads. `tests` and
+  `tests-fast` both map to the pytest shard command: the `always` shard holds every top-level
+  `tests/test_*.py` plus `architecture` and `migrations`, which covers every path `tests-fast` names.

@@ -23,6 +23,7 @@ def needs(
     e2e: str = "success",
     checks: str = "success",
     web: str = "success",
+    docs: str = "success",
     coverage: str = "success",
 ) -> dict[str, object]:
     """A `needs` object with every job passing unless a keyword says otherwise."""
@@ -34,6 +35,7 @@ def needs(
         "e2e": {"result": e2e, "outputs": {}},
         "checks": {"result": checks, "outputs": {}},
         "web": {"result": web, "outputs": {}},
+        "docs": {"result": docs, "outputs": {}},
         "coverage": {"result": coverage, "outputs": {}},
     }
 
@@ -41,7 +43,7 @@ def needs(
 def test_everything_succeeding_passes_with_one_line_per_job() -> None:
     ok, lines = verdict(needs())
     assert ok
-    assert len(lines) == 7
+    assert len(lines) == 8
     assert not any("warning" in line for line in lines)
 
 
@@ -90,7 +92,7 @@ def test_a_skipped_changes_job_fails() -> None:
     assert lines == ["changes: skipped"]
 
 
-@pytest.mark.parametrize("job", ["checks", "web"])
+@pytest.mark.parametrize("job", ["checks", "web", "docs"])
 @pytest.mark.parametrize("result", ["failure", "cancelled", "skipped"])
 def test_an_always_job_that_is_not_success_fails(job: str, result: str) -> None:
     given = needs()

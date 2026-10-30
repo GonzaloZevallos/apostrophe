@@ -230,7 +230,8 @@ jobs:
       - if: needs.changes.outputs.pytest == 'true' && steps.combine.outcome != 'success'
         env:
           SHARDS: ${{ length(fromJSON(needs.changes.outputs.pytest_matrix).include) }}
-        run: echo "Coverage failed: no pytest data from $SHARDS shards (a shard failed before uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" && exit 1
+        run: |-
+          echo "Coverage failed: no pytest data from $SHARDS shards (a shard failed before uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" && exit 1
   ci-ok:
     needs: [changes, checks, web, docs, pytest, vitest, e2e, coverage]
     if: always()
