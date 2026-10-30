@@ -11,8 +11,9 @@ const PUBLIC = `${resolve(__dirname, '../../public')}/`
 const ICONS = `${PUBLIC}icons/`
 const INDEX_HTML = resolve(__dirname, '../../index.html')
 
-const MARK_SVG =
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="28" fill="#1E6B47"/><g fill="#FFFFFF"><path transform="translate(-8 -8) scale(1.12)" d="M60 24a20 20 0 0 1 20 20C80 68 66 86 42 94l-3-7C54 80 62 72 64 63.6A20 20 0 1 1 60 24Z"/></g></svg>'
+// SHA-256 of the request's markup. The markup itself lives only in `mark.svg`: nothing under
+// `web/src` carries the mark's drawing or its colours.
+const REQUEST_MARK_SHA256 = '7a1c26d0a652079aa9142a58e1a820241a4afeaf1ee6b6b9b10477909f18d64f'
 
 type Pixel = { r: number; g: number; b: number; a: number }
 
@@ -65,7 +66,9 @@ const manifest = (): {
 
 describe('mark.svg', () => {
   it('is the request markup, byte for byte', () => {
-    expect(readFileSync(`${ICONS}mark.svg`, 'utf8')).toBe(MARK_SVG)
+    expect(createHash('sha256').update(readFileSync(`${ICONS}mark.svg`)).digest('hex')).toBe(
+      REQUEST_MARK_SHA256,
+    )
   })
 
   it('hashes to the value icons.json recorded when the PNGs were rendered', () => {
@@ -165,11 +168,12 @@ describe('the manifest', () => {
     expect([id, name, shortName]).toEqual([HOME, 'apostrophe', 'apostrophe'])
   })
 
-  it('lists the PNG icons with their sizes, maskable only on the maskable one', () => {
+  it('lists the four PNG icons with their sizes, maskable only on the maskable one', () => {
     expect(manifest().icons).toEqual([
       { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
       { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
     ])
   })
 })
