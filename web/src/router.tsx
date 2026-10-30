@@ -71,6 +71,7 @@ import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
+import { holdScrollRestoration, watchScroll } from './shell/scrollPlaces'
 import {
   CATCH_ALL,
   HOME,
@@ -192,3 +193,7 @@ export const router = createBrowserRouter([
     ],
   },
 ])
+
+// Where the document goes is decided in `router.subscribe`, before the new screen is drawn (ADR-0065).
+watchScroll(router)
+holdScrollRestoration()

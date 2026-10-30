@@ -33,6 +33,15 @@ interface Rule {
   allow?: (path: string) => boolean
 }
 
+/** The files ADR-0065 lets move the document's scroll (`test-setup.ts` is the jsdom stub). */
+const SCROLL_OWNERS: readonly string[] = [
+  'src/shell/ScrollSync.tsx',
+  'src/shell/scrollPlaces.ts',
+  'src/shell/scrollFollow.ts',
+  'src/components/useReturnToPlace.ts',
+  'src/test-setup.ts',
+]
+
 const RULES: Rule[] = [
   { name: 'fetch', pattern: /\bfetch\s*\(/, allow: (path) => path.endsWith('api/client.ts') },
   { name: 'XMLHttpRequest', pattern: /\bXMLHttpRequest\b/ },
@@ -55,6 +64,20 @@ const RULES: Rule[] = [
     name: 'useBlocker',
     pattern: /\buseBlocker\b/,
     allow: (path) => path === 'src/components/useLeaveGuard.ts',
+  },
+  {
+    name: 'documentScroll',
+    pattern: new RegExp(
+      [
+        // window.scrollTo(...), globalThis?.scrollBy(...), document['scroll'](...)
+        String.raw`\b(?:window|globalThis|document)\s*(?:\??\.\s*|\[\s*['"])(?:scrollTo|scrollBy|scroll)['"]?\s*\]?\s*\(`,
+        // document.documentElement.scrollTop = ..., body.scrollLeft += ...
+        String.raw`\b(?:documentElement|body|scrollingElement)\s*\??\.\s*scroll(?:Top|Left)\s*(?:[-+*/]?=(?!=))`,
+        // history.scrollRestoration, read or written
+        String.raw`\bhistory\s*\??\.\s*scrollRestoration\b`,
+      ].join('|'),
+    ),
+    allow: (path) => SCROLL_OWNERS.includes(path),
   },
   {
     name: 'execCommand',

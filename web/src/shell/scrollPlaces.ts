@@ -12,7 +12,11 @@
  * writer: `recordChange`, through `nextPlaces`, called by `watchScroll` on each location change.
  */
 
-import type { NavigationType, ScrollDecision } from './scrollOnArrival'
+import { matchRoutes, type Location, type Router as DataRouter } from 'react-router'
+import { sheetDepth } from '../components/useSheetStack'
+import { isScreenId, SCREENS, screenOf, type ScreenId, type Viewport } from '../routes'
+import { FORM_DRAWING, scrollOnArrival, type Arrival, type NavigationType, type ScrollDecision } from './scrollOnArrival'
+import { COMPUTER_QUERY } from '../format/breakpoints'
 
 export type Places = ReadonlyMap<string, number>
 
@@ -112,4 +116,91 @@ export function resetPlaces(): void {
   places = new Map()
   decisions = new Map()
   held = undefined
+}
+
+/** What `watchScroll` needs of the page; the browser's own by default, a fake in a test. */
+export interface WatchDeps {
+  viewport: () => Viewport
+  /** `window.scrollY`, read synchronously at the moment of the change. */
+  scrollY: () => number
+  /** The page is pinned: `html:has(.sheet)` or `html.html--formulario-fijo`. */
+  isPinned: () => boolean
+}
+
+export function browserWatchDeps(): WatchDeps {
+  return {
+    viewport: () => (typeof window.matchMedia === 'function' && window.matchMedia(COMPUTER_QUERY).matches ? 'computer' : 'phone'),
+    scrollY: () => window.scrollY,
+    isPinned: () => document.documentElement.matches('html:has(.sheet), html.html--formulario-fijo'),
+  }
+}
+
+/** What `watchScroll` needs of a data router. */
+type WatchedRouter = Pick<DataRouter, 'state' | 'subscribe'>
+
+const SCREEN_ROUTES = SCREENS.map((entry) => ({ path: entry.path, id: entry.id }))
+
+/** The registry screen at `pathname`, ranked as the router ranks (`/customers/new` before `/customers/:id`). */
+export function screenAt(pathname: string): ScreenId | undefined {
+  const found = matchRoutes(SCREEN_ROUTES, pathname)?.at(-1)?.route.id
+  return found !== undefined && isScreenId(found) ? found : undefined
+}
+
+function arrivalAt(location: Location): Arrival {
+  return { pathname: location.pathname, screen: screenAt(location.pathname), sheetDepth: sheetDepth(location.state) }
+}
+
+function navigationType(action: string): NavigationType {
+  return action === 'POP' || action === 'REPLACE' ? action : 'PUSH'
+}
+
+/** Whether the move draws `next` over the page it came from, so the page stays and its offset is held. */
+function drawnOver(prev: Arrival, next: Arrival, viewport: Viewport): boolean {
+  if (prev.pathname === next.pathname) return next.sheetDepth > 0
+  if (next.screen === undefined) return false
+  if (viewport === 'computer') return screenOf(next.screen).modalOnComputer === true
+  return next.screen in FORM_DRAWING && FORM_DRAWING[next.screen as keyof typeof FORM_DRAWING] === 'over'
+}
+
+/**
+ * Decides, once per new location key and before the new screen is drawn, where the document
+ * goes (`scrollOnArrival`), and takes the change into the memory. `ScrollSync` only applies it.
+ * Returns the way to stop watching.
+ */
+export function watchScroll(router: WatchedRouter, deps: WatchDeps = browserWatchDeps()): () => void {
+  let left = router.state.location
+  return router.subscribe((state) => {
+    const reached = state.location
+    if (reached.key === left.key) return
+    const prev = arrivalAt(left)
+    const next = arrivalAt(reached)
+    const action = navigationType(String(state.historyAction))
+    const viewport = deps.viewport()
+    const decision = scrollOnArrival(prev, next, action, viewport)
+    recordChange({
+      prevKey: left.key,
+      nextKey: reached.key,
+      action,
+      decision,
+      overPage: drawnOver(prev, next, viewport),
+      pinned: deps.isPinned(),
+      liveScrollY: deps.scrollY(),
+    })
+    left = reached
+  })
+}
+
+/** `history.scrollRestoration = 'manual'` one frame after load; `'auto'` on `pagehide`, so a reload keeps the browser's own. */
+export function holdScrollRestoration(): void {
+  if (!('scrollRestoration' in window.history)) return
+  const hold = (): void => {
+    window.requestAnimationFrame(() => {
+      window.history.scrollRestoration = 'manual'
+    })
+  }
+  if (document.readyState === 'complete') hold()
+  else window.addEventListener('load', hold, { once: true })
+  window.addEventListener('pagehide', () => {
+    window.history.scrollRestoration = 'auto'
+  })
 }
