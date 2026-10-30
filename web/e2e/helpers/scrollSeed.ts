@@ -80,3 +80,22 @@ export async function seedLongLists(page: Page): Promise<void> {
     await Promise.all(names.slice(start, start + BATCH).map((name) => customerOwing(page, name, rosa)))
   }
 }
+
+/** `LONG` expenses ("Gasto 01" ...) dated on the business's own today, so Expenses scrolls (an in-page sheet opens from a row). */
+export async function seedLongExpenses(page: Page): Promise<void> {
+  const me = await okJson<{ today: string }>(await page.request.get('/auth/me'))
+  const categories = await okJson<{ id: number }[]>(await page.request.get('/expense-categories'))
+  const category = categories[0]
+  if (category === undefined) throw new Error('a new business has no expense category')
+  const details = Array.from({ length: LONG }, (_, index) => `Gasto ${String(index + 1).padStart(2, '0')}`)
+  for (let start = 0; start < details.length; start += BATCH) {
+    await Promise.all(
+      details.slice(start, start + BATCH).map(async (detail) => {
+        const recorded = await page.request.post('/expenses', {
+          data: { spent_on: me.today, category_id: category.id, amount: 4500, detail },
+        })
+        expect(recorded.status(), `POST /expenses answered ${recorded.status()}: ${await recorded.text()}`).toBe(201)
+      }),
+    )
+  }
+}

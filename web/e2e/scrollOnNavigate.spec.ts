@@ -6,15 +6,17 @@
  *   - a tab or a list row into its detail opens the new screen at the top;
  *   - Back and the app's "‹" return a list to the offset it was left at, also through a tab
  *     in between (`history.go(-2)`);
+ *   - a link, a Settings group, and Nueva venta (a sheet over the list on the phone) behave as
+ *     their kind says; an in-page sheet and Record payment leave the list where it is;
  *   - Record payment opened from a scrolled list leaves the list where it is, on Close and on Back;
  *   - on a computer, picking a row in the two panes leaves the list where it is.
  * Roles, names, text and URLs only; every wait is a condition.
  */
 
 import type { Locator, Page } from '@playwright/test'
-import { CUSTOMER, CUSTOMERS, SALE, SALES } from '../src/routes.js'
+import { CUSTOMER, CUSTOMERS, EXPENSES, SALE, SALE_NEW, SALES, SETTINGS } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
-import { expectLongPage, seedLongLists } from './helpers/scrollSeed.js'
+import { expectLongPage, seedLongExpenses, seedLongLists } from './helpers/scrollSeed.js'
 import { expectPath } from './helpers/url.js'
 
 const VIEWPORTS = [
@@ -46,6 +48,30 @@ async function expectAtTop(page: Page): Promise<void> {
 function tap(control: Locator): Promise<void> {
   return control.evaluate((element) => {
     if (element instanceof HTMLElement) element.click()
+  })
+}
+
+/** Where a control sits in the viewport: it does not move while a sheet is drawn over the page. */
+async function viewportTop(control: Locator): Promise<number> {
+  const box = await control.boundingBox()
+  if (box === null) throw new Error('the control has no box')
+  return box.y
+}
+
+async function expectViewportTop(control: Locator, top: number): Promise<void> {
+  await expect.poll(() => viewportTop(control)).toBeCloseTo(top, 0)
+}
+
+/** How far the form's own scroller (the dialog's, or the page's when the form is the page) is scrolled. */
+async function formScrollerTop(page: Page): Promise<number> {
+  const dialog = page.getByRole('dialog')
+  if ((await dialog.count()) === 0) return scrollY(page)
+  return dialog.first().evaluate((root) => {
+    const scrollers = [root, ...Array.from(root.querySelectorAll('*'))].filter((element) => {
+      const overflow = getComputedStyle(element).overflowY
+      return overflow === 'auto' || overflow === 'scroll'
+    })
+    return Math.max(0, ...scrollers.map((element) => element.scrollTop))
   })
 }
 
@@ -126,10 +152,13 @@ for (const viewport of VIEWPORTS) {
       await opener.scrollIntoViewIfNeeded()
       const offset = await scrollY(page)
       expect(offset, 'the list is scrolled').toBeGreaterThan(300)
+      const rowTop = await viewportTop(opener)
       await opener.click()
       const dialog = page.getByRole('dialog', { name: 'Record payment' })
       await expect(dialog).toBeVisible()
       await expectScrolledTo(page, offset)
+      await expectViewportTop(opener, rowTop)
+      expect(await formScrollerTop(page), "the form's own scroller starts at 0").toBe(0)
 
       await dialog.getByRole('button', { name: 'Close' }).click()
       await expect(page.getByRole('dialog')).toHaveCount(0)
@@ -142,6 +171,111 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('dialog')).toHaveCount(0)
       await expectPath(page, CUSTOMERS)
       await expectScrolledTo(page, offset)
+    })
+
+    test('Collect from a scrolled Customers, saved, returns to the debtor row in view', async ({ page }) => {
+      await seedLongLists(page)
+
+      await page.goto(CUSTOMERS)
+      const opener = page
+        .getByRole('region', { name: 'Everyone · A–Z' })
+        .getByRole('link', { name: 'Collect from Zeta 30' })
+      await expect(opener).toBeVisible()
+      await opener.scrollIntoViewIfNeeded()
+      const offset = await scrollY(page)
+      expect(offset, 'the list is scrolled').toBeGreaterThan(300)
+      await opener.click()
+      await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
+      await page.getByLabel('Amount').fill('500')
+      await page.getByRole('radio', { name: 'Cash' }).check()
+      await page.getByRole('button', { name: 'Save' }).click()
+
+      await expectPath(page, CUSTOMERS)
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await expectScrolledTo(page, offset)
+      await expect(opener).toBeFocused()
+      await expect(opener).toBeInViewport()
+    })
+
+    test('a link out of a scrolled list opens its screen at the top, or keeps the list in the computer panes', async ({
+      page,
+    }) => {
+      await seedLongLists(page)
+
+      await page.goto(CUSTOMERS)
+      await expect(page.getByRole('link', { name: /Zeta 40/ }).first()).toBeVisible()
+      const offset = await scrollDown(page)
+      await tap(page.getByRole('link', { name: /Zeta 25/ }).first())
+      await expectPath(page, CUSTOMER)
+      if (computer) await expectScrolledTo(page, offset)
+      else await expectAtTop(page)
+    })
+
+    test('an in-page sheet opened from a scrolled list leaves the list where it is, on Close and on Back', async ({
+      page,
+    }) => {
+      await seedLongLists(page)
+      await seedLongExpenses(page)
+
+      await page.goto(EXPENSES)
+      const row = page.getByRole('button', { name: /Gasto 25/ })
+      await expect(row).toBeVisible()
+      const offset = await scrollDown(page)
+      const rowTop = await viewportTop(row)
+      await tap(row)
+      const dialog = page.getByRole('dialog')
+      await expect(dialog).toBeVisible()
+      await expectScrolledTo(page, offset)
+      await expectViewportTop(row, rowTop)
+
+      await dialog.getByRole('button', { name: 'Close' }).click()
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await expectScrolledTo(page, offset)
+
+      await tap(row)
+      await expect(page.getByRole('dialog')).toBeVisible()
+      await page.goBack()
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await expectScrolledTo(page, offset)
+    })
+
+    test('Nueva venta from a scrolled list starts at the top of its own scroller and leaves the list alone', async ({
+      page,
+    }) => {
+      await seedLongLists(page)
+
+      await page.goto(CUSTOMERS)
+      await expect(page.getByRole('link', { name: /Zeta 40/ }).first()).toBeVisible()
+      const offset = await scrollDown(page)
+      await tap(page.getByRole('link', { name: 'New sale' }).last())
+      await expectPath(page, SALE_NEW)
+      if (computer) {
+        // A whole-width page on a computer: it opens at the top, and Back returns the list.
+        await expectAtTop(page)
+        await page.goBack()
+      } else {
+        await expect(page.getByRole('dialog')).toBeVisible()
+        expect(await formScrollerTop(page), "the form's own scroller starts at 0").toBe(0)
+        await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click()
+      }
+      await expectPath(page, CUSTOMERS)
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await expectScrolledTo(page, offset)
+    })
+
+    test('a Settings group opened from a scrolled Settings starts at the top', async ({ page }) => {
+      await seedLongLists(page)
+
+      await page.goto(SETTINGS)
+      await expect(page.getByRole('link', { name: 'Business', exact: true })).toBeVisible()
+      // The list of groups is short: give the page a height of its own so there is something to scroll.
+      await page.evaluate(() => {
+        document.documentElement.style.minHeight = '3000px'
+      })
+      await scrollDown(page)
+      await tap(page.getByRole('link', { name: 'Business', exact: true }))
+      await expect(page.getByLabel('Business name')).toBeVisible()
+      await expectAtTop(page)
     })
 
     if (computer) {
