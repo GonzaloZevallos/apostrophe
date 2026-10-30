@@ -10,6 +10,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter, type InitialEntry } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import type { ArchivedAttributes } from '../../api/catalog'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import { inAppState } from '../../components/inAppState'
@@ -18,7 +19,7 @@ import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo, relative } from '../../
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { iconAndTextProblems, expectIconAndTextRule } from '../../test/iconAndTextRule'
 import Shell from '../../shell/Shell'
-import Variedades from '../Variedades'
+import Variedades, { type Variety } from '../Variedades'
 import ArchivedIndex from './ArchivedIndex'
 import ArchivedVarieties from './ArchivedVarieties'
 import VarietiesIndex from './VarietiesIndex'
@@ -204,6 +205,27 @@ describe('the Archivadas card', () => {
     const hiddenRow = (await screen.findByText('Hidden')).closest('.variedad-archivada')
     expect(hiddenRow).toHaveTextContent('Zeta Vieja')
     expect(screen.getAllByText('Hidden')).toHaveLength(1)
+  })
+
+  test("joins the archived products to their catalog attributes on product_id, so Hidden marks only the matching row", async () => {
+    const archived = [
+      { id: 21, name: 'Mora Vieja', archived: true, current_price: null },
+      { id: 22, name: 'Nogal Viejo', archived: true, current_price: null },
+    ] satisfies Variety[]
+    const attributes = [
+      { product_id: 22, name: 'Nogal Viejo', shown: false, emoji: null, indica_share: null, aroma: null },
+      { product_id: 21, name: 'Mora Vieja', shown: true, emoji: null, indica_share: null, aroma: null },
+      { product_id: 1, name: 'Otro', shown: false, emoji: null, indica_share: null, aroma: null },
+    ] satisfies ArchivedAttributes[]
+    renderAt(ARCHIVED_VARIETIES, {
+      'GET /api/products?archived=true': () => json(200, archived),
+      'GET /catalog/archived': () => json(200, attributes),
+    })
+
+    const hidden = await screen.findByText('Hidden')
+    expect(screen.getAllByText('Hidden')).toHaveLength(1)
+    expect(hidden.closest('div')).toHaveTextContent('Nogal Viejo')
+    expect(screen.getByText('Mora Vieja').closest('div')).not.toHaveTextContent('Hidden')
   })
 
   test('an empty list reached by an in-app link goes on to Variedades (a typed address keeps the fixed line, below)', async () => {

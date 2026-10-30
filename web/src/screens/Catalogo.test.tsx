@@ -117,7 +117,7 @@ const CATALOG = {
 // Every test but the ones that build `withPinnedCatalog` explicitly leaves the bot
 // section's own fetch (`GET /pinned-catalog`) unmocked: this fallback answers it with
 // "nothing saved yet" so the catalog-only tests above don't have to know the bot
-// section exists, the same way they never had to mock `/catalog/varieties` twice.
+// section exists, the same way they never had to mock `/catalog/products` twice.
 const DEFAULT_PINNED_CATALOG = {
   token_saved_on: null,
   own_chat: null,
