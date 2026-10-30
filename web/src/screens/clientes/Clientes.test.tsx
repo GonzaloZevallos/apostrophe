@@ -707,21 +707,17 @@ test('on a phone, a customer\'s card is alone, with no list behind it', async ()
 
 // Back from Record payment the list is at its place (PM option a): the hand-off the link left
 // is applied once the data has rendered, then taken.
-test('after Close the list focuses that customer\'s "Collect" and scrolls to the offset it was at', async () => {
+test('after Close the list focuses that customer\'s "Collect" (the scroll is ScrollSync\'s)', async () => {
   vi.mocked(fetch).mockImplementation(fetchApp)
-  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  Object.defineProperty(window, 'scrollY', { configurable: true, value: 480 })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
   const router = renderApp()
 
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
   await screen.findByRole('button', { name: 'Save' })
-  scrollTo.mockClear()
   await act(() => router.navigate(-1))
 
   const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
   await waitFor(() => expect(collect).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 480 }))
-  Reflect.deleteProperty(window, 'scrollY')
 })
 
 test('when the customer owes nothing any more the list focuses the "Owed to you" block instead', async () => {

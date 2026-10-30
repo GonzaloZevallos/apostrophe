@@ -187,6 +187,12 @@ export function readPaymentUnderneath(state: unknown): PaymentUnderneath {
   return 'card'
 }
 
+/** Whether the history state carries the screen Record payment was opened over (`paymentLink`
+ * wrote it): the signal that the route opens over a screen instead of replacing it. */
+export function hasPaymentUnderneath(state: unknown): boolean {
+  return typeof state === 'object' && state !== null && 'underneath' in state && isPaymentUnderneath(state.underneath)
+}
+
 /** The part of a click the helper looks at: a plain click follows the link, a modified one
  * opens it elsewhere and leaves this page where it is. */
 interface LinkClick {
@@ -476,6 +482,25 @@ function matchesTemplate(path: string, template: string): boolean {
     have.length === want.length &&
     want.every((segment, index) => (segment.startsWith(':') ? have[index] !== '' : segment === have[index]))
   )
+}
+
+/**
+ * The declared screen a pathname is, or `undefined` for a pathname outside the table. A static
+ * path wins over a parameterised one (`/customers/new` is the form, not a customer's card).
+ */
+export function screenAtPath(pathname: string): Screen | undefined {
+  const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
+  let best: Screen | undefined
+  let bestParams = Number.POSITIVE_INFINITY
+  for (const candidate of SCREENS) {
+    if (!matchesTemplate(path, candidate.path)) continue
+    const params = candidate.path.split('/').filter((segment) => segment.startsWith(':')).length
+    if (params < bestParams) {
+      best = candidate
+      bestParams = params
+    }
+  }
+  return best
 }
 
 /** Whether `path` is one of the public pages (Entrar, an invitation, a reset). */

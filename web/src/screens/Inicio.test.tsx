@@ -877,13 +877,12 @@ test('a stock write elsewhere makes the next read of /first-run, and the checkli
   await waitFor(() => expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument())
 })
 
-// Back from Record payment, Home is at its place (PM option a): the hand-off the link left is
-// applied once the panel has rendered, then taken.
+// Back from Record payment, Home takes focus back (PM option a): the hand-off the link left is
+// applied once the panel has rendered, then taken. The page's scroll is ScrollSync's (ADR-0068).
 const PLAIN_CLICK = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false }
 
-test('after Close Home focuses that customer\'s "Collect" and scrolls to the offset it was at', async () => {
+test('after Close Home focuses that customer\'s "Collect" and leaves the scroll to ScrollSync', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  Object.defineProperty(window, 'scrollY', { configurable: true, value: 320 })
   paymentLink(1, 'home').onClick(PLAIN_CLICK)
   stubFetch(PANEL)
   renderInicio()
@@ -891,8 +890,7 @@ test('after Close Home focuses that customer\'s "Collect" and scrolls to the off
   const collect = await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
 
   await waitFor(() => expect(collect).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 320 }))
-  Reflect.deleteProperty(window, 'scrollY')
+  expect(scrollTo).not.toHaveBeenCalled()
 })
 
 test('when that customer\'s row is gone Home focuses the "Owed to you" heading', async () => {
@@ -927,7 +925,7 @@ test('with no hand-off Home moves nothing and focuses nothing', async () => {
   expect(scrollTo).not.toHaveBeenCalled()
 })
 
-test('Home applies the offset only after the notice above the panel has answered, never against a shorter page', async () => {
+test('Home takes focus back only after the notice above the panel has answered', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
   paymentLink(1, 'home').onClick(PLAIN_CLICK)
   let answerFirstRun: (response: Response) => void = () => undefined
@@ -952,5 +950,4 @@ test('Home applies the offset only after the notice above the panel has answered
   answerFirstRun(jsonResponse(200, CHECKLIST))
 
   await waitFor(() => expect(collect).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalled()
 })

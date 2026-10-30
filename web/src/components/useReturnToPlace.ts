@@ -1,14 +1,15 @@
 /**
  * `useReturnToPlace`: brings the seller back to where they were when they opened Record
  * payment (PM option a, this flow only). The hand-off (`paymentReturn.ts`) holds a customer id
- * and a scroll offset, set by the payment link; the document scrolls on both viewports.
- *   - Under the sheet (the location is Record payment's), the mount only puts the page at the
- *     offset, once, and takes nothing.
- *   - The origin's live mount, once its data has rendered and stopped refetching, puts the page
- *     at the offset, focuses the customer's control (or `fallback` when the row is gone) and
- *     takes the hand-off, so a later visit applies nothing. A mount that does not `own` the
- *     place (the list beside a card) leaves it to the one that does.
- * With no hand-off nothing moves and focus is untouched.
+ * and a scroll offset, set by the payment link. The page's scroll is not this hook's: it
+ * belongs to `shell/ScrollSync.tsx` alone (ADR-0068), which restores the screen's place on the
+ * way back; this hook only brings focus back.
+ *   - Under the sheet (the location is Record payment's), the mount takes nothing.
+ *   - The origin's live mount, once its data has rendered and stopped refetching, focuses the
+ *     customer's control (or `fallback` when the row is gone) and takes the hand-off, so a
+ *     later visit applies nothing. A mount that does not `own` the place (the list beside a
+ *     card) leaves it to the one that does.
+ * With no hand-off focus is untouched.
  */
 
 import { type RefObject, useEffect, useRef } from 'react'
@@ -37,10 +38,6 @@ export function owedPlace(root: HTMLElement): HTMLElement | null {
   return root.querySelector<HTMLElement>(`[data-place="${OWED_PLACE}"]`)
 }
 
-function scrollTo(top: number): void {
-  window.scrollTo({ top, left: 0, behavior: 'instant' })
-}
-
 /** The candidate nearest the part of the page the seller was looking at. */
 export function nearestTo(candidates: readonly HTMLElement[], scrollY: number): HTMLElement | null {
   let best: HTMLElement | null = null
@@ -66,7 +63,6 @@ export function useReturnToPlace({ root, ready, owns = true, customerId, fallbac
     if (handOff === null) return
     if (underSheet) {
       done.current = true
-      scrollTo(handOff.scrollY)
       return
     }
     if (!owns) return
@@ -75,7 +71,6 @@ export function useReturnToPlace({ root, ready, owns = true, customerId, fallbac
     if (element === null) return
     done.current = true
     consumePaymentReturn()
-    scrollTo(handOff.scrollY)
     const href = pathTo(CUSTOMER_PAYMENT, { id: handOff.customerId })
     const controls = Array.from(element.querySelectorAll<HTMLElement>('a')).filter((link) => link.getAttribute('href') === href)
     const target = nearestTo(controls, handOff.scrollY) ?? fallback(element)

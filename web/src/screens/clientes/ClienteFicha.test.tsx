@@ -1106,9 +1106,8 @@ function fakeCustomer(customer: unknown): void {
   )
 }
 
-test('after Close the card focuses "Record payment" and scrolls to the offset it was at', async () => {
+test('after Close the card focuses "Record payment" and leaves the scroll to ScrollSync', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  Object.defineProperty(window, 'scrollY', { configurable: true, value: 210 })
   paymentLink(1, 'card').onClick(PLAIN_CLICK)
   fakeCustomer(OWING_CUSTOMER)
   renderFicha('1')
@@ -1116,8 +1115,7 @@ test('after Close the card focuses "Record payment" and scrolls to the offset it
   const record = await screen.findByRole('link', { name: 'Record payment' })
 
   await waitFor(() => expect(record).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 210 }))
-  Reflect.deleteProperty(window, 'scrollY')
+  expect(scrollTo).not.toHaveBeenCalled()
 })
 
 test('when the balance is paid and the control is gone the card focuses its heading', async () => {
@@ -1154,9 +1152,8 @@ test('with no hand-off the card moves nothing and focuses nothing', async () => 
   expect(scrollTo).not.toHaveBeenCalled()
 })
 
-test('the card takes its place only once its account has answered, so a short page does not clamp the offset', async () => {
+test('the card takes focus back only once its account has answered', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  Object.defineProperty(window, 'scrollY', { configurable: true, value: 210 })
   paymentLink(1, 'card').onClick(PLAIN_CLICK)
   let answer: (response: Response) => void = () => undefined
   const held = new Promise<Response>((resolve) => {
@@ -1177,6 +1174,5 @@ test('the card takes its place only once its account has answered, so a short pa
   answer(jsonResponse(200, OWING_ACCOUNT))
 
   await waitFor(() => expect(record).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 210 }))
-  Reflect.deleteProperty(window, 'scrollY')
+  expect(scrollTo).not.toHaveBeenCalled()
 })

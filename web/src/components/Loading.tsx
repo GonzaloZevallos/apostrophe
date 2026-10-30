@@ -13,6 +13,10 @@ import { useTranslation } from 'react-i18next'
  * hidden progressbar a screen announces itself with while those markers are on.
  */
 
+/** The marker both components below render while something is loading: the one selector the
+ * scroll owner (`shell/ScrollSync.tsx`) waits on before it puts a page back at its offset. */
+export const LOADING_MARKER = '[role="progressbar"][aria-busy="true"]'
+
 export interface LoadingProps {
   compacto?: boolean
 }
