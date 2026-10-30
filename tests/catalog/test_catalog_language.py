@@ -58,7 +58,7 @@ def _qualifying_variety(client: TestClient, name: str) -> int:
 
 def _attributes(client: TestClient, variety: int) -> dict[str, Any]:
     response = client.put(
-        f"/catalog/varieties/{variety}",
+        f"/catalog/products/{variety}",
         json={"shown": True, "emoji": None, "indica_share": 60, "aroma": "Citrus"},
     )
     assert response.status_code == 200, response.text

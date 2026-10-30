@@ -496,7 +496,7 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
     hidden = _variety(client, "Oculta")
     _price(client, hidden)
     hid = client.put(
-        f"/catalog/varieties/{hidden}",
+        f"/catalog/products/{hidden}",
         json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
     )
     assert hid.status_code == 200, hid.text

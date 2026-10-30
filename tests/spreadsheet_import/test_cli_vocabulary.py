@@ -225,7 +225,7 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     assert stored_origins == {origin.value for origin in ORIGEN_WORDS.values()}
 
     catalog = client.get("/catalog").json()
-    shown_flags = {entry["name"]: entry["shown"] for entry in catalog["varieties"]}
+    shown_flags = {entry["name"]: entry["shown"] for entry in catalog["products"]}
     assert shown_flags[VARIETY] is True
     assert shown_flags[HIDDEN_VARIETY] is False
 

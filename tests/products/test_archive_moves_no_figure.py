@@ -201,7 +201,7 @@ def test_a_restored_variety_comes_back_whole(
     _ok(client.put(f"/stock/products/{a}/threshold", json={"quantity": "20"}))
     _ok(
         client.put(
-            f"/catalog/varieties/{a}",
+            f"/catalog/products/{a}",
             json={"shown": shown, "emoji": "🌿", "indica_share": 70, "aroma": "Cítrico"},
         )
     )
@@ -213,7 +213,7 @@ def test_a_restored_variety_comes_back_whole(
             "prices": _ok(client.get(f"/api/products/{a}/prices")),
             "entries": [e for e in stock["entries"] if e["product_id"] == a],
             "stock_row": _variety_row(stock, a),
-            "catalog": [v for v in _ok(client.get("/catalog"))["varieties"] if v["id"] == a],
+            "catalog": [v for v in _ok(client.get("/catalog"))["products"] if v["product_id"] == a],
         }
 
     before = whole()
@@ -221,7 +221,7 @@ def test_a_restored_variety_comes_back_whole(
     assert a not in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
     assert a not in [v["id"] for v in _ok(client.get("/api/products"))]
     assert a not in [v["product_id"] for v in _ok(client.get("/stock"))["products"]]
-    assert all(v["id"] != a for v in _ok(client.get("/catalog"))["varieties"])
+    assert all(v["product_id"] != a for v in _ok(client.get("/catalog"))["products"])
     _restore(client, a)
 
     assert whole() == before
@@ -273,7 +273,7 @@ def test_archiving_a_hidden_or_unpriced_variety_sends_nothing(
     hidden = _qualifying(client, "Hidden")
     _ok(
         client.put(
-            f"/catalog/varieties/{hidden}",
+            f"/catalog/products/{hidden}",
             json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
         )
     )

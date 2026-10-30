@@ -46,7 +46,7 @@ def _variety(client: TestClient, name: str, aroma: str | None = None) -> int:
     assert stocked.status_code == 201, stocked.text
     if aroma is not None:
         described = client.put(
-            f"/catalog/varieties/{variety_id}",
+            f"/catalog/products/{variety_id}",
             json={"shown": True, "emoji": None, "indica_share": None, "aroma": aroma},
         )
         assert described.status_code == 200, described.text
@@ -110,7 +110,7 @@ def _upkeep_unchanged(client: TestClient, telegram: FakeTelegram, variety_id: in
     # A write that leaves the text as it was: upkeep finds nothing to send.
     calls_before = list(telegram.calls)
     saved = client.put(
-        f"/catalog/varieties/{variety_id}",
+        f"/catalog/products/{variety_id}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
     )
     assert saved.status_code == 200, saved.text

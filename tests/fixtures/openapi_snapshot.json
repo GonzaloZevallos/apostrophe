@@ -339,7 +339,7 @@
         "title": "AppliedToOut",
         "type": "object"
       },
-      "ArchivedCatalogVarietyOut": {
+      "ArchivedCatalogProductOut": {
         "properties": {
           "aroma": {
             "anyOf": [
@@ -378,24 +378,24 @@
             "title": "Name",
             "type": "string"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "shown": {
             "title": "Shown",
             "type": "boolean"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "name",
           "shown",
           "emoji",
           "indica_share",
           "aroma"
         ],
-        "title": "ArchivedCatalogVarietyOut",
+        "title": "ArchivedCatalogProductOut",
         "type": "object"
       },
       "AssignCustomerIn": {
@@ -572,6 +572,13 @@
             "title": "Header",
             "type": "string"
           },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogProductOut"
+            },
+            "title": "Products",
+            "type": "array"
+          },
           "text": {
             "anyOf": [
               {
@@ -582,25 +589,18 @@
               }
             ],
             "title": "Text"
-          },
-          "varieties": {
-            "items": {
-              "$ref": "#/components/schemas/CatalogVarietyOut"
-            },
-            "title": "Varieties",
-            "type": "array"
           }
         },
         "required": [
           "text",
           "header",
           "footer",
-          "varieties"
+          "products"
         ],
         "title": "CatalogOut",
         "type": "object"
       },
-      "CatalogVarietyOut": {
+      "CatalogProductOut": {
         "properties": {
           "aroma": {
             "anyOf": [
@@ -624,10 +624,6 @@
             ],
             "title": "Emoji"
           },
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
           "indica_share": {
             "anyOf": [
               {
@@ -642,6 +638,10 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
           },
           "shown": {
             "title": "Shown",
@@ -660,7 +660,7 @@
           }
         },
         "required": [
-          "id",
+          "product_id",
           "name",
           "emoji",
           "indica_share",
@@ -668,7 +668,7 @@
           "shown",
           "state"
         ],
-        "title": "CatalogVarietyOut",
+        "title": "CatalogProductOut",
         "type": "object"
       },
       "CategoryIn": {
@@ -5118,7 +5118,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/ArchivedCatalogVarietyOut"
+                    "$ref": "#/components/schemas/ArchivedCatalogProductOut"
                   },
                   "title": "Response Get Archived Catalog Archived Get",
                   "type": "array"
@@ -5185,16 +5185,16 @@
         ]
       }
     },
-    "/catalog/varieties/{variety_id}": {
+    "/catalog/products/{product_id}": {
       "put": {
-        "operationId": "put_variety_attributes_catalog_varieties__variety_id__put",
+        "operationId": "put_variety_attributes_catalog_products__product_id__put",
         "parameters": [
           {
             "in": "path",
-            "name": "variety_id",
+            "name": "product_id",
             "required": true,
             "schema": {
-              "title": "Variety Id",
+              "title": "Product Id",
               "type": "integer"
             }
           }

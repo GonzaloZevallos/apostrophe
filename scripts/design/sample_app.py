@@ -321,7 +321,7 @@ def seed(api: Api, today: date) -> Sample:
     ):
         api.call(
             "PUT",
-            f"/catalog/varieties/{variety_id}",
+            f"/catalog/products/{variety_id}",
             {"shown": True, "emoji": emoji, "indica_share": indica, "aroma": aroma},
         )
 
@@ -331,7 +331,7 @@ def seed(api: Api, today: date) -> Sample:
     archived = variety("Blue Dream", 13_000)
     api.call(
         "PUT",
-        f"/catalog/varieties/{archived}",
+        f"/catalog/products/{archived}",
         {"shown": False, "emoji": "🫐", "indica_share": 40, "aroma": "Frutos rojos"},
     )
     api.call("PUT", f"/stock/products/{archived}/threshold", {"quantity": "15"})

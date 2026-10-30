@@ -141,7 +141,7 @@ def test_catalog_attributes_change_triggers_an_edit(
     telegram.calls.clear()
 
     changed = client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": "Cítrico"},
     )
     assert changed.status_code == 200, changed.text
@@ -289,7 +289,7 @@ def test_too_long_text_is_not_sent_and_the_pin_keeps_its_text(
             json={"product_id": over["id"], "origin": "opening_stock", "quantity": "50"},
         )
         client.put(
-            f"/catalog/varieties/{over['id']}",
+            f"/catalog/products/{over['id']}",
             json={"shown": True, "emoji": None, "indica_share": None, "aroma": "a" * 200},
         )
 
@@ -567,7 +567,7 @@ def test_a_pin_posted_with_the_spanish_fixed_lines_gets_one_edit_and_no_new_post
     telegram.calls.clear()
 
     saved = client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
     )
 

@@ -213,7 +213,7 @@ def test_the_archived_variety_is_hidden_and_carries_its_catalog_attributes(
     sample = seeded_at_capture_date(client, clock)
 
     client.post(f"/api/products/{sample.archived}/restore")
-    catalog = {v["id"]: v for v in client.get("/catalog").json()["varieties"]}
+    catalog = {v["product_id"]: v for v in client.get("/catalog").json()["products"]}
 
     assert catalog[sample.archived]["shown"] is False
     assert catalog[sample.archived]["emoji"] == "🫐"
@@ -231,7 +231,7 @@ def test_the_archived_variety_touches_no_read_of_the_live_business(
     assert gone not in [r["product_id"] for r in client.get("/stock").json()["products"]]
     assert gone not in [v["id"] for v in client.get("/api/products").json()]
     catalog = client.get("/catalog").json()
-    assert gone not in [v["id"] for v in catalog["varieties"]]
+    assert gone not in [v["product_id"] for v in catalog["products"]]
     assert ARCHIVED_NAME not in (catalog["text"] or "")
     analysis = client.get("/analysis").json()
     assert gone not in [v["variety_id"] for v in analysis["month"]["varieties"]]

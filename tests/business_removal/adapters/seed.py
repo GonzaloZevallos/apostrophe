@@ -178,7 +178,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         assert header_footer.status_code == 200, header_footer.text
 
         attributes = client.put(
-            f"/catalog/varieties/{variety_id}",
+            f"/catalog/products/{variety_id}",
             json={"shown": True, "emoji": "\U0001f33f", "indica_share": 50, "aroma": "floral"},
         )
         assert attributes.status_code == 200, attributes.text

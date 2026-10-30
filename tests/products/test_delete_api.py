@@ -112,7 +112,7 @@ def test_prices_a_threshold_and_attributes_alone_leave_delete_offered_and_go_wit
         == 200
     )
     attributes = client.put(
-        f"/catalog/varieties/{variety_id}",
+        f"/catalog/products/{variety_id}",
         json={"shown": True, "emoji": None, "indica_share": 50, "aroma": "dulce"},
     )
     assert attributes.status_code == 200, attributes.text

@@ -35,7 +35,7 @@ def _add_variety_with_long_aroma(client: TestClient, index: int) -> None:
         json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": "a" * 200},
     )
 

@@ -148,14 +148,14 @@ def test_one_business_changing_its_language_leaves_the_other(
 def test_a_change_leaves_the_business_s_own_texts(client: TestClient) -> None:
     variety = client.post("/api/products", json={"name": "Ananá"}).json()
     client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": "Cítrico"},
     )
     client.put("/catalog/header-footer", json={"header": "Hola!", "footer": "Chau"})
     before = (
         client.get("/catalog/header-footer").json(),
         client.get("/api/products").json(),
-        client.get("/catalog/varieties").json(),
+        client.get("/catalog/products").json(),
     )
 
     _change(client, "de")
@@ -163,7 +163,7 @@ def test_a_change_leaves_the_business_s_own_texts(client: TestClient) -> None:
     assert before == (
         client.get("/catalog/header-footer").json(),
         client.get("/api/products").json(),
-        client.get("/catalog/varieties").json(),
+        client.get("/catalog/products").json(),
     )
 
 

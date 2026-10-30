@@ -149,7 +149,7 @@ def seed_catalog(client: TestClient) -> dict[str, int]:
     )
     assert entry.status_code == 201, entry.text
     attributes = client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": MARKER},
     )
     assert attributes.status_code == 200, attributes.text
@@ -305,7 +305,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "lines": [{"product_id": 1, "quantity": "2"}],
     },
     ("PUT", "/stock/products/{product_id}/threshold"): {"quantity": "15"},
-    ("PUT", "/catalog/varieties/{variety_id}"): {
+    ("PUT", "/catalog/products/{product_id}"): {
         "shown": True,
         "emoji": None,
         "indica_share": 50,
@@ -646,10 +646,10 @@ def test_business_a_sees_its_own_catalog_seed(
 
     assert catalog["header"] == MARKER
     assert catalog["text"] is not None and MARKER in catalog["text"]
-    assert any(variety["name"] == f"{MARKER} catalog variety" for variety in catalog["varieties"])
+    assert any(variety["name"] == f"{MARKER} catalog variety" for variety in catalog["products"])
     assert any(
         variety["name"] == f"{MARKER} catalog variety" and variety["state"] == "in"
-        for variety in catalog["varieties"]
+        for variety in catalog["products"]
     )
 
 
@@ -1107,11 +1107,11 @@ def test_another_business_reads_none_of_the_archived_catalog_attributes(
 ) -> None:
     variety = business_a.post("/api/products", json={"name": "Archived catalog here"}).json()
     attributes = business_a.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": False, "emoji": None, "indica_share": 40, "aroma": MARKER},
     )
     assert attributes.status_code == 200, attributes.text
     archive_by_hand(engine, variety["id"])
-    assert [r["variety_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
+    assert [r["product_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
 
     assert business_b.get("/catalog/archived").json() == []

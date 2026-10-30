@@ -226,7 +226,7 @@ def _archived(api: _ClientApi) -> list[str]:
     archived = api.get("/api/products?archived=true")
     for variety in archived:
         api.call("POST", f"/api/products/{variety['id']}/restore")
-    shown = {v["id"]: v["shown"] for v in api.get("/catalog")["varieties"]}
+    shown = {v["product_id"]: v["shown"] for v in api.get("/catalog")["products"]}
     for variety in archived:
         api.call("POST", f"/api/products/{variety['id']}/archive")
     rows = []

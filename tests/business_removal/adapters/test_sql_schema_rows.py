@@ -62,7 +62,7 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     ).json()
     client.put(f"/stock/products/{variety['id']}/threshold", json={"quantity": "5"})
     client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": "removal"},
     )
     client.put("/catalog/header-footer", json={"header": "removal", "footer": "removal"})
