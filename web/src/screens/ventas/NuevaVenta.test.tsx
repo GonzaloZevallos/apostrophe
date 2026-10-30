@@ -17,6 +17,8 @@ import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
+import type { SaleLine } from '../../api/sales'
+import type { Variety } from '../Variedades'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -206,8 +208,46 @@ test('saving posts each line\'s amount as `quantity`, never `grams`', async () =
   const init = (post ?? [])[1] as RequestInit | undefined
   const body = JSON.parse(String(init?.body)) as { lines: Record<string, unknown>[] }
   expect(body.lines).toHaveLength(1)
-  expect(body.lines[0]).toMatchObject({ variety_id: 1, quantity: '2.5' })
+  expect(body.lines[0]).toMatchObject({ product_id: 1, quantity: '2.5' })
   expect(body.lines[0]).not.toHaveProperty('grams')
+})
+
+test('the posted line\'s product_id is the id of the product picked from the products list', async () => {
+  const user = userEvent.setup()
+  const products = [
+    { id: 7, name: 'Menta', archived: false, current_price: ROSA.current_price },
+    { id: 9, name: 'Salvia', archived: false, current_price: ROSA.current_price },
+  ] satisfies Variety[]
+  const savedLine = {
+    product_id: 9,
+    product_name: 'Salvia',
+    quantity: 1,
+    pricing_rule: 'list',
+    price_per_gram: 1000,
+    line_total: 1000,
+  } satisfies SaleLine
+  const savedSale = { ...SALE_DETAIL, id: 42, lines: [{ ...SALE_DETAIL.lines[0], ...savedLine }] }
+  const fetchMock = await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, products),
+    'POST /sales': () => jsonResponse(201, savedSale),
+    'GET /sales/42': () => jsonResponse(200, savedSale),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), String(products[1].id))
+  await user.type(screen.getByLabelText('Line 1 grams'), '1')
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
+  const post = fetchMock.mock.calls.find(
+    ([path, init]) => path === '/sales' && (init as RequestInit | undefined)?.method === 'POST',
+  )
+  const body = JSON.parse(String(((post ?? [])[1] as RequestInit | undefined)?.body)) as {
+    lines: { product_id: number }[]
+  }
+  expect(body.lines[0].product_id).toBe(products[1].id)
+  expect(products.map((product) => product.id)).toContain(savedLine.product_id)
 })
 
 test('the form closes with "Close" and shows no back control named "Volver"', async () => {

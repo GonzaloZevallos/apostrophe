@@ -40,8 +40,8 @@ const SALE = {
   bill: null,
   lines: [
     {
-      variety_id: 1,
-      variety_name: '24K Gold',
+      product_id: 1,
+      product_name: '24K Gold',
       quantity: 1,
       pricing_rule: 'list',
       price_per_gram: 11000,

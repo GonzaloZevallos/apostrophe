@@ -1069,7 +1069,7 @@
         "type": "object"
       },
       "DeleteSaleOut": {
-        "description": "`DELETE /sales/{id}`'s own response: the grams returned per variety, summed from\nthe sale's own lines and sorted by `variety_id`.",
+        "description": "`DELETE /sales/{id}`'s own response: the quantity returned per product, summed from\nthe sale's own lines and sorted by `product_id`.",
         "properties": {
           "returned": {
             "items": {
@@ -1580,6 +1580,10 @@
             "title": "Gift",
             "type": "boolean"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "anyOf": [
               {
@@ -1602,14 +1606,10 @@
               }
             ],
             "title": "Special Price"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "quantity"
         ],
         "title": "LineIn",
@@ -2967,17 +2967,17 @@
       },
       "ReturnedQuantityOut": {
         "properties": {
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "quantity"
         ],
         "title": "ReturnedQuantityOut",
@@ -3361,22 +3361,22 @@
           "pricing_rule": {
             "$ref": "#/components/schemas/PricingRule"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "product_name": {
+            "title": "Product Name",
+            "type": "string"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          },
-          "variety_name": {
-            "title": "Variety Name",
-            "type": "string"
           }
         },
         "required": [
-          "variety_id",
-          "variety_name",
+          "product_id",
+          "product_name",
           "quantity",
           "pricing_rule",
           "price_per_gram",
@@ -3399,22 +3399,22 @@
           "pricing_rule": {
             "$ref": "#/components/schemas/PricingRule"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "product_name": {
+            "title": "Product Name",
+            "type": "string"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          },
-          "variety_name": {
-            "title": "Variety Name",
-            "type": "string"
           }
         },
         "required": [
-          "variety_id",
-          "variety_name",
+          "product_id",
+          "product_name",
           "quantity",
           "pricing_rule",
           "price_per_gram",

@@ -59,7 +59,7 @@ def _sale(client: TestClient, variety_id: int, *, quantity: str, on: str) -> Non
         json={
             "date": on,
             "payment": "cash",
-            "lines": [{"variety_id": variety_id, "quantity": quantity}],
+            "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
     )
     assert response.status_code == 201, response.text

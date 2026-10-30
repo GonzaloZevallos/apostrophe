@@ -118,7 +118,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
         json={
             "payment": "cash",
             "note": MARKER,
-            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
+            "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     ).json()
     client.post(
@@ -126,7 +126,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
         json={
             "payment": "owing",
             "customer_id": customer["id"],
-            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
+            "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )
     return {"sale_id": without_customer["id"]}
@@ -212,7 +212,7 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={
             "payment": "owing",
             "customer_id": customer_id,
-            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
+            "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )
     payment = client.post(
@@ -283,7 +283,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,
-        "lines": [{"variety_id": 1, "quantity": "1"}],
+        "lines": [{"product_id": 1, "quantity": "1"}],
     },
     ("PUT", "/sales/{sale_id}/customer"): {"customer_id": 1},
     ("POST", "/stock/entries"): {
@@ -492,7 +492,7 @@ def _sale_body(*, variety_id: int, customer_id: int) -> dict[str, Any]:
     return {
         "payment": "owing",
         "customer_id": customer_id,
-        "lines": [{"variety_id": variety_id, "quantity": "1"}],
+        "lines": [{"product_id": variety_id, "quantity": "1"}],
     }
 
 
@@ -592,7 +592,7 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     )
     sale_id = business_b.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "quantity": "1"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "1"}]},
     ).json()["id"]
     foreign_customer = seeded_b["customer_id"]
 
@@ -805,7 +805,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         json={
             "date": today,
             "payment": "cash",
-            "lines": [{"variety_id": variety["id"], "quantity": "3", "gift": True}],
+            "lines": [{"product_id": variety["id"], "quantity": "3", "gift": True}],
         },
     )
     assert gifted.status_code == 201, gifted.text
@@ -815,7 +815,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
             "date": today,
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "quantity": "2"}],
+            "lines": [{"product_id": variety["id"], "quantity": "2"}],
         },
     )
     assert owing.status_code == 201, owing.text

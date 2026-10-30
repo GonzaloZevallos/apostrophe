@@ -41,7 +41,7 @@ def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, 
 def _sale(client: TestClient, variety_id: int, quantity: str, **overrides: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "payment": "cash",
-        "lines": [{"variety_id": variety_id, "quantity": quantity}],
+        "lines": [{"product_id": variety_id, "quantity": quantity}],
     }
     body.update(overrides)
     response = client.post("/sales", json=body)
@@ -202,7 +202,7 @@ def test_a_gift_also_draws_down_stock(client: TestClient) -> None:
     _record(client, variety_id, quantity="50")
 
     _sale(
-        client, variety_id, "10", lines=[{"variety_id": variety_id, "quantity": "10", "gift": True}]
+        client, variety_id, "10", lines=[{"product_id": variety_id, "quantity": "10", "gift": True}]
     )
 
     stock = client.get("/stock").json()

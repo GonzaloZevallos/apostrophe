@@ -229,7 +229,7 @@ def seed(api: Api, today: date) -> Sample:
                 "payment": payment,
                 "lines": [
                     {
-                        "variety_id": line.variety,
+                        "product_id": line.variety,
                         "quantity": line.quantity,
                         "gift": line.gift,
                         "special_price": None,
@@ -407,7 +407,7 @@ def stretch(api: Api, today: date) -> None:
             "note": None,
             "payment": "cash",
             "lines": [
-                {"variety_id": variety, "quantity": "1", "gift": False, "special_price": None}
+                {"product_id": variety, "quantity": "1", "gift": False, "special_price": None}
             ],
         },
     )

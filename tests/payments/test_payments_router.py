@@ -39,7 +39,7 @@ def _owing_sale(
             "customer_id": customer_id,
             "payment": "owing",
             "date": sale_date,
-            "lines": [{"variety_id": variety_id, "quantity": quantity}],
+            "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
     )
     assert body.status_code == 201, body.text
@@ -201,7 +201,7 @@ def test_deleting_an_on_the_spot_payment_is_refused(client: TestClient, engine: 
     variety_id = _priced_variety(client)
     sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
     ).json()
     with Session(engine) as session:
         payment_id = session.scalar(select(PaymentRow.id).where(PaymentRow.sale_id == sale["id"]))
@@ -226,7 +226,7 @@ def test_a_cash_sale_s_payment_never_settles_an_owed_sale(client: TestClient) ->
             "customer_id": customer_id,
             "payment": "cash",
             "date": "2026-09-10",
-            "lines": [{"variety_id": variety_id, "quantity": "1"}],
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     )
     assert cash_sale.status_code == 201, cash_sale.text

@@ -68,14 +68,14 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     client.put("/catalog/header-footer", json={"header": "removal", "footer": "removal"})
     cash_sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "quantity": "5"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "5"}]},
     ).json()
     client.post(
         "/sales",
         json={
             "payment": "owing",
             "customer_id": customer["id"],
-            "lines": [{"variety_id": variety["id"], "quantity": "5"}],
+            "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     client.post(

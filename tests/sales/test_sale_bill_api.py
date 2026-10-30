@@ -56,7 +56,7 @@ def _sale(
     *,
     gift: bool = False,
 ) -> int:
-    body: dict[str, Any] = {"lines": [{"variety_id": variety_id, "quantity": "1", "gift": gift}]}
+    body: dict[str, Any] = {"lines": [{"product_id": variety_id, "quantity": "1", "gift": gift}]}
     if payment is not None:
         body["payment"] = payment
     if customer_id is not None:
@@ -192,9 +192,9 @@ def test_a_bulk_line_carries_its_rule_and_unit_price_and_a_gift_its_rule_and_no_
             "payment": "cash",
             "shipping_charged": 700,
             "lines": [
-                {"variety_id": plain, "quantity": "1.25"},
-                {"variety_id": bulk, "quantity": "60"},
-                {"variety_id": plain, "quantity": "2", "gift": True},
+                {"product_id": plain, "quantity": "1.25"},
+                {"product_id": bulk, "quantity": "60"},
+                {"product_id": plain, "quantity": "2", "gift": True},
             ],
         },
     )
@@ -242,8 +242,8 @@ def test_the_bill_leaks_nothing_internal(client: TestClient, engine: Engine) -> 
             "note": note,
             "shipping_charged": 300,
             "lines": [
-                {"variety_id": flowers, "quantity": "1"},
-                {"variety_id": flowers, "quantity": "2", "special_price": 5_000},
+                {"product_id": flowers, "quantity": "1"},
+                {"product_id": flowers, "quantity": "2", "special_price": 5_000},
             ],
         },
     )

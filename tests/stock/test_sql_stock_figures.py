@@ -50,7 +50,7 @@ def test_reads_entries_and_draws_exactly_once_whatever_the_number_of_varieties(
         _entry(client, variety_id, quantity="10", total_cost=1_000)
         sale = client.post(
             "/sales",
-            json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "2"}]},
+            json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "2"}]},
         )
         assert sale.status_code == 201, sale.text
 
@@ -105,7 +105,7 @@ def test_draws_are_costed_the_same_way_sql_draw_costs_answers_them(
     _entry(client, variety_id, quantity="10", total_cost=1_000)
     sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
     )
     assert sale.status_code == 201, sale.text
 

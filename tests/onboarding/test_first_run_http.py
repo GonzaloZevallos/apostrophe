@@ -509,7 +509,7 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
     _price(client, sold_out)
     _stock(client, sold_out, quantity="10")
     sold = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": sold_out, "quantity": "10"}]}
+        "/sales", json={"payment": "cash", "lines": [{"product_id": sold_out, "quantity": "10"}]}
     )
     assert sold.status_code == 201, sold.text
     assert client.get("/catalog").json()["text"] is None
@@ -547,7 +547,7 @@ def _build_sold_out(client: TestClient, engine: Engine) -> None:
     _price(client, variety_id)
     _stock(client, variety_id, quantity="10")
     sold = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]}
+        "/sales", json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]}
     )
     assert sold.status_code == 201, sold.text
 

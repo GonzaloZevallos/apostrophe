@@ -75,19 +75,19 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
         _sale(
             client,
             "2026-09-12",
-            [{"variety_id": a, "quantity": "5"}, {"variety_id": b, "quantity": "2"}],
+            [{"product_id": a, "quantity": "5"}, {"product_id": b, "quantity": "2"}],
             customer_id=customer["id"],
             payment="owing",
         ),
         # paid on the spot
-        _sale(client, "2026-09-20", [{"variety_id": a, "quantity": "3"}], payment="cash"),
+        _sale(client, "2026-09-20", [{"product_id": a, "quantity": "3"}], payment="cash"),
         # a gift and a special price
         _sale(
             client,
             "2026-10-01",
             [
-                {"variety_id": a, "quantity": "2", "gift": True},
-                {"variety_id": b, "quantity": "1", "special_price": 1_500},
+                {"product_id": a, "quantity": "2", "gift": True},
+                {"product_id": b, "quantity": "1", "special_price": 1_500},
             ],
             payment="cash",
         ),
@@ -103,13 +103,13 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
     _entry(client, a, "-4", "2026-09-25", origin="adjustment")
     _entry(client, a, "-150", "2026-10-02", origin="adjustment")
     # a sale line whose grams have no lot behind them
-    sales.append(_sale(client, "2026-10-03", [{"variety_id": a, "quantity": "10"}], payment="cash"))
+    sales.append(_sale(client, "2026-10-03", [{"product_id": a, "quantity": "10"}], payment="cash"))
     # a sale on the clock's own day, so the panel's today and week are not empty either
     sales.append(
         _sale(
             client,
             "2026-10-15",
-            [{"variety_id": a, "quantity": "1"}, {"variety_id": b, "quantity": "1"}],
+            [{"product_id": a, "quantity": "1"}, {"product_id": b, "quantity": "1"}],
             payment="cash",
         )
     )

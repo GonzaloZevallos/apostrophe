@@ -54,7 +54,7 @@ def test_a_line_spanning_two_lots_is_split_between_costed_and_pending(
 
     sale_response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
     )
     assert sale_response.status_code == 201, sale_response.text
     sale = sale_response.json()

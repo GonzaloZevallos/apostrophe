@@ -71,7 +71,7 @@ def _customer(client: TestClient, name: str = "Juana") -> int:
 def _sale(client: TestClient, variety_id: int, payment: str, customer_id: int | None) -> int:
     body: dict[str, object] = {
         "payment": payment,
-        "lines": [{"variety_id": variety_id, "quantity": "1"}],
+        "lines": [{"product_id": variety_id, "quantity": "1"}],
     }
     if customer_id is not None:
         body["customer_id"] = customer_id

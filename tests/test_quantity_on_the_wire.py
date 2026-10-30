@@ -60,7 +60,7 @@ def test_a_sale_line_written_with_grams_is_refused(client: TestClient) -> None:
     variety_id = _variety(client)
 
     response = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]}
+        "/sales", json={"payment": "cash", "lines": [{"product_id": variety_id, "grams": "1"}]}
     )
 
     assert response.status_code == 422

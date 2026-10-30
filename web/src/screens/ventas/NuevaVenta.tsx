@@ -124,7 +124,7 @@ interface SavedSale {
 }
 
 interface LineBody {
-  variety_id: number
+  product_id: number
   quantity: string
   gift: boolean
   special_price: number | null
@@ -480,7 +480,7 @@ function NuevaVentaForm() {
       lines: filled.map((line) => {
         const grams = parseGrams(line.grams)
         return {
-          variety_id: Number(line.varietyId),
+          product_id: Number(line.varietyId),
           quantity: grams.ok ? grams.value : '0',
           gift: line.gift,
           special_price: specialPriceOf(line),

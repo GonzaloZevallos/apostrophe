@@ -145,7 +145,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
                 "shipping_charged": SHIPPING_CHARGED,
                 "note": SALE_NOTE,
                 "payment": "owing",
-                "lines": [{"variety_id": variety_id, "quantity": 10, "special_price": 6000}],
+                "lines": [{"product_id": variety_id, "quantity": 10, "special_price": 6000}],
             },
         )
         assert sale.status_code == 201, sale.text

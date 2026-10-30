@@ -72,8 +72,8 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
         json={
             "payment": "cash",
             "lines": [
-                {"variety_id": split_variety, "quantity": "10"},
-                {"variety_id": gift_variety, "quantity": "2", "gift": True},
+                {"product_id": split_variety, "quantity": "10"},
+                {"product_id": gift_variety, "quantity": "2", "gift": True},
             ],
         },
     ).json()

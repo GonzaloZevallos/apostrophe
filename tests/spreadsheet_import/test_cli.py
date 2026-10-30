@@ -714,7 +714,7 @@ def _seed_sale(seed_client: TestClient) -> None:
         "/sales",
         json={
             "date": "2026-01-01",
-            "lines": [{"variety_id": variety_id, "quantity": 1, "gift": True}],
+            "lines": [{"product_id": variety_id, "quantity": 1, "gift": True}],
         },
     )
     assert body.status_code == 201, body.text
@@ -731,7 +731,7 @@ def _seed_payment(seed_client: TestClient) -> None:
         json={
             "date": "2026-01-01",
             "customer_id": customer_id,
-            "lines": [{"variety_id": variety_id, "quantity": 1, "special_price": 1000}],
+            "lines": [{"product_id": variety_id, "quantity": 1, "special_price": 1000}],
             "payment": "owing",
         },
     )

@@ -349,7 +349,7 @@ def _sales(api: _ClientApi) -> list[str]:
         lines.extend(
             [
                 key,
-                line["variety_name"],
+                line["product_name"],
                 grams(line["quantity"]),
                 f"{money(line['price_per_gram'])} x g",
                 _RULE[line["pricing_rule"]],

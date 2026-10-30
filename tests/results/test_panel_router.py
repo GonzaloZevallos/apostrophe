@@ -69,7 +69,7 @@ def _sale(
     body: dict[str, Any] = {
         "date": on,
         "payment": payment,
-        "lines": [{"variety_id": variety_id, "quantity": quantity, "gift": gift}],
+        "lines": [{"product_id": variety_id, "quantity": quantity, "gift": gift}],
     }
     if customer_id is not None:
         body["customer_id"] = customer_id
@@ -899,7 +899,7 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
         _entry(client, variety_id, quantity="100", total_cost=None, on="2026-10-01")
         sold = client.post(
             "/sales",
-            json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
+            json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
         )
         assert sold.status_code == 201, sold.text
     before = client.get("/panel").json()

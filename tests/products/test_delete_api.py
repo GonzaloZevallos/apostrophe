@@ -38,7 +38,7 @@ def _entry(client: TestClient, variety_id: int, origin: str, quantity: str) -> i
 
 def _sale(client: TestClient, variety_id: int, **line: Any) -> int:
     _price(client, variety_id)
-    body = {"lines": [{"variety_id": variety_id, "quantity": "1", **line}], "payment": "cash"}
+    body = {"lines": [{"product_id": variety_id, "quantity": "1", **line}], "payment": "cash"}
     response = client.post("/sales", json=body)
     assert response.status_code == 201, response.text
     sale_id: int = response.json()["id"]

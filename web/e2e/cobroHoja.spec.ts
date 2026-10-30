@@ -176,7 +176,7 @@ async function owingCustomers(page: Page, count: number): Promise<void> {
       data: {
         customer_id: customer.id,
         payment: 'owing',
-        lines: [{ variety_id: rosa.id, quantity: '1', gift: false, special_price: null }],
+        lines: [{ product_id: rosa.id, quantity: '1', gift: false, special_price: null }],
       },
     })
     expect(sold.ok()).toBe(true)
@@ -207,7 +207,7 @@ async function moreSalesFor(page: Page, name: string, count: number): Promise<vo
       data: {
         customer_id: customer.id,
         payment: 'owing',
-        lines: [{ variety_id: rosa.id, quantity: '1', gift: false, special_price: null }],
+        lines: [{ product_id: rosa.id, quantity: '1', gift: false, special_price: null }],
       },
     })
     expect(sold.ok()).toBe(true)
