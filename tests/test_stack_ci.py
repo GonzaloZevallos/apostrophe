@@ -13,6 +13,7 @@ data; the real files are checked as they are."""
 from __future__ import annotations
 
 import copy
+import re
 from pathlib import Path
 from typing import Any, cast
 
@@ -69,8 +70,10 @@ CI_ONLY: dict[str, str] = {
     'cat coverage-report.md >> "$GITHUB_STEP_SUMMARY"': "the job summary exists only in CI",
     COMMENT_RUN: "the pull request comment, updated in place by its marker; CI only",
     (
-        'echo "Coverage failed: no pytest data from $SHARDS shards (a shard failed before '
-        'uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" && exit 1'
+        'echo "Coverage failed: no pytest data from '
+        "$(printf '%s' \"$MATRIX\" | jq '.include | length') shards "
+        '(a shard failed before uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" '
+        "&& exit 1"
     ): "the coverage job's own failure reason; a warning in ci-ok",
     VERDICT_RUN: "the merge condition: one verdict over every job's result and the `changes` flags",
     "uv run --no-project python -m scripts.docs.generate": (
@@ -107,6 +110,25 @@ EXPECTED_CONCURRENCY = {
     "group": "ci-${{ github.workflow }}-${{ github.ref }}",
     "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
 }
+# Functions a GitHub Actions expression may call (the documented set); anything else, such as
+# `length(`, makes GitHub reject the whole workflow file, so no job runs.
+EXPRESSION_FUNCTIONS = frozenset(
+    {
+        "contains",
+        "startsWith",
+        "endsWith",
+        "format",
+        "join",
+        "toJSON",
+        "fromJSON",
+        "hashFiles",
+        "success",
+        "always",
+        "cancelled",
+        "failure",
+        "case",
+    }
+)
 FORK_GUARD = (
     "github.event_name == 'pull_request' && "
     "github.event.pull_request.head.repo.full_name == github.repository"
@@ -202,7 +224,21 @@ def _structure_problems(workflow: Data, ci_names: list[str]) -> list[str]:
 
     problems.extend(_changes_problems(jobs.get("changes")))
     problems.extend(_coverage_problems(jobs))
+    problems.extend(_expression_problems(workflow))
     return problems
+
+
+def _expression_problems(workflow: Data) -> list[str]:
+    """Every function called inside a `${{ }}` or an `if:` must be one GitHub documents."""
+    texts = re.findall(r"\$\{\{(.*?)\}\}", yaml.safe_dump(workflow, width=10**6), re.DOTALL)
+    for job in cast("Data", workflow["jobs"]).values():
+        texts.extend(str(step["if"]) for step in _steps(job) if "if" in step)
+        texts.append(str(job.get("if", "")))
+    called = {name for text in texts for name in re.findall(r"([A-Za-z_]\w*)\s*\(", text)}
+    return [
+        f"expression function {name!r} is not one GitHub Actions documents"
+        for name in sorted(called - EXPRESSION_FUNCTIONS)
+    ]
 
 
 def _changes_problems(changes: Data | None) -> list[str]:
@@ -234,11 +270,18 @@ def _coverage_problems(jobs: Data) -> list[str]:
                         f"job {job_id!r}: coverage upload {step['with']['name']!r} "
                         "lacks include-hidden-files: true"
                     )
-    comment = [
-        step
-        for step in _steps(jobs.get(COVERAGE, {"steps": []}))
-        if "gh api" in str(step.get("run", ""))
-    ]
+    cov_steps = _steps(jobs.get(COVERAGE, {"steps": []}))
+    combine = [step for step in cov_steps if step.get("id") == "combine"]
+    if not combine or combine[0].get("continue-on-error") is not True:
+        problems.append("the coverage `combine` step is missing or lacks continue-on-error: true")
+    failure = [step for step in cov_steps if "exit 1" in str(step.get("run", ""))]
+    if not failure or "steps.combine.outcome" not in str(failure[0].get("if", "")):
+        problems.append("the coverage failure step does not read steps.combine.outcome")
+    elif "no pytest data from" not in failure[0]["run"] or not failure[0].get("env", {}).get(
+        "MATRIX"
+    ):
+        problems.append("the coverage failure step does not name the shard count from MATRIX")
+    comment = [step for step in cov_steps if "gh api" in str(step.get("run", ""))]
     if not comment:
         problems.append("the coverage job has no comment step")
     for step in comment:
@@ -423,6 +466,46 @@ def test_a_coverage_upload_without_include_hidden_files_is_refused() -> None:
             del step["with"]["include-hidden-files"]
     problems = _problems(workflow)
     assert any("coverage upload" in p and "include-hidden-files" in p for p in problems)
+
+
+def test_an_expression_function_github_does_not_have_is_refused() -> None:
+    workflow = _mutated()
+    step = workflow["jobs"]["coverage"]["steps"][-1]
+    step["env"] = {"SHARDS": "${{ length(fromJSON(needs.changes.outputs.pytest_matrix).include) }}"}
+    problems = _problems(workflow)
+    assert "expression function 'length' is not one GitHub Actions documents" in problems
+
+
+def test_an_expression_function_in_an_if_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["pytest"]["steps"][0]["if"] = "length(github.ref) > 3"
+    assert "expression function 'length' is not one GitHub Actions documents" in _problems(workflow)
+
+
+def test_a_coverage_combine_without_continue_on_error_is_refused() -> None:
+    workflow = _mutated()
+    for step in workflow["jobs"]["coverage"]["steps"]:
+        if step.get("id") == "combine":
+            del step["continue-on-error"]
+    assert any("`combine` step" in p for p in _problems(workflow))
+
+
+def test_a_coverage_failure_step_that_does_not_read_the_combine_outcome_is_refused() -> None:
+    workflow = _mutated()
+    for step in workflow["jobs"]["coverage"]["steps"]:
+        if "exit 1" in str(step.get("run", "")):
+            step["if"] = "needs.changes.outputs.pytest == 'true'"
+    assert "the coverage failure step does not read steps.combine.outcome" in _problems(workflow)
+
+
+def test_a_coverage_failure_step_that_does_not_count_the_shards_is_refused() -> None:
+    workflow = _mutated()
+    for step in workflow["jobs"]["coverage"]["steps"]:
+        if "exit 1" in str(step.get("run", "")):
+            del step["env"]["MATRIX"]
+    assert "the coverage failure step does not name the shard count from MATRIX" in _problems(
+        workflow
+    )
 
 
 def test_an_output_name_no_producer_emits_is_refused() -> None:

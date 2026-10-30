@@ -229,9 +229,9 @@ jobs:
           id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq '.[] | select(.body | contains(env.MARKER)) | .id' | head -n 1); if [ -n "$id" ]; then gh api --method PATCH "repos/$REPO/issues/comments/$id" --field body=@coverage-report.md; else gh api --method POST "repos/$REPO/issues/$PR/comments" --field body=@coverage-report.md; fi
       - if: needs.changes.outputs.pytest == 'true' && steps.combine.outcome != 'success'
         env:
-          SHARDS: ${{ length(fromJSON(needs.changes.outputs.pytest_matrix).include) }}
+          MATRIX: ${{ needs.changes.outputs.pytest_matrix }}
         run: |-
-          echo "Coverage failed: no pytest data from $SHARDS shards (a shard failed before uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" && exit 1
+          echo "Coverage failed: no pytest data from $(printf '%s' "$MATRIX" | jq '.include | length') shards (a shard failed before uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" && exit 1
   ci-ok:
     needs: [changes, checks, web, docs, pytest, vitest, e2e, coverage]
     if: always()
