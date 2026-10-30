@@ -12,7 +12,7 @@
  * never blocked: it opens or closes a sheet, not the form (ADR-0027).
  */
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
 import { type Blocker, type BlockerFunction, useBlocker } from 'react-router'
 import { sheetDepth } from './useSheetStack'
 
@@ -23,7 +23,9 @@ export interface LeaveGuard {
 
 export function useLeaveGuard(dirty: boolean): LeaveGuard {
   const dirtyRef = useRef(dirty)
-  useEffect(() => {
+  // A layout effect: it runs in the commit that shows the typed value, so no Back can arrive
+  // between the screen showing it and the guard counting it.
+  useLayoutEffect(() => {
     dirtyRef.current = dirty
   }, [dirty])
   const disarmedRef = useRef(false)

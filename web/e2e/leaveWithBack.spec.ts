@@ -1,7 +1,7 @@
 /**
  * The browser's own Back on a dirty form asks the same question "Close" does, at the
- * phone viewport, against the real backend: a dirty Registrar cobro asks "¿Descartás el
- * cobro?" and a dirty Nueva venta asks "Discard the sale?". "No, keep entering" keeps
+ * phone viewport, against the real backend: a dirty Record payment asks "Discard the
+ * payment?" and a dirty New sale asks "Discard the sale?". "No, keep entering" keeps
  * what was typed.
  */
 
@@ -18,7 +18,7 @@ const PASSWORD = 'correcthorsebattery'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
-test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" keeps what was typed', async ({
+test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keeps what was typed', async ({
   page,
 }) => {
   await page.goto(newBusinessInvitationUrl())
@@ -48,7 +48,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
-  // A dirty Registrar cobro, reached from Clientes' "Cobrar a".
+  // A dirty Record payment, reached from Customers' "Collect from".
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Collect from Carla Volver' }).first().click()
   await page.getByRole('radio', { name: 'Cash' }).check()
@@ -62,7 +62,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await page.getByRole('button', { name: 'Yes, discard it' }).click()
   await expectPath(page, CUSTOMERS)
 
-  // A dirty Nueva venta.
+  // A dirty New sale.
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Volver' }).first().click()
   await page.getByRole('link', { name: 'New sale to Carla Volver' }).click()
