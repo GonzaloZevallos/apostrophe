@@ -3,15 +3,13 @@
  * `queryClient.ts`'s notion of "where am I" current, so a 401 on a gated call
  * knows whether the screen it happened on is public (plan, invariants: "a 401
  * does nothing on a public route"). The offline banner renders once for every
- * route, public or gated. `ScrollSync` decides where the document is scrolled on each location
- * change (ADR-0065).
+ * route, public or gated.
  */
 
 import { useEffect } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router'
 import SinConexion from './components/SinConexion'
 import { setCurrentPath, setNavigate } from './queryClient'
-import ScrollSync from './shell/ScrollSync'
 import { useOnline } from './useOnline'
 
 function RouterSync() {
@@ -38,7 +36,6 @@ export default function Root() {
   return (
     <>
       <RouterSync />
-      <ScrollSync />
       <OfflineBanner />
       <Outlet />
     </>
