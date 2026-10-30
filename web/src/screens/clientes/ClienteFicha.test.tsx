@@ -7,7 +7,7 @@
  * the link's own visible text.
  *
  * The balance, "Record payment" and the account are the payments domain's own
- * answer (payments.md, "On screen"): this test fakes `GET /customers/:id` and
+ * answer (payments.md, "En pantalla"): this test fakes `GET /customers/:id` and
  * `GET /customers/:id/account` and checks the screen only ever shows what those
  * answers carry, branching on `standing` and a row's `kind` — never a sign on a
  * number.

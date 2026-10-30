@@ -1,5 +1,5 @@
 /**
- * "Te deben" (`payments.md`, "On screen"): the section on top of Clientes. The total, the count
+ * "Te deben" (`payments.md`, "En pantalla"): the section on top of Clientes. The total, the count
  * line and every customer with a balance above $0 are the API's own answer
  * (`GET /payments/debtors`, oldest owing-since first, ties by name): nothing is sorted, added or
  * compared here, so they equal Inicio's block. With nobody owing it reads a fixed "Nadie te
