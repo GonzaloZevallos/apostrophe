@@ -29,15 +29,32 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 
 | Lugar | Muestra |
 |---|---|
-| Encabezado del teléfono | Solo la Yerba mark |
-| Sign in, aceptación de Invitation, bienvenida del Onboarding | Yerba mark con Wordmark |
-| Barra lateral de la computadora | Yerba mark y Wordmark en el lugar de la marca anterior, sin rediseño |
+| Teléfono: encabezado de Home, en línea al comienzo de su fila actual | Solo la Yerba mark, y solo cuando el nombre del Business entra entero a su lado |
+| Sign in, las dos pantallas de aceptación de Invitation (Business nuevo y sumarse a un Business), primer paso del Onboarding | Yerba mark con Wordmark, arriba |
+| Barra lateral de la computadora (`InicioCompu`) | Yerba mark y Wordmark arriba, sobre "+ New sale", sin rediseño |
 
-- En el encabezado del teléfono, la Yerba mark ocupa el lugar de la marca anterior donde estaba, y en ningún lugar nuevo. Ahí es `role=img` con el nombre "apostrophe".
+La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (Sales, Customers, Varieties, More), ni en tarjetas, detalles o Sheets.
+
+**Encabezado de Home en el teléfono**
+
+- La Yerba mark va en línea, al comienzo de la fila del encabezado que ya existe, antes del nombre del Business y del título. No es más alta que esa fila, y el encabezado nunca gana altura por ella.
+- Es `role=img` con el nombre "apostrophe".
+- Se dibuja solo cuando el nombre del Business entra entero a su lado. Si el nombre se partiría, se cortaría o se achicaría, la marca no se dibuja y el encabezado queda como sin ella: Phone first gana sobre mostrar la marca, y el nombre del Business nunca pierde un carácter por la marca.
 - Nunca mueve ni oculta una flecha de regreso ni "Close", y las Sheets nunca la muestran.
-- Un encabezado al que la Yerba mark apretaría no la muestra: Phone first gana sobre mostrar la marca.
 - Tocarla no hace nada. Nombra la app y no es un control.
-- Sign in, la aceptación de Invitation y la bienvenida del Onboarding muestran la Yerba mark con el Wordmark, nunca las dos formas a la vez.
+
+**Sign in, aceptación de Invitation y primer paso del Onboarding**
+
+- Muestran la Yerba mark con el Wordmark arriba, nunca las dos formas a la vez. En Sign in reemplazan al texto "apostrophe’" actual.
+- Las dos pantallas de aceptación de Invitation la muestran: la que abre un Business nuevo y la que suma a una persona a un Business que ya existe.
+- En el Onboarding va solo en su primer paso, el que abre un Business recién creado, cada vez que se muestra ese paso, también al retomar. Los demás pasos no la muestran, y no hay una pantalla de bienvenida propia.
+
+**Barra lateral de la computadora**
+
+- La Yerba mark y el Wordmark van arriba, sobre "+ New sale". Nada más de la barra lateral se mueve ni se rediseña.
+
+**Marca fija**
+
 - La marca es fija para toda la instalación: la misma en cada Business, cada tema y cada idioma. Ninguna configuración la renombra ni la oculta, tampoco la futura Product word (GH-318) ni los Selectable languages (#317). El nombre accesible es "apostrophe" en todo idioma, Test locale incluido.
 - La marca aparece solo dentro de la app, ante el vendedor y sus Users. Nunca en el Catalog, el Pinned catalog, los valores por defecto del Catalog header and footer, el Sale bill ni ningún texto de Telegram; esos valores por defecto quedan como están.
 
@@ -49,6 +66,7 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 - La copia de docs conserva su `@import` de Google para Geist. Es documentación, y la app nunca la carga.
 - En las Design captures, `scripts/design/fonts.mjs` responde el pedido de Plus Jakarta Sans de los dibujos con los archivos de Geist alojados en la instalación (ADR-0042). Por eso el lado del dibujo ya sale en Geist.
 - Los dibujos de `pantallas/` no se editan. La Yerba mark y el Wordmark son las diferencias esperadas contra ellos, y no son hallazgos.
+- Las Design captures cubren Sign in, las dos pantallas de aceptación de Invitation, el primer paso del Onboarding, Home en el teléfono e `InicioCompu`.
 
 ## Tabular figures
 
@@ -81,6 +99,7 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 - **Geist sin red.** El e2e no hace ningún pedido de tipografía fuera de la instalación.
 - **Cifras alineadas.** Toda cifra cubierta lleva `tabular-nums`.
 - **Teléfono sin problemas nuevos.** El Mobile check imprime cero infractores nuevos, las listas de infractores solo se achican, y registrar una Sale desde el teléfono sigue tomando menos de un minuto.
+- **Encabezado de Home intacto.** Con un nombre de Business corto, la Yerba mark se muestra; con uno que necesita todo el ancho, no se dibuja. En ningún caso el encabezado gana altura ni el nombre se corta.
 - **Misma app instalada.** El `id`, el `name` y el `short_name` del manifest no cambian.
 
 ## Reglas fijas

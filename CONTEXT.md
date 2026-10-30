@@ -572,7 +572,7 @@ La marca del producto Apostrophe: un cuadrado redondeado #1E6B47 con el apóstro
 _Avoid_: logo, icon, badge, Business logo
 
 **Wordmark**:
-El nombre "apostrophe" en minúscula, en Geist 600, con el ’ en `--acento`, que acompaña a la Yerba mark en Sign in, la aceptación de Invitation, la bienvenida del Onboarding y la barra lateral de la computadora. Es fijo para toda la instalación: ninguna configuración, Product word ni idioma lo renombra. En la app: apostrophe.
+El nombre "apostrophe" en minúscula, en Geist 600, con el ’ en `--acento`. Acompaña a la Yerba mark en Sign in, en la aceptación de Invitation, en el primer paso del Onboarding y arriba de la barra lateral de la computadora. Es fijo para toda la instalación: ninguna configuración, Product word ni idioma lo renombra. En la app: apostrophe.
 _Avoid_: logo, title, brand name, Business name
 
 **Tabular figures**:
