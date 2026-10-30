@@ -111,7 +111,7 @@ Criterios de éxito:
 - **Todos los jobs de `ci:` en verde.** Un pull request se integra solo con todos los jobs de CI listados en `ci:` de `.agentic/stack.yaml` en verde en su head, e2e incluido (regla del dueño). `agentic merge` lo hace cumplir. Desde GH-476, `ci:` lista solo `ci-ok`, que depende de todos los demás jobs (`changes`, `checks`, `web`, `docs`, `pytest`, `vitest`, `e2e`, `coverage`) y lee las banderas de `changes`: una suite omitida por no afectada cuenta como pasada solo si su bandera es `"false"`, y e2e sigue gateando (ADR-0067).
 - **Cualquier estado que no sea éxito frena.** Para cada job de `ci:`, `agentic merge` rechaza un head cuyo job falló, se canceló, se salteó, sigue pendiente o falta, y nombra el job. e2e sigue la misma regla que los demás jobs, sin una regla propia. La prueba de ese rechazo vive fuera de este repo, en el sistema agentic (hallazgo `outside`); si alguno de los jobs existentes no se comportara así, eso se registra como una falla del comportamiento existente.
 - **Un spec e2e nuevo o cambiado se ve pasar en GitHub sin pasos extra.** Desde GH-476 el job `e2e` corre en shards solo los specs que el cambio afecta (la suite completa en cada push a master, y en un pull request cuando el cambio es de infraestructura o no coincide con ninguna regla); `ci-ok` lee la bandera `e2e` de `changes` (ADR-0064, reglas 7 y 8; ADR-0067). Así, un pull request que agrega o cambia un spec e2e cumple "ver pasar ese spec en GitHub antes de pedir el merge" con solo cumplir la regla anterior. No es un paso manual aparte.
-- **Solo el e2e de GitHub.** El `web-e2e` local sigue apagado (dueño, 2026-10-26). El job e2e de GitHub es el único freno e2e, sin respaldo local.
+- **El `web-e2e` vuelve a ser un check declarado (GH-476).** `.agentic/stack.yaml` lo restaura en `checks` y en `affected_checks`, de modo que lo corre el tier completo; no está en `delivery_checks`, así que la entrega de cada subtask no lo corre. El freno del merge sigue siendo el job e2e de GitHub, leído por `ci-ok` (la decisión del dueño del 2026-10-26 de apagarlo en esta máquina queda reemplazada para el tier completo).
 - **Nunca verde a la fuerza.** Un rojo se arregla encontrando su causa, en el spec o en el código que atrapó. Nunca se saltea, se pone en cuarentena, se reintenta hasta que pase ni se afloja una aserción. Un spec sigue la definición escrita vigente, nunca al revés.
 
 ### Un e2e en rojo que resulta ser un flake
@@ -327,6 +327,6 @@ No hay telemetría. Se leen de la evidencia de la tarea y de la revisión.
 - Cambiar cómo se calcula el ordinal de un target: la regla de renumeración acepta el ordinal tal como es.
 - Dejar crecer las listas de infractores en cualquier caso que no sea el canje o una fila nueva del registro.
 - Traducir `docs/product/design-system/README.md`.
-- Volver a encender el `web-e2e` local o cualquier respaldo local del job e2e de GitHub.
+- Meter `web-e2e` en `delivery_checks` o dar al e2e un respaldo local distinto del job e2e de GitHub.
 - Saltear, poner en cuarentena, reintentar hasta que pase o aflojar una aserción para poner el Gate en verde.
 - Una regla de merge propia de e2e distinta de la de los demás jobs de `ci:`.

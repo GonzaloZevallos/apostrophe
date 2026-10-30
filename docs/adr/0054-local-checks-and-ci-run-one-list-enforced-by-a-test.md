@@ -69,6 +69,8 @@ type-checked locally failed on GitHub's runner.
   either succeeded or was skipped on a `"false"` flag, which is what `ci_verdict.py` reads. `tests` and
   `tests-fast` both map to the pytest shard command: the `always` shard holds every top-level
   `tests/test_*.py` plus `architecture` and `migrations`, which covers every path `tests-fast` names.
-- **Supersedes the GH-533 amendment above where they differ.** `e2e` is no longer `CI_ONLY` (it is a check
+- **Supersedes the GH-533 amendment above where they differ.** "Local web-e2e stays off" no longer holds:
+  `web-e2e: npm --prefix web run e2e` is restored in `checks` and `affected_checks` of `.agentic/stack.yaml`
+  (full tier; not in `delivery_checks`). `e2e` is no longer `CI_ONLY` (it is a check
   with a `CI_FORMS` entry), `ci:` is `[ci-ok]`, and e2e is skipped, never unconditional: `ci-ok` reads the
   `changes` flag (ADR-0064, rule 7; ADR-0067). The every-holder rule for `CI_ONLY` commands stays.
