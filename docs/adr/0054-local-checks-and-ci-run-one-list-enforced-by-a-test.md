@@ -43,6 +43,19 @@ type-checked locally failed on GitHub's runner.
 - **Superseded.** The bullet "A CI-only check gates every merge" no longer holds for e2e: `ci: [test, web]`
   gates the merge, and `test` and `web` together run every check of `.agentic/stack.yaml`.
 
+## Amendment (GH-533): e2e is `CI_ONLY` and gates every merge
+
+- **The owner's rule (2026-10-29).** A pull request lands only with every CI job green, e2e included. The
+  merges of #523 and #525 landed with a red e2e because the job gated nothing.
+- **#428 is closed.** The condition of the GH-444 amendment ("joins `ci:` when the owner turns local e2e back
+  on and #428 has fixed the flake") no longer holds, and neither does its "Superseded" bullet.
+- **Local web-e2e stays off** (owner, 2026-10-26). So `npm --prefix web run e2e` is a `CI_ONLY` command again,
+  and `ci:` is `[test, web, docs, e2e]`. `PARKED` stays as a mechanism and is now empty.
+- **The `CI_ONLY` rule is now every-holder.** With `ci:` set, every job that runs a `CI_ONLY` command is in
+  `ci:`, one problem per ungated holder, so an unlisted e2e shard is refused.
+- **e2e gates unconditionally** (no `if:`, no `needs:`) until GH-448 part 2 decides how a selectively skipped
+  e2e is read (ADR-0064, rule 7).
+
 ## Amendment (GH-476): gating is the `needs` closure of `ci:`, and `CI_FORMS` ties a check to its CI form
 
 - **Gated jobs.** `ci: [ci-ok]` names one job. The gated jobs are its transitive `needs` closure, and
@@ -56,3 +69,6 @@ type-checked locally failed on GitHub's runner.
   either succeeded or was skipped on a `"false"` flag, which is what `ci_verdict.py` reads. `tests` and
   `tests-fast` both map to the pytest shard command: the `always` shard holds every top-level
   `tests/test_*.py` plus `architecture` and `migrations`, which covers every path `tests-fast` names.
+- **Supersedes the GH-533 amendment above where they differ.** `e2e` is no longer `CI_ONLY` (it is a check
+  with a `CI_FORMS` entry), `ci:` is `[ci-ok]`, and e2e is skipped, never unconditional: `ci-ok` reads the
+  `changes` flag (ADR-0064, rule 7; ADR-0067). The every-holder rule for `CI_ONLY` commands stays.
