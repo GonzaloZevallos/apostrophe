@@ -8,7 +8,7 @@
  * this subtask replaces.
  */
 
-import { HOME, SALE, SALES, SALE_NEW, pathTo } from '../../routes'
+import { CUSTOMERS, HOME, SALE, SALES, SALE_NEW, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -257,6 +257,24 @@ test('opened from inside the app, "Close" goes back through history', async () =
   await user.click(screen.getByRole('button', { name: 'Close' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(SALES))
   expect(router.state.location.state).toBeNull()
+})
+
+test('opened from the Customers list, "Close" is a POP back to Customers, not a replace to Sales', async () => {
+  const user = userEvent.setup()
+  setupFetch({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
+  })
+  await act(() => router.navigate(CUSTOMERS))
+  await act(() => router.navigate(SALE_NEW, { state: inAppState({ pathname: CUSTOMERS }) }))
+  render(<App />)
+  await screen.findByText('New sale')
+
+  await user.click(screen.getByRole('button', { name: 'Close' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+  expect(router.state.historyAction).toBe('POP')
 })
 
 test('an untouched form closes at once; a touched one asks "Discard the sale?" first', async () => {

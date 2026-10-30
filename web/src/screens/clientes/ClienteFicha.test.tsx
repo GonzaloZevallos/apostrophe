@@ -870,6 +870,16 @@ test('an untouched sheet leaves at once on history back', async () => {
   expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument()
 })
 
+test('"Record payment" on the card opens the form as an in-app entry over the card', async () => {
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1')
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
+  expect(router.state.location.state).toMatchObject({ inApp: true, underneath: 'card' })
+})
+
 test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
   api.mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
