@@ -108,9 +108,9 @@ Criterios de éxito:
 
 ### Cuándo se integra un pull request
 
-- **Todos los jobs de `ci:` en verde.** Un pull request se integra solo con todos los jobs de CI listados en `ci:` de `.agentic/stack.yaml` en verde en su head, e2e incluido (regla del dueño). `agentic merge` lo hace cumplir. `ci:` lista `test`, `web`, `docs` y `e2e`.
-- **Cualquier estado que no sea éxito frena.** Para cada job de `ci:`, `agentic merge` rechaza un head cuyo job falló, se canceló, se salteó, sigue pendiente o falta, y nombra el job. e2e sigue la misma regla que los demás jobs, sin una regla propia. Si alguno de los jobs existentes no se comportara así, eso se registra como una falla del comportamiento existente.
-- **Un spec e2e nuevo o cambiado se ve pasar en GitHub sin pasos extra.** El job `e2e` corre la suite completa en cada pull request, sin `if:` ni `needs:`. Así, un pull request que agrega o cambia un spec e2e cumple "ver pasar ese spec en GitHub antes de pedir el merge" con solo cumplir la regla anterior. No es un paso manual aparte.
+- **Todos los jobs de `ci:` en verde.** Un pull request se integra solo con todos los jobs de CI listados en `ci:` de `.agentic/stack.yaml` en verde en su head, e2e incluido (regla del dueño). `agentic merge` lo hace cumplir. `ci:` lista exactamente `test`, `web`, `docs` y `e2e`.
+- **Cualquier estado que no sea éxito frena.** Para cada job de `ci:`, `agentic merge` rechaza un head cuyo job falló, se canceló, se salteó, sigue pendiente o falta, y nombra el job. e2e sigue la misma regla que los demás jobs, sin una regla propia. La prueba de ese rechazo vive fuera de este repo, en el sistema agentic (hallazgo `outside`); si alguno de los jobs existentes no se comportara así, eso se registra como una falla del comportamiento existente.
+- **Un spec e2e nuevo o cambiado se ve pasar en GitHub sin pasos extra.** El job `e2e` corre la suite completa en cada pull request, sin `if:` ni `needs:`, y así seguirá hasta que la parte 2 de GH-448 decida cómo se lee un e2e salteado de forma selectiva (ADR-0064, reglas 7 y 8). Así, un pull request que agrega o cambia un spec e2e cumple "ver pasar ese spec en GitHub antes de pedir el merge" con solo cumplir la regla anterior. No es un paso manual aparte.
 - **Solo el e2e de GitHub.** El `web-e2e` local sigue apagado (dueño, 2026-10-26). El job e2e de GitHub es el único freno e2e, sin respaldo local.
 - **Nunca verde a la fuerza.** Un rojo se arregla encontrando su causa, en el spec o en el código que atrapó. Nunca se saltea, se pone en cuarentena, se reintenta hasta que pase ni se afloja una aserción. Un spec sigue la definición escrita vigente, nunca al revés.
 
@@ -120,6 +120,7 @@ Criterios de éxito:
 - Un flake es un defecto del Gate, no ruido con el que convivir. Recibe su propio issue que nombra el spec y la falla, como #428.
 - Si el spec que falla de forma intermitente es uno que el pull request agrega o cambia, el head no se integra hasta que se arregle el flake.
 - Si el pull request no toca ese spec, puede integrarse con el re-run en verde, pero solo después de abrir el issue del flake. El freno de `ci:` se cumple porque todos los jobs están en verde en el head.
+- Si el job `e2e` se cancela o llega a su `timeout-minutes` (30), se vuelve a correr una sola vez, solo para distinguir un flake de una regresión. Un flake recibe su propio issue. El workflow no tiene ningún bucle de re-run.
 
 ### Listas de infractores del estándar móvil
 
@@ -313,7 +314,7 @@ No hay telemetría. Se leen de la evidencia de la tarea y de la revisión.
 - **Todo estado que no sea éxito rechazado (mismo job, cuándo se integra):** la evidencia o los tests cubren fallado, cancelado, salteado, pendiente y faltante para un job de `ci:`. Cualquier falla encontrada en `test`, `web` o `docs` queda registrada.
 - **Master en verde (mismo job, criterio 2):** la primera corrida de CI de master después del merge tiene todos los jobs en verde, e2e incluido. La evidencia nombra la causa de cada rojo arreglado, y la revisión confirma que no se agregó ningún `skip`, `fixme`, reintento ni aserción aflojada.
 - **Spec visto pasar (mismo job, criterio 3):** la corrida e2e propia del pull request en GitHub está en verde antes de pedir el merge, con su link en la evidencia.
-- **Textos alineados (mismo job, criterio 4):** buscar "gates nothing" y la lista de jobs que frenan el merge no encuentra ningún texto que no coincida con `ci:`, ni ningún ADR que lo contradiga sin un hallazgo `outside`.
+- **Textos alineados (mismo job, criterio 4):** buscar los textos que dicen que e2e no frena nada y la lista de jobs que frenan el merge no encuentra ningún texto que no coincida con `ci:`, ni ningún ADR que lo contradiga sin un hallazgo `outside`.
 
 ## Fuera de alcance
 

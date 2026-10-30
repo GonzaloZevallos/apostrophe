@@ -9,9 +9,8 @@ and prints. Lines carry job names and results, nothing else.
 - A gating suite (`SUITES`) passes on `success`; on `skipped` only when its `changes` flag
   is "false". A "true" or missing flag, `failure` and `cancelled` fail.
 - `ALWAYS_JOBS` must be `success`.
-- `WARN_JOBS` and `PARKED_SUITES` (a suite that gates nothing, see `stack.yaml` `ci:`) pass
-  on `success`, and on a parked suite skipped with a "false" flag; any other result is a
-  warning, except `cancelled`, which fails.
+- `WARN_JOBS` pass on `success`; any other result is a warning, except `cancelled`, which
+  fails.
 - A job in no map fails by name.
 """
 
@@ -24,9 +23,7 @@ from pathlib import Path
 from typing import cast
 
 # job id -> the `changes` output flag that says whether the suite had to run.
-SUITES: dict[str, str] = {"pytest": "pytest", "vitest": "vitest"}
-# Suites CI runs that gate nothing (tests/test_stack_ci.py PARKED); they warn instead of fail.
-PARKED_SUITES: dict[str, str] = {"e2e": "e2e"}
+SUITES: dict[str, str] = {"pytest": "pytest", "vitest": "vitest", "e2e": "e2e"}
 ALWAYS_JOBS = ("checks", "web")
 WARN_JOBS = ("coverage",)
 CHANGES = "changes"
@@ -69,18 +66,12 @@ def _always(name: str, result: str) -> tuple[bool, str]:
     return result == "success", f"{name}: {result}"
 
 
-def _warning(flags: Mapping[str, object], flag_name: str | None) -> Judge:
-    def judge(name: str, result: str) -> tuple[bool, str]:
-        quiet_skip = (
-            result == "skipped" and flag_name is not None and flags.get(flag_name) == "false"
-        )
-        if result == "success" or quiet_skip:
-            return True, f"{name}: {result}"
-        if result == "cancelled":
-            return False, f"{name}: cancelled"
-        return True, f"{name}: {result} (warning)"
-
-    return judge
+def _warning(name: str, result: str) -> tuple[bool, str]:
+    if result == "success":
+        return True, f"{name}: {result}"
+    if result == "cancelled":
+        return False, f"{name}: cancelled"
+    return True, f"{name}: {result} (warning)"
 
 
 def verdict(needs: Mapping[str, object]) -> tuple[bool, list[str]]:
@@ -95,10 +86,8 @@ def verdict(needs: Mapping[str, object]) -> tuple[bool, list[str]]:
         judges[job] = _gating(flags, flag_name)
     for job in ALWAYS_JOBS:
         judges[job] = _always
-    for job, flag_name in PARKED_SUITES.items():
-        judges[job] = _warning(flags, flag_name)
     for job in WARN_JOBS:
-        judges[job] = _warning(flags, None)
+        judges[job] = _warning
 
     ok = True
     lines = [f"{CHANGES}: success"]

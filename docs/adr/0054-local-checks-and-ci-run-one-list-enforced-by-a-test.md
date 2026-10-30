@@ -42,3 +42,16 @@ type-checked locally failed on GitHub's runner.
   when the owner turns local e2e back on and #428 has fixed the flake; the entry then leaves `PARKED`.
 - **Superseded.** The bullet "A CI-only check gates every merge" no longer holds for e2e: `ci: [test, web]`
   gates the merge, and `test` and `web` together run every check of `.agentic/stack.yaml`.
+
+## Amendment (GH-533): e2e is `CI_ONLY` and gates every merge
+
+- **The owner's rule (2026-10-29).** A pull request lands only with every CI job green, e2e included. The
+  merges of #523 and #525 landed with a red e2e because the job gated nothing.
+- **#428 is closed.** The condition of the GH-444 amendment ("joins `ci:` when the owner turns local e2e back
+  on and #428 has fixed the flake") no longer holds, and neither does its "Superseded" bullet.
+- **Local web-e2e stays off** (owner, 2026-10-26). So `npm --prefix web run e2e` is a `CI_ONLY` command again,
+  and `ci:` is `[test, web, docs, e2e]`. `PARKED` stays as a mechanism and is now empty.
+- **The `CI_ONLY` rule is now every-holder.** With `ci:` set, every job that runs a `CI_ONLY` command is in
+  `ci:`, one problem per ungated holder, so an unlisted e2e shard is refused.
+- **e2e gates unconditionally** (no `if:`, no `needs:`) until GH-448 part 2 decides how a selectively skipped
+  e2e is read (ADR-0064, rule 7).

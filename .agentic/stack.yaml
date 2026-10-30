@@ -20,9 +20,8 @@ checks:
   web-lint: npm --prefix web run lint
   web-tests: npm --prefix web test
   web-build: npm --prefix web run build
-  # web-e2e is off on this machine (owner, 2026-10-26) to free it; GitHub CI still runs
-  # e2e on every pull request and gates nothing (`ci:` below names test and web; #428).
-  # Restore with the line below when the owner says so.
+  # web-e2e is off locally (owner, 2026-10-26); GitHub's `e2e` job gates every merge, see
+  # docs/product/gate.md. Restore with the line below when the owner says so.
   # web-e2e: npm --prefix web run e2e
 # `parallel_checks`: the gate runs the checks above at once (agentic-system ADR-0044),
 # so a gate takes the slowest check instead of the sum (passing-gate median 16.1 min, 2026-10-12
@@ -135,6 +134,5 @@ forbidden:
 # together run every check above in full (pytest, ruff, mypy; web typecheck, lint, test, build);
 # `docs` gates too and runs no declared check: the generator's stale check, the Mermaid render,
 # the offline link check and the OpenAPI breaking-change check (ADR-0066). The `e2e` job runs on
-# every pull request and gates nothing (tests/test_stack_ci.py, PARKED).
-# e2e joins `ci:` when the owner turns local e2e back on and #428 has fixed the flake.
-ci: [test, web, docs]
+# every pull request and gates too (docs/product/gate.md, "Cuándo se integra un pull request").
+ci: [test, web, docs, e2e]
