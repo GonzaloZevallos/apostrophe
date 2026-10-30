@@ -48,20 +48,24 @@ export function pseudoText(text: string): string {
 type Tree = { readonly [key: string]: string | Tree }
 
 /**
- * The brand's own texts, as dotted paths in a file. They are never translated nor pseudo-
+ * The brand's own texts, as `namespace:path`. They are never translated nor pseudo-
  * localised: the name is the same in every language, the Test locale included (`BrandMark`).
  */
-export const VERBATIM_KEYS: readonly string[] = ['brand.wordmark', 'brand.mark.label']
+export const VERBATIM_KEYS: readonly string[] = ['brand:wordmark', 'brand:mark.label']
 
 /** The same tree with every string value pseudo-localised: keys, suffixes and nesting stay. */
-export function generatePseudo(english: Tree, path = ''): Tree {
+export function generatePseudo(english: Tree, ns = '', path = ''): Tree {
   return Object.fromEntries(
     Object.entries(english).map(([key, value]) => {
       const here = path === '' ? key : `${path}.${key}`
-      if (typeof value !== 'string') return [key, generatePseudo(value, here)]
-      return [key, VERBATIM_KEYS.includes(here) ? value : pseudoText(value)]
+      if (typeof value !== 'string') return [key, generatePseudo(value, ns, here)]
+      return [key, VERBATIM_KEYS.includes(`${ns}:${here}`) ? value : pseudoText(value)]
     }),
   )
+}
+
+function nsOf(file: string): string {
+  return file.slice(0, -'.json'.length)
 }
 
 function jsonFiles(dir: string): readonly string[] {
@@ -83,7 +87,7 @@ export function writePseudo(englishDir: string = ENGLISH_DIR, outDir: string = P
     if (!english.includes(file)) rmSync(join(outDir, file))
   }
   for (const file of english) {
-    const text = `${JSON.stringify(generatePseudo(readTree(join(englishDir, file))), null, 2)}\n`
+    const text = `${JSON.stringify(generatePseudo(readTree(join(englishDir, file)), nsOf(file)), null, 2)}\n`
     writeFileSync(join(outDir, file), text)
   }
 }
@@ -102,7 +106,7 @@ export function pseudoProblems(
       problems.push(`en-XA/${file} is missing: ${hint}`)
       continue
     }
-    const expected = generatePseudo(readTree(join(englishDir, file)))
+    const expected = generatePseudo(readTree(join(englishDir, file)), nsOf(file))
     if (!isDeepStrictEqual(readTree(join(outDir, file)), expected)) {
       problems.push(`en-XA/${file} disagrees with en/${file}: ${hint}`)
     }

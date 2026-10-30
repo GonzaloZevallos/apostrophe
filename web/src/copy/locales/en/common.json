@@ -106,11 +106,5 @@
   "cancel": "Cancel",
   "backArrow": "‹ {{parent}}",
   "offline": "Offline: check your internet and try again.",
-  "genericError": "Something went wrong. Try again.",
-  "brand": {
-    "wordmark": "apostrophe",
-    "mark": {
-      "label": "apostrophe"
-    }
-  }
+  "genericError": "Something went wrong. Try again."
 }

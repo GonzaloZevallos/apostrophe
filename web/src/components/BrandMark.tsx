@@ -46,10 +46,10 @@ export default function BrandMark({
 
   if (variant === 'lockup') {
     return (
-      <span className="brand-mark brand-mark--lockup" role="img" aria-label={t('common:brand.wordmark')}>
+      <span className="brand-mark brand-mark--lockup" role="img" aria-label={t('brand:wordmark')}>
         <img src={MARK_SOURCE} alt="" width={MARK_SIZE.lockup} height={MARK_SIZE.lockup} />
         <span className="brand-mark__word">
-          {t('common:brand.wordmark')}
+          {t('brand:wordmark')}
           <span className="brand-mark__apostrophe" aria-hidden="true">
             {'’'}
           </span>
@@ -63,7 +63,7 @@ export default function BrandMark({
       ref={imageRef}
       className="brand-mark brand-mark--mark"
       src={MARK_SOURCE}
-      alt={t('common:brand.mark.label')}
+      alt={t('brand:mark.label')}
       width={MARK_SIZE.mark}
       height={MARK_SIZE.mark}
       aria-hidden={visible ? undefined : true}

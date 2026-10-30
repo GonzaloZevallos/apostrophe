@@ -81,28 +81,24 @@ describe('the en-XA generator', () => {
   })
 
   it('copies the brand keys verbatim and still pseudo-localises every other key', () => {
-    const english = {
-      brand: { wordmark: 'apostrophe', mark: { label: 'apostrophe' }, tagline: 'Sell better' },
-      other: { wordmark: 'apostrophe' },
-    }
+    const english = { wordmark: 'apostrophe', mark: { label: 'apostrophe' }, tagline: 'Sell better' }
 
-    expect(VERBATIM_KEYS).toEqual(['brand.wordmark', 'brand.mark.label'])
-    expect(generatePseudo(english)).toEqual({
-      brand: {
-        wordmark: 'apostrophe',
-        mark: { label: 'apostrophe' },
-        tagline: pseudoText('Sell better'),
-      },
-      other: { wordmark: pseudoText('apostrophe') },
+    expect(VERBATIM_KEYS).toEqual(['brand:wordmark', 'brand:mark.label'])
+    expect(generatePseudo(english, 'brand')).toEqual({
+      wordmark: 'apostrophe',
+      mark: { label: 'apostrophe' },
+      tagline: pseudoText('Sell better'),
     })
+    // The same keys in another namespace are ordinary text.
+    expect(generatePseudo(english, 'other')).toEqual(generatePseudo(english))
+    expect(generatePseudo(english, 'other')['wordmark']).toBe(pseudoText('apostrophe'))
   })
 
   it('has the committed en-XA brand texts equal to the English ones', () => {
-    const read = (dir: string): { brand: { wordmark: string; mark: { label: string } } } =>
-      JSON.parse(readFileSync(join(dir, 'common.json'), 'utf8'))
+    const read = (dir: string): unknown => JSON.parse(readFileSync(join(dir, 'brand.json'), 'utf8'))
 
-    expect(read(PSEUDO_DIR).brand).toEqual({ wordmark: 'apostrophe', mark: { label: 'apostrophe' } })
-    expect(read(ENGLISH_DIR).brand).toEqual(read(PSEUDO_DIR).brand)
+    expect(read(PSEUDO_DIR)).toEqual({ wordmark: 'apostrophe', mark: { label: 'apostrophe' } })
+    expect(read(ENGLISH_DIR)).toEqual(read(PSEUDO_DIR))
   })
 
   it.runIf(WRITE)('writes the committed en-XA files', () => {
