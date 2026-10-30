@@ -8,7 +8,8 @@
  *   - the seller scrolls or touches the page themselves (wheel, touch, pointer, key);
  *   - `cancel()` is called, which the next location change does before its own decision.
  * The frame, the clock, the page and the seller's input are injected, so a fake can drive it.
- * This module and `scrollPlaces.ts`/`ScrollSync.tsx` are the only ones that move the document.
+ * This module, `scrollPlaces.ts`, `ScrollSync.tsx`, `components/useReturnToPlace.ts` and the
+ * jsdom stub in `test-setup.ts` are the only ones that move the document (the forbidden-API rule).
  */
 
 export const FOLLOW_CAP_MS = 3000
