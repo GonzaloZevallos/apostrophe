@@ -45,7 +45,7 @@ function answer(
     resume: first === -1 ? 'finish' : (ORDER[first] ?? null),
     steps: ORDER.map((step, index) => ({ step, state: states[index] ?? 'pending' })),
     can_skip_rest: states[0] === 'done' && states[1] === 'done',
-    varieties_count: 1,
+    products_count: 1,
     stock_entries_count: 0,
     price_target: null,
     priced_target: null,

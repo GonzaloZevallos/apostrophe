@@ -82,7 +82,7 @@ def test_a_new_business_is_offered_the_onboarding_at_its_first_step(client: Test
         "resume": "variety",
         "steps": [{"step": name, "state": "pending"} for name in STEP_NAMES],
         "can_skip_rest": False,
-        "varieties_count": 0,
+        "products_count": 0,
         "stock_entries_count": 0,
         "price_target": None,
         "priced_target": None,
@@ -167,14 +167,14 @@ def test_an_unpriced_variety_is_the_price_target_and_priced_it_becomes_the_stock
     before = client.get("/onboarding-progress").json()
     assert before["price_target"] == {"id": variety_id, "name": "Lemon Haze"}
     assert before["stock_target"] is None
-    assert before["varieties_count"] == 1
+    assert before["products_count"] == 1
 
     _price(client, variety_id)
     after = client.get("/onboarding-progress").json()
 
     assert after["price_target"] is None
     assert after["stock_target"] == {"id": variety_id, "name": "Lemon Haze"}
-    assert after["varieties_count"] == 1
+    assert after["products_count"] == 1
     assert _states(after)["variety"] == "done"
 
 
@@ -317,7 +317,7 @@ def test_the_state_is_the_session_s_business_only(
     other = other_client.get("/onboarding-progress").json()
 
     assert other["count"] == 0
-    assert other["varieties_count"] == 0
+    assert other["products_count"] == 0
     assert other["price_target"] is None
     assert other["priced_target"] is None
     assert other_client.post("/onboarding-progress/skip-rest").status_code == 409

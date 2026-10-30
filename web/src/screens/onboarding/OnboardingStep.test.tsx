@@ -32,7 +32,7 @@ function progress(canSkipRest: boolean): OnboardingProgress {
     resume: 'header_footer',
     steps: ORDER.map((step, index) => ({ step, state: states[index] ?? 'pending' })),
     can_skip_rest: canSkipRest,
-    varieties_count: 1,
+    products_count: 1,
     stock_entries_count: 1,
     price_target: null,
     priced_target: null,

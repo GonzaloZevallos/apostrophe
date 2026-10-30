@@ -67,7 +67,7 @@ function progress(): OnboardingProgress {
       state: (step === 'variety' && varietyDone) || (step === 'stock' && stocked) ? 'done' : 'pending',
     })),
     can_skip_rest: varietyDone && stocked,
-    varieties_count: varieties.length,
+    products_count: varieties.length,
     stock_entries_count: stocked ? 1 : 0,
     price_target: target(sorted.find((item) => item.price === null)),
     priced_target: target(pricedOne),

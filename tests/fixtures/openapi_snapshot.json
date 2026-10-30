@@ -2916,6 +2916,10 @@
               }
             ]
           },
+          "products_count": {
+            "title": "Products Count",
+            "type": "integer"
+          },
           "resume": {
             "anyOf": [
               {
@@ -2959,10 +2963,6 @@
                 "type": "null"
               }
             ]
-          },
-          "varieties_count": {
-            "title": "Varieties Count",
-            "type": "integer"
           }
         },
         "required": [
@@ -2972,7 +2972,7 @@
           "resume",
           "steps",
           "can_skip_rest",
-          "varieties_count",
+          "products_count",
           "stock_entries_count",
           "price_target",
           "priced_target",
