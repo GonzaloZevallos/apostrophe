@@ -40,9 +40,6 @@ _INDEX = "index.html"
 # router would answer them, so the front is served there only through this list of
 # whole-path templates, and only to a browser navigation (docs/adr/0024, amendment of
 # GH-59). A segment is a literal or `{id}`, which matches digits only.
-# The `/varieties` rows stay for the browser navigation and the slash redirect, even
-# though no API route shares that segment since the products API moved to `/api/products`
-# (GH-388): without them a trailing-slash `/varieties/7/` would no longer get its 308.
 SHARED_FRONT_PATHS = frozenset(
     {
         "/sales",
