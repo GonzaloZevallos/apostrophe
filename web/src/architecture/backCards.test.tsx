@@ -82,7 +82,7 @@ const CATALOG = {
   text: '**24K Gold**',
   header: '',
   footer: '',
-  varieties: [{ id: 2, name: 'Sir Jack', emoji: '👑', indica_share: null, aroma: null, shown: false, state: 'hidden' }],
+  products: [{ product_id: 2, name: 'Sir Jack', emoji: '👑', indica_share: null, aroma: null, shown: false, state: 'hidden' }],
 }
 
 const STOCK = {

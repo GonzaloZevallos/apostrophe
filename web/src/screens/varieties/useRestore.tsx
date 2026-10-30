@@ -99,7 +99,7 @@ export function useRestore(): {
       const landing = restoreLanding(queryClient.getQueryData<Variety[]>(keys.archivedVarieties()), varietyId)
       queryClient.setQueryData<Variety[]>(keys.archivedVarieties(), (old) => old?.filter((variety) => variety.id !== varietyId))
       queryClient.setQueryData<ArchivedAttributes[]>(keys.archivedCatalog(), (old) =>
-        old?.filter((attributes) => attributes.variety_id !== varietyId),
+        old?.filter((attributes) => attributes.product_id !== varietyId),
       )
       flash.armAfterLeaving(VARIETIES_TEXT.variedadRestaurada)
       leaveTo(landing)

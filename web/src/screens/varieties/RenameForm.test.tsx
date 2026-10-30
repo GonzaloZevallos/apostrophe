@@ -65,7 +65,7 @@ test('starts on the saved name; a save patches the new name and hands "Variety s
 test('a save marks the catalog stale', async () => {
   const user = userEvent.setup()
   const { queryClient } = renderHost(async () => jsonResponse(200, { id: 1, name: 'Gold' }))
-  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
 
   await user.type(screen.getByLabelText('Name'), 'x')
   await user.click(screen.getByRole('button', { name: 'Save the name' }))

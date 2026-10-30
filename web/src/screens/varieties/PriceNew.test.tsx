@@ -76,7 +76,7 @@ test('a save marks the catalog stale', async () => {
   const user = userEvent.setup()
   const { queryClient } = await renderOpened(api({ 'POST /api/products/1/prices': () => CREATED.clone() }),
   )
-  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Save the price' }))

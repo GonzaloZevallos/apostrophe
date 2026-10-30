@@ -33,7 +33,7 @@ function stockOf(grams: number) {
   return { total: grams, products: [row], entries: [] }
 }
 
-const CATALOG = { text: '', header: '', footer: '', varieties: [] }
+const CATALOG = { text: '', header: '', footer: '', products: [] }
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })

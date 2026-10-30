@@ -74,7 +74,7 @@ function renderApp(entries: { pathname: string }[], viewport: Viewport, answers:
     'GET /api/products': () => jsonResponse(200, VARIETIES),
     'GET /stock': () => jsonResponse(200, STOCK),
     'GET /stock/entries/12': () => jsonResponse(200, ENTRY),
-    'GET /catalog': () => jsonResponse(200, { varieties: [] }),
+    'GET /catalog': () => jsonResponse(200, { products: [] }),
     'GET /first-run': () =>
       jsonResponse(200, {
         kind: 'none',

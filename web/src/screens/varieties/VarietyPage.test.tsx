@@ -10,6 +10,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter, matchRoutes, useLocation } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import type { Catalog, ArchivedAttributes } from '../../api/catalog'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import FlashProvider from '../../flash/FlashProvider'
@@ -77,16 +78,16 @@ const ENTRIES = [
 ]
 
 function archivedRow(shown: boolean) {
-  return { variety_id: 1, name: '24K Gold', shown, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' }
+  return { product_id: 1, name: '24K Gold', shown, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' }
 }
 
 const CATALOG = {
   text: 'texto',
   header: '',
   footer: '',
-  varieties: [
-    { id: 1, name: '24K Gold', emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla', shown: true, state: 'in' },
-    { id: 2, name: 'Otra', emoji: null, indica_share: null, aroma: null, shown: true, state: 'in' },
+  products: [
+    { product_id: 1, name: '24K Gold', emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla', shown: true, state: 'in' },
+    { product_id: 2, name: 'Otra', emoji: null, indica_share: null, aroma: null, shown: true, state: 'in' },
   ],
 }
 
@@ -208,11 +209,55 @@ describe('the summary line', () => {
   })
 
   test('a variety left out of the catalog is marked "Hidden" beside its status', async () => {
-    const hidden = { ...CATALOG, varieties: [{ ...CATALOG.varieties[0], shown: false, state: 'hidden' }] }
+    const hidden = { ...CATALOG, products: [{ ...CATALOG.products[0], shown: false, state: 'hidden' }] }
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
     const line = (await screen.findByText('Hidden')).closest('p')
     expect(line).toHaveTextContent('18 g · low · Hidden · 24 days')
+  })
+})
+
+describe("the page's product id against the catalog's product_id", () => {
+  const TWO = pathTo(VARIETY, { id: 2 })
+  const TWO_ROW = { id: 2, name: 'Otra', current_price: null }
+
+  function answersFor(two: Answers): Answers {
+    return {
+      'GET /api/products/2': () => json(200, TWO_ROW),
+      'GET /api/products/2/prices': () => json(200, []),
+      'GET /stock/products/2/movements': () => json(200, []),
+      ...two,
+    }
+  }
+
+  test("a live page reads the catalog row whose product_id is its own, not the first row's", async () => {
+    const catalog = {
+      ...CATALOG,
+      products: [
+        { ...CATALOG.products[0], shown: true, state: 'in' },
+        { ...CATALOG.products[1], shown: false, state: 'hidden' },
+      ],
+    } satisfies Catalog
+    renderPage(TWO, answersFor({ 'GET /catalog': () => json(200, catalog) }))
+
+    expect(await screen.findByText('Hidden')).toBeInTheDocument()
+  })
+
+  test("an archived page reads the archived attributes whose product_id is its own", async () => {
+    const attributes = [
+      { product_id: 1, name: '24K Gold', shown: true, emoji: null, indica_share: null, aroma: null },
+      { product_id: 2, name: 'Otra', shown: false, emoji: null, indica_share: null, aroma: null },
+    ] satisfies ArchivedAttributes[]
+    renderPage(
+      TWO,
+      answersFor({
+        'GET /api/products/2': () => json(200, { ...TWO_ROW, archived: true, removal: null }),
+        'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+        'GET /catalog/archived': () => json(200, attributes),
+      }),
+    )
+
+    expect(await screen.findByText('Hidden')).toBeInTheDocument()
   })
 })
 
@@ -509,7 +554,7 @@ describe('the actions and the sections', () => {
   })
 
   test('In the catalog tells a hidden variety by word', async () => {
-    const hidden = { ...CATALOG, varieties: [{ ...CATALOG.varieties[0], shown: false, state: 'hidden' }] }
+    const hidden = { ...CATALOG, products: [{ ...CATALOG.products[0], shown: false, state: 'hidden' }] }
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
     const section = (await screen.findByRole('heading', { name: 'In the catalog' })).closest('section')
@@ -906,7 +951,7 @@ describe('In the catalog: the form', () => {
   test('saving puts the four values, closes the form, toasts and asks the catalog again', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage(VARIETY_ONE, {
-      'PUT /catalog/varieties/1': () => json(200, CATALOG),
+      'PUT /catalog/products/1': () => json(200, CATALOG),
     })
     await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.click(screen.getByRole('switch', { name: 'Show in the catalog' }))
@@ -919,7 +964,7 @@ describe('In the catalog: the form', () => {
     expect(await screen.findByText('Catalog saved')).toBeInTheDocument()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
     expect(putOf(fetchMock)).toEqual({
-      url: '/catalog/varieties/1',
+      url: '/catalog/products/1',
       body: { shown: false, emoji: null, indica_share: 70, aroma: 'Cítrico' },
     })
     await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
@@ -928,7 +973,7 @@ describe('In the catalog: the form', () => {
   test('a too-long aroma is refused under its own field and keeps everything typed', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, {
-      'PUT /catalog/varieties/1': () => json(422, { code: 'catalog.aroma_too_long' }),
+      'PUT /catalog/products/1': () => json(422, { code: 'catalog.aroma_too_long' }),
     })
     await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.type(screen.getByLabelText('Emoji'), 'x')
@@ -951,7 +996,7 @@ describe('In the catalog: the form', () => {
     ['catalog.indica_share_invalid', '% indica', 'The indica percentage goes from 0 to 100'],
   ])('%s is shown under %s only', async (code, label, message) => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(422, { code }) })
+    renderPage(VARIETY_ONE, { 'PUT /catalog/products/1': () => json(422, { code }) })
     await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.type(screen.getByLabelText('Aroma/flavor'), '!')
     await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
@@ -976,7 +1021,7 @@ describe('In the catalog: the form', () => {
 
   test('a variety that is gone while saving shows "That is gone."', async () => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(404, { code: 'catalog.variety_not_found' }) })
+    renderPage(VARIETY_ONE, { 'PUT /catalog/products/1': () => json(404, { code: 'catalog.variety_not_found' }) })
     await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 

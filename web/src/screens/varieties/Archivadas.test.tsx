@@ -36,7 +36,7 @@ function json(status: number, body: unknown): Response {
 const FROM_FOOT_LINK: InitialEntry[] = [VARIETIES, { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) }]
 const NAMES: Record<number, string> = { 4: 'Alfa Vieja', 5: 'Zeta Vieja' }
 const GRAMS: Record<number, number> = { 4: 7, 5: 3 }
-const CATALOG = { text: '', header: '', footer: '', varieties: [] }
+const CATALOG = { text: '', header: '', footer: '', products: [] }
 
 type Answers = Record<string, () => Response>
 
@@ -65,7 +65,7 @@ function fakeApi(hidden: readonly number[] = [], overrides: Answers = {}): Answe
     'GET /catalog/archived': () =>
       json(
         200,
-        archivedIds().map((id) => ({ variety_id: id, name: NAMES[id], shown: !hidden.includes(id), emoji: null, indica_share: null, aroma: null })),
+        archivedIds().map((id) => ({ product_id: id, name: NAMES[id], shown: !hidden.includes(id), emoji: null, indica_share: null, aroma: null })),
       ),
   }
   for (const id of [4, 5]) {

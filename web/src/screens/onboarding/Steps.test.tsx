@@ -282,7 +282,7 @@ test('"Add another variety" goes back to step 1 with the progress still on steps
 })
 
 test('step 3 sends the pass done only after the save answered, and a refused save sends none and keeps what was typed', async () => {
-  const catalog = { text: null, header: 'H', footer: 'F', varieties: [] }
+  const catalog = { text: null, header: 'H', footer: 'F', products: [] }
   let refuse = true
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
     'GET /catalog': () => json(catalog),
@@ -314,7 +314,7 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
 test('step 3 "Leave as is" passes it done with the defaults kept, and sends no catalog write', async () => {
   const bodies: unknown[] = []
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
-    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', varieties: [] }),
+    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', products: [] }),
     'POST /onboarding-progress/passes': (body) => {
       bodies.push(body)
       return json(answer(['done', 'done', 'done', 'pending', 'pending', 'pending']))
@@ -481,7 +481,7 @@ function expectNoNestedForm(): void {
 
 test('step 3 draws "Leave as is" as a form submit that is not inside another form, under the icon and text rule', async () => {
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
-    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', varieties: [] }),
+    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', products: [] }),
   })
   renderAt(ONBOARDING_CATALOG_MESSAGE)
 

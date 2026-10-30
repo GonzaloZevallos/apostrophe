@@ -37,7 +37,7 @@ const CATALOG = {
   text: 'texto',
   header: '',
   footer: '',
-  varieties: [{ id: 1, name: '24K Gold', emoji: '🍪', indica_share: 70, aroma: 'Vainilla', shown: true, state: 'in' }],
+  products: [{ product_id: 1, name: '24K Gold', emoji: '🍪', indica_share: 70, aroma: 'Vainilla', shown: true, state: 'in' }],
 }
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 

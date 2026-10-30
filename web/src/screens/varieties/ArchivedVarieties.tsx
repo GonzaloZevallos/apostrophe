@@ -45,7 +45,7 @@ export default function ArchivedVarieties() {
   const { state } = useLocation()
   const failure = query.error ?? catalog.error
   const loaded = query.data !== undefined && catalog.data !== undefined
-  const hidden = new Set(catalog.data?.filter((attributes) => !attributes.shown).map((attributes) => attributes.variety_id))
+  const hidden = new Set(catalog.data?.filter((attributes) => !attributes.shown).map((attributes) => attributes.product_id))
 
   if (query.data?.length === 0 && catalog.data !== undefined && isInApp(state)) {
     return <Navigate to={VARIETIES} replace state={FOLLOWED_REDIRECT} />

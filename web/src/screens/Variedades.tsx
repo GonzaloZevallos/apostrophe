@@ -106,7 +106,7 @@ export default function Variedades() {
 
   const failure = varietiesQuery.error ?? stockQuery.error
   const ready = varietiesQuery.data !== undefined && stockQuery.data !== undefined
-  const hidden = new Set((catalogQuery.data?.varieties ?? []).filter((row) => !row.shown).map((row) => row.id))
+  const hidden = new Set((catalogQuery.data?.products ?? []).filter((row) => !row.shown).map((row) => row.product_id))
   const rows = ready
     ? varietiesByName(varietiesQuery.data).flatMap((variety) => {
         const row = stockQuery.data.products.find((candidate) => candidate.product_id === variety.id)

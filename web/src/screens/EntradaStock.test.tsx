@@ -573,7 +573,7 @@ test('a save marks the catalog stale, since stock changes what it says', async (
       }),
   })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
   renderForm(STOCK_ENTRY_NEW, client)
 
   await userEvent.type(await screen.findByLabelText('Grams'), '30')

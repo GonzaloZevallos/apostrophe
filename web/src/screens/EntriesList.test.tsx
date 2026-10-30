@@ -338,7 +338,7 @@ test('a variety that is gone, or an id that is not a number, shows "That is gone
 test('a delete marks the catalog stale and the stock list refetches', async () => {
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
   renderAt(STOCK_PATH, client)
 
   const rows = await screen.findAllByRole('listitem')

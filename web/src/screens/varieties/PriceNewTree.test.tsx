@@ -28,7 +28,7 @@ const STOCK = {
   entries: [],
 }
 const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
-const CATALOG = { text: 'texto', header: '', footer: '', varieties: [] }
+const CATALOG = { text: 'texto', header: '', footer: '', products: [] }
 
 type Answers = Record<string, () => Response>
 

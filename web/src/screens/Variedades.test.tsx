@@ -63,8 +63,8 @@ function catalogOf(hidden: number[]) {
     text: 'texto',
     header: '',
     footer: '',
-    varieties: VARIETIES.map((variety) => ({
-      id: variety.id,
+    products: VARIETIES.map((variety) => ({
+      product_id: variety.id,
       name: variety.name,
       emoji: null,
       indica_share: null,

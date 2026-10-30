@@ -107,7 +107,7 @@ test('a delete marks the catalog stale', async () => {
     [pathTo(VARIETY_PRICES, { id: 1 })],
     api({ 'DELETE /api/products/1/prices/3': () => new Response(null, { status: 204 }) }),
   )
-  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
 
   const buttons = await screen.findAllByRole('button', { name: 'Delete this price' })
   await user.click(buttons[0]!)

@@ -136,11 +136,11 @@ function VarietyPageView({
   const { restoreFromPage, sending: restoring, notice: restoreNotice } = useRestore()
   const catalogQuery = useQuery({
     ...catalogQueryOptions(),
-    select: (catalog) => catalog.varieties.find((row) => row.id === varietyId) ?? null,
+    select: (catalog) => catalog.products.find((row) => row.product_id === varietyId) ?? null,
   })
 
   const archivedCatalogQuery = useQuery({ ...archivedCatalogQueryOptions(), enabled: archived })
-  const archivedAttributes = archivedCatalogQuery.data?.find((attributes) => attributes.variety_id === varietyId) ?? null
+  const archivedAttributes = archivedCatalogQuery.data?.find((attributes) => attributes.product_id === varietyId) ?? null
 
   const catalogRow = catalogQuery.data ?? null
   const ready = varietyQuery.data !== undefined && pricesQuery.data !== undefined && stockQuery.data !== undefined
