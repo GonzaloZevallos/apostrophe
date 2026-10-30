@@ -38,6 +38,7 @@ SELECTOR_INPUTS = (
     "scripts/ci_changes.py",
     "scripts/e2e_screen_specs.json",
     "scripts/affected.py",
+    "scripts/ci_vitest.py",
 )
 
 STACK_PATH: Final = ".agentic/stack.yaml"
