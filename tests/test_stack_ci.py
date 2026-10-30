@@ -225,6 +225,23 @@ def _structure_problems(workflow: Data, ci_names: list[str]) -> list[str]:
     problems.extend(_changes_problems(jobs.get("changes")))
     problems.extend(_coverage_problems(jobs))
     problems.extend(_expression_problems(workflow))
+    problems.extend(_browser_problems(workflow))
+    return problems
+
+
+CHROMIUM_RUN = "npx --prefix web playwright install --with-deps chromium"
+
+
+def _browser_problems(workflow: Data) -> list[str]:
+    """A job that runs vitest or Playwright needs Chromium first (the census test launches it)."""
+    problems: list[str] = []
+    for job_id, job in cast("Data", workflow["jobs"]).items():
+        runs = [str(step.get("run", "")) for step in _steps(job)]
+        browser = [i for i, run in enumerate(runs) if run in (VITEST_RUN, E2E_RUN)]
+        if browser and not any(run == CHROMIUM_RUN for run in runs[: browser[0]]):
+            problems.append(
+                f"job {job_id!r} runs a browser suite without installing Chromium first"
+            )
     return problems
 
 
@@ -466,6 +483,17 @@ def test_a_coverage_upload_without_include_hidden_files_is_refused() -> None:
             del step["with"]["include-hidden-files"]
     problems = _problems(workflow)
     assert any("coverage upload" in p and "include-hidden-files" in p for p in problems)
+
+
+@pytest.mark.parametrize("job", ["vitest", "e2e"])
+def test_a_browser_suite_without_the_chromium_install_is_refused(job: str) -> None:
+    workflow = _mutated()
+    workflow["jobs"][job]["steps"] = [
+        step for step in workflow["jobs"][job]["steps"] if step.get("run") != CHROMIUM_RUN
+    ]
+    assert f"job {job!r} runs a browser suite without installing Chromium first" in _problems(
+        workflow
+    )
 
 
 def test_an_expression_function_github_does_not_have_is_refused() -> None:

@@ -108,6 +108,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm --prefix web ci --no-fund --no-audit
+      - run: npx --prefix web playwright install --with-deps chromium
       - run: npx --prefix web vitest list --root web --changed=HEAD^1 --filesOnly > "$RUNNER_TEMP/vitest-listed.txt"
       - id: vitest-args
         env:
