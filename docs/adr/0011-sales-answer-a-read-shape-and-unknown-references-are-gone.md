@@ -31,7 +31,7 @@ had to be sent as `"owing"`.
   sale is sent with no payment and `sale.payment_required` is reachable. `"owing"` keeps
   its meaning. This widens nothing across businesses: a body without `payment` now reaches
   the domain, for the session's own business only.
-- **`GET /varieties` takes an optional `on` date** (today when omitted), and each
+- **`GET /api/products` takes an optional `on` date** (today when omitted), and each
   variety's current price is the one in force on that date: one request per date change in
   Nueva venta, inside the existing sweep.
 
@@ -45,10 +45,10 @@ had to be sent as `"owing"`.
 
 ## Considered and rejected
 
-- **The front joins `GET /customers` and `GET /varieties`**: every Ventas load downloads
+- **The front joins `GET /customers` and `GET /api/products`**: every Ventas load downloads
   every customer's phone to label a list, and a customer created after the cache loaded
   goes unlabelled.
 - **Keeping 422 for unknown references**: the codes would be kind `refusal`, against the
   PRD and ADR-0008's status-to-kind rule.
-- **Calling `/varieties/{id}/current-price?on=` per variety**: N requests per date change
+- **Calling `/api/products/{id}/current-price?on=` per variety**: N requests per date change
   through a route outside the refusal contract.

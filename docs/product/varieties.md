@@ -150,7 +150,7 @@ Success criteria:
   - When a rule is switched back on, the current price shows no bulk or VIP line if its entry has none; the seller records a new entry if they want one.
 - One entry per variety per effective date; a second one on the same date is refused.
 - **No edits**: a price entry is never edited, its VIP price included. A new entry replaces it from its own date (ADR-0003).
-- **Deleting a price entry** (`DELETE /varieties/{id}/prices/{entry_id}`, ADR-0003): any entry may be deleted, the one in force today included. The entry before it applies again.
+- **Deleting a price entry** (`DELETE /api/products/{id}/prices/{entry_id}`, ADR-0003): any entry may be deleted, the one in force today included. The entry before it applies again.
 - A variety's own representation carries its current price **today**, `null` when it has none. Today is the business day in Argentina time. Answers carry what is stored, together with the business's switches; screens hide what is switched off.
 - The price history lists the newest entry first.
 - **Low-stock threshold**: optional grams, above zero, up to two decimals, set or turned off per variety. Turned off means the variety has none; no former amount is kept. Its rules and the stock status are in `stock.md`.
@@ -648,7 +648,7 @@ The epic lets a business describe what it sells in its own words. Each passage n
 Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md and docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; delivered by the product word part, with the Product rename on the wire for the API path.
 
 - The seller will choose the word for what is sold, singular and plural. The default will be "Product" / "Products". It will be shown as typed and never translated, because it is the seller's own data.
-- Code, tests and docs will say Product, and the API path will become `/api/products`. Columns that reference a variety's id will stay `variety_id` until #75 (ADR-0061). The front paths under `/varieties/*` will not move.
+- Code, tests and docs will say Product, and the API path is `/api/products`. Columns that reference a variety's id will stay `variety_id` until #75 (ADR-0061). The front paths under `/varieties/*` will not move.
 - It will replace: "**Variety**: a name, trimmed, inner spaces collapsed, up to 60 characters. Renaming keeps its prices. Varieties are listed by name." and the capability's title, "The varieties a business sells and the price history of each".
 
 ### Categories, subcategories and attributes

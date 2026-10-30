@@ -383,9 +383,9 @@ classDiagram
     date : EntryDate #124; None
     note : str #124; None
     origin : Origin
+    product_id : int
     quantity
     total_cost : int #124; None
-    variety_id : int
   }
   class EntryMovementOut {
     kind : Literal~'entry'~
@@ -396,10 +396,19 @@ classDiagram
     id : int
     note : str #124; None
     origin : Origin
+    product_id : int
     quantity
     total_cost : int #124; None
-    variety_id : int
     of(entry: StockEntry) 'EntryOut'
+  }
+  class ProductStockOut {
+    days_left : int #124; None
+    product_id : int
+    quantity
+    sold_out_since : date #124; None
+    status : Literal
+    threshold : QuantityOut #124; None
+    of(view: VarietyStock) 'ProductStockOut'
   }
   class SqlDrawCosts {
     rows() list~DrawRow~
@@ -472,8 +481,8 @@ classDiagram
   }
   class StockOut {
     entries : list~EntryOut~
+    products : list~ProductStockOut~
     total
-    varieties : list~VarietyStockOut~
     of(view: StockView) 'StockOut'
   }
   class StockThresholdRow {
@@ -501,15 +510,6 @@ classDiagram
   class ThresholdIn {
     quantity : Decimal #124; None
   }
-  class VarietyStockOut {
-    days_left : int #124; None
-    quantity
-    sold_out_since : date #124; None
-    status : Literal
-    threshold : QuantityOut #124; None
-    variety_id : int
-    of(view: VarietyStock) 'VarietyStockOut'
-  }
   class WithdrawalIn {
     date : EntryDate #124; None
     lines : list~WithdrawalLineIn~
@@ -517,13 +517,13 @@ classDiagram
     reason : str #124; None
   }
   class WithdrawalLineIn {
+    product_id : int
     quantity
-    variety_id : int
   }
   class WithdrawalLineOut {
+    product_id : int
+    product_name : str
     quantity
-    variety_id : int
-    variety_name : str
   }
   class WithdrawalMovementOut {
     date : date

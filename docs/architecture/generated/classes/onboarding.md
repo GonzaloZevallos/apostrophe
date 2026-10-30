@@ -300,11 +300,11 @@ classDiagram
     over : bool
     price_target : TargetOut #124; None
     priced_target : TargetOut #124; None
+    products_count : int
     resume : StepSlug #124; Literal~'finish'~ #124; None
     steps : list~StepOut~
     stock_entries_count : int
     stock_target : TargetOut #124; None
-    varieties_count : int
     not_offered() ProgressOut
     of(progress: Progress #124; None) ProgressOut
   }
