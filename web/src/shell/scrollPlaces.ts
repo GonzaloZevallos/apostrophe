@@ -12,7 +12,7 @@
  * writer: `recordChange`, through `nextPlaces`, called by `watchScroll` on each location change.
  */
 
-import { matchRoutes, type Location, type Router as DataRouter } from 'react-router'
+import { matchRoutes, type Location, type DataRouter } from 'react-router'
 import { sheetDepth } from '../components/useSheetStack'
 import { isScreenId, SCREENS, screenOf, type ScreenId, type Viewport } from '../routes'
 import { FORM_DRAWING, scrollOnArrival, type Arrival, type NavigationType, type ScrollDecision } from './scrollOnArrival'
