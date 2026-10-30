@@ -128,7 +128,7 @@ function ExpenseBreakdownView({
       {breakdown.categories.map((category) => (
         <div key={category.category_id} className="gastos__categoria-cabecera">
           <span className="gastos__categoria-nombre">{category.name}</span>
-          <span className="gastos__categoria-subtotal">{formatMoney(category.total)}</span>
+          <span className="gastos__categoria-subtotal cifra-n">{formatMoney(category.total)}</span>
         </div>
       ))}
       <div className="gastos__categoria-cabecera">
@@ -136,7 +136,7 @@ function ExpenseBreakdownView({
           {COMMON_TEXT.flowerPurchases}
           <span className="pie"> {PURCHASES_NOTE}</span>
         </span>
-        <span className="gastos__categoria-subtotal">{formatMoney(breakdown.purchases)}</span>
+        <span className="gastos__categoria-subtotal cifra-n">{formatMoney(breakdown.purchases)}</span>
       </div>
     </div>
   )
@@ -169,16 +169,16 @@ function AnalisisContenido({
           <span className="cifra-xl analisis__monto-cifra">{formatMoney(m.sales)}</span>
         </div>
         <span className="pie">
-          <span className="analisis__monto-cifra">{formatGrams(m.quantity_sold)}</span>
+          <span className="analisis__monto-cifra cifra-n">{formatGrams(m.quantity_sold)}</span>
           {ANALYSIS_TEXT.vendidos}
-          <span className="analisis__monto-cifra">{formatGrams(m.quantity_gifted)}</span>
+          <span className="analisis__monto-cifra cifra-n">{formatGrams(m.quantity_gifted)}</span>
           {ANALYSIS_TEXT.regalados}
           {(m.average_margin.percent !== null || m.average_margin.pending_quantity > 0) &&
             ANALYSIS_TEXT.margenPromedio}
           {m.average_margin.percent !== null && (
             <>
               {' '}
-              <span className="analisis__monto-cifra">
+              <span className="analisis__monto-cifra cifra-n">
                 {ANALYSIS_TEXT.porcentaje(m.average_margin.percent)}
               </span>
             </>
@@ -237,7 +237,7 @@ function AnalisisContenido({
               <div key={day.weekday} className="analisis__dia">
                 <span>{WEEKDAY_LABEL[day.weekday]}</span>
                 <Bar value={day.sales} max={maxWeekdaySales} />
-                <span className="analisis__dia-cifra">{formatMoney(day.sales)}</span>
+                <span className="analisis__dia-cifra cifra-n">{formatMoney(day.sales)}</span>
                 <span>{day.count}{ANALYSIS_TEXT.ventas}</span>
                 {day.best && <span className="analisis__marca-mejor">{BEST_WEEKDAY_MARK}</span>}
               </div>

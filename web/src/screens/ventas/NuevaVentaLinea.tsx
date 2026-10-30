@@ -121,10 +121,10 @@ export default function NuevaVentaLinea({
           preview !== null && (
             <div className="nueva-venta__linea-detalle">
               {preview.rule !== 'gift' && (
-                <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
+                <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
               )}
               <ReglaInsignia rule={preview.rule} />
-              <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
+              <span className="nueva-venta__linea-total cifra-n">{formatMoney(preview.lineTotal)}</span>
             </div>
           )
         )}
@@ -229,10 +229,10 @@ export default function NuevaVentaLinea({
       {error === null && !figuresLoading && preview !== null && (
         <div className="nueva-venta__linea-detalle">
           {preview.rule !== 'gift' && (
-            <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
+            <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
           )}
           <ReglaInsignia rule={preview.rule} />
-          <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
+          <span className="nueva-venta__linea-total cifra-n">{formatMoney(preview.lineTotal)}</span>
         </div>
       )}
       {canRemove && (

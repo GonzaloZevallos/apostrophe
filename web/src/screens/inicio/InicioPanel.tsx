@@ -146,7 +146,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
           <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
             <span className="bloque-deben__nombre">{row.name}</span>
             <span className="pie">
-              <span className="monto-deuda">{formatMoney(row.balance)}</span>
+              <span className="monto-deuda cifra-n">{formatMoney(row.balance)}</span>
               {INICIO_TEXT.sinceDate(formatDateShort(row.owing_since))}
             </span>
           </InAppLink>

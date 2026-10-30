@@ -270,7 +270,7 @@ function VarietyPageView({
         {row !== undefined && archived && (
           <>
             <p className="variedad-resumen variedad-resumen--archivada">
-              {formatGrams(row.quantity)}
+              <span className="cifra-n">{formatGrams(row.quantity)}</span>
               {' · '}
               {variety.current_price === null ? NO_PRICE_TODAY : keepMoneyTogether(COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price)))}
             </p>
@@ -282,9 +282,9 @@ function VarietyPageView({
         )}
         {row !== undefined && !archived && (
           <p className="variedad-resumen">
-            {formatGrams(row.quantity)}{OUT_OF_DATE_JOINER}<MarcaEstado estado={row.status} />
+            <span className="cifra-n">{formatGrams(row.quantity)}</span>{OUT_OF_DATE_JOINER}<MarcaEstado estado={row.status} />
             {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_JOINER}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
-            {row.days_left !== null && <>{OUT_OF_DATE_JOINER}{row.days_left}{VARIETIES_TEXT.dias}</>}
+            {row.days_left !== null && <>{OUT_OF_DATE_JOINER}<span className="cifra-n">{row.days_left}{VARIETIES_TEXT.dias}</span></>}
             {' · '}
             {variety.current_price === null ? NO_PRICE_TODAY : keepMoneyTogether(COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price)))}
           </p>

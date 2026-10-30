@@ -185,8 +185,8 @@ describe('the summary line', () => {
   test('tells grams, status by shape and word, days left and today\'s price', async () => {
     renderPage(VARIETY_ONE)
 
-    const line = await screen.findByText(/24 days/)
-    expect(line).toHaveTextContent('18 g · low · 24 days · $ 11.000 x g')
+    const days = await screen.findByText(/24 days/)
+    expect(days.closest('p')).toHaveTextContent('18 g · low · 24 days · $ 11.000 x g')
     expect(screen.getByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
   })
 

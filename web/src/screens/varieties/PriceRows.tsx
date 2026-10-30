@@ -96,7 +96,7 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
               {currentPriceId === entry.id && <span className="historial-fila__vigente">{VARIETIES_TEXT.vigenteHoy}</span>}
             </span>
             <span>
-              <span className="historial-fila__precio">{keepMoneyTogether(formatMoney(entry.list_price))}</span>
+              <span className="historial-fila__precio cifra-n">{keepMoneyTogether(formatMoney(entry.list_price))}</span>
               {showBulk && entry.bulk_price !== null && entry.bulk_minimum !== null && (
                 <span className="historial-fila__detalle">
                   {VARIETIES_TEXT.desde}{formatGrams(entry.bulk_minimum)}{OUT_OF_DATE_JOINER}{keepMoneyTogether(formatMoney(entry.bulk_price))}

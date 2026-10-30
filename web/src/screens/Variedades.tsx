@@ -207,7 +207,7 @@ export function VarietyRows({
             {hidden.has(variety.id) && <span className="variedad-fila__oculta">{VARIETIES_TEXT.oculta}</span>}
           </span>
           <span className="variedad-fila__pie">
-            <span className="variedad-fila__detalle">{figuresOf(row, today)}</span>
+            <span className="variedad-fila__detalle cifra-n">{figuresOf(row, today)}</span>
             <span className="variedad-fila__precio">
               {variety.current_price === null
                 ? NO_PRICE_TODAY

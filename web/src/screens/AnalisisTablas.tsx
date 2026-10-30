@@ -57,25 +57,25 @@ export function TablaVariedades({ varieties }: { varieties: Analysis['month']['v
           {varieties.map((variety) => (
             <tr key={variety.variety_id}>
               <td>{variety.name}</td>
-              <td className="analisis__num">
+              <td className="analisis__num cifra-n">
                 {formatMoney(variety.sales_without_shipping)}
               </td>
-              <td className="analisis__num">
+              <td className="analisis__num cifra-n">
                 {variety.share_percent !== null ? `${variety.share_percent}%` : ''}
               </td>
-              <td className="analisis__num">{formatGrams(variety.quantity_sold)}</td>
-              <td className="analisis__num">{formatGrams(variety.quantity_gifted)}</td>
-              <td className="analisis__num">
+              <td className="analisis__num cifra-n">{formatGrams(variety.quantity_sold)}</td>
+              <td className="analisis__num cifra-n">{formatGrams(variety.quantity_gifted)}</td>
+              <td className="analisis__num cifra-n">
                 {formatMoney(variety.cost.costed)}
                 {pendingSuffix(variety.cost.pending_quantity)}
               </td>
-              <td className="analisis__num analisis__celda-margen">
-                <span>
+              <td className="analisis__num analisis__celda-margen cifra-n">
+                <span className="cifra-n">
                   {formatMoney(variety.margin.amount)}
                   {pendingSuffix(variety.margin.pending_quantity)}
                 </span>
                 {variety.margin.percent !== null && (
-                  <span>{variety.margin.percent}%</span>
+                  <span className="cifra-n">{variety.margin.percent}%</span>
                 )}
               </td>
             </tr>
@@ -109,17 +109,17 @@ export function TablaSemanas({ weeks, ids }: { weeks: Analysis['weeks']; ids: st
               }
             >
               <td id={`${ids}-wt-${week.first_day}`}>{formatDateShort(week.first_day)}</td>
-              <td className="analisis__num">{formatMoney(week.sales)}</td>
-              <td className="analisis__num">{formatGrams(week.quantity)}</td>
-              <td className="analisis__num">{formatMoney(week.expenses)}</td>
-              <td className="analisis__num">
+              <td className="analisis__num cifra-n">{formatMoney(week.sales)}</td>
+              <td className="analisis__num cifra-n">{formatGrams(week.quantity)}</td>
+              <td className="analisis__num cifra-n">{formatMoney(week.expenses)}</td>
+              <td className="analisis__num cifra-n">
                 {formatMoney(week.profit.amount)}
                 {pendingSuffix(week.profit.pending_quantity)}
                 {week.best && (
                   <span className="analisis__etiqueta-mejor">{BEST_WEEK_TABLE_MARK}</span>
                 )}
               </td>
-              <td className="analisis__num">{formatMoney(week.cash)}</td>
+              <td className="analisis__num cifra-n">{formatMoney(week.cash)}</td>
             </tr>
             <CostSubRow
               period={week}
@@ -154,14 +154,14 @@ export function TablaMeses({ months, ids }: { months: Analysis['months']; ids: s
             <Fragment key={row.month}>
             <tr>
               <td id={`${ids}-mt-${row.month}`}>{formatMonthLong(row.month)}</td>
-              <td className="analisis__num">{formatMoney(row.sales)}</td>
-              <td className="analisis__num">{formatGrams(row.quantity)}</td>
-              <td className="analisis__num">{formatMoney(row.expenses)}</td>
-              <td className="analisis__num">
+              <td className="analisis__num cifra-n">{formatMoney(row.sales)}</td>
+              <td className="analisis__num cifra-n">{formatGrams(row.quantity)}</td>
+              <td className="analisis__num cifra-n">{formatMoney(row.expenses)}</td>
+              <td className="analisis__num cifra-n">
                 {formatMoney(row.profit.amount)}
                 {pendingSuffix(row.profit.pending_quantity)}
               </td>
-              <td className="analisis__num">{formatMoney(row.cash)}</td>
+              <td className="analisis__num cifra-n">{formatMoney(row.cash)}</td>
             </tr>
             <CostSubRow period={row} current={false} labelId={`${ids}-mt-${row.month}`} />
             </Fragment>

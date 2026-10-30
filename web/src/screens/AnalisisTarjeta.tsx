@@ -29,14 +29,14 @@ export default function AnalisisTarjeta({
         <span id={titleId} className="analisis__tarjeta-titulo">
           {card.title}
         </span>
-        <span className="analisis__tarjeta-cifra analisis__tarjeta-titular">{card.headline}</span>
+        <span className="analisis__tarjeta-cifra analisis__tarjeta-titular cifra-n">{card.headline}</span>
       </div>
       {bar}
       {card.mark !== undefined && <span className="analisis__marca-mejor">{card.mark}</span>}
       {card.rows.map((row, index) => (
         <div key={index} className="analisis__tarjeta-fila">
           {row.before}
-          {row.figure !== null && <span className="analisis__tarjeta-cifra">{row.figure}</span>}
+          {row.figure !== null && <span className="analisis__tarjeta-cifra cifra-n">{row.figure}</span>}
           {row.after}
           {row.pending !== null && (
             <div className="analisis__tarjeta-pendiente">{row.pending}</div>

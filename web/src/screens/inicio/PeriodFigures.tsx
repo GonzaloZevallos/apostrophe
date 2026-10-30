@@ -146,7 +146,7 @@ function ListItem({ label, value, pending }: { label: string; value: string; pen
     <div className="panel-lista__item" role="group" aria-labelledby={labelId}>
       <div className="panel-lista__fila">
         <span id={labelId}>{label}</span>
-        <span className="panel-lista__valor" data-largo={largoOf(value)}>
+        <span className="panel-lista__valor cifra-n" data-largo={largoOf(value)}>
           {value}
         </span>
       </div>
@@ -173,7 +173,7 @@ function ResultCell({
         {label}
       </span>
       <span
-        className={accent ? 'panel-resultados__valor panel-resultados__valor--acento' : 'panel-resultados__valor'}
+        className={accent ? 'panel-resultados__valor panel-resultados__valor--acento cifra-n' : 'panel-resultados__valor cifra-n'}
         data-largo={largoOf(value)}
       >
         {value}
