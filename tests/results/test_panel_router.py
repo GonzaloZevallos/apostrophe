@@ -349,17 +349,16 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
 
     stock = client.get("/stock").json()
     stock_by_id = {row["product_id"]: row for row in stock["products"]}
-    panel_ids = {row["variety_id"] for row in panel["stock"]}
+    panel_ids = {row["product_id"] for row in panel["stock"]}
     assert panel_ids == {no_entries_id, ok_id, sold_out_id, low_id, boundary_id}
-    statuses = {row["variety_id"]: row["status"] for row in panel["stock"]}
+    statuses = {row["product_id"]: row["status"] for row in panel["stock"]}
     assert statuses[no_entries_id] == "no_entries"
     assert statuses[ok_id] == "ok"
     assert statuses[sold_out_id] == "sold_out"
     assert statuses[low_id] == "low"
     for row in panel["stock"]:
-        reference = dict(stock_by_id[row["variety_id"]])
-        # The panel row still says variety_id (its own slice renames it); stock's says product_id.
-        own = {("product_id" if key == "variety_id" else key): value for key, value in row.items()}
+        reference = dict(stock_by_id[row["product_id"]])
+        own = dict(row)
         del own["name"]
         assert own == reference
 
@@ -568,7 +567,7 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
     assert month_row["sales"] == 3_000
     assert month_row["profit"]["amount"] == 3_000 - 300
     assert month_row["profit"]["pending_quantity"] == 0
-    header_varieties = analysis["month"]["varieties"]
+    header_varieties = analysis["month"]["products"]
     assert sum(v["cost"]["costed"] for v in header_varieties) == month["cost_of_goods"] == 300
     assert not any(v["cost"]["pending_quantity"] > 0 for v in header_varieties)
 
@@ -907,8 +906,8 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
 
     after = client.get("/panel").json()
 
-    assert {row["variety_id"] for row in before["stock"]} == {kept, gone}
-    assert [row["variety_id"] for row in after["stock"]] == [kept]
+    assert {row["product_id"] for row in before["stock"]} == {kept, gone}
+    assert [row["product_id"] for row in after["stock"]] == [kept]
     assert {key: value for key, value in after.items() if key != "stock"} == {
         key: value for key, value in before.items() if key != "stock"
     }

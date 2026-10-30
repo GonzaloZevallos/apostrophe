@@ -114,7 +114,7 @@ test('reads the best and worst variety by margin, the best week, the best weekda
     return jsonResponse(200, analysisFixture)
   })
 
-  // The fixture sorts `varieties` by margin descending (plan, invariants: the front
+  // The fixture sorts `products` by margin descending (plan, invariants: the front
   // never sorts) — "Flor A" (margin $ 40.000) is the best, "Flor Gift" (margin
   // -$ 5.000) is the worst. Reading them in that order needs no arithmetic.
   // Both the phone's cards and the computer's table carry the same names (CSS
@@ -579,7 +579,7 @@ describe('one layout in the DOM, chosen by the viewport', () => {
 
     expect(screen.queryByRole('table')).toBeNull()
     expect(document.querySelectorAll('.analisis__variedades > .analisis__tarjeta')).toHaveLength(
-      analysisFixture.month.varieties.length,
+      analysisFixture.month.products.length,
     )
   })
 
@@ -645,7 +645,7 @@ describe('one layout in the DOM, chosen by the viewport', () => {
   test('the empty-month line shows once at both widths', async () => {
     const emptyMonth = {
       ...analysisFixture,
-      month: { ...analysisFixture.month, varieties: [] },
+      month: { ...analysisFixture.month, products: [] },
     }
     for (const viewport of ['phone', 'computer'] as const) {
       renderAnalisis(async () => jsonResponse(200, emptyMonth), viewport)
@@ -670,8 +670,8 @@ describe('the phone renders cards, one per row, month selector first', () => {
     await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
     const cards = cardsIn('.analisis__variedades')
-    expect(cards).toHaveLength(analysisFixture.month.varieties.length)
-    analysisFixture.month.varieties.forEach((variety, index) => {
+    expect(cards).toHaveLength(analysisFixture.month.products.length)
+    analysisFixture.month.products.forEach((variety, index) => {
       const card = cards[index]!
       expect(card).toHaveAccessibleName(variety.name)
       const share = variety.share_percent === null ? [] : [String(variety.share_percent)]
@@ -783,12 +783,12 @@ describe('the phone renders cards, one per row, month selector first', () => {
   })
 
   test('a pending variety cost and margin show their text apart from the figure', async () => {
-    const [first, ...rest] = analysisFixture.month.varieties
+    const [first, ...rest] = analysisFixture.month.products
     const body = {
       ...analysisFixture,
       month: {
         ...analysisFixture.month,
-        varieties: [
+        products: [
           {
             ...first!,
             cost: { costed: 5000, pending_quantity: 2.5 },

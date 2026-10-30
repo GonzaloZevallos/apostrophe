@@ -180,6 +180,13 @@
             ],
             "title": "Previous"
           },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductRowOut"
+            },
+            "title": "Products",
+            "type": "array"
+          },
           "promotion": {
             "anyOf": [
               {
@@ -215,13 +222,6 @@
                 "type": "null"
               }
             ]
-          },
-          "varieties": {
-            "items": {
-              "$ref": "#/components/schemas/VarietyRowOut"
-            },
-            "title": "Varieties",
-            "type": "array"
           }
         },
         "required": [
@@ -236,7 +236,7 @@
           "shortfall",
           "promotion",
           "own_use",
-          "varieties"
+          "products"
         ],
         "title": "AnalysisMonthOut",
         "type": "object"
@@ -1634,7 +1634,7 @@
         "type": "object"
       },
       "MarginOut": {
-        "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a variety's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are\nnot costed yet.",
+        "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a product's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are\nnot costed yet.",
         "properties": {
           "amount": {
             "title": "Amount",
@@ -1858,7 +1858,7 @@
           },
           "stock": {
             "items": {
-              "$ref": "#/components/schemas/PanelVarietyOut"
+              "$ref": "#/components/schemas/PanelProductOut"
             },
             "title": "Stock",
             "type": "array"
@@ -1872,8 +1872,8 @@
         "title": "PanelOut",
         "type": "object"
       },
-      "PanelVarietyOut": {
-        "description": "The keys of stock's `ProductStockOut` with the panel's own `variety_id` (the panel's\nwire is renamed in its own slice, so it no longer subclasses stock's row) plus `name`.",
+      "PanelProductOut": {
+        "description": "The keys of stock's `ProductStockOut` plus `name`; the row's internal id is mapped to\n`product_id` here, in the adapter.",
         "properties": {
           "days_left": {
             "anyOf": [
@@ -1889,6 +1889,10 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
           },
           "quantity": {
             "title": "Quantity",
@@ -1926,14 +1930,10 @@
               }
             ],
             "title": "Threshold"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "quantity",
           "status",
           "sold_out_since",
@@ -1941,7 +1941,7 @@
           "days_left",
           "name"
         ],
-        "title": "PanelVarietyOut",
+        "title": "PanelProductOut",
         "type": "object"
       },
       "PassIn": {
@@ -2756,6 +2756,59 @@
           "archived"
         ],
         "title": "ProductOut",
+        "type": "object"
+      },
+      "ProductRowOut": {
+        "properties": {
+          "cost": {
+            "$ref": "#/components/schemas/CostOut"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/MarginOut"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "quantity_gifted": {
+            "title": "Quantity Gifted",
+            "type": "number"
+          },
+          "quantity_sold": {
+            "title": "Quantity Sold",
+            "type": "number"
+          },
+          "sales_without_shipping": {
+            "title": "Sales Without Shipping",
+            "type": "integer"
+          },
+          "share_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Percent"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "sales_without_shipping",
+          "share_percent",
+          "quantity_sold",
+          "quantity_gifted",
+          "cost",
+          "margin"
+        ],
+        "title": "ProductRowOut",
         "type": "object"
       },
       "ProductStockOut": {
@@ -3774,59 +3827,6 @@
           "type"
         ],
         "title": "ValidationError",
-        "type": "object"
-      },
-      "VarietyRowOut": {
-        "properties": {
-          "cost": {
-            "$ref": "#/components/schemas/CostOut"
-          },
-          "margin": {
-            "$ref": "#/components/schemas/MarginOut"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "quantity_gifted": {
-            "title": "Quantity Gifted",
-            "type": "number"
-          },
-          "quantity_sold": {
-            "title": "Quantity Sold",
-            "type": "number"
-          },
-          "sales_without_shipping": {
-            "title": "Sales Without Shipping",
-            "type": "integer"
-          },
-          "share_percent": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Share Percent"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "variety_id",
-          "name",
-          "sales_without_shipping",
-          "share_percent",
-          "quantity_sold",
-          "quantity_gifted",
-          "cost",
-          "margin"
-        ],
-        "title": "VarietyRowOut",
         "type": "object"
       },
       "WeekOut": {

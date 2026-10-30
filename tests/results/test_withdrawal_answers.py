@@ -167,16 +167,16 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     assert header["promotion"] == month_row["promotion"]
     assert header["own_use"] == month_row["own_use"]
     assert header["shortfall"] == {"amount": 0, "pending_quantity": 1.0, "all_pending": True}
-    assert sum(v["cost"]["costed"] for v in header["varieties"]) == month["cost_of_goods"] == 500
+    assert sum(v["cost"]["costed"] for v in header["products"]) == month["cost_of_goods"] == 500
     # The panel's month shortfall is the header's, amount and pending flag.
     assert _same_line(month["shortfall"], header["shortfall"])
     assert month["pending_cost"] is True
     assert month["pending_cost"] == any(
-        v["cost"]["pending_quantity"] > 0 for v in header["varieties"]
+        v["cost"]["pending_quantity"] > 0 for v in header["products"]
     )
     # B's row holds the sale's 1 g only: its 2 g promotion is not a sale (ADR-0031), so
     # it must not add to the variety's pending cost (that would read 3.0).
-    b_row = next(v for v in header["varieties"] if v["name"] == "B")
+    b_row = next(v for v in header["products"] if v["name"] == "B")
     assert b_row["cost"] == {"costed": 0, "pending_quantity": 1.0}
 
     # Since the first record: every promotion ($100 + $400, B's 2 g pending) and own use.
@@ -301,7 +301,7 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
         "quantity_gifted",
         "average_margin",
         "shortfall",
-        "varieties",
+        "products",
     ):
         assert after_analysis["month"][key] == before_analysis["month"][key], key
     assert after_analysis["weekdays"] == before_analysis["weekdays"]

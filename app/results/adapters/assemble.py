@@ -15,9 +15,9 @@ from app.results.adapters.schemas import (
     ExpenseCategoryTotalOut,
     MarginOut,
     MonthRowOut,
+    ProductRowOut,
     RowCostOut,
     SinceFirstRecordOut,
-    VarietyRowOut,
     WeekdayOut,
     WeekOut,
 )
@@ -91,9 +91,9 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
             shortfall=_optional(month.shortfall),
             promotion=_optional(month.promotion),
             own_use=_optional(month.own_use),
-            varieties=[
-                VarietyRowOut(
-                    variety_id=v.variety_id,
+            products=[
+                ProductRowOut(
+                    product_id=v.variety_id,
                     name=v.name,
                     sales_without_shipping=v.sales_without_shipping,
                     share_percent=v.share_percent,

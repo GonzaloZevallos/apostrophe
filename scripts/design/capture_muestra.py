@@ -443,7 +443,7 @@ def _analysis(api: _ClientApi) -> list[str]:
             pending_grams(v["margin"]["pending_quantity"]),
             f"{v['share_percent']}%",
         ]
-        for v in month["varieties"]
+        for v in month["products"]
     ]
     out += table(
         [

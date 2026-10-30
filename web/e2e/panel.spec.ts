@@ -63,7 +63,7 @@ interface PanelAnswer {
     teaser: { customer_id: number; name: string; balance: number; owing_since: string }[]
   }
   stock: {
-    variety_id: number
+    product_id: number
     name: string
     quantity: number
     status: Status

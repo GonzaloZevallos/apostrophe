@@ -79,7 +79,7 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
     ).json()
 
     detail = client.get(f"/sales/{sale['id']}").json()
-    line_by_variety = {line["variety_id"]: line for line in detail["lines"]}
+    line_by_variety = {line["product_id"]: line for line in detail["lines"]}
 
     business_id = _business_id_of_variety(engine, split_variety)
     with Session(engine) as session:

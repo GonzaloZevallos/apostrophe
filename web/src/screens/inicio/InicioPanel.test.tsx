@@ -295,9 +295,9 @@ test('a low variety links to its page; every other row is plain text, and order 
   panelNow = {
     ...PANEL,
     stock: [
-      { ...PANEL.stock[0]!, variety_id: 1, name: 'Criolla', status: 'low' },
-      { ...PANEL.stock[0]!, variety_id: 2, name: 'Mora', status: 'ok', days_left: 40 },
-      { ...PANEL.stock[0]!, variety_id: 3, name: 'Zinnia', status: 'sold_out', days_left: null },
+      { ...PANEL.stock[0]!, product_id: 1, name: 'Criolla', status: 'low' },
+      { ...PANEL.stock[0]!, product_id: 2, name: 'Mora', status: 'ok', days_left: 40 },
+      { ...PANEL.stock[0]!, product_id: 3, name: 'Zinnia', status: 'sold_out', days_left: null },
     ],
   }
   const { container } = renderInicio()
@@ -321,10 +321,10 @@ test('every stock row says its state in a word as well as its mark, in both them
   panelNow = {
     ...PANEL,
     stock: [
-      { ...PANEL.stock[0]!, variety_id: 1, name: 'Criolla', status: 'low' },
-      { ...PANEL.stock[0]!, variety_id: 2, name: 'Mora', status: 'ok' },
-      { ...PANEL.stock[0]!, variety_id: 3, name: 'Zinnia', status: 'sold_out' },
-      { ...PANEL.stock[0]!, variety_id: 4, name: 'Nueva', status: 'no_entries' },
+      { ...PANEL.stock[0]!, product_id: 1, name: 'Criolla', status: 'low' },
+      { ...PANEL.stock[0]!, product_id: 2, name: 'Mora', status: 'ok' },
+      { ...PANEL.stock[0]!, product_id: 3, name: 'Zinnia', status: 'sold_out' },
+      { ...PANEL.stock[0]!, product_id: 4, name: 'Nueva', status: 'no_entries' },
     ],
   }
   for (const theme of ['claro', 'oscuro'] as const) {
@@ -504,10 +504,10 @@ test('What you have left: every status has its word once and days only as the si
   panelNow = {
     ...PANEL,
     stock: [
-      { ...PANEL.stock[0]!, variety_id: 1, name: 'Criolla', status: 'low', days_left: 5 },
-      { ...PANEL.stock[0]!, variety_id: 2, name: 'Mora', status: 'ok', days_left: 40 },
-      { ...PANEL.stock[0]!, variety_id: 3, name: 'Zinnia', status: 'sold_out', days_left: null },
-      { ...PANEL.stock[0]!, variety_id: 4, name: 'Nueva', status: 'no_entries', days_left: null },
+      { ...PANEL.stock[0]!, product_id: 1, name: 'Criolla', status: 'low', days_left: 5 },
+      { ...PANEL.stock[0]!, product_id: 2, name: 'Mora', status: 'ok', days_left: 40 },
+      { ...PANEL.stock[0]!, product_id: 3, name: 'Zinnia', status: 'sold_out', days_left: null },
+      { ...PANEL.stock[0]!, product_id: 4, name: 'Nueva', status: 'no_entries', days_left: null },
     ],
   }
   const { container } = renderInicio()

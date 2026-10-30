@@ -974,7 +974,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
 
     assert a_analysis["first_record"] is not None
     assert a_analysis["month"]["sales"] > 0
-    assert any(MARKER in variety["name"] for variety in a_analysis["month"]["varieties"])
+    assert any(MARKER in variety["name"] for variety in a_analysis["month"]["products"])
 
     current_month = str(Month.containing(TODAY))
     assert b_analysis == {
@@ -992,7 +992,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
             "shortfall": None,
             "promotion": None,
             "own_use": None,
-            "varieties": [],
+            "products": [],
         },
         "weeks": [],
         "months": [],

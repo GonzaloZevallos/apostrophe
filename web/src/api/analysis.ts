@@ -33,7 +33,7 @@ export interface RowCost {
 }
 
 export interface VarietyRow {
-  variety_id: number
+  product_id: number
   name: string
   sales_without_shipping: number
   share_percent: number | null
@@ -55,7 +55,7 @@ export interface AnalysisMonth {
   shortfall: RowCost | null
   promotion: RowCost | null
   own_use: RowCost | null
-  varieties: VarietyRow[]
+  products: VarietyRow[]
 }
 
 export interface AnalysisWeek {

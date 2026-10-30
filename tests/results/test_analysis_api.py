@@ -29,7 +29,7 @@ def test_the_empty_business_answers_the_empty_shape(client: TestClient) -> None:
     assert body["weeks"] == []
     assert body["months"] == []
     assert body["since_first_record"] is None
-    assert body["month"]["varieties"] == []
+    assert body["month"]["products"] == []
     assert body["month"]["month"] == "2026-10"
 
 
@@ -158,7 +158,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
 
     before_october = client.get("/analysis", params={"month": "2026-10"}).json()
     before_august = client.get("/analysis", params={"month": "2026-08"}).json()
-    [variety_before] = before_october["month"]["varieties"]
+    [variety_before] = before_october["month"]["products"]
     assert variety_before["cost"]["costed"] == 1_000
 
     # A cheaper lot, backdated before the sale: the sale's cost changes on the next
@@ -177,7 +177,7 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
 
     after_october = client.get("/analysis", params={"month": "2026-10"}).json()
     after_august = client.get("/analysis", params={"month": "2026-08"}).json()
-    [variety_after] = after_october["month"]["varieties"]
+    [variety_after] = after_october["month"]["products"]
 
     # Affected: the Flor variety's own cost and margin, and October's month row.
     assert variety_after["cost"]["costed"] < variety_before["cost"]["costed"]
@@ -229,7 +229,7 @@ def test_a_negative_adjustment_lowers_profit_on_its_date_and_moves_no_variety_ma
     ).json()
 
     before = client.get("/analysis").json()
-    variety_before = before["month"]["varieties"][0]
+    variety_before = before["month"]["products"][0]
 
     adjustment = client.post(
         "/stock/entries",
@@ -238,7 +238,7 @@ def test_a_negative_adjustment_lowers_profit_on_its_date_and_moves_no_variety_ma
     assert adjustment.status_code == 201, adjustment.text
 
     after = client.get("/analysis").json()
-    variety_after = after["month"]["varieties"][0]
+    variety_after = after["month"]["products"][0]
 
     assert variety_after["margin"] == variety_before["margin"]
     assert variety_after["quantity_sold"] == variety_before["quantity_sold"]
