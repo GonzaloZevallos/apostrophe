@@ -234,8 +234,8 @@ describe("the page's product id against the catalog's product_id", () => {
     const catalog = {
       ...CATALOG,
       products: [
-        { ...CATALOG.products[0], shown: true, state: 'in' },
-        { ...CATALOG.products[1], shown: false, state: 'hidden' },
+        { product_id: 1, name: '24K Gold', emoji: null, indica_share: null, aroma: null, shown: true, state: 'in' },
+        { product_id: 2, name: 'Otra', emoji: null, indica_share: null, aroma: null, shown: false, state: 'hidden' },
       ],
     } satisfies Catalog
     renderPage(TWO, answersFor({ 'GET /catalog': () => json(200, catalog) }))
