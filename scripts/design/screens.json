@@ -252,6 +252,9 @@
     { "path": "/onboarding/bot", "kind": "form", "parent": "/" },
     { "path": "/onboarding/partner", "kind": "form", "parent": "/" },
     { "path": "/onboarding/categories", "kind": "form", "parent": "/" },
-    { "path": "/onboarding/done", "kind": "form", "parent": "/" }
+    { "path": "/onboarding/done", "kind": "form", "parent": "/" },
+    { "path": "/login", "kind": "root" },
+    { "path": "/invitation/{token}", "kind": "root" },
+    { "path": "/reset/{token}", "kind": "root" }
   ]
 }
