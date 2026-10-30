@@ -38,6 +38,7 @@ src_App_tsx-->src_queryClient_ts
 src_App_tsx-->src_router_tsx
 src_Root_tsx-->src_components
 src_Root_tsx-->src_queryClient_ts
+src_Root_tsx-->src_shell
 src_Root_tsx-->src_useOnline_ts
 src_api-->src_copy
 src_api-->src_i18n
@@ -97,6 +98,7 @@ src_shell-->src_copy
 src_shell-->src_flash
 src_shell-->src_format
 src_shell-->src_i18n
+src_shell-->src_paymentReturn_ts
 src_shell-->src_routes_ts
 src_stock-->src_api
 src_stock-->src_copy
