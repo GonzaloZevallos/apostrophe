@@ -16,7 +16,6 @@ import {
   ONBOARDING_DONE,
   ONBOARDING_STOCK,
   SETTINGS,
-  paymentLink,
 } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
@@ -30,7 +29,7 @@ import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
 import { LIMITS } from '../copy/limits'
 import { chooseTheme } from '../theme'
-import { consumePaymentReturn } from '../paymentReturn'
+import { consumePaymentReturn, setPaymentReturn } from '../paymentReturn'
 import { invalidateResource } from '../api/keys'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import type { OnboardingProgress } from '../api/onboarding'
@@ -877,13 +876,12 @@ test('a stock write elsewhere makes the next read of /first-run, and the checkli
   await waitFor(() => expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument())
 })
 
-// Back from Record payment, Home takes focus back (PM option a): the hand-off the link left is
+// Back from Record payment, Home takes focus back (PM option a): the hand-off a save left is
 // applied once the panel has rendered, then taken. The page's scroll is ScrollSync's (ADR-0068).
-const PLAIN_CLICK = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false }
 
-test('after Close Home focuses that customer\'s "Collect" and leaves the scroll to ScrollSync', async () => {
+test('after a save Home focuses that customer\'s "Collect" and leaves the scroll to ScrollSync', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   stubFetch(PANEL)
   renderInicio()
 
@@ -894,7 +892,7 @@ test('after Close Home focuses that customer\'s "Collect" and leaves the scroll 
 })
 
 test('when that customer\'s row is gone Home focuses the "Owed to you" heading', async () => {
-  paymentLink(99, 'home').onClick(PLAIN_CLICK)
+  setPaymentReturn(99)
   stubFetch(PANEL)
   renderInicio()
 
@@ -904,7 +902,7 @@ test('when that customer\'s row is gone Home focuses the "Owed to you" heading',
 })
 
 test('when nobody owes any more Home focuses the "Nobody owes you" line', async () => {
-  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   stubFetch({ ...PANEL, debts: { total_owed: 0, sales_owing_count: 0, oldest: null, teaser: [] } })
   renderInicio()
 
@@ -927,7 +925,7 @@ test('with no hand-off Home moves nothing and focuses nothing', async () => {
 
 test('Home takes focus back only after the notice above the panel has answered', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   let answerFirstRun: (response: Response) => void = () => undefined
   vi.stubGlobal(
     'fetch',

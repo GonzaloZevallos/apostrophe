@@ -27,6 +27,7 @@ import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { setPaymentReturn } from '../../paymentReturn'
 import { CUSTOMERS } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Cobro from './Cobro'
@@ -67,8 +68,10 @@ export default function CobroRoute() {
     back()
   }, [sending, blocked, back])
 
+  // A save is the only exit that leaves the hand-off: the origin focuses this customer's control.
   function onDone(): void {
     disarm()
+    setPaymentReturn(Number(customerId))
     back()
   }
 

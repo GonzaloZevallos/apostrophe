@@ -1,19 +1,20 @@
 /**
- * `useReturnToPlace`: brings the seller back to where they were when they opened Record
- * payment (PM option a, this flow only). The hand-off (`paymentReturn.ts`) holds a customer id
- * and a scroll offset, set by the payment link. The page's scroll is not this hook's: it
- * belongs to `shell/ScrollSync.tsx` alone (ADR-0068), which restores the screen's place on the
- * way back; this hook only brings focus back.
+ * `useReturnToPlace`: brings focus back to the customer's control when Record payment was
+ * saved. The hand-off (`paymentReturn.ts`) holds a customer id, written by a save alone
+ * (`CobroRoute`): Close and Back leave none. The page's scroll is not this hook's: it belongs
+ * to `shell/ScrollSync.tsx` alone (ADR-0068), which restores the screen's place on the way
+ * back; this hook never scrolls.
  *   - Under the sheet (the location is Record payment's), the mount takes nothing.
  *   - The origin's live mount, once its data has rendered and stopped refetching, focuses the
- *     customer's control (or `fallback` when the row is gone) and takes the hand-off, so a
- *     later visit applies nothing. A mount that does not `own` the place (the list beside a
- *     card) leaves it to the one that does.
+ *     customer's control nearest the part of the page in view (or `fallback` when the row is
+ *     gone) and takes the hand-off, so a later visit applies nothing. A mount that does not
+ *     `own` the place (the list beside a card) leaves it to the one that does.
+ *   - It acts once per history entry (its location key), so a later entry starts clean.
  * With no hand-off focus is untouched.
  */
 
 import { type RefObject, useEffect, useRef } from 'react'
-import { useMatch } from 'react-router'
+import { useLocation, useMatch } from 'react-router'
 import { consumePaymentReturn, peekPaymentReturn } from '../paymentReturn'
 import { CUSTOMER_PAYMENT, pathTo } from '../routes'
 
@@ -55,25 +56,21 @@ export function nearestTo(candidates: readonly HTMLElement[], scrollY: number): 
 
 export function useReturnToPlace({ root, ready, owns = true, customerId, fallback }: Place): void {
   const underSheet = useMatch(CUSTOMER_PAYMENT) !== null
-  const done = useRef(false)
+  const { key: entry } = useLocation()
+  const handled = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!ready || done.current) return
+    if (!ready || underSheet || handled.current === entry) return
     const handOff = peekPaymentReturn()
-    if (handOff === null) return
-    if (underSheet) {
-      done.current = true
-      return
-    }
-    if (!owns) return
+    if (handOff === null || !owns) return
     if (customerId !== undefined && Number(customerId) !== handOff.customerId) return
     const element = root.current
     if (element === null) return
-    done.current = true
+    handled.current = entry
     consumePaymentReturn()
     const href = pathTo(CUSTOMER_PAYMENT, { id: handOff.customerId })
     const controls = Array.from(element.querySelectorAll<HTMLElement>('a')).filter((link) => link.getAttribute('href') === href)
-    const target = nearestTo(controls, handOff.scrollY) ?? fallback(element)
+    const target = nearestTo(controls, window.scrollY) ?? fallback(element)
     target?.focus({ preventScroll: true })
-  }, [ready, underSheet, owns, customerId, root, fallback])
+  }, [ready, underSheet, owns, customerId, root, fallback, entry])
 }

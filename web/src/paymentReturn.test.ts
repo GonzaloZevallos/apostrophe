@@ -5,31 +5,31 @@ afterEach(() => {
   consumePaymentReturn()
 })
 
-test('nothing is held until a payment link is followed', () => {
+test('nothing is held until a payment is saved', () => {
   expect(peekPaymentReturn()).toBeNull()
   expect(consumePaymentReturn()).toBeNull()
 })
 
-test('it holds a customer id and a scroll offset, and consuming gives them once', () => {
-  setPaymentReturn(7, 412)
+test('it holds a customer id only, and consuming gives them once', () => {
+  setPaymentReturn(7)
 
-  expect(peekPaymentReturn()).toEqual({ customerId: 7, scrollY: 412 })
-  expect(peekPaymentReturn()).toEqual({ customerId: 7, scrollY: 412 })
-  expect(consumePaymentReturn()).toEqual({ customerId: 7, scrollY: 412 })
+  expect(peekPaymentReturn()).toEqual({ customerId: 7 })
+  expect(peekPaymentReturn()).toEqual({ customerId: 7 })
+  expect(consumePaymentReturn()).toEqual({ customerId: 7 })
   expect(peekPaymentReturn()).toBeNull()
   expect(consumePaymentReturn()).toBeNull()
 })
 
 test('a later link replaces the one before it', () => {
-  setPaymentReturn(7, 412)
-  setPaymentReturn(9, 0)
+  setPaymentReturn(7)
+  setPaymentReturn(9)
 
-  expect(consumePaymentReturn()).toEqual({ customerId: 9, scrollY: 0 })
+  expect(consumePaymentReturn()).toEqual({ customerId: 9 })
 })
 
 test('it writes nothing to browser storage or the address', () => {
   const before = window.location.href
-  setPaymentReturn(7, 412)
+  setPaymentReturn(7)
 
   expect(window.localStorage.length).toBe(0)
   expect(window.sessionStorage.length).toBe(0)

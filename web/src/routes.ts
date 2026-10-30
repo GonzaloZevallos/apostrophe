@@ -1,5 +1,4 @@
 import type { CopyKey } from './i18n/resources.generated.ts'
-import { pageScrollY, setPaymentReturn } from './paymentReturn.ts'
 /**
  * The route registry: the one place the front writes a path, and the one place that says
  * what kind of screen each path is. No other file in `web/src` or `web/e2e` carries a route
@@ -193,34 +192,16 @@ export function hasPaymentUnderneath(state: unknown): boolean {
   return typeof state === 'object' && state !== null && 'underneath' in state && isPaymentUnderneath(state.underneath)
 }
 
-/** The part of a click the helper looks at: a plain click follows the link, a modified one
- * opens it elsewhere and leaves this page where it is. */
-interface LinkClick {
-  button: number
-  metaKey: boolean
-  ctrlKey: boolean
-  shiftKey: boolean
-  altKey: boolean
-}
-
 /**
  * The link to Record payment for a customer, from the screen it is opened from: the only
- * writer of `underneath`, and the only setter of the return-of-place hand-off (the customer
- * and the scroll offset the seller is at, in memory, `paymentReturn.ts`). The state is a
- * closed screen name, never a record (§9).
+ * writer of `underneath`, a closed screen name, never a record (§9). It leaves nothing in
+ * memory: the return-of-place hand-off is written by a save alone (`CobroRoute`).
  */
 export function paymentLink(
   customerId: number | string,
   underneath: PaymentUnderneath,
-): { to: string; state: { underneath: PaymentUnderneath }; onClick: (event: LinkClick) => void } {
-  return {
-    to: pathTo(CUSTOMER_PAYMENT, { id: customerId }),
-    state: { underneath },
-    onClick: (event) => {
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-      setPaymentReturn(Number(customerId), pageScrollY())
-    },
-  }
+): { to: string; state: { underneath: PaymentUnderneath } } {
+  return { to: pathTo(CUSTOMER_PAYMENT, { id: customerId }), state: { underneath } }
 }
 
 /** The path as a route-table segment (`'/more'` → `'more'`). */
