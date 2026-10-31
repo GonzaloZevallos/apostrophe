@@ -25,9 +25,10 @@ import { decideScroll, type PlaceInHistory } from './scrollPlan'
 import { CEILING_MS, MAX_REMEMBERED, SETTLE_FRAMES, type Scroller } from './scroller'
 import { useViewport } from './useViewport'
 
-/** The window as a scroller: the only place the page is actually scrolled. */
+/** The seller's own inputs: any of them ends a pending restore. */
 const INPUT_EVENTS = ['touchstart', 'wheel', 'keydown'] as const
 
+/** The window as a scroller: the only place the page is actually scrolled. */
 const windowScroller: Scroller = {
   y: () => window.scrollY,
   maxY: () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight),
