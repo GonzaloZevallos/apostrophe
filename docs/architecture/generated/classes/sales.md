@@ -318,6 +318,9 @@ classDiagram
     get(sale_id: int) Sale #124; None
     list(date_from: date #124; None, date_to: date #124; None) list~Sale~
   }
+  class UnitsReader {
+    units_of(product_ids: Collection~int~) dict~int, Unit~
+  }
   SaleDetail --> SaleView : view
 ```
 
