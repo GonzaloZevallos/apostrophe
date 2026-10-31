@@ -43,12 +43,3 @@ class ProductUnitRequired(ValueError):
 
     def __init__(self) -> None:
         super().__init__("the business has several units, so the product needs one")
-
-
-class UnitNotFound(LookupError):
-    """The unit is not one of this business's. Fixed text: the id is never repeated."""
-
-    code: ClassVar[str] = "unit.not_found"
-
-    def __init__(self) -> None:
-        super().__init__("no such unit")

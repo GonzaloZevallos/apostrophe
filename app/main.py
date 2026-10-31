@@ -61,6 +61,7 @@ from app.pricing_settings.adapters.router import router as pricing_settings_rout
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.products.adapters.onboarding_facts import SqlProductFacts
 from app.products.adapters.router import router as products_router
+from app.products.adapters.unit_use import SqlUnitUse
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -78,6 +79,7 @@ from app.stock.adapters.stock_figures import SqlStockFigures
 from app.units.adapters.import_port import UnitsImport
 from app.units.adapters.opening import UnitsOpening
 from app.units.adapters.products_reader import SqlUnitsReader
+from app.units.adapters.router import router as units_router
 
 
 class _Opening(Protocol):
@@ -230,6 +232,8 @@ def create_app(
     )
     # Products reads a product's unit only through its own `UnitsReader` port (docs/adr/0055).
     app.state.products_units = SqlUnitsReader
+    # Units counts a unit's products only through its own `UnitUse` port (docs/adr/0055).
+    app.state.units_use = SqlUnitUse
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
     # directly (CODING_STANDARDS section 1). A dependency under `app/sales/adapters/`
@@ -315,6 +319,7 @@ def create_app(
     # the router schedules upkeep itself when it did (ADR-0014, as pricing settings does).
     app.include_router(language_router, dependencies=gated)
     app.include_router(products_router, dependencies=upkeep_gated)
+    app.include_router(units_router, dependencies=gated)
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=upkeep_gated)
