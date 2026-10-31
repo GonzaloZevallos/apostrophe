@@ -193,6 +193,8 @@ sequenceDiagram
 
 En el paso 3, y en el 10 para el retiro, se revisa primero la Variety (404) y recién después las reglas del dominio (422). El paso 18 arma, por Variety, los lotes y los retiros del Stock: fecha primero y después orden de registro, con `rank` para desempatar entre una entrada, una línea de venta y una línea de retiro ([app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) `LotOrder`). Los routers de stock también llevan el upkeep de la venta de arriba.
 
+Entre el paso 3 y la escritura (y entre el 10 y la suya), el caso de uso pregunta la Unit de cada producto por el puerto `UnitsReader` de stock ([app/stock/application/unit_check.py](../../app/stock/application/unit_check.py) `require_admitted`): si una cantidad tiene más decimales de los que la Unit admite, rechaza antes de escribir nada, con el código de rechazo de decimales de cantidad. Antes de confirmar repite la lectura (`confirm_admitted`); si la Unit perdió decimales entretanto, deshace la transacción y rechaza con el mismo código. Lo mismo vale para editar una entrada o un retiro, donde solo se revisa una cantidad que cambió, y para fijar el umbral. Esas ramas no están dibujadas.
+
 ## Abrir un Business nuevo
 
 El Operator imprime una Invitation, el User la acepta y, en la misma transacción que crea el Business, cada capacidad que siembra algo al abrir lo hace por el puerto `BusinessOpening`; el Onboarding es una de ellas. Después el User avanza con el Onboarding.
