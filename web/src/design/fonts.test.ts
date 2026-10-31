@@ -70,6 +70,22 @@ describe('fontRoute', () => {
     expect(fontRoute(two)).toEqual({ kind: 'unserved' })
   })
 
+  it('merges a family asked twice into one stylesheet request, weights sorted and unique', () => {
+    const twice =
+      'https://fonts.googleapis.com/css2?family=Geist:wght@500;600;700&family=Geist:wght@400;500;600&display=swap'
+    expect(fontRoute(twice)).toEqual({
+      kind: 'stylesheet',
+      family: 'Geist',
+      weights: [400, 500, 600, 700],
+    })
+  })
+
+  it('still serves nothing when a repeated family is joined by an unknown one', () => {
+    const mixed =
+      'https://fonts.googleapis.com/css2?family=Geist:wght@400&family=Roboto:wght@400&display=swap'
+    expect(fontRoute(mixed)).toEqual({ kind: 'unserved' })
+  })
+
   it('leaves Roboto unserved as a stylesheet and as a file', () => {
     expect(fontRoute('https://fonts.googleapis.com/css2?family=Roboto:wght@400')).toEqual({
       kind: 'unserved',

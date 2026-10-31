@@ -2,62 +2,39 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Cargar un gasto</title>
+<title>Nuevo gasto</title>
 </head>
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-body { margin: 0 }
-a { color: #1B4FA8 } a:hover { color: #231E18 }
+body{margin:0}
+a{color:#1E6B47}a:hover{color:#14532F}
 </style>
 </helmet>
-
-<div style="width: 390px; min-height: 820px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column">
-  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 12px"><span style="flex: 1; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Cargar gasto</span><span style="font-size: 15px; font-weight: 600; color: #706659">Cerrar</span></div>
-  <div style="padding: 20px 24px 0; display: flex; flex-direction: column; gap: 14px">
-    <label style="display: flex; flex-direction: column; gap: 6px">
-      <span style="font-size: 14px; color: #706659">Fecha</span>
-      <span style="display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; border-radius: 16px; background: #F2EEE6; font-size: 17px; font-weight: 500">Hoy 05/10<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9.5 6 6 6-6"/></svg></span>
-    </label>
-    <label style="display: flex; flex-direction: column; gap: 6px">
-      <span style="font-size: 14px; color: #706659">Categoría <span style="color: #706659; font-weight: 400">Obligatorio</span></span>
-      <span style="display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 56px; padding: 0 16px; border-radius: 16px; background: #F2EEE6; font-size: 17px; font-weight: 500">Packaging<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9.5 6 6 6-6"/></svg></span>
-      <span style="font-size: 15px; color: #1B4FA8; box-shadow: 0 1px 0 #1B4FA8; width: fit-content">Crear categoría nueva</span>
-    </label>
-    <label style="display: flex; flex-direction: column; gap: 6px">
-      <span style="font-size: 14px; color: #706659">Monto <span style="color: #706659; font-weight: 400">Obligatorio</span></span>
-      <input type="text" value="$ 8.000" style="height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; border: 0; background: #F2EEE6; color: #231E18; font: inherit; font-size: 22px; font-weight: 600; letter-spacing: -0.03em">
-    </label>
-    <label style="display: flex; flex-direction: column; gap: 6px">
-      <span style="font-size: 14px; color: #706659">Detalle <span style="color: #706659; font-weight: 400">Obligatorio</span></span>
-      <input type="text" value="Bolsitas zip" style="height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; border: 0; background: #F2EEE6; color: #231E18; font: inherit; font-size: 17px">
-    </label>
-  </div>
-  <div style="padding: 24px 24px 24px"><span style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 56px; border-radius: 999px; background: #231E18; color: #FCFBF8; font-size: 17px; font-weight: 600">Guardá el gasto</span></div>
-  <div style="margin: 0 24px; border-top: 1px solid #EBE5DA"></div>
-  <div style="padding: 20px 24px 8px; display: flex; flex-direction: column; gap: 8px">
-    <span style="font-size: 13px; color: #706659">Si un socio borró la categoría mientras cargabas el gasto</span>
-    <label style="display: flex; flex-direction: column; gap: 6px">
-      <span style="font-size: 14px; color: #7A4A00">Esa categoría ya no está. Elegí otra.</span>
-      <span style="display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 56px; padding: 0 16px; border-radius: 16px; background: #F2EEE6; box-shadow: inset 0 0 0 2px #7A4A00; font-size: 17px; color: #706659">Elegí una categoría<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9.5 6 6 6-6"/></svg></span>
-    </label>
-  </div>
-  <div style="margin: 8px 24px 0; border-top: 1px solid #EBE5DA"></div>
-  <div style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 8px">
-    <span style="font-size: 13px; color: #706659">Cambios sin guardar, al cerrar</span>
-    <div style="background: #F2EEE6; border-radius: 24px; padding: 20px">
-      <span style="display: block; font-size: 18px; font-weight: 600">¿Descartás el gasto?</span>
-      <span style="display: block; font-size: 15px; color: #706659; line-height: 1.5; margin-top: 6px">Se pierde lo que cargaste: todavía no se guardó nada.</span>
-      <div style="display: flex; gap: 10px; margin-top: 16px">
-        <span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #FCFBF8; font-size: 15px; font-weight: 600">No, seguí cargando</span>
-        <span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #33281A; color: #F7EFE0; font-size: 15px; font-weight: 600">Sí, descartalo</span>
-      </div>
-    </div>
-  </div>
-
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F7F5; font-family: 'Geist', system-ui, sans-serif; color: #15201A; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div aria-hidden="true" style="padding: 16px; opacity: .45"><span style="font-size: 22px; font-weight: 600">·</span></div>
+<div style="position: absolute; inset: 0; background: rgba(21,32,26,.4)"></div>
+<section aria-label="Nuevo gasto" style="position: absolute; left: 0; right: 0; bottom: 0; top: 120px; background: #FFFFFF; border-radius: 22px 22px 0 0; display: flex; flex-direction: column">
+<span aria-hidden="true" style="align-self: center; margin-top: 8px; width: 40px; height: 5px; border-radius: 3px; background: #D2DAD5"></span>
+<div style="padding: 10px 16px 0; display: flex; justify-content: space-between; align-items: center"><h1 style="margin: 0; font-size: 20px; font-weight: 600">Nuevo gasto</h1><button aria-label="Cerrar" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #E6ECE8; color: #15201A; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div style="padding: 14px 16px 0; display: flex; flex-direction: column; gap: 14px"><label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #56645C">Cuánto
+<span style="display: flex; align-items: baseline; gap: 4px; border-bottom: 2px solid #1E6B47; padding-bottom: 6px"><span style="font-size: 28px; color: #56645C">$</span><input value="18.000" style="background: transparent; border: none; outline: none; font: 600 44px 'Geist', sans-serif; color: #15201A; width: 240px"></span></label>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; color: #56645C; font-weight: 500">En qué</span><div style="display: flex; gap: 8px; flex-wrap: wrap"><button aria-pressed="true" style="height: 38px; padding: 0 14px; border-radius: 19px; border: 2px solid #1E6B47; background: #E2F1E8; color: #15201A; font: 600 13px 'Geist', sans-serif">Envíos</button><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Servicios</button><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Alquiler</button><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Otros</button></div></div>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #56645C">Nota (opcional)<input value="Envío a clientes de la zona sur" style="height: 48px; border-radius: 12px; border: 1px solid #DCE3DE; padding: 0 12px; font: 15px 'Geist', sans-serif; color: #15201A; background: #FFFFFF"></label>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; color: #56645C; font-weight: 500">Cómo pagaste</span><div style="display: flex; gap: 8px"><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Efectivo</button><button aria-pressed="true" style="height: 38px; padding: 0 14px; border-radius: 19px; border: 2px solid #1E6B47; background: #E2F1E8; color: #15201A; font: 600 13px 'Geist', sans-serif">Transferencia</button></div></div></div>
+<div style="margin-top: auto; padding: 12px 16px 24px; border-top: 1px solid #DCE3DE; display: flex; flex-direction: column; gap: 8px"><button style="height: 54px; border-radius: 16px; border: none; background: #1E6B47; color: #FFFFFF; font: 600 16px 'Geist', sans-serif; ">Guardar gasto · $18.000</button></div>
+</section>
 </div>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
 </body>
 </html>

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ficha de producto</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E6B47}a:hover{color:#14532F}
+</style>
+</helmet>
+<div style="width: 390px; height: 1240px; box-sizing: border-box; background: #F6F7F5; font-family: 'Geist', system-ui, sans-serif; color: #15201A; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="padding: 14px 16px 6px; display: flex; align-items: center; gap: 12px"><button aria-label="Volver" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #E6ECE8; color: #15201A; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h1 style="margin: 0; flex-grow: 1; font-size: 22px; font-weight: 600; letter-spacing: -0.02em">Café en grano</h1><button style="height: 36px; padding: 0 14px; border-radius: 18px; border: none; background: #1E6B47; color: #FFFFFF; font: 600 13px 'Geist', sans-serif">Guardar</button></header>
+<div style="padding: 4px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 8px"><div style="width: 132px; height: 132px; border-radius: 16px; background: #EFE6D8; color: #6E5536; display: flex; align-items: center; justify-content: center; font-size: 12px">[foto]</div>
+<button style="width: 132px; height: 132px; border-radius: 16px; border: 2px dashed #DCE3DE; background: #FFFFFF; color: #1E6B47; font: 600 13px 'Geist', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Agregar foto</button></div>
+<section style="background: #FFFFFF; border-radius: 16px; padding: 14px; box-shadow: 0 1px 2px rgba(21,32,26,.06); display: flex; flex-direction: column; gap: 10px; "><label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #56645C">Nombre<input value="Café en grano" style="height: 48px; border-radius: 12px; border: 1px solid #DCE3DE; padding: 0 12px; font: 15px 'Geist', sans-serif; color: #15201A; background: #FFFFFF"></label><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px"><label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #56645C">Categoría<input value="Almacén" style="height: 48px; border-radius: 12px; border: 1px solid #DCE3DE; padding: 0 12px; font: 15px 'Geist', sans-serif; color: #15201A; background: #FFFFFF"></label><label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #56645C">Se vende por<input value="unidad" style="height: 48px; border-radius: 12px; border: 1px solid #DCE3DE; padding: 0 12px; font: 15px 'Geist', sans-serif; color: #15201A; background: #FFFFFF"></label></div></section>
+<section style="background: #FFFFFF; border-radius: 16px; padding: 14px; box-shadow: 0 1px 2px rgba(21,32,26,.06); display: flex; flex-direction: column; gap: 10px; "><h2 style="margin: 0; font-size: 14px; font-weight: 600">Precios de hoy</h2>
+<div style="display: flex; flex-direction: column"><div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #E9EEEA; font-size: 14px"><span>Minorista</span><span style="font-weight: 600; font-variant-numeric: tabular-nums">$6.500</span></div><div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #E9EEEA; font-size: 14px"><span>Mayorista</span><span style="font-weight: 600; font-variant-numeric: tabular-nums">$5.900</span></div><div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #E9EEEA; font-size: 14px"><span>Costo</span><span style="font-weight: 600; font-variant-numeric: tabular-nums">$3.900</span></div></div>
+<span style="font-size: 12px; color: #1E7A45">Margen minorista 40 % · mayorista 34 %</span></section>
+<section style="background: #FFFFFF; border-radius: 16px; padding: 14px; box-shadow: 0 1px 2px rgba(21,32,26,.06); display: flex; flex-direction: column; gap: 10px; "><h2 style="margin: 0; font-size: 14px; font-weight: 600">Atributos</h2><div style="display: flex; gap: 8px; flex-wrap: wrap"><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Origen: Colombia</button><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Tostado: medio</button><button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">+ Atributo</button></div></section>
+<section style="background: #FFFFFF; border-radius: 16px; padding: 14px; box-shadow: 0 1px 2px rgba(21,32,26,.06); display: flex; flex-direction: column; gap: 10px; "><div style="display: flex; justify-content: space-between; align-items: center"><h2 style="margin: 0; font-size: 14px; font-weight: 600">Stock</h2><span style="font-size: 12px; font-weight: 600; color: #FFFFFF; background: #C0352B; border-radius: 6px; padding: 2px 7px">Quedan 3</span></div>
+<span style="font-size: 13px; color: #56645C">Avisame cuando queden menos de 5</span></section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1240}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

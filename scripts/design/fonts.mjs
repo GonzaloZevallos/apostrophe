@@ -36,9 +36,13 @@ export function fontRoute(url) {
   if (parsed.protocol !== 'https:') return { kind: 'unserved' }
   if (parsed.hostname === 'fonts.googleapis.com' && parsed.pathname === '/css2') {
     const families = parsed.searchParams.getAll('family')
-    const match = families.length === 1 ? FAMILY.exec(families[0]) : null
-    if (match && isFamily(match[1])) {
-      return { kind: 'stylesheet', family: match[1], weights: match[2].split(';').map(Number) }
+    // One family, asked once or repeated (Marca.dc.html asks Geist twice, for two weight sets): the
+    // weights are merged. Two different families stay unserved.
+    const matches = families.map((family) => FAMILY.exec(family))
+    const [first] = matches
+    if (first && isFamily(first[1]) && matches.every((match) => match && match[1] === first[1])) {
+      const weights = [...new Set(matches.flatMap((match) => (match ? match[2] : '').split(';').map(Number)))]
+      return { kind: 'stylesheet', family: first[1], weights: weights.sort((a, b) => a - b) }
     }
     return { kind: 'unserved' }
   }
