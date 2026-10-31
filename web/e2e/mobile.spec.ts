@@ -74,6 +74,9 @@ for (const size of SIZES) {
       await inPage.goto(HOME)
       await settle(inPage)
       expect(new URL(inPage.url()).pathname).toBe(HOME)
+      // Home on the phone shows at most one visible brand element: the mark in its header,
+      // never the rail's lockup (display: none on a phone), which the accessibility tree skips.
+      expect(await inPage.getByRole('img', { name: 'apostrophe' }).count()).toBeLessThanOrEqual(1)
 
       const own = OFFENDERS.filter((o) => o.size === size && o.theme === theme)
       expect(diffOffenders(own, actual)).toEqual({ unlisted: [], fixedButListed: [] })
