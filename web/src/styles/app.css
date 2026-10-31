@@ -3736,45 +3736,45 @@ body {
    * so `cqi` is 1% of the card's content width.
    *
    * k_n = 2500 / W_n, W_n being the width in px at 25 px of the widest formatted figure of
-   * n characters (the built app, Plus Jakarta Sans 600, letter-spacing -0.035em,
+   * n characters (the built app, Geist 600, letter-spacing -0.035em,
    * tabular figures), taken over dot-grouped strings with and without "−" and over grams
    * ("$ 150.000", "−$ 150.000", "$ 1.500.000" ... "−$ 999.999.999", "1.234,55 g"), floored
    * to two decimals: the figure then fills at most the card's content width.
    *
    *   n   8      9       10      11      12      13      14
-   *   W   98     112.125 126.25  133.375 148.5   162.625 176.75
-   *   k   25.51  22.29   19.80   18.74   16.83   15.37   14.14
+   *   W   101    116.125 128.25  136.375 151.5   166.625 178.75
+   *   k   24.75  21.52   19.49   18.33   16.50   15.00   13.98
    *
    * Bound: "−$ 999.999.999", 14 characters (ADR-0048's fixture); a longer one reads 14 and
    * is held by the 17 px floor. The arbiter is `InicioCompu`'s comparison: if "$ 150.000"
    * or any other sample figure leaves 25 px, this rule is wrong. Re-measure when the
    * font or the tracking changes. */
   .panel-periodo--con-cifras [data-largo='8'] {
-    font-size: max(17px, min(25px, 25.51cqi));
+    font-size: max(17px, min(25px, 24.75cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='9'] {
-    font-size: max(17px, min(25px, 22.29cqi));
+    font-size: max(17px, min(25px, 21.52cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='10'] {
-    font-size: max(17px, min(25px, 19.80cqi));
+    font-size: max(17px, min(25px, 19.49cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='11'] {
-    font-size: max(17px, min(25px, 18.74cqi));
+    font-size: max(17px, min(25px, 18.33cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='12'] {
-    font-size: max(17px, min(25px, 16.83cqi));
+    font-size: max(17px, min(25px, 16.50cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='13'] {
-    font-size: max(17px, min(25px, 15.37cqi));
+    font-size: max(17px, min(25px, 15.00cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='14'] {
-    font-size: max(17px, min(25px, 14.14cqi));
+    font-size: max(17px, min(25px, 13.98cqi));
   }
 
   /* `VentasCompu`: title, range and total sit together on one row, the tabs

@@ -956,15 +956,30 @@ test('Home applies the offset only after the notice above the panel has answered
 })
 
 /** The header's mark with the clipping box as the observer's root, and what that observer is told. */
-class VisibleObserver {
+class VisibleObserver implements IntersectionObserver {
   static roots: (Element | Document | null)[] = []
+  readonly root: Element | Document | null
+  readonly rootMargin = '0px'
+  readonly scrollMargin = '0px'
+  readonly thresholds: readonly number[] = [0]
   private readonly callback: IntersectionObserverCallback
   constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
     this.callback = callback
-    VisibleObserver.roots.push(options?.root ?? null)
+    this.root = options?.root ?? null
+    VisibleObserver.roots.push(this.root)
   }
   observe(target: Element): void {
-    this.callback([{ isIntersecting: true, target } as IntersectionObserverEntry], this as unknown as IntersectionObserver)
+    const box = target.getBoundingClientRect()
+    const seen: IntersectionObserverEntry = {
+      boundingClientRect: box,
+      intersectionRatio: 1,
+      intersectionRect: box,
+      isIntersecting: true,
+      rootBounds: null,
+      target,
+      time: 0,
+    }
+    this.callback([seen], this)
   }
   unobserve(): void {}
   disconnect(): void {}
