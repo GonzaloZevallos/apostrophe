@@ -528,10 +528,10 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(row('InicioHoyCompu').section).toBeUndefined()
   })
 
-  it('captures the dark computer Hoy against the light computer drawing, as the other CompuOscuro twins do', () => {
+  it('captures the dark computer Hoy against its own dark drawing, InicioCompuOscuro', () => {
     expect(clicks(row('InicioHoyCompuOscuro'))).toEqual([])
     expect(row('InicioHoyCompuOscuro')).toMatchObject({
-      design: 'InicioCompu',
+      design: 'InicioCompuOscuro',
       tema: 'oscuro',
       viewport: [1280, 920],
     })
@@ -1137,20 +1137,32 @@ describe('assertAccountKinds', () => {
 
 describe('the customer dark twins of the real screens.json', () => {
   const pantallas = resolve(process.cwd(), '..', 'docs/product/design-system/pantallas')
-  const pairs = [
+  // GH-526: twins whose dark drawing exists compare it; the others keep the light file until one is drawn.
+  const ownDark = [
     ['Clientes', 'ClientesOscuro'],
     ['ClientesCompu', 'ClientesCompuOscuro'],
     ['ClienteFicha', 'ClienteFichaOscuro'],
     ['Cobro', 'CobroOscuro'],
-    ['CobroCompu', 'CobroCompuOscuro'],
   ] as const
+  const lightKept = [['CobroCompu', 'CobroCompuOscuro']] as const
+  const pairs = [...ownDark, ...lightKept]
   const entry = (key: string) => screens.screens.find((s) => s.screen === key)
 
-  it('has each twin exactly once, compared against the light design file, which exists', () => {
-    for (const [light, dark] of pairs) {
+  it('has each twin exactly once, compared against its own dark drawing, which exists', () => {
+    for (const [light, dark] of ownDark) {
+      expect(screens.screens.filter((s) => s.screen === dark).length, dark).toBe(1)
+      expect(entry(dark)?.design, dark).toBe(dark)
+      expect(readdirSync(pantallas), dark).toContain(`${dark}.dc.html`)
+      expect(readdirSync(pantallas), light).toContain(`${light}.dc.html`)
+    }
+  })
+
+  it('keeps the light file for a twin with no dark drawing, and that drawing is absent', () => {
+    for (const [light, dark] of lightKept) {
       expect(screens.screens.filter((s) => s.screen === dark).length, dark).toBe(1)
       expect(entry(dark)?.design, dark).toBe(light)
-      expect(readdirSync(pantallas), dark).toContain(`${light}.dc.html`)
+      expect(readdirSync(pantallas), light).toContain(`${light}.dc.html`)
+      expect(readdirSync(pantallas), dark).not.toContain(`${dark}.dc.html`)
     }
   })
 
