@@ -74,6 +74,19 @@ body {
 
 .brand-mark__word {
   min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* At 130 % zoom on the smallest phone (246 CSS px) the full lockup is wider than the column. */
+@media (max-width: 300px) {
+  .brand-mark--lockup {
+    font-size: var(--marca-palabra-tamano-angosto);
+  }
+
+  .brand-mark--lockup > img {
+    width: var(--marca-lockup-tamano-angosto);
+    height: var(--marca-lockup-tamano-angosto);
+  }
 }
 
 .brand-mark__apostrophe {

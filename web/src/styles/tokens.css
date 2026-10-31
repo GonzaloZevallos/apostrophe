@@ -57,6 +57,9 @@
   --marca-tamano: 24px;
   --marca-lockup-tamano: 40px;
   --marca-palabra-tamano: 34px;
+  /* En 246 px (130 % de zoom) el lockup entero tiene que entrar en el ancho útil: 198 px */
+  --marca-lockup-tamano-angosto: 32px;
+  --marca-palabra-tamano-angosto: 26px;
 
   /* Espacio y radios */
   --espacio-xs: 4px;
