@@ -303,6 +303,16 @@ class BusinessDirectory(Protocol):
         ...
 
 
+class TargetZone(Protocol):
+    """The stored time zone name of the target business: the one way the command learns
+    its day, since no day is ever worked out without its business's own zone
+    (docs/adr/0057)."""
+
+    def zone_name_of(self, business_id: int) -> str | None:
+        """`None` when there is no such business."""
+        ...
+
+
 class OnboardingEnding(Protocol):
     """The Onboarding's end (docs/adr/0036) and the business's first-run fact that it was
     imported (docs/adr/0046). Eligibility never looks at the state of either."""

@@ -9,30 +9,33 @@ cancels it on shutdown (plan's "Process model": correct only because
 from __future__ import annotations
 
 import asyncio
-from datetime import date
+from datetime import datetime
 from typing import cast
 
 from sqlalchemy.engine import Engine
 from starlette.datastructures import State
 
-from app.clock import Clock, business_day
+from app.clock import Clock
 from app.pinned_catalog.adapters.safe_upkeep import run_upkeep_safely
 from app.pinned_catalog.adapters.sql_due import SqlDueBusinesses
+from app.pinned_catalog.application.ports import BusinessZones
 from app.pinned_catalog.application.sync_all import sync_all_published
 
 INTERVAL_SECONDS = 300.0
 
 
-def _tick(state: State, today: date) -> None:
-    due = SqlDueBusinesses(cast(Engine, state.engine))
-    sync_all_published(today, due, lambda business_id: run_upkeep_safely(state, business_id, today))
+def _tick(state: State, instant: datetime) -> None:
+    due = SqlDueBusinesses(cast(Engine, state.engine), cast(BusinessZones, state.business_zones))
+    sync_all_published(
+        instant, due, lambda business_id: run_upkeep_safely(state, business_id, instant)
+    )
 
 
 async def run_ticker(state: State) -> None:
     clock = cast(Clock, state.clock)
     while True:
         try:
-            await asyncio.to_thread(_tick, state, business_day(clock()))
+            await asyncio.to_thread(_tick, state, clock())
         except Exception:
             # `run_upkeep_safely` already contains every per-business failure; this is
             # only a backstop against the due-businesses query itself failing, so one

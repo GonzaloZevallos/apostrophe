@@ -127,7 +127,22 @@ class SettingsWriter(Protocol):
 
 
 class DueBusinesses(Protocol):
-    def due(self, today: date) -> list[int]:
-        """Every business with a pin published and not yet checked today — the
-        day-change ticker's own query (`upkeep` subtask)."""
+    def due(self, instant: datetime) -> list[int]:
+        """Every business with a pin published whose last check was not on its own
+        today at `instant` (`last_checked_on` empty or different: ADR-0057's "differs"),
+        the day-change ticker's own query."""
         ...
+
+
+class BusinessZones(Protocol):
+    """Every business's stored zone name, read in one batch by the day-change query.
+    Wired in `app/main.py` to an accounts SQL adapter (ADR-0055)."""
+
+    def zones(self) -> dict[int, str]: ...
+
+
+class BusinessZone(Protocol):
+    """One business's stored zone name, read by a single primary-key lookup; `None`
+    when there is no such business."""
+
+    def zone_of(self, business_id: int) -> str | None: ...

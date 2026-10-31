@@ -10,11 +10,12 @@ import sys
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app.clock import business_day
+from app.shared.calendar import business_day
 from tests import e2e_app
 from tests.conftest import PASSWORD, MovableClock
 from tests.e2e_app import (
@@ -26,6 +27,7 @@ from tests.e2e_app import (
     offset_seconds,
 )
 
+BUENOS_AIRES = ZoneInfo("America/Argentina/Buenos_Aires")
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REAL_DAY = datetime(2027, 11, 20, 1, 30, tzinfo=UTC)
 
@@ -36,10 +38,10 @@ def test_anchored_clock_starts_at_the_anchor_and_advances_across_argentina_midni
 
     assert clock() == ANCHOR
     real.set(REAL_DAY + timedelta(hours=11))  # 12:00 -> 23:00 in Argentina
-    assert business_day(clock()).isoformat() == "2026-10-07"
+    assert business_day(clock(), BUENOS_AIRES).isoformat() == "2026-10-07"
     real.set(REAL_DAY + timedelta(hours=13))
     assert clock() == ANCHOR + timedelta(hours=13)
-    assert business_day(clock()).isoformat() == "2026-10-08"
+    assert business_day(clock(), BUENOS_AIRES).isoformat() == "2026-10-08"
 
 
 def test_offset_seconds_is_the_whole_seconds_from_the_source_to_the_anchor() -> None:

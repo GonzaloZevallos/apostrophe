@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.deps import CurrentBusinessId, get_today
+from app.accounts.adapters.deps import BusinessZoneDep, CurrentBusinessId, get_today
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
@@ -171,19 +171,19 @@ as_http = TranslateErrors(
 
 @router.get("")
 def get_pinned_catalog(
-    business_id: CurrentBusinessId, snapshots: SnapshotsDep, today: TodayDep
+    business_id: CurrentBusinessId, snapshots: SnapshotsDep, today: TodayDep, zone: BusinessZoneDep
 ) -> PinnedCatalogOut:
     snap = snapshots.snapshot(business_id, today)
-    status = status_of(snap.settings, snap.pin)
+    status = status_of(snap.settings, snap.pin, zone)
     return PinnedCatalogOut.of(snap.settings, status)
 
 
 @router.get("/status")
 def get_pinned_catalog_status(
-    business_id: CurrentBusinessId, snapshots: SnapshotsDep, today: TodayDep
+    business_id: CurrentBusinessId, snapshots: SnapshotsDep, today: TodayDep, zone: BusinessZoneDep
 ) -> PinnedCatalogStatusOut:
     snap = snapshots.snapshot(business_id, today)
-    status = status_of(snap.settings, snap.pin)
+    status = status_of(snap.settings, snap.pin, zone)
     return PinnedCatalogStatusOut(status=None if status is None else PinStatusOut.of(status))
 
 
@@ -196,6 +196,7 @@ def post_pinned_catalog_test(
     settings_writer: SettingsWriterDep,
     locks: LocksDep,
     today: TodayDep,
+    zone: BusinessZoneDep,
 ) -> PinnedCatalogTestOut:
     with as_http:
         result = test_send(
@@ -210,7 +211,7 @@ def post_pinned_catalog_test(
             today,
         )
         snap_after = snapshots.snapshot(business_id, today)
-        status = status_of(result.settings, snap_after.pin)
+        status = status_of(result.settings, snap_after.pin, zone)
         return PinnedCatalogTestOut.of_result(result, status)
 
 
@@ -223,11 +224,12 @@ def post_pinned_catalog_publish(
     locks: LocksDep,
     today: TodayDep,
     clock: ClockDep,
+    zone: BusinessZoneDep,
 ) -> PinnedCatalogOut:
     with as_http:
-        push(telegram, snapshots, recorder, locks, business_id, "publish", today, clock())
+        push(telegram, snapshots, recorder, locks, business_id, "publish", today, clock(), zone)
         snap = snapshots.snapshot(business_id, today)
-        status = status_of(snap.settings, snap.pin)
+        status = status_of(snap.settings, snap.pin, zone)
         return PinnedCatalogOut.of(snap.settings, status)
 
 

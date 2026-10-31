@@ -8,20 +8,22 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.clock import business_day
 from app.pinned_catalog.adapters.safe_upkeep import run_upkeep_safely
 from app.pinned_catalog.adapters.sql_due import SqlDueBusinesses
 from app.pinned_catalog.application.sync_all import sync_all_published
+from app.shared.calendar import business_day
 from tests.conftest import MovableClock
 from tests.fakes.telegram import FakeTelegram
 
 TOKEN = "123456789:top-secret-bot-token"
 CHAT = "@canal"
+BUENOS_AIRES = ZoneInfo("America/Argentina/Buenos_Aires")
 
 
 def _publish(client: TestClient) -> None:
@@ -38,7 +40,7 @@ def _publish_then_change_the_text(client: TestClient, clock: MovableClock) -> No
     send without any background trigger consuming the fake's `fail_next` first."""
     _publish(client)
     variety = client.post("/api/products", json={"name": "V1"}).json()
-    tomorrow = business_day(clock()) + timedelta(days=1)
+    tomorrow = business_day(clock(), BUENOS_AIRES) + timedelta(days=1)
     client.post(
         f"/api/products/{variety['id']}/prices",
         json={"effective_from": tomorrow.isoformat(), "list_price": 9000},
@@ -62,7 +64,7 @@ def test_a_non_telegram_failure_logs_exactly_one_fixed_warning_line(
 
     telegram.fail_next(ValueError("a bug, not a Telegram answer"))
     with caplog.at_level(logging.WARNING, logger="apostrophe.pinned_catalog"):
-        run_upkeep_safely(app.state, 1, business_day(clock()))
+        run_upkeep_safely(app.state, 1, clock())
 
     messages = [record.message for record in caplog.records]
     assert messages == ["pinned catalog sync failed: ValueError"]
@@ -79,7 +81,7 @@ def test_a_non_telegram_failure_is_recorded_as_telegram_unreachable(
     telegram.calls.clear()
 
     telegram.fail_next(ValueError("boom"))
-    run_upkeep_safely(app.state, 1, business_day(clock()))
+    run_upkeep_safely(app.state, 1, clock())
 
     status = client.get("/pinned-catalog/status").json()["status"]
     assert status is not None
@@ -102,7 +104,7 @@ def test_one_businesss_non_telegram_failure_never_stops_the_others_syncing(
     day-change trigger nobody saves (plan, "Day change") — so only the manual
     `sync_all_published` call below ever touches the fake, never a background trigger
     from the setup writes themselves."""
-    tomorrow = business_day(clock()) + timedelta(days=1)
+    tomorrow = business_day(clock(), BUENOS_AIRES) + timedelta(days=1)
 
     a_variety = client.post("/api/products", json={"name": "A1"}).json()
     client.post(
@@ -129,12 +131,12 @@ def test_one_businesss_non_telegram_failure_never_stops_the_others_syncing(
     telegram.calls.clear()
     clock.set(clock() + timedelta(days=1))
     telegram.fail_next(ValueError("business A's bot misbehaves"))
-    due = SqlDueBusinesses(app.state.engine)
+    due = SqlDueBusinesses(app.state.engine, app.state.business_zones)
 
     def run(business_id: int) -> None:
-        run_upkeep_safely(app.state, business_id, tomorrow)
+        run_upkeep_safely(app.state, business_id, clock())
 
-    sync_all_published(tomorrow, due, run)
+    sync_all_published(clock(), due, run)
 
     status_a = client.get("/pinned-catalog/status").json()["status"]
     status_b = other_client.get("/pinned-catalog/status").json()["status"]

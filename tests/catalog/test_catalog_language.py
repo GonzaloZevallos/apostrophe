@@ -6,7 +6,7 @@ real adapters and the fake Telegram port."""
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +18,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
-from app.clock import business_day
 from app.main import create_app
 from app.pinned_catalog.adapters.safe_upkeep import run_upkeep_safely
 from app.pinned_catalog.adapters.ticker import _tick as run_tick
@@ -171,7 +170,7 @@ def _two_pinned_businesses(
 
 def _start_of_day(app: FastAPI, clock: MovableClock) -> None:
     clock.set(clock() + timedelta(days=1))
-    run_tick(app.state, business_day(clock()))
+    run_tick(app.state, clock())
 
 
 def test_the_start_of_day_run_gives_each_pin_its_own_language(
@@ -259,13 +258,13 @@ def test_a_business_removed_between_the_listing_and_its_snapshot_calls_nothing(
     app: FastAPI, telegram: FakeTelegram, clock: MovableClock
 ) -> None:
     class Removed:
-        def due(self, today: date) -> list[int]:
+        def due(self, instant: datetime) -> list[int]:
             return [999]
 
     sync_all_published(
-        business_day(clock()),
+        clock(),
         Removed(),
-        lambda business_id: run_upkeep_safely(app.state, business_id, business_day(clock())),
+        lambda business_id: run_upkeep_safely(app.state, business_id, clock()),
     )
 
     assert telegram.calls == []

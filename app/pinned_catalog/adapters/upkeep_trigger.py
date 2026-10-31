@@ -15,7 +15,7 @@ from typing import cast
 from fastapi import BackgroundTasks, Request
 
 from app.accounts.adapters.deps import CurrentBusinessId
-from app.clock import Clock, business_day
+from app.clock import Clock
 from app.pinned_catalog.adapters.safe_upkeep import run_upkeep_safely
 
 _WRITE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
@@ -27,5 +27,4 @@ def schedule_upkeep(
     if request.method not in _WRITE_METHODS:
         return
     clock = cast(Clock, request.app.state.clock)
-    today = business_day(clock())
-    background_tasks.add_task(run_upkeep_safely, request.app.state, business_id, today)
+    background_tasks.add_task(run_upkeep_safely, request.app.state, business_id, clock())

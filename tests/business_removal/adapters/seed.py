@@ -10,18 +10,21 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
-from app.clock import business_day
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
+from app.shared.calendar import business_day
 from tests.conftest import PASSWORD, TEST_HASHER, MovableClock, invite
 from tests.fakes.telegram import FakeTelegram
+
+BUENOS_AIRES = ZoneInfo("America/Argentina/Buenos_Aires")
 
 EMAIL_LEAVING = "closing@example.com"
 EMAIL_STAYING = "staying@example.com"
@@ -51,7 +54,7 @@ def seeded_days(clock: MovableClock) -> SeededDays:
     """The calendar days `seed` posts, each a fixed number of days before the clock's
     business day. The price day falls before the stock entry, which is recorded on the
     business day itself."""
-    today = business_day(clock())
+    today = business_day(clock(), BUENOS_AIRES)
     return SeededDays(
         price=today - timedelta(days=90),
         payment=today - timedelta(days=2),

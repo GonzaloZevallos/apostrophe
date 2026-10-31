@@ -14,8 +14,8 @@ import threading
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Literal
+from zoneinfo import ZoneInfo
 
-from app.clock import business_day
 from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.ports import (
     PinFacts,
@@ -39,6 +39,7 @@ from app.pinned_catalog.domain.errors import (
 from app.pinned_catalog.domain.refusal_causes import for_test_send
 from app.pinned_catalog.domain.status import Pin, PinFailure, PinSettings, PinStatus, pin_status
 from app.pinned_catalog.domain.status import needs_send as domain_needs_send
+from app.shared.calendar import business_day
 
 
 class BusinessLocks:
@@ -61,14 +62,18 @@ class BusinessLocks:
             return lock
 
 
-def _published_on(facts: PinFacts) -> date | None:
-    return business_day(facts.last_published_at) if facts.last_published_at is not None else None
+def _published_on(facts: PinFacts, zone: ZoneInfo) -> date | None:
+    """The date of the last send, derived from `last_published_at` in the business's
+    current zone and never stored (ADR-0057): changing the zone rewrites nothing."""
+    if facts.last_published_at is None:
+        return None
+    return business_day(facts.last_published_at, zone)
 
 
-def status_of(settings: SettingsSnapshot, facts: PinFacts) -> PinStatus | None:
+def status_of(settings: SettingsSnapshot, facts: PinFacts, zone: ZoneInfo) -> PinStatus | None:
     """The one seam both `push` and the router ask what the status is, wrapping
     `pin_status` (the plan's invariant: only `pin_status` derives it) with the
-    Argentina-date conversion the domain itself never does."""
+    date-in-the-business's-zone conversion the domain itself never does."""
     return pin_status(
         PinSettings(
             token_fingerprint=settings.token_fingerprint, channel_chat=settings.channel_chat
@@ -77,7 +82,7 @@ def status_of(settings: SettingsSnapshot, facts: PinFacts) -> PinStatus | None:
             message_token_fingerprint=facts.message_token_fingerprint,
             message_chat=facts.message_chat,
             last_published_text=facts.last_published_text,
-            last_published_on=_published_on(facts),
+            last_published_on=_published_on(facts, zone),
             last_failure=facts.last_failure,
         ),
     )
@@ -170,6 +175,7 @@ def push(
     mode: Literal["publish", "upkeep"],
     today: date,
     now: datetime,
+    zone: ZoneInfo,
 ) -> None:
     """Publicar and upkeep (plan, "How a sync runs" and "Calls per action"): both reach
     this, so they can never post, edit or pin differently for the same facts."""
@@ -178,12 +184,21 @@ def push(
         settings = snap.settings
         facts = snap.pin
         text = snap.text
-        status = status_of(settings, facts)
+        status = status_of(settings, facts, zone)
         missing_publish = status is not None and status.reason == "missing_publish"
 
         if mode == "upkeep":
             _push_upkeep(
-                telegram, recorder, business_id, settings, facts, text, today, now, missing_publish
+                telegram,
+                recorder,
+                business_id,
+                settings,
+                facts,
+                text,
+                today,
+                now,
+                missing_publish,
+                zone,
             )
             return
 
@@ -202,6 +217,7 @@ def _push_upkeep(
     today: date,
     now: datetime,
     missing_publish: bool,
+    zone: ZoneInfo,
 ) -> None:
     if facts.last_published_at is None or missing_publish:
         # Never published, or the settings changed since: upkeep attempts nothing in a
@@ -225,7 +241,7 @@ def _push_upkeep(
         message_token_fingerprint=facts.message_token_fingerprint,
         message_chat=facts.message_chat,
         last_published_text=facts.last_published_text,
-        last_published_on=_published_on(facts),
+        last_published_on=_published_on(facts, zone),
         last_failure=facts.last_failure,
     )
     if not domain_needs_send(text, pin_for_needs_send):

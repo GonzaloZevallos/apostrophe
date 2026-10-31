@@ -27,10 +27,10 @@ from typing import TextIO
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.import_port import BusinessDirectory
+from app.accounts.adapters.import_port import BusinessDirectory, TargetZone
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.catalog.adapters.import_port import CatalogImport
-from app.clock import Clock, business_day, system_clock
+from app.clock import Clock, system_clock
 from app.customers.adapters.import_port import CustomersImport
 from app.db import make_engine
 from app.expenses.adapters.import_port import ExpensesImport
@@ -41,6 +41,7 @@ from app.pricing_settings.adapters.import_port import PricingSettingsImport
 from app.products.adapters.import_port import ProductsImport as SqlProductsImport
 from app.sales.adapters.import_port import SalesImport
 from app.settings import Settings
+from app.shared.calendar import business_day, load_zone
 from app.shared.copy import OperatorText
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cells import read_workbook
@@ -59,6 +60,14 @@ from app.stock.adapters.import_port import SqlStockImport
 
 class _BusinessUnknown(Exception):
     code = "import.business_unknown"
+
+
+class _TimeZoneUnavailable(Exception):
+    """The target's stored zone cannot be loaded: the run stops before any sheet is read
+    and says only this fixed code, naming no data, and never falls back to another zone
+    (docs/adr/0057)."""
+
+    code = "import.time_zone_unavailable"
 
 
 # Eligibility (PRD "the refusal comes before any sheet check") is decided before the
@@ -129,8 +138,13 @@ def _run(
         if business_name is None:
             raise _BusinessUnknown()
 
+        zone_name = TargetZone(SqlAccounts(session)).zone_name_of(args.business_id)
+        zone = None if zone_name is None else load_zone(zone_name)
+        if zone is None:
+            raise _TimeZoneUnavailable()
+
         instant = clock()
-        today = business_day(instant)
+        today = business_day(instant, zone)
 
         varieties = SqlProductsImport(session, args.business_id)
         stock = SqlStockImport(session, args.business_id)

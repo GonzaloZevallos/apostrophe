@@ -21,6 +21,7 @@ from app.accounts.adapters.language_router import router as language_router
 from app.accounts.adapters.onboarding_facts import SqlUserFacts
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
+from app.accounts.adapters.sql_zones import SqlBusinessZones
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.catalog.adapters.babel_defaults import BabelHeaderFooterDefaults
@@ -201,6 +202,10 @@ def create_app(
         api=api, channel=ChannelTelegram(api), updates=api
     )
     app.state.pinned_catalog_locks = BusinessLocks()
+    # The readers outside a request get a business's stored zone through their own
+    # Protocols (`BusinessZones`, `BusinessZone`, `TargetZone`), all served by this one
+    # accounts adapter (ADR-0055).
+    app.state.business_zones = SqlBusinessZones(cast(Engine, app.state.engine))
     app.state.pinned_catalog_cipher = TokenCipher(settings.secret_key)
     app.state.pinned_catalog_upkeep_ticker = upkeep_ticker
     app.add_exception_handler(RequestValidationError, _without_request_data)
