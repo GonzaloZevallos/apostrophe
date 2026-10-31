@@ -186,3 +186,25 @@ export function monthRange(todayIso: string): DateRange {
 export function maxSaleDate(todayIso: string): string {
   return todayIso
 }
+
+const MS_PER_MINUTE = 60_000
+const MS_PER_DAY = 86_400_000
+
+/**
+ * The wall clock of a zone at an instant, "dd/mm HH:MM", from `epochMs` (the API's
+ * `now_epoch_ms`) and the zone's UTC offset in minutes **at that instant** (the API's
+ * `utc_offsets_minutes`, which settles daylight saving). Pure arithmetic: no `Date`, no
+ * `Intl` (ADR-0049) and no wall clock (the screen never reads one). `null` offset (a zone the
+ * server could not load) gives `null`, so the screen shows no preview rather than a wrong one.
+ */
+export function localDateTimeIn(epochMs: number, offsetMinutes: number | null): string | null {
+  if (offsetMinutes === null) {
+    return null
+  }
+  const local = epochMs + offsetMinutes * MS_PER_MINUTE
+  const days = Math.floor(local / MS_PER_DAY)
+  const minutesOfDay = Math.floor((local - days * MS_PER_DAY) / MS_PER_MINUTE)
+  const { month, day } = civilFromDays(days)
+  const hour = Math.floor(minutesOfDay / 60)
+  return `${pad(day, 2)}/${pad(month, 2)} ${pad(hour, 2)}:${pad(minutesOfDay % 60, 2)}`
+}

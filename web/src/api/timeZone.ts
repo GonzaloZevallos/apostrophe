@@ -13,6 +13,8 @@ import type { Me } from './me'
 export interface TimeZoneSettings {
   time_zone: string
   time_zones: readonly string[]
+  /** Aligned with `time_zones`: each zone's UTC offset in minutes at `now_epoch_ms`, `null` if unloadable. */
+  utc_offsets_minutes: readonly (number | null)[]
   now_epoch_ms: number
 }
 
