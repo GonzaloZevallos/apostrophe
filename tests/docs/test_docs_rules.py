@@ -1,8 +1,7 @@
 """Rules the Spanish architecture pages obey (GH-461), as pure functions.
 
-Nothing here reads a Markdown link or a Mermaid block: that belongs to #460's extractor,
-and the glue that feeds it into these functions is the repo-wide test's job. What lives
-here is what the rules decide once a page's citations are already extracted:
+Links and Mermaid blocks are read only through `scripts/docs/links.py` (`page_problems`
+feeds its output to the rules); this file defines no link or Mermaid pattern of its own. The rules:
 `defined_symbol_problems` (a cited symbol is defined in its linked file),
 `adr_index_problems` (the ADR index equals `docs/adr/` and its marks equal the ADRs' own
 `status:` lines) and `reach_problems` (every page is within two clicks of the entry).
@@ -33,7 +32,8 @@ def defined_symbol_problems(
 ) -> list[str]:
     """One message per `(path, symbol)` citation whose symbol starts with `_` or has no
     line-start definition (`class`, `def`, `async def` or an assignment, indentation
-    allowed) in the text of `path`. A mention in a comment or docstring is not one."""
+    allowed) in the text of `path`. A `#` comment is not one; the text is not parsed, so a docstring
+    line shaped like a definition would be."""
     problems: list[str] = []
     for path, symbol in citations:
         if symbol.startswith("_"):

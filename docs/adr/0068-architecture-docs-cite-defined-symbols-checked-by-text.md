@@ -12,7 +12,7 @@ cites a symbol that was renamed, or never existed, is wrong without anyone notic
 ## Decision
 - **A cited symbol is defined in the file its link points to.** `tests/docs/test_docs_rules.py` holds
   `defined_symbol_problems` and `page_problems`: the file's text has a line-start `class`, `def`, `async def` or assignment
-  of that name, indentation allowed. A mention in a comment or docstring does not count. The test reads
+  of that name, indentation allowed. A mention in a `#` comment does not count; the text is not parsed, so a docstring line that looks like a definition would. The test reads
   docs and sources as text and imports nothing from `app`.
 - **Only stable names are cited**: use cases, ports, routers, domain entities and the dependencies in
   `deps.py`. Never a `_private` helper; a cited name starting with `_` fails the test.

@@ -65,10 +65,13 @@ def _adr_statuses() -> dict[str, str | None]:
 
 
 def _index_marks(page: str, markdown: str) -> dict[str, str | None]:
-    """Each ADR file `page` links, mapped to the number named by `reemplazada por NNNN` on a
-    line that links it (None when no such line carries a mark)."""
+    """Each ADR file linked on a table row of `page`, mapped to the number named by
+    `reemplazada por NNNN` on that row (None when it carries no mark). A link in the prose
+    around the table does not put an ADR in the index."""
     marks: dict[str, str | None] = {}
     for line in markdown.splitlines():
+        if not line.lstrip().startswith("|"):
+            continue
         found = _SUPERSEDED_MARK.search(line)
         for link in extract_links(line):
             path = posixpath.normpath(posixpath.join(posixpath.dirname(page), link.target))
@@ -133,4 +136,17 @@ def test_an_index_with_a_wrong_mark_and_a_missing_adr_is_rejected() -> None:
     assert adr_index_problems(_index_marks(page, index), statuses) == [
         "0003-c.md is in docs/adr/ but not in the index",
         "0001-a.md: index mark '0002' does not match status 'accepted'",
+    ]
+
+
+def test_an_adr_linked_only_in_the_prose_is_not_in_the_index() -> None:
+    page = "docs/architecture/decisiones.md"
+    index = (
+        "Por ejemplo [0001](../adr/0001-a.md) puede estar enmendada.\n\n"
+        "| [0002](../adr/0002-b.md) | dos | |\n"
+    )
+    statuses: dict[str, str | None] = {"0001-a.md": "accepted", "0002-b.md": "accepted"}
+
+    assert adr_index_problems(_index_marks(page, index), statuses) == [
+        "0001-a.md is in docs/adr/ but not in the index"
     ]
