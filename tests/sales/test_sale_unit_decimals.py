@@ -134,3 +134,43 @@ def test_decimals_lowered_between_the_first_read_and_the_write_refuse_and_write_
     assert refused.status_code == 422
     assert refused.json()["code"] == "quantity.too_many_decimals"
     assert (_count(engine, SaleRow), _count(engine, SaleLineRow)) == (0, 0)
+
+
+def test_a_bulk_minimum_refused_after_the_write_when_the_unit_lost_decimals_stores_nothing(
+    app: FastAPI, client: TestClient, engine: Engine
+) -> None:
+    """The same race on a price entry: the unit loses its decimals right after the first
+    read, the read after the write sees it, the entry is rolled back and not stored."""
+    set_switches(engine, bulk=True, vip=False)
+    set_unit_decimals(engine, 2)
+    product_id = int(client.post("/api/products", json={"name": "Lavanda"}).json()["id"])
+    real = app.state.products_units
+
+    class LowersAfterTheFirstRead:
+        def __init__(self, session: Session, business_id: int) -> None:
+            self._session = session
+            self._reader = real(session, business_id)
+            self._reads = 0
+
+        def units_of(self, product_ids: Collection[int]) -> dict[int, Unit]:
+            found: dict[int, Unit] = self._reader.units_of(product_ids)
+            self._reads += 1
+            if self._reads == 1:
+                self._session.execute(text("UPDATE unit SET decimals = 0"))
+            return found
+
+    app.state.products_units = LowersAfterTheFirstRead
+
+    refused = client.post(
+        f"/api/products/{product_id}/prices",
+        json={
+            "effective_from": "2026-01-01",
+            "list_price": 11_000,
+            "bulk_price": 10_000,
+            "bulk_minimum": "3.5",
+        },
+    )
+
+    assert refused.status_code == 422
+    assert refused.json()["code"] == "quantity.too_many_decimals"
+    assert _count(engine, PriceEntryRow) == 0
