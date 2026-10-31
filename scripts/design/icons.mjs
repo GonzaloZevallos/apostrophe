@@ -19,8 +19,10 @@ const require = createRequire(join(REPO, 'web', 'package.json'))
 const { chromium } = require('playwright')
 const { PNG } = require('pngjs')
 
-// The Yerba green: the mark's own ground. Maskable and apple-touch icons fill their page with it.
-const GREEN = '#1E6B47'
+// The Yerba green: the mark's own ground, read from the rounded square's fill in mark.svg so the
+// script never carries a second copy. Maskable and apple-touch icons fill their page with it.
+const GREEN = /<rect[^>]*\bfill="(#[0-9A-Fa-f]{6})"/.exec(readFileSync(join(ICONS, 'mark.svg'), 'utf8'))?.[1]
+if (GREEN === undefined) throw new Error('mark.svg has no rounded square with a hex fill')
 // The safe zone of a maskable icon: every white pixel inside a circle of 0.4 of the side (80 %).
 const SAFE_RADIUS = 0.4
 
