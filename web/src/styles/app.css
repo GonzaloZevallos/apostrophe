@@ -56,17 +56,48 @@ body {
   font-family: var(--fuente);
 }
 
-.marca {
+.brand-mark--lockup {
   display: flex;
-  align-items: baseline;
-  gap: 2px;
-  font-size: 34px;
-  font-weight: 700;
+  align-items: center;
+  gap: var(--espacio-sm);
+  font-size: var(--marca-palabra-tamano);
+  font-weight: 600;
   letter-spacing: -0.04em;
+  line-height: 1.2;
 }
 
-.marca__apostrofe {
+.brand-mark--lockup > img {
+  flex: none;
+  width: var(--marca-lockup-tamano);
+  height: var(--marca-lockup-tamano);
+}
+
+.brand-mark__word {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* At 130 % zoom on the smallest phone (246 CSS px) the full lockup is wider than the column. */
+@media (max-width: 300px) {
+  .brand-mark--lockup {
+    font-size: var(--marca-palabra-tamano-angosto);
+  }
+
+  .brand-mark--lockup > img {
+    width: var(--marca-lockup-tamano-angosto);
+    height: var(--marca-lockup-tamano-angosto);
+  }
+}
+
+.brand-mark__apostrophe {
   color: var(--acento);
+}
+
+.brand-mark--mark {
+  display: block;
+  flex: none;
+  width: var(--marca-tamano);
+  height: var(--marca-tamano);
 }
 
 .subtitulo {

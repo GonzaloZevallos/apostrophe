@@ -22,7 +22,7 @@ import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import AuthPage from '../components/AuthPage'
 import Boton from '../components/Boton'
 import PasswordField from '../components/PasswordField'
-import { BRAKE_MESSAGE, BRAND_NAME, INVITE_ONLY_LINE, LOGIN_HINT, AUTH_TEXT } from '../copy/auth'
+import { BRAKE_MESSAGE, INVITE_ONLY_LINE, LOGIN_HINT, AUTH_TEXT } from '../copy/auth'
 import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
 export const CREDENTIALS_WRONG = AUTH_TEXT.wrongEmailOrPassword
@@ -69,13 +69,8 @@ export default function Entrar() {
   }
 
   return (
-    <AuthPage>
-      <div>
-        <span className="marca">
-          {BRAND_NAME}<span className="marca__apostrofe">’</span>
-        </span>
-        <p className="subtitulo">{AUTH_TEXT.tagline}</p>
-      </div>
+    <AuthPage brand>
+      <p className="subtitulo">{AUTH_TEXT.tagline}</p>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
           <span className="campo__rotulo">{AUTH_TEXT.emailAddress}</span>

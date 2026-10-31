@@ -125,7 +125,7 @@ export default function Invitacion() {
   }
 
   if (status === 'not_usable') {
-    return <AuthPage title={NOT_USABLE_TITLE} subtitle={NOT_USABLE_DETAIL} />
+    return <AuthPage brand title={NOT_USABLE_TITLE} subtitle={NOT_USABLE_DETAIL} />
   }
 
   if (status === 'offline') {
@@ -157,6 +157,7 @@ export default function Invitacion() {
 
   return (
     <AuthPage
+      brand
       titleClass="invitacion__titulo"
       eyebrow={isNewBusiness ? AUTH_TEXT.validInvitation : AUTH_TEXT.youWereInvitedTo}
       title={isNewBusiness ? AUTH_TEXT.setUpYourBusiness : (view.business_name ?? undefined)}

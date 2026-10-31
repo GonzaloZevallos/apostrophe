@@ -106,7 +106,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport)
     await page.goto(LOGIN)
-    const moved = await shift(page, '.marca')
+    const moved = await shift(page, '.brand-mark--lockup')
     expect(moved.top, `${viewport.name}: /entrar top`).toBe(TOP)
   }
 

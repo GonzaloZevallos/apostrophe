@@ -10,7 +10,7 @@
 
 import { INVITATION, ONBOARDING, pathTo } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -277,4 +277,39 @@ test('accepting a join invitation still lands on Inicio', async () => {
   await acceptAs('join_business')
 
   expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
+})
+
+function lookupAs(body: { kind: string; business_name: string | null } | null): void {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      if (body === null) return Promise.resolve(jsonResponse(404, { detail: 'gone', code: 'account.invitation_not_usable' }))
+      return Promise.resolve(jsonResponse(200, { ...body, expires_at: '2026-10-09T00:00:00Z' }))
+    }),
+  )
+}
+
+test.each([
+  ['joining a business', { kind: 'join_business', business_name: 'La Esquina' }, 'La Esquina'],
+  ['a new business', { kind: 'new_business', business_name: null }, 'Set up your business'],
+  ['an unusable invitation', null, NOT_USABLE_TITLE],
+])('shows the brand lockup above the title for %s', async (_name, body, title) => {
+  lookupAs(body)
+
+  renderInvitacion()
+
+  const main = screen.getByRole('main')
+  const heading = await within(main).findByRole('heading', { name: title })
+  const brand = within(main).getByRole('img', { name: 'apostrophe' })
+  expect(brand).toHaveTextContent('apostrophe\u2019')
+  expect(brand.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+})
+
+test('shows no brand while the lookup is pending', () => {
+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => undefined)))
+
+  renderInvitacion()
+
+  expect(within(screen.getByRole('main')).queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
 })

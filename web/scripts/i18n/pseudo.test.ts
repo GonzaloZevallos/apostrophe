@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import {
   PSEUDO_COMMAND,
   PSEUDO_DIR,
+  VERBATIM_KEYS,
   generatePseudo,
   pseudoProblems,
   pseudoText,
@@ -77,6 +78,27 @@ describe('the en-XA generator', () => {
       items_other: pseudoText('{{count}} items'),
       nested: { deep: pseudoText('Deep'), empty: '' },
     })
+  })
+
+  it('copies the brand keys verbatim and still pseudo-localises every other key', () => {
+    const english = { wordmark: 'apostrophe', mark: { label: 'apostrophe' }, tagline: 'Sell better' }
+
+    expect(VERBATIM_KEYS).toEqual(['brand:wordmark', 'brand:mark.label'])
+    expect(generatePseudo(english, 'brand')).toEqual({
+      wordmark: 'apostrophe',
+      mark: { label: 'apostrophe' },
+      tagline: pseudoText('Sell better'),
+    })
+    // The same keys in another namespace are ordinary text.
+    expect(generatePseudo(english, 'other')).toEqual(generatePseudo(english))
+    expect(generatePseudo(english, 'other')['wordmark']).toBe(pseudoText('apostrophe'))
+  })
+
+  it('has the committed en-XA brand texts equal to the English ones', () => {
+    const read = (dir: string): unknown => JSON.parse(readFileSync(join(dir, 'brand.json'), 'utf8'))
+
+    expect(read(PSEUDO_DIR)).toEqual({ wordmark: 'apostrophe', mark: { label: 'apostrophe' } })
+    expect(read(ENGLISH_DIR)).toEqual(read(PSEUDO_DIR))
   })
 
   it.runIf(WRITE)('writes the committed en-XA files', () => {
