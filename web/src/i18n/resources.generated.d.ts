@@ -6,6 +6,7 @@ export type Resources = {
   "emptyStates": typeof import('../copy/locales/en/emptyStates.json')
   "refusals": typeof import('../copy/locales/en/refusals.json')
   "shell": typeof import('../copy/locales/en/shell.json')
+  "units": typeof import('../copy/locales/en/units.json')
 }
 
 /** Every key `t` accepts, as `ns:key`. */
