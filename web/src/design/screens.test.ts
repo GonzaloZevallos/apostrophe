@@ -829,12 +829,14 @@ describe('the archived variety rows of the real screens.json', () => {
     }
   })
 
-  it('names, for each, a design file that exists, the light file for a dark twin', () => {
+  it('names, for each, a design file that exists, the light file for a dark twin that has no dark drawing', () => {
     for (const key of keys) {
       const entry = screens.screens.find((s) => s.screen === key)!
       const design = entry.design ?? key
       expect(design, key).toBe(key.replace('Oscuro', ''))
       expect(readdirSync(pantallas), key).toContain(`${design}.dc.html`)
+      // The light file is only right while the twin has no dark drawing of its own (GH-526 invariant 6).
+      if (key.endsWith('Oscuro')) expect(readdirSync(pantallas), key).not.toContain(`${key}.dc.html`)
     }
   })
 
