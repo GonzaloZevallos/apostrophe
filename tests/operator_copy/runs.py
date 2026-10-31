@@ -262,7 +262,9 @@ class _Rows:
     def business_of(self, email: str) -> BusinessRef | None:
         if email != OWNER_EMAIL:
             return None
-        return BusinessRef(id=1, name=LEAVING_BUSINESS, language="en")
+        return BusinessRef(
+            id=1, name=LEAVING_BUSINESS, language="en", time_zone="America/Argentina/Buenos_Aires"
+        )
 
     def rows(self, table: str, business_id: int) -> list[dict[str, Any]]:
         if table == "business":

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import case, delete, literal, select, update
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import (
@@ -68,9 +69,10 @@ class SqlAccounts:
             .where(BusinessRow.id == business_id, BusinessRow.time_zone != zone.name)
             .values(time_zone=zone.name)
         )
-        changed = self._session.execute(statement).rowcount > 0
+        result = self._session.execute(statement)
+        assert isinstance(result, CursorResult)
         self._session.flush()
-        return changed
+        return result.rowcount > 0
 
     def add_user(self, user: User) -> User:
         row = UserRow(

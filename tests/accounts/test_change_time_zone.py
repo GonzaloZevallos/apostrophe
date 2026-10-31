@@ -26,6 +26,9 @@ class CountingTransaction:
     def commit(self) -> None:
         self.commits += 1
 
+    def rollback(self) -> None:
+        raise AssertionError("the use case never rolls back")
+
 
 @pytest.fixture
 def session(engine: Engine) -> Iterator[Session]:
