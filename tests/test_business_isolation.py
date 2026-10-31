@@ -1116,3 +1116,18 @@ def test_another_business_reads_none_of_the_archived_catalog_attributes(
     assert [r["product_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
 
     assert business_b.get("/catalog/archived").json() == []
+
+
+def test_a_body_reference_to_a_missing_or_foreign_unit_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    foreign_unit = business_a.get(f"/api/products/{seeded_b['variety_id']}").json()["unit"]["id"]
+
+    missing = business_b.post("/api/products", json={"name": "B unit", "unit_id": 999_999})
+    other_business = business_b.post("/api/products", json={"name": "B unit", "unit_id": foreign_unit})
+
+    assert missing.status_code == 404, missing.text
+    assert other_business.status_code == 404, other_business.text
+    assert missing.json() == other_business.json()
+    assert missing.json()["code"] == "unit.not_found"
+    assert business_b.get("/api/products").json() == []

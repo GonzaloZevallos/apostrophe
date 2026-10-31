@@ -57,6 +57,10 @@ Los gramos desde los cuales se aplica el Bulk price.
 _In the app_: Minimum in grams
 _Avoid_: threshold, minimum order
 
+**Unit**:
+Cómo mide un Business un Product: un nombre único dentro del Business (sin importar mayúsculas, minúsculas ni espacios), una etiqueta y de 0 a 2 decimales que solo validan lo que se ingresa y deciden cómo se muestra (ADR-0056). Cada Product usa una, que queda trabada una vez que el Product tiene Variety history; un Business siempre tiene al menos una, y una en uso no se elimina. _In the app_: Unit, en Settings → Products → Units.
+_Avoid_: measure, UoM, grams
+
 ## Customers y lo que se debe
 
 **Customer**:
@@ -524,10 +528,6 @@ _Avoid_: Product language, locale, idioma de la app, traducción
 ## Planned in GH-318 (not yet in the code)
 
 Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte nombrada en cada línea; solo esa parte pasa su término al glosario propiamente dicho y corrige la definición que reemplaza. Cada línea da el término, el ADR que lo decide y la parte a cargo, nombrada por capacidad.
-
-**Unit**:
-Cómo mide un Business un Product: un nombre único dentro del Business (sin importar mayúsculas, minúsculas ni espacios), una etiqueta y de 0 a 2 decimales que solo validan lo que se ingresa y deciden cómo se muestra (ADR-0056). Cada Product usa una, que queda trabada una vez que el Product tiene Variety history; un Business siempre tiene al menos una, y una en uso no se elimina. _In the app_: Unit, en Settings → Products → Units.
-_Avoid_: measure, UoM, grams
 
 **Quantity, in hundredths of a unit**:
 Una cantidad guardada de cualquier Unit, siempre un número entero de centésimos. Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; a cargo de la parte units.

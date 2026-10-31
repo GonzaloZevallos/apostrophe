@@ -72,6 +72,18 @@ La app solo hablaba de gramos con dos decimales. Un Business que vendiera de otr
 - La página de un Product muestra su Unit como elección (sin historial) o como texto de solo lectura con su línea de motivo (con historial).
 - Todo texto de pantalla viene del Copy module. Ningún valor por defecto nuevo lleva una palabra de flor (variety, gram, g, indica, sativa, aroma, strain, 🌿).
 
+## Qué entrega la primera parte
+
+La primera parte, `units-link`, entrega el vínculo y nada de pantalla:
+
+- la Unit compartida y su regla de decimales (`Unit.admits`);
+- la migración `0021_units`: una Unit "grams" / "g" con 2 decimales por Business existente, y cada Product unido a la de su Business, sin cambiar ningún valor guardado;
+- la Unit "unit" con 0 decimales en cada Business nuevo;
+- el Product con su Unit: al crearlo, sin `unit_id` toma la única Unit del Business, con dos o más responde `product.unit_required`, y la Unit de otro Business responde `unit.not_found`; la lista y el detalle del Product traen su Unit;
+- el Spreadsheet import, que le da "grams" / "g" con 2 decimales a los Products que carga.
+
+El control de cantidades, el abm de Units y las pantallas llegan en las partes siguientes.
+
 ## Restricciones
 
 - La tabla de Units lleva un `business_id` no nulo y se lee solo con un repositorio construido para un Business. Una Unit de otro Business responde 404 y nunca se revela (ADR-0004). Cada ruta nueva entra en el barrido de aislamiento y en el test de rutas protegidas.
