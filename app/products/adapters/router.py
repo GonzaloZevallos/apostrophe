@@ -37,7 +37,7 @@ from app.products.domain.product import (
     UnknownPriceEntry,
     VipPriceNotBelowList,
 )
-from app.shared.quantity import InvalidQuantity, Quantity
+from app.shared.quantity import InvalidQuantity, Quantity, TooManyDecimals
 from app.shared.unit import Unit
 
 router = APIRouter(prefix="/api/products", tags=["products"])
@@ -97,6 +97,7 @@ as_http = TranslateErrors(
                 ProductRuleBroken,
                 VipPriceNotBelowList,
                 InvalidQuantity,
+                TooManyDecimals,
                 ProductUnitRequired,
                 ProductUnitLocked,
                 ProductUnitDecimalsInUse,
@@ -216,6 +217,7 @@ def record_price_entry(
     body: PriceEntryIn,
     products: ProductsDep,
     settings: SettingsDep,
+    units: UnitsDep,
     session: SessionDep,
 ) -> PriceEntryOut:
     with as_http:
@@ -223,6 +225,7 @@ def record_price_entry(
         entry = manage_prices.record_price_entry(
             products,
             settings,
+            units,
             session,
             product_id=product_id,
             effective_from=body.effective_from,

@@ -22,6 +22,18 @@ class InvalidQuantity(ValueError):
     code: ClassVar[str] = "grams.invalid"
 
 
+class TooManyDecimals(ValueError):
+    """A quantity had more decimals than it can hold: `Quantity.of` raises it for anything
+    finer than a hundredth, and a use case raises it for anything finer than the
+    product's unit admits (`Unit.admits`). Nothing is ever rounded or truncated. The
+    message is a fixed literal, so it never repeats what was submitted."""
+
+    code: ClassVar[str] = "quantity.too_many_decimals"
+
+    def __init__(self) -> None:
+        super().__init__("the quantity has more decimals than allowed")
+
+
 @dataclass(frozen=True, order=True)
 class Quantity:
     hundredths: int
@@ -36,7 +48,7 @@ class Quantity:
             raise InvalidQuantity("the quantity must be a number")
         scaled = amount * HUNDREDTHS_PER_UNIT
         if scaled != scaled.to_integral_value():
-            raise InvalidQuantity("a quantity allows at most two decimals")
+            raise TooManyDecimals()
         return cls(int(scaled))
 
     @property

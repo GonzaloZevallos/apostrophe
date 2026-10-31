@@ -164,7 +164,7 @@ def test_a_malformed_threshold_grams_value_is_refused(client: TestClient) -> Non
     response = client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": "1.234"})
 
     assert response.status_code == 422
-    assert response.json()["code"] == "grams.invalid"
+    assert response.json()["code"] == "quantity.too_many_decimals"
 
 
 def test_turning_off_an_unset_threshold_is_not_found_for_a_foreign_or_missing_variety(

@@ -20,7 +20,7 @@ from app.products.adapters.sql_products import SqlProducts
 from app.products.adapters.tables import PriceEntryRow, ProductRow
 from app.products.application.manage_prices import record_imported_price_entry
 from app.products.application.manage_products import register_product
-from app.products.application.ports import Products
+from app.products.application.ports import Products, UnitsReader
 from app.products.domain.product import (
     InvalidName,
     PriceEntry,
@@ -36,9 +36,10 @@ from app.spreadsheet_import.domain.rows import PriceHistoryRow
 class ProductsImport:
     """`VarietiesImport` for one business."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(self, session: Session, business_id: int, units: UnitsReader) -> None:
         self._session = session
         self._business_id = business_id
+        self._units = units
 
     def has_records(self) -> bool:
         statement = (
@@ -106,6 +107,7 @@ class ProductsImport:
         # leaves Clientes VIP on: a rule that is off stores nothing (docs/adr/0034).
         record_imported_price_entry(
             self._varieties(),
+            self._units,
             transaction,
             variety_id,
             row.effective,

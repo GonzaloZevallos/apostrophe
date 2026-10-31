@@ -59,6 +59,9 @@ classDiagram
   }
   class ReferenceRefused {
   }
+  class TooManyDecimals {
+    code : ClassVar~str~
+  }
   class Transaction {
     commit() None
     rollback() None

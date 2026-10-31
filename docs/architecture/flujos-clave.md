@@ -69,7 +69,7 @@ En el paso 9, `burn` (en el mismo archivo que `verify`) gasta el mismo tiempo cu
 
 ## Una venta con pago en el acto
 
-El caso de uso resuelve todas las referencias y arma y valida la venta entera, pago incluido, antes de la primera y única llamada al repositorio; confirma una sola vez, al final. El upkeep del Pinned catalog corre después, ya respondido el pedido.
+El caso de uso resuelve todas las referencias, comprueba que cada cantidad cabe en la Unit de su producto y arma y valida la venta entera, pago incluido, antes de la primera y única llamada al repositorio; después de escribir vuelve a leer las Units y confirma una sola vez, al final. El upkeep del Pinned catalog corre después, ya respondido el pedido.
 
 ```mermaid
 sequenceDiagram
@@ -81,6 +81,7 @@ sequenceDiagram
   participant UseCase as record_sale
   participant Customers as CustomerFacts
   participant Book as PriceBook
+  participant Units as UnitsReader
   participant Domain as Sale
   participant Store as Sales
   participant Tx as Transaction
@@ -91,8 +92,10 @@ sequenceDiagram
   Router->>UseCase: record_sale
   UseCase->>Customers: get
   UseCase->>Book: for_variety
+  UseCase->>Units: units_of
   UseCase->>Domain: record
   UseCase->>Store: add
+  UseCase->>Units: units_of
   UseCase->>Tx: commit
   UseCase-->>Router: the stored Sale
   Router-->>Browser: 201
@@ -109,14 +112,16 @@ sequenceDiagram
 | 4 | [app/sales/adapters/router.py](../../app/sales/adapters/router.py) | `record_sale` |
 | 5 | [app/sales/application/ports.py](../../app/sales/application/ports.py) | `CustomerFacts` |
 | 6 | [app/sales/application/ports.py](../../app/sales/application/ports.py) | `for_variety` |
-| 7 | [app/sales/domain/sale.py](../../app/sales/domain/sale.py) | `record` |
-| 8 | [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) | `SqlSales` |
-| 9 | [app/shared/transaction.py](../../app/shared/transaction.py) | `Transaction` |
-| 10 | [app/sales/application/record_sale.py](../../app/sales/application/record_sale.py) | `record_sale` |
-| 11 | [app/sales/adapters/router.py](../../app/sales/adapters/router.py) | `record_sale` |
-| 12 | [app/pinned_catalog/adapters/safe_upkeep.py](../../app/pinned_catalog/adapters/safe_upkeep.py) | `run_upkeep_safely` |
+| 7 | [app/sales/application/ports.py](../../app/sales/application/ports.py) | `UnitsReader` |
+| 8 | [app/sales/domain/sale.py](../../app/sales/domain/sale.py) | `record` |
+| 9 | [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) | `SqlSales` |
+| 10 | [app/sales/application/ports.py](../../app/sales/application/ports.py) | `UnitsReader` |
+| 11 | [app/shared/transaction.py](../../app/shared/transaction.py) | `Transaction` |
+| 12 | [app/sales/application/record_sale.py](../../app/sales/application/record_sale.py) | `record_sale` |
+| 13 | [app/sales/adapters/router.py](../../app/sales/adapters/router.py) | `record_sale` |
+| 14 | [app/pinned_catalog/adapters/safe_upkeep.py](../../app/pinned_catalog/adapters/safe_upkeep.py) | `run_upkeep_safely` |
 
-El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta, sus líneas y el pago en el acto, todos con el id del Business de la sesión. La flecha del paso 3 no es una llamada del handler: es una dependencia del router que FastAPI resuelve antes de entrar a él. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
+El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. En el paso 7 el caso de uso ([app/sales/application/record_sale.py](../../app/sales/application/record_sale.py) `record_sale`) pregunta la Unit de cada producto y, si una cantidad tiene más decimales de los que la Unit admite, rechaza antes de escribir nada, con el código de rechazo de decimales de cantidad. En el paso 10, después de guardar y antes de confirmar, repite la lectura; si la Unit perdió decimales entretanto, deshace la transacción y rechaza con el mismo código, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 9 la venta, sus líneas y el pago en el acto, todos con el id del Business de la sesión. La flecha del paso 3 no es una llamada del handler: es una dependencia del router que FastAPI resuelve antes de entrar a él. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
 
 ## Un movimiento de stock
 

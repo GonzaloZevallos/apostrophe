@@ -14,6 +14,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
+from app.main import units_reader
 from app.products.adapters.import_port import ProductsImport
 from app.shared.quantity import Quantity
 from app.spreadsheet_import.application.no_commit import NoCommit
@@ -61,14 +62,14 @@ def _price_row(
 def test_has_records_is_false_for_a_fresh_business(client: TestClient, engine: Engine) -> None:
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         assert imports.has_records() is False
 
 
 def test_has_records_is_true_once_a_variety_is_written(client: TestClient, engine: Engine) -> None:
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         imports.write_variety("Blue Dream", NoCommit(), _unit_id(session, business_id))
         session.commit()
         assert imports.has_records() is True
@@ -79,7 +80,7 @@ def test_check_name_answers_the_key_and_display_name_for_a_good_name(
 ) -> None:
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         result = imports.check_name("  Blue   Dream ")
         assert isinstance(result, VarietyKey)
         assert result.name == "Blue Dream"
@@ -89,7 +90,7 @@ def test_check_name_answers_the_key_and_display_name_for_a_good_name(
 def test_check_name_refuses_an_empty_name(client: TestClient, engine: Engine) -> None:
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         result = imports.check_name("   ")
         assert isinstance(result, Refusal)
         assert result.code == "variety.name_invalid"
@@ -105,7 +106,7 @@ def test_check_price_history_flags_a_duplicate_effective_date_aligned_to_its_row
     ]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         results = imports.check_price_history(rows, keys)
 
     assert results[0] is None
@@ -127,7 +128,7 @@ def test_check_price_history_flags_a_bulk_price_not_below_the_list_price(
     ]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         results = imports.check_price_history(rows, keys)
 
     assert len(results) == 1
@@ -142,7 +143,7 @@ def test_check_price_history_flags_a_bulk_price_with_no_bulk_minimum(
     rows = [_price_row(row=37, list_price=1_000, bulk_price=800, bulk_minimum=None)]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         results = imports.check_price_history(rows, keys)
 
     assert len(results) == 1
@@ -157,7 +158,7 @@ def test_check_price_history_flags_a_bulk_minimum_with_no_bulk_price(
     rows = [_price_row(row=37, list_price=1_000, bulk_price=None, bulk_minimum=Quantity.of(10))]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         results = imports.check_price_history(rows, keys)
 
     assert len(results) == 1
@@ -172,7 +173,7 @@ def test_check_price_history_flags_a_list_price_at_or_below_zero(
     rows = [_price_row(row=37, list_price=0)]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         results = imports.check_price_history(rows, keys)
 
     assert len(results) == 1
@@ -191,7 +192,7 @@ def test_write_variety_then_write_price_entry_round_trips_through_a_real_session
         bulk_minimum=Quantity.of(5),
     )
     with Session(engine) as session:
-        imports = ProductsImport(session, business_id)
+        imports = ProductsImport(session, business_id, units_reader(session, business_id))
         variety_id = imports.write_variety("Blue Dream", NoCommit(), _unit_id(session, business_id))
         imports.write_price_entry(variety_id, row, NoCommit())
         session.commit()

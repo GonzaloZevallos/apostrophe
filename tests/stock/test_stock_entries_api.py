@@ -221,7 +221,7 @@ def test_a_malformed_grams_value_is_refused(client: TestClient) -> None:
     )
 
     assert response.status_code == 422
-    assert response.json()["code"] == "grams.invalid"
+    assert response.json()["code"] == "quantity.too_many_decimals"
 
 
 def _archived_variety(client: TestClient, engine: Engine, name: str) -> int:

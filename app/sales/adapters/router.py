@@ -32,6 +32,7 @@ from app.sales.application.ports import (
     OwingSales,
     PricingSettingsReader,
     SaleView,
+    UnitsReader,
 )
 from app.sales.application.record_sale import LineInput
 from app.sales.application.record_sale import record_sale as record_sale_use_case
@@ -42,7 +43,7 @@ from app.sales.domain.sale import (
     UnknownCustomer,
     UnknownVariety,
 )
-from app.shared.quantity import InvalidQuantity, Quantity
+from app.shared.quantity import InvalidQuantity, Quantity, TooManyDecimals
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -105,6 +106,14 @@ def get_business_names(session: SessionDep, business_id: CurrentBusinessId) -> B
     return SqlBusinessNames(session, business_id)
 
 
+def get_units(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> UnitsReader:
+    # Sales never imports `app.units`: `app/main.py` hangs the real reader on
+    # `app.state.sales_units` as a `(Session, business_id)` factory (docs/adr/0055).
+    factory = cast(Callable[[Session, int], UnitsReader], request.app.state.sales_units)
+    return factory(session, business_id)
+
+
+UnitsDep = Annotated[UnitsReader, Depends(get_units)]
 LineCostsDep = Annotated[LineCosts, Depends(get_line_costs)]
 PricingSettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 OwingSalesDep = Annotated[OwingSales, Depends(get_owing_sales)]
@@ -115,7 +124,7 @@ as_http = TranslateErrors(
     [
         (404, (SaleNotFound, UnknownCustomer, UnknownVariety)),
         (409, (CustomerAlreadyAssigned,)),
-        (422, (SaleRuleBroken, InvalidQuantity)),
+        (422, (SaleRuleBroken, InvalidQuantity, TooManyDecimals)),
     ]
 )
 
@@ -136,6 +145,7 @@ def record_sale(
     price_book: PriceBookDep,
     customer_facts: CustomerFactsDep,
     pricing_settings: PricingSettingsDep,
+    units: UnitsDep,
     owing_sales: OwingSalesDep,
     session: SessionDep,
     today: TodayDep,
@@ -148,6 +158,7 @@ def record_sale(
             price_book,
             customer_facts,
             pricing_settings,
+            units,
             session,
             sale_date=body.date or today,
             today=today,

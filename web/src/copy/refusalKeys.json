@@ -32,6 +32,7 @@
   "variety.duplicate_effective_date": "refusals:generic",
   "variety.price_entry_not_found": "refusals:goneNotice",
   "grams.invalid": "refusals:generic",
+  "quantity.too_many_decimals": "refusals:generic",
   "expense_category.not_found": "refusals:goneNotice",
   "expense_category.name_taken": "refusals:generic",
   "expense_category.in_use": "refusals:generic",
