@@ -45,11 +45,12 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | payments | [payments](../../app/payments/application/ports.py) `Payments` `Ledgers` | [payments](generated/classes/payments.md) |
 | pinned_catalog | [pinned_catalog](../../app/pinned_catalog/application/ports.py) `TelegramApi` `PinSnapshots` `PinRecorder` | [pinned_catalog](generated/classes/pinned_catalog.md) |
 | pricing_settings | [pricing_settings](../../app/pricing_settings/application/ports.py) `PricingSettingsStore` | [pricing_settings](generated/classes/pricing_settings.md) |
-| products | [products](../../app/products/application/ports.py) `Products` `ProductLeaving` | [products](generated/classes/products.md) |
+| products | [products](../../app/products/application/ports.py) `Products` `ProductLeaving` `UnitsReader` | [products](generated/classes/products.md) |
 | results | [results](../../app/results/application/ports.py) `StockFigures` `SalesLedger` `DebtSummary` | [results](generated/classes/results.md) |
 | sales | [sales](../../app/sales/application/ports.py) `Sales` `PriceBook` `CustomerFacts` | [sales](generated/classes/sales.md) |
-| spreadsheet_import | [spreadsheet_import](../../app/spreadsheet_import/application/ports.py) `VarietiesImport` `SalesImport` | [spreadsheet_import](generated/classes/spreadsheet_import.md) |
+| spreadsheet_import | [spreadsheet_import](../../app/spreadsheet_import/application/ports.py) `VarietiesImport` `SalesImport` `UnitsImport` | [spreadsheet_import](generated/classes/spreadsheet_import.md) |
 | stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` | [stock](generated/classes/stock.md) |
+| units | [units](../../app/units/application/ports.py) `Units` | [units](generated/classes/units.md) |
 | shared | sin puertos de negocio: [transaction.py](../../app/shared/transaction.py) `Transaction` | [shared](generated/classes/shared.md) |
 
 Un ejemplo de punta a punta, con las llamadas en orden, está en [flujos-clave.md](flujos-clave.md).

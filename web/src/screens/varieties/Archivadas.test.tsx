@@ -209,8 +209,8 @@ describe('the Archivadas card', () => {
 
   test("joins the archived products to their catalog attributes on product_id, so Hidden marks only the matching row", async () => {
     const archived = [
-      { id: 21, name: 'Mora Vieja', archived: true, current_price: null },
-      { id: 22, name: 'Nogal Viejo', archived: true, current_price: null },
+      { id: 21, name: 'Mora Vieja', archived: true, current_price: null, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } },
+      { id: 22, name: 'Nogal Viejo', archived: true, current_price: null, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } },
     ] satisfies Variety[]
     const attributes = [
       { product_id: 22, name: 'Nogal Viejo', shown: false, emoji: null, indica_share: null, aroma: null },

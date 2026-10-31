@@ -22,8 +22,8 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 const VARIETIES = [
-  { id: 3, name: 'Sir Jack', archived: false, current_price: null },
-  { id: 4, name: 'Gelato', archived: false, current_price: null },
+  { id: 3, name: 'Sir Jack', archived: false, current_price: null, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } },
+  { id: 4, name: 'Gelato', archived: false, current_price: null, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } },
 ] satisfies Variety[]
 const STOCK_VIEW = { total: 0, products: [], entries: [] }
 

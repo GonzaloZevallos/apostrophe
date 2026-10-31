@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { restoreLanding } from './restoreLanding'
 
-const v = (id: number, name: string) => ({ id, name, archived: true, current_price: null })
+const v = (id: number, name: string) => ({ id, name, archived: true, current_price: null, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } })
 
 describe('restoreLanding', () => {
   const list = [v(5, 'Zeta'), v(4, 'Alfa'), v(6, 'Mango')]

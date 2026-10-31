@@ -68,6 +68,43 @@ def _seed(engine: Engine) -> None:
         )
 
 
+def _seed_quantities(engine: Engine) -> None:
+    """One row in every other table the migration must leave alone, so the comparison
+    holds real values for all six."""
+    _exec(
+        engine,
+        "INSERT INTO sale (id, business_id, sale_date, shipping_charged, recorded_at) "
+        "VALUES (1, 1, '2026-01-02', 0, '2026-01-02 12:00:00')",
+    )
+    _exec(
+        engine,
+        "INSERT INTO sale_line (id, business_id, sale_id, variety_id, grams_hundredths, "
+        "pricing_rule, price_per_gram, line_total, position) "
+        "VALUES (1, 1, 1, 1, 1250, 'list', 1000, 12500, 0)",
+    )
+    _exec(
+        engine,
+        "INSERT INTO stock_entry (id, business_id, entry_date, variety_id, origin, "
+        "grams_hundredths, total_cost, recorded_at) "
+        "VALUES (1, 1, '2026-01-01', 1, 'harvest', 50000, 7000, '2026-01-01 12:00:00')",
+    )
+    _exec(
+        engine,
+        "INSERT INTO stock_withdrawal (id, business_id, reason, withdrawn_on, recorded_at) "
+        "VALUES (1, 1, 'promotion', '2026-01-03', '2026-01-03 12:00:00')",
+    )
+    _exec(
+        engine,
+        "INSERT INTO stock_withdrawal_line (id, business_id, stock_withdrawal_id, variety_id, "
+        "position, grams_hundredths) VALUES (1, 1, 1, 1, 0, 300)",
+    )
+    _exec(
+        engine,
+        "INSERT INTO stock_threshold (id, business_id, variety_id, threshold_hundredths) "
+        "VALUES (1, 1, 1, 2500)",
+    )
+
+
 def _snapshot(
     engine: Engine, keep: dict[str, set[str]] | None = None
 ) -> dict[str, list[tuple[object, ...]]]:
@@ -95,7 +132,9 @@ def test_each_business_gets_one_grams_unit_and_every_value_that_existed_stays() 
     engine = make_engine("sqlite://")
     _upgrade_to(engine, "0019")
     _seed(engine)
+    _seed_quantities(engine)
     before = _snapshot(engine)
+    assert all(before[table] for table in UNTOUCHED)
     columns_before = _columns(engine)
 
     upgrade_to_head(engine)
@@ -123,7 +162,9 @@ def test_the_downgrade_drops_the_unit_and_keeps_every_variety() -> None:
     engine = make_engine("sqlite://")
     _upgrade_to(engine, "0019")
     _seed(engine)
+    _seed_quantities(engine)
     before = _snapshot(engine)
+    assert all(before[table] for table in UNTOUCHED)
     upgrade_to_head(engine)
 
     _downgrade_to(engine, "0019")

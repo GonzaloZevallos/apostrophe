@@ -215,8 +215,8 @@ test('saving posts each line\'s amount as `quantity`, never `grams`', async () =
 test('the posted line\'s product_id is the id of the product picked from the products list', async () => {
   const user = userEvent.setup()
   const price = { ...ROSA.current_price, vip_price: null } satisfies NonNullable<Variety['current_price']>
-  const menta = { id: 7, name: 'Menta', archived: false, current_price: price } satisfies Variety
-  const salvia = { id: 9, name: 'Salvia', archived: false, current_price: price } satisfies Variety
+  const menta = { id: 7, name: 'Menta', archived: false, current_price: price, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } } satisfies Variety
+  const salvia = { id: 9, name: 'Salvia', archived: false, current_price: price, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } } satisfies Variety
   const savedLine = {
     product_id: salvia.id,
     product_name: salvia.name,

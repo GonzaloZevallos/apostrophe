@@ -37,10 +37,10 @@ function price(list: number) {
 }
 
 const VARIETIES = [
-  { id: 4, name: 'Sir Jack', archived: false, current_price: price(11000) },
-  { id: 2, name: 'Golden Cookies', archived: false, current_price: price(14000) },
-  { id: 3, name: 'Mango Bomb', archived: false, current_price: null },
-  { id: 1, name: '24K Gold', archived: false, current_price: price(12000) },
+  { id: 4, name: 'Sir Jack', archived: false, current_price: price(11000), unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } },
+  { id: 2, name: 'Golden Cookies', archived: false, current_price: price(14000), unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } },
+  { id: 3, name: 'Mango Bomb', archived: false, current_price: null, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } },
+  { id: 1, name: '24K Gold', archived: false, current_price: price(12000), unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } },
 ] satisfies Variety[]
 
 function stockRow(product_id: number, patch: Partial<VarietyStock>) {

@@ -24,6 +24,7 @@ import { catalogQueryOptions } from '../api/catalog'
 import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
+import type { ProductUnit } from '../api/varieties'
 import { readStock, type VarietyStock } from '../api/stock'
 import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
@@ -79,6 +80,7 @@ export interface Variety {
   name: string
   archived: boolean
   current_price: PriceEntry | null
+  unit: ProductUnit
 }
 
 /** "135 g · 270 días", or the status' own line where there are no days to count ("0 g · Sin
