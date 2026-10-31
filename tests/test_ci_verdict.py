@@ -9,8 +9,7 @@ from pathlib import Path
 import pytest
 
 from scripts import ci_verdict
-from scripts.ci_verdict import PARKED_SUITES, SUITES, verdict
-from tests.test_stack_ci import PARKED
+from scripts.ci_verdict import SUITES, verdict
 
 FLAGS = {"pytest": "true", "vitest": "true", "e2e": "true"}
 
@@ -24,6 +23,7 @@ def needs(
     e2e: str = "success",
     checks: str = "success",
     web: str = "success",
+    docs: str = "success",
     coverage: str = "success",
 ) -> dict[str, object]:
     """A `needs` object with every job passing unless a keyword says otherwise."""
@@ -35,6 +35,7 @@ def needs(
         "e2e": {"result": e2e, "outputs": {}},
         "checks": {"result": checks, "outputs": {}},
         "web": {"result": web, "outputs": {}},
+        "docs": {"result": docs, "outputs": {}},
         "coverage": {"result": coverage, "outputs": {}},
     }
 
@@ -42,7 +43,7 @@ def needs(
 def test_everything_succeeding_passes_with_one_line_per_job() -> None:
     ok, lines = verdict(needs())
     assert ok
-    assert len(lines) == 7
+    assert len(lines) == 8
     assert not any("warning" in line for line in lines)
 
 
@@ -91,7 +92,7 @@ def test_a_skipped_changes_job_fails() -> None:
     assert lines == ["changes: skipped"]
 
 
-@pytest.mark.parametrize("job", ["checks", "web"])
+@pytest.mark.parametrize("job", ["checks", "web", "docs"])
 @pytest.mark.parametrize("result", ["failure", "cancelled", "skipped"])
 def test_an_always_job_that_is_not_success_fails(job: str, result: str) -> None:
     given = needs()
@@ -119,26 +120,33 @@ def test_coverage_cancelled_fails() -> None:
     assert "coverage: cancelled" in lines
 
 
-def test_a_failed_parked_e2e_is_a_pass_and_a_warning() -> None:
+def test_a_failed_e2e_fails_the_verdict() -> None:
     ok, lines = verdict(needs(e2e="failure"))
-    assert ok
-    assert "e2e: failure (warning)" in lines
+    assert not ok
+    assert "e2e: failure" in lines
 
 
-def test_a_parked_e2e_skipped_with_a_false_flag_passes_silently() -> None:
+def test_e2e_skipped_with_a_false_flag_passes() -> None:
     flags = {"pytest": "true", "vitest": "true", "e2e": "false"}
     ok, lines = verdict(needs(e2e="skipped", flags=flags))
     assert ok
-    assert not any("warning" in line for line in lines)
+    assert "e2e: skipped" in lines
 
 
-def test_a_parked_e2e_skipped_with_a_true_flag_is_a_warning_not_a_failure() -> None:
+def test_e2e_skipped_with_a_true_flag_fails() -> None:
     ok, lines = verdict(needs(e2e="skipped"))
-    assert ok
-    assert "e2e: skipped (warning)" in lines
+    assert not ok
+    assert "e2e: skipped but its flag is 'true'" in lines
 
 
-def test_a_cancelled_parked_e2e_fails() -> None:
+def test_e2e_skipped_with_a_missing_flag_fails() -> None:
+    flags = {"pytest": "true", "vitest": "true"}
+    ok, lines = verdict(needs(e2e="skipped", flags=flags))
+    assert not ok
+    assert "e2e: skipped but its flag is missing" in lines
+
+
+def test_a_cancelled_e2e_fails() -> None:
     ok, lines = verdict(needs(e2e="cancelled"))
     assert not ok
     assert "e2e: cancelled" in lines
@@ -169,11 +177,7 @@ def test_a_malformed_job_entry_fails_by_name() -> None:
 
 
 def test_the_suites_map_each_job_to_its_changes_flag() -> None:
-    assert SUITES == {"pytest": "pytest", "vitest": "vitest"}
-
-
-def test_e2e_is_parked_exactly_when_the_stack_ci_test_parks_its_command() -> None:
-    assert ("e2e" in PARKED_SUITES) == ("npm --prefix web run e2e" in PARKED)
+    assert SUITES == {"pytest": "pytest", "vitest": "vitest", "e2e": "e2e"}
 
 
 def test_main_exits_zero_on_a_pass_and_prints_only_names_and_results(

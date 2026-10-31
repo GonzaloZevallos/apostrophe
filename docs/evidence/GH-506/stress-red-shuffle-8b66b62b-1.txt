@@ -1,0 +1,76 @@
+
+ RUN  v5.0.3 /home/zeta/.cache/agentic/scratch/2996b5300205/GH-506/r-238cca10/wt-4c6596b6/web
+      Running tests with seed "163994"
+
+ ❯ |unit| src/screens/clientes/Clientes.test.tsx (33 tests | 1 failed) 4968ms
+   × with no hand-off the list moves nothing and focuses nothing 146ms
+ ❯ |unit| src/screens/ventas/NuevaVenta.test.tsx (20 tests | 1 failed) 7221ms
+   × with no history behind it, "Close" replaces the form with Ventas instead of pushing it 223ms
+e2eToastRule: 27 sites observed in the page, 6 kept on page text, 86 pending
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/screens/clientes/Clientes.test.tsx > with no hand-off the list moves nothing and focuses nothing
+Error: [2mexpect([22m[31melement[39m[2m).not.toHaveFocus()[22m
+
+Received element is focused:
+  [31m<a
+  aria-label="Collect from Ana Pérez"
+  class="boton"
+  data-discover="true"
+  href="/customers/1/payment"
+>
+  <svg
+    aria-hidden="true"
+    fill="none"
+    height="22"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.6"
+    viewBox="0 0 24 24"
+    width="22"
+  >
+    <rect
+      height="11"
+      rx="2.5"
+      width="18"
+      x="3"
+      y="6.5"
+    />
+    <circle
+      cx="12"
+      cy="12"
+      r="2.4"
+    />
+  </svg>
+  Collect
+</a>[39m
+ ❯ src/screens/clientes/Clientes.test.tsx:755:23
+    753|   await new Promise((resolve) => setTimeout(resolve, 50))
+    754|
+    755|   expect(collect).not.toHaveFocus()
+       |                       ^
+    756|   expect(scrollTo).not.toHaveBeenCalled()
+    757| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| src/screens/ventas/NuevaVenta.test.tsx > with no history behind it, "Close" replaces the form with Ventas instead of pushing it
+AssertionError: expected '/sales/new' not to be '/sales/new' // Object.is equality
+ ❯ src/screens/ventas/NuevaVenta.test.tsx:215:46
+    213|
+    214|   await act(() => router.navigate(-1))
+    215|   expect(router.state.location.pathname).not.toBe(SALE_NEW)
+       |                                              ^
+    216| })
+    217|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 238 passed | 1 skipped (241)
+      Tests  2 failed | 3651 passed | 4 skipped (3657)
+   Start at  06:09:15
+   Duration  201.27s (environment 42%, tests 39%, setup 8%, import 6%, transform 4%, worker 1%)
+

@@ -16,6 +16,7 @@ from scripts.ci_changes import (
     SELECTOR_INPUTS,
     Selection,
     diff_argv,
+    is_safe_path,
     main,
     paths_from_git,
     pytest_readers,
@@ -396,6 +397,8 @@ def test_main_runs_the_diff_for_a_pull_request_and_prints_the_outputs(
         "pytest": "true",
         "vitest": "false",
         "e2e": "false",
+        "vitest_all": "false",
+        "vitest_files": 0,
         "areas": ["catalog", "pinned_catalog", "sales"],
         "selected": ["catalog", "sales"],
     }
@@ -430,6 +433,145 @@ def test_main_selects_everything_when_the_diff_is_unusable_for_the_event(
     if result.returncode or not result.stdout:
         _, printed = run_main("pull_request", result, root, capsys)
         assert printed == expected
+
+
+# --- e2e outputs, safe paths and the new selection keys ----------------------------------------
+
+
+def rendered(paths: Sequence[str] | None, root: Path) -> dict[str, str]:
+    return outputs(render(select(paths, root)))
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("web/e2e/foo.spec.ts", True),
+        ("tests/catalog", True),
+        ("web/e2e/a-b.spec.ts", True),
+        ("./x", True),
+        ("-x.spec.ts", False),
+        ("web/e2e/-x.spec.ts", True),
+        ("web/e2e/x.spec.ts\n", False),
+        ("web/e2e/a b.spec.ts", False),
+        ("web/e2e/*.spec.ts", False),
+        ("web/e2e/$(id).spec.ts", False),
+        ("web/e2e/a;b.spec.ts", False),
+        ("", False),
+        ("web/e2e/a\nb.spec.ts", False),
+    ],
+)
+def test_is_safe_path_accepts_plain_paths_and_rejects_the_rest(path: str, expected: bool) -> None:
+    assert is_safe_path(path) is expected
+
+
+def test_e2e_matrix_and_args_are_empty_when_e2e_is_false(tmp_path: Path) -> None:
+    printed = rendered(["app/catalog/data.py"], make_tree(tmp_path))
+
+    assert printed["e2e"] == "false"
+    assert json.loads(printed["e2e_matrix"]) == []
+    assert printed["e2e_args"] == ""
+
+
+def test_one_spec_gives_a_one_shard_matrix_and_its_path_without_web(tmp_path: Path) -> None:
+    printed = rendered(["web/e2e/other.spec.ts"], make_tree(tmp_path))
+
+    assert json.loads(printed["e2e_matrix"]) == [1]
+    assert printed["e2e_args"] == "e2e/other.spec.ts"
+
+
+def test_the_setup_file_travels_with_the_mobile_spec_in_the_args(tmp_path: Path) -> None:
+    printed = rendered(["web/src/screens/clientes/Clientes.tsx"], make_tree(tmp_path))
+
+    assert printed["e2e_args"] == "e2e/mobile.setup.ts e2e/mobile.spec.ts"
+    assert json.loads(printed["e2e_matrix"]) == [1]
+
+
+def test_four_or_more_specs_give_a_matrix_capped_at_four_shards(tmp_path: Path) -> None:
+    root = make_tree(tmp_path)
+    for spec in ("a", "b", "c"):
+        write(root, f"web/e2e/{spec}.spec.ts")
+    write(
+        root,
+        "scripts/e2e_screen_specs.json",
+        json.dumps({"Foo": [f"web/e2e/{n}.spec.ts" for n in ("a", "b", "c", "foo", "other")]}),
+    )
+
+    printed = rendered(["web/src/screens/Foo.tsx"], root)
+
+    assert json.loads(printed["e2e_matrix"]) == [1, 2, 3, 4]
+    assert printed["e2e_shards"] == "4"
+
+
+def test_a_full_e2e_run_has_empty_args_so_playwright_runs_every_spec(tmp_path: Path) -> None:
+    printed = rendered(["web/src/App.tsx"], make_tree(tmp_path))
+
+    assert printed["e2e"] == "true"
+    assert printed["e2e_args"] == ""
+    assert json.loads(printed["e2e_matrix"]) == [1, 2, 3]
+    assert rendered(None, make_tree(tmp_path / "again"))["e2e_args"] == ""
+
+
+@pytest.mark.parametrize("name", ["-x.spec.ts", "a b.spec.ts", "*.spec.ts"])
+def test_an_unsafe_spec_name_empties_the_e2e_args(tmp_path: Path, name: str) -> None:
+    root = make_tree(tmp_path)
+    write(root, f"web/e2e/{name}")
+
+    printed = rendered([f"web/e2e/{name}"], root)
+
+    assert printed["e2e"] == "true"
+    assert printed["e2e_args"] == ""
+    assert json.loads(printed["e2e_matrix"]) == [1]
+
+
+def test_an_unsafe_tests_path_collapses_the_pytest_matrix_to_one_all_shard(
+    tmp_path: Path,
+) -> None:
+    root = make_tree(tmp_path)
+    write(root, "tests/test_a b.py", "def test_one() -> None: ...\n")
+
+    printed = rendered(["tests/test_a b.py"], root)
+
+    assert printed["pytest"] == "true"
+    assert json.loads(printed["pytest_matrix"]) == {"include": [{"shard": "all", "paths": ""}]}
+    chosen = json.loads(printed["selection"])
+    assert chosen["selected"] == chosen["areas"] == ["catalog", "pinned_catalog", "sales"]
+
+
+def test_safe_paths_keep_the_sharded_matrix(tmp_path: Path) -> None:
+    printed = rendered(["app/catalog/data.py"], make_tree(tmp_path))
+
+    matrix = json.loads(printed["pytest_matrix"])["include"]
+    assert [entry["shard"] for entry in matrix] == ["always", "areas-1", "areas-2"]
+
+
+def test_pytest_false_keeps_an_empty_matrix_rather_than_an_all_shard(tmp_path: Path) -> None:
+    printed = rendered(["web/src/App.tsx"], make_tree(tmp_path))
+
+    assert json.loads(printed["pytest_matrix"]) == {"include": []}
+
+
+def test_the_selection_reports_vitest_all_and_the_count_of_vitest_files(tmp_path: Path) -> None:
+    root = make_tree(tmp_path)
+
+    partial = json.loads(rendered(["web/src/screens/Foo.tsx"], root)["selection"])
+    full = json.loads(rendered(None, root)["selection"])
+
+    assert partial["vitest_all"] == "false"
+    assert partial["vitest_files"] == 1
+    assert full["vitest_all"] == "true"
+    assert isinstance(full["vitest_files"], int)
+
+
+@pytest.mark.parametrize("event", ["push", "workflow_dispatch"])
+def test_any_event_but_a_pull_request_sets_every_flag_true(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], event: str
+) -> None:
+    root = make_tree(tmp_path)
+
+    _, printed = run_main(event, CommandResult(0, "docs/adr/x.md\n"), root, capsys)
+
+    assert [printed[flag] for flag in ("pytest", "vitest", "e2e", "vitest_all")] == ["true"] * 4
+    assert printed["e2e_args"] == ""
 
 
 # --- the reader map -----------------------------------------------------------------------------

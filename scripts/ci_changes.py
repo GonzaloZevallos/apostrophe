@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -37,6 +38,7 @@ SELECTOR_INPUTS = (
     "scripts/ci_changes.py",
     "scripts/e2e_screen_specs.json",
     "scripts/affected.py",
+    "scripts/ci_vitest.py",
 )
 
 STACK_PATH: Final = ".agentic/stack.yaml"
@@ -46,6 +48,24 @@ MAX_E2E_SHARDS: Final = 4
 MOBILE_PAIR: Final = ("web/e2e/mobile.spec.ts", "web/e2e/mobile.setup.ts")
 _WATCHED: Final = frozenset({"web", "docs"})
 _TEST_SUFFIXES: Final = (".test.ts", ".test.tsx")
+_SAFE_PATH: Final = re.compile(r"[A-Za-z0-9._/][A-Za-z0-9._/-]*")
+ALL_SHARD: Final = "all"
+
+
+# --- paths that may reach a shell --------------------------------------------------------------
+
+
+def is_safe_path(path: str) -> bool:
+    """Whether a path a fork can influence is plain enough to travel through `env:` into a command
+    line: letters, digits, `.`, `_`, `-` and `/`, never starting with `-`. Every producer of such a
+    value drops it to a full run when any path fails this."""
+    return _SAFE_PATH.fullmatch(path) is not None
+
+
+def _is_plain_path(path: str) -> bool:
+    """`is_safe_path`, and no segment starts with `-` (a spec name Playwright could read as an
+    option once the directory is stripped)."""
+    return is_safe_path(path) and not any(part.startswith("-") for part in path.split("/"))
 
 
 # --- the git side -----------------------------------------------------------------------------
@@ -634,6 +654,8 @@ class Selection:
     vitest_files: list[str]
     e2e_specs: list[str]
     e2e_shards: int
+    e2e_all: bool
+    shard_paths_safe: bool
     areas: list[str]
     selected: list[str]
 
@@ -654,6 +676,14 @@ def _matrix(root: Path, dirs: list[str], always: list[str]) -> list[dict[str, st
     for number, names in enumerate(bins, start=1):
         matrix.append({"shard": f"areas-{number}", "paths": " ".join(f"tests/{n}" for n in names)})
     return matrix
+
+
+def _e2e_shards(specs: list[str]) -> int:
+    """Shards for the selected specs: one per spec up to the cap, and at least one whenever
+    anything is selected."""
+    if not specs:
+        return 0
+    return min(MAX_E2E_SHARDS, max(1, sum(s.endswith(".spec.ts") for s in specs)))
 
 
 def select(paths: Sequence[str] | None, root: Path) -> Selection:
@@ -700,14 +730,30 @@ def _finish(plan: _Plan, root: Path) -> Selection:
         pytest_matrix=matrix,
         vitest_files=vitest_files,
         e2e_specs=e2e_specs,
-        e2e_shards=min(MAX_E2E_SHARDS, sum(s.endswith(".spec.ts") for s in e2e_specs)),
+        e2e_shards=_e2e_shards(e2e_specs),
+        e2e_all=plan.all_e2e,
+        shard_paths_safe=all(is_safe_path(p) for p in [*always, *(f"tests/{d}" for d in ordered)]),
         areas=list(known),
         selected=sorted([*ordered, *in_always]) if matrix else [],
     )
 
 
+def _e2e_args(selection: Selection) -> str:
+    """The spec and setup paths below `web/` for Playwright; empty (every configured spec) on a
+    full run or when any selected path is unsafe."""
+    if selection.e2e_all or not _all_plain(selection.e2e_specs):
+        return ""
+    return " ".join(spec.removeprefix("web/") for spec in selection.e2e_specs)
+
+
+def _all_plain(paths: list[str]) -> bool:
+    return all(_is_plain_path(path) for path in paths)
+
+
 def render(selection: Selection) -> list[str]:
-    """The `key=value` lines for `$GITHUB_OUTPUT`: flags as `"true"`/`"false"`, lists as JSON."""
+    """The `key=value` lines for `$GITHUB_OUTPUT`: flags as `"true"`/`"false"`, lists as JSON. A
+    pytest path that is not safe collapses the matrix to one `all` shard with no paths, which
+    runs every test and counts as every area selected."""
 
     def flag(value: bool) -> str:
         return "true" if value else "false"
@@ -715,12 +761,20 @@ def render(selection: Selection) -> list[str]:
     def dump(value: object) -> str:
         return json.dumps(value, separators=(",", ":"))
 
+    matrix = selection.pytest_matrix
+    selected = selection.selected
+    if matrix and not selection.shard_paths_safe:
+        matrix = [{"shard": ALL_SHARD, "paths": ""}]
+        selected = sorted(selection.areas)
+    e2e_matrix = list(range(1, selection.e2e_shards + 1)) if selection.e2e else []
     coverage = {
         "pytest": flag(selection.pytest),
         "vitest": flag(selection.vitest),
         "e2e": flag(selection.e2e),
+        "vitest_all": flag(selection.vitest_all),
+        "vitest_files": len(selection.vitest_files),
         "areas": selection.areas,
-        "selected": selection.selected,
+        "selected": selected,
     }
     return [
         f"pytest={flag(selection.pytest)}",
@@ -728,10 +782,12 @@ def render(selection: Selection) -> list[str]:
         f"e2e={flag(selection.e2e)}",
         f"vitest_changed={flag(selection.vitest_changed)}",
         f"vitest_all={flag(selection.vitest_all)}",
-        f"pytest_matrix={dump({'include': selection.pytest_matrix})}",
+        f"pytest_matrix={dump({'include': matrix})}",
         f"vitest_files={dump(selection.vitest_files)}",
         f"e2e_specs={dump(selection.e2e_specs)}",
         f"e2e_shards={selection.e2e_shards}",
+        f"e2e_matrix={dump(e2e_matrix)}",
+        f"e2e_args={_e2e_args(selection)}",
         f"selection={dump(coverage)}",
     ]
 

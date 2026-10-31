@@ -1,9 +1,12 @@
 import { describe, expect, test } from 'vitest'
+import { HOME } from '../routes.ts'
 import {
   parseFacts,
   parseRegistry,
+  parseRouteRegistry,
   resolvePlaceholders,
   REGISTRY,
+  ROUTE_REGISTRY,
   SCREEN_NAMES,
   SKIP_COMPUTER_VIEWPORT,
   SKIP_NO_ROUTE,
@@ -163,5 +166,43 @@ describe('parseFacts', () => {
     ['a list', []],
   ])('refuses %s', (_name, raw) => {
     expect(() => parseFacts(raw)).toThrow(/facts/)
+  })
+})
+
+describe('parseRouteRegistry', () => {
+  test('reads path, kind and parent; a root has no parent', () => {
+    expect(
+      parseRouteRegistry({
+        registry: [
+          { path: HOME, kind: 'root' },
+          { path: '/shop/{id}', kind: 'card', parent: '/shop', computer_parent: HOME, archived_parent: '/shop/old' },
+          { path: '/shop/new', kind: 'form', parent: '/shop' },
+        ],
+      }),
+    ).toEqual([
+      { path: HOME, kind: 'root', parent: null, computerParent: null, archivedParent: null },
+      { path: '/shop/{id}', kind: 'card', parent: '/shop', computerParent: HOME, archivedParent: '/shop/old' },
+      { path: '/shop/new', kind: 'form', parent: '/shop', computerParent: null, archivedParent: null },
+    ])
+  })
+
+  test.each([
+    ['no registry list', {}, /no registry list/],
+    ['a missing path', { registry: [{ kind: 'root' }] }, /path/],
+    ['an empty path', { registry: [{ path: '', kind: 'root' }] }, /path/],
+    ['an invalid kind', { registry: [{ path: '/x', kind: 'sheet' }] }, /kind/],
+    ['a parent that is not text', { registry: [{ path: '/x', kind: 'form', parent: 3 }] }, /parent/],
+    ['a form without a parent', { registry: [{ path: '/x', kind: 'form' }] }, /parent/],
+    ['a computer parent that is not text', { registry: [{ path: '/x', kind: 'root', computer_parent: 1 }] }, /computer_parent is not text/],
+    ['an archived parent that is not text', { registry: [{ path: '/x', kind: 'card', parent: '/y', archived_parent: {} }] }, /archived_parent is not text/],
+  ])('refuses %s', (_name, raw, message) => {
+    expect(() => parseRouteRegistry(raw)).toThrow(message)
+  })
+
+  test('the real registry[] is parsed: every path starts with a slash', () => {
+    expect(ROUTE_REGISTRY.length).toBeGreaterThan(30)
+    for (const route of ROUTE_REGISTRY) expect(route.path.startsWith(HOME)).toBe(true)
+    expect(ROUTE_REGISTRY.map((route) => route.path)).toContain(`${HOME}withdrawals${HOME}{id}${HOME}edit`)
+    expect(ROUTE_REGISTRY.map((route) => route.path)).toContain(`${HOME}login`)
   })
 })

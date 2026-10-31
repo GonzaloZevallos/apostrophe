@@ -227,7 +227,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   expect(consoleMessages).toEqual([])
 
   // --- The plural form: two more sales left owing bring the count to "2 ventas
-  // debiendo", and Te deben's header total is their sum (payments.md, Metrics
+  // debiendo", and Te deben's header total is their sum (payments.md, Métricas
   // "Who-owes totals" and "No curl"). ---
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()

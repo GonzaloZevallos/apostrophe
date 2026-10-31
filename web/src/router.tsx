@@ -70,7 +70,6 @@ import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
 import GatedLayout from './shell/GatedLayout'
-import { holdScrollRestoration, watchScroll } from './shell/scrollPlaces'
 import Shell from './shell/Shell'
 import {
   CATCH_ALL,
@@ -193,7 +192,3 @@ export const router = createBrowserRouter([
     ],
   },
 ])
-
-// Offsets are read in `router.subscribe`, before the new screen is drawn (ADR-0065).
-watchScroll(router)
-holdScrollRestoration()

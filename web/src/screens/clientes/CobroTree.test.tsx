@@ -161,6 +161,27 @@ describe('on a phone', () => {
     expect(router.state.location.pathname).toBe(PAYMENT)
   })
 
+  test('a Back sent right after the choice, before any scheduled effect has run, still asks', async () => {
+    const router = renderApp([{ pathname: CUSTOMERS }, { pathname: PAYMENT }], 'phone')
+    const cash = await screen.findByRole('radio', { name: 'Cash' })
+
+    // Outside `act`, so no scheduled effect is flushed for the test.
+    const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    env.IS_REACT_ACT_ENVIRONMENT = false
+    try {
+      cash.click()
+      // A browser's Back is another task: the click's own microtasks have run, scheduled
+      // (macro)task effects have not.
+      await Promise.resolve()
+      void router.navigate(-1)
+    } finally {
+      env.IS_REACT_ACT_ENVIRONMENT = true
+    }
+
+    expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(PAYMENT)
+  })
+
   test('the sheet holds exactly one Close, and Save inside the form in its pinned actions', async () => {
     renderApp([{ pathname: PAYMENT }], 'phone')
     const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
