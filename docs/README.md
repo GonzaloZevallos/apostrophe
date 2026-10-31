@@ -8,6 +8,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 
 - [Accounts](product/accounts.md)
 - [Análisis](product/analysis.md)
+- [Brand](product/brand.md)
 - [Catalog](product/catalog.md)
 - [Clientes](product/customers.md)
 - [Design capture](product/design-capture.md)
