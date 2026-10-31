@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, PlainSerializer
+from pydantic import BaseModel, PlainSerializer, model_validator
 
 from app.products.domain.product import PriceEntry, Product
 from app.shared.unit import Unit
@@ -18,6 +18,20 @@ class ProductIn(BaseModel):
 class ProductCreateIn(ProductIn):
     # Optional only while the business has exactly one unit (a compatibility rule).
     unit_id: int | None = None
+
+
+class ProductPatchIn(BaseModel):
+    """A rename or a unit change, never both: the unit change is one guarded statement
+    of its own, so it never shares a transaction with another edit."""
+
+    name: str | None = None
+    unit_id: int | None = None
+
+    @model_validator(mode="after")
+    def _one_of_them(self) -> "ProductPatchIn":
+        if (self.name is None) == (self.unit_id is None):
+            raise ValueError("name a new name or a new unit_id, not both and not neither")
+        return self
 
 
 class UnitOut(BaseModel):

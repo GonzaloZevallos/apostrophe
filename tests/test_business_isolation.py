@@ -1133,3 +1133,19 @@ def test_a_body_reference_to_a_missing_or_foreign_unit_is_refused_the_same_way(
     assert missing.json() == other_business.json()
     assert missing.json()["code"] == "unit.not_found"
     assert business_b.get("/api/products").json() == []
+
+
+def test_a_unit_change_reaches_neither_another_businesss_product_nor_its_unit(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    unit_a = business_a.get(f"/api/products/{seeded_b['variety_id']}").json()["unit"]["id"]
+    product_b = business_b.post("/api/products", json={"name": f"{MARKER} unit change"}).json()
+
+    foreign_product = business_a.patch(f"/api/products/{product_b['id']}", json={"unit_id": unit_a})
+    foreign_unit = business_b.patch(f"/api/products/{product_b['id']}", json={"unit_id": unit_a})
+
+    assert foreign_product.status_code == 404, foreign_product.text
+    assert foreign_product.json()["code"] == "variety.not_found"
+    assert foreign_unit.status_code == 404, foreign_unit.text
+    assert foreign_unit.json()["code"] == "unit.not_found"
+    assert business_b.get(f"/api/products/{product_b['id']}").json()["unit"] == product_b["unit"]

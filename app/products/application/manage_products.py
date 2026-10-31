@@ -7,10 +7,12 @@ from app.products.application.errors import (
     ProductArchived,
     ProductHasHistory,
     ProductNotFound,
+    ProductUnitDecimalsInUse,
+    ProductUnitLocked,
     ProductUnitRequired,
     UnitNotFound,
 )
-from app.products.application.ports import ProductLeaving, Products, UnitsReader
+from app.products.application.ports import ProductLeaving, Products, UnitChanging, UnitsReader
 from app.products.domain.product import NameHolder, Product, ProductName
 from app.shared.transaction import Transaction
 
@@ -50,6 +52,32 @@ def rename_product(
     stored = products.save(product)
     transaction.commit()
     return stored
+
+
+def change_product_unit(
+    products: UnitChanging,
+    units: UnitsReader,
+    transaction: Transaction,
+    product_id: int,
+    unit_id: int,
+) -> Product:
+    """The one guarded write decides; a refusal reads once to say which rule held it back.
+    A product keeps its unit for good once it has history, so that is the first reason."""
+    product = get_product(products, product_id)
+    if product.is_archived:
+        raise ProductArchived(product_id)
+    unit = units.get(unit_id)
+    if unit is None:
+        raise UnitNotFound
+    if product.unit_id == unit.id:
+        return product
+    if not products.change_unit(product_id, unit):
+        if products.has_history(product_id):
+            raise ProductUnitLocked
+        get_product(products, product_id)
+        raise ProductUnitDecimalsInUse
+    transaction.commit()
+    return get_product(products, product_id)
 
 
 def _require_name_free(products: Products, name: ProductName, other_than: int | None) -> None:

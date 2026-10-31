@@ -2739,19 +2739,6 @@
         "title": "ProductDetailOut",
         "type": "object"
       },
-      "ProductIn": {
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "title": "ProductIn",
-        "type": "object"
-      },
       "ProductOut": {
         "properties": {
           "archived": {
@@ -2788,6 +2775,35 @@
           "unit"
         ],
         "title": "ProductOut",
+        "type": "object"
+      },
+      "ProductPatchIn": {
+        "description": "A rename or a unit change, never both: the unit change is one guarded statement\nof its own, so it never shares a transaction with another edit.",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "title": "ProductPatchIn",
         "type": "object"
       },
       "ProductRowOut": {
@@ -4530,7 +4546,8 @@
         ]
       },
       "patch": {
-        "operationId": "rename_product_api_products__product_id__patch",
+        "description": "Renames the product, or gives it another unit (never both in one request).",
+        "operationId": "patch_product_api_products__product_id__patch",
         "parameters": [
           {
             "in": "path",
@@ -4546,7 +4563,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ProductIn"
+                "$ref": "#/components/schemas/ProductPatchIn"
               }
             }
           },
@@ -4579,7 +4596,7 @@
             "HTTPBearer": []
           }
         ],
-        "summary": "Rename Product",
+        "summary": "Patch Product",
         "tags": [
           "products"
         ]

@@ -35,7 +35,8 @@ class Products(Protocol):
         ...
 
     def has_history(self, product_id: int) -> bool:
-        """Any sale line or any stock entry of the variety, worked out live."""
+        """Any sale line, any stock entry or any withdrawal line of the product, worked out
+        live; the same expression that decides Delete versus Archive."""
         ...
 
     def remove_price_entries(self, product_id: int) -> None: ...
@@ -43,6 +44,15 @@ class Products(Protocol):
     def remove_unused(self, product_id: int) -> bool:
         """One guarded delete: the variety goes only while it still has no history, and
         `False` says it did not."""
+        ...
+
+
+class UnitChanging(Products, Protocol):
+    """The products of one business, and the one guarded write that gives one a unit."""
+
+    def change_unit(self, product_id: int, unit: Unit) -> bool:
+        """One guarded update: the product takes `unit` only while it has no history and
+        no bulk minimum or threshold finer than `unit` allows; `False` says it did not."""
         ...
 
 

@@ -14,8 +14,8 @@ from app.products.adapters.schemas import (
     PriceEntryOut,
     ProductCreateIn,
     ProductDetailOut,
-    ProductIn,
     ProductOut,
+    ProductPatchIn,
 )
 from app.products.adapters.sql_products import SqlProducts
 from app.products.application import manage_prices, manage_products
@@ -24,6 +24,8 @@ from app.products.application.errors import (
     NameTaken,
     ProductHasHistory,
     ProductNotFound,
+    ProductUnitDecimalsInUse,
+    ProductUnitLocked,
     ProductUnitRequired,
     UnitNotFound,
 )
@@ -89,7 +91,17 @@ as_http = TranslateErrors(
     [
         (404, (ProductNotFound, ProductArchived, UnknownPriceEntry, UnitNotFound)),
         (409, (NameTaken, NameHeldByArchived, ProductHasHistory, DuplicateEffectiveDate)),
-        (422, (ProductRuleBroken, VipPriceNotBelowList, InvalidQuantity, ProductUnitRequired)),
+        (
+            422,
+            (
+                ProductRuleBroken,
+                VipPriceNotBelowList,
+                InvalidQuantity,
+                ProductUnitRequired,
+                ProductUnitLocked,
+                ProductUnitDecimalsInUse,
+            ),
+        ),
     ]
 )
 
@@ -144,18 +156,25 @@ def delete_product(
 
 
 @router.patch("/{product_id}")
-def rename_product(
+def patch_product(
     product_id: int,
-    body: ProductIn,
+    body: ProductPatchIn,
     products: ProductsDep,
     units: UnitsDep,
     session: SessionDep,
     today: TodayDep,
 ) -> ProductOut:
+    """Renames the product, or gives it another unit (never both in one request)."""
     with as_http:
-        product = manage_products.rename_product(
-            products, session, product_id=product_id, raw_name=body.name
-        )
+        if body.unit_id is not None:
+            product = manage_products.change_product_unit(
+                products, units, session, product_id=product_id, unit_id=body.unit_id
+            )
+        else:
+            assert body.name is not None, "the body names a name or a unit_id"
+            product = manage_products.rename_product(
+                products, session, product_id=product_id, raw_name=body.name
+            )
         return ProductOut.of(product, today, _unit_of(units, product.unit_id))
 
 

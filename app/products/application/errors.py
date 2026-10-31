@@ -52,3 +52,23 @@ class UnitNotFound(LookupError):
 
     def __init__(self) -> None:
         super().__init__("no such unit")
+
+
+class ProductUnitLocked(ValueError):
+    """The product has history (a sale line, a stock entry or a withdrawal line), so its
+    unit is fixed for good. Fixed text: nothing of the product or the unit is repeated."""
+
+    code: ClassVar[str] = "product.unit_locked"
+
+    def __init__(self) -> None:
+        super().__init__("the product has history, so its unit cannot change")
+
+
+class ProductUnitDecimalsInUse(ValueError):
+    """A bulk minimum or the low-stock threshold of the product uses more decimals than
+    the new unit allows. Fixed text: no quantity or unit is repeated."""
+
+    code: ClassVar[str] = "product.unit_decimals_in_use"
+
+    def __init__(self) -> None:
+        super().__init__("a quantity of the product uses more decimals than the unit allows")

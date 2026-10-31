@@ -155,6 +155,12 @@ classDiagram
   class ProductNotFound {
     code : ClassVar~str~
   }
+  class ProductUnitDecimalsInUse {
+    code : ClassVar~str~
+  }
+  class ProductUnitLocked {
+    code : ClassVar~str~
+  }
   class ProductUnitRequired {
     code : ClassVar~str~
   }
@@ -169,6 +175,9 @@ classDiagram
     remove_unused(product_id: int) bool
     save(product: Product) Product
   }
+  class UnitChanging {
+    change_unit(product_id: int, unit: Unit) bool
+  }
   class UnitNotFound {
     code : ClassVar~str~
   }
@@ -177,6 +186,7 @@ classDiagram
     only_unit() Unit #124; None
     units_of(product_ids: Collection~int~) dict~int, Unit~
   }
+  UnitChanging --|> Products
 ```
 
 ## adapters
@@ -227,6 +237,10 @@ classDiagram
     unit
     of(product: Product, day: date, unit: Unit) 'ProductOut'
   }
+  class ProductPatchIn {
+    name : str #124; None
+    unit_id : int #124; None
+  }
   class ProductRow {
     archived_at : Mapped~datetime #124; None~
     business_id : Mapped~int~
@@ -249,6 +263,7 @@ classDiagram
   class SqlProducts {
     add(product: Product) Product
     archived() list~Product~
+    change_unit(product_id: int, unit: Unit) bool
     get(product_id: int) Product #124; None
     has_history(product_id: int) bool
     listed() list~Product~

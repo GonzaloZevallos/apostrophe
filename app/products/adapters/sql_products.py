@@ -1,4 +1,4 @@
-from sqlalchemy import ColumnElement, delete, exists, select
+from sqlalchemy import ColumnElement, delete, exists, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import flush_or_refuse
@@ -7,7 +7,8 @@ from app.products.domain.product import NameHolder, PriceEntry, Product, Product
 from app.sales.adapters.tables import SaleLineRow
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
-from app.stock.adapters.tables import StockEntryRow, StockWithdrawalLineRow
+from app.shared.unit import MAX_DECIMALS, Unit
+from app.stock.adapters.tables import StockEntryRow, StockThresholdRow, StockWithdrawalLineRow
 
 
 class SqlProducts:
@@ -89,6 +90,37 @@ class SqlProducts:
             )
         )
         self._session.expire_all()
+
+    def change_unit(self, product_id: int, unit: Unit) -> bool:
+        """One statement: the history check, the two finer-quantity checks and the update
+        cannot be pulled apart by an entry or a sale recorded in between. `step` is how
+        many hundredths one unit of the last decimal the unit allows is worth."""
+        step = 10 ** (MAX_DECIMALS - unit.decimals)
+        finer_minimum = exists().where(
+            PriceEntryRow.variety_id == product_id,
+            PriceEntryRow.business_id == self._business_id,
+            PriceEntryRow.bulk_minimum_hundredths % step != 0,
+        )
+        finer_threshold = exists().where(
+            StockThresholdRow.variety_id == product_id,
+            StockThresholdRow.business_id == self._business_id,
+            StockThresholdRow.threshold_hundredths % step != 0,
+        )
+        statement = (
+            update(ProductRow)
+            .where(
+                ProductRow.id == product_id,
+                ProductRow.business_id == self._business_id,
+                ~self._history_exists(product_id),
+                ~finer_minimum,
+                ~finer_threshold,
+            )
+            .values(unit_id=unit.id)
+            .returning(ProductRow.id)
+        )
+        changed = self._session.execute(statement).first()
+        self._session.expire_all()
+        return changed is not None
 
     def remove_unused(self, product_id: int) -> bool:
         """One statement: the history check and the delete cannot be pulled apart by a
