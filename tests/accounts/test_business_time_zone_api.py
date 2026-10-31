@@ -245,6 +245,20 @@ def test_moving_west_with_the_text_unchanged_edits_nothing_and_the_ticks_stay_qu
     assert telegram.calls == []
 
 
+def test_moving_east_with_the_text_unchanged_edits_nothing_and_the_ticks_stay_quiet(
+    app: Any, client: TestClient, telegram: FakeTelegram, clock: MovableClock
+) -> None:
+    _publish(client, "V1", "2026-01-01")
+    _tick(app.state, clock())
+    telegram.calls.clear()
+
+    _put(client, EAST)
+    _tick(app.state, clock())
+    _tick(app.state, clock())
+
+    assert telegram.calls == []
+
+
 def test_a_failed_edit_after_the_save_leaves_the_zone_saved_and_the_pin_out_of_date(
     client: TestClient, telegram: FakeTelegram, clock: MovableClock
 ) -> None:
@@ -367,34 +381,96 @@ def test_the_current_price_the_default_dates_and_the_week_follow_the_zone(
     assert entry.json()["date"] == "2026-10-04"
 
 
-def test_days_left_best_week_and_best_weekday_count_days_in_the_zone(
-    client: TestClient, clock: MovableClock
-) -> None:
-    product_id = _product(client)
+def _stocked_product(client: TestClient) -> int:
+    """A product with a price from January and 50 in stock since August, so a sale on any
+    date of the scenarios below is allowed."""
+    variety = client.post("/api/products", json={"name": "V1"}).json()
+    client.post(
+        f"/api/products/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 9000},
+    )
+    entry = client.post(
+        "/stock/entries",
+        json={
+            "product_id": variety["id"],
+            "origin": "opening_stock",
+            "quantity": "50",
+            "date": "2026-08-01",
+        },
+    )
+    assert entry.status_code == 201, entry.text
+    return int(variety["id"])
+
+
+def _sell_on(client: TestClient, product_id: int, day: str | None, quantity: str) -> None:
+    body: dict[str, Any] = {
+        "payment": "cash",
+        "lines": [{"product_id": product_id, "quantity": quantity}],
+    }
+    if day is not None:
+        body["date"] = day
+    sale = client.post("/sales", json=body)
+    assert sale.status_code == 201, sale.text
+
+
+def _two_businesses(
+    client: TestClient, other_client: TestClient, clock: MovableClock
+) -> tuple[TestClient, TestClient]:
+    """The same instant (4 Oct 23:30 in Los Angeles, already 5 Oct in Buenos Aires): the first
+    business stays on Argentina, the second moves to Los Angeles."""
     clock.set(LOCAL_LATE)
-    for days_back in (3, 2, 1):
-        sold_on = (date(2026, 10, 4) - timedelta(days=days_back)).isoformat()
-        client.post(
-            "/sales",
-            json={
-                "payment": "cash",
-                "date": sold_on,
-                "lines": [{"product_id": product_id, "quantity": "5"}],
-            },
-        )
+    assert _put(other_client, "America/Los_Angeles").status_code == 200
+    return client, other_client
 
-    def figures() -> tuple[Any, Any, Any]:
-        stock = client.get("/panel").json()["stock"][0]["days_left"]
-        analysis = client.get("/analysis").json()
-        weeks = [(w["best"], w["sales"]) for w in analysis["weeks"]]
-        weekdays = [(w["weekday"], w["count"]) for w in analysis["weekdays"]]
-        return stock, weeks, weekdays
 
-    in_argentina = figures()
-    _put(client, "America/Los_Angeles")
-    in_los_angeles = figures()
+def test_days_left_counts_its_thirty_days_back_from_the_zone_s_today(
+    client: TestClient, other_client: TestClient, clock: MovableClock
+) -> None:
+    argentina, los_angeles = _two_businesses(client, other_client, clock)
+    for business in (argentina, los_angeles):
+        # 5 Sep is the first day of the 30-day window ending 4 Oct (Los Angeles), and the day
+        # before the window ending 5 Oct (Buenos Aires).
+        _sell_on(business, _stocked_product(business), "2026-09-05", "5")
 
-    assert in_argentina != in_los_angeles
+    def days_left(business: TestClient) -> Any:
+        return business.get("/panel").json()["stock"][0]["days_left"]
+
+    assert days_left(argentina) is None
+    assert days_left(los_angeles) == 270
+
+
+def test_best_week_is_chosen_among_the_eight_weeks_ending_in_the_zone_s_today(
+    client: TestClient, other_client: TestClient, clock: MovableClock
+) -> None:
+    argentina, los_angeles = _two_businesses(client, other_client, clock)
+    for business in (argentina, los_angeles):
+        product_id = _stocked_product(business)
+        # The week of 10 Aug is the eighth back from Los Angeles' week and the ninth from
+        # Buenos Aires', so only Los Angeles still counts its big sale.
+        _sell_on(business, product_id, "2026-08-12", "10")
+        _sell_on(business, product_id, "2026-10-04", "1")
+
+    def best_week(business: TestClient) -> Any:
+        weeks = business.get("/analysis").json()["weeks"]
+        return [week["first_day"] for week in weeks if week["best"]]
+
+    assert best_week(argentina) == ["2026-09-28"]
+    assert best_week(los_angeles) == ["2026-08-10"]
+
+
+def test_best_weekday_is_the_weekday_of_the_zone_s_own_today(
+    client: TestClient, other_client: TestClient, clock: MovableClock
+) -> None:
+    argentina, los_angeles = _two_businesses(client, other_client, clock)
+    for business in (argentina, los_angeles):
+        _sell_on(business, _stocked_product(business), None, "1")
+
+    def best_weekday(business: TestClient) -> Any:
+        weekdays = business.get("/analysis").json()["weekdays"]
+        return [row["weekday"] for row in weekdays if row["best"]]
+
+    assert best_weekday(argentina) == [1]  # Monday 5 Oct
+    assert best_weekday(los_angeles) == [7]  # Sunday 4 Oct
 
 
 def test_records_after_the_new_today_keep_their_dates_and_stay_listed(
