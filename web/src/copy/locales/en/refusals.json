@@ -23,7 +23,6 @@
   "withdrawalDateInFuture": "The date cannot be in the future",
   "withdrawalNoLines": "Add at least one variety with its grams",
   "withdrawalGramsNotPositive": "Grams have to be more than zero",
-  "withdrawalGramsTooPrecise": "Grams allow up to two decimals",
   "withdrawalNoteTooLong": "The note allows up to 200 characters",
   "withdrawalVarietyNotFound": "A variety is gone: pick another"
 }

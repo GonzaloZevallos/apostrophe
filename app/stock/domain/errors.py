@@ -54,10 +54,6 @@ class WithdrawalQuantityNotPositive(ValueError):
     code: ClassVar[str] = "stock.withdrawal_grams_not_positive"
 
 
-class WithdrawalQuantityTooPrecise(ValueError):
-    code: ClassVar[str] = "stock.withdrawal_grams_too_precise"
-
-
 class WithdrawalNoteTooLong(ValueError):
     code: ClassVar[str] = "stock.withdrawal_note_too_long"
 

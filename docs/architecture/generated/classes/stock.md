@@ -293,9 +293,6 @@ classDiagram
   class WithdrawalQuantityNotPositive {
     code : ClassVar~str~
   }
-  class WithdrawalQuantityTooPrecise {
-    code : ClassVar~str~
-  }
   class WithdrawalReason {
     name
   }

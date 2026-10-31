@@ -79,7 +79,6 @@ describe('the exported tables hold the key of their code', () => {
       'stock.withdrawal_date_in_future',
       'stock.withdrawal_no_lines',
       'stock.withdrawal_grams_not_positive',
-      'stock.withdrawal_grams_too_precise',
       'stock.withdrawal_note_too_long',
       'stock.withdrawal_variety_not_found',
     ] satisfies RefusalCode[]

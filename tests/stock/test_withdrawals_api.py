@@ -222,7 +222,7 @@ def test_an_edit_keeps_the_recording_order_of_the_withdrawal(
         ({"note": "x" * 201}, "stock.withdrawal_note_too_long"),
         ({"lines": [{"product_id": 0, "quantity": "0"}]}, "stock.withdrawal_grams_not_positive"),
         ({"lines": [{"product_id": 0, "quantity": "-1"}]}, "stock.withdrawal_grams_not_positive"),
-        ({"lines": [{"product_id": 0, "quantity": "1.234"}]}, "stock.withdrawal_grams_too_precise"),
+        ({"lines": [{"product_id": 0, "quantity": "1.234"}]}, "quantity.too_many_decimals"),
     ],
 )
 def test_each_refusal_has_its_own_code_and_never_repeats_the_input(

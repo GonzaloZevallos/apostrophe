@@ -71,7 +71,6 @@
   "stock.withdrawal_date_in_future": "refusals:withdrawalDateInFuture",
   "stock.withdrawal_no_lines": "refusals:withdrawalNoLines",
   "stock.withdrawal_grams_not_positive": "refusals:withdrawalGramsNotPositive",
-  "stock.withdrawal_grams_too_precise": "refusals:withdrawalGramsTooPrecise",
   "stock.withdrawal_note_too_long": "refusals:withdrawalNoteTooLong",
   "stock.withdrawal_not_found": "refusals:goneNotice",
   "stock.withdrawal_variety_not_found": "refusals:withdrawalVarietyNotFound",

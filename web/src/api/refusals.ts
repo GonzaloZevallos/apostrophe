@@ -173,7 +173,6 @@ export const WITHDRAWAL_REFUSAL_MESSAGES: Record<
   | 'stock.withdrawal_date_in_future'
   | 'stock.withdrawal_no_lines'
   | 'stock.withdrawal_grams_not_positive'
-  | 'stock.withdrawal_grams_too_precise'
   | 'stock.withdrawal_note_too_long'
   | 'stock.withdrawal_variety_not_found',
   Refusal
@@ -182,7 +181,6 @@ export const WITHDRAWAL_REFUSAL_MESSAGES: Record<
   'stock.withdrawal_date_in_future': { key: REFUSAL_KEY['stock.withdrawal_date_in_future'] },
   'stock.withdrawal_no_lines': { key: REFUSAL_KEY['stock.withdrawal_no_lines'] },
   'stock.withdrawal_grams_not_positive': { key: REFUSAL_KEY['stock.withdrawal_grams_not_positive'] },
-  'stock.withdrawal_grams_too_precise': { key: REFUSAL_KEY['stock.withdrawal_grams_too_precise'] },
   'stock.withdrawal_note_too_long': { key: REFUSAL_KEY['stock.withdrawal_note_too_long'] },
   'stock.withdrawal_variety_not_found': { key: REFUSAL_KEY['stock.withdrawal_variety_not_found'] },
 }

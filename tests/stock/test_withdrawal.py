@@ -7,7 +7,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.shared.quantity import Quantity
+from app.shared.quantity import Quantity, TooManyDecimals
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
 from app.stock.domain.errors import (
@@ -16,7 +16,6 @@ from app.stock.domain.errors import (
     WithdrawalNoteTooLong,
     WithdrawalNotFound,
     WithdrawalQuantityNotPositive,
-    WithdrawalQuantityTooPrecise,
     WithdrawalReasonRequired,
     WithdrawalVarietyNotFound,
 )
@@ -27,7 +26,6 @@ type Refusal = (
     | WithdrawalDateInFuture
     | WithdrawalNoLines
     | WithdrawalQuantityNotPositive
-    | WithdrawalQuantityTooPrecise
     | WithdrawalNoteTooLong
     | WithdrawalNotFound
     | WithdrawalVarietyNotFound
@@ -121,7 +119,7 @@ def test_a_line_with_grams_not_above_zero_is_refused(raw: str) -> None:
 
 @pytest.mark.parametrize("raw", ["0.001", "1.005", "12.345"])
 def test_a_line_with_more_than_two_decimals_is_refused(raw: str) -> None:
-    with pytest.raises(WithdrawalQuantityTooPrecise):
+    with pytest.raises(TooManyDecimals):
         _line(quantity=raw)
 
 
@@ -183,7 +181,6 @@ def test_every_refusal_carries_its_code() -> None:
         WithdrawalDateInFuture: "stock.withdrawal_date_in_future",
         WithdrawalNoLines: "stock.withdrawal_no_lines",
         WithdrawalQuantityNotPositive: "stock.withdrawal_grams_not_positive",
-        WithdrawalQuantityTooPrecise: "stock.withdrawal_grams_too_precise",
         WithdrawalNoteTooLong: "stock.withdrawal_note_too_long",
         WithdrawalNotFound: "stock.withdrawal_not_found",
         WithdrawalVarietyNotFound: "stock.withdrawal_variety_not_found",

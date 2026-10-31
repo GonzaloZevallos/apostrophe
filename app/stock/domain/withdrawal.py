@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 
-from app.shared.quantity import HUNDREDTHS_PER_UNIT, Quantity
+from app.shared.quantity import HUNDREDTHS_PER_UNIT, Quantity, TooManyDecimals
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
 from app.stock.domain.errors import (
@@ -21,7 +21,6 @@ from app.stock.domain.errors import (
     WithdrawalNoLines,
     WithdrawalNoteTooLong,
     WithdrawalQuantityNotPositive,
-    WithdrawalQuantityTooPrecise,
     WithdrawalReasonRequired,
 )
 
@@ -47,7 +46,7 @@ class WithdrawalLine:
             raise WithdrawalQuantityNotPositive("a withdrawal line takes a quantity above zero")
         scaled = amount * HUNDREDTHS_PER_UNIT
         if scaled != scaled.to_integral_value():
-            raise WithdrawalQuantityTooPrecise("a withdrawal line allows at most two decimals")
+            raise TooManyDecimals()
         return cls(variety_id, Quantity(int(scaled)))
 
 

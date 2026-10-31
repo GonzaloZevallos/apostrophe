@@ -72,7 +72,6 @@
     "stock.withdrawal_date_in_future": { "kind": "refusal" },
     "stock.withdrawal_no_lines": { "kind": "refusal" },
     "stock.withdrawal_grams_not_positive": { "kind": "refusal" },
-    "stock.withdrawal_grams_too_precise": { "kind": "refusal" },
     "stock.withdrawal_note_too_long": { "kind": "refusal" },
     "stock.withdrawal_not_found": { "kind": "gone" },
     "stock.withdrawal_variety_not_found": { "kind": "gone" },

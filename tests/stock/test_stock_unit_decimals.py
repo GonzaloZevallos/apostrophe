@@ -3,6 +3,7 @@ is written: entry create and edit, withdrawal create and edit, and the threshold
 and 2 decimals (invariants 4, 5 and 6)."""
 
 from collections.abc import Collection
+from datetime import UTC, date, datetime
 from typing import Any
 
 import pytest
@@ -15,6 +16,7 @@ from sqlalchemy.orm import Session
 from app.main import units_reader
 from app.shared.quantity import Quantity, TooManyDecimals
 from app.shared.unit import Unit
+from app.spreadsheet_import.domain.rows import EntradaRow, SheetRef
 from app.stock.adapters.import_port import SqlStockImport
 from app.stock.adapters.tables import (
     StockEntryRow,
@@ -26,11 +28,8 @@ from app.stock.application.ports import UnitsReader
 from tests.fakes.units import set_unit_decimals
 
 TOO_MANY = "quantity.too_many_decimals"
-# decimals -> (a quantity the unit admits, one decimal too fine for it, the code a
-# withdrawal answers: three decimals never reach the unit, the withdrawal line's own
-# hundredths rule refuses them first)
+# decimals -> (a quantity the unit admits, one decimal too fine for it)
 CASES = [(0, "3", "3.5"), (1, "3.5", "3.55"), (2, "3.55", "3.555")]
-WITHDRAWAL_CODE = {0: TOO_MANY, 1: TOO_MANY, 2: "stock.withdrawal_grams_too_precise"}
 
 
 def _product(client: TestClient) -> int:
@@ -87,7 +86,7 @@ def test_a_withdrawal_finer_than_the_unit_is_refused_on_create_and_on_edit(
     refused = client.post("/stock/withdrawals", json=_withdrawal(product_id, too_fine))
 
     assert refused.status_code == 422
-    assert refused.json()["code"] == WITHDRAWAL_CODE[decimals]
+    assert refused.json()["code"] == TOO_MANY
     assert (_count(engine, StockWithdrawalRow), _count(engine, StockWithdrawalLineRow)) == (0, 0)
     created = client.post("/stock/withdrawals", json=_withdrawal(product_id, admitted))
     assert created.status_code == 201
@@ -96,7 +95,7 @@ def test_a_withdrawal_finer_than_the_unit_is_refused_on_create_and_on_edit(
     edited = client.put(path, json=_withdrawal(product_id, too_fine))
 
     assert edited.status_code == 422
-    assert edited.json()["code"] == WITHDRAWAL_CODE[decimals]
+    assert edited.json()["code"] == TOO_MANY
     assert client.get(path).json()["lines"][0]["quantity"] == float(admitted)
 
 
@@ -258,3 +257,28 @@ def test_the_import_refuses_a_quantity_finer_than_the_unit_and_writes_nothing(
             port.write_threshold(product_id, Quantity.of("1.5"), session)
         session.rollback()
     assert _count(engine, StockThresholdRow) == 0
+
+
+def test_the_import_refuses_an_entry_finer_than_the_unit_and_writes_nothing(
+    client: TestClient, engine: Engine
+) -> None:
+    set_unit_decimals(engine, 1)
+    product_id = _product(client)
+    row = EntradaRow(
+        ref=SheetRef(sheet="Entradas", row=5),
+        entry_date=date(2026, 10, 1),
+        variety="Lavanda",
+        quantity=Quantity.of("1.25"),
+        origin="Stock inicial",
+        total_cost=None,
+        note=None,
+        revisar=None,
+    )
+    with Session(engine) as session:
+        port = SqlStockImport(session, 1, units_reader(session, 1))
+        with pytest.raises(TooManyDecimals):
+            port.write_entry(
+                product_id, row, datetime(2026, 10, 2, tzinfo=UTC), date(2026, 10, 2), session
+            )
+        session.rollback()
+    assert _count(engine, StockEntryRow) == 0

@@ -46,7 +46,6 @@ from app.stock.domain.errors import (
     WithdrawalNoteTooLong,
     WithdrawalNotFound,
     WithdrawalQuantityNotPositive,
-    WithdrawalQuantityTooPrecise,
     WithdrawalReasonRequired,
     WithdrawalVarietyNotFound,
 )
@@ -124,8 +123,7 @@ as_http = TranslateErrors(
                 WithdrawalDateInFuture,
                 WithdrawalNoLines,
                 WithdrawalQuantityNotPositive,
-                WithdrawalQuantityTooPrecise,
-                WithdrawalNoteTooLong,
+                            WithdrawalNoteTooLong,
             ),
         ),
     ]

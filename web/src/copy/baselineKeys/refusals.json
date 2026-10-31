@@ -260,9 +260,6 @@
   "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_grams_not_positive\"]": {
     "key": "refusals:withdrawalGramsNotPositive"
   },
-  "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_grams_too_precise\"]": {
-    "key": "refusals:withdrawalGramsTooPrecise"
-  },
   "refusals.ts:REFUSAL_BY_CODE[\"stock.withdrawal_no_lines\"]": {
     "key": "refusals:withdrawalNoLines"
   },
@@ -376,9 +373,6 @@
   },
   "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_grams_not_positive\"]": {
     "key": "refusals:withdrawalGramsNotPositive"
-  },
-  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_grams_too_precise\"]": {
-    "key": "refusals:withdrawalGramsTooPrecise"
   },
   "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_no_lines\"]": {
     "key": "refusals:withdrawalNoLines"
