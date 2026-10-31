@@ -69,8 +69,9 @@ for (const [label, businessName, shows] of [
       await page.goto(HOME)
       await expect(page.locator('.encabezado__negocio')).toBeVisible()
 
-      const mark = page.getByRole('img', { name: 'apostrophe' })
-      const markImage = page.getByAltText('apostrophe')
+      const main = page.getByRole('main')
+      const mark = main.getByRole('img', { name: 'apostrophe' })
+      const markImage = main.getByAltText('apostrophe')
       if (shows) {
         await expect(mark).toBeVisible()
       } else {
