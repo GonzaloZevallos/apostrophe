@@ -22,6 +22,8 @@
     "variety.name_taken": { "kind": "refusal" },
     "variety.name_archived": { "kind": "refusal" },
     "variety.has_history": { "kind": "refusal" },
+    "product.unit_required": { "kind": "refusal" },
+    "unit.not_found": { "kind": "gone" },
     "variety.rule_broken": { "kind": "refusal" },
     "variety.name_invalid": { "kind": "refusal" },
     "variety.price_entry_invalid": { "kind": "refusal" },

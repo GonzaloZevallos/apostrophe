@@ -9,10 +9,19 @@ import { del, post } from './client'
 
 export type Removal = 'delete' | 'archive'
 
+/** The unit a product is measured in; `decimals` is how many a quantity of it may have. */
+export interface ProductUnit {
+  id: number
+  name: string
+  label: string
+  decimals: number
+}
+
 export interface VarietyDetail {
   id: number
   name: string
   archived: boolean
+  unit: ProductUnit
   removal: Removal | null
 }
 

@@ -21,6 +21,8 @@
   "variety.name_taken": "refusals:generic",
   "variety.name_archived": "refusals:nameArchived",
   "variety.has_history": "refusals:hasHistory",
+  "product.unit_required": "refusals:generic",
+  "unit.not_found": "refusals:goneNotice",
   "variety.rule_broken": "refusals:generic",
   "variety.name_invalid": "refusals:generic",
   "variety.price_entry_invalid": "refusals:generic",
