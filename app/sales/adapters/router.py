@@ -42,7 +42,7 @@ from app.sales.domain.sale import (
     UnknownCustomer,
     UnknownVariety,
 )
-from app.shared.quantity import InvalidQuantity, Quantity
+from app.shared.quantity import InvalidQuantity, Quantity, TooManyDecimals
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -115,7 +115,7 @@ as_http = TranslateErrors(
     [
         (404, (SaleNotFound, UnknownCustomer, UnknownVariety)),
         (409, (CustomerAlreadyAssigned,)),
-        (422, (SaleRuleBroken, InvalidQuantity)),
+        (422, (SaleRuleBroken, InvalidQuantity, TooManyDecimals)),
     ]
 )
 

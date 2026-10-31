@@ -228,7 +228,7 @@ def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
         },
     )
     assert bad_quantity.status_code == 422
-    assert bad_quantity.json()["code"] == "grams.invalid"
+    assert bad_quantity.json()["code"] == "quantity.too_many_decimals"
 
 
 GOLD_WITH_VIP = {**GOLD_JANUARY, "vip_price": 9_000}

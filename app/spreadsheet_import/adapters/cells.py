@@ -28,7 +28,7 @@ from openpyxl import load_workbook
 if TYPE_CHECKING:
     from openpyxl.cell import _CellGetValue
 
-from app.shared.quantity import InvalidQuantity, Quantity
+from app.shared.quantity import InvalidQuantity, Quantity, TooManyDecimals
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
@@ -129,7 +129,7 @@ def _to_quantity(value: _CellGetValue) -> Quantity | None:
     if isinstance(value, float):
         try:
             return Quantity.of(Decimal(repr(value)))
-        except InvalidQuantity as exc:
+        except (InvalidQuantity, TooManyDecimals) as exc:
             raise _CellError("grams_too_precise") from exc
     raise _CellError("grams_not_numeric")
 

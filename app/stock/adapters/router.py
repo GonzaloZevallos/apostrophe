@@ -9,7 +9,7 @@ from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.products.application.errors import ProductArchived, ProductNotFound
-from app.shared.quantity import InvalidQuantity, Quantity
+from app.shared.quantity import InvalidQuantity, Quantity, TooManyDecimals
 from app.stock.adapters.schemas import (
     EntryIn,
     EntryOut,
@@ -108,6 +108,7 @@ as_http = TranslateErrors(
                 EntryDateInFuture,
                 EntryNoteTooLong,
                 InvalidQuantity,
+                TooManyDecimals,
                 ThresholdInvalid,
                 WithdrawalReasonRequired,
                 WithdrawalDateInFuture,

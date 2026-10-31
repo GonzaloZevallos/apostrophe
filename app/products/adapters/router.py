@@ -35,7 +35,7 @@ from app.products.domain.product import (
     UnknownPriceEntry,
     VipPriceNotBelowList,
 )
-from app.shared.quantity import InvalidQuantity, Quantity
+from app.shared.quantity import InvalidQuantity, Quantity, TooManyDecimals
 from app.shared.unit import Unit
 
 router = APIRouter(prefix="/api/products", tags=["products"])
@@ -89,7 +89,16 @@ as_http = TranslateErrors(
     [
         (404, (ProductNotFound, ProductArchived, UnknownPriceEntry, UnitNotFound)),
         (409, (NameTaken, NameHeldByArchived, ProductHasHistory, DuplicateEffectiveDate)),
-        (422, (ProductRuleBroken, VipPriceNotBelowList, InvalidQuantity, ProductUnitRequired)),
+        (
+            422,
+            (
+                ProductRuleBroken,
+                VipPriceNotBelowList,
+                InvalidQuantity,
+                TooManyDecimals,
+                ProductUnitRequired,
+            ),
+        ),
     ]
 )
 
