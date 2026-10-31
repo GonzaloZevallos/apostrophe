@@ -63,12 +63,15 @@ export default function CobroRoute() {
   // The one way out of every close gesture: none does anything while the save is in
   // flight or while the leave confirmation is showing.
   const blocked = blocker.state === 'blocked'
+  // Close, Escape and the backdrop leave the hand-off too: the origin focuses this customer's
+  // control, as after a save. Opening the link never does, and the page's place is ScrollSync's.
   const leave = useCallback(() => {
     if (sending || blocked) return
+    setPaymentReturn(Number(customerId))
     back()
-  }, [sending, blocked, back])
+  }, [sending, blocked, back, customerId])
 
-  // A save is the only exit that leaves the hand-off: the origin focuses this customer's control.
+  // A save leaves the hand-off: the origin focuses this customer's control.
   function onDone(): void {
     disarm()
     setPaymentReturn(Number(customerId))

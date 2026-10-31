@@ -1,7 +1,7 @@
 /**
  * `useReturnToPlace`: brings focus back to the customer's control when Record payment was
- * saved. The hand-off (`paymentReturn.ts`) holds a customer id, written by a save alone
- * (`CobroRoute`): Close and Back leave none. The page's scroll is not this hook's: it belongs
+ * saved or closed. The hand-off (`paymentReturn.ts`) holds a customer id, written by
+ * `CobroRoute` on a save or a Close: opening the link and Back leave none. The page's scroll is not this hook's: it belongs
  * to `shell/ScrollSync.tsx` alone (ADR-0068), which restores the screen's place on the way
  * back; this hook never scrolls.
  *   - Under the sheet (the location is Record payment's), the mount takes nothing.

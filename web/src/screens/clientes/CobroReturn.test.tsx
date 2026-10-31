@@ -1,9 +1,9 @@
 /**
  * Record payment's return of place, the whole way through (GH-480): the app's real route table
  * (`appRouter.routes`, so the real `ScrollSync`, `ClientesLayout`/`Clientes`, `CobroRoute` and
- * `Inicio`) under StrictMode, with `fetch` faked. The hand-off is written by a save alone:
- * only the save focuses the customer's control, Close and Back leave nothing behind, and the
- * next open starts clean. The page's scroll is `ScrollSync`'s, so nothing here scrolls it.
+ * `Inicio`) under StrictMode, with `fetch` faked. The hand-off is written by an exit of Record
+ * payment, never by opening it: a save and Close focus the customer's control, Back leaves
+ * nothing behind, and the next open starts clean. The page's scroll is `ScrollSync`'s, so nothing here scrolls it.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -98,22 +98,24 @@ describe.each<[string, string, string]>([
   ['Customers', CUSTOMERS, 'customers'],
   ['Home', HOME, 'home'],
 ])('opened from %s', (_name, origin, underneath) => {
-  test.each<Viewport>(['phone', 'computer'])('on a %s only the save focuses the customer\'s control, and each exit leaves no hand-off', async (viewport) => {
+  test.each<Viewport>(['phone', 'computer'])('on a %s a save and Close focus the customer\'s control, Back does not, and each exit leaves no hand-off', async (viewport) => {
     const router = renderFrom(origin, viewport)
     const collect = async () => (await screen.findAllByRole('link', { name: COLLECT }))[0]!
 
-    // Open → Close: nothing is left and nothing is focused.
+    // Opening writes nothing; Close focuses the control and the origin takes the hand-off.
     await open()
+    expect(peekPaymentReturn()).toBeNull()
     // The link opens the form as an in-app entry over the screen it came from.
     expect(router.state.location.state).toEqual(inAppState({ pathname: origin }, { underneath }))
     await userEvent.click(screen.getByRole('button', { name: 'Close' }))
     await waitFor(() => expect(router.state.location.pathname).toBe(origin))
     expect(router.state.historyAction).toBe('POP')
-    await pause()
+    await waitFor(async () => expect(await collect()).toHaveFocus())
     expect(peekPaymentReturn()).toBeNull()
+    await userEvent.tab()
     expect(await collect()).not.toHaveFocus()
 
-    // Open → Back: the same.
+    // Open → Back: nothing is left and nothing is focused.
     await open()
     await act(() => router.navigate(-1))
     await waitFor(() => expect(router.state.location.pathname).toBe(origin))
@@ -129,10 +131,10 @@ describe.each<[string, string, string]>([
     await waitFor(async () => expect(await collect()).toHaveFocus())
     expect(peekPaymentReturn()).toBeNull()
 
-    // The next open starts clean: a Close right after a save focuses nothing new.
+    // The next open starts clean: the save left nothing, and a Back right after it focuses nothing.
     await open()
     expect(peekPaymentReturn()).toBeNull()
-    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+    await act(() => router.navigate(-1))
     await waitFor(() => expect(router.state.location.pathname).toBe(origin))
     await pause()
     expect(peekPaymentReturn()).toBeNull()
