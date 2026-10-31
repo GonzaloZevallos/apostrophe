@@ -640,6 +640,18 @@ describe("screens.json against the English routes", () => {
     ).toEqual(["VentasVacio: its path /sales is a built row's route"]);
   });
 
+  test("one ceiling keeps the listed null row out of the report and the unlisted one in it, in the same run", () => {
+    expect(
+      routeProblems(
+        [
+          { screen: "Listed", route: null, path: "/listed" },
+          { screen: "Unlisted", route: null, path: "/unlisted" },
+        ],
+        { Listed: 9 },
+      ),
+    ).toEqual(["Unlisted: route is null, so it is not built"]);
+  });
+
   test("the route check reports a null route only off the ceiling, a route that is not the path, and a step-reached screen with no steps", () => {
     expect(
       routeProblems(
