@@ -216,7 +216,8 @@ by a trade, or by the real cells of a row new to the screens registry (the condi
 network lookup; review checks that the number is a real, open area issue. An area issue is
 not done while its own screens are still on the list. The list is valid only against the
 pinned fixture and date (ADR-0048); a change to either is a change to the lists, in the
-same diff.
+same diff. One rule has no file: `tabular-figures` (a figure outside its figure class) is
+fixed, never listed, and the loader refuses an entry for it.
 
 **Attached.** Every area PR (#45-#49, #59, #60, #78) attaches the check's result: the
 `mobile` project of `npm --prefix web run e2e`, and the offender counts that

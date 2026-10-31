@@ -11,7 +11,7 @@ import {
 } from './index.ts'
 
 /** Every rule's file empty but `rule`'s: the shipped files list real offenders and change with the code. */
-function filesWith(rule: Rule, entries: unknown[]): Record<Rule, unknown> {
+function filesWith(rule: Rule, entries: unknown[]): Partial<Record<Rule, unknown>> {
   const empty = Object.fromEntries(RULES.map((name) => [name, []]))
   return { ...FILES, ...empty, [rule]: entries }
 }
@@ -152,6 +152,23 @@ describe('offendersOfCell', () => {
     expect(mine).toHaveLength(1)
     expect(mine[0]).toMatchObject({ size: '375x812', theme: 'oscuro' })
     expect(offendersOfCell(cells, { screen: 'Home', size: '375x812', theme: 'oscuro' })).toEqual([])
+  })
+})
+
+describe('tabular-figures is fixed, never listed', () => {
+  const figure = entry({ rule: 'tabular-figures', target: 'span:$ #' })
+
+  test('refuses an entry for it, in its own file or in another rule’s', () => {
+    const message = 'tabular-figures has no offenders file; fix the figure, never list it'
+    expect(() => parseOffenders({ ...filesWith('touch-target', []), 'tabular-figures': [figure] })).toThrow(message)
+    expect(() => parseOffenders(filesWith('touch-target', [figure]))).toThrow(message)
+  })
+
+  test('has no offenders file, and the shipped table holds none for it', () => {
+    const names = Object.keys(import.meta.glob('./*.json', { eager: true }))
+    expect(names).not.toContain('./tabular-figures.json')
+    expect(Object.keys(FILES)).not.toContain('tabular-figures')
+    expect(OFFENDERS.filter((offender) => offender.rule === 'tabular-figures')).toEqual([])
   })
 })
 

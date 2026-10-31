@@ -8,6 +8,7 @@
 import type { Page } from '@playwright/test'
 import type { CellId } from '../../src/mobile-standard/targets.ts'
 import type { Rule, Violation } from '../../src/mobile-standard/violation.ts'
+import { FIGURE_SOURCES } from '../../src/mobile-standard/figures.ts'
 import { LOGIN } from '../../src/routes.ts'
 import { collectGeometry } from './collectGeometry.js'
 import { COLOUR_COLLECTOR } from './collectColour.js'
@@ -33,7 +34,8 @@ export interface Collector {
 export const GEOMETRY_COLLECTOR: Collector = {
   name: 'geometry',
   phase: 'loaded',
-  run: (page, cell) => page.evaluate(collectGeometry, { cell, loginPath: LOGIN }),
+  run: (page, cell) =>
+    page.evaluate(collectGeometry, { cell, loginPath: LOGIN, figures: FIGURE_SOURCES }),
 }
 
 export const COLLECTORS: readonly Collector[] = [

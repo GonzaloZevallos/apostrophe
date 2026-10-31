@@ -11,14 +11,23 @@
  *
  * Rules: h-scroll, chrome-at-load, chrome-mid-scroll, touch-target, input-font,
  * text-size, figure-split, name-overflow, autocomplete, inputmode, input-type,
- * user-select, touch-action and overscroll. The 60-character fixture names are the ones
+ * user-select, touch-action, overscroll and tabular-figures (the figure patterns come from
+ * `mobile-standard/figures.ts`, passed in as sources). The 60-character fixture names are the ones
  * with a word of 30 characters or more (`scripts/design/sample_app.py`'s LONG_NAME).
  */
 
 import type { Rule, Violation } from '../../src/mobile-standard/violation.ts'
 import type { CellId } from './collect.js'
 
-export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: string }): Violation[] {
+export function collectGeometry({
+  cell,
+  loginPath,
+  figures,
+}: {
+  cell: CellId
+  loginPath: string
+  figures: readonly string[]
+}): Violation[] {
   const MIN_TOUCH = 44
   const MIN_INPUT_FONT = 16
   const MIN_TEXT = 12
@@ -221,6 +230,19 @@ export function collectGeometry({ cell, loginPath }: { cell: CellId; loginPath: 
     const range = document.createRange()
     range.selectNodeContents(element)
     if (lineCount(range) > 1) add('figure-split', element)
+  }
+
+  // --- tabular figures ---------------------------------------------------------------
+  // An element whose whole trimmed text is a figure (React may split "12" and " days" into
+  // two text nodes of one element) must draw its digits tabular.
+  const figurePatterns = figures.map((source) => new RegExp(source))
+  for (const element of all('*')) {
+    if (element.childElementCount > 0) continue
+    const text = (element.textContent ?? '').trim()
+    if (!figurePatterns.some((pattern) => pattern.test(text))) continue
+    if (!getComputedStyle(element).fontVariantNumeric.split(/\s+/).includes('tabular-nums')) {
+      add('tabular-figures', element)
+    }
   }
 
   // --- inputs ------------------------------------------------------------------------
