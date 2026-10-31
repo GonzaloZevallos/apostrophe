@@ -549,10 +549,21 @@ function listoRowsOverBound(
       ];
 }
 
-/** What is wrong with the routes of these entries: a null route, or a route that is not the path. */
-function routeProblems(entries: readonly RouteEntry[]): string[] {
+/** The screens of screens.json that may have `route: null` (not built yet), each with the issue
+ * that builds it. It can only shrink: an entry leaves when its screen is built. */
+const NULL_ROUTE_CEILING: Readonly<Record<string, number>> = Object.freeze({});
+
+/** What is wrong with the routes of these entries: a null route that is not on the ceiling, or a
+ * route that is not the path. */
+function routeProblems(
+  entries: readonly RouteEntry[],
+  ceiling: Readonly<Record<string, number>> = NULL_ROUTE_CEILING,
+): string[] {
   return entries.flatMap((entry) => {
-    if (entry.route === null) return [`${entry.screen}: route is null, so it is not built`];
+    if (entry.route === null)
+      return Object.keys(ceiling).includes(entry.screen)
+        ? []
+        : [`${entry.screen}: route is null, so it is not built`];
     if (REACHED_BY_STEPS.includes(entry.screen))
       return "steps" in entry ? [] : [`${entry.screen}: reached by steps, so it needs steps`];
     return entry.route === entry.path
@@ -561,12 +572,81 @@ function routeProblems(entries: readonly RouteEntry[]): string[] {
   });
 }
 
+/** What is wrong with the ceiling against these entries: a key that is no row, a key whose row
+ * has a route, or an issue number that is not a positive integer. */
+function ceilingProblems(
+  entries: readonly RouteEntry[],
+  ceiling: Readonly<Record<string, number>>,
+): string[] {
+  return Object.entries(ceiling).flatMap(([screen, issue]) => {
+    const row = entries.find((entry) => entry.screen === screen);
+    const found: string[] = [];
+    if (row === undefined)
+      found.push(`${screen}: on the null-route ceiling but no row of screens.json`);
+    else if (row.route !== null)
+      found.push(`${screen}: on the null-route ceiling but its route is not null`);
+    if (!Number.isInteger(issue) || issue < 1)
+      found.push(`${screen}: its issue number is not a positive integer`);
+    return found;
+  });
+}
+
+/** A null-route row whose path is some built row's route: the unbuilt screen would shadow it. */
+function nullPathProblems(entries: readonly RouteEntry[]): string[] {
+  const built = entries.flatMap((entry) => (entry.route === null ? [] : [entry.route]));
+  return entries
+    .filter((entry) => entry.route === null && built.includes(entry.path))
+    .map((entry) => `${entry.screen}: its path ${entry.path} is a built row's route`);
+}
+
 describe("screens.json against the English routes", () => {
   test("route is path for every screen, and none is null", () => {
     expect(routeProblems(screensJson.screens)).toEqual([]);
   });
 
-  test("the route check reports a null route, a route that is not the path, and a step-reached screen with no steps", () => {
+  test("every ceiling entry is a null-route row, with a positive issue number", () => {
+    expect(ceilingProblems(screensJson.screens, NULL_ROUTE_CEILING)).toEqual([]);
+  });
+
+  test("a null-route row's path is no built row's route", () => {
+    expect(nullPathProblems(screensJson.screens)).toEqual([]);
+  });
+
+  test("the ceiling check reports a key with no row, a key whose row has a route, and an issue that is not a positive integer", () => {
+    const entries: RouteEntry[] = [
+      { screen: "Built", route: "/sales", path: "/sales" },
+      { screen: "Unbuilt", route: null, path: "/unbuilt" },
+    ];
+    expect(ceilingProblems(entries, { Unbuilt: 12 })).toEqual([]);
+    expect(
+      ceilingProblems(entries, { Ghost: 3, Built: 4, Unbuilt: 0 }),
+    ).toEqual([
+      "Ghost: on the null-route ceiling but no row of screens.json",
+      "Built: on the null-route ceiling but its route is not null",
+      "Unbuilt: its issue number is not a positive integer",
+    ]);
+    expect(ceilingProblems(entries, { Unbuilt: 1.5 })).toEqual([
+      "Unbuilt: its issue number is not a positive integer",
+    ]);
+  });
+
+  test("a null-route row whose path is a built row's route is reported", () => {
+    expect(
+      nullPathProblems([
+        { screen: "Ventas", route: "/sales", path: "/sales" },
+        { screen: "VentasVacio", route: null, path: "/sales" },
+        { screen: "Nueva", route: null, path: "/sales/new" },
+      ]),
+    ).toEqual(["VentasVacio: its path /sales is a built row's route"]);
+  });
+
+  test("the route check reports a null route only off the ceiling, a route that is not the path, and a step-reached screen with no steps", () => {
+    expect(
+      routeProblems(
+        [{ screen: "Listed", route: null, path: "/listed" }],
+        { Listed: 9 },
+      ),
+    ).toEqual([]);
     expect(
       routeProblems([
         { screen: "Inicio", route: "/", path: "/" },
