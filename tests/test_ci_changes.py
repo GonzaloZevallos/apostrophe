@@ -4,17 +4,20 @@ reader map, the diff command and the thin `main`, over a `tmp_path` tree and the
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
 
-from scripts.affected import REPO_ROOT, CommandResult
+from scripts.affected import REPO_ROOT, CommandResult, Runner, run_command
 from scripts.ci_areas import ALWAYS_DIRS, areas
 from scripts.ci_changes import (
     MOBILE_PAIR,
     SELECTOR_INPUTS,
     Selection,
+    base_argv,
     diff_argv,
     is_safe_path,
     main,
@@ -160,7 +163,7 @@ def test_a_push_to_master_selects_everything(tmp_path: Path) -> None:
     root = make_tree(tmp_path)
     runner = FakeRunner(CommandResult(0, "web/src/App.tsx\n"))
 
-    assert main(["push"], runner, root=root) == 0
+    assert main(["push", MASTER_REF], runner, root=root) == 0
 
     assert runner.commands == []
     assert everything(selected(None, root))
@@ -328,17 +331,43 @@ def test_no_shard_is_ever_empty(tmp_path: Path) -> None:
 # --- the diff and git ---------------------------------------------------------------------------
 
 
-def test_only_a_pull_request_builds_a_diff_command() -> None:
-    assert diff_argv("pull_request") == [
-        "git",
-        "diff",
-        "--name-only",
-        "--no-renames",
-        "HEAD^1",
-        "HEAD",
-    ]
-    for event in ("push", "workflow_dispatch", "merge_group", "schedule", ""):
-        assert diff_argv(event) is None
+PR_REF = "refs/pull/1/merge"
+MASTER_REF = "refs/heads/master"
+AGENTIC_REF = "refs/heads/agentic-ci/GH-1"
+SHA = "a1b2c3d4" * 5
+DIFF_FLAGS = ["git", "diff", "--name-only", "--no-renames"]
+
+
+def test_the_merge_base_is_asked_only_for_a_push_to_an_agentic_ci_branch() -> None:
+    assert base_argv("push", AGENTIC_REF) == ["git", "merge-base", "origin/master", "HEAD"]
+    for event, ref in (
+        ("pull_request", PR_REF),
+        ("pull_request", AGENTIC_REF),
+        ("push", MASTER_REF),
+        ("push", "refs/heads/agentic-ci-x"),
+        ("push", "refs/tags/agentic-ci/x"),
+        ("push", "refs/heads/agentic-ci"),
+        ("push", ""),
+        ("workflow_dispatch", AGENTIC_REF),
+        ("", ""),
+    ):
+        assert base_argv(event, ref) is None
+
+
+def test_the_diff_starts_at_head_parent_for_a_pull_request_and_at_the_base_for_agentic_ci() -> None:
+    assert diff_argv("pull_request", PR_REF, "") == [*DIFF_FLAGS, "HEAD^1", "HEAD"]
+    assert diff_argv("push", AGENTIC_REF, SHA) == [*DIFF_FLAGS, SHA, "HEAD"]
+    for event, ref, base in (
+        ("push", AGENTIC_REF, ""),
+        ("push", MASTER_REF, SHA),
+        ("push", "refs/heads/agentic-ci-x", SHA),
+        ("push", "refs/tags/agentic-ci/x", SHA),
+        ("push", "", SHA),
+        ("workflow_dispatch", AGENTIC_REF, SHA),
+        ("merge_group", PR_REF, SHA),
+        ("", "", ""),
+    ):
+        assert diff_argv(event, ref, base) is None
 
 
 def test_a_git_failure_or_an_empty_diff_selects_everything(tmp_path: Path) -> None:
@@ -352,15 +381,17 @@ def test_a_git_failure_or_an_empty_diff_selects_everything(tmp_path: Path) -> No
 
 
 class FakeRunner:
-    def __init__(self, result: CommandResult) -> None:
-        self.result = result
+    """Answers each call with the next result, and the last one again once they run out."""
+
+    def __init__(self, *results: CommandResult) -> None:
+        self.results = list(results)
         self.commands: list[list[str]] = []
 
     def __call__(
         self, command: Sequence[str], *, capture: bool, cwd: Path = REPO_ROOT
     ) -> CommandResult:
         self.commands.append(list(command))
-        return self.result
+        return self.results[min(len(self.commands), len(self.results)) - 1]
 
 
 def outputs(lines: Sequence[str]) -> dict[str, str]:
@@ -368,10 +399,15 @@ def outputs(lines: Sequence[str]) -> dict[str, str]:
 
 
 def run_main(
-    event: str, result: CommandResult, root: Path, capsys: pytest.CaptureFixture[str]
+    event: str,
+    result: CommandResult,
+    root: Path,
+    capsys: pytest.CaptureFixture[str],
+    ref: str = "",
+    *more: CommandResult,
 ) -> tuple[FakeRunner, dict[str, str]]:
-    runner = FakeRunner(result)
-    assert main([event], runner, root=root) == 0
+    runner = FakeRunner(result, *more)
+    assert main([event, ref], runner, root=root) == 0
     return runner, outputs(capsys.readouterr().out.splitlines())
 
 
@@ -381,10 +417,11 @@ def test_main_runs_the_diff_for_a_pull_request_and_prints_the_outputs(
     root = make_tree(tmp_path)
 
     runner, printed = run_main(
-        "pull_request", CommandResult(0, "app/catalog/data.py\n"), root, capsys
+        "pull_request", CommandResult(0, "app/catalog/data.py\n"), root, capsys, PR_REF
     )
 
-    assert runner.commands == [diff_argv("pull_request")]
+    assert runner.commands == [[*DIFF_FLAGS, "HEAD^1", "HEAD"]]
+    assert printed["base_ref"] == "HEAD^1"
     assert printed["pytest"] == "true"
     assert printed["vitest"] == "false"
     assert printed["e2e"] == "false"
@@ -409,7 +446,9 @@ def test_a_suite_that_selects_nothing_prints_false_and_no_entries(
 ) -> None:
     root = make_tree(tmp_path)
 
-    _, printed = run_main("pull_request", CommandResult(0, "web/src/App.tsx\n"), root, capsys)
+    _, printed = run_main(
+        "pull_request", CommandResult(0, "web/src/App.tsx\n"), root, capsys, PR_REF
+    )
 
     assert printed["pytest"] == "false"
     assert json.loads(printed["pytest_matrix"]) == {"include": []}
@@ -424,15 +463,231 @@ def test_main_selects_everything_when_the_diff_is_unusable_for_the_event(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], result: CommandResult
 ) -> None:
     root = make_tree(tmp_path)
-    expected = outputs(render(select(None, root)))
+    expected = {**outputs(render(select(None, root))), "base_ref": ""}
 
-    for event in ("workflow_dispatch", "merge_group", "something_new", "push"):
-        runner, printed = run_main(event, result, root, capsys)
+    for event, ref in (
+        ("workflow_dispatch", MASTER_REF),
+        ("merge_group", MASTER_REF),
+        ("something_new", ""),
+        ("push", MASTER_REF),
+        ("push", "refs/heads/agentic-ci-x"),
+        ("push", "refs/tags/agentic-ci/x"),
+        ("push", ""),
+    ):
+        runner, printed = run_main(event, result, root, capsys, ref)
         assert runner.commands == []
         assert printed == expected
     if result.returncode or not result.stdout:
-        _, printed = run_main("pull_request", result, root, capsys)
+        _, printed = run_main("pull_request", result, root, capsys, PR_REF)
         assert printed == expected
+
+
+def test_an_agentic_ci_push_diffs_from_the_merge_base_and_prints_it_as_base_ref(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = make_tree(tmp_path)
+    base = CommandResult(0, f"{SHA}\n")
+
+    runner, printed = run_main(
+        "push", base, root, capsys, AGENTIC_REF, CommandResult(0, "app/catalog/data.py\n")
+    )
+
+    assert runner.commands == [
+        ["git", "merge-base", "origin/master", "HEAD"],
+        [*DIFF_FLAGS, SHA, "HEAD"],
+    ]
+    assert printed["base_ref"] == SHA
+    assert printed["selection"] == json.dumps(
+        {
+            "pytest": "true",
+            "vitest": "false",
+            "e2e": "false",
+            "vitest_all": "false",
+            "vitest_files": 0,
+            "areas": ["catalog", "pinned_catalog", "sales"],
+            "selected": ["catalog", "sales"],
+        },
+        separators=(",", ":"),
+    )
+
+
+@pytest.mark.parametrize(
+    "merge_base",
+    [
+        CommandResult(1, f"{SHA}\n"),
+        CommandResult(128, ""),
+        CommandResult(0, ""),
+        CommandResult(0, "\n"),
+        CommandResult(0, f"{SHA}0\n"),
+        CommandResult(0, f"{SHA[:-1]}\n"),
+        CommandResult(0, "not-a-sha\n"),
+        CommandResult(0, f"{SHA.upper()}\n"),
+        CommandResult(0, f"--{SHA[2:]}\n"),
+    ],
+)
+def test_an_agentic_ci_push_without_a_usable_merge_base_selects_everything(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], merge_base: CommandResult
+) -> None:
+    root = make_tree(tmp_path)
+    expected = {**outputs(render(select(None, root))), "base_ref": ""}
+
+    runner, printed = run_main(
+        "push", merge_base, root, capsys, AGENTIC_REF, CommandResult(0, "app/catalog/data.py\n")
+    )
+
+    assert runner.commands == [["git", "merge-base", "origin/master", "HEAD"]]
+    assert printed == expected
+
+
+@pytest.mark.parametrize(
+    "diff", [CommandResult(128, ""), CommandResult(0, ""), CommandResult(0, "\n")]
+)
+def test_an_agentic_ci_push_with_an_unusable_diff_selects_everything_and_no_base_ref(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], diff: CommandResult
+) -> None:
+    root = make_tree(tmp_path)
+    expected = {**outputs(render(select(None, root))), "base_ref": ""}
+
+    runner, printed = run_main(
+        "push", CommandResult(0, f"{SHA}\n"), root, capsys, AGENTIC_REF, diff
+    )
+
+    assert len(runner.commands) == 2
+    assert printed == expected
+
+
+def test_a_missing_ref_argument_selects_everything_without_a_git_call(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = make_tree(tmp_path)
+    runner = FakeRunner(CommandResult(0, f"{SHA}\n"))
+
+    assert main(["push"], runner, root=root) == 0
+
+    printed = outputs(capsys.readouterr().out.splitlines())
+    assert runner.commands == []
+    assert printed == {**outputs(render(select(None, root))), "base_ref": ""}
+
+
+def test_a_pull_request_with_a_failed_diff_prints_no_base_ref(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, printed = run_main(
+        "pull_request", CommandResult(128, ""), make_tree(tmp_path), capsys, PR_REF
+    )
+
+    assert printed["base_ref"] == ""
+    assert printed["vitest_all"] == "true"
+
+
+# --- one real git repository ---------------------------------------------------------------------
+
+GIT_ENV = {
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_SYSTEM": "/dev/null",
+    "GIT_AUTHOR_DATE": "2026-01-01T00:00:00+00:00",
+    "GIT_COMMITTER_DATE": "2026-01-01T00:00:00+00:00",
+}
+GIT_IDENTITY = ["-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false"]
+
+
+def git(root: Path, *args: str) -> str:
+    done = subprocess.run(
+        ["git", *GIT_IDENTITY, *args],
+        cwd=root,
+        env={**os.environ, **GIT_ENV},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return done.stdout.strip()
+
+
+def commit_touching(root: Path, relative: str, message: str) -> str:
+    write(root, relative, f"# {message}\n")
+    git(root, "add", relative)
+    git(root, "commit", "-m", message)
+    return git(root, "rev-parse", "HEAD")
+
+
+class DiffSpy:
+    """The real `run_command`, remembering the stdout of the diff it ran."""
+
+    def __init__(self) -> None:
+        self.diffs: list[str] = []
+
+    def __call__(
+        self, command: Sequence[str], *, capture: bool, cwd: Path = REPO_ROOT
+    ) -> CommandResult:
+        result = run_command(command, capture=capture, cwd=cwd)
+        if "diff" in command:
+            self.diffs.append(result.stdout)
+        return result
+
+
+def agentic_branch(root: Path) -> str:
+    """A branch off master with two commits, one in `sales` and one in `pinned_catalog`; returns
+    the fork commit."""
+    make_tree(root)
+    git(root, "init", "-b", "master")
+    git(root, "add", ".")
+    git(root, "commit", "-m", "fork")
+    fork = git(root, "rev-parse", "HEAD")
+    git(root, "switch", "-c", "agentic-ci/GH-1")
+    commit_touching(root, "app/sales/service.py", "sales")
+    commit_touching(root, "app/pinned_catalog/service.py", "pinned catalog")
+    return fork
+
+
+def selected_by_real_git(
+    root: Path, spy: DiffSpy, capsys: pytest.CaptureFixture[str]
+) -> dict[str, str]:
+    run: Runner = spy
+    assert main(["push", AGENTIC_REF], run, root=root) == 0
+    return outputs(capsys.readouterr().out.splitlines())
+
+
+def assert_both_commits_and_nothing_else(printed: dict[str, str], spy: DiffSpy, fork: str) -> None:
+    matrix = json.loads(printed["pytest_matrix"])["include"]
+    test_dirs = {
+        path.removeprefix("tests/")
+        for entry in matrix
+        if entry["shard"] != "always"
+        for path in entry["paths"].split()
+    }
+    assert test_dirs == {"sales", "pinned_catalog"}
+    assert printed["base_ref"] == fork
+    assert [set(diff.split()) for diff in spy.diffs] == [
+        {"app/sales/service.py", "app/pinned_catalog/service.py"}
+    ]
+
+
+def test_a_real_agentic_ci_branch_selects_both_commits_not_just_the_last(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    fork = agentic_branch(tmp_path)
+    git(tmp_path, "update-ref", "refs/remotes/origin/master", fork)
+    spy = DiffSpy()
+
+    printed = selected_by_real_git(tmp_path, spy, capsys)
+
+    assert_both_commits_and_nothing_else(printed, spy, fork)
+
+
+def test_a_real_agentic_ci_branch_ignores_what_master_gained_since_the_fork(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    fork = agentic_branch(tmp_path)
+    branch = git(tmp_path, "rev-parse", "HEAD")
+    git(tmp_path, "switch", "master")
+    advanced = commit_touching(tmp_path, "app/catalog/data.py", "catalog on master")
+    git(tmp_path, "update-ref", "refs/remotes/origin/master", advanced)
+    git(tmp_path, "switch", "--detach", branch)
+    spy = DiffSpy()
+
+    printed = selected_by_real_git(tmp_path, spy, capsys)
+
+    assert_both_commits_and_nothing_else(printed, spy, fork)
 
 
 # --- e2e outputs, safe paths and the new selection keys ----------------------------------------
@@ -568,7 +823,7 @@ def test_any_event_but_a_pull_request_sets_every_flag_true(
 ) -> None:
     root = make_tree(tmp_path)
 
-    _, printed = run_main(event, CommandResult(0, "docs/adr/x.md\n"), root, capsys)
+    _, printed = run_main(event, CommandResult(0, "docs/adr/x.md\n"), root, capsys, MASTER_REF)
 
     assert [printed[flag] for flag in ("pytest", "vitest", "e2e", "vitest_all")] == ["true"] * 4
     assert printed["e2e_args"] == ""
