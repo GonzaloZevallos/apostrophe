@@ -1,5 +1,5 @@
 /**
- * The page's scroll has one owner (navigation.md, "Scroll on a change of screen"; ADR-0068):
+ * The page's scroll has one owner (navigation.md, "Scroll on a change of screen"; ADR-0069):
  * `shell/ScrollSync.tsx` is the only non-test source in `web/src` that calls `scrollTo`,
  * `scrollBy` or `.scroll(`, assigns `scrollTop` or touches `history.scrollRestoration`, and
  * nothing uses react-router's `ScrollRestoration` (it keeps offsets in `sessionStorage`,

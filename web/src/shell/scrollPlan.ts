@@ -1,6 +1,6 @@
 /**
  * What the page does when the location changes, as one pure function (navigation.md,
- * "Scroll on a change of screen", criteria 21-23; ADR-0068). `ScrollSync` is the only caller.
+ * "Scroll on a change of screen", criteria 21-23; ADR-0069). `ScrollSync` is the only caller.
  * The rules read the screens table (`kind`-free: only `pane`, `parent`, `modalOnComputer` and `sheetOnPhone`
  * of `routes.ts`) and the history state, never a list of paths.
  *

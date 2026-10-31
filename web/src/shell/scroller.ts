@@ -1,6 +1,6 @@
 /**
  * What `ScrollSync` is built on: the scroller seam (`ScrollSync` fits the window to it; a test
- * drives frames, timers and events by hand) and the numbers of the wait (ADR-0068). Kept out of
+ * drives frames, timers and events by hand) and the numbers of the wait (ADR-0069). Kept out of
  * the component's file because fast refresh only works on a file that exports components alone.
  * Nothing here touches the page's scroll: that is `ScrollSync.tsx` alone.
  */

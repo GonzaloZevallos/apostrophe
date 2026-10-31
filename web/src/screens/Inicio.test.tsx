@@ -877,7 +877,7 @@ test('a stock write elsewhere makes the next read of /first-run, and the checkli
 })
 
 // Back from Record payment, Home takes focus back (PM option a): the hand-off a save left is
-// applied once the panel has rendered, then taken. The page's scroll is ScrollSync's (ADR-0068).
+// applied once the panel has rendered, then taken. The page's scroll is ScrollSync's (ADR-0069).
 
 test('after a save Home focuses that customer\'s "Collect" and leaves the scroll to ScrollSync', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
@@ -950,7 +950,7 @@ test('Home takes focus back only after the notice above the panel has answered',
   await waitFor(() => expect(collect).toHaveFocus())
 })
 
-// The scroll owner waits for the Loading marker before it puts Home back at its offset (ADR-0068):
+// The scroll owner waits for the Loading marker before it puts Home back at its offset (ADR-0069):
 // after a save Home shows it until the hand-off has its place; a first visit never does.
 
 function holdFirstRun(): (response: Response) => void {

@@ -4,7 +4,7 @@
  * knows whether the screen it happened on is public (plan, invariants: "a 401
  * does nothing on a public route"). The offline banner renders once for every
  * route, public or gated. `ScrollSync` is the one owner of the page's scroll on a change of
- * screen (ADR-0068), for the same reason: one mount above both trees.
+ * screen (ADR-0069), for the same reason: one mount above both trees.
  */
 
 import { useEffect } from 'react'

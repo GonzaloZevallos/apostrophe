@@ -6,7 +6,7 @@
  * and no name, phone number, amount or scroll offset (§9). Only `CobroRoute` writes it, on a
  * save or on Close, Escape and the backdrop: opening the link and the browser's Back leave
  * nothing behind. The page's scroll is not part of it: it belongs to
- * `shell/ScrollSync.tsx` alone (ADR-0068). The screens that come back to a place read it
+ * `shell/ScrollSync.tsx` alone (ADR-0069). The screens that come back to a place read it
  * through `useReturnToPlace`.
  */
 

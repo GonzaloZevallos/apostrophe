@@ -1,6 +1,6 @@
 /**
  * `ScrollSync` under a memory router and StrictMode, with a fake scroller the test drives
- * frame by frame (navigation.md, criteria 21-23; ADR-0068). The page is a stack of empty
+ * frame by frame (navigation.md, criteria 21-23; ADR-0069). The page is a stack of empty
  * routes: what is under test is what the owner does to the scroll on each kind of move.
  */
 
