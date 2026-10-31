@@ -326,8 +326,8 @@ describe('assertScreens', () => {
 
   it('refuses a section that occurs more than once in its design file', () => {
     expect(() =>
-      assertScreens([{ screen: 'AnalisisX', design: 'Analisis', section: 'Promotion' }]),
-    ).toThrow(/^AnalisisX: section "Promotion" occurs \d+ times in Analisis\.dc\.html, expected exactly once$/)
+      assertScreens([{ screen: 'AnalisisX', design: 'Analisis', section: 'Hoy' }]),
+    ).toThrow(/^AnalisisX: section "Hoy" occurs \d+ times in Analisis\.dc\.html, expected exactly once$/)
   })
 
   it('refuses a needs that is not a non-empty string', () => {
@@ -517,48 +517,39 @@ describe('the Inicio rows of the real screens.json', () => {
     return found
   }
   const clicks = (r: Row): unknown[] => (r.steps ?? []).flatMap((step) => ('click' in step ? [step.click] : []))
-  const HOY_PHONE = 'Hoy · la pestaña con la que abre el panel'
-  const SEMANA_PHONE = 'Semana · Ganancia y Caja sólo acá y en Mes, nunca en Hoy'
-  const SEMANA_COMPU = 'Semana · Ganancia y Caja sólo acá y en Mes'
+  // GH-526: the 2026-10-29 drawings of Inicio and InicioCompu draw one frame, Hoy, so no Inicio row crops to
+  // a section any more: `section` is absent on every row of both drawings.
 
   it('captures Hoy, the tab Inicio opens on, with no step, on phone and computer', () => {
     expect(clicks(row('InicioHoy'))).toEqual([])
-    expect(row('InicioHoy')).toMatchObject({ design: 'Inicio', section: HOY_PHONE })
+    expect(row('InicioHoy')).toMatchObject({ design: 'Inicio' })
+    expect(row('InicioHoy').section).toBeUndefined()
     expect(clicks(row('InicioHoyCompu'))).toEqual([])
     expect(row('InicioHoyCompu')).toMatchObject({
       design: 'InicioCompu',
-      section: HOY_PHONE,
       viewport: [1280, 920],
     })
-    // GH-274: added beside the original assertion, which stays as it was.
-    expect(row('InicioHoyCompu').section).toBe(HOY_PHONE)
+    expect(row('InicioHoyCompu').section).toBeUndefined()
   })
 
   it('captures the dark computer Hoy against the light computer drawing, as the other CompuOscuro twins do', () => {
     expect(clicks(row('InicioHoyCompuOscuro'))).toEqual([])
     expect(row('InicioHoyCompuOscuro')).toMatchObject({
       design: 'InicioCompu',
-      section: HOY_PHONE,
       tema: 'oscuro',
       viewport: [1280, 920],
     })
-    // GH-274, deliberate: the original `toBeUndefined()` cannot hold, the brief crops this row to the new Hoy
-    // caption. It fails when the row loses its crop (`section` undefined), so the capture shows both
-    // computer frames again. It is redundant with the `toMatchObject` above, which fails the same way; it
-    // stays so the change reads at the line where `toBeUndefined()` stood.
-    expect(row('InicioHoyCompuOscuro').section).toBe(HOY_PHONE)
+    expect(row('InicioHoyCompuOscuro').section).toBeUndefined()
   })
 
-  it('crops the computer Hoy rows to one frame of InicioCompu.dc.html, never to two', () => {
+  it('names no section for the computer Hoy rows, since InicioCompu.dc.html draws one frame', () => {
     const drawing = readFileSync(
       resolve(process.cwd(), '..', 'docs/product/design-system/pantallas/InicioCompu.dc.html'),
       'utf-8',
     )
-    for (const key of ['InicioHoyCompu', 'InicioHoyCompuOscuro']) {
-      const section = row(key).section ?? ''
-      expect(sectionOccurrences(drawing, section), key).toBe(1)
-      expect(sectionOccurrences(drawing + drawing, section), `${key} drawn twice`).toBe(2)
-    }
+    // A frame label would occur once; the drawing carries none, so a crop could never find its block.
+    expect(sectionOccurrences(drawing, 'Hoy · la pestaña con la que abre el panel')).toBe(0)
+    for (const key of ['InicioHoyCompu', 'InicioHoyCompuOscuro']) expect(row(key).section, key).toBeUndefined()
   })
 
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
@@ -566,11 +557,11 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(row('InicioOscuro').tema).toBe('oscuro')
   })
 
-  it('crops each Semana capture to the block that draws Semana', () => {
+  it('keeps the Semana captures without a crop, the drawings having a single frame', () => {
     expect(clicks(row('Inicio'))).toEqual(['Week'])
-    expect(row('Inicio').section).toBe(SEMANA_PHONE)
+    expect(row('Inicio').section).toBeUndefined()
     expect(clicks(row('InicioCompu'))).toEqual(['Week'])
-    expect(row('InicioCompu').section).toBe(SEMANA_COMPU)
+    expect(row('InicioCompu').section).toBeUndefined()
   })
 
   it('keeps every Inicio row in the Inicio drawings, which assertScreens accepts', () => {
@@ -587,27 +578,27 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(() => assertScreens(inicio)).not.toThrow()
   })
 
-  it('pairs the dark InicioCompu with the light drawing and the same Semana crop', () => {
+  it('pairs the dark InicioCompu with the light drawing and no crop', () => {
     const dark = row('InicioCompuOscuro')
     expect(dark.design).toBe('InicioCompu')
     expect(dark.tema).toBe('oscuro')
-    expect(dark.section).toBe(SEMANA_COMPU)
+    expect(dark.section).toBeUndefined()
     expect(clicks(dark)).toEqual(['Week'])
   })
 
   // GH-272 follow-up: Home's evidence rows. Screenshots judged by eye, never fed to ae.mjs.
-  // Month has no drawing of its own, so it reuses the Week block, which says Ganancia and Caja show "in Mes".
-  const HOME_EVIDENCE: [string, string, number[], string[], number | undefined][] = [
-    ['InicioMesCompu', SEMANA_COMPU, [1280, 920], ['Month'], undefined],
-    ['InicioHoyCompu960', HOY_PHONE, [960, 920], [], undefined],
-    ['InicioCompu960', SEMANA_COMPU, [960, 920], ['Week'], undefined],
-    ['InicioMesCompu960', SEMANA_COMPU, [960, 920], ['Month'], undefined],
-    ['InicioHoyCompu960Texto130', HOY_PHONE, [960, 920], [], TEXT_SCALE],
-    ['InicioCompu960Texto130', SEMANA_COMPU, [960, 920], ['Week'], TEXT_SCALE],
-    ['InicioMesCompu960Texto130', SEMANA_COMPU, [960, 920], ['Month'], TEXT_SCALE],
-    ['InicioHoyCompuTexto130', HOY_PHONE, [1280, 920], [], TEXT_SCALE],
-    ['InicioCompuTexto130', SEMANA_COMPU, [1280, 920], ['Week'], TEXT_SCALE],
-    ['InicioMesCompuTexto130', SEMANA_COMPU, [1280, 920], ['Month'], TEXT_SCALE],
+  // Month has no drawing of its own: like Week, it is captured against the single Hoy frame, with no crop.
+  const HOME_EVIDENCE: [string, undefined, number[], string[], number | undefined][] = [
+    ['InicioMesCompu', undefined, [1280, 920], ['Month'], undefined],
+    ['InicioHoyCompu960', undefined, [960, 920], [], undefined],
+    ['InicioCompu960', undefined, [960, 920], ['Week'], undefined],
+    ['InicioMesCompu960', undefined, [960, 920], ['Month'], undefined],
+    ['InicioHoyCompu960Texto130', undefined, [960, 920], [], TEXT_SCALE],
+    ['InicioCompu960Texto130', undefined, [960, 920], ['Week'], TEXT_SCALE],
+    ['InicioMesCompu960Texto130', undefined, [960, 920], ['Month'], TEXT_SCALE],
+    ['InicioHoyCompuTexto130', undefined, [1280, 920], [], TEXT_SCALE],
+    ['InicioCompuTexto130', undefined, [1280, 920], ['Week'], TEXT_SCALE],
+    ['InicioMesCompuTexto130', undefined, [1280, 920], ['Month'], TEXT_SCALE],
   ]
 
   it.each(HOME_EVIDENCE)('pins %s: design, section, clicks, viewport and text_scale', (name, section, viewport, taps, scale) => {
@@ -618,9 +609,9 @@ describe('the Inicio rows of the real screens.json', () => {
       route: row('InicioCompu').route,
       path: row('InicioCompu').path,
       design: 'InicioCompu',
-      section,
       viewport,
     })
+    expect(r.section).toBe(section)
     expect(clicks(r)).toEqual(taps)
     expect(r.text_scale).toBe(scale)
     expect(r.tema).toBeUndefined()
