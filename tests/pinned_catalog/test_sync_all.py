@@ -4,7 +4,7 @@ pure application code, over fakes only — no `TestClient`, no database.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI

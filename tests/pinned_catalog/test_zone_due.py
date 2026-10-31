@@ -50,9 +50,8 @@ def _publish_with_a_price_for_tomorrow(client: TestClient, name: str, clock: Mov
 
 def _business_id(engine: Engine, name: str) -> int:
     with engine.connect() as connection:
-        return int(
-            connection.execute(text("SELECT id FROM business WHERE name = :n"), {"n": name}).scalar_one()
-        )
+        found = connection.execute(text("SELECT id FROM business WHERE name = :n"), {"n": name})
+        return int(found.scalar_one())
 
 
 def _set_zone(engine: Engine, business_id: int, zone: str) -> None:

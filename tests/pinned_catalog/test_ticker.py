@@ -7,7 +7,7 @@ app has shut down.
 from __future__ import annotations
 
 import threading
-from datetime import date
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -25,11 +25,11 @@ from tests.fakes.telegram import FakeTelegram
 def test_ticker_runs_once_at_startup_and_stops_on_shutdown(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    calls: list[date] = []
+    calls: list[datetime] = []
     ran = threading.Event()
 
-    def fake_sync_all_published(today: date, due: DueBusinesses, run: object) -> None:
-        calls.append(today)
+    def fake_sync_all_published(instant: datetime, due: DueBusinesses, run: object) -> None:
+        calls.append(instant)
         ran.set()
 
     monkeypatch.setattr(ticker_module, "sync_all_published", fake_sync_all_published)

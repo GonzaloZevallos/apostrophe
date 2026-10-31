@@ -182,8 +182,8 @@ def test_the_walk_accepts_what_the_rules_allow(tmp_path: Path) -> None:
         {
             CALENDAR: CALENDAR_SOURCE,
             "app/accounts/adapters/deps.py": "from app.shared.calendar import business_day\n",
-            "app/db.py": "from datetime import UTC\n\ndef f(value):\n    return value.astimezone(UTC)\n",
-            "app/loader.py": "from zoneinfo import ZoneInfo\n\ndef load(name):\n    return ZoneInfo(name)\n",
+            "app/db.py": "from datetime import UTC\n\ndef f(v):\n    return v.astimezone(UTC)\n",
+            "app/loader.py": "from zoneinfo import ZoneInfo\n\ndef f(n):\n    return ZoneInfo(n)\n",
             "tests/j.py": "from app.shared.calendar import business_day\nZ = ZoneInfo('UTC')\n",
         },
     )
