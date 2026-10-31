@@ -4,7 +4,29 @@
  */
 
 import { describe, expect, test } from 'vitest'
-import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_PAYMENT, CUSTOMER_NEW, CUSTOMERS, HOME, SALE_NEW, SALES, VARIETIES, VARIETY, VARIETY_PRICE_NEW, pathTo } from '../routes'
+import {
+  CUSTOMER,
+  CUSTOMER_EDIT,
+  CUSTOMER_NEW,
+  CUSTOMER_PAYMENT,
+  CUSTOMERS,
+  EXPENSE_NEW,
+  EXPENSES,
+  HOME,
+  SALE_NEW,
+  SALES,
+  STOCK,
+  STOCK_ENTRY,
+  STOCK_ENTRY_NEW,
+  VARIETIES,
+  VARIETY,
+  VARIETY_NEW,
+  VARIETY_PRICE_NEW,
+  WITHDRAWAL,
+  WITHDRAWAL_EDIT,
+  WITHDRAWAL_NEW,
+  pathTo,
+} from '../routes'
 import { decideScroll, type NavigationAction, type PlaceInHistory } from './scrollPlan'
 import type { Viewport } from '../routes'
 
@@ -117,6 +139,18 @@ describe('a form drawn by a Sheet on a phone (`sheetOnPhone`)', () => {
   test.each(['PUSH', 'REPLACE'] as const)('opened over its screen leaves the page where it is (%s)', (action) => {
     expect(decideScroll(at(CUSTOMERS), at(CUSTOMER_NEW), action, 'phone')).toBe('none')
     expect(decideScroll(at(pathTo(CUSTOMER, { id: 3 })), at(pathTo(CUSTOMER_EDIT, { id: 3 })), action, 'phone')).toBe('none')
+  })
+
+  test.each([
+    ['variety-new', VARIETIES, VARIETY_NEW],
+    ['stock-entry-new', VARIETIES, STOCK_ENTRY_NEW],
+    ['stock-entry', STOCK, pathTo(STOCK_ENTRY, { id: 2 })],
+    ['withdrawal-new', VARIETIES, WITHDRAWAL_NEW],
+    ['withdrawal-edit', pathTo(WITHDRAWAL, { id: 2 }), pathTo(WITHDRAWAL_EDIT, { id: 2 })],
+    ['expense-new', EXPENSES, EXPENSE_NEW],
+  ])('%s opened over its screen leaves the page where it is on a phone, and is an arrival on a computer', (_name, from, to) => {
+    expect(decideScroll(at(from), at(to), 'PUSH', 'phone')).toBe('none')
+    expect(decideScroll(at(from), at(to), 'PUSH', 'computer')).toBe('top')
   })
 
   test('a form the table does not mark is a full screen: it opens at the top', () => {

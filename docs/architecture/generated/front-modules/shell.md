@@ -10,15 +10,21 @@ subgraph src["src"]
   subgraph src_shell["shell"]
     src_shell_BackArrow_tsx["BackArrow.tsx"]
     src_shell_GatedLayout_tsx["GatedLayout.tsx"]
+    src_shell_ScrollSync_tsx["ScrollSync.tsx"]
     src_shell_Shell_tsx["Shell.tsx"]
     src_shell_chrome_ts["chrome.ts"]
     src_shell_keepFocusVisible_ts["keepFocusVisible.ts"]
+    src_shell_scrollPlan_ts["scrollPlan.ts"]
+    src_shell_scroller_ts["scroller.ts"]
     src_shell_useBackParent_ts["useBackParent.ts"]
     src_shell_useViewport_ts["useViewport.ts"]
   end
 end
 src_shell_BackArrow_tsx-->src_shell_useBackParent_ts
 src_shell_BackArrow_tsx-->src_shell_useViewport_ts
+src_shell_ScrollSync_tsx-->src_shell_scrollPlan_ts
+src_shell_ScrollSync_tsx-->src_shell_scroller_ts
+src_shell_ScrollSync_tsx-->src_shell_useViewport_ts
 src_shell_Shell_tsx-->src_shell_BackArrow_tsx
 src_shell_Shell_tsx-->src_shell_chrome_ts
 src_shell_Shell_tsx-->src_shell_useBackParent_ts

@@ -16,7 +16,6 @@ import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../
 import { inAppState } from '../../components/inAppState'
 import { consumePaymentReturn, peekPaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { toast } from '../../components/feedback'
-import { consumePaymentReturn } from '../../paymentReturn'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { stubViewport } from '../../test-viewport'

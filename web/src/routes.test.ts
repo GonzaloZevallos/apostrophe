@@ -184,6 +184,27 @@ describe("the screens that are a modal on a computer", () => {
   });
 });
 
+describe("the screens a phone draws as a Sheet (`sheetOnPhone`)", () => {
+  test("are the nine route-drawn forms, and no other: a phone leaves the page under them where it is", () => {
+    const sheets = SCREENS.filter((entry) => "sheetOnPhone" in entry && entry.sheetOnPhone === true).map((entry) => entry.id);
+    expect(sheets.sort()).toEqual([
+      "customer-edit",
+      "customer-new",
+      "expense-new",
+      "stock-entry",
+      "stock-entry-new",
+      "variety-new",
+      "variety-price-new",
+      "withdrawal-edit",
+      "withdrawal-new",
+    ]);
+  });
+
+  test("a full-screen form such as the new sale is not one", () => {
+    expect(SCREENS.find((entry) => entry.id === "sale-new")).not.toHaveProperty("sheetOnPhone");
+  });
+});
+
 describe("the new stock entry form's parent", () => {
   const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", titleKey: "common:varieties" };
 
