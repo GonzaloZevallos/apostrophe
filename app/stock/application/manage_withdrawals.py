@@ -5,7 +5,10 @@ A withdrawal is never refused for lack of stock, nor because its grams were alre
 drawn from lots (ADR-0009): the lots after it are worked out again on the next read.
 Checks run in this order: the withdrawal (404), every line's variety (404, a missing one
 before an archived one), then the domain rules (422), so a foreign variety never reaches
-the grams, date or reason rules.
+the grams, date or reason rules, and last the product's unit (422,
+`quantity.too_many_decimals`), read before the write and again after it, before the
+commit: a unit that lost decimals in between undoes the write. An edit checks only the
+lines that differ from the stored ones.
 Each use case that writes commits once, at its end, through `Transaction`
 (CODING_STANDARDS section 9).
 """
@@ -21,10 +24,12 @@ from app.shared.transaction import Transaction
 from app.stock.application.errors import VarietyNotFound
 from app.stock.application.ports import (
     StockEntries,
+    UnitsReader,
     VarietyCatalog,
     WithdrawalMovement,
     Withdrawals,
 )
+from app.stock.application.unit_check import Checked, confirm_admitted, require_admitted
 from app.stock.application.variety_use import require_usable
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import StockEntry
@@ -76,6 +81,11 @@ def _built(
     )
 
 
+def _quantities(withdrawal: Withdrawal) -> list[Checked]:
+    """Each line's product with its quantity, the pairs the unit check reads."""
+    return [(line.variety_id, line.quantity) for line in withdrawal.lines]
+
+
 def _viewed(catalog: VarietyCatalog, withdrawal: Withdrawal) -> WithdrawalView:
     names = catalog.names()
     return WithdrawalView(
@@ -93,6 +103,7 @@ def _stored(withdrawals: Withdrawals, withdrawal_id: int) -> Withdrawal:
 def record_withdrawal(
     withdrawals: Withdrawals,
     catalog: VarietyCatalog,
+    units: UnitsReader,
     transaction: Transaction,
     *,
     reason: str | None,
@@ -103,7 +114,10 @@ def record_withdrawal(
     now: datetime,
 ) -> WithdrawalView:
     withdrawal = _built(catalog, reason, withdrawn_on, note, lines, today, now, None, frozenset())
+    checked = _quantities(withdrawal)
+    require_admitted(units, checked)
     stored = withdrawals.add(withdrawal)
+    confirm_admitted(units, transaction, checked)
     transaction.commit()
     return _viewed(catalog, stored)
 
@@ -111,6 +125,7 @@ def record_withdrawal(
 def edit_withdrawal(
     withdrawals: Withdrawals,
     catalog: VarietyCatalog,
+    units: UnitsReader,
     transaction: Transaction,
     withdrawal_id: int,
     *,
@@ -134,7 +149,11 @@ def edit_withdrawal(
         existing.id,
         frozenset(line.variety_id for line in existing.lines),
     )
+    held = set(_quantities(existing))
+    checked = [line for line in _quantities(updated) if line not in held]
+    require_admitted(units, checked)
     stored = withdrawals.replace(updated)
+    confirm_admitted(units, transaction, checked)
     transaction.commit()
     return _viewed(catalog, stored)
 

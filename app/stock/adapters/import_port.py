@@ -3,6 +3,9 @@ import's only way into stock's tables (CODING_STANDARDS section 1; the plan's
 invariant that no code under `app/spreadsheet_import/` reads, writes or counts
 another capability's table directly).
 
+A write refuses a quantity finer than the product's unit through the same unit check as
+a hand-recorded one (`unit_check`), before the write and again before the commit.
+
 `check_entry` runs `StockEntry.of` exactly as `record_entry` would, as if the row were
 typed in by hand today, so an imported row is refused by the same rules (the PRD's
 "same data as hand entry"). It never checks the variety against this business's
@@ -26,6 +29,8 @@ from app.spreadsheet_import.domain.rows import EntradaRow
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_thresholds import SqlThresholds
 from app.stock.adapters.tables import StockEntryRow
+from app.stock.application.ports import UnitsReader
+from app.stock.application.unit_check import confirm_admitted, require_admitted
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.errors import (
     EntryCostInvalid,
@@ -69,9 +74,10 @@ class SqlStockImport:
     """`StockImport` over `SqlStockEntries` and `SqlThresholds`, for one business
     (ADR-0004)."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(self, session: Session, business_id: int, units: UnitsReader) -> None:
         self._session = session
         self._business_id = business_id
+        self._units = units
         self._entries = SqlStockEntries(session, business_id)
         self._thresholds = SqlThresholds(session, business_id)
 
@@ -117,7 +123,10 @@ class SqlStockImport:
     def write_threshold(
         self, variety_id: int, quantity: Quantity, transaction: Transaction
     ) -> None:
+        checked = [(variety_id, quantity)]
+        require_admitted(self._units, checked)
         self._thresholds.set(variety_id, Threshold.of(quantity))
+        confirm_admitted(self._units, transaction, checked)
         transaction.commit()
 
     def write_entry(
@@ -142,5 +151,8 @@ class SqlStockImport:
             today,
             recorded_at,
         )
+        checked = [(variety_id, row.quantity)]
+        require_admitted(self._units, checked)
         self._entries.add(entry)
+        confirm_admitted(self._units, transaction, checked)
         transaction.commit()

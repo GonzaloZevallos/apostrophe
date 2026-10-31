@@ -15,8 +15,15 @@ from app.stock.adapters.tables import StockWithdrawalLineRow, StockWithdrawalRow
 from tests.conftest import MovableClock
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
+from tests.fakes.units import set_unit_decimals
 
 TODAY = "2026-10-02"
+
+
+@pytest.fixture(autouse=True)
+def hundredths_unit(client: TestClient, engine: Engine) -> None:
+    """These tests move fractions of a unit: the business's unit admits two decimals."""
+    set_unit_decimals(engine, 2)
 
 
 def _variety(client: TestClient, name: str = "Zkittlez") -> int:

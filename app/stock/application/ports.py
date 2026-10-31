@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Protocol
 
 from app.shared.quantity import Quantity
+from app.shared.unit import Unit
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import StockEntry
 from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
@@ -125,4 +126,14 @@ class VarietyCatalog(Protocol):
     def names(self) -> dict[int, str]:
         """Every variety's name of this business by id, for an answer that names the
         varieties of a record's lines."""
+        ...
+
+
+class UnitsReader(Protocol):
+    """The unit of each product, read through the one port stock declares for it
+    (docs/adr/0055); the units hexagon implements it, wired in `app/main.py`. Built for
+    one business."""
+
+    def units_of(self, product_ids: Collection[int]) -> dict[int, Unit]:
+        """Each product's unit, by product id; one statement whatever the count."""
         ...

@@ -38,6 +38,7 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyNotFound as StockVarietyNotFound
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.threshold import Threshold
+from tests.fakes.units import GramsEverywhere
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
@@ -293,6 +294,7 @@ def test_a_delete_committed_first_makes_the_entry_answer_gone_and_orphans_nothin
             manage_entries.record_entry(
                 SqlStockEntries(late, BUSINESS),
                 _StaleCatalog(SqlVarietyCatalog(late, BUSINESS)),
+                GramsEverywhere(),
                 late,
                 entry_date=DAY,
                 variety_id=variety_id,

@@ -179,6 +179,7 @@ def _record_entry(then: str, transaction: CountingTransaction) -> StockEntry:
     return manage_entries.record_entry(
         RefusingEntries(),
         catalog,
+        GramsEverywhere(),
         transaction,
         entry_date=DAY,
         variety_id=7,
@@ -195,6 +196,7 @@ def _edit_entry(then: str, transaction: CountingTransaction) -> StockEntry:
     return manage_entries.edit_entry(
         RefusingEntries(own_variety_id=3),
         AskedAgainCatalog(then),
+        GramsEverywhere(),
         transaction,
         1,
         entry_date=DAY,

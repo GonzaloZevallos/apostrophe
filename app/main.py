@@ -238,6 +238,8 @@ def create_app(
     app.state.products_units = SqlUnitsReader
     # The same reader for sales, through the port sales declares for it.
     app.state.sales_units = SqlUnitsReader
+    # And for stock, through the port stock declares for it.
+    app.state.stock_units = SqlUnitsReader
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
     # directly (CODING_STANDARDS section 1). A dependency under `app/sales/adapters/`

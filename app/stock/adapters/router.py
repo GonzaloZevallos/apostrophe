@@ -1,7 +1,8 @@
+from collections.abc import Callable
 from datetime import date
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
@@ -31,6 +32,7 @@ from app.stock.application import read_stock as read_stock_uc
 from app.stock.application import set_threshold as set_threshold_uc
 from app.stock.application.errors import VarietyArchived as _ArchivedVariety
 from app.stock.application.errors import VarietyNotFound as _UnknownVariety
+from app.stock.application.ports import UnitsReader
 from app.stock.domain.errors import (
     EntryCostInvalid,
     EntryCostOnNegativeAdjustment,
@@ -80,11 +82,19 @@ def get_thresholds(session: SessionDep, business_id: CurrentBusinessId) -> SqlTh
     return SqlThresholds(session, business_id)
 
 
+def get_units(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> UnitsReader:
+    # Stock never imports `app.units`: `app/main.py` hangs the real reader on
+    # `app.state.stock_units` as a `(Session, business_id)` factory (docs/adr/0055).
+    factory = cast(Callable[[Session, int], UnitsReader], request.app.state.stock_units)
+    return factory(session, business_id)
+
+
 EntriesDep = Annotated[SqlStockEntries, Depends(get_entries)]
 CatalogDep = Annotated[SqlVarietyCatalog, Depends(get_catalog)]
 DrawsDep = Annotated[SqlDraws, Depends(get_draws)]
 WithdrawalsDep = Annotated[SqlStockWithdrawals, Depends(get_withdrawals)]
 ThresholdsDep = Annotated[SqlThresholds, Depends(get_thresholds)]
+UnitsDep = Annotated[UnitsReader, Depends(get_units)]
 
 as_http = TranslateErrors(
     [
@@ -140,6 +150,7 @@ def record_entry(
     body: EntryIn,
     entries: EntriesDep,
     catalog: CatalogDep,
+    units: UnitsDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -149,6 +160,7 @@ def record_entry(
             entry = manage_entries.record_entry(
                 entries,
                 catalog,
+                units,
                 session,
                 entry_date=body.date or today,
                 variety_id=body.product_id,
@@ -176,6 +188,7 @@ def edit_entry(
     body: EntryIn,
     entries: EntriesDep,
     catalog: CatalogDep,
+    units: UnitsDep,
     session: SessionDep,
     today: TodayDep,
 ) -> EntryOut:
@@ -184,6 +197,7 @@ def edit_entry(
             entry = manage_entries.edit_entry(
                 entries,
                 catalog,
+                units,
                 session,
                 stock_entry_id,
                 entry_date=body.date or today,
@@ -210,6 +224,7 @@ def record_withdrawal(
     body: WithdrawalIn,
     withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
+    units: UnitsDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -219,6 +234,7 @@ def record_withdrawal(
             view = manage_withdrawals.record_withdrawal(
                 withdrawals,
                 catalog,
+                units,
                 session,
                 reason=body.reason,
                 withdrawn_on=body.date or today,
@@ -229,6 +245,8 @@ def record_withdrawal(
             )
         except _ArchivedVariety as exc:
             raise ProductArchived(exc.variety_id) from exc
+        except _UnknownVariety as exc:
+            raise WithdrawalVarietyNotFound() from exc
         return WithdrawalOut.of(view)
 
 
@@ -248,6 +266,7 @@ def edit_withdrawal(
     body: WithdrawalIn,
     withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
+    units: UnitsDep,
     session: SessionDep,
     today: TodayDep,
 ) -> WithdrawalOut:
@@ -256,6 +275,7 @@ def edit_withdrawal(
             view = manage_withdrawals.edit_withdrawal(
                 withdrawals,
                 catalog,
+                units,
                 session,
                 withdrawal_id,
                 reason=body.reason,
@@ -266,6 +286,8 @@ def edit_withdrawal(
             )
         except _ArchivedVariety as exc:
             raise ProductArchived(exc.variety_id) from exc
+        except _UnknownVariety as exc:
+            raise WithdrawalVarietyNotFound() from exc
         return WithdrawalOut.of(view)
 
 
@@ -302,6 +324,7 @@ def set_threshold(
     withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
     thresholds: ThresholdsDep,
+    units: UnitsDep,
     session: SessionDep,
     today: TodayDep,
 ) -> ProductStockOut:
@@ -314,6 +337,7 @@ def set_threshold(
                 withdrawals,
                 thresholds,
                 catalog,
+                units,
                 session,
                 product_id,
                 quantity,
