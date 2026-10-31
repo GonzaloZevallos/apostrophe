@@ -991,3 +991,24 @@ test('a first visit to Home shows no Loading marker while the notices answer', a
 
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 })
+
+test('a failed panel read hides the Loading marker even with a hand-off waiting', async () => {
+  setPaymentReturn(1)
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/first-run')) return Promise.resolve(jsonResponse(200, NONE))
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, NOT_OFFERED))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(500, { detail: 'boom' }))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  renderInicio()
+
+  await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Collect from Ana Pérez' })).not.toBeInTheDocument()
+})
