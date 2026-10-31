@@ -70,6 +70,9 @@ classDiagram
     name : str
     admits(quantity: _InHundredths) bool
   }
+  class UnitNotFound {
+    code : ClassVar~str~
+  }
   class UnknownLanguage {
   }
   class Week {

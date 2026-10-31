@@ -22,6 +22,10 @@ classDiagram
   }
   class products_reader {
   }
+  class router {
+  }
+  class schemas {
+  }
   class sql_units {
   }
   class tables {
@@ -39,6 +43,12 @@ classDiagram
   ports --> unit
   products_reader --> sql_units
   products_reader --> tables
+  router --> application
+  router --> ports
+  router --> schemas
+  router --> sql_units
+  router --> unit
+  schemas --> unit
   sql_units --> tables
   sql_units --> unit
   tables --> unit
@@ -48,6 +58,13 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class CountedUnit {
+    product_count : int
+    unit : Unit
+  }
+  class DecimalsInUse {
+    code : ClassVar~str~
+  }
   class InvalidUnitDecimals {
     code : ClassVar~str~
   }
@@ -57,10 +74,16 @@ classDiagram
   class InvalidUnitName {
     code : ClassVar~str~
   }
+  class LastUnit {
+    code : ClassVar~str~
+  }
   class UnitDraft {
     decimals : int
     label
     name
+  }
+  class UnitInUse {
+    code : ClassVar~str~
   }
   class UnitLabel {
     value : str
@@ -71,23 +94,39 @@ classDiagram
     value : str
     of(raw: str) UnitName
   }
+  class UnitNameTaken {
+    code : ClassVar~str~
+  }
   class UnitRuleBroken {
     code : ClassVar~str~
   }
+  DecimalsInUse --|> UnitRuleBroken
   InvalidUnitDecimals --|> UnitRuleBroken
   InvalidUnitLabel --|> UnitRuleBroken
   InvalidUnitName --|> UnitRuleBroken
+  LastUnit --|> UnitRuleBroken
   UnitDraft --> UnitLabel : label
   UnitDraft --> UnitName : name
+  UnitInUse --|> UnitRuleBroken
+  UnitNameTaken --|> UnitRuleBroken
 ```
 
 ## application
 
 ```mermaid
 classDiagram
+  class UnitUse {
+    products_per_unit() dict~int, int~
+    products_using(unit_id: int) int
+  }
   class Units {
     add(draft: UnitDraft) Unit
+    by_id(unit_id: int) Unit #124; None
     by_name(name: UnitName) Unit #124; None
+    count() int
+    list() list~Unit~
+    remove(unit_id: int) None
+    save(unit: Unit) Unit
   }
 ```
 
@@ -97,12 +136,35 @@ classDiagram
 classDiagram
   class SqlUnits {
     add(draft: UnitDraft) Unit
+    by_id(unit_id: int) Unit #124; None
     by_name(name: UnitName) Unit #124; None
+    count() int
+    list() list~Unit~
+    remove(unit_id: int) None
+    save(unit: Unit) Unit
   }
   class SqlUnitsReader {
     get(unit_id: int) Unit #124; None
     only_unit() Unit #124; None
     units_of(product_ids: Collection~int~) dict~int, Unit~
+  }
+  class UnitIn {
+    decimals : int
+    label : str
+    name : str
+  }
+  class UnitOut {
+    decimals : int
+    id : int
+    label : str
+    name : str
+    product_count : int
+    of(counted: CountedUnit) 'UnitOut'
+  }
+  class UnitPatch {
+    decimals : int #124; None
+    label : str #124; None
+    name : str #124; None
   }
   class UnitRow {
     business_id : Mapped~int~

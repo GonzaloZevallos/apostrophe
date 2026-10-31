@@ -36,6 +36,8 @@ classDiagram
   }
   class tables {
   }
+  class unit_use {
+  }
   errors --> product
   import_port --> manage_prices
   import_port --> manage_products
@@ -62,6 +64,7 @@ classDiagram
   sql_products --> product
   sql_products --> tables
   tables --> product
+  unit_use --> tables
 ```
 
 ## domain
@@ -169,9 +172,6 @@ classDiagram
     remove_unused(product_id: int) bool
     save(product: Product) Product
   }
-  class UnitNotFound {
-    code : ClassVar~str~
-  }
   class UnitsReader {
     get(unit_id: int) Unit #124; None
     only_unit() Unit #124; None
@@ -256,6 +256,10 @@ classDiagram
     remove_price_entries(product_id: int) None
     remove_unused(product_id: int) bool
     save(product: Product) Product
+  }
+  class SqlUnitUse {
+    products_per_unit() dict~int, int~
+    products_using(unit_id: int) int
   }
   class UnitOut {
     decimals : int
