@@ -206,6 +206,7 @@ def record_price_entry(
     body: PriceEntryIn,
     products: ProductsDep,
     settings: SettingsDep,
+    units: UnitsDep,
     session: SessionDep,
 ) -> PriceEntryOut:
     with as_http:
@@ -213,6 +214,7 @@ def record_price_entry(
         entry = manage_prices.record_price_entry(
             products,
             settings,
+            units,
             session,
             product_id=product_id,
             effective_from=body.effective_from,

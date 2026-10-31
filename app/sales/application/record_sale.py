@@ -13,9 +13,10 @@ from app.sales.application.ports import (
     PriceBook,
     PricingSettingsReader,
     Sales,
+    UnitsReader,
 )
 from app.sales.domain.sale import LineRequest, PaymentMethod, Sale, UnknownCustomer, UnknownVariety
-from app.shared.quantity import Quantity
+from app.shared.quantity import Quantity, TooManyDecimals
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
 
@@ -36,6 +37,7 @@ def record_sale(
     price_book: PriceBook,
     customer_facts: CustomerFacts,
     pricing_settings: PricingSettingsReader,
+    units: UnitsReader,
     transaction: Transaction,
     *,
     sale_date: date,
@@ -56,6 +58,7 @@ def record_sale(
 
     settings = pricing_settings.current()
     requests = [_resolve_line(price_book, sale_date, line) for line in lines]
+    _require_admitted(units, requests)
 
     sale = Sale.record(
         sale_date=sale_date,
@@ -79,8 +82,29 @@ def record_sale(
         if any(price_book.for_variety(r.variety_id, sale_date) is None for r in requests):
             raise UnknownVariety from None
         raise
+    # The unit may have lost decimals since the first read: ask again, before committing.
+    if not _admitted(units, requests):
+        transaction.rollback()
+        raise TooManyDecimals()
     transaction.commit()
     return stored
+
+
+def _admitted(units: UnitsReader, requests: Sequence[LineRequest]) -> bool:
+    """Whether every line's quantity fits its product's unit. A product missing from the
+    map is an internal error (the lookup raises `KeyError`), never a refusal."""
+    by_product = units.units_of({request.variety_id for request in requests})
+    return all(by_product[r.variety_id].admits(r.quantity) for r in requests)
+
+
+def _require_admitted(units: UnitsReader, requests: Sequence[LineRequest]) -> None:
+    """The check before any write. A product deleted since it was priced has no unit to
+    read: that is the same "gone" the price book answers, not a refusal of the quantity."""
+    by_product = units.units_of({request.variety_id for request in requests})
+    if any(request.variety_id not in by_product for request in requests):
+        raise UnknownVariety()
+    if not all(by_product[r.variety_id].admits(r.quantity) for r in requests):
+        raise TooManyDecimals()
 
 
 def _resolve_line(price_book: PriceBook, sale_date: date, line: LineInput) -> LineRequest:

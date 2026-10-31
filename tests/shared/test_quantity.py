@@ -48,9 +48,7 @@ def test_invalid_grams_messages_do_not_vary_with_the_input() -> None:
     assert len(too_precise) == 1
 
 
-def _raised_by(
-    func: Callable[[str], Quantity], value: str
-) -> InvalidQuantity | TooManyDecimals:
+def _raised_by(func: Callable[[str], Quantity], value: str) -> InvalidQuantity | TooManyDecimals:
     with pytest.raises((InvalidQuantity, TooManyDecimals)) as exc_info:
         func(value)
     return exc_info.value

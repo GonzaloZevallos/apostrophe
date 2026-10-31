@@ -26,6 +26,7 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyArchived as StockArchived
 from app.stock.application.errors import VarietyNotFound as StockNotFound
 from app.stock.domain.entry import Origin, StockEntry
+from tests.fakes.units import GramsEverywhere
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
@@ -93,6 +94,7 @@ def _record_sale(present: bool, transaction: CountingTransaction) -> Sale:
         AskedAgainPriceBook(present),
         NoCustomers(),
         BothRulesOn(),
+        GramsEverywhere(),
         transaction,
         sale_date=DAY,
         today=DAY,
@@ -274,6 +276,7 @@ def _record_price(then: Product | None, transaction: CountingTransaction) -> obj
     return manage_prices.record_price_entry(
         RefusingVarieties(then),
         BothRulesOn(),
+        GramsEverywhere(),
         transaction,
         7,
         effective_from=DAY,

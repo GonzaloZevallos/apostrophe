@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.payments.adapters.settlements import SqlOwingSales
 from app.sales.application.ports import CustomerSettlement, OwingSales
 from tests.conftest import TODAY
+from tests.fakes.units import set_unit_decimals
 from tests.pricing_switches import set_switches
 
 PRICE = 10_000
@@ -184,6 +185,7 @@ def test_a_bulk_line_carries_its_rule_and_unit_price_and_a_gift_its_rule_and_no_
     client: TestClient, engine: Engine
 ) -> None:
     set_switches(engine, bulk=True, vip=False)
+    set_unit_decimals(engine, 2)
     bulk = _variety(client, "Lavanda", bulk_price=8_000, bulk_minimum="50")
     plain = _variety(client, "Romero")
     response = client.post(

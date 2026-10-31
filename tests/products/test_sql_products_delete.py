@@ -16,6 +16,7 @@ from app.catalog.adapters.leaving import SqlCatalogLeaving
 from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.domain.attributes import CatalogAttributes
 from app.db import make_engine
+from app.main import units_reader
 from app.migrations.runner import upgrade_to_head
 from app.products.adapters.sql_products import SqlProducts
 from app.products.application import manage_prices, manage_products
@@ -320,6 +321,7 @@ def test_a_delete_committed_first_makes_the_price_answer_gone(engine: Engine) ->
             manage_prices.record_price_entry(
                 _ReadsStaleOnce(late, stale),
                 BothRulesOn(),
+                units_reader(late, BUSINESS),
                 late,
                 variety_id,
                 effective_from=date(2026, 2, 1),
@@ -348,6 +350,7 @@ def _record_sale(session: Session, price_book: SqlPriceBook, variety_id: int) ->
         price_book,
         SqlCustomerFacts(session, BUSINESS),
         BothRulesOn(),
+        units_reader(session, BUSINESS),
         session,
         sale_date=DAY,
         today=DAY,

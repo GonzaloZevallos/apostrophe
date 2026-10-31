@@ -15,6 +15,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
+from app.main import units_reader
 from app.products.adapters.import_port import ProductsImport
 from app.sales.adapters.import_port import SalesImport
 from app.sales.adapters.price_book import PlannedPriceBook
@@ -106,10 +107,10 @@ def test_has_records_is_false_for_a_fresh_business_true_after_write(
 ) -> None:
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
-        sales_import = SalesImport(session, business_id)
+        sales_import = SalesImport(session, business_id, units_reader(session, business_id))
         assert sales_import.has_records() is False
 
-        varieties_import = ProductsImport(session, business_id)
+        varieties_import = ProductsImport(session, business_id, units_reader(session, business_id))
         variety_id = varieties_import.write_variety(
             "Blue Dream", NoCommit(), _unit_id(session, business_id)
         )
@@ -138,7 +139,7 @@ def test_check_sales_refuses_a_row_with_no_price_that_day(
 ) -> None:
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
-        sales_import = SalesImport(session, business_id)
+        sales_import = SalesImport(session, business_id, units_reader(session, business_id))
         results = sales_import.check_sales(
             price_history=[],
             variety_keys={},
@@ -161,7 +162,7 @@ def test_check_sales_refuses_a_gift_with_a_special_total(
     history = [_price_row(effective=date(2026, 1, 1), list_price=1_000)]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
-        sales_import = SalesImport(session, business_id)
+        sales_import = SalesImport(session, business_id, units_reader(session, business_id))
         results = sales_import.check_sales(
             price_history=history,
             variety_keys=keys,
@@ -189,7 +190,7 @@ def test_check_sales_prices_list_bulk_and_vip_falling_back_to_list(
     ]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
-        sales_import = SalesImport(session, business_id)
+        sales_import = SalesImport(session, business_id, units_reader(session, business_id))
 
         lista_bulk = _sale_input(
             has_customer=True, quantity=Quantity.of(20), sale_date=date(2026, 6, 1)
@@ -232,14 +233,14 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
     )
 
     with Session(engine) as session:
-        sales_import = SalesImport(session, business_id)
+        sales_import = SalesImport(session, business_id, units_reader(session, business_id))
         planned = sales_import.check_sales(
             price_history=history, variety_keys=keys, sales=[sale], today=TODAY, settings=BOTH_ON
         )
         assert planned[0].refusal is None
         planned_total = planned[0].total
 
-        varieties_import = ProductsImport(session, business_id)
+        varieties_import = ProductsImport(session, business_id, units_reader(session, business_id))
         variety_id = varieties_import.write_variety(
             "Blue Dream", NoCommit(), _unit_id(session, business_id)
         )
@@ -270,7 +271,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     customer_id = _customer_id(client)
     run_today = date(2026, 8, 1)
     with Session(engine) as session:
-        varieties_import = ProductsImport(session, business_id)
+        varieties_import = ProductsImport(session, business_id, units_reader(session, business_id))
         variety_id = varieties_import.write_variety(
             "Blue Dream", NoCommit(), _unit_id(session, business_id)
         )
@@ -291,7 +292,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
         )
         session.commit()
 
-        sales_import = SalesImport(session, business_id)
+        sales_import = SalesImport(session, business_id, units_reader(session, business_id))
         bulk_date = date(2026, 6, 1)
         list_date = date(2026, 6, 2)
         amigo_fallback_date = date(2026, 7, 15)
@@ -402,14 +403,14 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
         )
 
     with Session(engine) as session:
-        varieties_import = ProductsImport(session, business_id)
+        varieties_import = ProductsImport(session, business_id, units_reader(session, business_id))
         variety_id = varieties_import.write_variety(
             "Blue Dream", NoCommit(), _unit_id(session, business_id)
         )
         varieties_import.write_price_entry(variety_id, history[0], NoCommit())
         session.commit()
 
-        sales_import = SalesImport(session, business_id)
+        sales_import = SalesImport(session, business_id, units_reader(session, business_id))
         for sale in cases:
             given_customer_id = customer_id if sale.has_customer else None
             sales_import.write_sale(

@@ -8,6 +8,7 @@ from sqlalchemy.engine import Engine
 
 from tests.conftest import MovableClock
 from tests.fakes.archive import archive_by_hand
+from tests.fakes.units import set_unit_decimals
 from tests.pricing_switches import set_switches
 
 GOLD_JANUARY = {
@@ -102,6 +103,7 @@ def test_grams_with_two_decimals_go_in_and_out_as_numbers(
     client: TestClient, engine: Engine
 ) -> None:
     set_switches(engine, bulk=True, vip=False)
+    set_unit_decimals(engine, 2)
     variety = _register(client)
 
     entry = _price(client, variety["id"], **{**GOLD_JANUARY, "bulk_minimum": 7.25})

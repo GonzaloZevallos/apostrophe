@@ -15,6 +15,7 @@ from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale, SaleLine
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
+from app.shared.unit import Unit
 
 
 class PriceBook(Protocol):
@@ -24,6 +25,16 @@ class PriceBook(Protocol):
         """`None` when the variety does not exist in this business. A variety that
         exists but has no current price on `day` is a `VarietyPricing` whose
         `current` is `None`."""
+        ...
+
+
+class UnitsReader(Protocol):
+    """The unit of each product, read through the one port sales declares for it
+    (docs/adr/0055); the units hexagon implements it, wired in `app/main.py`. Built for
+    one business."""
+
+    def units_of(self, product_ids: Collection[int]) -> dict[int, Unit]:
+        """Each product's unit, by product id; one statement whatever the count."""
         ...
 
 

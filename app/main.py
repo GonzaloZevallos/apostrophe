@@ -133,6 +133,12 @@ class CompositeOpening:
         return _BoundComposite([factory(session) for factory in self._factories])
 
 
+def units_reader(session: Session, business_id: int) -> SqlUnitsReader:
+    """The one `units_of` reader every hexagon's own reader port is served by, built here
+    for the spreadsheet import and its callers so none imports `app.units` (docs/adr/0055)."""
+    return SqlUnitsReader(session, business_id)
+
+
 def units_import(session: Session, business_id: int) -> UnitsImport:
     """The spreadsheet import's `UnitsImport`, built here so the import's own composition
     root never imports `app.units` (docs/adr/0055)."""
@@ -230,6 +236,8 @@ def create_app(
     )
     # Products reads a product's unit only through its own `UnitsReader` port (docs/adr/0055).
     app.state.products_units = SqlUnitsReader
+    # The same reader for sales, through the port sales declares for it.
+    app.state.sales_units = SqlUnitsReader
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
     # directly (CODING_STANDARDS section 1). A dependency under `app/sales/adapters/`
