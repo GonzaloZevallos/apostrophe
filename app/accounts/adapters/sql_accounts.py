@@ -62,6 +62,16 @@ class SqlAccounts:
         # UPDATE, so a rename or a language change from a stale read never undoes it.
         self._session.flush()
 
+    def set_time_zone_if_different(self, business_id: int, zone: BusinessTimeZone) -> bool:
+        statement = (
+            update(BusinessRow)
+            .where(BusinessRow.id == business_id, BusinessRow.time_zone != zone.name)
+            .values(time_zone=zone.name)
+        )
+        changed = self._session.execute(statement).rowcount > 0
+        self._session.flush()
+        return changed
+
     def add_user(self, user: User) -> User:
         row = UserRow(
             business_id=user.business_id,

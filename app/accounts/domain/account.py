@@ -31,6 +31,13 @@ class WeakPassword(AccountRuleBroken):
     code: ClassVar[str] = "account.password_weak"
 
 
+class UnknownTimeZone(AccountRuleBroken):
+    """The name is not one of the zones a business may choose (`accepted_time_zones`). The
+    message is the fixed rule: it never echoes the name."""
+
+    code: ClassVar[str] = "unknown_time_zone"
+
+
 @dataclass(frozen=True)
 class Email:
     """Lowercased and trimmed, so the same address typed twice is the same address."""

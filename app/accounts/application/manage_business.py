@@ -7,7 +7,8 @@ from collections.abc import Collection
 from dataclasses import dataclass
 
 from app.accounts.application.ports import Accounts
-from app.accounts.domain.account import BusinessName
+from app.accounts.domain.account import BusinessName, BusinessTimeZone, UnknownTimeZone
+from app.accounts.domain.time_zone import accepted_time_zones
 from app.shared.language import BusinessLanguage, Language
 from app.shared.transaction import Transaction
 
@@ -63,3 +64,21 @@ def change_business_language(
     accounts.save_business(dataclasses.replace(business, language=language))
     transaction.commit()
     return True
+
+
+def change_time_zone(
+    accounts: Accounts, transaction: Transaction, business_id: int, name: str
+) -> bool:
+    """Answers whether the stored zone changed (docs/adr/0057). The stored name chosen again
+    is no change, whatever the list says; any other name must be in `accepted_time_zones()`,
+    the same list the picker shows. The write is one conditional UPDATE, so only a real
+    change reports True and commits."""
+    business = accounts.business(business_id)
+    assert business is not None, "a signed-in user's business always exists"
+    if name == business.time_zone.name:
+        return False
+    if name not in set(accepted_time_zones()):
+        raise UnknownTimeZone("that is not a time zone a business can use")
+    changed = accounts.set_time_zone_if_different(business_id, BusinessTimeZone(name))
+    transaction.commit()
+    return changed

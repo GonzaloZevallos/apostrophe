@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
 
-from app.accounts.domain.account import Business, Email, User
+from app.accounts.domain.account import Business, BusinessTimeZone, Email, User
 from app.accounts.domain.invitation import Invitation
 from app.shared.language import BusinessLanguage
 
@@ -37,6 +37,12 @@ class Accounts(Protocol):
     def business(self, business_id: int) -> Business | None: ...
 
     def save_business(self, business: Business) -> None: ...
+
+    def set_time_zone_if_different(self, business_id: int, zone: BusinessTimeZone) -> bool:
+        """One `UPDATE business SET time_zone = :new WHERE id = :id AND time_zone != :new`;
+        whether it changed a row (docs/adr/0057). `save_business` never writes the zone, so
+        a stale read of another field cannot undo it."""
+        ...
 
     def add_user(self, user: User) -> User: ...
 
