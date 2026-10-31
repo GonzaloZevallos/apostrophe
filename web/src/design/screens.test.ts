@@ -1,5 +1,6 @@
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   assertAccountKinds,
@@ -111,6 +112,50 @@ describe('assertScreens', () => {
     expect(() =>
       assertScreens([{ screen: 'OnboardingStockCompuOscuro', design: 'OnboardingStock', tema: 'oscuro' }]),
     ).not.toThrow()
+  })
+
+  describe('a dark twin and its drawings', () => {
+    const MESSAGE = (screen: string) => `${screen}: a dark twin must compare its own dark drawing`
+    const pantallasWith = (...files: string[]): string => {
+      const dir = mkdtempSync(join(tmpdir(), 'pantallas-'))
+      for (const file of files) writeFileSync(join(dir, `${file}.dc.html`), '')
+      return dir
+    }
+
+    it('refuses the light file when the twin has a drawing named after its own screen', () => {
+      const dir = pantallasWith('Inicio', 'InicioOscuro')
+      expect(() => assertScreens([{ screen: 'InicioOscuro', design: 'Inicio', tema: 'oscuro' }], dir)).toThrow(
+        new Error(MESSAGE('InicioOscuro')),
+      )
+      expect(() => assertScreens([{ screen: 'InicioOscuro', tema: 'oscuro' }], dir)).not.toThrow()
+    })
+
+    it('accepts the light file when no dark drawing exists', () => {
+      const dir = pantallasWith('Inicio')
+      expect(() => assertScreens([{ screen: 'InicioOscuro', design: 'Inicio', tema: 'oscuro' }], dir)).not.toThrow()
+    })
+
+    it('holds a twin of another design to that design\'s own dark drawing', () => {
+      const dir = pantallasWith('OnboardingListo', 'OnboardingListoOscuro')
+      const row = { screen: 'ListoOscuro', tema: 'oscuro' }
+      expect(() => assertScreens([{ ...row, design: 'OnboardingListo' }], dir)).toThrow(new Error(MESSAGE('ListoOscuro')))
+      expect(() => assertScreens([{ ...row, design: 'OnboardingListoOscuro' }], dir)).not.toThrow()
+    })
+
+    it('prefers the twin\'s own file over its design\'s dark drawing', () => {
+      const dir = pantallasWith('OnboardingListo', 'ListoOscuro', 'OnboardingListoOscuro')
+      const row = { screen: 'ListoOscuro', tema: 'oscuro' }
+      expect(() => assertScreens([{ ...row, design: 'OnboardingListoOscuro' }], dir)).toThrow(
+        new Error(MESSAGE('ListoOscuro')),
+      )
+      expect(() => assertScreens([{ ...row, design: 'ListoOscuro' }], dir)).not.toThrow()
+    })
+
+    it('does not treat a design that is itself a dark drawing as a light one', () => {
+      const dir = pantallasWith('OnboardingListoOscuro', 'OnboardingListoOscuroOscuro')
+      const row = { screen: 'ListoOscuro', design: 'OnboardingListoOscuro', tema: 'oscuro' }
+      expect(() => assertScreens([row], dir)).not.toThrow()
+    })
   })
 
   it('accepts a Compu entry outside the Onboarding, and one with Compu in the middle of its name', () => {
@@ -741,15 +786,21 @@ describe('the real registry covers its evidence', () => {
 
   it('has a row for every Onboarding design, phone and computer, light and dark', () => {
     const pantallas = resolve(process.cwd(), '..', 'docs/product/design-system/pantallas')
-    const designs = readdirSync(pantallas)
-      .filter((file) => /^Onboarding.*\.dc\.html$/.test(file))
-      .map((file) => file.replace('.dc.html', ''))
+    const designs = [
+      ...new Set(
+        readdirSync(pantallas)
+          .filter((file) => /^Onboarding.*\.dc\.html$/.test(file))
+          .map((file) => file.replace('.dc.html', '').replace(/Oscuro$/, '')),
+      ),
+    ]
     expect(designs.length).toBeGreaterThan(0)
     const has = (design: string, computer: boolean, dark: boolean) =>
       screens.screens.some((s) => {
         const isComputer = s.viewport !== undefined && s.viewport[0]! >= COMPUTER_MIN_WIDTH
         const isPhone = s.viewport === undefined
-        return (s.design ?? s.screen) === design && (computer ? isComputer : isPhone) && (s.tema === 'oscuro') === dark
+        const own = s.design ?? s.screen
+        const named = own === design || (dark && own === `${design}Oscuro`)
+        return named && (computer ? isComputer : isPhone) && (s.tema === 'oscuro') === dark
       })
     for (const design of designs) {
       expect(has(design, false, false), `${design}: phone light`).toBe(true)
