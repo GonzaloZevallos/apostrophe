@@ -116,7 +116,7 @@ sequenceDiagram
 | 11 | [app/sales/adapters/router.py](../../app/sales/adapters/router.py) | `record_sale` |
 | 12 | [app/pinned_catalog/adapters/safe_upkeep.py](../../app/pinned_catalog/adapters/safe_upkeep.py) | `run_upkeep_safely` |
 
-El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta, sus líneas y el pago en el acto, todos con el id del Business de la sesión. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
+El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta, sus líneas y el pago en el acto, todos con el id del Business de la sesión. La flecha del paso 3 no es una llamada del handler: es una dependencia del router que FastAPI resuelve antes de entrar a él. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
 
 ## Un movimiento de stock
 
