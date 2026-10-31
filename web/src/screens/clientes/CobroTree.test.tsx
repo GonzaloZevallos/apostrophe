@@ -18,6 +18,7 @@ import type { PaymentUnderneath, Viewport } from '../../routes'
 import panelFixture from '../../api/fixtures/panel.json'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 import { inAppState } from '../../components/inAppState'
+import { peekPaymentReturn } from '../../paymentReturn'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -129,6 +130,8 @@ describe('on a computer', () => {
     // A second Escape does nothing while the question shows.
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(router.state.location.pathname).toBe(PAYMENT)
+    // The leave was asked, not made: no hand-off is left behind to focus a control later.
+    expect(peekPaymentReturn()).toBeNull()
   })
 })
 

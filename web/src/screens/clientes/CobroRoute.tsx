@@ -27,7 +27,7 @@ import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
-import { setPaymentReturn } from '../../paymentReturn'
+import { consumePaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { CUSTOMERS } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Cobro from './Cobro'
@@ -106,7 +106,11 @@ export default function CobroRoute() {
   const wasBlocked = useRef(false)
   useEffect(() => {
     if (blocked) {
-      if (!wasBlocked.current) focusBeforeAsking.current = document.activeElement
+      if (!wasBlocked.current) {
+        focusBeforeAsking.current = document.activeElement
+        // The leave was asked, not made: the note `leave` left must not outlive "keep editing".
+        consumePaymentReturn()
+      }
     } else if (wasBlocked.current) {
       const before = focusBeforeAsking.current
       if (stillFocusable(before)) before.focus()
