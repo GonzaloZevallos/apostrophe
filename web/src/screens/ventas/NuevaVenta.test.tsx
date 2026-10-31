@@ -270,14 +270,15 @@ test('with no history behind it, "Close" replaces the form with Ventas instead o
   render(<App />)
   await screen.findByText('New sale')
 
+  // The jsdom history is shared by every test of the file, so what is behind the form depends
+  // on the tests that ran before it. A replace leaves the number of entries as it was; a push adds one.
+  const entries = window.history.length
   await user.click(screen.getByRole('button', { name: 'Close' }))
   expect(
     await screen.findByText('Sales', { selector: '.encabezado__titulo' }),
   ).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(SALES)
-
-  await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).not.toBe(SALE_NEW)
+  expect(window.history.length).toBe(entries)
 })
 
 test('opened from inside the app, "Close" goes back through history', async () => {

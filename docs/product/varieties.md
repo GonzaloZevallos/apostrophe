@@ -1,698 +1,686 @@
 # Varieties
 
-The varieties a business sells and the price history of each, seen only by that business (ADR-0004). Every other capability reads prices from here: a sale takes the current price of its day, the catalog shows today's.
+Las Varieties que vende un **Business** y el historial de precios de cada una, que ve solo ese Business (ADR-0004). Toda otra capacidad lee los precios de acá: una **Sale** toma el **Current price** de su día, y el **Catalog** muestra el de hoy.
 
-Varieties is the one screen for a variety. Its list and each variety's page hold:
-- the variety's prices (here);
-- its stock, entries, withdrawals and low-stock threshold (`stock.md`);
-- its catalog attributes (`catalog.md`).
+Varieties es la única pantalla de una **Variety**. Su lista y la página de cada Variety reúnen:
+- los precios de la Variety (acá);
+- su **Stock**, sus **Stock entry**, sus **Stock withdrawal** y su **Low-stock threshold** (`stock.md`);
+- sus **Catalog attributes** (`catalog.md`).
 
-Which price fields a price entry shows and stores follows the business's pricing settings (pricing-settings.md). Varieties is a tab (navigation.md). It replaced the former Stock tab, the old Catalog screen and the old Varieties screens; their paths redirect (navigation.md). It also covers the end of a variety's life: a variety with no history can be deleted, and one with history archived and later restored, with no past figure moving.
+Qué campos de precio muestra y guarda una **Price entry** sigue los **Pricing settings** del Business (pricing-settings.md). Varieties es una pestaña (navigation.md). Reemplazó a la antigua pestaña Stock, a la vieja pantalla Catalog y a las viejas pantallas de Varieties; sus rutas redirigen (navigation.md). También cubre el final de la vida de una Variety: una Variety sin **Variety history** se puede eliminar, y una con historial se puede archivar y restaurar más adelante, sin que se mueva ninguna cifra pasada.
 
 ## Jobs
 
-**When** I start selling a new variety or change what I charge, **I want** to record the variety once and each price with the date it starts to apply, **so I can** charge the right price on any day without remembering when it changed.
+**Cuando** empiezo a vender una variedad nueva o cambio lo que cobro, **quiero** registrar la variedad una sola vez y cada precio con la fecha desde la que rige, **para** cobrar el precio correcto cualquier día sin acordarme de cuándo cambió.
 
-**When** a price changes mid-day and I'm on my phone between orders or mid-chat with a customer, **I want** to record the new price and the day it applies from in a short form that reads as pesos and starts on today, without leaving the variety I was looking at, **so I can** get back to the customer sure the right price is in force, without second-guessing the amount or the date.
+**Cuando** un precio cambia en mitad del día y estoy con el celular entre pedidos o en medio de un chat con un cliente, **quiero** registrar el precio nuevo y el día desde el que rige en un formulario corto que se lea en pesos y arranque en hoy, sin salir de la variedad que estaba mirando, **para** volver con el cliente seguro de que rige el precio correcto, sin dudar del monto ni de la fecha.
 
-This refines the job above for the phone and the computer (on the computer, the variety's page stays behind the form); it is not a new job. Its secondary situation is the Onboarding's step 1, which shares the price fields (onboarding.md). Before it, the computer opened the price form as a page of its own, amounts carried no "$" and the date was a native date field.
+Este afina el job de arriba para el celular y la computadora (en la computadora, la página de la Variety queda detrás del formulario); no es un job nuevo. Su situación secundaria es el paso 1 del **Onboarding**, que comparte los campos de precio (onboarding.md). Antes, la computadora abría el formulario de precio como una página propia, los montos no llevaban "$" y la fecha era un campo de fecha nativo.
 
-**When** I change a message or a screen's chrome, **I want** each shared message to live in one place and the chrome rule to be proven by a test of what the screen shows, **so I** never fix a message in one screen and leave it stale in another, and never ship a card that shows "+ New sale" unnoticed.
+**Cuando** cambio un mensaje o el marco de una pantalla, **quiero** que cada mensaje compartido viva en un solo lugar y que la regla del marco se pruebe con un test de lo que muestra la pantalla, **para** no arreglar nunca un mensaje en una pantalla y dejarlo viejo en otra, y no publicar nunca sin notarlo una tarjeta que muestre "+ New sale".
 
-Its protagonist is the maintainer of the app, or the reviewer acting for them, in the style of accounts.md's maintainer job; the seller is affected only indirectly. It is served here by the one source of "Check the grams entered" and "Price saved", and by the chrome test that navigation.md's chrome metric asks for. No behaviour of the app changes.
+Su protagonista es quien mantiene la app, o quien revisa en su nombre, al estilo del job del mantenedor de accounts.md; quien vende se ve afectado solo de forma indirecta. Lo sirven acá la única fuente de "Check the grams entered" y "Price saved", y el test del marco que pide la métrica del marco de navigation.md. No cambia ningún comportamiento de la app.
 
-**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has (a bulk price if I sell by quantity, and a VIP price I set per variety if I have VIP customers), **so I can** charge every customer exactly what I mean to without typing a special price by hand, without seeing fields that don't apply to me, and without anyone's price changing by surprise. (Served here by the price entry's VIP price and by price fields that follow the switches; defined in pricing-settings.md.)
+**Cuando** configuro cómo pone precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las **Pricing rule**s que tiene mi negocio (un **Bulk price** si vendo por cantidad, y un **VIP price** que fijo por variedad si tengo **VIP customers**), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa. (Lo sirven acá el VIP price de la Price entry y los campos de precio que siguen los interruptores; se define en pricing-settings.md.)
 
-**When** I run my business from my phone, **I want to** keep my prices up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive.
+**Cuando** manejo mi negocio desde el celular, **quiero** mantener mis precios al día desde el celular, **para** dejar de llevarlos en la planilla y tener datos reales cuando lleguen las ventas.
 
-**When** I buy, harvest or count flower, **I want** to record it from my phone in a few taps, **so I can** know what I have of each variety, see one running out before a customer asks for it, and know what the grams I sell or gift cost me. (Served here by the list's status, the variety's page, its low-stock warning and "+ Stock entry"; defined in `stock.md`.)
+**Cuando** compro, cosecho o cuento flor, **quiero** registrarlo desde el celular en pocos toques, **para** saber qué tengo de cada variedad, ver que una se está acabando antes de que un cliente la pida y saber cuánto me costaron los gramos que vendo o regalo. (Lo sirven acá el estado de la lista, la página de la Variety, su aviso de Stock bajo y "+ Stock entry"; se define en `stock.md`.)
 
-**When** I take grams out of my own stock without selling them (to share at a party so
-people get to know the business, or for my own use), **I want** to record them from my
-phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right
-and see in Profit what promoting the business and my own consumption cost me, without
-recording a sale nobody made or an adjustment that reads as lost flower. (Served here by
-"Take from stock" on the list and on a variety's page, and the withdrawals in its "Stock y
-entradas"; defined in `stock.md`.)
+**Cuando** saco gramos de mi propio stock sin venderlos (para compartirlos en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlos desde el celular en pocos toques (fecha, variedades y gramos, el motivo), **para** mantener el stock correcto y ver en **Profit** cuánto me costó promocionar el negocio y mi propio consumo, sin registrar una venta que nadie hizo ni un **Adjustment** que se lea como flor perdida. (Lo sirven acá "Take from stock" en la lista y en la página de una Variety, y los Stock withdrawals de su "Stock y entradas"; se define en `stock.md`.)
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, with everything about one variety in one place, **so I can** get back to the customer instead of hunting through menus, and never wonder which of several screens holds what I need. (The navigation job, navigation.md.)
+**Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, con todo lo de una variedad en un solo lugar, **para** volver con el cliente en vez de buscar entre menús, y no preguntarme nunca cuál de varias pantallas tiene lo que necesito. (El job de navegación, navigation.md.)
 
-**When** I'm in the middle of serving a customer with my phone in hand, **I want** the app to behave like a phone app (a form that fills the screen with its main action under my thumb, and nothing I need hidden behind the keyboard), **so I can** record a price or edit a variety without fighting the screen or losing what I typed. (The phone layout job, navigation.md, GH-319: served here by the price form, New variety and a variety's rename, low-stock warning and catalog attributes forms, drawn on the phone by the one shared `Sheet`.)
+**Cuando** estoy atendiendo a un cliente con el celular en la mano, **quiero** que la app se comporte como una app de celular (un formulario que llena la pantalla con su acción principal bajo el pulgar, y nada que necesite escondido detrás del teclado), **para** registrar un precio o editar una variedad sin pelearme con la pantalla ni perder lo que tipeé. (El job del diseño en el celular, navigation.md, GH-319: lo sirven acá el formulario de precio, New variety y los formularios de renombre, de aviso de Stock bajo y de Catalog attributes de una Variety, dibujados en el celular por el único `Sheet` compartido.)
 
-**When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one variety and find everything about it on its own page (its stock and entries, its prices, its low-stock warning and how it shows in the catalog), the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a variety I can't sell.
+**Cuando** un cliente me pregunta qué tengo o cuánto cuesta algo, o entra flor, se acaba o cambia de precio, **quiero** abrir una variedad y encontrar todo sobre ella en su propia página (su stock y sus Stock entries, sus precios, su aviso de Stock bajo y cómo se muestra en el Catalog), que la lista me diga de un vistazo qué tengo, qué se está acabando y qué no puedo vender, y tener el Catalog de hoy a un toque de esa lista, listo para compartir desde el celular, **para** contestarle al cliente, registrar lo que entró y mandar un Catalog al día sin moverme entre pantallas, y que mis clientes nunca reciban un precio viejo ni una variedad que no puedo vender.
 
-This one is the navigation job applied to varieties, stock and the catalog, not a
-new job; its main situation is mid-chat, between orders. The stock and catalog jobs stay
-in `stock.md` and `catalog.md`; the computer is the same job on two panes.
+Este es el job de navegación aplicado a las variedades, el stock y el Catalog, no un
+job nuevo; su situación principal es en medio de un chat, entre pedidos. Los jobs de stock y de Catalog siguen
+en `stock.md` y `catalog.md`; la computadora es el mismo job en dos paneles.
 
-**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my
-lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if
-it never moved and archiving it if it has history, **so** my lists show only what I still
-sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly
-as it was if I start selling it again.
+**Cuando** una variedad que cargué por error, o una con la que ya no trabajo, sigue apareciendo en mis
+listas y selectores, **quiero** sacarla desde el celular en pocos toques, eliminándola si
+nunca se movió y archivándola si tiene historial, **para** que mis listas muestren solo lo que todavía
+vendo, que no cambie ninguna cifra pasada de ventas, stock, costo ni Profit, y poder traerla de vuelta exactamente
+como estaba si vuelvo a venderla.
 
-This one is the varieties and navigation job applied to the end of a variety's life,
-not a new job. Before it, a seller could only hide such a variety from the catalog and
-live with it in the lists, rename it to something like "NO USAR" or leave it sold out.
+Este es el job de variedades y de navegación aplicado al final de la vida de una variedad,
+no un job nuevo. Antes, quien vendía solo podía ocultar esa variedad del Catalog y
+convivir con ella en las listas, renombrarla a algo como "NO USAR" o dejarla agotada.
 
-**When** I open a variety I archived, from Archived, to check what it was or to bring it
-back, **I want** its page to read at a glance as archived and read-only, with everything it
-had (summary, hidden flag, prices, stock and movements, low-stock warning, catalog
-attributes) still in view and Restore as its one safe action, **so I can** decide whether
-to bring it back and leave knowing I changed nothing by accident. And when I delete a
-variety that never moved, the delete looks like what it is: permanent.
+**Cuando** abro una variedad que archivé, desde Archived, para ver qué era o para traerla
+de vuelta, **quiero** que su página se lea de un vistazo como archivada y de solo lectura, con todo lo que
+tenía (resumen, marca de **Hidden variety**, precios, stock y movimientos, aviso de Stock bajo, Catalog
+attributes) todavía a la vista y Restore como su única acción segura, **para** decidir si
+la traigo de vuelta e irme sabiendo que no cambié nada por accidente. Y cuando elimino una
+variedad que nunca se movió, la eliminación se ve como lo que es: permanente.
 
-This refines the end-of-life job above for the archived page and the live page's delete;
-it is not a new job. Its secondary audience is the reviewer acting for the maintainer
-(design-capture.md), who approves the archived page and Archived from drawings and
-before/after captures, not by reading code. Before it, the archived page left out "Hidden",
-the low-stock warning and the catalog attributes, styled "Archived" like "Hidden" next to
-a live status mark, turned into the live variety in place on Restore, and had no drawing,
-registry row or seeded variety to compare against.
+Este afina el job del final de la vida de arriba para la página archivada y la eliminación de la página activa;
+no es un job nuevo. Su público secundario es quien revisa en nombre del mantenedor
+(design-capture.md), que aprueba la página archivada y Archived a partir de dibujos y
+capturas de antes y después, no leyendo código. Antes, la página archivada dejaba afuera "Hidden",
+el aviso de Stock bajo y los Catalog attributes, mostraba "Archived" con el mismo estilo que "Hidden" junto a
+una marca de estado activa, se convertía en la Variety activa en el lugar al tocar Restore, y no tenía dibujo,
+fila del registro ni Variety sembrada con la cual compararla.
 
-Success criteria:
+Criterios de éxito:
 
-1. Asking for a variety's price on a day answers the entry in force that day: the latest
-   entry effective on or before it. A day before the first entry has no price.
-2. A price change never rewrites the past: it is a new entry from its own date. A typo is
-   fixed by deleting the wrong entry, and the one before it applies again (ADR-0003).
-3. Two varieties of a business never share a name, whatever the case or spacing; two
-   businesses may each have a variety of the same name. An archived variety keeps its
-   name.
-4. Everything here, deleting a mistaken entry included, is done from the phone with no API
-   call by hand.
-5. Varieties says on its own, by shape and word and never by color alone, when a variety
-   is sold out or below its threshold (`stock.md`, criterion 4). The summary line is
-   never blank.
-6. **One variety, one page**: a variety's stock and its movements (entries and
-   withdrawals), prices, low-stock warning and
-   catalog attributes are seen and edited from its page, and from no other screen. Every
-   edit there ends in an explicit save, so the seller always knows a change was kept.
-7. **Two taps at most**: from any tab root, the catalog screen ("Send catalog") and
-   the stock entry form ("+ Stock entry") open in at most 2 taps; a computer never
-   takes more than the phone. An entry started from a variety's page has that variety
-   chosen, with "Initial stock" preselected only when it has no entries.
-8. **Nothing lost, nothing invented**: everything a seller could do on the former Stock,
-   Catalog and Varieties screens is still reachable; every old path redirects
-   permanently; no link points at a screen that does not exist.
-9. **Out of the way in a few taps**: from a variety's own page, on phone and computer, the
-   seller takes it out of every list and picker. The app offers Delete only when the
-   variety has no history, and Archive otherwise. It never offers a delete that will be
-   refused.
-10. **The books don't move**: after archiving, every past sale and its lines, stock
-    figure, cost of goods, stock shortfall, Profit, Cash, Analysis figure and customer
-    balance reads exactly as before, to the peso and the hundredth of a gram.
-11. **Comes back whole**: restoring brings the variety back with its prices, stock,
-    entries, low-stock threshold, catalog attributes and hidden flag intact, and back in
-    every list and picker it qualifies for.
-12. **The domain decides**: a delete of a variety with history is refused by the domain
-    itself, not only hidden in the UI.
-13. **Archived varieties stay findable**: the seller can always see what they archived and
-    restore it.
-14. **Nothing new in the rules that already hold**: businesses stay isolated (ADR-0004);
-    every state is told by word and shape, never by colour alone, in both themes; toasts
-    carry no data.
-15. **Only my rules show, and switching loses nothing** (pricing-settings.md):
-    - With Bulk price off, no bulk price or bulk minimum shows in the price form or on the variety's page.
-    - With Customers VIP off, no VIP price shows.
-    - Switched back on, every stored bulk and VIP price shows again.
-16. **The price form looks as designed**: it matches `docs/product/design-system/pantallas/` on the phone and the computer, in both themes:
-    - on the computer, a modal over the variety's page, never a page of its own;
-    - a "$" before every peso amount (list, bulk and VIP price; never the bulk minimum);
-    - the effective date shown as a "Today" chip by default.
-17. **A price from today in the fewest taps**: recording a price effective today never requires opening a date picker. Choosing another date stays possible.
-18. **One message, one source**: every message shown on more than one screen ("Check the grams entered" in the price, stock entry and withdrawal forms) has one source, and so does the toast "Price saved". The wording a seller sees does not change anywhere.
-19. **Read as archived, nothing hidden**: an archived variety's page says "Archived" in
-    words, and "Hidden" when the variety is hidden. It shows its summary, prices, stock and
-    movements, low-stock warning and catalog attributes, all read-only, with no action but
-    Restore. No state is told by colour alone, in either theme. Restoring still meets
-    criteria 10 and 11.
-20. **The right weight on each action**: "Delete variety" (a live variety with no
-    history) is drawn as a destructive action; Restore is drawn as a safe action, with no
-    confirmation.
-21. **Approved from evidence**: the archived page and Archived have drawings in
-    `pantallas/` on phone and computer, light and dark; the sample app seeds one archived
-    variety; `scripts/design/screens.json` lists both pages; before/after captures
-    (ADR-0042) are attached to the PR with every difference listed.
+1. Preguntar el precio de una Variety en un día responde la Price entry vigente ese día: la última
+   con fecha de vigencia en ese día o antes. Un día anterior a la primera Price entry no tiene precio.
+2. Un cambio de precio nunca reescribe el pasado: es una Price entry nueva desde su propia fecha. Un error de tipeo
+   se corrige eliminando la Price entry equivocada, y vuelve a regir la anterior (ADR-0003).
+3. Dos Varieties de un Business nunca comparten nombre, sin importar mayúsculas, minúsculas ni espacios; dos
+   Businesses pueden tener cada uno una Variety con el mismo nombre. Una **Archived variety** conserva su
+   nombre.
+4. Todo lo de acá, incluido eliminar una Price entry equivocada, se hace desde el celular sin ninguna llamada a la API
+   a mano.
+5. Varieties dice por sí sola, por forma y palabra y nunca solo por color, cuándo una Variety
+   está agotada o por debajo de su umbral (`stock.md`, criterio 4). La línea de resumen
+   nunca queda en blanco.
+6. **Una variedad, una página**: el Stock de una Variety y sus movimientos (Stock entries y
+   Stock withdrawals), precios, aviso de Stock bajo y
+   Catalog attributes se ven y se editan desde su página, y desde ninguna otra pantalla. Toda
+   edición ahí termina en un guardado explícito, así quien vende siempre sabe que un cambio quedó guardado.
+7. **Dos toques como máximo**: desde cualquier **Tab root**, la pantalla del Catalog ("Send catalog") y
+   el formulario de Stock entry ("+ Stock entry") se abren en 2 toques como máximo; una computadora nunca
+   necesita más que el celular. Una Stock entry iniciada desde la página de una Variety tiene esa Variety
+   elegida, con "Initial stock" preseleccionado solo cuando no tiene Stock entries.
+8. **Nada perdido, nada inventado**: todo lo que quien vendía podía hacer en las antiguas pantallas Stock,
+   Catalog y Varieties sigue al alcance; cada ruta vieja redirige
+   de forma permanente; ningún link apunta a una pantalla que no existe.
+9. **Fuera del camino en pocos toques**: desde la propia página de una Variety, en celular y computadora, quien
+   vende la saca de toda lista y selector. La app ofrece Delete solo cuando la
+   Variety no tiene historial, y Archive en el resto de los casos. Nunca ofrece una eliminación que va a ser
+   rechazada.
+10. **Los libros no se mueven**: después de archivar, cada Sale pasada y sus **Sale line**, cada cifra de Stock,
+    **Cost of goods sold**, **Stock shortfall**, Profit, **Cash**, cifra de Analysis y **Balance** de
+    **Customer** se lee exactamente igual que antes, al peso y al centésimo de gramo.
+11. **Vuelve entera**: restaurar trae la Variety de vuelta con sus precios, Stock,
+    Stock entries, Low-stock threshold, Catalog attributes y marca de Hidden variety intactos, y de vuelta en
+    cada lista y selector en que califica.
+12. **Decide el dominio**: la eliminación de una Variety con historial la rechaza el propio
+    dominio, no solo la oculta la UI.
+13. **Las Archived varieties se siguen encontrando**: quien vende siempre puede ver lo que archivó y
+    restaurarlo.
+14. **Nada nuevo en las reglas que ya rigen**: los Businesses siguen aislados (ADR-0004);
+    cada estado se dice con palabra y forma, nunca solo con color, en los dos temas; los toasts
+    no llevan datos.
+15. **Solo se ven mis reglas, y cambiar de interruptor no pierde nada** (pricing-settings.md):
+    - Con Bulk price desactivado, no se muestra ningún Bulk price ni **Bulk minimum** en el formulario de precio ni en la página de la Variety.
+    - Con Customers VIP desactivado, no se muestra ningún VIP price.
+    - Al volver a activarlos, se muestra otra vez cada Bulk price y VIP price guardado.
+16. **El formulario de precio se ve como se diseñó**: coincide con `docs/product/design-system/pantallas/` en el celular y la computadora, en los dos temas:
+    - en la computadora, un modal sobre la página de la Variety, nunca una página propia;
+    - un "$" antes de cada monto en pesos (**List price**, Bulk price y VIP price; nunca el Bulk minimum);
+    - la fecha de vigencia se muestra por defecto como un chip "Today".
+17. **Un precio desde hoy en la menor cantidad de toques**: registrar una Price entry que rige desde hoy nunca exige abrir un selector de fecha. Elegir otra fecha sigue siendo posible.
+18. **Un mensaje, una fuente**: cada mensaje que se muestra en más de una pantalla ("Check the grams entered" en los formularios de precio, de Stock entry y de Stock withdrawal) tiene una sola fuente, y también la tiene el toast "Price saved". Lo que lee quien vende no cambia en ningún lado.
+19. **Se lee como archivada, nada oculto**: la página de una Archived variety dice "Archived" en
+    palabras, y "Hidden" cuando la Variety está oculta. Muestra su resumen, precios, Stock y
+    movimientos, aviso de Stock bajo y Catalog attributes, todo de solo lectura, sin ninguna acción salvo
+    Restore. Ningún estado se dice solo por color, en ninguno de los dos temas. Restaurar sigue cumpliendo
+    los criterios 10 y 11.
+20. **El peso justo en cada acción**: "Delete variety" (una Variety activa sin
+    historial) se dibuja como una acción destructiva; Restore se dibuja como una acción segura, sin
+    confirmación.
+21. **Aprobado con evidencia**: la página archivada y Archived tienen dibujos en
+    `pantallas/` en celular y computadora, claro y oscuro; la app de ejemplo siembra una Archived
+    variety; `scripts/design/screens.json` lista las dos páginas; las capturas de antes y después
+    (ADR-0042) se adjuntan al PR con cada diferencia listada.
 
-## Behaviour
+## Comportamiento
 
-- **Variety**: a name, trimmed, inner spaces collapsed, up to 60 characters. Renaming keeps its prices. Varieties are listed by name.
-- **Price entry**: an effective date and a list price per gram in whole pesos. Optionally, it also has:
-  - a bulk price per gram with its bulk minimum in grams (up to two decimals). The two come together or not at all, and the bulk price is lower than the list price;
-  - a VIP price per gram, in whole pesos, lower than the list price. It is independent of the bulk price and minimum (an entry may have either one alone) and is never compared with the bulk price.
+- **Variety**: un nombre, sin espacios al principio ni al final, con los espacios internos colapsados, de hasta 60 caracteres. Renombrarla conserva sus precios. Las Varieties se listan por nombre.
+- **Price entry**: una fecha de vigencia y un List price por gramo en pesos enteros. Opcionalmente, también tiene:
+  - un Bulk price por gramo con su Bulk minimum en gramos (hasta dos decimales). Los dos van juntos o ninguno, y el Bulk price es menor que el List price;
+  - un VIP price por gramo, en pesos enteros, menor que el List price. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price.
 
-  Every amount is above zero.
-- **A VIP price at or above the list price** is refused with its own fixed message and its own refusal code (ADR-0008), which never repeats the amount (ADR-0005).
-- **Rules switched off** (pricing-settings.md):
-  - A price entry recorded while Bulk price is off stores no bulk price or bulk minimum, and one recorded while VIP customers is off stores no VIP price, whatever the request sends. Nothing is copied forward from an earlier entry.
-  - Earlier entries keep what they stored.
-  - When a rule is switched back on, the current price shows no bulk or VIP line if its entry has none; the seller records a new entry if they want one.
-- One entry per variety per effective date; a second one on the same date is refused.
-- **No edits**: a price entry is never edited, its VIP price included. A new entry replaces it from its own date (ADR-0003).
-- **Deleting a price entry** (`DELETE /api/products/{id}/prices/{entry_id}`, ADR-0003): any entry may be deleted, the one in force today included. The entry before it applies again.
-- A variety's own representation carries its current price **today**, `null` when it has none. Today is the business day in Argentina time. Answers carry what is stored, together with the business's switches; screens hide what is switched off.
-- The price history lists the newest entry first.
-- **Low-stock threshold**: optional grams, above zero, up to two decimals, set or turned off per variety. Turned off means the variety has none; no former amount is kept. Its rules and the stock status are in `stock.md`.
+  Todo monto es mayor que cero.
+- **Un VIP price igual o mayor que el List price** se rechaza con su propio mensaje fijo y su propio código de rechazo (ADR-0008), que nunca repite el monto (ADR-0005).
+- **Reglas desactivadas** (pricing-settings.md):
+  - Una Price entry registrada mientras Bulk price está desactivado no guarda ningún Bulk price ni Bulk minimum, y una registrada mientras VIP customers está desactivado no guarda ningún VIP price, mande lo que mande el pedido. No se copia nada de una Price entry anterior.
+  - Las Price entries anteriores conservan lo que guardaron.
+  - Cuando se vuelve a activar una regla, el Current price no muestra línea de Bulk ni de VIP si su Price entry no la tiene; quien vende registra una Price entry nueva si quiere una.
+- Una Price entry por Variety por fecha de vigencia; una segunda en la misma fecha se rechaza.
+- **Sin ediciones**: una Price entry nunca se edita, su VIP price incluido. Una Price entry nueva la reemplaza desde su propia fecha (ADR-0003).
+- **Eliminar una Price entry** (`DELETE /api/products/{id}/prices/{entry_id}`, ADR-0003): cualquier Price entry se puede eliminar, incluida la que rige hoy. Vuelve a regir la anterior.
+- La representación propia de una Variety lleva su Current price de **hoy**, `null` cuando no tiene. Hoy es el día del negocio en hora de Argentina. Las respuestas llevan lo guardado, junto con los interruptores del Business; las pantallas ocultan lo desactivado.
+- El historial de precios lista primero la Price entry más nueva.
+- **Low-stock threshold**: gramos opcionales, mayores que cero, de hasta dos decimales, que se fijan o se desactivan por Variety. Desactivado significa que la Variety no tiene ninguno; no se conserva ningún monto anterior. Sus reglas y el **Stock status** están en `stock.md`.
 
-### Deleting and archiving a variety
+### Eliminar y archivar una Variety
 
-- **History** is any sale line of the variety (gifts and special prices included) or any
-  stock entry of it (any origin: purchase, harvest, opening stock, or an adjustment of
-  either sign), or any stock withdrawal line of it (promotion or own use). It is worked
-  out live and never stored.
-- **Not history**: price entries, the low-stock threshold and catalog attributes. A
-  deleted variety takes them with it.
-- **History decides which action is offered**, worked out when the page is read: Delete
-  with no history, Archive with history. Only Delete is guarded by the domain.
-- **Delete**: only for a variety with no history. The variety disappears for good.
-  - Once the seller deletes the variety's last sale or last stock entry, Delete is offered
-    again.
-  - A delete with history is refused by the domain with its own coded refusal in
-    `contract.json` (ADR-0008), repeating no name or amount (ADR-0005).
-  - The check and the delete are one guarded write: a sale or entry a partner records at
-    the same moment either blocks the delete or is refused as "That is gone". Nothing is
-    ever orphaned.
-  - A variety already gone answers 404 and follows accounts.md: "That is gone. The list is up to date."
-- **Archive**: offered for a variety with history. It leaves every list and picker but
-  stays in the books.
-  - Archive is never refused for having or lacking history. If the variety's last sale or
-    entry was deleted after the page loaded, tapping "Archive variety" still archives
-    it; it can be deleted later by restoring it first. An archived variety may also lose
-    all its history while archived (its last entry or sale deleted); the same path
-    applies.
-  - Archiving a variety already archived changes nothing; one already gone answers "That is gone. The list is up to date."
-  - Allowed with stock above, at or below zero, always after a confirmation.
-  - Archiving and restoring never create a stock entry and never change stock, lots, cost
-    of goods, pending cost, prices or any other figure.
-  - Archive and hide are independent: archiving keeps the hidden flag, and restoring
-    brings it back as it was.
-  - Archiving and restoring are upkeep triggers for the pinned catalog
+- **Historial**: la Variety history es cualquier Sale line de la Variety (los **Gift** y los Special price
+  incluidos) o cualquier Stock entry de ella (de cualquier origen: **Purchase**, **Harvest**, **Opening stock** o un Adjustment de
+  cualquiera de los dos signos), o cualquier línea de Stock withdrawal de ella (**Promotion** u **Own use**). Se calcula
+  en el momento y nunca se guarda.
+- **Qué no es historial**: las Price entries, el Low-stock threshold y los Catalog attributes. Una
+  Variety eliminada se los lleva con ella.
+- **El historial decide qué acción se ofrece**, calculado cuando se lee la página: Delete
+  sin historial, Archive con historial. Solo Delete está protegido por el dominio.
+- **Delete**: solo para una Variety sin historial. La Variety desaparece para siempre.
+  - Una vez que quien vende elimina la última Sale o la última Stock entry de la Variety, Delete se vuelve a
+    ofrecer.
+  - Una eliminación con historial la rechaza el dominio con su propio rechazo con código en
+    `contract.json` (ADR-0008), sin repetir ningún nombre ni monto (ADR-0005).
+  - El control y la eliminación son una sola escritura protegida: una Sale o una Stock entry que un socio registra en
+    el mismo momento o bien bloquea la eliminación o bien se rechaza como "That is gone". Nunca queda nada
+    huérfano.
+  - Una Variety que ya no existe responde 404 y sigue accounts.md: "That is gone. The list is up to date."
+- **Archive**: se ofrece para una Variety con historial. Sale de toda lista y selector pero
+  sigue en los libros.
+  - Archive nunca se rechaza por tener o no tener historial. Si la última Sale o
+    Stock entry de la Variety se eliminó después de que cargó la página, tocar "Archive variety" igual la archiva;
+    se puede eliminar más adelante restaurándola primero. Una Archived variety también puede perder
+    todo su historial mientras está archivada (si se elimina su última Stock entry o Sale); se aplica el mismo camino.
+  - Archivar una Variety ya archivada no cambia nada; una que ya no existe responde "That is gone. The list is up to date."
+  - Se permite con Stock mayor, igual o menor que cero, siempre después de una confirmación.
+  - Archivar y restaurar nunca crean una Stock entry y nunca cambian el Stock, los **Lot**, el Cost
+    of goods sold, el **Pending cost**, los precios ni ninguna otra cifra.
+  - Archivar y ocultar son independientes: archivar conserva la marca de Hidden variety, y restaurar
+    la devuelve como estaba.
+  - Archivar y restaurar son disparadores del **Upkeep** del **Pinned catalog**
     (pinned-catalog.md).
-- **An archived variety is left out of**:
-  - Varieties' list and its summary line;
-  - Home's What you have left, and the "Start with your varieties" rule (results.md);
-  - New sale's variety picker (`sales.md`);
-  - the stock entry form's variety picker (`stock.md`);
-  - the price entry form;
-  - the catalog text and the catalog screen's "what does not go out" list (`catalog.md`);
-  - the pinned catalog.
-- **Past records keep it, by its plain name, with no "Archived" tag and no figure
-  changed**: Sales and a sale's detail, the customer's account, All entries,
-  Analysis' variety rows and every week, month and since-the-start figure, Results'
-  Profit and Cash, and the business export (which holds the archived flag as a stored
-  fact).
-- **Existing records stay workable** (ADR-0009): a stock entry of an archived variety can
-  be edited or deleted from All entries; a sale containing one can be deleted,
-  Undo included; Assign customer still works. An entry edit can keep the archived
-  variety it already has, but can never move the entry onto a different archived one.
-- **Nothing new is recorded against an archived variety**: no sale line, stock entry or
-  price entry; such a reference answers as gone. A form left open while a partner
-  archives the variety is refused on save with accounts.md's "That is gone" rule and
-  keeps the rest of what was typed where the screen allows. In New sale the line shows
-  the generic gone message and the form stays open (sales.md's rule for a variety not
-  found).
-- **Names**: an archived variety keeps its name reserved under the uniqueness rule (case
-  and spacing ignored).
-  - Adding or renaming a variety to that name is refused inline with its own fixed
-    refusal: the name belongs to an archived variety, look in Archived. It repeats
-    nothing typed.
-  - An archived variety can be renamed only after it is restored, so restore never
-    collides: Restore has no name-clash refusal and no error state of its own. Its only
-    other outcome is accounts.md's "That is gone." for a variety that is gone.
-  - A deleted variety's name is free at once.
+- **Una Archived variety queda afuera de**:
+  - la lista de Varieties y su línea de resumen;
+  - What you have left de Home, y la regla "Start with your varieties" (results.md);
+  - el selector de Variety de New sale (`sales.md`);
+  - el selector de Variety del formulario de Stock entry (`stock.md`);
+  - el formulario de Price entry;
+  - el texto del Catalog y la lista "what does not go out" de la pantalla del Catalog (`catalog.md`);
+  - el Pinned catalog.
+- **Los registros pasados la conservan, por su nombre a secas, sin etiqueta "Archived" y sin ninguna cifra
+  cambiada**: Sales y el detalle de una Sale, la cuenta del Customer, All entries,
+  las filas de Variety de Analysis y cada cifra de semana, mes y desde el inicio, el
+  Profit y el Cash de Results, y el **Business export** (que guarda la marca de archivada como un hecho
+  guardado).
+- **Los registros existentes siguen siendo manejables** (ADR-0009): una Stock entry de una Archived variety se puede
+  editar o eliminar desde All entries; una Sale que contenga una se puede eliminar,
+  Undo incluido; Assign customer sigue funcionando. Una edición de Stock entry puede conservar la Archived
+  variety que ya tiene, pero nunca puede pasar la Stock entry a otra Archived variety distinta.
+- **No se registra nada nuevo contra una Archived variety**: ninguna Sale line, Stock entry ni
+  Price entry; esa referencia responde como inexistente. Un formulario que quedó abierto mientras un socio
+  archiva la Variety se rechaza al guardar con la regla "That is gone" de accounts.md y
+  conserva el resto de lo tipeado donde la pantalla lo permite. En New sale la línea muestra
+  el mensaje genérico de inexistente y el formulario sigue abierto (la regla de sales.md para una Variety que no se
+  encuentra).
+- **Nombres**: una Archived variety mantiene su nombre reservado bajo la regla de unicidad (sin importar
+  mayúsculas, minúsculas ni espacios).
+  - Agregar o renombrar una Variety con ese nombre se rechaza en línea con su propio rechazo
+    fijo: el nombre pertenece a una Archived variety, que se busque en Archived. No repite
+    nada de lo tipeado.
+  - Una Archived variety solo se puede renombrar después de restaurarla, así que restaurar nunca
+    choca: Restore no tiene rechazo por choque de nombre ni estado de error propio. Su único
+    otro resultado es el "That is gone." de accounts.md para una Variety que ya no existe.
+  - El nombre de una Variety eliminada queda libre de inmediato.
 
-### Routes
+### Rutas
 
-- The routes are those in `scripts/design/screens.json`: `/varieties`,
+- Las rutas son las de `scripts/design/screens.json`: `/varieties`,
   `/varieties/{low}`, `/varieties/catalog`, `/varieties/entries`,
-  `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry),
-  `/varieties/{low}/entries` (a variety's "See all" of entries and withdrawals),
-  `/varieties/{low}/prices`, `/varieties/{low}/prices/new`, `/varieties/new` and
-  `/varieties/archived` (the Archived card). An archived variety's page is the same
-  `/varieties/{low}`, read-only.
-- A reload on any of them opens the screen, never the API's answer (ADR-0024 and
-  ADR-0033 govern paths shared with the API).
-- Old paths (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`,
-  `/mi-stock/entradas/{id}`, `/catalogo` and every other former Stock, Varieties or
-  Catalog path) redirect permanently (navigation.md).
+  `/varieties/entries/new`, `/varieties/entries/{id}` (editar una Stock entry),
+  `/varieties/{low}/entries` (el "See all" de Stock entries y Stock withdrawals de una Variety),
+  `/varieties/{low}/prices`, `/varieties/{low}/prices/new`, `/varieties/new` y
+  `/varieties/archived` (la tarjeta Archived). La página de una Archived variety es la misma
+  `/varieties/{low}`, de solo lectura.
+- Recargar cualquiera de ellas abre la pantalla, nunca la respuesta de la API (ADR-0024 y
+  ADR-0033 rigen las rutas compartidas con la API).
+- Las rutas viejas (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`,
+  `/mi-stock/entradas/{id}`, `/catalogo` y toda otra ruta de las antiguas Stock, Varieties o
+  Catalog) redirigen de forma permanente (navigation.md).
 
-### On screen: the Varieties list (`Varieties`)
+### En pantalla: la lista de Varieties (`Varieties`)
 
-- **A tab root** (navigation.md). On a computer it is two panes: the list on the left, the
-  selected variety's page on the right.
-  - **On a computer**, opening Varieties with nothing selected selects the first
-    unarchived variety by name automatically, so a figure is always in view; this counts
-    as no tap, and picking another variety replaces it. With no varieties, the right pane
-    holds nothing that could be read as data.
-  - Archiving or deleting the selected variety selects the next one by name, else the
-    previous one, else the empty state.
-  - **On the phone**, the list is the screen; it never opens a variety on its own.
-  - A selected variety that is gone follows accounts.md's "That is gone." rule.
-- **Every unarchived variety**, hidden ones included, sorted by name, in a stable order.
-- **Each row**:
-  - the name;
-  - its stock status mark (`MarcaEstado`: square = sold out as the inverted chip, filled
-    circle = low, empty circle = ok) and its word, with "no entries" when it has none
-    and its detail line (`stock.md`);
-  - "Hidden" beside the status when the variety is hidden from the catalog. It never
-    replaces the stock status: a hidden variety can still be sold, gifted, withdrawn and
-    restocked;
-  - grams and days left;
-  - today's list price per gram, or "No price: cannot be sold" when it has none.
-- **The summary line**, above the list, counting unarchived varieties only:
-  - with no varieties at all: no summary line, and a fixed empty state inviting the seller
-    to add the first variety;
-  - with every variety ok: "N varieties · all ok";
-  - otherwise: every status that is not ok, counted by word, in stock-status order (e.g. "1 no entries · 1 sold out · 1 low"). It is never blank.
-  - The exact wording is design's, as long as each state is told by word.
-- **"Send catalog"** at the top, opening the catalog screen (`catalog.md`). It is
-  disabled, with its reason in words, only while the first-run checklist shows and nothing
-  qualifies (navigation.md).
-- **"+ Stock entry"**, a secondary button above the list (not a floating button),
-  opening the stock entry form with the variety to be chosen (`stock.md`).
-- **"Take from stock"**, a secondary button next to "+ Stock entry", on phone and
-  computer, opening the stock withdrawal form with no variety chosen (`stock.md`).
-- **"New variety"**: adds a variety (a form; on the phone a sheet drawn by the one shared `Sheet`, over Varieties, navigation.md's Phone layout).
-- **"All entries"** at the foot (`stock.md`), at `/varieties/entries`. It lists entries only.
-- **"Archived (N)"** at the foot, next to "All entries", opening the Archived
-  card. It is left out when there are none.
+- **Un Tab root** (navigation.md). En una computadora son dos paneles: la lista a la izquierda y la
+  página de la Variety seleccionada a la derecha.
+  - **En una computadora**, abrir Varieties sin nada seleccionado selecciona automáticamente la primera
+    Variety sin archivar por nombre, así siempre hay una cifra a la vista; esto no cuenta
+    como toque, y elegir otra Variety la reemplaza. Sin Varieties, el panel derecho
+    no tiene nada que pueda leerse como dato.
+  - Archivar o eliminar la Variety seleccionada selecciona la siguiente por nombre, si no la
+    anterior, si no el estado vacío.
+  - **En el celular**, la lista es la pantalla; nunca abre una Variety por su cuenta.
+  - Una Variety seleccionada que ya no existe sigue la regla "That is gone." de accounts.md.
+- **Toda Variety sin archivar**, las ocultas incluidas, ordenadas por nombre, en un orden estable.
+- **Cada fila**:
+  - el nombre;
+  - la marca de Stock status (`MarcaEstado`: cuadrado = agotada como el chip invertido, círculo
+    lleno = bajo, círculo vacío = ok) y su palabra, con "no entries" cuando no tiene ninguna Stock entry,
+    y su línea de detalle (`stock.md`);
+  - "Hidden" junto al estado cuando la Variety está oculta del Catalog. Nunca
+    reemplaza al Stock status: una Hidden variety se puede seguir vendiendo, regalando, retirando y
+    reponiendo;
+  - gramos y **Days left**;
+  - el List price por gramo de hoy, o "No price: cannot be sold" cuando no tiene.
+- **La línea de resumen**, arriba de la lista, que cuenta solo Varieties sin archivar:
+  - sin ninguna Variety: no hay línea de resumen, y un estado vacío fijo invita a quien vende
+    a agregar la primera Variety;
+  - con todas las Varieties en ok: "N varieties · all ok";
+  - si no: cada estado que no es ok, contado por palabra, en el orden de Stock status (p. ej. "1 no entries · 1 sold out · 1 low"). Nunca queda en blanco.
+  - La redacción exacta es de diseño, siempre que cada estado se diga con palabra.
+- **"Send catalog"** arriba, que abre la pantalla del Catalog (`catalog.md`). Está
+  deshabilitado, con su motivo en palabras, solo mientras se muestra la **First-run checklist** y nada
+  califica (navigation.md).
+- **"+ Stock entry"**, un botón secundario arriba de la lista (no un botón flotante),
+  que abre el formulario de Stock entry con la Variety por elegir (`stock.md`).
+- **"Take from stock"**, un botón secundario junto a "+ Stock entry", en celular y
+  computadora, que abre el formulario de Stock withdrawal sin ninguna Variety elegida (`stock.md`).
+- **"New variety"**: agrega una Variety (un formulario; en el celular, una **Sheet** dibujada por el único `Sheet` compartido, sobre Varieties, según el Phone layout de navigation.md).
+- **"All entries"** abajo de todo (`stock.md`), en `/varieties/entries`. Lista solo Stock entries.
+- **"Archived (N)"** abajo de todo, junto a "All entries", que abre la tarjeta
+  Archived. No se muestra cuando no hay ninguna.
 
-### On screen: Archived
+### En pantalla: Archived
 
-- **A card** (navigation.md) at `/varieties/archived`: the bar or sidebar and
-  "‹ Varieties", without "+ New sale".
-- It lists every archived variety by name. Each row marks "Archived" as a neutral
-  badge (a word, with no colour carrying the state, in both themes) and "Hidden", in its
-  own text style beside it, when the variety is hidden, so the seller knows what Restore
-  will bring back. Each row carries "Restore", icon + text, in a secondary row-action
-  size, with the same icon and word as the archived page's Restore.
-- On a computer it uses the same two panes; opened with nothing selected, it selects the
-  first archived variety by name.
-- **Restore** on a row is one tap with no confirmation, shows the toast "Variety
-  restored", and the variety returns to Varieties' list exactly as it was: hidden flag,
-  prices, stock, entries, threshold and catalog attributes.
+- **Una tarjeta** (navigation.md) en `/varieties/archived`: la barra o la barra lateral y
+  "‹ Varieties", sin "+ New sale".
+- Lista cada Archived variety por nombre. Cada fila marca "Archived" como un badge
+  neutro (una palabra, sin que ningún color lleve el estado, en los dos temas) y "Hidden", en su
+  propio estilo de texto al lado, cuando la Variety está oculta, así quien vende sabe qué va a traer
+  de vuelta Restore. Cada fila lleva "Restore", ícono + texto, en un tamaño de acción de fila
+  secundaria, con el mismo ícono y la misma palabra que el Restore de la página archivada.
+- En una computadora usa los mismos dos paneles; abierta sin nada seleccionado, selecciona la
+  primera Archived variety por nombre.
+- **Restore** en una fila es un toque sin confirmación, muestra el toast "Variety restored", y la Variety vuelve a la lista de Varieties exactamente como estaba: marca de Hidden variety,
+  precios, Stock, Stock entries, umbral y Catalog attributes.
 
-### On screen: a variety's page (`VariedadDetalle`)
+### En pantalla: la página de una Variety (`VariedadDetalle`)
 
-- **A detail** (navigation.md): the bar or sidebar and "‹ Varieties", without
+- **Un detalle** (navigation.md): la barra o la barra lateral y "‹ Varieties", sin
   "+ New sale".
-- **The summary line** at the top: grams, status, days left and today's list price (e.g.
-  "64 g · ok · 21 days · $ 11.000 x g"), with "Hidden" when hidden.
-- **Three actions**: "+ Entry" (the stock entry form with this variety chosen, and
-  "Initial stock" preselected only when it has no entries, `stock.md`), "New price"
-  (the price entry form) and "Take from stock" (the stock withdrawal form with this
-  variety chosen, `stock.md`).
-- **Sections**:
-  - **Stock and entries**: the variety's last 3 movements (its stock entries and the
-    withdrawals that touch it, newest date first, then most recently recorded first) and
-    "See all", which opens `/varieties/{low}/entries`: the same list as "All
-    entries", filtered to this variety, with its withdrawals, where each entry can be
-    edited or deleted (`stock.md`). A withdrawal row shows its date, "Promotion" or
-    "Own use" and this variety's grams with a minus sign, and opens the
-    withdrawal's detail;
-  - **Prices**: the last 3 price entries with "Effective from", newest first, each row with
-    its delete action, and "See all" (`/varieties/{low}/prices`) for the full history.
-    - Each row shows the list price.
-    - It shows the bulk price and minimum only while Bulk price is on, and the VIP price ("VIP price") only while VIP customers is on, each only when the entry has one;
-  - **Low stock warning**: the current warning, read-only, with an on/off switch and an
-    "Edit" link, and nothing else (no "See all"):
-    - it reads "Warn me below 15 g", "Warning: 18,5 g left" or "Warning off";
-    - "Edit" opens a small form: "Warn when below" in grams, "Save the warning" and "Close". A refused amount shows under the field and keeps what was typed;
-    - turning the switch on opens that same form (an off warning keeps no amount); closing it without saving leaves the warning off;
-    - turning the switch off saves at once;
-    - every save, the switch-off included, shows the toast "Warning saved";
-  - **In the catalog**: the variety's catalog attributes, read-only (shown or hidden, emoji, % indica, aroma/sabor), with an "Edit" link, and nothing else (no "See all"). It is the only place they are edited (`catalog.md`):
-    - "Edit" opens one form with "Show in the catalog", Emoji, % indica and Aroma/flavor, ending in "Save the catalog";
-    - each refusal (for example an aroma over 200 characters) shows under its own field and keeps everything typed;
-    - leaving with something typed and not saved asks before discarding;
-    - a save shows the toast "Catalog saved".
-- **One removal action**, worked out from history when the page is read:
-  - with no history: "Delete variety", through a destructive ConfirmDialog, then the
-    toast "Variety deleted" and back to Varieties.
-    - The trigger on the page is drawn as a visibly critical action: icon + text with the
-      `tacho` icon, its accessible name unchanged, and never a filled button outside a
-      confirmation. The filled critical button is the ConfirmDialog's confirm answer only.
-    - Its exact treatment is design's, inside the existing tokens and the icon and text
-      rule; a style the design system lacks is drawn from tokens before it is built.
-  - with history: "Archive variety", through a confirmation that names the grams on hand
-    when stock is not zero (e.g. "You have 12 g left. If you archive it, they stop showing on Home
-    and in the lists, but the stock is kept.") and simply asks with zero stock (the
-    exact wording is design's), then the toast "Variety archived". Its trigger keeps a
-    non-destructive look, clearly distinct from "Delete variety": archiving loses
-    nothing and can be undone.
-  - **Stale page, delete**: if history appeared after the page loaded, the delete is
-    refused with its coded refusal and the page refreshes to show "Archive variety". The
-    UI never offers a delete it knows will be refused.
-  - **Stale page, archive**: if the history went away after the page loaded, "Archive
-    variety" still archives it, with no refusal.
-- **An archived variety's page** is the same page, read-only, with the back arrow
-  "‹ Archived" (with no history, back goes to Archived):
-  - **Its summary line**: its grams, as a figure even when negative; today's list price,
-    or "No price"; "Archived" as a neutral badge (a word, with no colour carrying
-    the state, in both themes); and "Hidden", in its own text style beside it, when the
-    variety is hidden. It shows no stock status mark and no days left: those warn about
-    selling and restocking, and an archived variety is out of every list, picker and
+- **La línea de resumen** arriba: gramos, estado, Days left y el List price de hoy (p. ej.
+  "64 g · ok · 21 days · $ 11.000 x g"), con "Hidden" cuando está oculta.
+- **Tres acciones**: "+ Entry" (el formulario de Stock entry con esta Variety elegida, y
+  "Initial stock" preseleccionado solo cuando no tiene Stock entries, `stock.md`), "New price"
+  (el formulario de Price entry) y "Take from stock" (el formulario de Stock withdrawal con esta
+  Variety elegida, `stock.md`).
+- **Secciones**:
+  - **Stock and entries**: los últimos 3 movimientos de la Variety (sus Stock entries y los
+    Stock withdrawals que la tocan, primero la fecha más nueva, después lo registrado más recientemente) y
+    "See all", que abre `/varieties/{low}/entries`: la misma lista que "All
+    entries", filtrada a esta Variety, con sus Stock withdrawals, donde cada Stock entry se puede
+    editar o eliminar (`stock.md`). Una fila de Stock withdrawal muestra su fecha, "Promotion" u
+    "Own use" y los gramos de esta Variety con signo menos, y abre el
+    detalle del Stock withdrawal;
+  - **Prices**: las últimas 3 Price entries con "Effective from", primero la más nueva, cada fila con
+    su acción de eliminar, y "See all" (`/varieties/{low}/prices`) para el historial completo.
+    - Cada fila muestra el List price.
+    - Muestra el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y el VIP price ("VIP price") solo mientras VIP customers está activado, cada uno solo cuando la Price entry lo tiene;
+  - **Low stock warning**: el aviso actual, de solo lectura, con un interruptor de encendido y apagado y un
+    link "Edit", y nada más (sin "See all"):
+    - dice "Warn me below 15 g", "Warning: 18,5 g left" o "Warning off";
+    - "Edit" abre un formulario chico: "Warn when below" en gramos, "Save the warning" y "Close". Un monto rechazado se muestra bajo el campo y conserva lo tipeado;
+    - activar el interruptor abre ese mismo formulario (un aviso desactivado no conserva ningún monto); cerrarlo sin guardar deja el aviso desactivado;
+    - desactivar el interruptor guarda de inmediato;
+    - cada guardado, incluido el de desactivar, muestra el toast "Warning saved";
+  - **In the catalog**: los Catalog attributes de la Variety, de solo lectura (mostrada u oculta, emoji, % indica, aroma/sabor), con un link "Edit", y nada más (sin "See all"). Es el único lugar donde se editan (`catalog.md`):
+    - "Edit" abre un solo formulario con "Show in the catalog", Emoji, % indica y Aroma/flavor, que termina en "Save the catalog";
+    - cada rechazo (por ejemplo un **Aroma** de más de 200 caracteres) se muestra bajo su propio campo y conserva todo lo tipeado;
+    - salir con algo tipeado y sin guardar pregunta antes de descartar;
+    - un guardado muestra el toast "Catalog saved".
+- **Una sola acción de quitar**, calculada a partir del historial cuando se lee la página:
+  - sin historial: "Delete variety", a través de un ConfirmDialog destructivo, después el
+    toast "Variety deleted" y de vuelta a Varieties.
+    - El disparador en la página se dibuja como una acción visiblemente crítica: ícono + texto con el
+      ícono `tacho`, su nombre accesible sin cambios, y nunca un botón relleno fuera de una
+      confirmación. El botón crítico relleno es solo la respuesta de confirmar del ConfirmDialog.
+    - Su tratamiento exacto es de diseño, dentro de los tokens existentes y del **Icon and text
+      rule**; un estilo que le falta al design system se dibuja a partir de tokens antes de construirse.
+  - con historial: "Archive variety", a través de una confirmación que nombra los gramos en existencia
+    cuando el Stock no es cero (p. ej. "You have 12 g left. If you archive it, they stop showing on Home and in the lists, but the stock is kept.") y simplemente pregunta con Stock en cero (la
+    redacción exacta es de diseño), después el toast "Variety archived". Su disparador conserva un
+    aspecto no destructivo, claramente distinto de "Delete variety": archivar no pierde
+    nada y se puede deshacer.
+  - **Página vieja, eliminar**: si apareció historial después de que cargó la página, la eliminación se
+    rechaza con su rechazo con código y la página se actualiza para mostrar "Archive variety". La
+    UI nunca ofrece una eliminación que sabe que va a ser rechazada.
+  - **Página vieja, archivar**: si el historial desapareció después de que cargó la página, "Archive
+    variety" igual la archiva, sin rechazo.
+- **La página de una Archived variety** es la misma página, de solo lectura, con la flecha de regreso
+  "‹ Archived" (sin historial de navegación, volver lleva a Archived):
+  - **Su línea de resumen**: sus gramos, como cifra aunque sean negativos; el List price de hoy,
+    o "No price"; "Archived" como un badge neutro (una palabra, sin que ningún color lleve
+    el estado, en los dos temas); y "Hidden", en su propio estilo de texto al lado, cuando la
+    Variety está oculta. No muestra marca de Stock status ni Days left: esos avisan sobre
+    vender y reponer, y una Archived variety está afuera de toda lista, selector y de
     Home.
-  - **"Restore"** is its one action: a primary icon + text action, in the place of the
-    live page's three actions, right under the summary line and its marks, so on the phone
-    it is reachable without scrolling past any section. Nothing sits next to it. Its icon
-    is a `NombreIcono` name; if none fits, design draws one under the icon rule.
-  - **Its sections, all read-only**:
-    - **Stock and entries**: the last 3 movements, with "See all";
-    - **Prices**: the last 3 price entries, with "See all", following the same switch
-      rule as the live Prices section (no VIP price while Customers VIP is off);
-    - **Low stock warning**: the stored setting only, "Warn me below N g" or "Warning
-      off"; never the live "Warning: N g left"; no switch and no "Edit";
-    - **In the catalog**: the four stored attributes (shown or hidden in words, emoji,
-      % indica, aroma/sabor), an attribute never set left out; no "Edit" and no note
-      about the public catalog.
-  - **"See all" from it** opens read-only lists: the prices list has no price delete;
-    in the movements list, entry rows have no edit or delete and open nothing, while
-    withdrawal rows still open the withdrawal's own detail (its back follows history to
-    this list, and with no history goes to Varieties). Each list's back arrow names the
-    variety and returns to its archived page. Entries stay editable and deletable from
-    "All entries", and withdrawals from their own detail, so nothing is lost.
-  - no "+ Entry", "Take from stock", "New price", price delete, threshold switch,
-    rename, Edit forms or removal action;
-  - **Restore from the page** shows the toast "Variety restored" and goes back to
-    Archived in one move; the page never turns into the live variety in place, and no
-    history entry is duplicated. On a computer, Archived' right pane then selects the
-    next archived variety by name, else the previous one, replacing the current history
-    entry. With no archived variety left, it goes to Varieties, so an empty Archived is
-    never shown. The variety comes back exactly as it was;
-  - to delete an archived variety that has no history, the seller restores it first, then
-    deletes it. There is no second path.
-- **"See all" lists** are cards (navigation.md): the bar or sidebar and "‹ <variety>",
-  without "+ New sale"; back with no history goes to the variety's page. The full price
-  history follows the same switch rule as the Prices section.
-- **Renaming** the variety is done here.
-- **Forms** opened from here (New price, + Entry, Take from stock, rename, the low-stock warning, the
-  catalog attributes) have "Close" and a confirmation when leaving with something typed;
-  an untouched one closes at once.
-  - On the phone each is a full-screen sheet drawn by the one shared `Sheet` (ADR-0062,
-    navigation.md's Phone layout), with its main action pinned at the bottom of the form.
-  - Rename, the low-stock warning and the catalog attributes open as sheets over this
-    page, which stays behind them, and share the page's one record of unsaved changes.
-    Back closes the sheet first and never jumps over the page.
-- **Deleting a price entry**: confirmed with "Before deleting" ("Delete…? / No, keep it /
-  Yes, delete it"), and the copy says what takes the entry's place:
-  - with an earlier entry, the price that applies again and its date, e.g. "Back to
+  - **"Restore"** es su única acción: una acción primaria de ícono + texto, en el lugar de las tres
+    acciones de la página activa, justo debajo de la línea de resumen y sus marcas, así en el celular
+    se alcanza sin desplazarse más allá de ninguna sección. No hay nada al lado. Su ícono
+    es un nombre de `NombreIcono`; si ninguno encaja, diseño dibuja uno bajo la Icon and text rule.
+  - **Sus secciones, todas de solo lectura**:
+    - **Stock and entries**: los últimos 3 movimientos, con "See all";
+    - **Prices**: las últimas 3 Price entries, con "See all", siguiendo la misma regla de
+      interruptores que la sección Prices activa (sin VIP price mientras Customers VIP está desactivado);
+    - **Low stock warning**: solo la configuración guardada, "Warn me below N g" o "Warning
+      off"; nunca el "Warning: N g left" en vivo; sin interruptor y sin "Edit";
+    - **In the catalog**: los cuatro atributos guardados (mostrada u oculta en palabras, emoji,
+      % indica, aroma/sabor), dejando afuera un atributo que nunca se fijó; sin "Edit" y sin nota
+      sobre el Catalog público.
+  - **"See all" desde ahí** abre listas de solo lectura: la lista de precios no tiene eliminación de precio;
+    en la lista de movimientos, las filas de Stock entry no tienen edición ni eliminación y no abren nada, mientras que
+    las filas de Stock withdrawal siguen abriendo el detalle propio del Stock withdrawal (su regreso sigue el historial de navegación hasta
+    esta lista, y sin historial va a Varieties). La flecha de regreso de cada lista nombra la
+    Variety y vuelve a su página archivada. Las Stock entries siguen pudiendo editarse y eliminarse desde
+    "All entries", y los Stock withdrawals desde su propio detalle, así no se pierde nada.
+  - sin "+ Entry", "Take from stock", "New price", eliminación de precio, interruptor de umbral,
+    renombre, formularios Edit ni acción de quitar;
+  - **Restore desde la página** muestra el toast "Variety restored" y vuelve a
+    Archived en un solo movimiento; la página nunca se convierte en la Variety activa en el lugar, y no se
+    duplica ningún paso del historial de navegación. En una computadora, el panel derecho de Archived selecciona entonces la
+    siguiente Archived variety por nombre, si no la anterior, reemplazando el paso actual del historial
+    de navegación. Sin ninguna Archived variety restante, va a Varieties, así nunca se muestra un Archived vacío. La Variety vuelve exactamente como estaba;
+  - para eliminar una Archived variety sin historial, quien vende primero la restaura y después
+    la elimina. No hay un segundo camino.
+- **Las listas "See all"** son tarjetas (navigation.md): la barra o la barra lateral y "‹ <variety>",
+  sin "+ New sale"; volver sin historial de navegación lleva a la página de la Variety. El historial completo
+  de precios sigue la misma regla de interruptores que la sección Prices.
+- **Renombrar** la Variety se hace acá.
+- **Los formularios** que se abren desde acá (New price, + Entry, Take from stock, renombrar, el aviso de Stock bajo, los
+  Catalog attributes) tienen "Close" y una confirmación al salir con algo tipeado;
+  uno sin tocar se cierra de inmediato.
+  - En el celular cada uno es una Sheet a pantalla completa dibujada por el único `Sheet` compartido (ADR-0062,
+    el Phone layout de navigation.md), con su acción principal fija abajo del formulario.
+  - El renombre, el aviso de Stock bajo y los Catalog attributes se abren como Sheets sobre esta
+    página, que queda detrás, y comparten el único registro de cambios sin guardar de la página.
+    Volver cierra primero la Sheet y nunca salta por encima de la página.
+- **Eliminar una Price entry**: se confirma con "Before deleting" ("Delete…? / No, keep it /
+  Yes, delete it"), y el texto dice qué toma el lugar de la Price entry:
+  - con una Price entry anterior, el precio que vuelve a regir y su fecha, p. ej. "Back to
     $ 9.000 x g from 12/09";
-  - for the first entry, that there is no price before the next entry's date;
-  - for the only entry, that the variety is left "No price: cannot be sold".
+  - para la primera Price entry, que no hay precio antes de la fecha de la siguiente;
+  - para la única Price entry, que la Variety queda "No price: cannot be sold".
 
-  The copy never mentions sales.
-- **After deleting**, today's prices update at once on the page and the list. Home may
-  show "Start with your varieties" again.
-- **Toasts**: "Variety saved", "Price saved", "Price deleted", "Variety
-  deleted", "Variety archived" and "Variety restored", with no names or amounts in
-  them (plus "Warning saved", "Catalog saved" and the entry form's "Entry
-  saved").
-- **Refusals**, such as a duplicate name, a name held by an archived variety, a
-  duplicate date or a VIP price at or above the list price, show inline and keep what was
-  typed.
-- **A variety that is gone**, or another business's variety (archived or not) opened by
-  id, follows accounts.md's "That is gone." rule, with "Back to Varieties".
-- No network shows "No connection"; a server error shows the generic retry (accounts.md).
-- Everything works on phone and computer, light and dark; no state is told by colour
-  alone.
+  El texto nunca menciona las Sales.
+- **Después de eliminar**, los precios de hoy se actualizan de inmediato en la página y en la lista. Home puede
+  volver a mostrar "Start with your varieties".
+- **Toasts**: "Variety saved", "Price saved", "Price deleted", "Variety deleted", "Variety archived" y "Variety restored", sin nombres ni montos
+  (más "Warning saved", "Catalog saved" y el "Entry saved" del formulario de Stock entry).
+- **Rechazos**, como un nombre duplicado, un nombre que tiene una Archived variety, una
+  fecha duplicada o un VIP price igual o mayor que el List price, se muestran en línea y conservan lo
+  tipeado.
+- **Una Variety que ya no existe**, o la Variety de otro Business (archivada o no) abierta por
+  id, sigue la regla "That is gone." de accounts.md, con "Back to Varieties".
+- Sin red se muestra "No connection"; un error del servidor muestra el reintento genérico (accounts.md).
+- Todo funciona en celular y computadora, claro y oscuro; ningún estado se dice solo por
+  color.
 
-### On screen: the price entry form ("New price")
+### En pantalla: el formulario de Price entry ("New price")
 
-- **Kind**: a form (navigation.md) on both devices: no bar and no "+ New sale"; "Close"; leaving with something typed asks before discarding, and an untouched form closes at once. Back with no history goes to the variety's page. Only how it is drawn on the computer differs.
-- **Fields**:
-  - the effective date and the list price;
-  - the bulk price and bulk minimum only while Bulk price is on, and "VIP price" only while VIP customers is on, each optional;
-  - it says nothing about a rule that is switched off.
-- **Amounts in pesos**: the list price, the bulk price and the VIP price each show "$" before the amount. The bulk minimum, in grams, never does. The "$" is text under the design README's contrast rule (ADR-0029), drawn with existing tokens only. These fields are the shared price fields, so the "$" also shows in the Onboarding's step 1 (onboarding.md).
-- **"Effective from", a date chip**:
-  - it reads "Today dd/mm" by default, as New sale's date does (sales.md);
-  - tapping it opens the date choice; how that choice looks is design's, as long as it is reached from the chip;
-  - a chosen day that is not today reads "dd/mm", without "Today";
-  - going back to today is done from the same chip, where "Today" can be found; there is no separate control, and it never takes more than the chip and its choice;
-  - recording a price effective today never requires opening a date picker;
-  - the date rules are unchanged: any date is allowed, one entry per variety per date, and a refused date is refused as before;
-  - the chosen date is kept when the save is refused for any field.
-- **On the phone**: a full-screen sheet drawn by the one shared `Sheet` (ADR-0062, navigation.md's Phone layout), with "Close" at the top and "Save the price" pinned at the bottom of the form, above the keyboard; refusals sit above it. It has no outside: "Close" and the phone's back gesture are its exits. Opened by a direct link, it shows over that variety's page, which stays inert behind it. Resizing across 900 px or rotating the phone keeps what was typed.
-- **On a computer**: a modal over the variety's page, unchanged by the phone layout (ADR-0044).
-  - "Close" returns to that page; a successful save returns there too, shows the toast "Price saved", and the Prices section shows the new entry.
-  - A refusal keeps the modal open with everything typed, inline on its field.
-  - Opened by a direct link (`/varieties/{low}/prices/new`), it shows the modal over that variety's page.
-  - While the modal is open, the variety list behind it cannot be used.
-- **A variety archived or gone** while the form is open follows accounts.md's "That is gone" rule, as before.
+- **Tipo**: un formulario (navigation.md) en los dos dispositivos: sin barra y sin "+ New sale"; "Close"; salir con algo tipeado pregunta antes de descartar, y un formulario sin tocar se cierra de inmediato. Volver sin historial de navegación lleva a la página de la Variety. Solo difiere cómo se dibuja en la computadora.
+- **Campos**:
+  - la fecha de vigencia y el List price;
+  - el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y "VIP price" solo mientras VIP customers está activado, cada uno opcional;
+  - no dice nada sobre una regla desactivada.
+- **Montos en pesos**: el List price, el Bulk price y el VIP price muestran cada uno "$" antes del monto. El Bulk minimum, en gramos, nunca. El "$" es texto bajo la regla de contraste del README de diseño (ADR-0029), dibujado solo con tokens existentes. Estos campos son los campos de precio compartidos, así que el "$" también se muestra en el paso 1 del Onboarding (onboarding.md).
+- **"Effective from", un chip de fecha**:
+  - por defecto dice "Today dd/mm", como la fecha de New sale (sales.md);
+  - tocarlo abre la elección de fecha; cómo se ve esa elección es de diseño, siempre que se llegue desde el chip;
+  - un día elegido que no es hoy dice "dd/mm", sin "Today";
+  - volver a hoy se hace desde el mismo chip, donde se encuentra "Today"; no hay un control aparte, y nunca lleva más que el chip y su elección;
+  - registrar una Price entry que rige desde hoy nunca exige abrir un selector de fecha;
+  - las reglas de fecha no cambian: se permite cualquier fecha, una Price entry por Variety por fecha, y una fecha rechazada se rechaza como antes;
+  - la fecha elegida se conserva cuando el guardado se rechaza por cualquier campo.
+- **En el celular**: una Sheet a pantalla completa dibujada por el único `Sheet` compartido (ADR-0062, el Phone layout de navigation.md), con "Close" arriba y "Save the price" fijo abajo del formulario, por encima del teclado; los rechazos van arriba de él. No tiene afuera: "Close" y el gesto de volver del celular son sus salidas. Abierta por un link directo, se muestra sobre la página de esa Variety, que queda inerte detrás. Cambiar el tamaño cruzando 900 px o rotar el celular conserva lo tipeado.
+- **En una computadora**: un modal sobre la página de la Variety, sin cambios por el diseño en el celular (ADR-0044).
+  - "Close" vuelve a esa página; un guardado exitoso también vuelve ahí, muestra el toast "Price saved", y la sección Prices muestra la Price entry nueva.
+  - Un rechazo deja el modal abierto con todo lo tipeado, en línea en su campo.
+  - Abierto por un link directo (`/varieties/{low}/prices/new`), muestra el modal sobre la página de esa Variety.
+  - Mientras el modal está abierto, no se puede usar la lista de Varieties de atrás.
+- **Una Variety archivada o que ya no existe** mientras el formulario está abierto sigue la regla "That is gone" de accounts.md, como antes.
 
-### Design evidence for the archived pages
+### Evidencia de diseño de las páginas archivadas
 
-- **Drawings**: `docs/product/design-system/pantallas/` draws the archived variety's page
-  and Archived, on phone and computer, in light and dark; on a computer, Archived is
-  two panes with the first archived variety by name selected. They cover the summary
-  line, the "Archived" badge and "Hidden", the read-only sections and Restore. The
-  live page's critical "Delete variety" trigger is drawn too.
-- **Registry** (`scripts/design/screens.json`): the existing `VariedadArchivada` and
-  `VariedadArchivadaOscuro` entries point at the new drawing and the seeded archived
-  variety, never duplicated; the computer twins and the Archived rows (phone and computer,
-  light and dark) are added. Each row reaches its screen the way a seller does and
-  captures its section whole (design-capture.md).
-- **Sample app** (`scripts/design/sample_app.py`): it seeds exactly one archived variety,
-  hidden, whose only history is one opening-stock entry recorded with no cost, dated on or
-  after the sample business's first record (no sale, no withdrawal), with a low-stock
-  threshold, catalog attributes (emoji, % indica, aroma) and a current price entry. Every
-  period figure on Home, Sales and Analysis stays as `muestra.md` has it; `muestra.md`
-  gains only that variety's own rows, recaptured by the script (ADR-0035).
-- **Muestra guard**: it checks the archived variety's own grams, "Archived" and "Hidden"
-  on its screens, not only denylisted literals.
+- **Dibujos**: `docs/product/design-system/pantallas/` dibuja la página de la Archived variety
+  y Archived, en celular y computadora, en claro y oscuro; en una computadora, Archived son
+  dos paneles con la primera Archived variety por nombre seleccionada. Cubren la línea de resumen,
+  el badge "Archived" y "Hidden", las secciones de solo lectura y Restore. También se dibuja el
+  disparador crítico "Delete variety" de la página activa.
+- **Registro** (`scripts/design/screens.json`): las filas existentes `VariedadArchivada` y
+  `VariedadArchivadaOscuro` apuntan al dibujo nuevo y a la Archived variety sembrada,
+  nunca duplicadas; se agregan los gemelos de computadora y las filas de Archived (celular y computadora,
+  claro y oscuro). Cada fila llega a su pantalla como lo hace quien vende y
+  captura su sección entera (design-capture.md).
+- **App de ejemplo** (`scripts/design/sample_app.py`): siembra exactamente una Archived variety,
+  oculta, cuyo único historial es una Stock entry de Opening stock registrada sin costo, con fecha en o
+  después del **First record** del Business de ejemplo (ninguna Sale, ningún Stock withdrawal), con un Low-stock
+  threshold, Catalog attributes (emoji, % indica, Aroma) y una Price entry vigente. Cada
+  cifra de período en Home, Sales y Analysis queda como la tiene `muestra.md`; `muestra.md`
+  gana solo las filas propias de esa Variety, recapturadas por el script (ADR-0035).
+- **Guard de muestra**: controla los gramos propios de la Archived variety, "Archived" y "Hidden"
+  en sus pantallas, no solo literales de una lista de prohibidos.
 
-### Constraints
+### Restricciones
 
-- Every route, the delete, archive and restore routes included, joins the isolation sweep
-  and the gated-route test (ADR-0004).
-- Refusal codes in `contract.json` (ADR-0008): a delete with history; a name held by an
-  archived variety; an archived variety referenced for a new record (gone). Archive has no
-  refusal of its own. None repeats a name or an amount (ADR-0005).
-- **One source per shared message**: in the front, "Check the grams entered" (shown by the price, stock entry and withdrawal forms) and the toast "Price saved" are each defined once and read from there; no screen restates either as its own literal.
-- **Phone layout (GH-319)**: the price form's phone branch, New variety and the three inline edits are drawn by the one shared `Sheet`; ADR-0044's `PriceFrame` dialog branch is not edited, and the registry keys `VariedadRenombrar`, `VariedadUmbral` and `CatalogoAtributos` are kept.
+- Cada ruta, incluidas las de eliminar, archivar y restaurar, entra en el barrido de aislamiento
+  y en el test de rutas protegidas (ADR-0004).
+- Códigos de rechazo en `contract.json` (ADR-0008): una eliminación con historial; un nombre que tiene una
+  Archived variety; una Archived variety referenciada para un registro nuevo (inexistente). Archive no tiene
+  rechazo propio. Ninguno repite un nombre ni un monto (ADR-0005).
+- **Una fuente por mensaje compartido**: en el front, "Check the grams entered" (que muestran los formularios de precio, de Stock entry y de Stock withdrawal) y el toast "Price saved" se definen cada uno una sola vez y se leen de ahí; ninguna pantalla repite ninguno de los dos como literal propio.
+- **Diseño en el celular (GH-319)**: la rama de celular del formulario de precio, New variety y las tres ediciones en línea los dibuja el único `Sheet` compartido; la rama de diálogo `PriceFrame` de ADR-0044 no se edita, y se conservan las claves del registro `VariedadRenombrar`, `VariedadUmbral` y `CatalogoAtributos`.
 
-## Metrics
+## Métricas
 
-- **Price in force (criterion 1)**: tests over the history answer the latest entry on or
-  before a day, and none before the first. 100% passing.
-- **Past untouched (criterion 2)**: deleting an entry makes the previous one current again,
-  covered by tests through the API and the front.
-- **Unique names (criterion 3)**: duplicates within a business, whatever the case or
-  spacing, are 0, archived varieties included.
-- **VIP price validation**: 100% passing.
-  - At or above the list price is refused with its own code, which is in `contract.json` and checked by `tests/test_refusal_codes.py`.
-  - A VIP price with no bulk price, and a bulk price with no VIP price, are accepted.
-  - No refusal contains the amount.
-- **Switched-off rules store nothing (criterion 15)**: a price entry sent with bulk or VIP values while that rule is off stores none of them; earlier entries' values are unchanged.
-- **Switches on screen (criterion 15)**: front tests show the price form, the Prices section and the full history with no bulk fields while Bulk price is off and no VIP price while VIP customers is off, and every stored value back once switched on.
-- **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
-  page (with a VIP price when VIP customers is on), renames the variety, deletes a price
-  entry, sets a low-stock threshold through "Edit", turns it off and on again through the
-  switch, and edits the variety's catalog attributes through "Edit" and "Save the
-  catalog", all from its page, and records a withdrawal from its page. It also deletes a
-  fresh variety, archives one with a sale, finds it in Archived, opens its read-only page
-  and restores it.
-- **Status shown (criterion 5)**: the list and the page show the status mark and word for
-  each status, "Hidden" beside (never instead of) the status of a hidden variety, and the
-  summary line for no varieties, all ok and a mix; never by color alone; covered by the
-  front tests and checked by eye in both themes.
-- **One page (criterion 6)**: no other screen offers an edit of a variety's prices,
-  entries' variety-level view, threshold or catalog attributes; checked against the docs
-  and the design. Front tests show only Stock and entries and Prices carry their last 3
-  rows and "See all". Withdrawal rows on the page are told apart from entries by word and
-  sign, covered by front tests.
-- **Saved, never guessed (criterion 6)**: front tests show:
-  - Low stock warning and In the catalog read-only until "Edit";
-  - switching the warning on opens the threshold form, and "Close" leaves it off;
-  - switching it off saves at once with "Warning saved";
-  - a too-long aroma refused under its field, everything typed kept;
-  - leaving the catalog form with unsaved text asks first, and an untouched form closes at
-    once.
-- **Two taps (criterion 7)**: the end-to-end run, phone and computer viewports, counts the
-  taps from every tab root to the catalog screen and to the stock entry form: 100% within
-  2, a computer never more than the phone; an entry from a variety's page has the variety
-  chosen and "Initial stock" preselected only with no entries.
-- **Two panes**: on a computer viewport, nothing selected shows the first unarchived
-  variety by name; no varieties leaves the right pane with no figure; archiving or
-  deleting the selected variety selects the next, else the previous, else the empty
-  state; on the phone the list never opens a variety.
-- **Nothing lost (criterion 8)**: every old Stock, Varieties and Catalog path answers a
-  permanent redirect, tested one by one, `/mi-stock/entradas/{id}` included; every old
-  action maps to a place in the new screens; no link points at a missing screen; a reload
-  on `/varieties/{low}/entries`, `/varieties/entries/{id}` and `/varieties/archived`
-  opens the screen.
-- **Offered action (criteria 9, 12)**: a matrix, 100% passing. The page offers "Delete
-  variety" exactly when the variety has no history and "Archive variety" otherwise,
-  with history from each source alone (a list line, a gift, a special price, an entry of
-  each origin, both adjustment signs). Price entries, a threshold and catalog attributes
-  alone leave Delete offered. Deleting the last sale or entry offers Delete again. The
-  domain refuses a delete with history with its code through the API, whatever the UI
-  showed. Archiving a variety whose history was deleted after the page loaded succeeds;
-  after restoring it, its page offers Delete.
-- **No orphan (criterion 12)**: a repository test over real SQLite races a delete with a
-  sale line and with a stock entry: either the delete is refused or the record is refused
-  as gone; 0 rows reference a missing variety.
-- **Books unchanged (criterion 10)**: over a seeded history, `GET /analysis` for every
-  week, month and the all-time window, `GET /panel`'s period figures, every sale's
-  detail, every customer's balance and account, and stock, cost of goods and pending
-  grams per variety, captured before archiving, after archiving and after restoring: 0
-  differences.
-- **Out of every list and picker (criterion 9)**: front and API tests show an archived
-  variety absent from Varieties' list and summary line, What you have left, New sale's,
-  the stock entry form's and the price form's choices, the catalog text, its "what does
-  not go out" list and the pinned catalog's text; upkeep edits the pin on archive and
-  restore exactly when the text changes. 100% passing.
-- **Comes back whole (criterion 11)**: after restoring, prices, stock, entries,
-  threshold, catalog attributes and the hidden flag (tested hidden and shown) equal what
-  they were before archiving. 100% passing.
-- **Names**: an archived variety's name, in any case or spacing, is refused on add and on
-  rename with its own code; a deleted variety's name is accepted at once.
-- **Nothing new**: a new sale line, stock entry or price entry against an archived variety
-  is refused as gone; an entry edit keeps its own archived variety and is refused moving
-  onto another archived one; editing and deleting that entry, deleting a sale containing
-  it (Undo included) and Assign customer still work.
-- **Findable (criterion 13)**: "Archived (N)" shows the right count and is absent with
-  none; restore takes 1 tap from the card and from the archived page; the archived page
-  offers no action but "Restore".
-- **Taps (criterion 9)**: through the front on a phone viewport, archiving or deleting
-  takes the action plus its confirmation from the variety's page; a computer takes no
-  more.
-- **Isolation (criterion 14)**: another business's variety or entry, archived or not,
-  opened by id shows "That is gone."; every route, delete, archive and restore
-  included, is in the sweep and the gated-route test; after a full front run, the console
-  and browser storage hold no names or amounts, and no refusal or toast carries a name or
-  an amount.
-- **Read as archived (criterion 19)**: front tests on an archived variety's page, hidden
-  and shown, show "Archived", plus "Hidden" when hidden; grams and price with no status
-  mark and no days left; the four sections read-only, the threshold as a stored statement
-  and never "Warning"; and no action but "Restore". Archived rows show "Archived"
-  and, when hidden, "Hidden". No state is told by colour alone, in both themes. The
-  muestra guard checks the seeded archived variety's grams, "Archived" and "Hidden".
-- **Right weight (criterion 20)**: front tests show the "Delete variety" trigger as
-  icon + text with `tacho`, never a filled button, and the filled critical button only in
-  its ConfirmDialog; "Archive variety" not drawn as destructive; Restore icon + text,
-  primary on the page and secondary on an Archived row, with no confirmation.
-- **Restore landing**: front tests show Restore from the archived page showing "Variety
-  restored" and landing on Archived in one move; on a computer the next archived
-  variety by name selected, else the previous one; Varieties when none is left; no
-  duplicated history entry; the page never becoming the live variety in place; the
-  Archived row's restore unchanged.
-- **Read-only lists**: front tests show the archived page's "See all" lists with no price
-  delete and no entry edit, delete or open; withdrawal rows still opening their detail;
-  each list's back arrow returning to the archived page.
-- **No regression (criteria 19–21)**: the existing varieties suites pass with no assertion
-  edited, criteria 10 and 11's metrics included, except those that pinned the old icon-only
-  delete, the archived page's old omissions, or the old restore-in-place landing (which
-  criterion 1 of the restore reverses); the PR lists each.
-- **Approved from evidence (criterion 21)**: the four drawings exist for the archived
-  page and for Archived; `screens.json` lists them and their twins with no duplicate key
-  (`assertScreens`); the sample app seeds one archived variety and `muestra.md` changes
-  only by its rows; before/after captures from one script and one install, on the same
-  Argentina day, with the fontsource version recorded (ADR-0042), are attached to the PR
-  with every difference listed. The delete trigger is judged by its front test and the
-  drawing, and by a capture only where a registry row already reaches a variety with no
-  history.
-- **Design**: `scripts/design/compare.sh` runs before and after for the list, the page,
-  Archived and the archived page, phone and computer, both themes, attached to the PR
-  and judged by eye. The PR lists the two agreed departures from the drawing (the
-  "Edit" forms of Low stock warning and In the catalog).
-- **Price form looks as designed (criterion 16)**:
-  - `scripts/design/compare.sh` runs before and after for the price form, phone and computer, both themes, and for the Onboarding's step 1, attached to the PR and judged by eye; every design-vs-docs difference is listed in the PR;
-  - `scripts/design/screens.json` holds the price form's dark twins (phone and computer), following the dark-twin convention, and the Onboarding's price step, and `compare.sh` measures them.
-- **"$" scope (criterion 16)**: front tests show the "$" on the list, bulk and VIP price, never on the bulk minimum, and the same in the Onboarding's step 1, which shows no date chip.
-- **Date chip (criterion 17)**: front tests show "Today dd/mm" by default and "dd/mm" for another day, going back to today from the chip, the chosen date kept after a refused save, and no native date input opened to record a price from today.
-- **Modal (criterion 16)**: front tests through the real routes show the modal on a computer viewport and a full-screen sheet on the phone, a direct link rendering the modal over its variety, the list behind it inert, and the close, save ("Price saved", the new entry in Prices) and discard flows. A viewport-flip test (phone to computer and back) keeps what was typed (GH-319).
-- **Sheets on a variety (GH-319)**: front tests show focus on the first field and exactly one "Close" in New variety and in the rename, low-stock warning and catalog attributes sheets; a direct address to New variety shows it over Varieties; an e2e run shows the rename sheet's action within `--inset-abajo` of the sheet's bottom.
-- **One source (criterion 18)**: a test shows "Check the grams entered" and "Price saved" each defined once, and the rendered text in every screen that shows them unchanged.
-- **Chrome proven by behaviour** (navigation.md, criterion 5): a Shell test shows "+ New sale" on a tab root and absent under card chrome.
-- **No regression (criteria 16–18)**: the existing suites pass; the only edited tests are those that found the native date input or the page layout, each listed in the PR; the contrast guard (ADR-0029) passes with no token change.
-- **Speed**: Varieties answers in under 300 ms with a few dozen varieties.
+- **Current price (criterio 1)**: tests sobre el historial responden la última Price entry en un día o
+  antes, y ninguna antes de la primera. 100% en verde.
+- **Pasado intacto (criterio 2)**: eliminar una Price entry vuelve a hacer vigente la anterior,
+  cubierto por tests a través de la API y del front.
+- **Nombres únicos (criterio 3)**: los duplicados dentro de un Business, sin importar mayúsculas, minúsculas ni
+  espacios, son 0, incluidas las Archived varieties.
+- **Validación del VIP price**: 100% en verde.
+  - Igual o mayor que el List price se rechaza con su propio código, que está en `contract.json` y lo controla `tests/test_refusal_codes.py`.
+  - Se aceptan un VIP price sin Bulk price y un Bulk price sin VIP price.
+  - Ningún rechazo contiene el monto.
+- **Las reglas desactivadas no guardan nada (criterio 15)**: una Price entry enviada con valores de Bulk o de VIP mientras esa regla está desactivada no guarda ninguno; los valores de las Price entries anteriores no cambian.
+- **Interruptores en pantalla (criterio 15)**: tests del front muestran el formulario de precio, la sección Prices y el historial completo sin campos de Bulk mientras Bulk price está desactivado y sin VIP price mientras VIP customers está desactivado, y cada valor guardado de vuelta una vez activados.
+- **Sin curl (criterio 4)**: la corrida de punta a punta del front agrega una Variety, agrega un precio desde su
+  página (con un VIP price cuando VIP customers está activado), renombra la Variety, elimina una Price
+  entry, fija un Low-stock threshold con "Edit", lo desactiva y lo vuelve a activar con el
+  interruptor, y edita los Catalog attributes de la Variety con "Edit" y "Save the
+  catalog", todo desde su página, y registra un Stock withdrawal desde su página. También elimina una
+  Variety nueva, archiva una con una Sale, la encuentra en Archived, abre su página de solo lectura
+  y la restaura.
+- **Estado a la vista (criterio 5)**: la lista y la página muestran la marca y la palabra de
+  cada estado, "Hidden" junto al (nunca en lugar del) estado de una Hidden variety, y la
+  línea de resumen sin Varieties, todo ok y una mezcla; nunca solo por color; cubierto por los
+  tests del front y revisado a ojo en los dos temas.
+- **Una página (criterio 6)**: ninguna otra pantalla ofrece editar los precios de una Variety,
+  la vista por Variety de sus Stock entries, el umbral ni los Catalog attributes; revisado contra los docs
+  y el diseño. Los tests del front muestran que solo Stock and entries y Prices llevan sus últimas 3
+  filas y "See all". Las filas de Stock withdrawal en la página se distinguen de las Stock entries por palabra y
+  signo, cubierto por tests del front.
+- **Guardado, nunca adivinado (criterio 6)**: tests del front muestran:
+  - Low stock warning e In the catalog de solo lectura hasta "Edit";
+  - activar el aviso abre el formulario del umbral, y "Close" lo deja desactivado;
+  - desactivarlo guarda de inmediato con "Warning saved";
+  - un Aroma demasiado largo rechazado bajo su campo, con todo lo tipeado conservado;
+  - salir del formulario del Catalog con texto sin guardar pregunta primero, y un formulario sin tocar se cierra de
+    inmediato.
+- **Dos toques (criterio 7)**: la corrida de punta a punta, en viewports de celular y computadora, cuenta los
+  toques desde cada Tab root hasta la pantalla del Catalog y hasta el formulario de Stock entry: 100% dentro de
+  2, una computadora nunca más que el celular; una Stock entry desde la página de una Variety tiene la Variety
+  elegida y "Initial stock" preseleccionado solo sin Stock entries.
+- **Dos paneles**: en un viewport de computadora, sin nada seleccionado se muestra la primera Variety sin archivar
+  por nombre; sin Varieties el panel derecho queda sin ninguna cifra; archivar o
+  eliminar la Variety seleccionada selecciona la siguiente, si no la anterior, si no el estado
+  vacío; en el celular la lista nunca abre una Variety.
+- **Nada perdido (criterio 8)**: cada ruta vieja de Stock, Varieties y Catalog responde una
+  redirección permanente, probada una por una, `/mi-stock/entradas/{id}` incluida; cada acción
+  vieja tiene un lugar en las pantallas nuevas; ningún link apunta a una pantalla que falta; recargar
+  `/varieties/{low}/entries`, `/varieties/entries/{id}` y `/varieties/archived`
+  abre la pantalla.
+- **Acción ofrecida (criterios 9, 12)**: una matriz, 100% en verde. La página ofrece "Delete
+  variety" exactamente cuando la Variety no tiene historial y "Archive variety" en el resto de los casos,
+  con historial de cada fuente sola (una Sale line a List price, un Gift, un Special price, una Stock entry de
+  cada origen, Adjustments de los dos signos). Las Price entries, un umbral y los Catalog attributes
+  solos dejan ofrecido Delete. Eliminar la última Sale o Stock entry vuelve a ofrecer Delete. El
+  dominio rechaza una eliminación con historial con su código a través de la API, muestre lo que muestre la UI.
+  Archivar una Variety cuyo historial se eliminó después de que cargó la página funciona;
+  después de restaurarla, su página ofrece Delete.
+- **Sin huérfanos (criterio 12)**: un test de repositorio sobre SQLite real hace competir una eliminación con una
+  Sale line y con una Stock entry: o bien se rechaza la eliminación o bien el registro se rechaza
+  como inexistente; 0 filas referencian una Variety que falta.
+- **Libros sin cambios (criterio 10)**: sobre un historial sembrado, `GET /analysis` para cada
+  semana, mes y la ventana de todo el período, las cifras de período de `GET /panel`, el
+  detalle de cada Sale, el Balance y la cuenta de cada Customer, y el Stock, el Cost of goods sold y los gramos
+  pendientes por Variety, capturados antes de archivar, después de archivar y después de restaurar: 0
+  diferencias.
+- **Afuera de toda lista y selector (criterio 9)**: tests del front y de la API muestran una Archived
+  variety ausente de la lista y la línea de resumen de Varieties, de What you have left, de las opciones de New sale,
+  del formulario de Stock entry y del formulario de precio, del texto del Catalog, de su lista "what does
+  not go out" y del texto del Pinned catalog; el Upkeep edita el Pinned catalog al archivar y
+  restaurar exactamente cuando cambia el texto. 100% en verde.
+- **Vuelve entera (criterio 11)**: después de restaurar, los precios, el Stock, las Stock entries, el
+  umbral, los Catalog attributes y la marca de Hidden variety (probada oculta y mostrada) son iguales a lo que
+  eran antes de archivar. 100% en verde.
+- **Nombres**: el nombre de una Archived variety, con cualquier combinación de mayúsculas, minúsculas o espacios, se rechaza al agregar y al
+  renombrar con su propio código; el nombre de una Variety eliminada se acepta de inmediato.
+- **Nada nuevo**: una Sale line, Stock entry o Price entry nueva contra una Archived variety
+  se rechaza como inexistente; una edición de Stock entry conserva su propia Archived variety y se rechaza si la pasa
+  a otra Archived variety; editar y eliminar esa Stock entry, eliminar una Sale que la contiene
+  (Undo incluido) y Assign customer siguen funcionando.
+- **Se encuentra (criterio 13)**: "Archived (N)" muestra el conteo correcto y no aparece cuando no hay
+  ninguna; restaurar lleva 1 toque desde la tarjeta y desde la página archivada; la página archivada
+  no ofrece ninguna acción salvo "Restore".
+- **Toques (criterio 9)**: a través del front en un viewport de celular, archivar o eliminar
+  lleva la acción más su confirmación desde la página de la Variety; una computadora no lleva
+  más.
+- **Aislamiento (criterio 14)**: la Variety o la Stock entry de otro Business, archivada o no,
+  abierta por id muestra "That is gone."; cada ruta, incluidas eliminar, archivar y restaurar,
+  está en el barrido y en el test de rutas protegidas; después de una corrida completa del front, la consola
+  y el almacenamiento del navegador no tienen nombres ni montos, y ningún rechazo ni toast lleva un nombre o
+  un monto.
+- **Se lee como archivada (criterio 19)**: tests del front sobre la página de una Archived variety, oculta
+  y mostrada, muestran "Archived", más "Hidden" cuando está oculta; gramos y precio sin marca de estado
+  y sin Days left; las cuatro secciones de solo lectura, el umbral como una frase guardada
+  y nunca "Warning"; y ninguna acción salvo "Restore". Las filas de Archived muestran "Archived"
+  y, cuando está oculta, "Hidden". Ningún estado se dice solo por color, en los dos temas. El
+  guard de muestra controla los gramos, "Archived" y "Hidden" de la Archived variety sembrada.
+- **Peso justo (criterio 20)**: tests del front muestran el disparador "Delete variety" como
+  ícono + texto con `tacho`, nunca un botón relleno, y el botón crítico relleno solo en
+  su ConfirmDialog; "Archive variety" no dibujado como destructivo; Restore con ícono + texto,
+  primario en la página y secundario en una fila de Archived, sin confirmación.
+- **Destino de Restore**: tests del front muestran que Restore desde la página archivada muestra "Variety
+  restored" y llega a Archived en un solo movimiento; en una computadora, seleccionada la siguiente Archived
+  variety por nombre, si no la anterior; Varieties cuando no queda ninguna; ningún paso del historial de navegación
+  duplicado; la página nunca convertida en la Variety activa en el lugar; el restore de la fila de
+  Archived sin cambios.
+- **Listas de solo lectura**: tests del front muestran las listas "See all" de la página archivada sin eliminación
+  de precio y sin editar, eliminar ni abrir Stock entries; las filas de Stock withdrawal siguen abriendo su detalle;
+  la flecha de regreso de cada lista vuelve a la página archivada.
+- **Sin regresiones (criterios 19–21)**: las suites existentes de Varieties pasan sin ninguna
+  aserción editada, incluidas las métricas de los criterios 10 y 11, salvo las que fijaban la vieja eliminación solo
+  con ícono, las viejas omisiones de la página archivada o el viejo destino de restaurar en el lugar (que
+  el criterio 1 de la restauración revierte); el PR lista cada una.
+- **Aprobado con evidencia (criterio 21)**: los cuatro dibujos existen para la página
+  archivada y para Archived; `screens.json` los lista junto con sus gemelos sin ninguna clave duplicada
+  (`assertScreens`); la app de ejemplo siembra una Archived variety y `muestra.md` cambia
+  solo en sus filas; las capturas de antes y después de un mismo script y una misma instalación, en el mismo
+  día de Argentina, con la versión de fontsource registrada (ADR-0042), se adjuntan al PR
+  con cada diferencia listada. El disparador de eliminar se juzga por su test del front y el
+  dibujo, y por una captura solo donde una fila del registro ya llega a una Variety sin
+  historial.
+- **Diseño**: `scripts/design/compare.sh` corre antes y después para la lista, la página,
+  Archived y la página archivada, en celular y computadora, en los dos temas, adjunto al PR y
+  juzgado a ojo. El PR lista las dos diferencias acordadas con el dibujo (los
+  formularios "Edit" de Low stock warning y de In the catalog).
+- **El formulario de precio se ve como se diseñó (criterio 16)**:
+  - `scripts/design/compare.sh` corre antes y después para el formulario de precio, en celular y computadora, en los dos temas, y para el paso 1 del Onboarding, adjunto al PR y juzgado a ojo; cada diferencia entre diseño y docs se lista en el PR;
+  - `scripts/design/screens.json` tiene los gemelos oscuros del formulario de precio (celular y computadora), según la convención de gemelos oscuros, y el paso de precio del Onboarding, y `compare.sh` los mide.
+- **Alcance del "$" (criterio 16)**: tests del front muestran el "$" en el List price, el Bulk price y el VIP price, nunca en el Bulk minimum, y lo mismo en el paso 1 del Onboarding, que no muestra chip de fecha.
+- **Chip de fecha (criterio 17)**: tests del front muestran "Today dd/mm" por defecto y "dd/mm" para otro día, volver a hoy desde el chip, la fecha elegida conservada después de un guardado rechazado, y ningún input de fecha nativo abierto para registrar un precio desde hoy.
+- **Modal (criterio 16)**: tests del front a través de las rutas reales muestran el modal en un viewport de computadora y una Sheet a pantalla completa en el celular, un link directo que dibuja el modal sobre su Variety, la lista de atrás inerte, y los flujos de cerrar, guardar ("Price saved", la Price entry nueva en Prices) y descartar. Un test de cambio de viewport (de celular a computadora y de vuelta) conserva lo tipeado (GH-319).
+- **Sheets en una Variety (GH-319)**: tests del front muestran el foco en el primer campo y exactamente un "Close" en New variety y en las Sheets de renombre, de aviso de Stock bajo y de Catalog attributes; una dirección directa a New variety la muestra sobre Varieties; una corrida e2e muestra la acción de la Sheet de renombre dentro de `--inset-abajo` del borde inferior de la Sheet.
+- **Una fuente (criterio 18)**: un test muestra "Check the grams entered" y "Price saved" definidos una sola vez cada uno, y el texto que se dibuja en cada pantalla que los muestra sin cambios.
+- **Marco probado por comportamiento** (navigation.md, criterio 5): un test del Shell muestra "+ New sale" en un Tab root y ausente bajo el marco de tarjeta.
+- **Sin regresiones (criterios 16–18)**: las suites existentes pasan; los únicos tests editados son los que encontraban el input de fecha nativo o la disposición de la página, cada uno listado en el PR; el guard de contraste (ADR-0029) pasa sin cambiar ningún token.
+- **Velocidad**: Varieties responde en menos de 300 ms con unas pocas docenas de Varieties.
 
-## Out of scope
+## Fuera de alcance
 
-- The rules of catalog attributes: the catalog capability (they are edited here).
-- The rules of stock withdrawals: the stock capability (they are started and seen here).
-- Deleting a variety with history, by any path.
-- Deleting an archived variety without restoring it first.
-- Refusing an archive because the variety has no history.
-- Merging varieties, or taking over an archived variety's name.
-- Deleting, archiving or restoring several varieties at once; archiving or deleting from
-  the list itself.
-- An "Archived" tag on past records.
-- Moving a stock entry onto an archived variety.
-- Live updates between partners while a screen is open.
-- Settings and its groups, the pricing switches included (pricing-settings.md).
-- Editing catalog attributes or the threshold in place, without a form and a save.
-- Editing a price entry, its VIP price included (ADR-0003).
-- Copying a hidden rule's prices forward onto a new entry.
-- Other VIP rules (a percent off list); price promotions by date.
-- Documenting the price form's divergence from the design instead of bringing it in line.
-- A date choice in the Onboarding's step 1; any change to a price entry's date rules.
-- A new token or a change to any token value for the price form.
-- Reworking the archived page's back arrow (navigation.md, ADR-0045).
-- A live stock status, days left or "Warning" warning on an archived variety.
-- Editing anything from an archived variety's page or its "See all" lists.
-- A name-clash refusal or error state for Restore.
-- Usage metrics for archived pages.
+- Las reglas de los Catalog attributes: la capacidad del Catalog (se editan acá).
+- Las reglas de los Stock withdrawals: la capacidad del Stock (se inician y se ven acá).
+- Eliminar una Variety con historial, por cualquier camino.
+- Eliminar una Archived variety sin restaurarla primero.
+- Rechazar un archivado porque la Variety no tiene historial.
+- Fusionar Varieties, o tomar el nombre de una Archived variety.
+- Eliminar, archivar o restaurar varias Varieties a la vez; archivar o eliminar desde
+  la propia lista.
+- Una etiqueta "Archived" en los registros pasados.
+- Pasar una Stock entry a una Archived variety.
+- Actualizaciones en vivo entre socios mientras una pantalla está abierta.
+- **Settings** y sus grupos, incluidos los interruptores de precio (pricing-settings.md).
+- Editar los Catalog attributes o el umbral en el lugar, sin un formulario y un guardado.
+- Editar una Price entry, su VIP price incluido (ADR-0003).
+- Copiar los precios de una regla oculta a una Price entry nueva.
+- Otras reglas VIP (un porcentaje sobre el List price); precios promocionales por fecha.
+- Documentar la diferencia del formulario de precio con el diseño en lugar de alinearlo.
+- Una elección de fecha en el paso 1 del Onboarding; cualquier cambio en las reglas de fecha de una Price entry.
+- Un token nuevo o un cambio en el valor de cualquier token para el formulario de precio.
+- Rehacer la flecha de regreso de la página archivada (navigation.md, ADR-0045).
+- Un Stock status en vivo, Days left o un aviso "Warning" en una Archived variety.
+- Editar cualquier cosa desde la página de una Archived variety o sus listas "See all".
+- Un rechazo por choque de nombre o un estado de error para Restore.
+- Métricas de uso de las páginas archivadas.
 
 ## Planned in GH-318
 
-Not built yet. Until the part named ships, the sections above are what the app does.
+Todavía no está construido. Hasta que salga la parte nombrada, las secciones de arriba son lo que hace la app.
 
-The epic lets a business describe what it sells in its own words. Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+El epic permite que un Business describa lo que vende con sus propias palabras. Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la oración actual que va a reemplazar. La parte que entrega un pasaje lo quita de acá y edita Comportamiento y Fuera de alcance en el mismo diff.
 
-### The product word
+### La Product word
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md and docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; delivered by the product word part, with the Product rename on the wire for the API path.
+Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md y docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; lo entrega la parte product word, con el Product rename on the wire para la ruta de la API.
 
-- The seller will choose the word for what is sold, singular and plural. The default will be "Product" / "Products". It will be shown as typed and never translated, because it is the seller's own data.
-- Code, tests and docs will say Product, and the API path is `/api/products`. Columns that reference a variety's id will stay `variety_id` until #75 (ADR-0061). The front paths under `/varieties/*` will not move.
-- It will replace: "**Variety**: a name, trimmed, inner spaces collapsed, up to 60 characters. Renaming keeps its prices. Varieties are listed by name." and the capability's title, "The varieties a business sells and the price history of each".
+- Quien vende va a elegir la palabra para lo que vende, en singular y en plural. El valor por defecto va a ser "Product" / "Products". Se va a mostrar tal como se tipeó y nunca se va a traducir, porque es un dato propio de quien vende.
+- El código, los tests y los docs van a decir **Product**, y la ruta de la API es `/api/products`. Las columnas que referencian el id de una Variety van a seguir siendo `variety_id` hasta #75 (ADR-0061). Las rutas del front bajo `/varieties/*` no se van a mover.
+- Va a reemplazar: "**Variety**: un nombre, sin espacios al principio ni al final, con los espacios internos colapsados, de hasta 60 caracteres. Renombrarla conserva sus precios. Las Varieties se listan por nombre." y el título de la capacidad, "Las Varieties que vende un **Business** y el historial de precios de cada una".
 
-### Categories, subcategories and attributes
+### Categorías, subcategorías y atributos
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the categories part.
+Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte categories.
 
-- Products will be grouped in categories and subcategories, two levels deep, and every product will belong to exactly one subcategory. The list, the pickers and the filters will group by category and subcategory.
-- A subcategory will be archivable only when it holds no unarchived product; a category only when none of its subcategories is unarchived; the business's last unarchived subcategory never. Restoring a product whose subcategory is archived will be refused until that subcategory is restored.
-- Attributes will be defined per subcategory (name, type, required or not, shown in the catalog or not). An attribute no product has a value for will be deletable; one with any value will only be archivable, and every value will be kept.
-- Moving a product to another subcategory will keep the values of the attributes both subcategories share and tell the seller, before confirming, which values the product loses. The hidden flag will stay on the product, never an attribute.
-- It will replace: "its catalog attributes (`catalog.md`)." in the list of what the page holds, and the fixed attributes of catalog.md's "### Catalog attributes, per variety" (quoted in `catalog.md`'s own Planned section).
+- Los Products se van a agrupar en categorías y subcategorías, de dos niveles, y cada Product va a pertenecer a exactamente una subcategoría. La lista, los selectores y los filtros van a agrupar por categoría y subcategoría.
+- Una subcategoría se va a poder archivar solo cuando no tenga ningún Product sin archivar; una categoría, solo cuando ninguna de sus subcategorías esté sin archivar; la última subcategoría sin archivar del Business, nunca. Restaurar un Product cuya subcategoría está archivada se va a rechazar hasta que se restaure esa subcategoría.
+- Los atributos se van a definir por subcategoría (nombre, tipo, obligatorio o no, se muestra en el Catalog o no). Un atributo para el que ningún Product tenga valor se va a poder eliminar; uno con algún valor solo se va a poder archivar, y se va a conservar cada valor.
+- Pasar un Product a otra subcategoría va a conservar los valores de los atributos que comparten las dos subcategorías y le va a decir a quien vende, antes de confirmar, qué valores pierde el Product. La marca de Hidden variety va a quedar en el Product, nunca como atributo.
+- Va a reemplazar: "sus **Catalog attributes** (`catalog.md`)." en la lista de lo que reúne la página, y los atributos fijos de "### Catalog attributes, per variety" de catalog.md (citados en la propia sección Planned de `catalog.md`).
 
-### Units and quantities
+### Units y cantidades
 
-Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
+Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte units.
 
-- Each product will have one unit with a name, a short label and 0 to 2 decimals, used for its stock, price, sale quantity, bulk minimum and low-stock threshold. A business will be able to mix units. The unit will be locked once the product has history.
-- A quantity will be stored as a whole number of hundredths whatever the unit; the unit's decimals will only validate input and decide display (ADR-0056). Quantities of different units will never be added: a figure that totals quantities will show one amount per unit.
-- It will replace: "a list price per gram in whole pesos", "a bulk price per gram with its bulk minimum in grams (up to two decimals)" and "**Low-stock threshold**: optional grams, above zero, up to two decimals".
+- Cada Product va a tener una **Unit** con un nombre, una etiqueta corta y de 0 a 2 decimales, que se usa para su Stock, su precio, la cantidad vendida, el Bulk minimum y el Low-stock threshold. Un Business va a poder mezclar Units. La Unit se va a bloquear una vez que el Product tenga historial.
+- Una cantidad se va a guardar como un número entero de centésimos, cualquiera sea la Unit; los decimales de la Unit solo van a validar lo ingresado y decidir cómo se muestra (ADR-0056). Las cantidades de Units distintas nunca se van a sumar: una cifra que totaliza cantidades va a mostrar un monto por Unit.
+- Va a reemplazar: "un List price por gramo en pesos enteros", "un Bulk price por gramo con su Bulk minimum en gramos (hasta dos decimales)" y "**Low-stock threshold**: gramos opcionales, mayores que cero, de hasta dos decimales".
 
-### Money
+### Dinero
 
-Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
+Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; lo entrega la parte money.
 
-- Prices will cross the wire in currency units, parsed as Decimal, and be stored at the business's own scale, 0 or 2. The business will have its own currency symbol and money decimals (0 to 2).
-- It will replace "whole pesos" wherever this file says it, and "Every amount is above zero." keeps holding.
+- Los precios van a viajar en unidades de moneda, interpretados como Decimal, y se van a guardar en la escala propia del Business, 0 o 2. El Business va a tener su propio símbolo de moneda y sus decimales de dinero (de 0 a 2).
+- Va a reemplazar "pesos enteros" en todos los lugares donde este archivo lo dice, y "Todo monto es mayor que cero." sigue rigiendo.
 
-### Customer types
+### Los Customer types
 
-Decided in docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; delivered by the customer-type prices part.
+Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; lo entrega la parte customer-type prices.
 
-- Customer types will replace the single VIP mark: each type will have its own price per product, kept as effective-dated rows. The `vip` mark and `vip_price` columns will stay frozen in place.
-- It will replace: "a VIP price per gram, in whole pesos, lower than the list price. It is independent of the bulk price and minimum (an entry may have either one alone) and is never compared with the bulk price." and the refusal "**A VIP price at or above the list price**".
-- Out of scope: the line "Other VIP rules (a percent off list); price promotions by date." will be split. "price promotions by date" will be reversed by the promotions part (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; see `sales.md`); "Other VIP rules (a percent off list)" will stay out.
+- Los **Customer type**s van a reemplazar la marca VIP única: cada tipo va a tener su propio precio por Product, guardado como filas con fecha de vigencia. Las columnas de la marca `vip` y de `vip_price` van a quedar congeladas en su lugar.
+- Va a reemplazar: "un VIP price por gramo, en pesos enteros, menor que el List price. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price." y el rechazo "**Un VIP price igual o mayor que el List price**".
+- Fuera de alcance: la línea "Otras reglas VIP (un porcentaje sobre el List price); precios promocionales por fecha." se va a dividir. "precios promocionales por fecha" lo va a revertir la parte promotions (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; ver `sales.md`); "Otras reglas VIP (un porcentaje sobre el List price)" va a quedar afuera.
 
-### The business day
+### El día del negocio
 
-Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; delivered by the time-zone part.
+Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; lo entrega la parte time-zone.
 
-- Each business will have a time zone, and "today" will be worked out per business. Recorded dates will never be rewritten.
-- It will replace: "Today is the business day in Argentina time."
+- Cada Business va a tener una zona horaria, y "hoy" se va a calcular por Business. Las fechas registradas nunca se van a reescribir.
+- Va a reemplazar: "Hoy es el día del negocio en hora de Argentina."
 
 ### Existing businesses
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the parts that build each configuration, each seeding existing businesses with its own default.
+Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entregan las partes que construyen cada configuración, cada una sembrando en los Businesses existentes su propio valor por defecto.
 
-- Each existing business will be migrated, with no stored row rewritten, to one category and one subcategory holding emoji, indica share and aroma as attributes; the "grams" / "g" unit with 2 decimals; "Variety" / "Varieties" as its word; "$" with whole pesos; and VIP as a customer type. The hidden flag will stay on each product. It will be able to add categories and subcategories; nothing else will be forced on it.
+- Cada Business existente se va a migrar, sin reescribir ninguna fila guardada, a una categoría y una subcategoría que tengan emoji, **Indica share** y Aroma como atributos; la Unit "grams" / "g" con 2 decimales; "Variety" / "Varieties" como su palabra; "$" con pesos enteros; y VIP como Customer type. La marca de Hidden variety va a quedar en cada Product. Va a poder agregar categorías y subcategorías; no se le va a imponer nada más.

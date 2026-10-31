@@ -1058,13 +1058,16 @@ def test_main_takes_its_business_day_from_the_clock_it_is_given(
 
 
 def test_an_invalid_forced_language_prints_only_refused_invalid_setting(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    clock: MovableClock,
 ) -> None:
     monkeypatch.setenv("APOSTROPHE_SECRET_KEY", "cli-secret")
     monkeypatch.setenv("APOSTROPHE_DATABASE_URL", f"sqlite:///{tmp_path / 'apostrophe.db'}")
     monkeypatch.setenv("APOSTROPHE_FORCED_LANGUAGE", "de")
 
-    assert main(["1", str(tmp_path / "sheet.xlsx")]) == 1
+    assert main(["1", str(tmp_path / "sheet.xlsx")], clock=clock) == 1
 
     captured = capsys.readouterr()
     assert captured.err == "refused: InvalidSetting\n"

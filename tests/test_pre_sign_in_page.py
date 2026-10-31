@@ -240,11 +240,6 @@ def operator_database(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> str:
     return url
 
 
-def _issue(capsys: pytest.CaptureFixture[str], clock: MovableClock, *command: str) -> str:
-    assert accounts_cli(list(command), clock=clock) == 0
-    return capsys.readouterr().out.splitlines()[0].rsplit("/", 1)[-1]
-
-
 def _seed_links(
     client: TestClient,
     capsys: pytest.CaptureFixture[str],
@@ -253,21 +248,26 @@ def _seed_links(
     """Front paths for every link state, seeded through the operator's commands and the
     movable clock, never rows."""
     invitation, reset = _front_paths()
-    used = _issue(capsys, clock, "invite-business")
+
+    def issue(*command: str) -> str:
+        assert accounts_cli(list(command), clock=clock) == 0
+        return capsys.readouterr().out.splitlines()[0].rsplit("/", 1)[-1]
+
+    used = issue("invite-business")
     accepted = client.post(
         f"/invitations/{used}/accept",
         json={"business_name": "La Huerta", "email": "ana@example.com", "password": PASSWORD},
     )
     assert accepted.status_code == 201
-    expired_invitation = _issue(capsys, clock, "invite-business")
-    expired_reset = _issue(capsys, clock, "reset-password", "ana@example.com")
+    expired_invitation = issue("invite-business")
+    expired_reset = issue("reset-password", "ana@example.com")
     clock.set(NOW + timedelta(days=8))
 
-    retired = _issue(capsys, clock, "reset-password", "ana@example.com")
-    used_reset = _issue(capsys, clock, "reset-password", "ana@example.com")
+    retired = issue("reset-password", "ana@example.com")
+    used_reset = issue("reset-password", "ana@example.com")
     submitted = client.post(f"/reset-links/{used_reset}", json={"new_password": PASSWORD + "!"})
     assert submitted.status_code == 200
-    live = _issue(capsys, clock, "reset-password", "ana@example.com")
+    live = issue("reset-password", "ana@example.com")
     return {
         "invitation unknown": _with_token(invitation, "unknown-token"),
         "invitation used": _with_token(invitation, used),
