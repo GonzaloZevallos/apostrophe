@@ -18,6 +18,8 @@ from tests.design.muestra_guard import (
     CHECKS,
     Muestra,
     check_screen,
+    date_problems,
+    denylist_problems,
     parse_muestra,
     read_screen,
     spanish_label_problems,
@@ -30,6 +32,23 @@ SCREENS = DESIGN / "pantallas"
 
 def real_muestra() -> Muestra:
     return parse_muestra((DESIGN / "muestra.md").read_text(encoding="utf-8"))
+
+
+def screen_problems(family: Family, screen: str, page: str, muestra: Muestra) -> list[str]:
+    """What the real-registry test holds a drawing to. A `PAUSED` drawing skips the figure
+    agreement (`check_screen`'s `CHECKS` of its family) and nothing else: its dates, its denylist
+    and, on Análisis, the English-label check still apply. `check_screen` itself is never
+    changed."""
+    problems: list[str] = []
+    if screen in PAUSED:
+        read = read_screen(page)
+        problems += date_problems(screen, read, muestra)
+        problems += denylist_problems(screen, read, family.denylist)
+    else:
+        problems += check_screen(family.name, screen, page, muestra, family.denylist)
+    if family.name == "analisis":
+        problems += spanish_label_problems(screen, read_screen(page))
+    return problems
 
 
 def test_the_six_families_are_declared_once_each() -> None:
@@ -63,10 +82,7 @@ def test_each_listed_screen_agrees_with_muestra(family: Family) -> None:
     problems: list[str] = []
     for screen in family.screens:
         page = (SCREENS / screen).read_text(encoding="utf-8")
-        paused = screen in PAUSED
-        problems += check_screen(family.name, screen, page, muestra, family.denylist, paused=paused)
-        if family.name == "analisis" and not paused:
-            problems += spanish_label_problems(screen, read_screen(page))
+        problems += screen_problems(family, screen, page, muestra)
 
     assert problems == []
 
@@ -86,6 +102,16 @@ def test_the_ventas_family_rejects_a_screen_that_kept_the_old_figures() -> None:
 ANALISIS_SCREENS = ("Analisis.dc.html", "AnalisisCompu.dc.html")
 # The drawings whose figures are checked; a paused one has none of the old figures to drift.
 ANALISIS_CHECKED = tuple(s for s in ANALISIS_SCREENS if s not in PAUSED)
+
+
+def test_the_analisis_drift_tests_have_no_drawing_while_both_are_paused() -> None:
+    # The drift, label, Own use and faltante tests below loop over ANALISIS_CHECKED. They hold
+    # zero assertions while it is empty, so that state is pinned here, in the open: when a
+    # drawing leaves the pause this fails, and the loops start asserting on it.
+    assert ANALISIS_CHECKED == ()
+    assert set(ANALISIS_SCREENS) <= set(PAUSED)
+
+
 ANALISIS_STALE = (
     ("the old month", "October 2026", "September 2026"),
     ("the old month total", "$ 369.000", "$ 2.684.000"),
@@ -253,11 +279,22 @@ def test_the_paused_figures_really_fail_and_the_other_checks_still_apply() -> No
 
             # Pausing is only for a drawing whose figures fail; a fixed one leaves the list.
             assert check_screen(family.name, screen, page, muestra, family.denylist) != []
-            assert check_screen(family.name, screen, page, muestra, (), paused=True) == []
             # What is not the figure agreement still rejects a paused drawing.
             stale = page.replace("</body>", "<span>capturadas el 05/10/2026</span></body>")
-            problems = check_screen(family.name, screen, stale, muestra, (), paused=True)
+            problems = screen_problems(family, screen, stale, muestra)
             assert any("not the capture date" in p for p in problems), screen
+            denied = page.replace("</body>", f"<span>{family.denylist[0]}</span></body>")
+            problems = screen_problems(family, screen, denied, muestra)
+            assert any("the stale literal" in p for p in problems), screen
+
+
+def test_a_paused_drawing_that_loses_its_figures_is_not_rejected_for_them() -> None:
+    muestra = real_muestra()
+    family = next(f for f in FAMILIES if f.name == "inicio")
+    page = (SCREENS / "Inicio.dc.html").read_text(encoding="utf-8")
+
+    assert "Inicio.dc.html" in PAUSED
+    assert screen_problems(family, "Inicio.dc.html", page, muestra) == []
 
 
 PAUSE_OK: tuple[tuple[str, int], ...] = (("Inicio.dc.html", 497), ("Analisis.dc.html", 321))

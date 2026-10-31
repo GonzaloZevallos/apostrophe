@@ -455,11 +455,7 @@ describe('the 130 % rows of the real screens.json', () => {
   // (960x920, and 1280x920 once the 960 set at 130 % had shown a break).
   const HOME_WIDTH: Record<string, number> = {
     InicioHoyCompu960Texto130: 960,
-    InicioCompu960Texto130: 960,
-    InicioMesCompu960Texto130: 960,
     InicioHoyCompuTexto130: 1280,
-    InicioCompuTexto130: 1280,
-    InicioMesCompuTexto130: 1280,
   }
   const HOME_TEXTO130 = Object.keys(HOME_WIDTH)
   const isOnboardingNarrow = (row: Row): boolean =>
@@ -467,7 +463,7 @@ describe('the 130 % rows of the real screens.json', () => {
   const isNamedHome = (row: Row): boolean =>
     HOME_TEXTO130.includes(row.screen) && row.viewport?.[0] === HOME_WIDTH[row.screen] && row.viewport?.[1] === 920
 
-  it('accepts a 130 % row only as a 320x844 Onboarding row or one of the six named Home rows at their own width x 920', () => {
+  it('accepts a 130 % row only as a 320x844 Onboarding row or one of the two named Home rows at their own width x 920', () => {
     const scaled = rows.filter((row) => row.text_scale !== undefined)
     expect(scaled.length).toBeGreaterThan(HOME_TEXTO130.length)
     for (const row of scaled) {
@@ -481,7 +477,7 @@ describe('the 130 % rows of the real screens.json', () => {
     const other: Row[] = [
       { screen: 'InicioHoyCompu960Texto130', viewport: [1280, 920], text_scale: TEXT_SCALE },
       { screen: 'InicioHoyCompuTexto130', viewport: [960, 920], text_scale: TEXT_SCALE },
-      { screen: 'InicioCompuTexto130', viewport: [1280, 844], text_scale: TEXT_SCALE },
+      { screen: 'InicioHoyCompuTexto130', viewport: [1280, 844], text_scale: TEXT_SCALE },
       { screen: 'InicioTexto130', viewport: [1280, 920], text_scale: TEXT_SCALE },
       { screen: 'InicioHoyCompu960Texto130', viewport: [960, 844], text_scale: TEXT_SCALE },
       { screen: 'InicioTexto130', viewport: [960, 920], text_scale: TEXT_SCALE },
@@ -557,57 +553,54 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(row('InicioOscuro').tema).toBe('oscuro')
   })
 
-  it('keeps the Semana captures without a crop, the drawings having a single frame', () => {
-    expect(clicks(row('Inicio'))).toEqual(['Week'])
-    expect(row('Inicio').section).toBeUndefined()
-    expect(clicks(row('InicioCompu'))).toEqual(['Week'])
-    expect(row('InicioCompu').section).toBeUndefined()
+  // GH-526: the 2026-10-29 Inicio and InicioCompu draw one frame, Hoy: there is no Semana or Mes block, so the
+  // rows that clicked Week or Month have no drawing to be compared with and were dropped.
+  const DROPPED_SEMANA_MES = [
+    'Inicio',
+    'InicioCompu',
+    'InicioCompuOscuro',
+    'InicioMesCompu',
+    'InicioCompu960',
+    'InicioMesCompu960',
+    'InicioCompu960Texto130',
+    'InicioMesCompu960Texto130',
+    'InicioCompuTexto130',
+    'InicioMesCompuTexto130',
+  ]
+
+  it('has no row that clicks Week or Month against the Hoy-only Inicio drawings', () => {
+    const names = rows.map((r) => r.screen)
+    for (const name of DROPPED_SEMANA_MES) expect(names, name).not.toContain(name)
+    const inicio = rows.filter((r) => ['Inicio', 'InicioCompu', 'InicioOscuro'].includes(r.design ?? r.screen))
+    expect(inicio.length).toBeGreaterThan(0)
+    for (const r of inicio) expect(clicks(r), r.screen).toEqual([])
   })
 
   it('keeps every Inicio row in the Inicio drawings, which assertScreens accepts', () => {
     const inicio = rows.filter((r) => /^Inicio(Hoy|Oscuro|Compu)*$/.test(r.screen))
     expect(inicio.map((r) => r.screen)).toEqual([
-      'Inicio',
       'InicioHoy',
       'InicioOscuro',
-      'InicioCompu',
       'InicioHoyCompu',
       'InicioHoyCompuOscuro',
-      'InicioCompuOscuro',
     ])
     expect(() => assertScreens(inicio)).not.toThrow()
   })
 
-  it('pairs the dark InicioCompu with the light drawing and no crop', () => {
-    const dark = row('InicioCompuOscuro')
-    expect(dark.design).toBe('InicioCompu')
-    expect(dark.tema).toBe('oscuro')
-    expect(dark.section).toBeUndefined()
-    expect(clicks(dark)).toEqual(['Week'])
-  })
-
   // GH-272 follow-up: Home's evidence rows. Screenshots judged by eye, never fed to ae.mjs.
-  // Month has no drawing of its own: like Week, it is captured against the single Hoy frame, with no crop.
   const HOME_EVIDENCE: [string, undefined, number[], string[], number | undefined][] = [
-    ['InicioMesCompu', undefined, [1280, 920], ['Month'], undefined],
     ['InicioHoyCompu960', undefined, [960, 920], [], undefined],
-    ['InicioCompu960', undefined, [960, 920], ['Week'], undefined],
-    ['InicioMesCompu960', undefined, [960, 920], ['Month'], undefined],
     ['InicioHoyCompu960Texto130', undefined, [960, 920], [], TEXT_SCALE],
-    ['InicioCompu960Texto130', undefined, [960, 920], ['Week'], TEXT_SCALE],
-    ['InicioMesCompu960Texto130', undefined, [960, 920], ['Month'], TEXT_SCALE],
     ['InicioHoyCompuTexto130', undefined, [1280, 920], [], TEXT_SCALE],
-    ['InicioCompuTexto130', undefined, [1280, 920], ['Week'], TEXT_SCALE],
-    ['InicioMesCompuTexto130', undefined, [1280, 920], ['Month'], TEXT_SCALE],
   ]
 
   it.each(HOME_EVIDENCE)('pins %s: design, section, clicks, viewport and text_scale', (name, section, viewport, taps, scale) => {
     const r = row(name)
     expect(r).toMatchObject({
       account: 'inicio',
-      // The same route and path as the Semana row, which is Inicio's own (routes.ts owns the literal).
-      route: row('InicioCompu').route,
-      path: row('InicioCompu').path,
+      // The same route and path as InicioHoyCompu, which is Inicio's own (routes.ts owns the literal).
+      route: row('InicioHoyCompu').route,
+      path: row('InicioHoyCompu').path,
       design: 'InicioCompu',
       viewport,
     })
@@ -617,10 +610,11 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(r.tema).toBeUndefined()
   })
 
-  it('puts the seven evidence rows right after InicioCompuOscuro, in that order', () => {
+  it('keeps the three evidence rows together, in that order', () => {
     const names = rows.map((r) => r.screen)
-    const at = names.indexOf('InicioCompuOscuro')
-    expect(names.slice(at + 1, at + 1 + HOME_EVIDENCE.length)).toEqual(HOME_EVIDENCE.map(([name]) => name))
+    const at = names.indexOf(HOME_EVIDENCE[0][0])
+    expect(at).toBeGreaterThan(-1)
+    expect(names.slice(at, at + HOME_EVIDENCE.length)).toEqual(HOME_EVIDENCE.map(([name]) => name))
   })
 
   it('explains in the registry note that the evidence rows are screenshots, never compared by ae.mjs', () => {
@@ -1060,9 +1054,9 @@ describe('assertSelectedAccounts', () => {
     expect(() => assertSelectedAccounts(screens.screens, all)).not.toThrow()
   })
 
-  it('puts the six Inicio rows on an ended account and each first-run frame on its own account', () => {
+  it('puts the four Inicio rows on an ended account and each first-run frame on its own account', () => {
     const accountOf = (key: string) => (screens.screens.find((s) => s.screen === key) as { account?: string }).account
-    for (const key of ['Inicio', 'InicioHoy', 'InicioOscuro', 'InicioCompu', 'InicioHoyCompu', 'InicioHoyCompuOscuro']) {
+    for (const key of ['InicioHoy', 'InicioOscuro', 'InicioHoyCompu', 'InicioHoyCompuOscuro']) {
       expect(accountOf(key), key).toBe('inicio')
     }
     const frames: Record<string, string[]> = {

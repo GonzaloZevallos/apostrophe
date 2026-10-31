@@ -410,19 +410,6 @@ def test_check_screen_applies_the_denylist() -> None:
     assert problems == ["X: the stale literal 'Septiembre 2026' is still drawn"]
 
 
-def test_a_paused_screen_skips_the_figure_agreement_and_nothing_else() -> None:
-    stale = page("Hoy 07/10", "Vendiste hoy", "$ 1", "capturadas el 05/10/2026", "Septiembre 2026")
-
-    assert check_screen("otras", "X", stale, MUESTRA, ()) == [
-        "X: the date 05/10/2026 is not the capture date 07/10/2026"
-    ]
-    assert check_screen("inicio", "X", stale, MUESTRA, ("Septiembre 2026",)) != []
-    assert check_screen("inicio", "X", stale, MUESTRA, ("Septiembre 2026",), paused=True) == [
-        "X: the date 05/10/2026 is not the capture date 07/10/2026",
-        "X: the stale literal 'Septiembre 2026' is still drawn",
-    ]
-
-
 # --- Análisis ---------------------------------------------------------------------------
 
 DAYS = [

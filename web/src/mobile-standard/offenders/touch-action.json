@@ -930,24 +930,6 @@
     "issue": 48
   },
   {
-    "screen": "Inicio",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45
-  },
-  {
-    "screen": "Inicio",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45
-  },
-  {
     "screen": "InicioChecklist",
     "rule": "touch-action",
     "target": "button:Today",

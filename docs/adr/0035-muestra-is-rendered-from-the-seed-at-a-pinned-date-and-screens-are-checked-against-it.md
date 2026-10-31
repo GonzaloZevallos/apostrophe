@@ -67,10 +67,13 @@ actualice la muestra o el dibujo.
 - **`PAUSED`** es la lista de archivos pausados. `pause_problems` la rechaza si tiene un nombre
   fuera del tope, un duplicado, un archivo que no existe o un issue que no es un entero
   positivo; un test la corre sobre el árbol real.
-- **Qué se salta:** solo la concordancia de cifras (`CHECKS` de la familia y, en Análisis, la
-  revisión de rótulos en inglés, que forma parte de esa misma concordancia). Siguen aplicando
-  las fechas (`date_problems`), la lista de literales prohibidos y todo lo demás que el guard
-  revisa. Un test falla si un archivo pausado ya concuerda con la muestra: se quita de la lista.
+- **Qué se salta:** solo la concordancia de cifras, es decir los `CHECKS` de la familia. Siguen
+  aplicando las fechas (`date_problems`), la lista de literales prohibidos y todo lo demás que
+  el guard revisa, incluida la revisión de rótulos en inglés de Análisis
+  (`spanish_label_problems`, GH-333), que es una función aparte. `check_screen` no cambia: la
+  pausa vive en `test_muestra_screens.py`, que llama a esas revisiones directamente para un
+  archivo pausado. Un test falla si un archivo pausado ya concuerda con la muestra: se quita de
+  la lista.
 - **Solo puede achicarse.** Agregar un archivo exige tocar el tope literal, que está acotado a
   los siete dibujos y a un issue del README; nunca se edita `muestra.md`, `check_screen` ni una
   lista de prohibidos para que pase un test.
