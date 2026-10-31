@@ -78,6 +78,12 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
     return {"variety_id": variety["id"], "product_id": variety["id"], "entry_id": entry["id"]}
 
 
+def seed_units(client: TestClient) -> dict[str, int]:
+    unit = client.post("/api/units", json={"name": f"{MARKER} unit", "label": "zz", "decimals": 1})
+    assert unit.status_code == 201, unit.text
+    return {"unit_id": unit.json()["id"]}
+
+
 def seed_customers(client: TestClient) -> dict[str, int]:
     customer = client.post(
         "/customers", json={"name": f"{MARKER} customer", "phone": "11 2345-6789"}
@@ -252,6 +258,9 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_payments,
     seed_pricing_settings,
     seed_first_run,
+    # Last: a second unit makes a product's `unit_id` required, and every seeder above
+    # creates products without one.
+    seed_units,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -261,6 +270,8 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "effective_from": "2026-02-01",
         "list_price": 12_000,
     },
+    ("POST", "/api/units"): {"name": "Another unit", "label": "au", "decimals": 1},
+    ("PATCH", "/api/units/{unit_id}"): {"name": "Renamed unit"},
     ("POST", "/customers"): {"name": "Another customer", "phone": "11 9876-5432"},
     ("PATCH", "/customers/{customer_id}"): {"name": "Renamed"},
     ("POST", "/expense-categories"): {"name": "Another category"},

@@ -23,9 +23,7 @@ def get_units(session: SessionDep, business_id: CurrentBusinessId) -> SqlUnits:
     return SqlUnits(session, business_id)
 
 
-def get_unit_use(
-    request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> UnitUse:
+def get_unit_use(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> UnitUse:
     # Units never reads the product table: `app/main.py` hangs the products adapter that
     # counts a unit's products on `app.state` as a `(Session, business_id)` factory.
     factory = cast(Callable[[Session, int], UnitUse], request.app.state.units_use)

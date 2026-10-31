@@ -104,7 +104,9 @@ def test_a_unit_is_renamed_and_relabelled_at_any_time_even_with_history(
 ) -> None:
     kilos = _add(client, "Kilos", "kg", 2)
     _product(client, "Gold", kilos["id"])
-    client.post("/stock/entries", json={"product_id": 1, "origin": "opening_stock", "quantity": "5"})
+    client.post(
+        "/stock/entries", json={"product_id": 1, "origin": "opening_stock", "quantity": "5"}
+    )
 
     renamed = client.patch(f"/api/units/{kilos['id']}", json={"name": "Kilograms", "label": "KG"})
 

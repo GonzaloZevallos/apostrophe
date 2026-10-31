@@ -41,7 +41,9 @@ class SqlUnits:
 
     def count(self) -> int:
         statement = (
-            select(func.count()).select_from(UnitRow).where(UnitRow.business_id == self._business_id)
+            select(func.count())
+            .select_from(UnitRow)
+            .where(UnitRow.business_id == self._business_id)
         )
         return self._session.scalar(statement) or 0
 

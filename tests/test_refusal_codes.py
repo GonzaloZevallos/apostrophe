@@ -29,6 +29,7 @@ from app.results.adapters.router import as_http as results_as_http
 from app.sales.adapters.router import as_http as sales_as_http
 from app.static_spa import SHARED_FRONT_PATHS
 from app.stock.adapters.router import as_http as stock_as_http
+from app.units.adapters.router import as_http as units_as_http
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
@@ -47,6 +48,7 @@ TRANSLATORS: list[TranslateErrors] = [
     results_as_http,
     pinned_catalog_as_http,
     onboarding_as_http,
+    units_as_http,
 ]
 
 # Added by the app-wide 422 handler (ADR-0005), not by any `TranslateErrors`: still
