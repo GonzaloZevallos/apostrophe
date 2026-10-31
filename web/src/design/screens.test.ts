@@ -612,9 +612,10 @@ describe('the Inicio rows of the real screens.json', () => {
 
   it('keeps the three evidence rows together, in that order', () => {
     const names = rows.map((r) => r.screen)
-    const at = names.indexOf(HOME_EVIDENCE[0][0])
+    const evidence = HOME_EVIDENCE.map(([name]) => name)
+    const at = names.indexOf(evidence.at(0) ?? '')
     expect(at).toBeGreaterThan(-1)
-    expect(names.slice(at, at + HOME_EVIDENCE.length)).toEqual(HOME_EVIDENCE.map(([name]) => name))
+    expect(names.slice(at, at + evidence.length)).toEqual(evidence)
   })
 
   it('explains in the registry note that the evidence rows are screenshots, never compared by ae.mjs', () => {
