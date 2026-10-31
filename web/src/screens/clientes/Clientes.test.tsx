@@ -14,7 +14,7 @@
 
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
-import { setPaymentReturn } from '../../paymentReturn'
+import { consumePaymentReturn, peekPaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { toast } from '../../components/feedback'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -486,6 +486,20 @@ test('"Collect from X" opens Registrar cobro for that customer as an in-app entr
   expect(router.state.location.state).toEqual({ ...inAppState({ pathname: CUSTOMERS }), underneath: 'customers' })
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
+})
+
+test('opening "Collect from X" from the list leaves no hand-off, and Back through history keeps none', async () => {
+  consumePaymentReturn()
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
+  expect(peekPaymentReturn()).toBeNull()
+
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+  expect(peekPaymentReturn()).toBeNull()
 })
 
 test('Cerrar on Registrar cobro with nothing behind it goes to Clientes', async () => {
