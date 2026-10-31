@@ -25,10 +25,10 @@ Siguen la zona del Business:
 - La fecha por defecto de toda Sale, Payment, Stock entry y Expense nueva.
 - El Current price de hoy.
 - Days left, Best week y Best weekday, que cuentan días calendario en esa zona.
-- La Upkeep diaria del Pinned catalog.
+- La Upkeep diaria del Pinned catalog y la fecha del último envío que muestra su estado.
 - El Spreadsheet import en ese Business, que usa la zona del Business de destino.
 
-Ninguna pantalla ni lector sigue la hora de Argentina por su cuenta. El código obtiene el día solo con `get_today` en `accounts/adapters/deps.py` (que lee el reloj inyectado y la zona del Business de la sesión) o con `business_day(instant, zone)` en `app/shared/calendar.py`; `BUSINESS_TIMEZONE` deja de existir y un test de arquitectura falla ante cualquier literal de zona o import de `business_day` fuera de esos dos lugares (ADR-0057). Un caso de uso sigue recibiendo `today` como una fecha simple y nunca lee una zona.
+Ninguna pantalla ni lector sigue la hora de Argentina por su cuenta. Ningún día se calcula sin la zona de su propio Business: el código obtiene el día con `get_today` en `accounts/adapters/deps.py` (que lee el reloj inyectado y la zona del Business de la sesión) o con `business_day(instant, zone)` de `app/shared/calendar.py`, pasándole la zona de ese Business. `BUSINESS_TIMEZONE` deja de existir. Los archivos que pueden llamar a `business_day` forman una lista cerrada que un test de arquitectura hace cumplir; la lista concreta es una decisión técnica. Un caso de uso sigue recibiendo `today` como una fecha simple y nunca lee una zona (ADR-0057).
 
 ## Settings → Business → Time zone
 
@@ -77,7 +77,7 @@ La instalación corre local, sin telemetría. Cada métrica es una cifra que afi
 - **Catálogo quieto (criterio 2)**: zona movida al oeste y al este: exactamente 1 edición cuando el texto cambia, 0 cuando no cambia. Envíos o fijados por un cambio de zona: 0. Ediciones al volver a guardar la misma zona: 0. Ediciones en un Business sin Pinned catalog: 0. Cambios de zona deshechos por una edición fallida: 0.
 - **Businesses existentes intactos (criterio 3)**: Businesses con `America/Argentina/Buenos_Aires` después de la migración: 100%. Valores de columnas existentes cambiados (comparador M3 en `tests/migrations/`): 0.
 - **Nada se vuelve a fechar (criterio 4)**: fechas guardadas (Sales, Payments, Stock entries, Expenses, Price entries, `last_checked_on`) cambiadas por un cambio de zona: 0.
-- **Una sola fuente de today**: usos de `BUSINESS_TIMEZONE`, de `ZoneInfo` con un nombre de zona literal o imports de `business_day` fuera de `app/shared/calendar.py` y `accounts/adapters/deps.py`: 0, según el test de arquitectura.
+- **Ningún día sin la zona de su Business**: usos de `BUSINESS_TIMEZONE`: 0; usos de `ZoneInfo` con un nombre de zona literal: 0; usos de `datetime.now` para saber el día: 0; llamadas a `business_day` fuera de la lista cerrada de archivos que hace cumplir el test de arquitectura: 0, y cada una recibe la zona de su propio Business. Un archivo nuevo fuera de la lista hace fallar el test.
 - **Cambio en un toque**: acciones desde elegir una zona hasta que queda guardada: 1, sin confirmación.
 - **Rechazo**: una zona inválida se rechaza, la zona guardada no cambia y la pantalla muestra el mensaje fijo con el Attention icon, nunca el `detail`. 100% en verde.
 - **Aislamiento**: la ruta responde solo por el Business de la sesión y figura en el barrido y en el test de rutas protegidas. Fugas: 0.
