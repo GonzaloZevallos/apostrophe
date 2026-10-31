@@ -11,10 +11,13 @@ Nothing imports from `app`.
 
 from __future__ import annotations
 
+import posixpath
 import re
 from collections import deque
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import PurePosixPath
+
+from scripts.docs.links import extract_links, mermaid_blocks, participant_aliases
 
 
 def _is_defined(name: str, source: str) -> bool:
@@ -40,20 +43,13 @@ def defined_symbol_problems(
     return problems
 
 
-_PARTICIPANT = re.compile(r"^[ \t]*(?:participant|actor)[ \t]+\S+[ \t]+as[ \t]+(.+?)[ \t]*$")
-
-
 def alias_problems(mermaid_source: str, linked_sources: Iterable[str]) -> list[str]:
-    """One message per `participant X as Y` / `actor X as Y` line of one Mermaid block (the
-    block itself is cut out by #460's extractor, not here) whose alias `Y` starts with `_` or
-    has no line-start definition in any of the texts of the files linked on the same page."""
+    """One message per `participant X as Y` / `actor X as Y` alias of one Mermaid block (cut out
+    and read by `scripts/docs/links.py`) that starts with `_` or has no line-start definition
+    in any of the texts of the files linked on the same page."""
     sources = list(linked_sources)
     problems: list[str] = []
-    for line in mermaid_source.splitlines():
-        match = _PARTICIPANT.match(line)
-        if match is None:
-            continue
-        alias = match.group(1)
+    for alias in participant_aliases(mermaid_source):
         if alias.startswith("_"):
             problems.append(f"alias `{alias}` starts with an underscore")
         elif not any(_is_defined(alias, source) for source in sources):
@@ -136,6 +132,40 @@ def reach_problems(
     return [
         f"{page} is more than {depth} clicks from {start}" for page in sorted(set(pages) - seen)
     ]
+
+
+def page_problems(page: str, markdown: str, read_source: Callable[[str], str | None]) -> list[str]:
+    """Every rule applied to one page. `page` is its repo-relative path, `read_source` returns
+    the text of a repo-relative path or None when there is no such file. A relative link must
+    resolve to a file or directory in the repo; the symbols after a link to a source file must be
+    defined in it; each Mermaid alias must be defined in a source file linked on the page."""
+    problems: list[str] = []
+    sources: list[str] = []
+    citations: list[tuple[str, str]] = []
+    for link in extract_links(markdown):
+        target = link.target.split("#", 1)[0]
+        if not target or "://" in target or target.startswith("mailto:"):
+            continue
+        path = posixpath.normpath(posixpath.join(posixpath.dirname(page), target))
+        text = read_source(path)
+        if path.startswith("..") or text is None:
+            problems.append(f"{page}: link to {link.target} does not resolve in the repo")
+            continue
+        if path.endswith(".md"):
+            continue
+        sources.append(text)
+        citations.extend((path, symbol) for symbol in link.symbols)
+    problems += [
+        f"{page}: {p}"
+        for p in defined_symbol_problems(citations, read_source_or_empty(read_source))
+    ]
+    for block in mermaid_blocks(markdown):
+        problems += [f"{page}: {p}" for p in alias_problems(block, sources)]
+    return problems
+
+
+def read_source_or_empty(read: Callable[[str], str | None]) -> Callable[[str], str]:
+    return lambda path: read(path) or ""
 
 
 def test_a_symbol_defined_at_line_start_passes() -> None:
@@ -241,3 +271,97 @@ def test_adr_status_reads_only_the_front_matter() -> None:
 def test_an_adr_without_a_status_line_carries_no_mark() -> None:
     assert adr_index_problems({"0032-a.md": None}, {"0032-a.md": None}) == []
     assert adr_index_problems({"0032-a.md": "0033"}, {"0032-a.md": None}) != []
+
+
+def _reads(files: dict[str, str]) -> Callable[[str], str | None]:
+    return files.get
+
+
+def test_a_page_whose_links_and_symbols_hold_has_no_problems() -> None:
+    page = (
+        "| step | file | symbol |\n|---|---|---|\n"
+        "| 1 | [deps](../../app/deps.py) | `require_session` |\n"
+        "\n```mermaid\nsequenceDiagram\n    participant U as require_session\n```\n"
+    )
+    files = {"app/deps.py": "def require_session(): ...\n"}
+
+    assert page_problems("docs/architecture/x.md", page, _reads(files)) == []
+
+
+def test_a_page_with_a_dead_link_an_undefined_symbol_or_a_bad_alias_is_rejected() -> None:
+    page = (
+        "[gone](../../app/gone.py) `x`\n"
+        "[deps](../../app/deps.py) `ghost` `_hidden`\n"
+        "```mermaid\nsequenceDiagram\n    participant U as Browser\n```\n"
+    )
+    files = {"app/deps.py": "def _hidden(): ...\n"}
+
+    problems = page_problems("docs/architecture/x.md", page, _reads(files))
+
+    assert len(problems) == 4
+    assert any("gone.py" in p for p in problems)
+    assert any("`ghost`" in p for p in problems)
+    assert any("`_hidden` starts" in p for p in problems)
+    assert any("alias `Browser`" in p for p in problems)
+
+
+def test_a_link_to_a_path_outside_the_repo_is_rejected() -> None:
+    assert page_problems("docs/x.md", "[a](../../../etc/passwd)", _reads({})) != []
+
+
+def test_extractor_keeps_a_fragment_as_written_and_reach_strips_it() -> None:
+    links = {"docs/README.md": [link.target for link in extract_links("[s](a.md#section)")]}
+
+    assert links == {"docs/README.md": ["a.md#section"]}
+    assert reach_problems("docs/README.md", ["docs/a.md"], links) == []
+
+
+def test_extractor_skips_links_inside_fenced_and_mermaid_code() -> None:
+    markdown = (
+        "```\n[a](a.md)\n```\n~~~\n[t](t.md)\n~~~\n"
+        "```mermaid\nflowchart LR\n  A-->B\n  [m](m.md)\n```\n[real](real.md)\n"
+    )
+    targets = [link.target for link in extract_links(markdown)]
+
+    assert targets == ["real.md"]
+    links = {"docs/README.md": targets}
+    assert reach_problems("docs/README.md", ["docs/real.md"], links) == []
+    assert reach_problems("docs/README.md", ["docs/a.md"], links) != []
+
+
+def test_extractor_gives_directory_non_md_and_outside_targets_that_reach_treats_as_leaves() -> None:
+    markdown = "[d](adr/) [h](api/index.html) [c](../app/main.py)"
+    links = {"docs/README.md": [link.target for link in extract_links(markdown)]}
+
+    assert links["docs/README.md"] == ["adr/", "api/index.html", "../app/main.py"]
+    assert reach_problems("docs/README.md", ["docs/README.md"], links) == []
+    assert reach_problems("docs/README.md", ["docs/adr/x.md"], links) != []
+
+
+def test_extractor_gives_a_self_link_that_reach_drops() -> None:
+    links = {
+        "docs/README.md": [link.target for link in extract_links("[me](README.md) [up](#top)")]
+    }
+
+    assert links["docs/README.md"] == ["README.md", "#top"]
+    assert reach_problems("docs/README.md", ["docs/README.md"], links) == []
+
+
+def test_extractor_attaches_symbols_to_the_link_before_them_and_ignores_code_links() -> None:
+    markdown = (
+        "| 1 | [a](a.py) | `Alpha` | [b](b.py) | `Beta`, `not-a-name` |\n"
+        "see `[c](c.py)` and [d](d.md)"
+    )
+
+    found = [(link.target, link.symbols) for link in extract_links(markdown)]
+
+    assert found == [("a.py", ("Alpha",)), ("b.py", ("Beta",)), ("d.md", ())]
+
+
+def test_mermaid_blocks_are_cut_out_and_aliases_read_from_them() -> None:
+    markdown = "```python\nx = 1\n```\n```mermaid\nsequenceDiagram\n  actor A as Sale\n```\n"
+
+    blocks = mermaid_blocks(markdown)
+
+    assert len(blocks) == 1
+    assert participant_aliases(blocks[0]) == ["Sale"]
