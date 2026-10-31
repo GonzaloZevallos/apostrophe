@@ -27,7 +27,6 @@ from app.products.application.errors import (
     ProductUnitDecimalsInUse,
     ProductUnitLocked,
     ProductUnitRequired,
-    UnitNotFound,
 )
 from app.products.application.ports import PricingSettingsReader, ProductLeaving, UnitsReader
 from app.products.domain.product import (
@@ -38,7 +37,7 @@ from app.products.domain.product import (
     VipPriceNotBelowList,
 )
 from app.shared.quantity import InvalidQuantity, Quantity, TooManyDecimals
-from app.shared.unit import Unit
+from app.shared.unit import Unit, UnitNotFound
 
 router = APIRouter(prefix="/api/products", tags=["products"])
 

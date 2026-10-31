@@ -45,15 +45,6 @@ class ProductUnitRequired(ValueError):
         super().__init__("the business has several units, so the product needs one")
 
 
-class UnitNotFound(LookupError):
-    """The unit is not one of this business's. Fixed text: the id is never repeated."""
-
-    code: ClassVar[str] = "unit.not_found"
-
-    def __init__(self) -> None:
-        super().__init__("no such unit")
-
-
 class ProductUnitLocked(ValueError):
     """The product has history (a sale line, a stock entry or a withdrawal line), so its
     unit is fixed for good. Fixed text: nothing of the product or the unit is repeated."""

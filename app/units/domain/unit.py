@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from app.shared.names import NameProblem, collapse_spaces, name_key, name_problem
-from app.shared.unit import MAX_DECIMALS, MIN_DECIMALS
+from app.shared.unit import MAX_DECIMALS, MIN_DECIMALS, Unit
 
 NAME_MAX_LENGTH = 60
 LABEL_MAX_LENGTH = 20
@@ -43,6 +43,43 @@ class InvalidUnitLabel(UnitRuleBroken):
 
 class InvalidUnitDecimals(UnitRuleBroken):
     code: ClassVar[str] = "unit.decimals_invalid"
+
+
+class UnitNameTaken(UnitRuleBroken):
+    """Another unit of the business has this name, ignoring case. Fixed text: the name is
+    never repeated (docs/adr/0005)."""
+
+    code: ClassVar[str] = "unit.name_taken"
+
+    def __init__(self) -> None:
+        super().__init__("another unit of the business already has this name")
+
+
+class UnitInUse(UnitRuleBroken):
+    """A product, archived or not, still has this unit. Fixed text: no count, no name."""
+
+    code: ClassVar[str] = "unit.in_use"
+
+    def __init__(self) -> None:
+        super().__init__("a product uses this unit, so it cannot be deleted")
+
+
+class LastUnit(UnitRuleBroken):
+    """A business always keeps at least one unit."""
+
+    code: ClassVar[str] = "unit.last_unit"
+
+    def __init__(self) -> None:
+        super().__init__("the business needs at least one unit")
+
+
+class DecimalsInUse(UnitRuleBroken):
+    """Fewer decimals than a recorded quantity of the unit uses. Fixed text."""
+
+    code: ClassVar[str] = "unit.decimals_in_use"
+
+    def __init__(self) -> None:
+        super().__init__("a recorded quantity of this unit already uses more decimals")
 
 
 @dataclass(frozen=True)
@@ -97,3 +134,11 @@ class UnitDraft:
     def __post_init__(self) -> None:
         if not MIN_DECIMALS <= self.decimals <= MAX_DECIMALS:
             raise InvalidUnitDecimals("a unit has between 0 and 2 decimals")
+
+
+@dataclass(frozen=True)
+class CountedUnit:
+    """A stored unit with how many products, archived ones included, use it."""
+
+    unit: Unit
+    product_count: int

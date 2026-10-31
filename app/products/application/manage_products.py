@@ -10,11 +10,11 @@ from app.products.application.errors import (
     ProductUnitDecimalsInUse,
     ProductUnitLocked,
     ProductUnitRequired,
-    UnitNotFound,
 )
 from app.products.application.ports import ProductLeaving, Products, UnitChanging, UnitsReader
 from app.products.domain.product import NameHolder, Product, ProductName
 from app.shared.transaction import Transaction
+from app.shared.unit import UnitNotFound
 
 
 def resolve_unit(units: UnitsReader, unit_id: int | None) -> int:

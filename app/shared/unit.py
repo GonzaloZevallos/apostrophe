@@ -10,7 +10,7 @@ with a `hundredths` attribute (`Quantity` is one) instead of importing it.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import ClassVar, Protocol
 
 MIN_DECIMALS = 0
 MAX_DECIMALS = 2
@@ -40,3 +40,14 @@ class Unit:
         """Whether `quantity` has no more decimals than this unit allows."""
         remainder: int = quantity.hundredths % 10 ** (_STORED_DECIMALS - self.decimals)
         return remainder == 0
+
+
+class UnitNotFound(LookupError):
+    """The unit is not one of this business's. Fixed text: the id is never repeated. Shared
+    because products (a product's unit) and units (its own routes) both answer it, and a
+    refusal code belongs to exactly one class (docs/adr/0008)."""
+
+    code: ClassVar[str] = "unit.not_found"
+
+    def __init__(self) -> None:
+        super().__init__("no such unit")
