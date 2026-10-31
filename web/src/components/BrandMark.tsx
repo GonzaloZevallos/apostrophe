@@ -10,6 +10,8 @@
  * `aria-hidden`: set while the optional `clipRoot` clips it, and always when the browser has
  * no `IntersectionObserver`. Layout never depends on that state.
  *
+ * Its sizes are the `--marca-*` tokens, applied in `app.css`.
+ *
  * The brand is the same in every language, so both names come from `brand:*` keys that the
  * Test locale copies verbatim (`web/scripts/i18n/pseudo.ts`).
  */
@@ -18,8 +20,6 @@ import { type RefObject, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const MARK_SOURCE = '/icons/mark.svg'
-/** The drawn size of each variant, in CSS pixels. */
-const MARK_SIZE = { mark: 24, lockup: 40 } as const
 
 export default function BrandMark({
   variant,
@@ -47,7 +47,7 @@ export default function BrandMark({
   if (variant === 'lockup') {
     return (
       <span className="brand-mark brand-mark--lockup" role="img" aria-label={t('brand:wordmark')}>
-        <img src={MARK_SOURCE} alt="" width={MARK_SIZE.lockup} height={MARK_SIZE.lockup} />
+        <img src={MARK_SOURCE} alt="" />
         <span className="brand-mark__word">
           {t('brand:wordmark')}
           <span className="brand-mark__apostrophe" aria-hidden="true">
@@ -64,8 +64,6 @@ export default function BrandMark({
       className="brand-mark brand-mark--mark"
       src={MARK_SOURCE}
       alt={t('brand:mark.label')}
-      width={MARK_SIZE.mark}
-      height={MARK_SIZE.mark}
       aria-hidden={visible ? undefined : true}
     />
   )

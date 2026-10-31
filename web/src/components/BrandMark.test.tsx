@@ -39,14 +39,12 @@ afterEach(() => {
 
 describe('BrandMark as a lockup', () => {
   it('is named "apostrophe" and draws the mark from the one SVG file, decoratively', () => {
-    render(<BrandMark variant="lockup" />)
+    const { container } = render(<BrandMark variant="lockup" />)
 
-    const lockup = screen.getByRole('img', { name: 'apostrophe' })
+    const lockup = within(container).getByRole('img', { name: 'apostrophe' })
     const mark = lockup.querySelector('img')
     expect(mark).toHaveAttribute('src', '/icons/mark.svg')
     expect(mark).toHaveAttribute('alt', '')
-    expect(mark).toHaveAttribute('width')
-    expect(mark).toHaveAttribute('height')
   })
 
   it('hides the ’ (U+2019) from assistive technology and shows the word before it', () => {
@@ -58,10 +56,10 @@ describe('BrandMark as a lockup', () => {
   })
 
   it('is not a control', () => {
-    render(<BrandMark variant="lockup" />)
+    const { container } = render(<BrandMark variant="lockup" />)
 
-    expect(screen.queryByRole('link')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    expect(within(container).queryByRole('link')).not.toBeInTheDocument()
+    expect(within(container).queryByRole('button')).not.toBeInTheDocument()
   })
 })
 
@@ -72,7 +70,7 @@ describe('BrandMark as the mark alone', () => {
     const mark = container.querySelector('img')
     expect(mark).toHaveAttribute('src', '/icons/mark.svg')
     expect(mark).toHaveAttribute('aria-hidden', 'true')
-    expect(screen.queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
+    expect(within(container).queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
   })
 
   it('is role=img named "apostrophe" while visible and aria-hidden again once clipped', () => {
