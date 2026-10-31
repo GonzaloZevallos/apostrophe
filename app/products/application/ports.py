@@ -1,7 +1,9 @@
+from collections.abc import Collection
 from typing import Protocol
 
 from app.products.domain.product import NameHolder, Product, ProductName
 from app.shared.pricing_settings import PricingSettings
+from app.shared.unit import Unit
 
 
 class Products(Protocol):
@@ -57,3 +59,19 @@ class PricingSettingsReader(Protocol):
     `app/main.py`. A business with no row is an error, never a default (docs/adr/0034)."""
 
     def current(self) -> PricingSettings: ...
+
+
+class UnitsReader(Protocol):
+    """The units of one business, read through the one port products declares for them
+    (docs/adr/0055); the units hexagon implements it, wired in `app/main.py`. A unit of
+    another business is a unit that does not exist."""
+
+    def get(self, unit_id: int) -> Unit | None: ...
+
+    def only_unit(self) -> Unit | None:
+        """The business's unit when it has exactly one, else `None`."""
+        ...
+
+    def units_of(self, product_ids: Collection[int]) -> dict[int, Unit]:
+        """Each product's unit, by product id; one statement whatever the count."""
+        ...

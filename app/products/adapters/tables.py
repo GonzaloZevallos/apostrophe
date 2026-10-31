@@ -18,6 +18,7 @@ class ProductRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     name: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
     name_key: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
+    unit_id: Mapped[int] = mapped_column(ForeignKey("unit.id"), index=True)
     # The instant the variety left the lists; null while it is live (docs/adr/0032).
     archived_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
     price_entries: Mapped[list[PriceEntryRow]] = relationship(

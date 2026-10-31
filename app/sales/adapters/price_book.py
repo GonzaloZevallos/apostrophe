@@ -95,7 +95,7 @@ def _planned_pricing(variety: Product | None, variety_id: int, day: date) -> Var
 
 
 def _build_variety(name_source: str, rows: Sequence[PriceHistoryRow]) -> Product:
-    variety = Product(ProductName.of(name_source))
+    variety = Product(ProductName.of(name_source), unit_id=0)
     for row in rows:
         try:
             entry = PriceEntry.of(row.effective, row.list_price, row.bulk_price, row.bulk_minimum)

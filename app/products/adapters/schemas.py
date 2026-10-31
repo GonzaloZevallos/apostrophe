@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, PlainSerializer
 
 from app.products.domain.product import PriceEntry, Product
+from app.shared.unit import Unit
 
 # Quantity go out as a JSON number; they never carry more than two decimals.
 QuantityOut = Annotated[Decimal, PlainSerializer(float, return_type=float, when_used="json")]
@@ -12,6 +13,22 @@ QuantityOut = Annotated[Decimal, PlainSerializer(float, return_type=float, when_
 
 class ProductIn(BaseModel):
     name: str
+
+
+class ProductCreateIn(ProductIn):
+    # Optional only while the business has exactly one unit (a compatibility rule).
+    unit_id: int | None = None
+
+
+class UnitOut(BaseModel):
+    id: int
+    name: str
+    label: str
+    decimals: int
+
+    @classmethod
+    def of(cls, unit: Unit) -> "UnitOut":
+        return cls(id=unit.id, name=unit.name, label=unit.label, decimals=unit.decimals)
 
 
 class PriceEntryIn(BaseModel):
@@ -50,9 +67,10 @@ class ProductOut(BaseModel):
     # another day, docs/adr/0011); `null` when the product has none that day.
     current_price: PriceEntryOut | None
     archived: bool
+    unit: UnitOut
 
     @classmethod
-    def of(cls, product: Product, day: date) -> "ProductOut":
+    def of(cls, product: Product, day: date, unit: Unit) -> "ProductOut":
         assert product.id is not None, "only stored products go out"
         price = product.current_price(day)
         return cls(
@@ -60,6 +78,7 @@ class ProductOut(BaseModel):
             name=product.name.value,
             current_price=None if price is None else PriceEntryOut.of(price),
             archived=product.is_archived,
+            unit=UnitOut.of(unit),
         )
 
 

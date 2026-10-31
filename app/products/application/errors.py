@@ -34,3 +34,21 @@ class ProductHasHistory(ValueError):
 
     def __init__(self) -> None:
         super().__init__("the variety has history, so it can only be archived")
+
+
+class ProductUnitRequired(ValueError):
+    """The business has two or more units and the request named none. Fixed text."""
+
+    code: ClassVar[str] = "product.unit_required"
+
+    def __init__(self) -> None:
+        super().__init__("the business has several units, so the product needs one")
+
+
+class UnitNotFound(LookupError):
+    """The unit is not one of this business's. Fixed text: the id is never repeated."""
+
+    code: ClassVar[str] = "unit.not_found"
+
+    def __init__(self) -> None:
+        super().__init__("no such unit")

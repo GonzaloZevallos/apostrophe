@@ -7,16 +7,35 @@ from app.products.application.errors import (
     ProductArchived,
     ProductHasHistory,
     ProductNotFound,
+    ProductUnitRequired,
+    UnitNotFound,
 )
-from app.products.application.ports import ProductLeaving, Products
+from app.products.application.ports import ProductLeaving, Products, UnitsReader
 from app.products.domain.product import NameHolder, Product, ProductName
 from app.shared.transaction import Transaction
 
 
-def register_product(products: Products, transaction: Transaction, raw_name: str) -> Product:
+def resolve_unit(units: UnitsReader, unit_id: int | None) -> int:
+    """The unit a new product gets: the one named (of this business, else not found), or
+    the business's only unit when none is named. This is a compatibility rule for callers
+    that predate units, not a product rule (docs/product/units.md)."""
+    if unit_id is None:
+        only = units.only_unit()
+        if only is None:
+            raise ProductUnitRequired
+        return only.id
+    unit = units.get(unit_id)
+    if unit is None:
+        raise UnitNotFound
+    return unit.id
+
+
+def register_product(
+    products: Products, transaction: Transaction, raw_name: str, unit_id: int
+) -> Product:
     name = ProductName.of(raw_name)
     _require_name_free(products, name, other_than=None)
-    product = products.add(Product(name))
+    product = products.add(Product(name, unit_id))
     transaction.commit()
     return product
 

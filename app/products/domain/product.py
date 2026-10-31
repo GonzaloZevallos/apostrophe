@@ -143,6 +143,7 @@ class NameHolder(Enum):
 @dataclass
 class Product:
     name: ProductName
+    unit_id: int
     price_entries: tuple[PriceEntry, ...] = ()
     id: int | None = None
     archived_at: datetime | None = None

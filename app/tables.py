@@ -19,6 +19,7 @@ from app.pricing_settings.adapters import tables as pricing_settings_tables
 from app.products.adapters import tables as products_tables
 from app.sales.adapters import tables as sales_tables
 from app.stock.adapters import tables as stock_tables
+from app.units.adapters import tables as units_tables
 
 TABLE_MODULES = (
     accounts_tables,
@@ -32,6 +33,7 @@ TABLE_MODULES = (
     pinned_catalog_tables,
     onboarding_tables,
     pricing_settings_tables,
+    units_tables,
 )
 
 metadata: MetaData = Base.metadata

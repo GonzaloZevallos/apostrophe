@@ -123,8 +123,8 @@ class VarietiesImport(Protocol):
         maps a row's raw variety text to the key `check_name` gave it."""
         ...
 
-    def write_variety(self, name: str, transaction: Transaction) -> int:
-        """Create the variety and return its id."""
+    def write_variety(self, name: str, transaction: Transaction, unit_id: int) -> int:
+        """Create the variety, in the unit `unit_id`, and return its id."""
         ...
 
     def write_price_entry(
@@ -138,6 +138,15 @@ class VarietiesImport(Protocol):
         """Store the entry as the sheet says. `with_vip_price` is whether the import
         leaves Clientes VIP on: only then does an entry with a bulk price carry
         VIP price = bulk price (a rule that is off stores nothing, docs/adr/0034)."""
+        ...
+
+
+class UnitsImport(Protocol):
+    """The unit the sheet's products use."""
+
+    def grams_unit_id(self) -> int:
+        """The id of the business's "grams" / "g" unit with 2 decimals, added when the
+        business has none by that name. Never commits."""
         ...
 
 

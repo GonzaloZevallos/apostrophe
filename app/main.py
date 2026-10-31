@@ -75,6 +75,9 @@ from app.stock.adapters.onboarding_facts import SqlStockFacts
 from app.stock.adapters.purchases import SqlPurchases
 from app.stock.adapters.router import router as stock_router
 from app.stock.adapters.stock_figures import SqlStockFigures
+from app.units.adapters.import_port import UnitsImport
+from app.units.adapters.opening import UnitsOpening
+from app.units.adapters.products_reader import SqlUnitsReader
 
 
 class _Opening(Protocol):
@@ -128,6 +131,12 @@ class CompositeOpening:
 
     def __call__(self, session: Session) -> _BoundComposite:
         return _BoundComposite([factory(session) for factory in self._factories])
+
+
+def units_import(session: Session, business_id: int) -> UnitsImport:
+    """The spreadsheet import's `UnitsImport`, built here so the import's own composition
+    root never imports `app.units` (docs/adr/0055)."""
+    return UnitsImport(session, business_id)
 
 
 def _catalog_facts(session: Session, business_id: int, today: date) -> SqlCatalogFacts:
@@ -217,7 +226,10 @@ def create_app(
         partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
         partial(OnboardingOpening, clock=clock),
+        UnitsOpening,
     )
+    # Products reads a product's unit only through its own `UnitsReader` port (docs/adr/0055).
+    app.state.products_units = SqlUnitsReader
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
     # directly (CODING_STANDARDS section 1). A dependency under `app/sales/adapters/`

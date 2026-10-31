@@ -34,6 +34,7 @@ from app.clock import Clock, business_day, system_clock
 from app.customers.adapters.import_port import CustomersImport
 from app.db import make_engine
 from app.expenses.adapters.import_port import ExpensesImport
+from app.main import units_import
 from app.migrations.runner import upgrade_to_head
 from app.onboarding.adapters.import_port import OnboardingEnding
 from app.payments.adapters.import_port import PaymentsImport
@@ -133,6 +134,7 @@ def _run(
         today = business_day(instant)
 
         varieties = SqlProductsImport(session, args.business_id)
+        units = units_import(session, args.business_id)
         stock = SqlStockImport(session, args.business_id)
         catalog = CatalogImport(session, args.business_id)
         expenses = ExpensesImport(session, args.business_id)
@@ -179,6 +181,7 @@ def _run(
             plan,
             parsed,
             varieties=varieties,
+            units=units,
             stock=stock,
             catalog=catalog,
             expenses=expenses,

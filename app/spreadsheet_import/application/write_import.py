@@ -66,6 +66,7 @@ def write_import(
     parsed: ParsedWorkbook,
     *,
     varieties: ports.VarietiesImport,
+    units: ports.UnitsImport,
     stock: ports.StockImport,
     catalog: ports.CatalogImport,
     expenses: ports.ExpensesImport,
@@ -92,7 +93,8 @@ def write_import(
     pricing_settings.switch_on(plan.needs.is_bulk_pricing, plan.needs.is_vip_customers)
     leaves_vip_on = pricing_settings.current().is_vip_customers
 
-    variety_ids = _write_varieties(split_result.varieties, varieties, transaction)
+    unit_id = units.grams_unit_id()
+    variety_ids = _write_varieties(split_result.varieties, varieties, unit_id, transaction)
     for price_row in split_result.price_history:
         variety_id = variety_ids[_variety_key(price_row.variety, varieties)]
         varieties.write_price_entry(
@@ -152,7 +154,10 @@ def _gasto_sort_key(row: GastoRow) -> tuple[date, int]:
 
 
 def _write_varieties(
-    rows: tuple[VarietyRow, ...], varieties: ports.VarietiesImport, transaction: NoCommit
+    rows: tuple[VarietyRow, ...],
+    varieties: ports.VarietiesImport,
+    unit_id: int,
+    transaction: NoCommit,
 ) -> dict[str, int]:
     ids: dict[str, int] = {}
     for row in rows:
@@ -160,7 +165,7 @@ def _write_varieties(
         assert isinstance(result, ports.VarietyKey), "write_import takes only a writable plan"
         if result.key in ids:
             continue
-        ids[result.key] = varieties.write_variety(result.name, transaction)
+        ids[result.key] = varieties.write_variety(result.name, transaction, unit_id)
     return ids
 
 

@@ -71,7 +71,7 @@ class ProductsImport:
             key = keys[row.variety]
             variety = varieties.get(key)
             if variety is None:
-                variety = Product(ProductName.of(row.variety))
+                variety = Product(ProductName.of(row.variety), unit_id=0)
                 varieties[key] = variety
             try:
                 entry = PriceEntry.of(
@@ -88,8 +88,8 @@ class ProductsImport:
             results.append(None)
         return results
 
-    def write_variety(self, name: str, transaction: Transaction) -> int:
-        variety = register_product(self._varieties(), transaction, name)
+    def write_variety(self, name: str, transaction: Transaction, unit_id: int) -> int:
+        variety = register_product(self._varieties(), transaction, name, unit_id)
         assert variety.id is not None
         return variety.id
 

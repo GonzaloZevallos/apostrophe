@@ -21,7 +21,10 @@ class SqlProducts:
 
     def add(self, product: Product) -> Product:
         row = ProductRow(
-            business_id=self._business_id, name=product.name.value, name_key=product.name.key
+            business_id=self._business_id,
+            name=product.name.value,
+            name_key=product.name.key,
+            unit_id=product.unit_id,
         )
         row.price_entries = [self._entry_row(e) for e in product.price_entries]
         self._session.add(row)
@@ -136,6 +139,7 @@ class SqlProducts:
 def _product(row: ProductRow) -> Product:
     return Product(
         name=ProductName(row.name),
+        unit_id=row.unit_id,
         price_entries=tuple(_entry(r) for r in row.price_entries),
         id=row.id,
         archived_at=row.archived_at,
