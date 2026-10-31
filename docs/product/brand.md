@@ -25,7 +25,7 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 - "apostrophe" en minúscula, Geist 600, con el ’ (U+2019) en `--acento` (#1E6B47 en claro, #5CC594 en oscuro).
 - La Yerba mark junto al Wordmark (el lockup) es una sola imagen con el nombre accesible "apostrophe": la Yerba mark adentro es decorativa y el ’ es `aria-hidden`.
 - Sus textos viven en el Copy module (`brand.wordmark`, `brand.mark.label`), los dos con el valor "apostrophe". El ’ no es copy: lo dibuja `BrandMark` como un carácter fijo.
-- Los tamaños salen de los tokens `--marca-*`. Con 300 px de ancho o menos, el lockup pasa a sus tamaños angostos para que la acción principal no quede fuera de la pantalla.
+- Los tamaños salen de los tokens `--marca-*` de `web/src/styles/tokens.css`. Con 300 px de ancho o menos, el lockup pasa a sus tamaños angostos para que la acción principal no quede fuera de la pantalla. En la barra lateral de la computadora el lockup usa siempre los tamaños angostos.
 
 ## Dónde aparece
 
@@ -50,7 +50,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (
 
 - Muestran la Yerba mark con el Wordmark arriba, nunca las dos formas a la vez. En Sign in reemplazan al texto "apostrophe’" anterior, en el mismo lugar.
 - Las dos pantallas de aceptación de Invitation la muestran: la que abre un Business nuevo y la que suma a una persona a un Business que ya existe. También la muestra el aviso de un link de Invitation que ya no sirve. Las pantallas que solo esperan o fallan (cargando, sin conexión, error) no la muestran.
-- En el Onboarding va solo en su primer paso (la Variety), el que abre un Business recién creado, cada vez que se muestra ese paso, también al retomar. Va arriba de la cabecera, y "Atrás" y "Close" siguen en su lugar. Los demás pasos no la muestran, y no hay una pantalla de bienvenida propia.
+- En el Onboarding va solo en su primer paso (la Variety), el que abre un Business recién creado, cada vez que se muestra ese paso, también al retomar. Va arriba de la cabecera del paso: "Atrás" y "Close" bajan un poco pero nunca se ocultan. Los demás pasos no la muestran, y no hay una pantalla de bienvenida propia.
 
 **Barra lateral de la computadora**
 
@@ -73,7 +73,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (
 
 ## Tabular figures
 
-- Una sola regla de `app.css` pone `font-variant-numeric: tabular-nums` en las clases de cifra (`cifra*`) y en la clase del componente de dinero. Nunca va en `html`, `body` ni `:root`.
+- Una sola regla de `app.css` pone `font-variant-numeric: tabular-nums` en las clases de cifra (`cifra-xl`, `cifra-l`, `cifra-m`, `cifra-s`, `cifra-n`). La app no tiene un componente de dinero con clase propia: el dinero se dibuja dentro de esas mismas clases. La regla nunca va en `html`, `body` ni `:root`, así que el texto y las oraciones conservan los dígitos proporcionales de Geist.
 - Toda cifra cubierta que se dibujaba fuera de esas clases pasó a estar dentro de ellas, sin cambiar su valor, su formato ni su posición.
 - Cubren:
   - dinero;
