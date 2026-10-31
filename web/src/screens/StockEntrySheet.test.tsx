@@ -28,7 +28,7 @@ const VARIETIES = [
 const ENTRY = {
   id: 12,
   date: '2026-10-02',
-  variety_id: 3,
+  product_id: 3,
   origin: 'purchase',
   quantity: 30,
   total_cost: 150000,
@@ -37,9 +37,9 @@ const ENTRY = {
 }
 const STOCK = {
   total: 30,
-  varieties: [
+  products: [
     {
-      variety_id: 3,
+      product_id: 3,
       quantity: 30,
       status: 'ok',
       sold_out_since: null,
@@ -47,7 +47,7 @@ const STOCK = {
       days_left: 40,
     },
     {
-      variety_id: 4,
+      product_id: 4,
       quantity: 0,
       status: 'no_entries',
       sold_out_since: null,
@@ -71,10 +71,10 @@ type Answers = Record<string, () => Response | Promise<Response>>
 function renderApp(entries: { pathname: string }[], viewport: Viewport, answers: Answers = {}) {
   const table: Answers = {
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties': () => jsonResponse(200, VARIETIES),
+    'GET /api/products': () => jsonResponse(200, VARIETIES),
     'GET /stock': () => jsonResponse(200, STOCK),
     'GET /stock/entries/12': () => jsonResponse(200, ENTRY),
-    'GET /catalog': () => jsonResponse(200, { varieties: [] }),
+    'GET /catalog': () => jsonResponse(200, { products: [] }),
     'GET /first-run': () =>
       jsonResponse(200, {
         kind: 'none',
@@ -164,7 +164,7 @@ describe('on a phone, a direct address', () => {
   test('the panes are empty while their data is pending, and after an error', async () => {
     const pending = (): Promise<Response> => new Promise<Response>(() => undefined)
     renderApp([{ pathname: STOCK_ENTRY_NEW }], 'phone', {
-      'GET /varieties': pending,
+      'GET /api/products': pending,
     })
     await screen.findByRole('dialog', { name: STOCK_TEXT.nuevaEntrada })
     expectBehindPaneEmpty(behindPane())

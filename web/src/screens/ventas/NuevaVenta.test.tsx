@@ -17,6 +17,8 @@ import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
+import type { SaleLine } from '../../api/sales'
+import type { Variety } from '../Variedades'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -56,7 +58,7 @@ async function openForm(handlers: Record<string, () => Response>): Promise<Retur
   await screen.findByText('New sale')
   // The varieties arrive after the form mounts; a test that picks one straight away
   // races the fetch on a loaded machine, so wait until the first line can offer them.
-  if (Object.keys(handlers).some((key) => key.startsWith('GET /varieties'))) {
+  if (Object.keys(handlers).some((key) => key.startsWith('GET /api/products'))) {
     const picker = await screen.findByLabelText('Line 1 variety')
     await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(1))
   }
@@ -73,7 +75,7 @@ test('the live preview prices a list line as the sale types, with no save call',
   const user = userEvent.setup()
   const fetchMock = await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
   await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
@@ -93,7 +95,7 @@ test('a variety with no price that day shows its message and blocks saving', asy
   const user = userEvent.setup()
   const fetchMock = await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
   await user.selectOptions(screen.getByLabelText('Line 1 variety'), '2')
@@ -114,7 +116,7 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
   const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'GET /customers': () => jsonResponse(200, [ANA]),
   })
 
@@ -144,7 +146,7 @@ test('a customer with no phone shows no phone element in Pick a customer nor the
   const SOL = { id: 6, name: 'Sol', phone: null, vip: false }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'GET /customers': () => jsonResponse(200, [SOL]),
   })
 
@@ -165,7 +167,7 @@ test('a successful save opens the sale the API answered with, replacing history'
   const savedSale = { ...SALE_DETAIL, id: 42 }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'POST /sales': () => jsonResponse(201, savedSale),
     // `VentaDetalle` (sales-list-and-detail) renders what the API answered,
     // never the preview, and shows "Sale saved" once it reads the marker
@@ -188,7 +190,7 @@ test('saving posts each line\'s amount as `quantity`, never `grams`', async () =
   const savedSale = { ...SALE_DETAIL, id: 42 }
   const fetchMock = await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'POST /sales': () => jsonResponse(201, savedSale),
     'GET /sales/42': () => jsonResponse(200, savedSale),
   })
@@ -206,14 +208,50 @@ test('saving posts each line\'s amount as `quantity`, never `grams`', async () =
   const init = (post ?? [])[1] as RequestInit | undefined
   const body = JSON.parse(String(init?.body)) as { lines: Record<string, unknown>[] }
   expect(body.lines).toHaveLength(1)
-  expect(body.lines[0]).toMatchObject({ variety_id: 1, quantity: '2.5' })
+  expect(body.lines[0]).toMatchObject({ product_id: 1, quantity: '2.5' })
   expect(body.lines[0]).not.toHaveProperty('grams')
 })
 
+test('the posted line\'s product_id is the id of the product picked from the products list', async () => {
+  const user = userEvent.setup()
+  const price = { ...ROSA.current_price, vip_price: null } satisfies NonNullable<Variety['current_price']>
+  const menta = { id: 7, name: 'Menta', archived: false, current_price: price } satisfies Variety
+  const salvia = { id: 9, name: 'Salvia', archived: false, current_price: price } satisfies Variety
+  const savedLine = {
+    product_id: salvia.id,
+    product_name: salvia.name,
+    quantity: 1,
+    pricing_rule: 'list',
+    price_per_gram: 1000,
+    line_total: 1000,
+  } satisfies SaleLine
+  const savedSale = { ...SALE_DETAIL, id: 42, lines: [{ ...SALE_DETAIL.lines[0], ...savedLine }] }
+  const fetchMock = await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [menta, salvia]),
+    'POST /sales': () => jsonResponse(201, savedSale),
+    'GET /sales/42': () => jsonResponse(200, savedSale),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), String(salvia.id))
+  await user.type(screen.getByLabelText('Line 1 grams'), '1')
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
+  const post = fetchMock.mock.calls.find(
+    ([path, init]) => path === '/sales' && (init as RequestInit | undefined)?.method === 'POST',
+  )
+  const body = JSON.parse(String(((post ?? [])[1] as RequestInit | undefined)?.body)) as {
+    lines: { product_id: number }[]
+  }
+  expect(body.lines).toEqual([expect.objectContaining({ product_id: salvia.id })])
+  expect(savedLine.product_id).toBe(salvia.id)
+})
 test('the form closes with "Close" and shows no back control named "Volver"', async () => {
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
   expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
@@ -225,28 +263,29 @@ test('with no history behind it, "Close" replaces the form with Ventas instead o
   const user = userEvent.setup()
   setupFetch({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('New sale')
 
+  // The jsdom history is shared by every test of the file, so what is behind the form depends
+  // on the tests that ran before it. A replace leaves the number of entries as it was; a push adds one.
+  const entries = window.history.length
   await user.click(screen.getByRole('button', { name: 'Close' }))
   expect(
     await screen.findByText('Sales', { selector: '.encabezado__titulo' }),
   ).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(SALES)
-
-  await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).not.toBe(SALE_NEW)
+  expect(window.history.length).toBe(entries)
 })
 
 test('opened from inside the app, "Close" goes back through history', async () => {
   const user = userEvent.setup()
   setupFetch({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
   await act(() => router.navigate(SALES))
@@ -281,7 +320,7 @@ test('an untouched form closes at once; a touched one asks "Discard the sale?" f
   const user = userEvent.setup()
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     // Closing lands back on `Ventas` (sales-list-and-detail), whose own
     // "Today" period fetches this range from `me.today`.
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
@@ -315,7 +354,7 @@ test('a refused save keeps everything typed, the message on its field', async ()
   const user = userEvent.setup()
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'POST /sales': () => jsonResponse(422, { detail: 'too long', code: 'sale.note_too_long' }),
   })
 
@@ -337,7 +376,7 @@ test('sale.payment_required shows its own message on "How it was paid", not the 
   const user = userEvent.setup()
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'POST /sales': () => jsonResponse(422, { detail: 'needs a method', code: 'sale.payment_required' }),
   })
 
@@ -355,7 +394,7 @@ test('sale.no_price_that_day refetches prices, and the line then shows its own m
   let varietiesCalls = 0
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => {
+    'GET /api/products?on=2026-10-02': () => {
       varietiesCalls += 1
       // A partner deletes Rosa's price between this form's own fetch and the save
       // (sales.md): the second answer, after the refetch the refusal triggers, has
@@ -387,7 +426,7 @@ test('sale.no_price_that_day opens the flagged line even when it was closed', as
   }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => {
+    'GET /api/products?on=2026-10-02': () => {
       varietiesCalls += 1
       // Same partner-deletes-the-price race as the test above, but Rosa's own
       // line is no longer the one open when the refusal lands — Clavel's is,
@@ -424,7 +463,7 @@ test('sale.customer_not_found and sale.variety_not_found keep the form open with
   let call = 0
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'POST /sales': () => {
       const code = codes[call] ?? codes[codes.length - 1]
       call += 1
@@ -452,7 +491,7 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
   let listPrice = 1000
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () =>
+    'GET /api/products?on=2026-10-02': () =>
       jsonResponse(200, [{ ...ROSA, current_price: { ...ROSA.current_price, list_price: listPrice } }]),
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
@@ -487,7 +526,7 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
   const user = userEvent.setup()
   const fetchMock = await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
   await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
@@ -526,7 +565,7 @@ test('"Nueva venta a <name>" prices a VIP customer at the VIP price below the bu
   }
   setupFetch({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [WITH_BULK]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [WITH_BULK]),
     'GET /customers/7': () => jsonResponse(200, VIP_ANA),
     'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }),
   })
@@ -550,7 +589,7 @@ test('an untouched second line is removed once it closes', async () => {
   const user = userEvent.setup()
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
   await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
@@ -573,7 +612,7 @@ test('a closed line with bad grams shows its own message and opens on save, with
   const user = userEvent.setup()
   const fetchMock = await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
   })
 
   await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
@@ -602,7 +641,7 @@ test('a forced sale.grams_invalid answer keeps everything typed, the message at 
   const user = userEvent.setup()
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'POST /sales': () => jsonResponse(422, { detail: 'bad grams', code: 'sale.grams_invalid' }),
   })
 

@@ -16,13 +16,13 @@ TODAY = "2026-10-02"
 
 
 def _variety(client: TestClient, name: str) -> int:
-    variety: int = client.post("/varieties", json={"name": name}).json()["id"]
+    variety: int = client.post("/api/products", json={"name": name}).json()["id"]
     return variety
 
 
 def _price(client: TestClient, variety_id: int) -> None:
     response = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     assert response.status_code == 201, response.text
@@ -31,7 +31,7 @@ def _price(client: TestClient, variety_id: int) -> None:
 def _stock(client: TestClient, variety_id: int, quantity: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": quantity},
     )
     assert response.status_code == 201, response.text
 
@@ -39,14 +39,14 @@ def _stock(client: TestClient, variety_id: int, quantity: str) -> None:
 def _draw(client: TestClient, variety_id: int, quantity: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "quantity": f"-{quantity}"},
+        json={"product_id": variety_id, "origin": "adjustment", "quantity": f"-{quantity}"},
     )
     assert response.status_code == 201, response.text
 
 
 def _state_of(client: TestClient, variety_id: int) -> str:
     catalog = client.get("/catalog").json()
-    matches = [v for v in catalog["varieties"] if v["id"] == variety_id]
+    matches = [v for v in catalog["products"] if v["product_id"] == variety_id]
     assert len(matches) == 1
     state: str = matches[0]["state"]
     return state
@@ -71,7 +71,7 @@ def test_inclusion_matrix(
     if stocked:
         _stock(client, variety_id, "50")
     put = client.put(
-        f"/catalog/varieties/{variety_id}",
+        f"/catalog/products/{variety_id}",
         json={"shown": shown, "emoji": None, "indica_share": None, "aroma": None},
     )
     assert put.status_code == 200, put.text
@@ -86,7 +86,7 @@ def test_low_stock_still_qualifies_as_in(client: TestClient) -> None:
     variety_id = _variety(client, "Matrix low")
     _price(client, variety_id)
     _stock(client, variety_id, "5")
-    threshold = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "50"})
+    threshold = client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": "50"})
     assert threshold.status_code == 200, threshold.text
     assert threshold.json()["status"] == "low", threshold.text
 
@@ -112,7 +112,7 @@ def test_only_in_varieties_qualify_for_the_text(client: TestClient) -> None:
     _price(client, hidden_variety)
     _stock(client, hidden_variety, "50")
     client.put(
-        f"/catalog/varieties/{hidden_variety}",
+        f"/catalog/products/{hidden_variety}",
         json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
     )
 
@@ -158,7 +158,7 @@ def test_an_invalid_emoji_is_refused_without_echoing_the_aroma(client: TestClien
     variety_id = _variety(client, "Echo check")
 
     response = client.put(
-        f"/catalog/varieties/{variety_id}",
+        f"/catalog/products/{variety_id}",
         json={
             "shown": True,
             "emoji": "not an emoji",
@@ -177,7 +177,7 @@ def test_an_out_of_range_indica_share_is_refused(client: TestClient) -> None:
     variety_id = _variety(client, "Share check")
 
     response = client.put(
-        f"/catalog/varieties/{variety_id}",
+        f"/catalog/products/{variety_id}",
         json={"shown": True, "emoji": None, "indica_share": 101, "aroma": None},
     )
 
@@ -187,7 +187,7 @@ def test_an_out_of_range_indica_share_is_refused(client: TestClient) -> None:
 
 def test_setting_attributes_of_a_missing_variety_answers_404(client: TestClient) -> None:
     response = client.put(
-        "/catalog/varieties/999999",
+        "/catalog/products/999999",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
     )
 
@@ -205,7 +205,7 @@ def test_a_new_business_opens_with_both_openings_in_one_commit(client: TestClien
 
     assert catalog["header"] == "\U0001f33f **CATALOG** \U0001f33f"
     assert catalog["footer"] == "\U0001f4e9 Questions and orders by private message."
-    assert catalog["varieties"] == []
+    assert catalog["products"] == []
     assert len(categories) == 4
 
 
@@ -216,7 +216,7 @@ def test_a_business_only_ever_sees_its_own_catalog(
     _price(client, variety_id)
     _stock(client, variety_id, "50")
     client.put(
-        f"/catalog/varieties/{variety_id}",
+        f"/catalog/products/{variety_id}",
         json={"shown": True, "emoji": None, "indica_share": 60, "aroma": "cítrico"},
     )
     client.put("/catalog/header-footer", json={"header": "Mi negocio", "footer": "Gracias"})
@@ -228,7 +228,7 @@ def test_a_business_only_ever_sees_its_own_catalog(
     assert mine["text"] is not None and "Only mine" in mine["text"]
     assert other["header"] != "Mi negocio"
     assert other["text"] is None
-    assert all(v["name"] != "Only mine" for v in other["varieties"])
+    assert all(v["name"] != "Only mine" for v in other["products"])
 
 
 def test_an_archived_variety_is_absent_from_the_catalog_text_and_the_list(
@@ -246,7 +246,7 @@ def test_an_archived_variety_is_absent_from_the_catalog_text_and_the_list(
 
     assert "Gone" not in catalog["text"]
     assert "Kept" in catalog["text"]
-    assert [v["id"] for v in catalog["varieties"]] == [kept]
+    assert [v["product_id"] for v in catalog["products"]] == [kept]
 
 
 def test_the_attributes_of_an_archived_variety_cannot_be_edited(
@@ -256,7 +256,7 @@ def test_the_attributes_of_an_archived_variety_cannot_be_edited(
     archive_by_hand(engine, gone)
 
     response = client.put(
-        f"/catalog/varieties/{gone}",
+        f"/catalog/products/{gone}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
     )
 
@@ -268,7 +268,7 @@ def test_the_attributes_of_a_missing_variety_keep_the_catalog_refusal(
     client: TestClient,
 ) -> None:
     response = client.put(
-        "/catalog/varieties/9999",
+        "/catalog/products/9999",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
     )
 
@@ -276,7 +276,7 @@ def test_the_attributes_of_a_missing_variety_keep_the_catalog_refusal(
 
 
 def _set_attributes(client: TestClient, variety_id: int, body: dict[str, Any]) -> None:
-    response = client.put(f"/catalog/varieties/{variety_id}", json=body)
+    response = client.put(f"/catalog/products/{variety_id}", json=body)
     assert response.status_code == 200, response.text
 
 
@@ -298,7 +298,7 @@ def test_archived_lists_only_archived_varieties_with_their_stored_attributes_by_
     assert response.status_code == 200
     assert response.json() == [
         {
-            "variety_id": alfa,
+            "product_id": alfa,
             "name": "Alfa",
             "shown": True,
             "emoji": None,
@@ -306,7 +306,7 @@ def test_archived_lists_only_archived_varieties_with_their_stored_attributes_by_
             "aroma": None,
         },
         {
-            "variety_id": plain,
+            "product_id": plain,
             "name": "Mate",
             "shown": True,
             "emoji": None,
@@ -314,7 +314,7 @@ def test_archived_lists_only_archived_varieties_with_their_stored_attributes_by_
             "aroma": None,
         },
         {
-            "variety_id": zeta,
+            "product_id": zeta,
             "name": "Zeta",
             "shown": False,
             "emoji": "🌿",
@@ -322,7 +322,7 @@ def test_archived_lists_only_archived_varieties_with_their_stored_attributes_by_
             "aroma": "Cítrico",
         },
     ]
-    assert live not in [row["variety_id"] for row in response.json()]
+    assert live not in [row["product_id"] for row in response.json()]
 
 
 def test_archived_is_an_empty_list_when_nothing_is_archived(client: TestClient) -> None:

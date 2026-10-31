@@ -12,9 +12,9 @@ from app.http_errors import TranslateErrors
 from app.products.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
-    VarietyDetailOut,
-    VarietyIn,
-    VarietyOut,
+    ProductDetailOut,
+    ProductIn,
+    ProductOut,
 )
 from app.products.adapters.sql_products import SqlProducts
 from app.products.application import manage_prices, manage_products
@@ -34,7 +34,7 @@ from app.products.domain.product import (
 )
 from app.shared.quantity import InvalidQuantity, Quantity
 
-router = APIRouter(prefix="/varieties", tags=["varieties"])
+router = APIRouter(prefix="/api/products", tags=["products"])
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -83,90 +83,90 @@ as_http = TranslateErrors(
 
 
 @router.get("")
-def list_varieties(
+def list_all_products(
     products: ProductsDep, today: TodayDep, on: date | None = None, archived: bool = False
-) -> list[VarietyOut]:
-    """Each variety's current price as of `on` (today when omitted, docs/adr/0011),
-    inside the session's own business. Archived varieties only with `archived=true`."""
+) -> list[ProductOut]:
+    """Each product's current price as of `on` (today when omitted, docs/adr/0011),
+    inside the session's own business. Archived products only with `archived=true`."""
     day = on or today
     listed = manage_products.list_products(products, archived=archived)
-    return [VarietyOut.of(v, day) for v in listed]
+    return [ProductOut.of(v, day) for v in listed]
 
 
 @router.post("", status_code=201)
-def register_variety(
-    body: VarietyIn, products: ProductsDep, session: SessionDep, today: TodayDep
-) -> VarietyOut:
+def register_product(
+    body: ProductIn, products: ProductsDep, session: SessionDep, today: TodayDep
+) -> ProductOut:
     with as_http:
         product = manage_products.register_product(products, session, body.name)
-        return VarietyOut.of(product, today)
+        return ProductOut.of(product, today)
 
 
-@router.get("/{variety_id}")
-def get_variety(variety_id: int, products: ProductsDep, today: TodayDep) -> VarietyDetailOut:
+@router.get("/{product_id}")
+def get_product(product_id: int, products: ProductsDep, today: TodayDep) -> ProductDetailOut:
     with as_http:
-        product = manage_products.get_product(products, product_id=variety_id)
+        product = manage_products.get_product(products, product_id=product_id)
         removal = manage_products.removal_offered(products, product)
-        return VarietyDetailOut(**VarietyOut.of(product, today).model_dump(), removal=removal)
+        return ProductDetailOut(**ProductOut.of(product, today).model_dump(), removal=removal)
 
 
-@router.delete("/{variety_id}", status_code=204)
-def delete_variety(
-    variety_id: int, products: ProductsDep, leaving: LeavingDep, session: SessionDep
+@router.delete("/{product_id}", status_code=204)
+def delete_product(
+    product_id: int, products: ProductsDep, leaving: LeavingDep, session: SessionDep
 ) -> None:
     with as_http:
-        manage_products.delete_product(products, leaving, session, product_id=variety_id)
+        manage_products.delete_product(products, leaving, session, product_id=product_id)
 
 
-@router.patch("/{variety_id}")
-def rename_variety(
-    variety_id: int,
-    body: VarietyIn,
+@router.patch("/{product_id}")
+def rename_product(
+    product_id: int,
+    body: ProductIn,
     products: ProductsDep,
     session: SessionDep,
     today: TodayDep,
-) -> VarietyOut:
+) -> ProductOut:
     with as_http:
         product = manage_products.rename_product(
-            products, session, product_id=variety_id, raw_name=body.name
+            products, session, product_id=product_id, raw_name=body.name
         )
-        return VarietyOut.of(product, today)
+        return ProductOut.of(product, today)
 
 
-@router.post("/{variety_id}/archive")
-def archive_variety(
-    variety_id: int,
+@router.post("/{product_id}/archive")
+def archive_product(
+    product_id: int,
     products: ProductsDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
-) -> VarietyOut:
+) -> ProductOut:
     with as_http:
         product = manage_products.archive_product(
-            products, session, product_id=variety_id, at=clock()
+            products, session, product_id=product_id, at=clock()
         )
-        return VarietyOut.of(product, today)
+        return ProductOut.of(product, today)
 
 
-@router.post("/{variety_id}/restore")
-def restore_variety(
-    variety_id: int, products: ProductsDep, session: SessionDep, today: TodayDep
-) -> VarietyOut:
+@router.post("/{product_id}/restore")
+def restore_product(
+    product_id: int, products: ProductsDep, session: SessionDep, today: TodayDep
+) -> ProductOut:
     with as_http:
-        product = manage_products.restore_product(products, session, product_id=variety_id)
-        return VarietyOut.of(product, today)
+        product = manage_products.restore_product(products, session, product_id=product_id)
+        return ProductOut.of(product, today)
 
 
-@router.get("/{variety_id}/prices")
-def price_history(variety_id: int, products: ProductsDep) -> list[PriceEntryOut]:
+@router.get("/{product_id}/prices")
+def price_history(product_id: int, products: ProductsDep) -> list[PriceEntryOut]:
     with as_http:
-        product = manage_products.get_product(products, product_id=variety_id)
+        product = manage_products.get_product(products, product_id=product_id)
         return [PriceEntryOut.of(e) for e in product.price_history()]
 
 
-@router.post("/{variety_id}/prices", status_code=201)
+@router.post("/{product_id}/prices", status_code=201)
 def record_price_entry(
-    variety_id: int,
+    product_id: int,
     body: PriceEntryIn,
     products: ProductsDep,
     settings: SettingsDep,
@@ -178,7 +178,7 @@ def record_price_entry(
             products,
             settings,
             session,
-            product_id=variety_id,
+            product_id=product_id,
             effective_from=body.effective_from,
             list_price=body.list_price,
             bulk_price=body.bulk_price,
@@ -188,24 +188,24 @@ def record_price_entry(
         return PriceEntryOut.of(entry)
 
 
-@router.delete("/{variety_id}/prices/{entry_id}", status_code=204)
+@router.delete("/{product_id}/prices/{entry_id}", status_code=204)
 def delete_price_entry(
-    variety_id: int, entry_id: int, products: ProductsDep, session: SessionDep
+    product_id: int, entry_id: int, products: ProductsDep, session: SessionDep
 ) -> None:
     with as_http:
         manage_prices.delete_price_entry(
-            products, session, product_id=variety_id, entry_id=entry_id
+            products, session, product_id=product_id, entry_id=entry_id
         )
 
 
-@router.get("/{variety_id}/current-price")
+@router.get("/{product_id}/current-price")
 def current_price(
-    variety_id: int, products: ProductsDep, today: TodayDep, on: date | None = None
+    product_id: int, products: ProductsDep, today: TodayDep, on: date | None = None
 ) -> PriceEntryOut:
     """The price entry in force on `on` (today when omitted); 404 when there is none."""
     with as_http:
         day = on or today
-        entry = manage_prices.current_price(products, product_id=variety_id, on=day)
+        entry = manage_prices.current_price(products, product_id=product_id, on=day)
     if entry is None:
         raise HTTPException(status_code=404, detail=f"no price in force on {day}")
     return PriceEntryOut.of(entry)

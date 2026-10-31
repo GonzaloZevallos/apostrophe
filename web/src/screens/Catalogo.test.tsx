@@ -92,9 +92,9 @@ const CATALOG = {
   text: '🌿 **CATÁLOGO** 🌿\n\n🥇 **24K Gold**\n• 60% índica / 40% sativa\n• Aroma/flavor: cítrico\n• Precio x gramo: $11.000\n• From 10 g: $10.000 c/u\n\n📩 Consultas y pedidos por privado.',
   header: '🌿 **CATÁLOGO** 🌿',
   footer: '📩 Consultas y pedidos por privado.',
-  varieties: [
+  products: [
     {
-      id: 1,
+      product_id: 1,
       name: '24K Gold',
       emoji: '🥇',
       indica_share: 60,
@@ -103,7 +103,7 @@ const CATALOG = {
       state: 'in',
     },
     {
-      id: 2,
+      product_id: 2,
       name: 'Sir Jack',
       emoji: '👑',
       indica_share: null,
@@ -117,7 +117,7 @@ const CATALOG = {
 // Every test but the ones that build `withPinnedCatalog` explicitly leaves the bot
 // section's own fetch (`GET /pinned-catalog`) unmocked: this fallback answers it with
 // "nothing saved yet" so the catalog-only tests above don't have to know the bot
-// section exists, the same way they never had to mock `/catalog/varieties` twice.
+// section exists, the same way they never had to mock `/catalog/products` twice.
 const DEFAULT_PINNED_CATALOG = {
   token_saved_on: null,
   own_chat: null,
@@ -214,7 +214,7 @@ function catalogFetch(catalog: unknown): ReturnType<typeof vi.fn> {
 }
 
 function variety(id: number, name: string, state: string) {
-  return { id, name, emoji: null, indica_share: null, aroma: null, shown: true, state }
+  return { product_id: id, name, emoji: null, indica_share: null, aroma: null, shown: true, state }
 }
 
 function reasonsSection(): HTMLElement {
@@ -226,7 +226,7 @@ test('"What does not go out and why" lists every variety out of the catalog with
   renderCatalogo(
     catalogFetch({
       ...CATALOG,
-      varieties: [
+      products: [
         variety(1, '24K Gold', 'in'),
         variety(2, 'Sir Jack', 'hidden'),
         variety(3, 'Mango Bomb', 'no_price'),
@@ -248,14 +248,14 @@ test('"What does not go out and why" lists every variety out of the catalog with
 })
 
 test('with nothing out of the catalog the reasons section is not drawn', async () => {
-  renderCatalogo(catalogFetch({ ...CATALOG, varieties: [variety(1, '24K Gold', 'in')] }))
+  renderCatalogo(catalogFetch({ ...CATALOG, products: [variety(1, '24K Gold', 'in')] }))
 
   await screen.findByRole('button', { name: 'Copy' })
   expect(screen.queryByText('What does not go out and why')).not.toBeInTheDocument()
 })
 
 test('a variety left out opens its "In the catalog" section on its page', async () => {
-  renderCatalogo(catalogFetch({ ...CATALOG, varieties: [variety(7, 'Sir Jack', 'hidden')] }))
+  renderCatalogo(catalogFetch({ ...CATALOG, products: [variety(7, 'Sir Jack', 'hidden')] }))
 
   await userEvent.click(await screen.findByRole('link', { name: 'Sir Jack' }))
 

@@ -27,7 +27,7 @@ const cost = (amount: number, pending = 0, all = false): RowCost => ({
 })
 
 const variety: VarietyRow = {
-  variety_id: 1,
+  product_id: 1,
   name: 'Flor A',
   sales_without_shipping: 90000,
   share_percent: 40,

@@ -16,9 +16,10 @@ const PANTALLAS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'doc
 // a design file that draws several states, and that block must exist in the file.
 /**
  * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} screens
+ * @param {string} [pantallas] the directory of the design files, injected so a test can fake it
  * @returns {void}
  */
-export function assertScreens(screens) {
+export function assertScreens(screens, pantallas = PANTALLAS) {
   const all = new Set(screens.map((s) => s.screen))
   const seen = new Set()
   for (const s of screens) {
@@ -38,7 +39,8 @@ export function assertScreens(screens) {
     }
     if ('steps' in s) assertSteps(s)
     if ('needs' in s) assertNeeds(s, all, seen)
-    if ('design' in s || 'section' in s) assertDesign(s)
+    if ('design' in s || 'section' in s) assertDesign(s, pantallas)
+    if (isDarkTwin(s.screen)) assertTwinDrawing(s, pantallas)
     if ('account' in s) assertAccount(s)
     if (reachesListo(s) && !('account' in s)) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
@@ -252,11 +254,32 @@ export function assertSelectedAccounts(selected, kinds) {
   }
 }
 
-/** @param {Readonly<Record<string, unknown>>} s */
-function assertDesign(s) {
+// A dark twin is compared against its own dark drawing when one exists: the file named
+// after its screen, else its design's `…Oscuro` file (a design that is itself a dark
+// drawing has none). The light file stands only when neither exists. The refusal names
+// the row and nothing else.
+/**
+ * @param {Readonly<Record<string, unknown>>} s
+ * @param {string} pantallas
+ */
+function assertTwinDrawing(s, pantallas) {
+  const design = 'design' in s ? s.design : s.screen
+  if (typeof design !== 'string') return
+  const candidates = [s.screen, ...(isDarkTwin(design) ? [] : [`${design}${DARK_SUFFIX}`])]
+  const own = candidates.find((name) => existsSync(join(pantallas, `${name}.dc.html`)))
+  if (own !== undefined && own !== design) {
+    throw new Error(`${s.screen}: a dark twin must compare its own dark drawing`)
+  }
+}
+
+/**
+ * @param {Readonly<Record<string, unknown>>} s
+ * @param {string} pantallas
+ */
+function assertDesign(s, pantallas) {
   const design = 'design' in s ? s.design : s.screen
   if (typeof design !== 'string') throw new Error(`${s.screen}: design must be a string`)
-  const file = join(PANTALLAS, `${design}.dc.html`)
+  const file = join(pantallas, `${design}.dc.html`)
   if (!existsSync(file)) throw new Error(`${s.screen}: design ${design} has no pantallas/${design}.dc.html`)
   if (!('section' in s)) return
   if (typeof s.section !== 'string') throw new Error(`${s.screen}: section must be a string`)

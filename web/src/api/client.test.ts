@@ -86,7 +86,7 @@ describe('post, patch and del', () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(del('/varieties/1/prices/2')).resolves.toBeUndefined()
+    await expect(del('/api/products/1/prices/2')).resolves.toBeUndefined()
   })
 })
 

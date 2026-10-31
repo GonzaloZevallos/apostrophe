@@ -24,24 +24,24 @@ const NEW_PATH = pathTo(VARIETY_PRICE_NEW, { id: 1 })
 
 const STOCK = {
   total: 135,
-  varieties: [{ variety_id: 1, quantity: 135, status: 'ok', sold_out_since: null, threshold: null, days_left: 270 }],
+  products: [{ product_id: 1, quantity: 135, status: 'ok', sold_out_since: null, threshold: null, days_left: 270 }],
   entries: [],
 }
 const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
-const CATALOG = { text: 'texto', header: '', footer: '', varieties: [] }
+const CATALOG = { text: 'texto', header: '', footer: '', products: [] }
 
 type Answers = Record<string, () => Response>
 
 function defaults(): Answers {
   return {
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties': () => jsonResponse(200, [VARIETY_ROW]),
-    'GET /varieties?archived=true': () => jsonResponse(200, []),
-    'GET /varieties/1': () => jsonResponse(200, VARIETY_ROW),
-    'GET /varieties/1/prices': () => jsonResponse(200, HISTORY),
+    'GET /api/products': () => jsonResponse(200, [VARIETY_ROW]),
+    'GET /api/products?archived=true': () => jsonResponse(200, []),
+    'GET /api/products/1': () => jsonResponse(200, VARIETY_ROW),
+    'GET /api/products/1/prices': () => jsonResponse(200, HISTORY),
     'GET /pricing-settings': () => jsonResponse(200, SETTINGS_ON),
     'GET /stock': () => jsonResponse(200, STOCK),
-    'GET /stock/varieties/1/movements': () => jsonResponse(200, []),
+    'GET /stock/products/1/movements': () => jsonResponse(200, []),
     'GET /catalog': () => jsonResponse(200, CATALOG),
     'GET /first-run': () => jsonResponse(200, FIRST_RUN_NONE),
   }
@@ -250,10 +250,10 @@ describe('saving', () => {
     let release: (response: Response) => void = () => undefined
     let saved = false
     const { router } = renderApp([VARIETY_PATH, NEW_PATH], 'computer', {
-      'POST /varieties/1/prices': () => {
+      'POST /api/products/1/prices': () => {
         throw new Error('replaced below')
       },
-      'GET /varieties/1/prices': () =>
+      'GET /api/products/1/prices': () =>
         jsonResponse(
           200,
           saved
@@ -296,7 +296,7 @@ describe('saving', () => {
   test('a refusal keeps the modal open with everything typed', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer', {
-      'POST /varieties/1/prices': () => jsonResponse(409, { code: 'price_date_taken' }),
+      'POST /api/products/1/prices': () => jsonResponse(409, { code: 'price_date_taken' }),
     })
     await user.type(await screen.findByLabelText(/^List price/), '12000')
     await user.click(screen.getByRole('button', { name: 'Save the price' }))

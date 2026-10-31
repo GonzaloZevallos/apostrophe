@@ -44,7 +44,7 @@ export default function VarietiesLayout() {
   const priceFormFor = useMatch(VARIETY_PRICE_NEW)?.params.id
   const { data: opened } = useQuery({
     queryKey: keys.variety(varietyId ?? ''),
-    queryFn: () => get<VarietyDetail>(`/varieties/${varietyId}`),
+    queryFn: () => get<VarietyDetail>(`/api/products/${varietyId}`),
     enabled: computer && varietyId !== undefined && /^[0-9]+$/.test(varietyId),
   })
   const onVarietyNew = useMatch(VARIETY_NEW) !== null

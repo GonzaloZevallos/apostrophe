@@ -12,11 +12,11 @@ import NoBestWeekLine from './analisis/NoBestWeekLine'
 import { monthCard, varietyCard, weekCard } from './analisisCards'
 import AnalisisTarjeta from './AnalisisTarjeta'
 
-export function TarjetasVariedades({ varieties }: { varieties: Analysis['month']['varieties'] }) {
+export function TarjetasVariedades({ products }: { products: Analysis['month']['products'] }) {
   return (
     <div className="analisis__variedades">
-      {varieties.map((variety) => (
-        <AnalisisTarjeta key={variety.variety_id} card={varietyCard(variety)} />
+      {products.map((variety) => (
+        <AnalisisTarjeta key={variety.product_id} card={varietyCard(variety)} />
       ))}
     </div>
   )

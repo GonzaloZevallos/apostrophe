@@ -1,4 +1,4 @@
-"""`PUT /catalog/varieties/{variety_id}`'s use case (CONTEXT.md: Catalog attributes).
+"""`PUT /catalog/products/{product_id}`'s use case (CONTEXT.md: Catalog attributes).
 The variety is checked through `CatalogVarieties.exists` (404) and `usable` (an archived
 variety's attributes are read-only) before any write (the plan's invariant); the write
 replaces all four attributes in one upsert, then the use case commits once and answers

@@ -6,7 +6,7 @@
  * "Front": "Move `detailFor`/`sideNoteFor` from `Stock.tsx` to
  * `web/src/stock/detail.ts`, shared with Inicio").
  *
- * Structural (not `VarietyStock` itself) so `PanelVarietyOut` — `VarietyStockOut`'s
+ * Structural (not `VarietyStock` itself) so `PanelVarietyOut` — `ProductStockOut`'s
  * keys plus `name` (plan invariant) — satisfies it with no cast: both carry exactly
  * the fields these two functions read.
  */

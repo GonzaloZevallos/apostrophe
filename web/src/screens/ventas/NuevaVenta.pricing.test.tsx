@@ -75,7 +75,7 @@ afterEach(async () => {
 
 test('a VIP customer below the bulk minimum is priced at the VIP price, with the VIP mark', async () => {
   await openFor({
-    'GET /varieties?on=2026-10-02': () => json([variety(700)]),
+    'GET /api/products?on=2026-10-02': () => json([variety(700)]),
     'GET /pricing-settings': () => settings(true, true),
   })
   await line('1')
@@ -86,7 +86,7 @@ test('a VIP customer below the bulk minimum is priced at the VIP price, with the
 
 test('at the bulk minimum the lowest rule wins: a VIP price above the bulk price gives the bulk price', async () => {
   await openFor({
-    'GET /varieties?on=2026-10-02': () => json([variety(900)]),
+    'GET /api/products?on=2026-10-02': () => json([variety(900)]),
     'GET /pricing-settings': () => settings(true, true),
   })
   await line('10')
@@ -97,7 +97,7 @@ test('at the bulk minimum the lowest rule wins: a VIP price above the bulk price
 
 test('with Clientes VIP off there is no VIP mark and the line is priced as anyone', async () => {
   await openFor({
-    'GET /varieties?on=2026-10-02': () => json([variety(700)]),
+    'GET /api/products?on=2026-10-02': () => json([variety(700)]),
     'GET /pricing-settings': () => settings(true, false),
   })
   await line('1')
@@ -108,7 +108,7 @@ test('with Clientes VIP off there is no VIP mark and the line is priced as anyon
 
 test('with Precio por cantidad off a line at the minimum is priced at list, with no bulk badge', async () => {
   await openFor({
-    'GET /varieties?on=2026-10-02': () => json([variety(null)]),
+    'GET /api/products?on=2026-10-02': () => json([variety(null)]),
     'GET /pricing-settings': () => settings(false, true),
   })
   await line('10')
@@ -119,8 +119,8 @@ test('with Precio por cantidad off a line at the minimum is priced at list, with
 
 test('a date change loads the switches again', async () => {
   const mock = await openFor({
-    'GET /varieties?on=2026-10-02': () => json([variety(700)]),
-    'GET /varieties?on=2026-10-01': () => json([variety(700)]),
+    'GET /api/products?on=2026-10-02': () => json([variety(700)]),
+    'GET /api/products?on=2026-10-01': () => json([variety(700)]),
     'GET /pricing-settings': () => settings(true, true),
   })
   const asked = () => mock.mock.calls.filter(([path]) => path === '/pricing-settings').length

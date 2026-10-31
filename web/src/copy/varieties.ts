@@ -46,7 +46,7 @@ const LIMITED_COPY_1: readonly LimitedCopy[] = [
   { kind: 'help', text: VARIETY_NAME_HELP },
 ]
 /** The fixed English of the low-stock warning's form and switch, and the one table from a
- * refusal of `PUT /stock/varieties/{id}/threshold` to its message. */
+ * refusal of `PUT /stock/products/{id}/threshold` to its message. */
 
 
 export const THRESHOLD_INVALID_MESSAGE = 'Check the threshold entered'

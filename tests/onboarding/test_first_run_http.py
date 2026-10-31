@@ -67,14 +67,14 @@ def _stamps(engine: Engine) -> dict[str, Any]:
 
 
 def _variety(client: TestClient, name: str = "Lemon Haze") -> int:
-    created = client.post("/varieties", json={"name": name})
+    created = client.post("/api/products", json={"name": name})
     assert created.status_code == 201, created.text
     return int(created.json()["id"])
 
 
 def _price(client: TestClient, variety_id: int, effective_from: str = "2026-10-01") -> int:
     entry = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": effective_from, "list_price": 11_000},
     )
     assert entry.status_code == 201, entry.text
@@ -84,7 +84,7 @@ def _price(client: TestClient, variety_id: int, effective_from: str = "2026-10-0
 def _stock(client: TestClient, variety_id: int, quantity: str = "50") -> None:
     entry = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": quantity},
     )
     assert entry.status_code == 201, entry.text
 
@@ -186,7 +186,7 @@ def test_the_checklist_goes_when_both_required_steps_are_met_and_never_returns(
     assert met["checklist"] == []
     assert _stamps(engine)["checklist_gone_at"] == NOW
 
-    assert client.delete(f"/varieties/{variety_id}/prices/{price_id}").status_code == 204
+    assert client.delete(f"/api/products/{variety_id}/prices/{price_id}").status_code == 204
     after = _first_run(client)
 
     assert after["kind"] == "start_varieties"
@@ -496,7 +496,7 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
     hidden = _variety(client, "Oculta")
     _price(client, hidden)
     hid = client.put(
-        f"/catalog/varieties/{hidden}",
+        f"/catalog/products/{hidden}",
         json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
     )
     assert hid.status_code == 200, hid.text
@@ -509,7 +509,7 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
     _price(client, sold_out)
     _stock(client, sold_out, quantity="10")
     sold = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": sold_out, "quantity": "10"}]}
+        "/sales", json={"payment": "cash", "lines": [{"product_id": sold_out, "quantity": "10"}]}
     )
     assert sold.status_code == 201, sold.text
     assert client.get("/catalog").json()["text"] is None
@@ -547,7 +547,7 @@ def _build_sold_out(client: TestClient, engine: Engine) -> None:
     _price(client, variety_id)
     _stock(client, variety_id, quantity="10")
     sold = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]}
+        "/sales", json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]}
     )
     assert sold.status_code == 201, sold.text
 
@@ -565,7 +565,7 @@ def _build_checklist_gone_then_price_deleted(client: TestClient, engine: Engine)
     price_id = _price(client, variety_id)
     _stock(client, variety_id)
     assert _first_run(client)["kind"] == "none"  # this read stamps `checklist_gone_at`
-    assert client.delete(f"/varieties/{variety_id}/prices/{price_id}").status_code == 204
+    assert client.delete(f"/api/products/{variety_id}/prices/{price_id}").status_code == 204
 
 
 def _build_open_onboarding(client: TestClient, engine: Engine) -> None:

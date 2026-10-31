@@ -55,7 +55,7 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
   const titleRef = useRef<HTMLSpanElement>(null)
   const varietyQuery = useQuery({
     queryKey: keys.variety(String(varietyId)),
-    queryFn: () => get<Variety>(`/varieties/${varietyId}`),
+    queryFn: () => get<Variety>(`/api/products/${varietyId}`),
   })
   const settingsQuery = useQuery(pricingSettingsQueryOptions())
   const ready = varietyQuery.data !== undefined && settingsQuery.data !== undefined && !gone

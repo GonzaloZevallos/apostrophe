@@ -1,5 +1,5 @@
 /**
- * `RenameForm`: renames a variety (`PATCH /varieties/{id}`). Like `ExpenseForm` it knows
+ * `RenameForm`: renames a variety (`PATCH /api/products/{id}`). Like `ExpenseForm` it knows
  * nothing of the router: its host supplies the exits (`onDone`, `onCancel`) and learns
  * whether something was typed (`onDirtyChange`), so the host alone decides how leaving
  * works. A refusal shows under the name and keeps what was typed.
@@ -66,7 +66,7 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
     setOffline(false)
     setSending(true)
     try {
-      await patch<Variety>(`/varieties/${variety.id}`, { name })
+      await patch<Variety>(`/api/products/${variety.id}`, { name })
       invalidateResource(queryClient, 'varieties')
       onDone(VARIETY_SAVED)
     } catch (caught) {

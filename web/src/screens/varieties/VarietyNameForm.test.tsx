@@ -1,5 +1,5 @@
 /**
- * `VarietyNameForm` at the component seam: adds a variety (`POST /varieties`). Its host owns
+ * `VarietyNameForm` at the component seam: adds a variety (`POST /api/products`). Its host owns
  * the exits, so a tiny host stands in for `VarietyNew` and the Onboarding. A refusal shows
  * under the name and keeps what was typed.
  */
@@ -51,7 +51,7 @@ test('a save posts the name to the owner route and hands the id and name to its 
   await user.click(screen.getByRole('button', { name: 'Add the variety' }))
 
   expect(await screen.findByText(/state: saved 7 Gold 24K/)).toBeInTheDocument()
-  expect(writes(fetchMock)).toEqual([{ call: 'POST /varieties', body: { name: 'Gold 24K' } }])
+  expect(writes(fetchMock)).toEqual([{ call: 'POST /api/products', body: { name: 'Gold 24K' } }])
 })
 
 test('a save marks the varieties stale', async () => {

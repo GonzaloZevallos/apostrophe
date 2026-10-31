@@ -21,8 +21,8 @@ import { warningFor } from './detail'
 
 const MARKERS = Object.fromEntries(Object.keys(common).map((name) => [name, `de:${name}`]))
 
-const OFF: VarietyStock = { variety_id: 1, quantity: 90, status: 'ok', sold_out_since: null, threshold: null, days_left: 60 }
-const LOW: VarietyStock = { variety_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
+const OFF: VarietyStock = { product_id: 1, quantity: 90, status: 'ok', sold_out_since: null, threshold: null, days_left: 60 }
+const LOW: VarietyStock = { product_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
 
 function threshold(row: VarietyStock) {
   render(

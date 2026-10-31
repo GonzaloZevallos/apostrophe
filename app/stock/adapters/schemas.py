@@ -29,7 +29,7 @@ EntryDate = date
 
 class EntryIn(BaseModel):
     date: EntryDate | None = None
-    variety_id: int
+    product_id: int
     origin: Origin
     quantity: Decimal
     total_cost: int | None = None
@@ -39,7 +39,7 @@ class EntryIn(BaseModel):
 class EntryOut(BaseModel):
     id: int
     date: EntryDate
-    variety_id: int
+    product_id: int
     origin: Origin
     quantity: QuantityOut
     total_cost: int | None
@@ -58,7 +58,7 @@ class EntryOut(BaseModel):
         return cls(
             id=entry.id,
             date=entry.entry_date,
-            variety_id=entry.variety_id,
+            product_id=entry.variety_id,
             origin=entry.origin,
             quantity=entry.quantity.as_decimal(),
             total_cost=entry.total_cost,
@@ -68,19 +68,19 @@ class EntryOut(BaseModel):
 
 
 class ThresholdIn(BaseModel):
-    """`PUT /stock/varieties/{variety_id}/threshold`'s body: `None` turns the
+    """`PUT /stock/products/{product_id}/threshold`'s body: `None` turns the
     threshold off, rather than storing a zero or negative one (`Threshold.of`
     refuses both)."""
 
     quantity: Decimal | None
 
 
-class VarietyStockOut(BaseModel):
-    """One variety's row in `GET /stock` (and the threshold route's own response):
+class ProductStockOut(BaseModel):
+    """One product's row in `GET /stock` (and the threshold route's own response):
     computed only by `stock_level` over `lots_and_draws` (stock-domain), never by a
     SQL aggregate or front code."""
 
-    variety_id: int
+    product_id: int
     quantity: QuantityOut
     status: Status
     sold_out_since: date | None
@@ -88,10 +88,10 @@ class VarietyStockOut(BaseModel):
     days_left: int | None
 
     @classmethod
-    def of(cls, view: VarietyStock) -> "VarietyStockOut":
+    def of(cls, view: VarietyStock) -> "ProductStockOut":
         level = view.level
         return cls(
-            variety_id=view.variety_id,
+            product_id=view.variety_id,
             quantity=level.quantity.as_decimal(),
             status=level.status,
             sold_out_since=level.sold_out_since,
@@ -101,24 +101,24 @@ class VarietyStockOut(BaseModel):
 
 
 class StockOut(BaseModel):
-    """`GET /stock`'s own shape: the business's total grams, every variety's own row,
+    """`GET /stock`'s own shape: the business's total grams, every product's own row,
     and its entries, newest date first then most recently recorded first."""
 
     total: QuantityOut
-    varieties: list[VarietyStockOut]
+    products: list[ProductStockOut]
     entries: list[EntryOut]
 
     @classmethod
     def of(cls, view: StockView) -> "StockOut":
         return cls(
             total=view.total.as_decimal(),
-            varieties=[VarietyStockOut.of(variety) for variety in view.varieties],
+            products=[ProductStockOut.of(variety) for variety in view.varieties],
             entries=[EntryOut.of(entry) for entry in view.entries],
         )
 
 
 class WithdrawalLineIn(BaseModel):
-    variety_id: int
+    product_id: int
     quantity: Decimal
 
 
@@ -133,8 +133,8 @@ class WithdrawalIn(BaseModel):
 
 
 class WithdrawalLineOut(BaseModel):
-    variety_id: int
-    variety_name: str
+    product_id: int
+    product_name: str
     quantity: QuantityOut
 
 
@@ -158,8 +158,8 @@ class WithdrawalOut(BaseModel):
             total_quantity=withdrawal.total_quantity.as_decimal(),
             lines=[
                 WithdrawalLineOut(
-                    variety_id=line.variety_id,
-                    variety_name=view.variety_names[line.variety_id],
+                    product_id=line.variety_id,
+                    product_name=view.variety_names[line.variety_id],
                     quantity=line.quantity.as_decimal(),
                 )
                 for line in withdrawal.lines

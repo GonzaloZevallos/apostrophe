@@ -53,7 +53,7 @@ function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
 
-/** The API faked at `fetch`: `GET /varieties/{id}` answers what `answers[id]` holds. */
+/** The API faked at `fetch`: `GET /api/products/{id}` answers what `answers[id]` holds. */
 function fakeApi(answers: Record<number, Response | Deferred>) {
   const fetchMock = vi.fn((input: RequestInfo | URL) => {
     const id = Number(String(input).slice(pathTo(VARIETY, { id: '' }).length))

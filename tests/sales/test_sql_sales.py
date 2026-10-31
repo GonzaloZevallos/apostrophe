@@ -30,7 +30,7 @@ ONE_GRAM = Quantity.of(1)
 
 
 def _variety_id(client: TestClient) -> int:
-    body: dict[str, int] = client.post("/varieties", json={"name": "Blue Dream"}).json()
+    body: dict[str, int] = client.post("/api/products", json={"name": "Blue Dream"}).json()
     return body["id"]
 
 

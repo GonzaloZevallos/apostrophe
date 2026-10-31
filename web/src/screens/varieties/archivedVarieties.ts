@@ -1,4 +1,4 @@
-/** `GET /varieties?archived=true` as a query: the archived varieties, which "Archivadas (N)",
+/** `GET /api/products?archived=true` as a query: the archived varieties, which "Archivadas (N)",
  * the Archivadas card and a computer's selection all read through the one key. */
 
 import { queryOptions } from '@tanstack/react-query'
@@ -9,6 +9,6 @@ import type { Variety } from '../Variedades'
 export function archivedVarietiesQueryOptions() {
   return queryOptions({
     queryKey: keys.archivedVarieties(),
-    queryFn: () => get<Variety[]>('/varieties?archived=true'),
+    queryFn: () => get<Variety[]>('/api/products?archived=true'),
   })
 }

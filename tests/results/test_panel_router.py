@@ -25,9 +25,9 @@ from tests.statement_log import captured_statements
 
 
 def _variety(client: TestClient, name: str, price: int = 10_000) -> int:
-    variety = client.post("/varieties", json={"name": name}).json()
+    variety = client.post("/api/products", json={"name": name}).json()
     priced = client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2020-01-01", "list_price": price},
     )
     assert priced.status_code == 201, priced.text
@@ -44,7 +44,7 @@ def _entry(
     on: str,
 ) -> int:
     body: dict[str, Any] = {
-        "variety_id": variety_id,
+        "product_id": variety_id,
         "origin": origin,
         "quantity": quantity,
         "date": on,
@@ -69,7 +69,7 @@ def _sale(
     body: dict[str, Any] = {
         "date": on,
         "payment": payment,
-        "lines": [{"variety_id": variety_id, "quantity": quantity, "gift": gift}],
+        "lines": [{"product_id": variety_id, "quantity": quantity, "gift": gift}],
     }
     if customer_id is not None:
         body["customer_id"] = customer_id
@@ -206,7 +206,7 @@ def test_editing_a_stock_entry_s_cost_moves_cost_of_goods_and_profit(
     edited = client.put(
         f"/stock/entries/{entry_id}",
         json={
-            "variety_id": variety_id,
+            "product_id": variety_id,
             "origin": "opening_stock",
             "quantity": "10",
             "total_cost": 2_000,
@@ -229,7 +229,7 @@ def test_a_negative_adjustment_s_grams_are_never_summed_into_cost_of_goods(
     adjustment = client.post(
         "/stock/entries",
         json={
-            "variety_id": variety_id,
+            "product_id": variety_id,
             "origin": "adjustment",
             "quantity": "-4",
             "date": "2026-10-14",
@@ -289,7 +289,7 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
     _entry(client, sold_out_id, quantity="10", total_cost=500, on=day.isoformat())
     low_id = _variety(client, "Poca")
     _entry(client, low_id, quantity="10", total_cost=500, on=day.isoformat())
-    threshold = client.put(f"/stock/varieties/{low_id}/threshold", json={"quantity": "20"})
+    threshold = client.put(f"/stock/products/{low_id}/threshold", json={"quantity": "20"})
     assert threshold.status_code == 200, threshold.text
 
     _sale(client, ok_id, quantity="5", on=day.isoformat())
@@ -348,16 +348,16 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
     assert panel["debts"]["oldest"] == expected_oldest
 
     stock = client.get("/stock").json()
-    stock_by_id = {row["variety_id"]: row for row in stock["varieties"]}
-    panel_ids = {row["variety_id"] for row in panel["stock"]}
+    stock_by_id = {row["product_id"]: row for row in stock["products"]}
+    panel_ids = {row["product_id"] for row in panel["stock"]}
     assert panel_ids == {no_entries_id, ok_id, sold_out_id, low_id, boundary_id}
-    statuses = {row["variety_id"]: row["status"] for row in panel["stock"]}
+    statuses = {row["product_id"]: row["status"] for row in panel["stock"]}
     assert statuses[no_entries_id] == "no_entries"
     assert statuses[ok_id] == "ok"
     assert statuses[sold_out_id] == "sold_out"
     assert statuses[low_id] == "low"
     for row in panel["stock"]:
-        reference = dict(stock_by_id[row["variety_id"]])
+        reference = dict(stock_by_id[row["product_id"]])
         own = dict(row)
         del own["name"]
         assert own == reference
@@ -386,7 +386,7 @@ def test_a_negative_adjustment_beyond_every_lot_is_shortfall_only_pending(
     adjustment = client.post(
         "/stock/entries",
         json={
-            "variety_id": variety_id,
+            "product_id": variety_id,
             "origin": "adjustment",
             "quantity": "-3",
             "date": "2026-10-15",
@@ -422,7 +422,7 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     # same lot, which is used up exactly: 10 - 1 - 2 - 7 = 0.
     adjustment_29 = client.post(
         "/stock/entries",
-        json={"variety_id": x_id, "origin": "adjustment", "quantity": "-2", "date": "2026-09-29"},
+        json={"product_id": x_id, "origin": "adjustment", "quantity": "-2", "date": "2026-09-29"},
     )
     assert adjustment_29.status_code == 201, adjustment_29.text
     _sale(client, x_id, quantity="7", on="2026-09-29")
@@ -443,7 +443,7 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     _sale(client, y_id, quantity="3", on="2026-10-02")
     adjustment_today = client.post(
         "/stock/entries",
-        json={"variety_id": x_id, "origin": "adjustment", "quantity": "-1", "date": "2026-10-02"},
+        json={"product_id": x_id, "origin": "adjustment", "quantity": "-1", "date": "2026-10-02"},
     )
     assert adjustment_today.status_code == 201, adjustment_today.text
 
@@ -567,7 +567,7 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
     assert month_row["sales"] == 3_000
     assert month_row["profit"]["amount"] == 3_000 - 300
     assert month_row["profit"]["pending_quantity"] == 0
-    header_varieties = analysis["month"]["varieties"]
+    header_varieties = analysis["month"]["products"]
     assert sum(v["cost"]["costed"] for v in header_varieties) == month["cost_of_goods"] == 300
     assert not any(v["cost"]["pending_quantity"] > 0 for v in header_varieties)
 
@@ -583,7 +583,7 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
 def _adjust(client: TestClient, variety_id: int, *, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "quantity": quantity, "date": on},
+        json={"product_id": variety_id, "origin": "adjustment", "quantity": quantity, "date": on},
     )
     assert response.status_code == 201, response.text
 
@@ -594,7 +594,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
         json={
             "reason": reason,
             "date": on,
-            "lines": [{"variety_id": variety_id, "quantity": quantity}],
+            "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
     )
     assert response.status_code == 201, response.text
@@ -792,7 +792,7 @@ def _seed_small_panel_history(client: TestClient) -> None:
     _expense(client, amount=100, on=day)
     adjustment = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "quantity": "-1", "date": day},
+        json={"product_id": variety_id, "origin": "adjustment", "quantity": "-1", "date": day},
     )
     assert adjustment.status_code == 201, adjustment.text
     withdrawal = client.post(
@@ -800,7 +800,7 @@ def _seed_small_panel_history(client: TestClient) -> None:
         json={
             "reason": "promotion",
             "date": day,
-            "lines": [{"variety_id": variety_id, "quantity": "1"}],
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -852,7 +852,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
     adjustment = client.post(
         "/stock/entries",
         json={
-            "variety_id": variety_ids[0],
+            "product_id": variety_ids[0],
             "origin": "adjustment",
             "quantity": "-1",
             "date": TODAY.isoformat(),
@@ -864,7 +864,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
         json={
             "reason": "own_use",
             "date": TODAY.isoformat(),
-            "lines": [{"variety_id": variety_ids[0], "quantity": "1"}],
+            "lines": [{"product_id": variety_ids[0], "quantity": "1"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -898,7 +898,7 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
         _entry(client, variety_id, quantity="100", total_cost=None, on="2026-10-01")
         sold = client.post(
             "/sales",
-            json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
+            json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
         )
         assert sold.status_code == 201, sold.text
     before = client.get("/panel").json()
@@ -906,8 +906,8 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
 
     after = client.get("/panel").json()
 
-    assert {row["variety_id"] for row in before["stock"]} == {kept, gone}
-    assert [row["variety_id"] for row in after["stock"]] == [kept]
+    assert {row["product_id"] for row in before["stock"]} == {kept, gone}
+    assert [row["product_id"] for row in after["stock"]] == [kept]
     assert {key: value for key, value in after.items() if key != "stock"} == {
         key: value for key, value in before.items() if key != "stock"
     }

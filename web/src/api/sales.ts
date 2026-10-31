@@ -25,8 +25,8 @@ export interface SaleCustomer {
 }
 
 export interface SaleLine {
-  variety_id: number
-  variety_name: string
+  product_id: number
+  product_name: string
   quantity: number
   pricing_rule: PricingRule
   price_per_gram: number
@@ -135,9 +135,9 @@ export interface SaleDetail extends Omit<Sale, 'lines'> {
   bill: SaleBill | null
 }
 
-/** The quantity a deleted sale gave back to one variety's stock. */
+/** The quantity a deleted sale gave back to one product's stock. */
 export interface ReturnedQuantity {
-  variety_id: number
+  product_id: number
   quantity: number
 }
 

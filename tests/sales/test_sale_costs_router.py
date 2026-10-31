@@ -12,16 +12,16 @@ from tests.contract_shapes import assert_matches_fixture
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return int(variety["id"])
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
+    body: dict[str, Any] = {"product_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text
@@ -30,7 +30,7 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
 def _sale(client: TestClient, variety_id: int, quantity: str = "10") -> int:
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": quantity}]},
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": quantity}]},
     )
     assert response.status_code == 201, response.text
     return int(response.json()["id"])
@@ -49,8 +49,8 @@ def test_a_fully_costed_line_answers_its_cost_and_no_pending_grams(
     assert response.status_code == 200, response.text
     assert response.json()["lines"] == [
         {
-            "variety_id": variety_id,
-            "variety_name": "Lavanda",
+            "product_id": variety_id,
+            "product_name": "Lavanda",
             "quantity": 10.0,
             "pricing_rule": "list",
             "price_per_gram": 10_000,
@@ -84,7 +84,7 @@ def test_a_gift_line_with_no_lot_behind_it_matches_the_gift_fixture(client: Test
 
     sale = client.post(
         "/sales",
-        json={"lines": [{"variety_id": variety_id, "quantity": "5", "gift": True}]},
+        json={"lines": [{"product_id": variety_id, "quantity": "5", "gift": True}]},
     )
     assert sale.status_code == 201, sale.text
     sale_id = sale.json()["id"]
@@ -103,7 +103,7 @@ def test_list_sales_never_carries_a_cost_field(client: TestClient) -> None:
     _entry(client, variety_id, quantity="10", total_cost=5_000)
     client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
     )
 
     listed = client.get("/sales")
@@ -125,8 +125,8 @@ def test_sale_detail_answers_total_grams_summed_over_every_line_gifts_included(
         json={
             "payment": "cash",
             "lines": [
-                {"variety_id": variety_id, "quantity": "10"},
-                {"variety_id": variety_id, "quantity": "4", "gift": True},
+                {"product_id": variety_id, "quantity": "10"},
+                {"product_id": variety_id, "quantity": "4", "gift": True},
             ],
         },
     )
@@ -174,12 +174,12 @@ def test_a_sale_detail_carries_still_owing_from_settlement(client: TestClient) -
         json={
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety_id, "quantity": "1"}],
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     ).json()
     paid = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
     ).json()
 
     owing_detail = client.get(f"/sales/{owing['id']}").json()

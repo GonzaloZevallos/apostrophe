@@ -11,9 +11,9 @@ from tests.statement_log import captured_statements
 
 
 def _variety(client: TestClient, name: str) -> int:
-    variety = client.post("/varieties", json={"name": name}).json()
+    variety = client.post("/api/products", json={"name": name}).json()
     priced = client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2020-01-01", "list_price": 10_000},
     )
     assert priced.status_code == 201, priced.text
@@ -29,7 +29,7 @@ def _entry(client: TestClient, variety_id: int, quantity: str) -> None:
     _post(
         client,
         "/stock/entries",
-        {"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity},
+        {"product_id": variety_id, "origin": "opening_stock", "quantity": quantity},
     )
 
 
@@ -37,12 +37,12 @@ def _sale_and_withdrawal(client: TestClient, variety_id: int) -> None:
     _post(
         client,
         "/sales",
-        {"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
+        {"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
     )
     _post(
         client,
         "/stock/withdrawals",
-        {"reason": "own_use", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
+        {"reason": "own_use", "lines": [{"product_id": variety_id, "quantity": "1"}]},
     )
 
 

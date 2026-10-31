@@ -21,17 +21,17 @@ from app.stock.adapters.draw_costs import SqlDrawCosts
 
 
 def _variety_id(client: TestClient, name: str, list_price: int = 10_000) -> int:
-    variety = client.post("/varieties", json={"name": name}).json()
+    variety = client.post("/api/products", json={"name": name}).json()
     variety_id = int(variety["id"])
     client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return variety_id
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
+    body: dict[str, Any] = {"product_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text
@@ -63,7 +63,7 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
     _entry(client, shortfall_variety, quantity="4", total_cost=4_000)
     adjustment = client.post(
         "/stock/entries",
-        json={"variety_id": shortfall_variety, "origin": "adjustment", "quantity": "-1"},
+        json={"product_id": shortfall_variety, "origin": "adjustment", "quantity": "-1"},
     )
     assert adjustment.status_code == 201, adjustment.text
 
@@ -72,14 +72,14 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
         json={
             "payment": "cash",
             "lines": [
-                {"variety_id": split_variety, "quantity": "10"},
-                {"variety_id": gift_variety, "quantity": "2", "gift": True},
+                {"product_id": split_variety, "quantity": "10"},
+                {"product_id": gift_variety, "quantity": "2", "gift": True},
             ],
         },
     ).json()
 
     detail = client.get(f"/sales/{sale['id']}").json()
-    line_by_variety = {line["variety_id"]: line for line in detail["lines"]}
+    line_by_variety = {line["product_id"]: line for line in detail["lines"]}
 
     business_id = _business_id_of_variety(engine, split_variety)
     with Session(engine) as session:

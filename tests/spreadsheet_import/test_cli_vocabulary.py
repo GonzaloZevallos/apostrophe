@@ -215,9 +215,9 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     assert customers[AMIGO_CUSTOMER]["vip"] is True
     assert customers[AMIGO_CUSTOMER]["balance"] == 4000
 
-    varieties_by_name = {v["name"]: v["id"] for v in client.get("/varieties").json()}
+    varieties_by_name = {v["name"]: v["id"] for v in client.get("/api/products").json()}
     stock = client.get("/stock").json()
-    stock_by_variety = {row["variety_id"]: row for row in stock["varieties"]}
+    stock_by_variety = {row["product_id"]: row for row in stock["products"]}
     # 4 origins * 20g in, 9g sold (5 + 1 + 2 + 1): 71g left.
     assert stock_by_variety[varieties_by_name[VARIETY]]["quantity"] == 71.0
     assert stock_by_variety[varieties_by_name[HIDDEN_VARIETY]]["quantity"] == 0.0
@@ -225,7 +225,7 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     assert stored_origins == {origin.value for origin in ORIGEN_WORDS.values()}
 
     catalog = client.get("/catalog").json()
-    shown_flags = {entry["name"]: entry["shown"] for entry in catalog["varieties"]}
+    shown_flags = {entry["name"]: entry["shown"] for entry in catalog["products"]}
     assert shown_flags[VARIETY] is True
     assert shown_flags[HIDDEN_VARIETY] is False
 

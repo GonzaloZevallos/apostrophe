@@ -1,6 +1,6 @@
 /**
  * `CatalogAttributesForm`: edits how one variety shows in the catalog (`PUT
- * /catalog/varieties/{id}`: shown or not, emoji, % índica, aroma/sabor), opened over its
+ * /catalog/products/{product_id}`: shown or not, emoji, % índica, aroma/sabor), opened over its
  * page. It is the only place these attributes are edited. Like `RenameForm` it knows
  * nothing of the router: its host supplies the exits and learns whether something was
  * typed. Each refusal shows under its own field (`fieldOfRefusal`) and keeps everything
@@ -29,7 +29,7 @@ import { CATALOG_SAVED } from '../../copy/settings'
 export const CATALOG_ATTRIBUTES_SAVED: SuccessToast = CATALOG_SAVED
 
 export interface CatalogAttributesFormProps {
-  row: Pick<CatalogVariety, 'id' | 'shown' | 'emoji' | 'indica_share' | 'aroma'>
+  row: Pick<CatalogVariety, 'product_id' | 'shown' | 'emoji' | 'indica_share' | 'aroma'>
   onDone: (saved: SuccessToast) => void
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
@@ -91,7 +91,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
     }
     setSending(true)
     try {
-      await put(`/catalog/varieties/${row.id}`, {
+      await put(`/catalog/products/${row.product_id}`, {
         shown: typed.shown,
         emoji: nullIfEmpty(typed.emoji)?.trim() ?? null,
         indica_share: indica === '' ? null : Number(indica),

@@ -22,7 +22,7 @@ BUSINESS_ID = 1
 
 
 def _variety_id(client: TestClient) -> int:
-    variety: int = client.post("/varieties", json={"name": "Upsert variety"}).json()["id"]
+    variety: int = client.post("/api/products", json={"name": "Upsert variety"}).json()["id"]
     return variety
 
 

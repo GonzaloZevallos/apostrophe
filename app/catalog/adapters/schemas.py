@@ -19,8 +19,8 @@ class HeaderFooterIn(BaseModel):
     footer: str
 
 
-class CatalogVarietyOut(BaseModel):
-    id: int
+class CatalogProductOut(BaseModel):
+    product_id: int
     name: str
     emoji: str | None
     indica_share: int | None
@@ -29,9 +29,9 @@ class CatalogVarietyOut(BaseModel):
     state: CatalogState
 
     @classmethod
-    def of(cls, view: CatalogVarietyView) -> CatalogVarietyOut:
+    def of(cls, view: CatalogVarietyView) -> CatalogProductOut:
         return cls(
-            id=view.id,
+            product_id=view.id,
             name=view.name,
             emoji=view.emoji,
             indica_share=view.indica_share,
@@ -45,7 +45,7 @@ class CatalogOut(BaseModel):
     text: str | None
     header: str
     footer: str
-    varieties: list[CatalogVarietyOut]
+    products: list[CatalogProductOut]
 
     @classmethod
     def of(cls, view: CatalogView) -> CatalogOut:
@@ -53,12 +53,12 @@ class CatalogOut(BaseModel):
             text=view.text,
             header=view.header,
             footer=view.footer,
-            varieties=[CatalogVarietyOut.of(v) for v in view.varieties],
+            products=[CatalogProductOut.of(v) for v in view.varieties],
         )
 
 
-class ArchivedCatalogVarietyOut(BaseModel):
-    variety_id: int
+class ArchivedCatalogProductOut(BaseModel):
+    product_id: int
     name: str
     shown: bool
     emoji: str | None
@@ -66,9 +66,9 @@ class ArchivedCatalogVarietyOut(BaseModel):
     aroma: str | None
 
     @classmethod
-    def of(cls, view: ArchivedCatalogVarietyView) -> ArchivedCatalogVarietyOut:
+    def of(cls, view: ArchivedCatalogVarietyView) -> ArchivedCatalogProductOut:
         return cls(
-            variety_id=view.variety_id,
+            product_id=view.variety_id,
             name=view.name,
             shown=view.shown,
             emoji=view.emoji,

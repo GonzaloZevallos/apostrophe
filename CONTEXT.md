@@ -28,6 +28,10 @@ Una cepa que un Business vende por gramo, identificada por su nombre dentro de e
 _Avoid_: product, strain, item, SKU
 _In the app_: Variety
 
+**Product**:
+El nombre de lo que vende un Business, en el código y en la API (`/api/products`, `product_id`), cualquiera sea la palabra que el Business use en pantalla. Variety sigue siendo la palabra de pantalla de los Businesses existentes, y los paths del front `/varieties/*` no cambian. Las columnas que referencian a la Variety siguen siendo `variety_id` hasta #75. El dominio y los puertos de los hexágonos que no son el de Products conservan nombres con variety hasta sus propias partes (ADR-0061). Decidido en docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md. Ver Variety.
+_Avoid_: item, SKU, article
+
 **Price entry**:
 El List price de una Variety, y opcionalmente un Bulk price con su Bulk minimum, y opcionalmente un VIP price, que rige desde una fecha en adelante. Nunca se edita una vez que se registra: una Price entry posterior la reemplaza desde su propia fecha. Una Price entry equivocada se elimina, nunca se reescribe; una Sale no se ve afectada porque cada Sale line registra el precio al que se vendió. Una regla desactivada al momento de registrar no guarda nada para esa regla. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre de abajo. _In the app_: Price (price history).
 _Avoid_: price change, price update, tariff
@@ -520,10 +524,6 @@ _Avoid_: Product language, locale, idioma de la app, traducción
 ## Planned in GH-318 (not yet in the code)
 
 Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte nombrada en cada línea; solo esa parte pasa su término al glosario propiamente dicho y corrige la definición que reemplaza. Cada línea da el término, el ADR que lo decide y la parte a cargo, nombrada por capacidad.
-
-**Product**:
-Lo que vende un Business, en el código y en la API, cualquiera sea el nombre que el Business le dé en pantalla; reemplaza a la Variety en el código, y las columnas que la referencian siguen siendo `variety_id` hasta #75. Decidido en docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; a cargo del Product rename on the wire. Los nombres en Python del hexágono de Products (sus módulos, clases, puertos, parámetros de casos de uso y atributos de dominio) y `app/catalog/domain/product.py` dicen Product desde GH-386. Los campos propios de otros hexágonos, la API, las tablas, las columnas y las pantallas siguen con Variety hasta sus partes (ADR-0061).
-_Avoid_: item, SKU, article
 
 **Unit**:
 Cómo mide un Business un Product: una etiqueta y de 0 a 2 decimales que solo validan lo que se ingresa y deciden cómo se muestra. Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; a cargo de la parte units.

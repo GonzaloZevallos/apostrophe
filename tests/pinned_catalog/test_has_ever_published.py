@@ -31,22 +31,22 @@ def _ever_published(app: FastAPI, business_name: str = "Primer Negocio") -> bool
 
 
 def _variety(client: TestClient, name: str, aroma: str | None = None) -> int:
-    created = client.post("/varieties", json={"name": name})
+    created = client.post("/api/products", json={"name": name})
     assert created.status_code == 201, created.text
     variety_id = int(created.json()["id"])
     priced = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     assert priced.status_code == 201, priced.text
     stocked = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": "50"},
     )
     assert stocked.status_code == 201, stocked.text
     if aroma is not None:
         described = client.put(
-            f"/catalog/varieties/{variety_id}",
+            f"/catalog/products/{variety_id}",
             json={"shown": True, "emoji": None, "indica_share": None, "aroma": aroma},
         )
         assert described.status_code == 200, described.text
@@ -69,7 +69,7 @@ def _published(client: TestClient) -> int:
 
 def _rename(client: TestClient, variety_id: int, name: str) -> None:
     # A catalog change: upkeep runs after the save and always answers 200.
-    renamed = client.patch(f"/varieties/{variety_id}", json={"name": name})
+    renamed = client.patch(f"/api/products/{variety_id}", json={"name": name})
     assert renamed.status_code == 200, renamed.text
 
 
@@ -110,7 +110,7 @@ def _upkeep_unchanged(client: TestClient, telegram: FakeTelegram, variety_id: in
     # A write that leaves the text as it was: upkeep finds nothing to send.
     calls_before = list(telegram.calls)
     saved = client.put(
-        f"/catalog/varieties/{variety_id}",
+        f"/catalog/products/{variety_id}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
     )
     assert saved.status_code == 200, saved.text

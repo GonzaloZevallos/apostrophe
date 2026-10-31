@@ -24,9 +24,9 @@ def _business_id_of_customer(engine: Engine, customer_id: int) -> int:
 
 
 def _variety(client: TestClient) -> int:
-    variety = client.post("/varieties", json={"name": "Import variety"}).json()
+    variety = client.post("/api/products", json={"name": "Import variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 1_000},
     )
     variety_id: int = variety["id"]
@@ -57,7 +57,7 @@ def test_has_records_is_true_for_an_on_the_spot_payment(client: TestClient, engi
         json={
             "customer_id": customer["id"],
             "payment": "cash",
-            "lines": [{"variety_id": variety_id, "quantity": "2"}],
+            "lines": [{"product_id": variety_id, "quantity": "2"}],
         },
     )
     assert sold.status_code == 201, sold.text
@@ -78,7 +78,7 @@ def test_has_records_is_true_for_a_later_payment(client: TestClient, engine: Eng
         json={
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety_id, "quantity": "2"}],
+            "lines": [{"product_id": variety_id, "quantity": "2"}],
         },
     )
     assert sold.status_code == 201, sold.text

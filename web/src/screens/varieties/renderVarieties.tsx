@@ -66,8 +66,8 @@ export function api(overrides: Record<string, () => Response> = {}): FetchImpl {
     const override = overrides[key]
     if (override !== undefined) return Promise.resolve(override())
     if (key === 'GET /pricing-settings') return Promise.resolve(jsonResponse(200, SETTINGS_ON))
-    if (key === 'GET /varieties/1') return Promise.resolve(jsonResponse(200, VARIETY_ROW))
-    if (key === 'GET /varieties/1/prices') return Promise.resolve(jsonResponse(200, HISTORY))
+    if (key === 'GET /api/products/1') return Promise.resolve(jsonResponse(200, VARIETY_ROW))
+    if (key === 'GET /api/products/1/prices') return Promise.resolve(jsonResponse(200, HISTORY))
     return Promise.reject(new Error(`unexpected request: ${key}`))
   }
 }

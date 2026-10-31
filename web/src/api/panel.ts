@@ -62,7 +62,7 @@ export interface PanelDebts {
   teaser: PanelDebtorTeaser[]
 }
 
-/** `VarietyStockOut`'s keys plus `name` (plan invariant): every other field equals
+/** `ProductStockOut`'s keys plus `name` (plan invariant): every other field equals
  * `GET /stock`'s own row for the same variety. */
 export interface PanelVarietyOut extends VarietyStock {
   name: string

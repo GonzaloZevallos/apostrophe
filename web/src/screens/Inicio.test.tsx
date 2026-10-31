@@ -65,7 +65,7 @@ const NOT_OFFERED: OnboardingProgress = {
   resume: null,
   steps: [],
   can_skip_rest: false,
-  varieties_count: 0,
+  products_count: 0,
   stock_entries_count: 0,
   price_target: null,
   priced_target: null,
@@ -562,7 +562,7 @@ const MID_ONBOARDING: OnboardingProgress = {
   count: 1,
   resume: 'stock',
   steps: STEPS_AFTER_ONE,
-  varieties_count: 1,
+  products_count: 1,
 }
 
 const FINISH: OnboardingProgress = {

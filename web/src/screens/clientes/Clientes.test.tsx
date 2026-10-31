@@ -16,6 +16,7 @@ import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../
 import { inAppState } from '../../components/inAppState'
 import { consumePaymentReturn, peekPaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { toast } from '../../components/feedback'
+import { consumePaymentReturn } from '../../paymentReturn'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { stubViewport } from '../../test-viewport'
@@ -90,6 +91,9 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  // The hand-off a "Collect" click leaves lives in a module, not in the router: a test that
+  // clicks it and never comes back would otherwise focus the next test's list.
+  consumePaymentReturn()
 })
 
 test('the search is a search field with a search key and no autofill', async () => {

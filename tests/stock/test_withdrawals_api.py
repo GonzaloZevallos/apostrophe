@@ -20,12 +20,12 @@ TODAY = "2026-10-02"
 
 
 def _variety(client: TestClient, name: str = "Zkittlez") -> int:
-    return int(client.post("/varieties", json={"name": name}).json()["id"])
+    return int(client.post("/api/products", json={"name": name}).json()["id"])
 
 
 def _stock_in(client: TestClient, variety_id: int, quantity: str = "50", **extra: Any) -> None:
     body: dict[str, Any] = {
-        "variety_id": variety_id,
+        "product_id": variety_id,
         "origin": "opening_stock",
         "quantity": quantity,
     }
@@ -36,14 +36,14 @@ def _stock_in(client: TestClient, variety_id: int, quantity: str = "50", **extra
 def _body(variety_id: int, **overrides: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "reason": "promotion",
-        "lines": [{"variety_id": variety_id, "quantity": "5"}],
+        "lines": [{"product_id": variety_id, "quantity": "5"}],
     }
     body.update(overrides)
     return body
 
 
 def _line(variety_id: int, quantity: str = "5") -> dict[str, Any]:
-    return {"variety_id": variety_id, "quantity": quantity}
+    return {"product_id": variety_id, "quantity": quantity}
 
 
 def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, Any]:
@@ -54,8 +54,8 @@ def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, 
 
 
 def _quantity_of(client: TestClient, variety_id: int) -> float:
-    rows = client.get("/stock").json()["varieties"]
-    return float(next(row["quantity"] for row in rows if row["variety_id"] == variety_id))
+    rows = client.get("/stock").json()["products"]
+    return float(next(row["quantity"] for row in rows if row["product_id"] == variety_id))
 
 
 def test_a_withdrawal_is_recorded_and_answers_with_its_lines(client: TestClient) -> None:
@@ -68,8 +68,8 @@ def test_a_withdrawal_is_recorded_and_answers_with_its_lines(client: TestClient)
         reason="own_use",
         note="  para mí  ",
         lines=[
-            {"variety_id": zkittlez, "quantity": "2.5"},
-            {"variety_id": gelato, "quantity": "1"},
+            {"product_id": zkittlez, "quantity": "2.5"},
+            {"product_id": gelato, "quantity": "1"},
         ],
     )
 
@@ -78,7 +78,7 @@ def test_a_withdrawal_is_recorded_and_answers_with_its_lines(client: TestClient)
     assert withdrawal["date"] == TODAY
     assert withdrawal["note"] == "para mí"
     assert withdrawal["total_quantity"] == 3.5
-    assert [line["variety_name"] for line in withdrawal["lines"]] == ["Zkittlez", "Gelato"]
+    assert [line["product_name"] for line in withdrawal["lines"]] == ["Zkittlez", "Gelato"]
     assert "recorded_at" not in withdrawal
     assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
 
@@ -91,8 +91,8 @@ def test_an_earlier_date_is_allowed_and_the_same_variety_may_repeat(client: Test
         variety_id,
         date="2026-09-20",
         lines=[
-            {"variety_id": variety_id, "quantity": "1"},
-            {"variety_id": variety_id, "quantity": "1"},
+            {"product_id": variety_id, "quantity": "1"},
+            {"product_id": variety_id, "quantity": "1"},
         ],
     )
 
@@ -104,13 +104,13 @@ def test_stock_moves_exactly_on_record_edit_and_delete(client: TestClient) -> No
     variety_id = _variety(client)
     _stock_in(client, variety_id, "50")
 
-    withdrawal = _record(client, variety_id, lines=[{"variety_id": variety_id, "quantity": "5.25"}])
+    withdrawal = _record(client, variety_id, lines=[{"product_id": variety_id, "quantity": "5.25"}])
     assert _quantity_of(client, variety_id) == 44.75
 
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
         json=_body(
-            variety_id, reason="own_use", lines=[{"variety_id": variety_id, "quantity": "7"}]
+            variety_id, reason="own_use", lines=[{"product_id": variety_id, "quantity": "7"}]
         ),
     )
     assert edited.status_code == 200, edited.text
@@ -128,9 +128,9 @@ def test_a_withdrawal_past_stock_is_recorded_and_shows_sold_out(client: TestClie
     variety_id = _variety(client)
     _stock_in(client, variety_id, "3")
 
-    _record(client, variety_id, lines=[{"variety_id": variety_id, "quantity": "5"}])
+    _record(client, variety_id, lines=[{"product_id": variety_id, "quantity": "5"}])
 
-    row = client.get("/stock").json()["varieties"][0]
+    row = client.get("/stock").json()["products"][0]
     assert row["status"] == "sold_out"
     assert row["quantity"] == -2.0
     assert row["sold_out_since"] == TODAY
@@ -138,23 +138,23 @@ def test_a_withdrawal_past_stock_is_recorded_and_shows_sold_out(client: TestClie
 
 def test_a_variety_with_only_a_withdrawal_is_not_without_entries(client: TestClient) -> None:
     variety_id = _variety(client)
-    assert client.get("/stock").json()["varieties"][0]["status"] == "no_entries"
+    assert client.get("/stock").json()["products"][0]["status"] == "no_entries"
 
     _record(client, variety_id)
 
-    assert client.get("/stock").json()["varieties"][0]["status"] == "sold_out"
+    assert client.get("/stock").json()["products"][0]["status"] == "sold_out"
 
 
 def test_days_left_counts_withdrawn_grams(client: TestClient) -> None:
     variety_id = _variety(client)
     _stock_in(client, variety_id, "100", date="2026-08-01")
-    before = client.get("/stock").json()["varieties"][0]["days_left"]
+    before = client.get("/stock").json()["products"][0]["days_left"]
 
     _record(
-        client, variety_id, date="2026-09-20", lines=[{"variety_id": variety_id, "quantity": "30"}]
+        client, variety_id, date="2026-09-20", lines=[{"product_id": variety_id, "quantity": "30"}]
     )
 
-    after = client.get("/stock").json()["varieties"][0]["days_left"]
+    after = client.get("/stock").json()["products"][0]["days_left"]
     assert before is None
     assert after is not None
 
@@ -167,27 +167,27 @@ def test_an_edit_with_the_same_line_count_and_with_reversed_lines_answers_200(
     withdrawal = _record(
         client,
         first,
-        lines=[{"variety_id": first, "quantity": "1"}, {"variety_id": second, "quantity": "2"}],
+        lines=[{"product_id": first, "quantity": "1"}, {"product_id": second, "quantity": "2"}],
     )
 
     same = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
         json=_body(
             first,
-            lines=[{"variety_id": first, "quantity": "3"}, {"variety_id": second, "quantity": "4"}],
+            lines=[{"product_id": first, "quantity": "3"}, {"product_id": second, "quantity": "4"}],
         ),
     )
     reversed_ = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
         json=_body(
             first,
-            lines=[{"variety_id": second, "quantity": "4"}, {"variety_id": first, "quantity": "3"}],
+            lines=[{"product_id": second, "quantity": "4"}, {"product_id": first, "quantity": "3"}],
         ),
     )
 
     assert same.status_code == 200, same.text
     assert reversed_.status_code == 200, reversed_.text
-    assert [line["variety_id"] for line in reversed_.json()["lines"]] == [second, first]
+    assert [line["product_id"] for line in reversed_.json()["lines"]] == [second, first]
 
 
 def test_an_edit_keeps_the_recording_order_of_the_withdrawal(
@@ -201,7 +201,7 @@ def test_an_edit_keeps_the_recording_order_of_the_withdrawal(
 
     client.put(f"/stock/withdrawals/{first['id']}", json=_body(variety_id))
 
-    rows = client.get(f"/stock/varieties/{variety_id}/movements").json()
+    rows = client.get(f"/stock/products/{variety_id}/movements").json()
     assert [row["id"] for row in rows if row["kind"] == "withdrawal"] == [second["id"], first["id"]]
 
 
@@ -213,9 +213,9 @@ def test_an_edit_keeps_the_recording_order_of_the_withdrawal(
         ({"lines": []}, "stock.withdrawal_no_lines"),
         ({"date": "2026-10-03"}, "stock.withdrawal_date_in_future"),
         ({"note": "x" * 201}, "stock.withdrawal_note_too_long"),
-        ({"lines": [{"variety_id": 0, "quantity": "0"}]}, "stock.withdrawal_grams_not_positive"),
-        ({"lines": [{"variety_id": 0, "quantity": "-1"}]}, "stock.withdrawal_grams_not_positive"),
-        ({"lines": [{"variety_id": 0, "quantity": "1.234"}]}, "stock.withdrawal_grams_too_precise"),
+        ({"lines": [{"product_id": 0, "quantity": "0"}]}, "stock.withdrawal_grams_not_positive"),
+        ({"lines": [{"product_id": 0, "quantity": "-1"}]}, "stock.withdrawal_grams_not_positive"),
+        ({"lines": [{"product_id": 0, "quantity": "1.234"}]}, "stock.withdrawal_grams_too_precise"),
     ],
 )
 def test_each_refusal_has_its_own_code_and_never_repeats_the_input(
@@ -224,7 +224,7 @@ def test_each_refusal_has_its_own_code_and_never_repeats_the_input(
     variety_id = _variety(client)
     body = _body(variety_id, **({"note": "secreto 9876"} | overrides))
     for line in body["lines"]:
-        line["variety_id"] = variety_id
+        line["product_id"] = variety_id
 
     response = client.post("/stock/withdrawals", json=body)
 
@@ -298,15 +298,15 @@ def test_movements_mix_entries_and_withdrawals_newest_first(
         reason="own_use",
         date="2026-09-15",
         lines=[
-            {"variety_id": first, "quantity": "1"},
-            {"variety_id": second, "quantity": "2"},
-            {"variety_id": first, "quantity": "0.5"},
+            {"product_id": first, "quantity": "1"},
+            {"product_id": second, "quantity": "2"},
+            {"product_id": first, "quantity": "0.5"},
         ],
     )
     _stock_in(client, first, "10", date="2026-09-30")
 
-    rows = client.get(f"/stock/varieties/{first}/movements").json()
-    other = client.get(f"/stock/varieties/{second}/movements").json()
+    rows = client.get(f"/stock/products/{first}/movements").json()
+    other = client.get(f"/stock/products/{second}/movements").json()
 
     assert_matches_fixture(rows, "movements")
     assert [(row["kind"], row["date"]) for row in rows] == [
@@ -328,7 +328,7 @@ def test_movements_of_another_business_variety_answer_404(
     foreign = _variety(other_client, "Ajena")
     _record(other_client, foreign)
 
-    response = client.get(f"/stock/varieties/{foreign}/movements")
+    response = client.get(f"/stock/products/{foreign}/movements")
 
     assert response.status_code == 404
     assert response.json()["code"] == "variety.not_found"
@@ -337,7 +337,7 @@ def test_movements_of_another_business_variety_answer_404(
 def _priced_variety(client: TestClient, name: str) -> int:
     variety_id = _variety(client, name)
     client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9_000},
     )
     return variety_id
@@ -351,14 +351,14 @@ def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agre
     _stock_in(client, variety_id, "5", date="2026-09-01", origin="purchase", total_cost=5_000)
     sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "5"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "5"}]},
     ).json()
 
     def line_cost() -> int:
         detail = client.get(f"/sales/{sale['id']}").json()
         cost = detail["lines"][0]["cost"]["costed"]
         [analysed] = client.get("/analysis", params={"month": "2026-10"}).json()["month"][
-            "varieties"
+            "products"
         ]
         assert analysed["cost"]["costed"] == cost  # `GET /analysis` reads the same cost
         assert isinstance(cost, int)
@@ -367,14 +367,14 @@ def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agre
     assert line_cost() == 500
 
     withdrawal = _record(
-        client, variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "quantity": "3"}]
+        client, variety_id, date="2026-08-15", lines=[{"product_id": variety_id, "quantity": "3"}]
     )
     assert line_cost() == 3_200  # 2 g from the first lot, 3 g from the second
 
     client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
         json=_body(
-            variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "quantity": "1"}]
+            variety_id, date="2026-08-15", lines=[{"product_id": variety_id, "quantity": "1"}]
         ),
     )
     assert line_cost() == 1_400
@@ -392,7 +392,7 @@ def test_a_withdrawal_is_never_a_sale_a_debt_or_money(client: TestClient) -> Non
         json={
             "payment": "owing",
             "customer_id": customer["id"],
-            "lines": [{"variety_id": variety_id, "quantity": "2"}],
+            "lines": [{"product_id": variety_id, "quantity": "2"}],
         },
     )
     unchanged = (
