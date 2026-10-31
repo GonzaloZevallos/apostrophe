@@ -21,6 +21,8 @@ donde toda otra pantalla lo copia tal cual.
 
 ## Comparar con lo construido
 
+Los dibujos del rediseño en `pantallas/` son el objetivo de la épica #494; `docs/design/redesign/README.md` los indexa; se copiaron de la rama `design/redesign-2026-10-29` en `25f6cb18`; `fuente/telefono/X.dc.html` y `fuente/compu/X.dc.html` son `pantallas/X.dc.html`. Qué garantiza: [drawing-as-guide.md](../drawing-as-guide.md).
+
 Las pantallas mandan: lo construido tiene que verse igual a ojo (misma estructura,
 jerarquía, tipografía, colores, espaciado y componentes). Para mirarlo lado a lado:
 

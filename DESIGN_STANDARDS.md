@@ -64,6 +64,8 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 
 The full text is `docs/product/design-capture.md`.
 
+Los dibujos del rediseño en `pantallas/` son el objetivo de la épica #494; `docs/design/redesign/README.md` los indexa; se copiaron de la rama `design/redesign-2026-10-29` en `25f6cb18`; `fuente/telefono/X.dc.html` y `fuente/compu/X.dc.html` son `pantallas/X.dc.html`. Qué garantiza: `docs/product/drawing-as-guide.md`.
+
 ## Palette
 
 The app's colors are the owner's Yerba palette, in a light and a dark theme. The values live in `docs/product/design-system/tokens.css` and `tokens.ts` (and the app's copy, `web/src/styles/tokens.css`); no other file carries a literal color. The contrast table that proves every text pair is in `docs/product/design-system/README.md`.

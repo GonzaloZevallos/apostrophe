@@ -2,6 +2,8 @@
 
 The evidence a reviewer uses to judge that a screen looks as designed: the design file and the built app are captured side by side from the screens registry (`scripts/design/screens.json`), with pinned fonts, by `scripts/design/comparisons.mjs`, and when a change needs a before/after pair, the raw captures are compared by exact AE with `scripts/design/ae.mjs` (ADR-0042). How a shot is taken is frozen by ADR-0052 (the GH-301 request called it ADR-0050). This file holds what the capture and its registry must guarantee for the people who rely on them. It changes no product behaviour: no capability's rule, screen, route, step or copy is defined here, and the capture always follows the product, never the reverse. It is review evidence attached to a PR and judged by eye; it is never a step of the gate (docs/product/gate.md). Sellers and the operator see nothing of it.
 
+Lo que garantiza la fuente de diseño que está en master (qué versión, cómo se compara, qué pausas y topes hay) está en [drawing-as-guide.md](drawing-as-guide.md).
+
 ## Jobs
 
 **When** I run the design capture over Home and the Onboarding before approving a change, **I want** every screen the registry lists, both themes of the last Onboarding screen included, to be reached the way a seller reaches it and captured whole, and the registry, its tests and the plan to agree, **so I can** trust a green `--strict` run as evidence and approve without hand-patching a test, accepting a screen that was never reached, or recording an exception.
