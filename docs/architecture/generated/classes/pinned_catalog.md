@@ -92,6 +92,7 @@ classDiagram
   router --> sql_snapshot
   router --> telegram_holder
   router --> token_cipher
+  safe_upkeep --> ports
   safe_upkeep --> push
   safe_upkeep --> sql_recorder
   safe_upkeep --> sql_snapshot
@@ -100,6 +101,7 @@ classDiagram
   schemas --> ports
   schemas --> push
   schemas --> status
+  sql_due --> ports
   sql_due --> tables
   sql_recorder --> status
   sql_recorder --> tables
@@ -117,6 +119,7 @@ classDiagram
   telegram_holder --> ports
   telegram_http --> errors
   telegram_http --> ports
+  ticker --> ports
   ticker --> safe_upkeep
   ticker --> sql_due
   ticker --> sync_all
@@ -233,13 +236,19 @@ classDiagram
   class BusinessLocks {
     for_business(business_id: int) threading.Lock
   }
+  class BusinessZone {
+    zone_of(business_id: int) str #124; None
+  }
+  class BusinessZones {
+    zones() dict~int, str~
+  }
   class ChannelTelegram {
     edit(token: str, chat: str, message_id: int, plain: str, spans: Sequence~tuple~int, int~~) EditOutcome
     pin(token: str, chat: str, message_id: int) None
     send(token: str, chat: str, plain: str, spans: Sequence~tuple~int, int~~) int
   }
   class DueBusinesses {
-    due(today: date) list~int~
+    due(instant: datetime) list~int~
   }
   class PinFacts {
     last_checked_on : date #124; None
@@ -357,7 +366,7 @@ classDiagram
     is_bot_saved() bool
   }
   class SqlDueBusinesses {
-    due(today: date) list~int~
+    due(instant: datetime) list~int~
   }
   class SqlPinRecorder {
     record(business_id: int, expected_token_fingerprint: str #124; None, expected_channel_chat: str #124; None) None

@@ -52,6 +52,8 @@ classDiagram
   }
   class sql_accounts {
   }
+  class sql_zones {
+  }
   class tables {
   }
   cli --> invitations
@@ -106,6 +108,7 @@ classDiagram
   sql_accounts --> invitation
   sql_accounts --> ports
   sql_accounts --> tables
+  sql_zones --> tables
   tables --> account
 ```
 
@@ -402,8 +405,15 @@ classDiagram
     user_by_email(email: Email) User #124; None
     users_of_business(business_id: int) list~User~
   }
+  class SqlBusinessZones {
+    zone_of(business_id: int) str #124; None
+    zones() dict~int, str~
+  }
   class SqlUserFacts {
     user_count() int
+  }
+  class TargetZone {
+    zone_name_of(business_id: int) str #124; None
   }
   class UnknownUser {
   }

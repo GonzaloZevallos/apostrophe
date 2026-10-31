@@ -384,6 +384,9 @@ classDiagram
     write_entry(variety_id: int, row: EntradaRow, recorded_at: datetime, today: date, transaction: Transaction) None
     write_threshold(variety_id: int, quantity: Quantity, transaction: Transaction) None
   }
+  class TargetZone {
+    zone_name_of(business_id: int) str #124; None
+  }
   class VarietiesImport {
     check_name(raw: str) VarietyKey #124; Refusal
     check_price_history(rows: Sequence~PriceHistoryRow~, keys: Mapping~str, str~) Sequence~Refusal #124; None~
@@ -416,5 +419,8 @@ classDiagram
   class _SizableWorksheet {
     iter_rows() Generator~tuple~_CellGetValue, ...~~
     reset_dimensions() None
+  }
+  class _TimeZoneUnavailable {
+    code : str
   }
 ```
