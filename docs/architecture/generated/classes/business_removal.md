@@ -89,11 +89,13 @@ classDiagram
     id : int
     language : str
     name : str
+    time_zone : str
   }
   class BusinessRef {
     id : int
     language : str
     name : str
+    time_zone : str
   }
   class Column {
     name : str

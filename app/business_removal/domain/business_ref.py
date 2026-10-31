@@ -14,6 +14,7 @@ class BusinessRef:
     id: int
     name: str
     language: str
+    time_zone: str
 
     def __post_init__(self) -> None:
         if self.id <= 0:
@@ -22,3 +23,5 @@ class BusinessRef:
             raise ValueError("a business ref needs a name")
         if not self.language:
             raise ValueError("a business ref needs a language")
+        if not self.time_zone:
+            raise ValueError("a business ref needs a time zone")

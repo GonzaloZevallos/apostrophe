@@ -37,7 +37,9 @@ INTERRUPTED_MESSAGE = baseline_text("operator.removal.interrupted")
 BUSY_MESSAGE = baseline_text("operator.removal.busy")
 FAILED_MESSAGE = baseline_text("operator.removal.failed")
 RECORDS_CHANGED_MESSAGE = baseline_text("operator.removal.records_changed")
-BUSINESS = BusinessRef(id=1, name="La Huerta", language="en")
+BUSINESS = BusinessRef(
+    id=1, name="La Huerta", language="en", time_zone="America/Argentina/Buenos_Aires"
+)
 
 
 def _col(name: str, type_: ColumnType = ColumnType.INTEGER) -> Column:

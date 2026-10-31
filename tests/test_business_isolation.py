@@ -241,6 +241,12 @@ def seed_first_run(client: TestClient) -> dict[str, int]:
     return {}
 
 
+def seed_time_zone(client: TestClient) -> dict[str, int]:
+    saved = client.put("/business/time-zone", json={"time_zone": "Europe/Madrid"})
+    assert saved.status_code == 200, saved.text
+    return {}
+
+
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
@@ -252,6 +258,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_payments,
     seed_pricing_settings,
     seed_first_run,
+    seed_time_zone,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -281,6 +288,8 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     # `de` is selectable in this module (the `settings` fixture below), so the body really
     # changes the stored language of whichever business calls it.
     ("PUT", "/business/language"): {"language": "de"},
+    # A is seeded on Madrid, so B moving to Tokyo is a change that would show if it leaked.
+    ("PUT", "/business/time-zone"): {"time_zone": "Asia/Tokyo"},
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,

@@ -168,7 +168,10 @@ def remove_business(
         rows = {name: schema_rows.rows(name, business.id) for name in owned}
         now = _naive_utc(clock())
         document = build_document(
-            Business(business.id, business.name, business.language), schema, rows, now
+            Business(business.id, business.name, business.language, business.time_zone),
+            schema,
+            rows,
+            now,
         )
         name = file_name(business.name, now)
         path = export_file.write_durably(name, document)

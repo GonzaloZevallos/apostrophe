@@ -56,6 +56,8 @@ classDiagram
   }
   class tables {
   }
+  class time_zone {
+  }
   cli --> invitations
   cli --> reset_password
   cli --> router
@@ -78,6 +80,7 @@ classDiagram
   language_router --> sql_accounts
   manage_business --> account
   manage_business --> ports
+  manage_business --> time_zone
   onboarding_facts --> tables
   ports --> account
   ports --> invitation
@@ -98,6 +101,7 @@ classDiagram
   router --> session_token
   router --> sign_in
   router --> sql_accounts
+  router --> time_zone
   sign_in --> account
   sign_in --> login_guard
   sign_in --> password
@@ -206,6 +210,9 @@ classDiagram
   class TimeZoneUnavailable {
     code : ClassVar~str~
   }
+  class UnknownTimeZone {
+    code : ClassVar~str~
+  }
   class User {
     business_id : int
     email
@@ -222,6 +229,7 @@ classDiagram
   InvalidEmail --|> AccountRuleBroken
   Invitation --> InvitationKind : kind
   PasswordHasher --> ScryptParams : params
+  UnknownTimeZone --|> AccountRuleBroken
   User --> Email : email
   WeakPassword --|> AccountRuleBroken
 ```
@@ -248,6 +256,7 @@ classDiagram
     save_business(business: Business) None
     save_invitation(invitation: Invitation) None
     set_password_hash(user_id: int, password_hash: str) None
+    set_time_zone_if_different(business_id: int, zone: BusinessTimeZone) bool
     spend_reset_link(token_digest: str, cutoff: datetime) int #124; None
     unlock_email(email: Email) None
     user(user_id: int) User #124; None
@@ -399,6 +408,7 @@ classDiagram
     save_business(business: Business) None
     save_invitation(invitation: Invitation) None
     set_password_hash(user_id: int, password_hash: str) None
+    set_time_zone_if_different(business_id: int, zone: BusinessTimeZone) bool
     spend_reset_link(token_digest: str, cutoff: datetime) int #124; None
     unlock_email(email: Email) None
     user(user_id: int) User #124; None
@@ -414,6 +424,18 @@ classDiagram
   }
   class TargetZone {
     zone_name_of(business_id: int) str #124; None
+  }
+  class TimeZoneIn {
+    time_zone : str
+  }
+  class TimeZoneOut {
+    now_epoch_ms : int
+    time_zone : str
+    time_zones : list~str~
+  }
+  class TimeZoneSavedOut {
+    time_zone : str
+    today : date
   }
   class UnknownUser {
   }

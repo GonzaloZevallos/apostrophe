@@ -3776,6 +3776,64 @@
         "title": "ThresholdIn",
         "type": "object"
       },
+      "TimeZoneIn": {
+        "properties": {
+          "time_zone": {
+            "title": "Time Zone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "time_zone"
+        ],
+        "title": "TimeZoneIn",
+        "type": "object"
+      },
+      "TimeZoneOut": {
+        "properties": {
+          "now_epoch_ms": {
+            "title": "Now Epoch Ms",
+            "type": "integer"
+          },
+          "time_zone": {
+            "title": "Time Zone",
+            "type": "string"
+          },
+          "time_zones": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Time Zones",
+            "type": "array"
+          }
+        },
+        "required": [
+          "time_zone",
+          "time_zones",
+          "now_epoch_ms"
+        ],
+        "title": "TimeZoneOut",
+        "type": "object"
+      },
+      "TimeZoneSavedOut": {
+        "properties": {
+          "time_zone": {
+            "title": "Time Zone",
+            "type": "string"
+          },
+          "today": {
+            "format": "date",
+            "title": "Today",
+            "type": "string"
+          }
+        },
+        "required": [
+          "time_zone",
+          "today"
+        ],
+        "title": "TimeZoneSavedOut",
+        "type": "object"
+      },
       "UserOut": {
         "properties": {
           "email": {
@@ -5078,6 +5136,76 @@
           }
         ],
         "summary": "Change Language",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/business/time-zone": {
+      "get": {
+        "operationId": "get_time_zone_business_time_zone_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimeZoneOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Time Zone",
+        "tags": [
+          "accounts"
+        ]
+      },
+      "put": {
+        "operationId": "change_time_zone_business_time_zone_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimeZoneIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimeZoneSavedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Change Time Zone",
         "tags": [
           "accounts"
         ]
