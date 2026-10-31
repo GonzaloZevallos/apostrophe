@@ -9,7 +9,7 @@ never comes from the URL or the body: only from the session.
 import hashlib
 import hmac
 from collections.abc import Callable
-from datetime import date
+from datetime import date, datetime
 from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network, ip_address
 from typing import Annotated, NoReturn, cast
 from zoneinfo import ZoneInfo
@@ -123,6 +123,17 @@ def get_today(zone: BusinessZoneDep, clock: Annotated[Clock, Depends(get_clock)]
     """The day it is for the signed-in business: the injected clock's instant in its own zone.
     The one way a request learns the day (`business_day` in `app.shared.calendar`)."""
     return business_day(clock(), zone)
+
+
+def day_in_zone(name: str, instant: datetime) -> date:
+    """The day `instant` falls on in the zone `name`, a name the caller has just stored: the
+    one place outside `get_today` a request works out a day, for the save that answers with
+    the new zone's today. A name that cannot be loaded refuses with the same 500."""
+    with zone_as_http:
+        zone = load_zone(name)
+        if zone is None:
+            raise TimeZoneUnavailable
+        return business_day(instant, zone)
 
 
 def _parse_ip(raw: str) -> IPv4Address | IPv6Address | None:

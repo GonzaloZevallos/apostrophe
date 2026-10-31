@@ -1,7 +1,7 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, Literal, TypedDict
 
-from fastapi import APIRouter, Depends, Header, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, Request, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -10,6 +10,7 @@ from app.accounts.adapters.deps import (
     ClientAddressDep,
     CurrentBusinessId,
     CurrentSession,
+    day_in_zone,
     get_accounts,
     get_business_opening,
     get_hasher,
@@ -29,9 +30,11 @@ from app.accounts.domain.invitation import InvitationKind, InvitationNotUsable
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.reset_link import CurrentPasswordWrong, ResetLinkGone
 from app.accounts.domain.session_token import SESSION_LIFETIME, SessionSigner
+from app.accounts.domain.time_zone import time_zones_to_show
 from app.clock import Clock, get_clock
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.pinned_catalog.adapters.safe_upkeep import run_upkeep_safely
 from app.settings import Settings
 from app.shared.copy.negotiation import pre_sign_in_language
 from app.shared.language import BusinessLanguage, shown_language
@@ -92,6 +95,25 @@ class BusinessOut(BaseModel):
 
 class BusinessPatchIn(BaseModel):
     name: str
+
+
+class TimeZoneOut(BaseModel):
+    time_zone: str
+    # The accepted names (plus the stored one when it is off that list): the picker's list.
+    time_zones: list[str]
+    # The injected clock's instant, so the front previews a zone's local time without ever
+    # reading its own clock (docs/adr/0057).
+    now_epoch_ms: int
+
+
+class TimeZoneIn(BaseModel):
+    time_zone: str
+
+
+class TimeZoneSavedOut(BaseModel):
+    time_zone: str
+    # The new zone's today, worked out here from the injected clock for the `me` cache.
+    today: date
 
 
 class InvitationOut(BaseModel):
@@ -264,6 +286,41 @@ def rename_business(
     with as_http:
         profile = manage_business.rename_business(accounts, session, business_id, body.name)
     return _business_out(profile, settings)
+
+
+_EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
+
+
+@router.get("/business/time-zone")
+def get_time_zone(
+    business_id: CurrentBusinessId, accounts: AccountsDep, clock: ClockDep
+) -> TimeZoneOut:
+    stored = manage_business.stored_time_zone(accounts, business_id)
+    return TimeZoneOut(
+        time_zone=stored,
+        time_zones=list(time_zones_to_show(stored)),
+        now_epoch_ms=(clock() - _EPOCH) // timedelta(milliseconds=1),
+    )
+
+
+@router.put("/business/time-zone")
+def change_time_zone(
+    body: TimeZoneIn,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    business_id: CurrentBusinessId,
+    accounts: AccountsDep,
+    session: SessionDep,
+    clock: ClockDep,
+) -> TimeZoneSavedOut:
+    with as_http:
+        changed = manage_business.change_time_zone(accounts, session, business_id, body.time_zone)
+    # Only a real change can owe the pinned catalog an edit (docs/adr/0014); the task runs
+    # once the response is answered, after the single commit above. Not `schedule_upkeep`.
+    if changed:
+        background_tasks.add_task(run_upkeep_safely, request.app.state, business_id, clock())
+    stored = manage_business.stored_time_zone(accounts, business_id)
+    return TimeZoneSavedOut(time_zone=stored, today=day_in_zone(stored, clock()))
 
 
 @router.post("/invitations", status_code=201)

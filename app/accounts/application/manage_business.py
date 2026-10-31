@@ -66,6 +66,12 @@ def change_business_language(
     return True
 
 
+def stored_time_zone(accounts: Accounts, business_id: int) -> str:
+    business = accounts.business(business_id)
+    assert business is not None, "a signed-in user's business always exists"
+    return business.time_zone.name
+
+
 def change_time_zone(
     accounts: Accounts, transaction: Transaction, business_id: int, name: str
 ) -> bool:

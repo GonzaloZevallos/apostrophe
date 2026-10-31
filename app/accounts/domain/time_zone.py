@@ -26,3 +26,10 @@ REGIONS = (
 @cache
 def accepted_time_zones() -> tuple[str, ...]:
     return tuple(sorted(name for name in available_timezones() if name.startswith(REGIONS)))
+
+
+def time_zones_to_show(stored: str) -> tuple[str, ...]:
+    """The picker's list: the accepted names, plus the stored one when it is not among them
+    (a business keeps a zone the list no longer offers, and the screen must still show it)."""
+    accepted = accepted_time_zones()
+    return accepted if stored in accepted else (*accepted, stored)

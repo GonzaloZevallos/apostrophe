@@ -263,6 +263,8 @@ FIXTURE_ROUTES: Mapping[str, tuple[RouteShape, ...]] = {
     "pinnedCatalog": (RouteShape("POST", "/pinned-catalog/publish"),),
     "pinnedCatalogStatus": (RouteShape("GET", "/pinned-catalog/status"),),
     "pinnedCatalogTest": (RouteShape("POST", "/pinned-catalog/test"),),
+    "timeZone": (RouteShape("GET", "/business/time-zone"),),
+    "timeZoneSaved": (RouteShape("PUT", "/business/time-zone"),),
     "sale": (
         RouteShape("POST", "/sales"),
         RouteShape("GET", "/sales", item=True),

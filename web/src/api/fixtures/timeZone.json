@@ -1,0 +1,5 @@
+{
+  "time_zone": "America/Argentina/Buenos_Aires",
+  "time_zones": ["America/Argentina/Buenos_Aires", "Europe/Madrid"],
+  "now_epoch_ms": 1790964000000
+}
