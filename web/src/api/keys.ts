@@ -19,6 +19,7 @@ export type Resource =
   | 'payments'
   | 'pinnedCatalog'
   | 'pricingSettings'
+  | 'timeZone'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -33,11 +34,13 @@ const PREFIX: Record<Resource, string> = {
   payments: 'payments',
   pinnedCatalog: 'pinned-catalog',
   pricingSettings: 'pricing-settings',
+  timeZone: 'time-zone',
 }
 
 export const keys = {
   me: () => [PREFIX.me] as const,
   business: () => [PREFIX.business] as const,
+  timeZone: () => [PREFIX.timeZone] as const,
   varieties: () => [PREFIX.varieties] as const,
   archivedVarieties: () => [PREFIX.varieties, 'archived'] as const,
   variety: (id: string) => [PREFIX.varieties, id] as const,
