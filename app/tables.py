@@ -19,6 +19,10 @@ from app.pricing_settings.adapters import tables as pricing_settings_tables
 from app.products.adapters import tables as products_tables
 from app.sales.adapters import tables as sales_tables
 from app.stock.adapters import tables as stock_tables
+
+# The one import of app.units outside app/main.py: it only registers the `unit` table on
+# the metadata, which test_table_registry requires of `app.tables` alone. Nothing here
+# reads or writes a unit.
 from app.units.adapters import tables as units_tables
 
 TABLE_MODULES = (
