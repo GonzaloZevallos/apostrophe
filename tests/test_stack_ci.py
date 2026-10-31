@@ -7,6 +7,9 @@ that is not a check, or a value no gated job runs, is refused. Every other `run:
 `ci-ok` needs every other job and runs `if: always()`; the always-on jobs carry no skip `if:`;
 the suites are skipped only by their `changes` flag; the workflow's permissions, concurrency,
 fetch depth, fork guard, hidden-file uploads and output names are pinned.
+When `stack.yaml` has `docs:`, `docs.generate` is a known step that exactly one gated job runs
+and it is in no `checks`, `CI_ONLY` or `CI_FORMS` entry; the system adds the `docs` check, so
+none is declared and no declared command reads the generator's paths.
 `stack_ci_problems` is a pure function over the parsed YAML, so each rule is tested on in-memory
 data; the real files are checked as they are."""
 
@@ -76,9 +79,6 @@ CI_ONLY: dict[str, str] = {
         "&& exit 1"
     ): "the coverage job's own failure reason; a warning in ci-ok",
     VERDICT_RUN: "the merge condition: one verdict over every job's result and the `changes` flags",
-    "uv run --no-project python -m scripts.docs.generate": (
-        "the docs generator, until `docs:` is declared"
-    ),
     (
         'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
         '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
@@ -311,6 +311,33 @@ def _coverage_problems(jobs: Data) -> list[str]:
     return problems
 
 
+def _generate_problems(
+    generate: str,
+    runs: dict[str, list[str]],
+    gated: set[str],
+    checks: dict[str, str],
+    ci_only: dict[str, str],
+    ci_forms: dict[str, str],
+) -> list[str]:
+    """What keeps `docs.generate` from being one step of one gated job and nothing else."""
+    problems: list[str] = []
+    holders = [job for job, commands in runs.items() if generate in commands]
+    if len(holders) != 1:
+        problems.append(f"docs.generate ({generate}) is a step of {len(holders)} jobs, not 1")
+    elif holders[0] not in gated:
+        problems.append(f"docs.generate runs in job {holders[0]!r}, which ci: does not gate")
+    if generate in ci_only:
+        problems.append(f"docs.generate ({generate}) is also in CI_ONLY")
+    if generate in ci_forms.values():
+        problems.append(f"docs.generate ({generate}) is also in CI_FORMS")
+    problems.extend(
+        f"docs.generate ({generate}) is also in checks {name!r}"
+        for name, command in checks.items()
+        if command == generate
+    )
+    return problems
+
+
 def stack_ci_problems(
     stack: Data, workflow: Data, ci_only: dict[str, str], ci_forms: dict[str, str]
 ) -> list[str]:
@@ -320,6 +347,8 @@ def stack_ci_problems(
     checks: dict[str, str] = stack["checks"]
     setup: dict[str, str] = stack["setup"]
     ci_names: list[str] = stack.get("ci", [])
+    docs: Data | None = stack.get("docs")
+    generate: str | None = docs["generate"] if docs is not None else None
     if not ci_names:
         return ["stack.yaml has no `ci:`"]
 
@@ -352,6 +381,9 @@ def stack_ci_problems(
             problems.append(f"CI_ONLY command ({command}) is not in a gated job")
 
     known = {*setup.values(), *checks.values(), *ci_only, *ci_forms.values()}
+    if generate is not None:
+        known.add(generate)
+        problems.extend(_generate_problems(generate, runs, gated, checks, ci_only, ci_forms))
     for job, commands in runs.items():
         problems.extend(
             f"job {job!r} runs an unknown step: {command}"
@@ -622,6 +654,113 @@ def test_an_unknown_step_is_refused() -> None:
     workflow = _mutated()
     workflow["jobs"]["checks"]["steps"].append({"run": "make everything-green"})
     assert _problems(workflow) == ["job 'checks' runs an unknown step: make everything-green"]
+
+
+GENERATE = "uv run --no-project python -m scripts.docs.generate"
+DOCS_OWNED = ("docs/architecture/generated", "docs/api")
+
+
+def _without_generate_step(workflow: Data) -> Data:
+    copied = copy.deepcopy(workflow)
+    for body in copied["jobs"].values():
+        body["steps"] = [step for step in body["steps"] if step.get("run", "").strip() != GENERATE]
+    return copied
+
+
+def _generate_messages(problems: list[str]) -> list[str]:
+    return [problem for problem in problems if problem.startswith("docs.generate")]
+
+
+def test_docs_generate_is_declared_and_is_a_step_of_the_docs_job_only() -> None:
+    assert STACK["docs"]["generate"] == GENERATE
+    assert [job for job, commands in _runs(WORKFLOW).items() if GENERATE in commands] == ["docs"]
+
+
+def test_a_docs_generate_no_job_runs_is_refused() -> None:
+    assert _problems(_without_generate_step(WORKFLOW)) == [
+        f"docs.generate ({GENERATE}) is a step of 0 jobs, not 1"
+    ]
+
+
+def test_a_docs_generate_run_by_two_jobs_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["e2e"]["steps"].append({"run": GENERATE})
+    assert _problems(workflow) == [f"docs.generate ({GENERATE}) is a step of 2 jobs, not 1"]
+
+
+def test_a_docs_generate_in_a_job_outside_the_closure_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].remove("docs")
+    assert _generate_messages(_problems(workflow)) == [
+        "docs.generate runs in job 'docs', which ci: does not gate"
+    ]
+
+
+def test_a_docs_generate_still_listed_in_ci_only_is_refused() -> None:
+    ci_only = {**CI_ONLY, GENERATE: "the docs generator"}
+    assert stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS) == [
+        f"docs.generate ({GENERATE}) is also in CI_ONLY"
+    ]
+
+
+def test_a_docs_generate_that_is_also_a_ci_form_is_refused() -> None:
+    forms = {**CI_FORMS, "tests": GENERATE}
+    assert f"docs.generate ({GENERATE}) is also in CI_FORMS" in _problems(WORKFLOW, forms=forms)
+
+
+def test_a_docs_generate_that_is_also_a_check_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["checks"]["gen"] = GENERATE
+    problems = _problems(WORKFLOW, stack, _forms_for(stack))
+    assert f"docs.generate ({GENERATE}) is also in checks 'gen'" in problems
+
+
+def test_without_a_docs_block_the_generate_command_is_an_unknown_step() -> None:
+    stack = {key: value for key, value in copy.deepcopy(STACK).items() if key != "docs"}
+    assert _problems(WORKFLOW, stack) == [f"job 'docs' runs an unknown step: {GENERATE}"]
+
+
+def docs_reservation_problems(stack: Data) -> list[str]:
+    """What breaks the reservation of the `docs` check and its paths: the system adds the
+    check, and no command the product declares reads the paths the generator owns."""
+    problems: list[str] = []
+    if "docs" in stack["checks"]:
+        problems.append("checks declares a check named 'docs'")
+    if "docs" in stack.get("delivery_checks", []):
+        problems.append("delivery_checks lists 'docs'")
+    for section in ("setup", "checks", "affected_checks"):
+        for name, command in stack.get(section, {}).items():
+            problems.extend(
+                f"{section} {name!r} reads {path}" for path in DOCS_OWNED if path in command
+            )
+    return problems
+
+
+@pytest.mark.skipif("docs" not in STACK, reason="stack.yaml declares no docs: block")
+def test_the_docs_check_and_its_paths_are_reserved() -> None:
+    assert docs_reservation_problems(STACK) == []
+
+
+def test_a_declared_docs_check_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["checks"]["docs"] = GENERATE
+    stack["delivery_checks"].append("docs")
+    assert docs_reservation_problems(stack) == [
+        "checks declares a check named 'docs'",
+        "delivery_checks lists 'docs'",
+    ]
+
+
+def test_a_command_that_reads_the_owned_paths_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["setup"]["peek"] = "cat docs/api/openapi.json"
+    stack["checks"]["stale"] = "git diff --exit-code -- docs/architecture/generated"
+    stack["affected_checks"]["web-tests"] += " docs/api"
+    assert docs_reservation_problems(stack) == [
+        "setup 'peek' reads docs/api",
+        "checks 'stale' reads docs/architecture/generated",
+        "affected_checks 'web-tests' reads docs/api",
+    ]
 
 
 def test_the_verdict_command_is_ci_only_and_runs_in_ci_ok() -> None:

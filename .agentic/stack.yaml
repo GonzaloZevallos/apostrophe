@@ -129,6 +129,23 @@ forbidden:
     reason: >-
       this silences TypeScript or the linter. CODING_STANDARDS.md section 6: fix the
       code instead; nothing is silenced in this product, front included.
+# `docs` (agentic-system #398, ADR-0066): the one command that rewrites every generated doc
+# and the paths it owns. The system adds the reserved `docs` check to `checks` and to
+# `delivery_checks` from this block, so this file never declares a check named `docs`. The
+# check runs `generate`, fails with DOCS_STALE when anything under `paths` changed, and puts
+# the paths back as HEAD has them. Measured 2026-10-31, 16 cores, `generate` alone, 5 runs, load
+# average (1 min) before -> after each: 202.3 s (16.43 -> 34.65), 245.6 s (34.36 -> 35.53),
+# 187.2 s (34.92 -> 28.70), 241.9 s (28.70 -> 33.69), 192.7 s (33.69 -> 27.65). Median 202.3 s,
+# worst 245.6 s (load 34.36 -> 35.53); the machine was never idle, so these are upper bounds. That
+# median is above `tests-fast` alone (94.8 s): the reserved `docs` check is now the slowest check
+# of a delivery, and the gate takes its time instead of `tests-fast`'s. This is the known cost
+# of part 4 (GH-468). No other check may read `docs/architecture/generated/**` or `docs/api/**`
+# (tests/test_stack_ci.py checks the declared commands). `parallel_checks` stays true: `generate`
+# writes only inside those paths and temporary directories (ADR-0066 item 4), so the paths have
+# one writer; this extends the shared-state inventory above.
+docs:
+  generate: uv run --no-project python -m scripts.docs.generate
+  paths: ["docs/architecture/generated/**", "docs/api/**"]
 # `ci`: the check-run name of ci.yml that gates a merge (agentic-system ADR-0045, GH-216
 # amendment): with it, `agentic merge` decides from GitHub's CI on the reviewed head instead of
 # rerunning every check locally. Only `ci-ok` is named: it `needs` every other job (changes,
