@@ -216,7 +216,7 @@ _Avoid_: preview, draft
 _In the app_: Test it
 
 **Upkeep**:
-La edición automática del Pinned catalog después de un cambio que puede afectar su texto, o al comenzar un nuevo día en hora de Argentina. Solo edita: nunca envía ni fija. _In the app_: no tiene palabra propia.
+La edición automática del Pinned catalog después de un cambio que puede afectar su texto (un cambio de Business time zone incluido), o al comenzar un nuevo día en la Business time zone del Business. Solo edita: nunca envía ni fija. _In the app_: no tiene palabra propia.
 _Avoid_: sync, auto-publish, refresh
 _In the app_: no word of its own
 
@@ -332,7 +332,7 @@ El estado del Pinned catalog cuando los Customers no están viendo el Catalog de
 _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
-La vista de una sola pantalla de Home sobre un Business, en hora de Argentina. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Variety. Week y Month suman Cost of goods sold, Stock shortfall, el costo de Promotion y de Own use, Expenses, gramos regalados, Purchases, Profit y Cash; solo lectura, cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
+La vista de una sola pantalla de Home sobre un Business, en su Business time zone. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Variety. Week y Month suman Cost of goods sold, Stock shortfall, el costo de Promotion y de Own use, Expenses, gramos regalados, Purchases, Profit y Cash; solo lectura, cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
 _Avoid_: dashboard, overview, home, summary, Analysis
 
 **Average sale**:
@@ -534,8 +534,8 @@ Una cantidad guardada de cualquier Unit, siempre un número entero de centésimo
 _Avoid_: amount, grams
 
 **Business time zone**:
-La zona que decide cuándo empieza y termina el día de un Business; a todo Business existente se le da la de Argentina. Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; a cargo de la parte time-zone.
-_Avoid_: locale, region
+La zona IANA de un Business que decide cuándo empieza y termina su día: "today", las fechas por defecto, el Current price, Days left, Best week, Best weekday, el Panel, la Upkeep diaria y el Spreadsheet import la siguen. Todo Business existente y todo Business nuevo arranca con la de Argentina, y cualquier User la cambia en Settings → Business → Time zone sin que se vuelva a fechar nada registrado. _In the app_: Time zone.
+_Avoid_: locale, region, offset, timezone setting
 
 **Money scale**:
 Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2); los Businesses existentes quedan en 0 y los nuevos empiezan en 2. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
